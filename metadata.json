@@ -1,0 +1,5 @@
+{
+  "name": "Cosmic Blueprint",
+  "description": "Calculate your exact western zodiac sign, ascendant, moon sign, chinese bazi, and wuxing. Get a fusion interpretation and talk to Levi Bazi, your personal astrological agent.",
+  "requestFramePermissions": ["microphone"]
+}
