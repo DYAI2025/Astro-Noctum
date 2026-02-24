@@ -9,6 +9,7 @@ interface DashboardProps {
   onReset: () => void;
   onRegenerate: () => void;
   isLoading: boolean;
+  apiIssues: { endpoint: string; message: string }[];
 }
 
 export function Dashboard({
@@ -17,6 +18,7 @@ export function Dashboard({
   onReset,
   onRegenerate,
   isLoading,
+  apiIssues,
 }: DashboardProps) {
   useEffect(() => {
     // Load ElevenLabs widget script if not already loaded
@@ -104,6 +106,19 @@ export function Dashboard({
       >
         <ArrowLeft className="w-4 h-4" /> Start Over
       </button>
+
+      {apiIssues.length > 0 && (
+        <div className="mb-8 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-200">
+          Einige Berechnungen konnten nicht live geladen werden. Es wurden teilweise Fallback-Daten genutzt:
+          <ul className="mt-2 list-disc pl-4">
+            {apiIssues.map((issue) => (
+              <li key={`${issue.endpoint}-${issue.message}`}>
+                <span className="font-semibold">{issue.endpoint}</span>: {issue.message}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <header className="mb-20 text-center md:text-left">
         <p className="text-gold/60 text-[9px] uppercase tracking-[0.5em] mb-4">Willkommen im Atlas</p>

@@ -32,6 +32,18 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
       return;
     }
 
+    if (parsedLat < -90 || parsedLat > 90 || parsedLon < -180 || parsedLon > 180) {
+      alert("Koordinaten außerhalb des gültigen Bereichs. Breitengrad: -90 bis 90, Längengrad: -180 bis 180.");
+      return;
+    }
+
+    try {
+      Intl.DateTimeFormat(undefined, { timeZone: tz });
+    } catch {
+      alert("Ungültige Zeitzone. Bitte nutze eine IANA-Zeitzone wie Europe/Berlin.");
+      return;
+    }
+
     onSubmit({
       date: `${date}T${time}:00`,
       tz,
