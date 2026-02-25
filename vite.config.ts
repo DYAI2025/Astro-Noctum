@@ -19,7 +19,7 @@ export default defineConfig(({mode}) => {
       hmr: process.env.DISABLE_HMR !== 'true',
       proxy: {
         '/api/calculate': {
-          target: env.VITE_BAFE_BASE_URL || 'https://bafe-production.up.railway.app',
+          target: env.VITE_BAFE_BASE_URL || 'https://bafe.vercel.app',
           changeOrigin: true,
           rewrite: (p: string) => p.replace(/^\/api/, ''),
         },
