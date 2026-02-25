@@ -21,7 +21,6 @@ export default defineConfig(({mode}) => {
         '/api/calculate': {
           target: env.VITE_BAFE_BASE_URL || 'https://bafe.vercel.app',
           changeOrigin: true,
-          rewrite: (p: string) => p.replace(/^\/api/, ''),
         },
       },
     },
