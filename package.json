@@ -11,12 +11,12 @@
     "lint": "tsc --noEmit",
     "start": "node server.mjs"
   },
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "dependencies": {
     "@google/genai": "^1.29.0",
     "@tailwindcss/typography": "^0.5.19",
-    "@tailwindcss/vite": "^4.1.14",
-    "@vitejs/plugin-react": "^5.0.4",
-    "better-sqlite3": "^12.4.1",
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "lucide-react": "^0.546.0",
@@ -27,6 +27,8 @@
     "vite": "^6.2.0"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.1.14",
+    "@vitejs/plugin-react": "^5.0.4",
     "@types/express": "^4.17.21",
     "@types/node": "^22.14.0",
     "autoprefixer": "^10.4.21",

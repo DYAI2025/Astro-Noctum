@@ -12,6 +12,13 @@
 3. Start development:
    `npm run dev`
 
+## Runtime Requirements
+
+- Node.js **20.19+** (defined in `package.json` `engines` and `.nvmrc`)
+- npm 10+
+
+This project intentionally avoids native Node build dependencies during install, so CI/deploy installs remain deterministic without `node-gyp` toolchain requirements.
+
 ## Railway Deployment
 
 This repo is prepared for Railway with:
