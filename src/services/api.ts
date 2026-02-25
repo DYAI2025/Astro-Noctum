@@ -17,9 +17,12 @@ export interface ApiResults {
   wuxing: unknown;
   tst: unknown;
   issues: ApiIssue[];
+  _reading_id?: number | null;
 }
 
-const BASE_URL = import.meta.env.VITE_BAFE_BASE_URL || "https://bafe-production.up.railway.app";
+// Route through same-origin proxy (/api/calculate/…) to avoid CORS.
+// Dev: Vite proxy rewrites /api → BAFE.  Prod: Express server.mjs proxies.
+const BASE_URL = "/api";
 
 const fetchWithTimeout = async (url: string, options: RequestInit, timeoutMs = 15000) => {
   const controller = new AbortController();

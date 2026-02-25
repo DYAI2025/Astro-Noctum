@@ -1,6 +1,6 @@
-import { useEffect } from "react";
-import { motion } from "motion/react";
-import { Sun, Moon, Zap, ArrowLeft, RefreshCw, MessageCircle, ArrowUp } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Sun, Moon, Zap, ArrowLeft, RefreshCw, ArrowUp, Phone, PhoneOff } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
 interface DashboardProps {
@@ -10,6 +10,7 @@ interface DashboardProps {
   onRegenerate: () => void;
   isLoading: boolean;
   apiIssues: { endpoint: string; message: string }[];
+  onStopAudio: () => void;
 }
 
 export function Dashboard({
@@ -19,7 +20,11 @@ export function Dashboard({
   onRegenerate,
   isLoading,
   apiIssues,
+  onStopAudio,
 }: DashboardProps) {
+  const [leviActive, setLeviActive] = useState(false);
+  const leviSectionRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     // Load ElevenLabs widget script if not already loaded
     if (
@@ -34,6 +39,18 @@ export function Dashboard({
       document.body.appendChild(script);
     }
   }, []);
+
+  const handleCallLevi = () => {
+    onStopAudio();
+    setLeviActive(true);
+    setTimeout(() => {
+      leviSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 100);
+  };
+
+  const handleHangUp = () => {
+    setLeviActive(false);
+  };
 
   const zodiacEmojis: Record<string, string> = {
     Rat: "🐀",
@@ -288,30 +305,65 @@ export function Dashboard({
             </section>
           </div>
 
-          {/* AI Status Indicator & ElevenLabs */}
-          <div className="p-8 border border-gold/10 rounded-2xl bg-gold/[0.02] flex flex-col gap-6">
-            <div className="flex items-start gap-6">
-              <div className="relative mt-1">
-                <div className="w-2 h-2 rounded-full bg-gold breathing shadow-[0_0_10px_rgba(212,175,55,0.8)]"></div>
+          {/* Levi Call Tile */}
+          <div ref={leviSectionRef} className="p-8 border border-gold/10 rounded-2xl bg-gold/[0.02] flex flex-col gap-6">
+            <div className="flex items-start justify-between">
+              <div className="flex items-start gap-6">
+                <div className="relative mt-1">
+                  <div className={`w-2 h-2 rounded-full ${leviActive ? "bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.8)]" : "bg-gold shadow-[0_0_10px_rgba(212,175,55,0.8)]"} breathing`}></div>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-gold/80 mb-2 font-semibold">
+                    {leviActive ? "Levi Bazi — Im Gespräch" : "Levi Bazi Bereit"}
+                  </p>
+                  <p className="text-[11px] text-white/40 italic leading-relaxed">
+                    {leviActive
+                      ? "Ambient-Musik pausiert. Sprich mit Levi über dein Chart."
+                      : "Dein persönlicher astrologischer Agent ist bereit, tiefer in dein Chart einzutauchen."}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-[0.3em] text-gold/80 mb-2 font-semibold">Levi Bazi Aktiv</p>
-                <p className="text-[11px] text-white/40 italic leading-relaxed">
-                  Dein persönlicher astrologischer Agent ist bereit, tiefer in dein Chart einzutauchen.
-                </p>
-              </div>
-            </div>
-            <div className="relative z-20 w-full flex justify-center mt-4">
-              {/* @ts-ignore */}
-              <elevenlabs-convai
-                agent-id={elevenLabsAgentId}
-                dynamic-variables={JSON.stringify({
-                  chart_data: JSON.stringify(apiData),
-                })}
+              <button
+                onClick={leviActive ? handleHangUp : handleCallLevi}
+                className={`flex items-center gap-2 px-5 py-3 rounded-full text-[10px] uppercase tracking-[0.2em] font-semibold transition-all ${
+                  leviActive
+                    ? "bg-red-500/20 border border-red-500/40 text-red-400 hover:bg-red-500/30"
+                    : "bg-gold/10 border border-gold/30 text-gold hover:bg-gold/20 hover:border-gold/50"
+                }`}
               >
-              {/* @ts-ignore */}
-              </elevenlabs-convai>
+                {leviActive ? (
+                  <>
+                    <PhoneOff className="w-4 h-4" /> Auflegen
+                  </>
+                ) : (
+                  <>
+                    <Phone className="w-4 h-4" /> Call Levi
+                  </>
+                )}
+              </button>
             </div>
+            <AnimatePresence>
+              {leviActive && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                  className="relative z-20 w-full flex justify-center overflow-hidden"
+                >
+                  {/* @ts-ignore */}
+                  <elevenlabs-convai
+                    agent-id={elevenLabsAgentId}
+                    dynamic-variables={JSON.stringify({
+                      chart_data: JSON.stringify(apiData),
+                      reading_id: apiData._reading_id || "",
+                    })}
+                  >
+                  {/* @ts-ignore */}
+                  </elevenlabs-convai>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>

@@ -16,9 +16,14 @@ export default defineConfig(({mode}) => {
       },
     },
     server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
+      proxy: {
+        '/api/calculate': {
+          target: env.VITE_BAFE_BASE_URL || 'https://bafe-production.up.railway.app',
+          changeOrigin: true,
+          rewrite: (p: string) => p.replace(/^\/api/, ''),
+        },
+      },
     },
   };
 });
