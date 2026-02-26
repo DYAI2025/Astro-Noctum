@@ -24,6 +24,22 @@ export interface ApiResults {
 // Dev: Vite proxy rewrites /api → BAFE.  Prod: Express server.mjs proxies.
 const BASE_URL = "/api";
 
+// ── Zodiac sign mapping (index 0-11 → name) ────────────────────────
+const SIGN_NAMES = [
+  "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
+  "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces",
+] as const;
+
+function signFromIndex(idx: number | undefined | null): string | undefined {
+  if (idx == null || idx < 0 || idx > 11) return undefined;
+  return SIGN_NAMES[idx];
+}
+
+function signFromDegrees(deg: number | undefined | null): string | undefined {
+  if (deg == null) return undefined;
+  return SIGN_NAMES[Math.floor(((deg % 360) + 360) % 360 / 30)];
+}
+
 const fetchWithTimeout = async (url: string, options: RequestInit, timeoutMs = 15000) => {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeoutMs);
@@ -68,7 +84,7 @@ async function postCalculation(endpoint: string, payload: Record<string, unknown
 
 export async function calculateBazi(data: BirthData) {
   validateBirthData(data);
-  return postCalculation("bazi", {
+  const raw = await postCalculation("bazi", {
     date: data.date,
     tz: data.tz,
     lon: data.lon,
@@ -79,11 +95,37 @@ export async function calculateBazi(data: BirthData) {
     ambiguousTime: "earlier",
     nonexistentTime: "error",
   });
+
+  // Map BAFE response to Dashboard-expected shape.
+  // BAFE pillars use German keys (stamm/zweig/tier/element).
+  // Dashboard expects stem/branch plus English animal names.
+  const mapPillar = (p: any) => ({
+    stem: p?.stamm || p?.stem || "",
+    branch: p?.zweig || p?.branch || "",
+    animal: p?.tier || p?.animal || "",
+    element: p?.element || "",
+  });
+
+  return {
+    ...raw,
+    // Normalised pillars the Dashboard can iterate
+    pillars: raw.pillars
+      ? {
+          year: mapPillar(raw.pillars.year),
+          month: mapPillar(raw.pillars.month),
+          day: mapPillar(raw.pillars.day),
+          hour: mapPillar(raw.pillars.hour),
+        }
+      : undefined,
+    // Convenience fields
+    day_master: raw.chinese?.day_master || raw.pillars?.day?.stamm || "",
+    zodiac_sign: raw.chinese?.year?.animal || raw.pillars?.year?.tier || "",
+  };
 }
 
 export async function calculateWestern(data: BirthData) {
   validateBirthData(data);
-  return postCalculation("western", {
+  const raw = await postCalculation("western", {
     date: data.date,
     tz: data.tz,
     lon: data.lon,
@@ -91,6 +133,20 @@ export async function calculateWestern(data: BirthData) {
     ambiguousTime: "earlier",
     nonexistentTime: "error",
   });
+
+  // BAFE returns zodiac_sign as 0-based index and ascendant as degrees.
+  // Dashboard expects English sign name strings.
+  const sunSign = signFromIndex(raw.bodies?.Sun?.zodiac_sign);
+  const moonSign = signFromIndex(raw.bodies?.Moon?.zodiac_sign);
+  const ascendantDeg = raw.angles?.Ascendant;
+  const ascendantSign = signFromDegrees(ascendantDeg);
+
+  return {
+    ...raw,
+    zodiac_sign: sunSign,
+    moon_sign: moonSign,
+    ascendant_sign: ascendantSign,
+  };
 }
 
 export async function calculateFusion(data: BirthData) {
@@ -130,24 +186,21 @@ export async function calculateTst(data: BirthData) {
   });
 }
 
+// Fallback data is intentionally empty so the Dashboard shows "—" instead of
+// fake values when the API is unreachable.
 const MOCK_DATA = {
   bazi: {
-    day_master: "Yang Fire",
-    zodiac_sign: "Dragon",
-    pillars: {
-      year: { stem: "Jia", branch: "Chen" },
-      month: { stem: "Bing", branch: "Yin" },
-      day: { stem: "Wu", branch: "Wu" },
-      hour: { stem: "Ren", branch: "Zi" },
-    },
+    day_master: "",
+    zodiac_sign: "",
+    pillars: undefined,
   },
   western: {
-    zodiac_sign: "Aries",
-    moon_sign: "Leo",
-    ascendant_sign: "Scorpio",
+    zodiac_sign: "",
+    moon_sign: "",
+    ascendant_sign: "",
   },
   wuxing: {
-    dominant_element: "Fire",
+    dominant_element: "",
   },
   fusion: {},
   tst: {},
