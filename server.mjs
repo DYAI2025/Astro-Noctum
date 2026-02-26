@@ -12,12 +12,15 @@ const distPath = path.join(__dirname, "dist");
 // Railway private networking (.railway.internal) is IPv6-only and often
 // fails with ENETUNREACH from Node.js fetch. We keep it as an option but
 // always include the public URL as a reliable fallback.
-const BAFE_PUBLIC_URL =
+const stripTrailingSlash = (url) => url ? url.replace(/\/+$/, "") : url;
+
+const BAFE_PUBLIC_URL = stripTrailingSlash(
   process.env.BAFE_BASE_URL ||
   process.env.VITE_BAFE_BASE_URL ||
-  "https://bafe-production.up.railway.app";
+  "https://bafe-production.up.railway.app"
+);
 
-const BAFE_INTERNAL_URL = process.env.BAFE_INTERNAL_URL || null;
+const BAFE_INTERNAL_URL = stripTrailingSlash(process.env.BAFE_INTERNAL_URL) || null;
 
 // Primary URL for logging
 const BAFE_BASE_URL = BAFE_INTERNAL_URL || BAFE_PUBLIC_URL;
