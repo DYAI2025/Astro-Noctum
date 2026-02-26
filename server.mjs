@@ -8,16 +8,19 @@ const app = express();
 
 const distPath = path.join(__dirname, "dist");
 
-// BAFE API URL priority:
-// 1. BAFE_INTERNAL_URL  – Railway private networking (fastest)
-// 2. BAFE_BASE_URL      – explicit override
-// 3. VITE_BAFE_BASE_URL – shared with frontend config
-// 4. Vercel fallback    – works reliably from any host
-const BAFE_BASE_URL =
-  process.env.BAFE_INTERNAL_URL ||
+// BAFE API URLs - build ordered list for fallback chain.
+// Railway private networking (.railway.internal) is IPv6-only and often
+// fails with ENETUNREACH from Node.js fetch. We keep it as an option but
+// always include the public URL as a reliable fallback.
+const BAFE_PUBLIC_URL =
   process.env.BAFE_BASE_URL ||
   process.env.VITE_BAFE_BASE_URL ||
-  "https://bafe.vercel.app";
+  "https://bafe-production.up.railway.app";
+
+const BAFE_INTERNAL_URL = process.env.BAFE_INTERNAL_URL || null;
+
+// Primary URL for logging
+const BAFE_BASE_URL = BAFE_INTERNAL_URL || BAFE_PUBLIC_URL;
 
 // ── Generic proxy helper ────────────────────────────────────────────
 async function proxyToBafe(targetUrl, req, res) {
@@ -90,6 +93,16 @@ async function proxyToBafeWithFallback(targetUrls, req, res) {
   });
 }
 
+// ── Helper: build fallback URL list ─────────────────────────────────
+// Tries internal URL first (if configured), then public URL.
+// BAFE routes live at /calculate/{endpoint} (no /api/ prefix).
+function bafeFallbackUrls(routePath) {
+  const urls = [];
+  if (BAFE_INTERNAL_URL) urls.push(`${BAFE_INTERNAL_URL}${routePath}`);
+  urls.push(`${BAFE_PUBLIC_URL}${routePath}`);
+  return urls;
+}
+
 // ── /calculate/:endpoint  (bazi, western, fusion, wuxing, tst) ──────
 const CALC_ENDPOINTS = ["bazi", "western", "fusion", "wuxing", "tst"];
 
@@ -99,10 +112,7 @@ app.post("/api/calculate/:endpoint", express.json(), (req, res) => {
     return res.status(400).json({ error: `Unknown endpoint: ${endpoint}` });
   }
   proxyToBafeWithFallback(
-    [
-      `${BAFE_BASE_URL}/api/calculate/${endpoint}`,
-      `${BAFE_BASE_URL}/calculate/${endpoint}`,
-    ],
+    bafeFallbackUrls(`/calculate/${endpoint}`),
     req,
     res,
   );
@@ -110,32 +120,40 @@ app.post("/api/calculate/:endpoint", express.json(), (req, res) => {
 
 // ── /chart ──────────────────────────────────────────────────────────
 app.post("/api/chart", express.json(), (req, res) => {
-  proxyToBafe(`${BAFE_BASE_URL}/chart`, req, res);
+  proxyToBafeWithFallback(bafeFallbackUrls("/chart"), req, res);
 });
 
 app.get("/api/chart", (req, res) => {
   const qs = new URLSearchParams(req.query).toString();
-  const url = `${BAFE_BASE_URL}/chart${qs ? `?${qs}` : ""}`;
-  proxyToBafe(url, req, res);
+  const suffix = `/chart${qs ? `?${qs}` : ""}`;
+  proxyToBafeWithFallback(bafeFallbackUrls(suffix), req, res);
 });
 
 // ── /api/webhook/chart ──────────────────────────────────────────────
 app.post("/api/webhook/chart", express.json(), (req, res) => {
-  proxyToBafe(`${BAFE_BASE_URL}/api/webhook/chart`, req, res);
+  proxyToBafeWithFallback(
+    bafeFallbackUrls("/api/webhooks/chart"),
+    req,
+    res,
+  );
 });
 
 // ── Diagnostic: probe BAFE to discover available routes ─────────────
 app.get("/api/debug-bafe", async (_req, res) => {
+  const baseUrl = BAFE_PUBLIC_URL;
   const probes = [
-    { label: "root /", method: "GET", url: `${BAFE_BASE_URL}/` },
-    { label: "/docs", method: "GET", url: `${BAFE_BASE_URL}/docs` },
-    { label: "/openapi.json", method: "GET", url: `${BAFE_BASE_URL}/openapi.json` },
-    { label: "/health", method: "GET", url: `${BAFE_BASE_URL}/health` },
-    { label: "/chart", method: "GET", url: `${BAFE_BASE_URL}/chart` },
-    { label: "/api/webhook/chart", method: "GET", url: `${BAFE_BASE_URL}/api/webhook/chart` },
-    { label: "POST /api/calculate/western", method: "POST", url: `${BAFE_BASE_URL}/api/calculate/western` },
-    { label: "POST /calculate/western", method: "POST", url: `${BAFE_BASE_URL}/calculate/western` },
+    { label: "root /", method: "GET", url: `${baseUrl}/` },
+    { label: "/docs", method: "GET", url: `${baseUrl}/docs` },
+    { label: "/openapi.json", method: "GET", url: `${baseUrl}/openapi.json` },
+    { label: "/health", method: "GET", url: `${baseUrl}/health` },
+    { label: "/chart", method: "GET", url: `${baseUrl}/chart` },
+    { label: "POST /calculate/western", method: "POST", url: `${baseUrl}/calculate/western` },
+    { label: "POST /calculate/bazi", method: "POST", url: `${baseUrl}/calculate/bazi` },
   ];
+
+  const testBody = JSON.stringify({
+    date: "1990-01-01T12:00:00", tz: "Europe/Berlin", lon: 13.405, lat: 52.52,
+  });
 
   const results = [];
   for (const { label, method, url } of probes) {
@@ -143,12 +161,11 @@ app.get("/api/debug-bafe", async (_req, res) => {
       const r = await fetch(url, {
         method,
         headers: method === "POST" ? { "Content-Type": "application/json" } : {},
-        body: method === "POST" ? JSON.stringify({ date: "1990-01-01T12:00:00", tz: "Europe/Berlin", lon: 13.405, lat: 52.52 }) : undefined,
+        body: method === "POST" ? testBody : undefined,
       });
       const text = await r.text();
       results.push({
-        label,
-        url,
+        label, url,
         status: r.status,
         contentType: r.headers.get("content-type"),
         body: text.slice(0, 500),
@@ -158,7 +175,12 @@ app.get("/api/debug-bafe", async (_req, res) => {
     }
   }
 
-  res.json({ bafe_base_url: BAFE_BASE_URL, probes: results });
+  res.json({
+    bafe_public_url: BAFE_PUBLIC_URL,
+    bafe_internal_url: BAFE_INTERNAL_URL,
+    bafe_active: BAFE_BASE_URL,
+    probes: results,
+  });
 });
 
 // ── Static files ────────────────────────────────────────────────────
@@ -171,5 +193,6 @@ app.get("*", (_req, res) => {
 const port = Number(process.env.PORT || 3000);
 app.listen(port, "0.0.0.0", () => {
   console.log(`Astro-Noctum listening on port ${port}`);
-  console.log(`BAFE proxy → ${BAFE_BASE_URL}`);
+  console.log(`BAFE public  → ${BAFE_PUBLIC_URL}`);
+  if (BAFE_INTERNAL_URL) console.log(`BAFE internal → ${BAFE_INTERNAL_URL}`);
 });
