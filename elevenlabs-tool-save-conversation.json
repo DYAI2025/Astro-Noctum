@@ -40,23 +40,6 @@
     ],
     "auth_connection": null
   },
-  "response_schema": {
-    "type": "object",
-    "properties": {
-      "saved": {
-        "type": "boolean",
-        "description": "Whether the summary was saved successfully"
-      },
-      "id": {
-        "type": "number",
-        "description": "The ID of the saved conversation record"
-      },
-      "created_at": {
-        "type": "string",
-        "description": "Timestamp of when the summary was saved"
-      }
-    }
-  },
   "response_timeout_secs": 10,
   "dynamic_variables": {
     "dynamic_variable_placeholders": {
