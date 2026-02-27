@@ -64,6 +64,6 @@ with check (true);
 The dashboard embeds Levi Bazi via:
 
 ```html
-<elevenlabs-convai agent-id="agent_9001kdhah7vrfh3rd05pakg8vppk"></elevenlabs-convai>
+<elevenlabs-convai agent-id="agent_1801kje0zqc8e4b89swbt7wekawv"></elevenlabs-convai>
 <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
 ```

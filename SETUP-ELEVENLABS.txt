@@ -3,7 +3,7 @@ ElevenLabs Custom Tool Setup — Agent "Levi"
 ============================================================
 
 1. Geh zu: https://elevenlabs.io/app/conversational-ai
-2. Öffne Agent "Levi" (oder den Agent mit ID agent_9001kdhah7vrfh3rd05pakg8vppk)
+2. Öffne Agent "Levi" (oder den Agent mit ID agent_1801kje0zqc8e4b89swbt7wekawv)
 3. Geh zu: Tools → Add Tool → Custom Tool
 
 ------------------------------------------------------------

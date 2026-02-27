@@ -62,6 +62,18 @@ export function Splash({ onEnter }: SplashProps) {
     ];
   }, []);
 
+  // Safety timeout: if video phase stalls for 10s, force animation fallback
+  useEffect(() => {
+    if (phase !== "video" || videoFading) return;
+    const safety = setTimeout(() => {
+      console.warn("Splash video stalled, forcing animation fallback");
+      setVideoFading(true);
+      markSeen();
+      startAnimation();
+    }, 10000);
+    return () => clearTimeout(safety);
+  }, [phase, videoFading, markSeen, startAnimation]);
+
   // Video timeupdate: detect crossfade point
   const handleTimeUpdate = useCallback(() => {
     const video = videoRef.current;

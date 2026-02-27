@@ -114,7 +114,7 @@ export function Dashboard({
   };
 
   const dominantElement = apiData.wuxing?.dominant_element || "—";
-  const elevenLabsAgentId = import.meta.env.VITE_ELEVENLABS_AGENT_ID || "agent_9001kdhah7vrfh3rd05pakg8vppk";
+  const elevenLabsAgentId = import.meta.env.VITE_ELEVENLABS_AGENT_ID || "agent_1801kje0zqc8e4b89swbt7wekawv";
   const elementTrait = wuXingTraits[dominantElement] || "Deine elementare Natur formt deine Herangehensweise an das Leben.";
 
   // Parse birth date for the 3D orrery

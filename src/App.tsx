@@ -10,6 +10,7 @@ import {
   upsertAstroProfile,
   insertBirthData,
   insertNatalChart,
+  fetchAstroProfile,
 } from "./services/supabase";
 import { useAuth } from "./contexts/AuthContext";
 import { Volume2, VolumeX, User, LayoutGrid, LogOut } from "lucide-react";
@@ -26,6 +27,7 @@ export default function App() {
   const [interpretation, setInterpretation] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastBirthInput, setLastBirthInput] = useState<BirthData | null>(null);
+  const [profileLoading, setProfileLoading] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -34,6 +36,37 @@ export default function App() {
       "cosmic-audio",
     ) as HTMLAudioElement;
   }, []);
+
+  // Load existing astro profile for returning users
+  useEffect(() => {
+    if (!user || apiData) return;
+    setProfileLoading(true);
+    fetchAstroProfile(user.id)
+      .then((profile) => {
+        if (profile?.astro_json) {
+          const json = profile.astro_json as any;
+          setApiData({
+            bazi: json.bazi,
+            western: json.western,
+            fusion: json.fusion,
+            wuxing: json.wuxing,
+            tst: json.tst,
+            issues: [],
+          });
+          setInterpretation(json.interpretation || null);
+          if (profile.birth_date) {
+            setLastBirthInput({
+              date: `${profile.birth_date}T${profile.birth_time || "12:00"}`,
+              tz: profile.iana_time_zone || "Europe/Berlin",
+              lat: profile.birth_lat || 0,
+              lon: profile.birth_lng || 0,
+            });
+          }
+        }
+      })
+      .catch((err) => console.warn("Profile load failed:", err))
+      .finally(() => setProfileLoading(false));
+  }, [user]);
 
   const handleEnter = () => {
     setShowSplash(false);
@@ -216,7 +249,12 @@ export default function App() {
         <main className="flex-grow pt-24 md:pt-32 pb-24 md:pb-20 relative z-10 container mx-auto px-4 flex flex-col items-center justify-center">
           {/* Auth loading spinner */}
           {authLoading && (
-            <div className="text-gold/60 text-sm animate-pulse">Laden...</div>
+            <div className="flex flex-col items-center justify-center h-[40vh] space-y-6">
+              <div className="relative w-48 h-1 bg-white/5 rounded-full overflow-hidden">
+                <div className="absolute inset-0 skeleton-dust"></div>
+              </div>
+              <p className="font-serif text-lg italic text-gold/60 animate-pulse">Laden...</p>
+            </div>
           )}
 
           {/* Not logged in → AuthGate */}
@@ -231,7 +269,14 @@ export default function App() {
                 </div>
               )}
 
-              {!hasDashboard ? (
+              {profileLoading ? (
+                <div className="flex flex-col items-center justify-center h-[40vh] space-y-6">
+                  <div className="relative w-48 h-1 bg-white/5 rounded-full overflow-hidden">
+                    <div className="absolute inset-0 skeleton-dust"></div>
+                  </div>
+                  <p className="font-serif text-lg italic text-white/60 animate-pulse">Lade dein Profil...</p>
+                </div>
+              ) : !hasDashboard ? (
                 <BirthForm onSubmit={handleSubmit} isLoading={isLoading} />
               ) : (
                 <Dashboard
