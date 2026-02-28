@@ -31,11 +31,13 @@
     "request_headers": [
       {
         "key": "Authorization",
-        "value": "Bearer {{ELEVENLABS_TOOL_SECRET}}"
+        "value": "Bearer {{ELEVENLABS_TOOL_SECRET}}",
+        "type": "secret"
       },
       {
         "key": "Content-Type",
-        "value": "application/json"
+        "value": "application/json",
+        "type": "value"
       }
     ],
     "auth_connection": null
