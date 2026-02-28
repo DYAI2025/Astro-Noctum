@@ -28,6 +28,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [lastBirthInput, setLastBirthInput] = useState<BirthData | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
+  const [hasStoredProfile, setHasStoredProfile] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -43,6 +44,7 @@ export default function App() {
     setProfileLoading(true);
     fetchAstroProfile(user.id)
       .then((profile) => {
+        setHasStoredProfile(!!profile);
         if (profile?.astro_json) {
           const json = profile.astro_json as any;
           setApiData({
@@ -53,7 +55,10 @@ export default function App() {
             tst: json.tst,
             issues: [],
           });
-          setInterpretation(json.interpretation || null);
+          setInterpretation(
+            json.interpretation ||
+              "Dein gespeichertes Chart wurde geladen. Du kannst jederzeit unten eine neue KI-Deutung erzeugen.",
+          );
           if (profile.birth_date) {
             setLastBirthInput({
               date: `${profile.birth_date}T${profile.birth_time || "12:00"}`,
@@ -161,6 +166,7 @@ export default function App() {
     setError(null);
     setApiIssues([]);
     setLastBirthInput(null);
+    setHasStoredProfile(false);
   };
 
   const handleSignOut = async () => {
@@ -170,7 +176,7 @@ export default function App() {
 
   // Determine what to show
   const isLoggedIn = !!user;
-  const hasDashboard = apiData && interpretation;
+  const hasDashboard = !!apiData;
 
   return (
     <>
@@ -280,7 +286,7 @@ export default function App() {
                 <BirthForm onSubmit={handleSubmit} isLoading={isLoading} />
               ) : (
                 <Dashboard
-                  interpretation={interpretation}
+                  interpretation={interpretation || ""}
                   apiData={apiData}
                   onReset={handleReset}
                   onRegenerate={handleRegenerate}
@@ -295,6 +301,12 @@ export default function App() {
                     }
                   }}
                 />
+              )}
+
+              {!profileLoading && !hasDashboard && hasStoredProfile && (
+                <p className="mt-6 text-center text-xs text-white/40">
+                  Dein Account wurde gefunden, aber es liegt noch kein vollständiges Astro-Profil vor.
+                </p>
               )}
             </>
           )}
