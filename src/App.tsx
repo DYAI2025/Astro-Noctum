@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { BirthForm } from "./components/BirthForm";
 import { Dashboard } from "./components/Dashboard";
@@ -13,14 +13,16 @@ import {
   fetchAstroProfile,
 } from "./services/supabase";
 import { useAuth } from "./contexts/AuthContext";
+import { useAmbientePlayer } from "./hooks/useAmbientePlayer";
 import { Volume2, VolumeX, User, LayoutGrid, LogOut } from "lucide-react";
 
 export default function App() {
   const { user, loading: authLoading, signOut } = useAuth();
 
+  const ambiente = useAmbientePlayer();
+
   const [showSplash, setShowSplash] = useState(true);
   const [siteVisible, setSiteVisible] = useState(false);
-  const [audioPlaying, setAudioPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [apiData, setApiData] = useState<any>(null);
   const [apiIssues, setApiIssues] = useState<ApiIssue[]>([]);
@@ -29,14 +31,6 @@ export default function App() {
   const [lastBirthInput, setLastBirthInput] = useState<BirthData | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
   const [hasStoredProfile, setHasStoredProfile] = useState(false);
-
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  useEffect(() => {
-    audioRef.current = document.getElementById(
-      "cosmic-audio",
-    ) as HTMLAudioElement;
-  }, []);
 
   // Load existing astro profile for returning users
   useEffect(() => {
@@ -78,25 +72,7 @@ export default function App() {
     setTimeout(() => {
       setSiteVisible(true);
     }, 100);
-    if (audioRef.current) {
-      audioRef.current
-        .play()
-        .catch((e) =>
-          console.warn("Audio autoplay blocked by browser policy.", e),
-        );
-      setAudioPlaying(true);
-    }
-  };
-
-  const toggleAudio = () => {
-    if (audioRef.current) {
-      if (audioPlaying) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current.play();
-      }
-      setAudioPlaying(!audioPlaying);
-    }
+    ambiente.start();
   };
 
   const handleSubmit = async (data: BirthData) => {
@@ -220,10 +196,10 @@ export default function App() {
           </nav>
           <div className="flex items-center gap-6">
             <button
-              onClick={toggleAudio}
+              onClick={ambiente.toggle}
               className="hover:text-gold transition-colors opacity-60 hover:opacity-100"
             >
-              {audioPlaying ? (
+              {ambiente.playing ? (
                 <Volume2 className="w-4 h-4 text-gold" />
               ) : (
                 <VolumeX className="w-4 h-4 text-white/40" />
@@ -294,12 +270,8 @@ export default function App() {
                   apiIssues={apiIssues}
                   userId={user!.id}
                   birthInput={lastBirthInput}
-                  onStopAudio={() => {
-                    if (audioRef.current && audioPlaying) {
-                      audioRef.current.pause();
-                      setAudioPlaying(false);
-                    }
-                  }}
+                  onStopAudio={ambiente.pause}
+                  onResumeAudio={ambiente.resume}
                 />
               )}
 

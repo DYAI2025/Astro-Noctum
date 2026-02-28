@@ -13,6 +13,7 @@ interface DashboardProps {
   isLoading: boolean;
   apiIssues: { endpoint: string; message: string }[];
   onStopAudio: () => void;
+  onResumeAudio: () => void;
   userId?: string;
   birthInput?: BirthData | null;
 }
@@ -25,6 +26,7 @@ export function Dashboard({
   isLoading,
   apiIssues,
   onStopAudio,
+  onResumeAudio,
   userId,
   birthInput,
 }: DashboardProps) {
@@ -56,6 +58,7 @@ export function Dashboard({
 
   const handleHangUp = () => {
     setLeviActive(false);
+    onResumeAudio();
   };
 
   const zodiacEmojis: Record<string, string> = {
