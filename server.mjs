@@ -200,6 +200,21 @@ const supabaseAdmin = SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY
   : null;
 
 // ── GET /api/profile/:userId — ElevenLabs Custom Tool endpoint ──────
+const PROFILE_SELECT_FIELDS = [
+  "user_id",
+  "birth_date",
+  "birth_time",
+  "iana_time_zone",
+  "birth_lat",
+  "birth_lng",
+  "birth_place_name",
+  "sun_sign",
+  "moon_sign",
+  "asc_sign",
+  "astro_json",
+  "astro_computed_at",
+].join(", ");
+
 app.get("/api/profile/:userId", async (req, res) => {
   // Auth: require Bearer token (ElevenLabs tool secret)
   const authHeader = req.headers.authorization || "";
