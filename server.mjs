@@ -200,12 +200,28 @@ const supabaseAdmin = SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY
   : null;
 
 // ── GET /api/profile/:userId — ElevenLabs Custom Tool endpoint ──────
+const PROFILE_SELECT_FIELDS = [
+  "user_id",
+  "birth_date",
+  "birth_time",
+  "iana_time_zone",
+  "birth_lat",
+  "birth_lng",
+  "birth_place_name",
+  "sun_sign",
+  "moon_sign",
+  "asc_sign",
+  "astro_json",
+  "astro_computed_at",
+].join(", ");
+
 app.get("/api/profile/:userId", async (req, res) => {
-  // Auth: require Bearer token (ElevenLabs tool secret or session token)
+  // Auth: require Bearer token (ElevenLabs tool secret)
   const authHeader = req.headers.authorization || "";
   const token = authHeader.replace("Bearer ", "");
 
   if (!token || token !== ELEVENLABS_TOOL_SECRET) {
+    console.warn("[elevenlabs] unauthorized profile access for user", req.params.userId);
     return res.status(401).json({ error: "Unauthorized" });
   }
 
@@ -216,15 +232,17 @@ app.get("/api/profile/:userId", async (req, res) => {
   const { userId } = req.params;
   const { data, error } = await supabaseAdmin
     .from("astro_profiles")
-    .select("user_id, birth_date, birth_time, iana_time_zone, birth_lat, birth_lng, birth_place_name, sun_sign, moon_sign, asc_sign, astro_json, astro_computed_at")
+    .select(PROFILE_SELECT_FIELDS)
     .eq("user_id", userId)
     .single();
 
   if (error || !data) {
+    console.warn("[elevenlabs] profile not found for user", userId);
     return res.status(404).json({ error: "Profile not found" });
   }
 
-  res.json({
+  console.log("[elevenlabs] profile delivered for user", userId);
+  return res.json({
     user_id: data.user_id,
     sun_sign: data.sun_sign,
     moon_sign: data.moon_sign,

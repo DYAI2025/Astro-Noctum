@@ -20,6 +20,7 @@ export function Splash({ onEnter }: SplashProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hasSeenIntro = useRef(false);
   const animTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const videoStallTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Check if user has seen the intro before
   useEffect(() => {
@@ -35,7 +36,10 @@ export function Splash({ onEnter }: SplashProps) {
 
   // Cleanup timers
   useEffect(() => {
-    return () => animTimers.current.forEach(clearTimeout);
+    return () => {
+      animTimers.current.forEach(clearTimeout);
+      if (videoStallTimer.current) clearTimeout(videoStallTimer.current);
+    };
   }, []);
 
   const markSeen = useCallback(() => {
@@ -62,29 +66,42 @@ export function Splash({ onEnter }: SplashProps) {
     ];
   }, []);
 
-  // Safety timeout: if video phase stalls for 10s, force animation fallback
-  useEffect(() => {
+  // Stall guard: only fallback when video playback stops progressing.
+  const resetVideoStallGuard = useCallback(() => {
+    if (videoStallTimer.current) clearTimeout(videoStallTimer.current);
+
     if (phase !== "video" || videoFading) return;
-    const safety = setTimeout(() => {
+
+    videoStallTimer.current = setTimeout(() => {
       console.warn("Splash video stalled, forcing animation fallback");
       setVideoFading(true);
       markSeen();
       startAnimation();
-    }, 10000);
-    return () => clearTimeout(safety);
+    }, 4000);
   }, [phase, videoFading, markSeen, startAnimation]);
+
+  useEffect(() => {
+    if (phase !== "video" || videoFading) return;
+    resetVideoStallGuard();
+
+    return () => {
+      if (videoStallTimer.current) clearTimeout(videoStallTimer.current);
+    };
+  }, [phase, videoFading, resetVideoStallGuard]);
 
   // Video timeupdate: detect crossfade point
   const handleTimeUpdate = useCallback(() => {
     const video = videoRef.current;
     if (!video || videoFading) return;
 
+    resetVideoStallGuard();
+
     const remaining = video.duration - video.currentTime;
     if (remaining <= CROSSFADE_DURATION && remaining > 0) {
       setVideoFading(true);
       startAnimation();
     }
-  }, [videoFading, startAnimation]);
+  }, [videoFading, startAnimation, resetVideoStallGuard]);
 
   // Video ended
   const handleVideoEnded = useCallback(() => {
@@ -116,6 +133,8 @@ export function Splash({ onEnter }: SplashProps) {
   const handleGateClick = useCallback(() => {
     setPhase("video");
 
+    resetVideoStallGuard();
+
     const video = videoRef.current;
     if (!video || videoError) {
       // No video available, go straight to animation
@@ -129,7 +148,7 @@ export function Splash({ onEnter }: SplashProps) {
       console.warn("Video play failed after interaction:", err);
       startAnimation();
     });
-  }, [videoError, startAnimation]);
+  }, [videoError, startAnimation, resetVideoStallGuard]);
 
   return (
     <div className="fixed inset-0 z-[100] bg-obsidian flex flex-col items-center justify-center overflow-hidden">
