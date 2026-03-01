@@ -12,6 +12,7 @@ interface DashboardProps {
   isLoading: boolean;
   apiIssues: { endpoint: string; message: string }[];
   onStopAudio: () => void;
+  onResumeAudio: () => void;
 }
 
 export function Dashboard({
@@ -23,6 +24,7 @@ export function Dashboard({
   isLoading,
   apiIssues,
   onStopAudio,
+  onResumeAudio,
 }: DashboardProps) {
   const [leviActive, setLeviActive] = useState(false);
   const leviSectionRef = useRef<HTMLDivElement>(null);
@@ -52,6 +54,7 @@ export function Dashboard({
 
   const handleHangUp = () => {
     setLeviActive(false);
+    onResumeAudio();
   };
 
   const zodiacEmojis: Record<string, string> = {

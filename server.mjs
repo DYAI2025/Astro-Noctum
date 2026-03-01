@@ -26,33 +26,7 @@ const BAFE_INTERNAL_URL = stripTrailingSlash(process.env.BAFE_INTERNAL_URL) || n
 // Primary URL for logging
 const BAFE_BASE_URL = BAFE_INTERNAL_URL || BAFE_PUBLIC_URL;
 
-// ── Generic proxy helper ────────────────────────────────────────────
-async function proxyToBafe(targetUrl, req, res) {
-  console.log(`[proxy] ${req.method} ${targetUrl}`);
-  try {
-    const upstream = await fetch(targetUrl, {
-      method: req.method,
-      headers: { "Content-Type": "application/json" },
-      body: req.method === "GET" ? undefined : JSON.stringify(req.body),
-    });
-
-    const contentType = upstream.headers.get("content-type") || "application/json";
-    const body = await upstream.text();
-
-    if (!upstream.ok) {
-      console.error(`[proxy] → ${upstream.status}  body: ${body.slice(0, 300)}`);
-    }
-
-    res.status(upstream.status).set("Content-Type", contentType).send(body);
-  } catch (err) {
-    console.error(`[proxy] network error:`, err.message);
-    res.status(502).json({
-      error: "BAFE API unreachable",
-      details: err.message,
-    });
-  }
-}
-
+// ── Proxy with fallback chain ────────────────────────────────────────
 async function proxyToBafeWithFallback(targetUrls, req, res) {
   let lastResponse = null;
 

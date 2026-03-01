@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { BirthForm } from "./components/BirthForm";
 import { Dashboard } from "./components/Dashboard";
@@ -12,54 +12,28 @@ import {
   insertBirthData,
   insertNatalChart,
 } from "./services/supabase";
-import { Volume2, VolumeX, User, LogOut, LayoutGrid } from "lucide-react";
+import { useAmbientePlayer } from "./hooks/useAmbientePlayer";
+import { Volume2, VolumeX, LogOut, LayoutGrid } from "lucide-react";
 
 export default function App() {
   const { user, loading: authLoading, signOut } = useAuth();
 
   const [showSplash, setShowSplash] = useState(true);
   const [siteVisible, setSiteVisible] = useState(false);
-  const [audioPlaying, setAudioPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [apiData, setApiData] = useState<any>(null);
   const [apiIssues, setApiIssues] = useState<ApiIssue[]>([]);
   const [interpretation, setInterpretation] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  useEffect(() => {
-    audioRef.current = document.getElementById(
-      "cosmic-audio",
-    ) as HTMLAudioElement;
-  }, []);
+  const ambiente = useAmbientePlayer();
 
   const handleEnter = () => {
     setShowSplash(false);
     setTimeout(() => {
       setSiteVisible(true);
     }, 100);
-    if (audioRef.current) {
-      audioRef.current
-        .play()
-        .catch((e) =>
-          console.warn(
-            "Audio autoplay blocked by browser policy. Interaction required.",
-          ),
-        );
-      setAudioPlaying(true);
-    }
-  };
-
-  const toggleAudio = () => {
-    if (audioRef.current) {
-      if (audioPlaying) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current.play();
-      }
-      setAudioPlaying(!audioPlaying);
-    }
+    ambiente.start();
   };
 
   const handleSubmit = async (data: BirthData) => {
@@ -76,9 +50,11 @@ export default function App() {
       // Persist to Supabase if user is logged in
       if (user) {
         try {
-          await upsertAstroProfile(user.id, data, results, aiInterpretation);
-          await insertBirthData(user.id, data);
-          await insertNatalChart(user.id, results);
+          await Promise.all([
+            upsertAstroProfile(user.id, data, results, aiInterpretation),
+            insertBirthData(user.id, data),
+            insertNatalChart(user.id, results),
+          ]);
         } catch (persistErr) {
           console.warn("Supabase persist failed:", persistErr);
         }
@@ -176,10 +152,10 @@ export default function App() {
         </nav>
         <div className="flex items-center gap-6">
           <button
-            onClick={toggleAudio}
+            onClick={ambiente.toggle}
             className="hover:text-gold transition-colors opacity-60 hover:opacity-100"
           >
-            {audioPlaying ? (
+            {ambiente.playing ? (
               <Volume2 className="w-4 h-4 text-gold" />
             ) : (
               <VolumeX className="w-4 h-4 text-white/40" />
@@ -218,12 +194,8 @@ export default function App() {
             onRegenerate={handleRegenerate}
             isLoading={isLoading}
             apiIssues={apiIssues}
-            onStopAudio={() => {
-              if (audioRef.current && audioPlaying) {
-                audioRef.current.pause();
-                setAudioPlaying(false);
-              }
-            }}
+            onStopAudio={ambiente.pause}
+            onResumeAudio={ambiente.resume}
           />
         )}
       </main>
