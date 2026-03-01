@@ -80,14 +80,15 @@ export default function App() {
       const aiInterpretation = await generateInterpretation(results);
       setInterpretation(aiInterpretation);
 
-      // Persist to Supabase if user is logged in
-      if (user) {
+      // Persist to Supabase if user is logged in and has no profile yet
+      if (user && !hasPersistedProfile) {
         try {
           await Promise.all([
             upsertAstroProfile(user.id, data, results, aiInterpretation),
             insertBirthData(user.id, data),
             insertNatalChart(user.id, results),
           ]);
+          setHasPersistedProfile(true);
         } catch (persistErr) {
           console.warn("Supabase persist failed:", persistErr);
         }

@@ -10,8 +10,9 @@ export interface BirthInput {
   place?: string;
 }
 
-// ── Upsert astro_profiles ───────────────────────────────────────────
-// Stores the main profile row that ElevenLabs reads via /api/profile/:userId
+// ── Insert astro_profiles (write-once, never overwrite) ─────────────
+// Stores the main profile row that ElevenLabs reads via /api/profile/:userId.
+// If a profile already exists for this user, the insert is silently skipped.
 
 export async function upsertAstroProfile(
   userId: string,
@@ -23,28 +24,27 @@ export async function upsertAstroProfile(
   const moonSign = bafeData.western?.moon_sign || null;
   const ascSign = bafeData.western?.ascendant_sign || null;
 
-  const { error } = await supabase.from("astro_profiles").upsert(
-    {
-      user_id: userId,
-      birth_date: birth.date.split("T")[0],
-      birth_time: birth.date.includes("T")
-        ? birth.date.split("T")[1]?.slice(0, 5)
-        : null,
-      iana_time_zone: birth.tz,
-      birth_lat: birth.lat,
-      birth_lng: birth.lon,
-      birth_place_name: birth.place || null,
-      sun_sign: sunSign,
-      moon_sign: moonSign,
-      asc_sign: ascSign,
-      astro_json: { bafe: bafeData, interpretation },
-      astro_computed_at: new Date().toISOString(),
-    },
-    { onConflict: "user_id" },
-  );
+  const { error } = await supabase.from("astro_profiles").insert({
+    user_id: userId,
+    birth_date: birth.date.split("T")[0],
+    birth_time: birth.date.includes("T")
+      ? birth.date.split("T")[1]?.slice(0, 5)
+      : null,
+    iana_time_zone: birth.tz,
+    birth_lat: birth.lat,
+    birth_lng: birth.lon,
+    birth_place_name: birth.place || null,
+    sun_sign: sunSign,
+    moon_sign: moonSign,
+    asc_sign: ascSign,
+    astro_json: { bafe: bafeData, interpretation },
+    astro_computed_at: new Date().toISOString(),
+  });
 
   if (error) {
-    console.error("upsertAstroProfile error:", error);
+    // 23505 = unique_violation — profile already exists, skip silently
+    if (error.code === "23505") return;
+    console.error("insertAstroProfile error:", error);
     throw error;
   }
 }

@@ -1,19 +1,39 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { useAuth } from "../contexts/AuthContext";
+
+const EMAIL_STORAGE_KEY = "bazodiac_email";
 
 export function AuthGate() {
   const { signIn, signUp } = useAuth();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [signupDone, setSignupDone] = useState(false);
 
+  // Prefill email from localStorage (returning visitors)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(EMAIL_STORAGE_KEY);
+      if (saved) setEmail(saved);
+    } catch {
+      // silent
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    // Validate password confirmation for signup
+    if (mode === "signup" && password !== confirmPassword) {
+      setError("Die Passwörter stimmen nicht überein.");
+      return;
+    }
+
     setBusy(true);
 
     const err =
@@ -26,6 +46,13 @@ export function AuthGate() {
     if (err) {
       setError(err);
       return;
+    }
+
+    // Persist email for next visit
+    try {
+      localStorage.setItem(EMAIL_STORAGE_KEY, email);
+    } catch {
+      // silent
     }
 
     if (mode === "signup") {
@@ -113,6 +140,23 @@ export function AuthGate() {
             />
           </div>
 
+          {mode === "signup" && (
+            <div>
+              <label className="block text-[9px] uppercase tracking-[0.3em] text-gold/50 mb-2">
+                Passwort bestätigen
+              </label>
+              <input
+                type="password"
+                required
+                minLength={6}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full bg-white/[0.03] border border-gold/10 rounded-lg px-4 py-3 text-sm text-white/90 placeholder-white/20 focus:outline-none focus:border-gold/30 transition-colors"
+                placeholder="Passwort wiederholen"
+              />
+            </div>
+          )}
+
           {error && (
             <p className="text-red-400/80 text-xs text-center">{error}</p>
           )}
@@ -138,6 +182,7 @@ export function AuthGate() {
                 onClick={() => {
                   setMode("signup");
                   setError(null);
+                  setConfirmPassword("");
                 }}
                 className="text-gold/60 hover:text-gold transition-colors underline underline-offset-2"
               >
@@ -151,6 +196,7 @@ export function AuthGate() {
                 onClick={() => {
                   setMode("login");
                   setError(null);
+                  setConfirmPassword("");
                 }}
                 className="text-gold/60 hover:text-gold transition-colors underline underline-offset-2"
               >
