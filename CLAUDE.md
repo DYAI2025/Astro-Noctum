@@ -20,7 +20,7 @@ npm run clean      # Remove dist/
 # Terminal 2: PORT=3001 node server.mjs      (Express API on :3001, for /api/auth, /api/profile, /api/agent)
 ```
 
-Node 20.19+ required (pinned in `.nvmrc`). No test suite — `npm run lint` (tsc --noEmit) is the only automated check.
+Node 20.19+ required (pinned in `.nvmrc`). No test suite — `npm run lint` (tsc --noEmit) is the only automated check. Copy `.env.example` to `.env.local` and fill values before starting dev.
 
 ## Architecture
 
@@ -47,6 +47,7 @@ Node 20.19+ required (pinned in `.nvmrc`). No test suite — `npm run lint` (tsc
 | `src/contexts/AuthContext.tsx` | Supabase auth provider (signIn/signUp/signOut). Signup hits server-side `/api/auth/signup` (auto-confirm), falls back to client-side Supabase signup if server unreachable |
 | `src/services/api.ts` | BAFE API client. Maps BAFE response formats (German keys like `stamm/zweig/tier`) to Dashboard-expected English keys. Zodiac signs mapped from 0-based index to name strings |
 | `src/services/gemini.ts` | Gemini Flash integration for horoscope text generation (model: `gemini-3-flash-preview`, 15s timeout) |
+| `src/lib/supabase.ts` | Browser-side Supabase client singleton (init from `VITE_SUPABASE_*` env vars) |
 | `src/services/supabase.ts` | Supabase persistence layer — `upsertAstroProfile`, `insertBirthData`, `insertNatalChart`, `fetchAstroProfile` |
 | `src/components/BirthChartOrrery.tsx` | Three.js 3D solar system visualization with Keplerian orbital mechanics |
 | `src/lib/astronomy/` | Orbital calculations (Kepler solver, J2000 epoch), star catalog (150 stars), constellation data, planet orbital elements |
@@ -97,3 +98,4 @@ Railway via `nixpacks.toml` + `railway.json`. Build: `npm ci && npm run build`. 
 
 - BAFE API cannot always be reached from local/CI environments (`ENETUNREACH`). The app is designed to degrade gracefully — failed endpoints return empty data and the Dashboard shows "—".
 - No contract tests against BAFE; schema changes require manual verification.
+- The README references a legacy `readings` table — the current Supabase schema uses `astro_profiles`, `birth_data`, `natal_charts` (see `supabase-schema.sql`).

@@ -5,17 +5,24 @@
   "api_schema": {
     "url": "https://astro-noctum-production.up.railway.app/api/profile/{user_id}",
     "method": "GET",
-    "path_params_schema": {
-      "user_id": {
+    "path_params_schema": [
+      {
+        "id": "user_id",
         "type": "string",
-        "description": "Supabase auth UUID of the user"
+        "description": "Supabase auth UUID of the user",
+        "dynamic_variable": "user_id"
       }
-    },
-    "request_headers": {
-      "Authorization": {
+    ],
+    "query_params_schema": [],
+    "request_body_schema": [],
+    "request_headers": [
+      {
+        "key": "Authorization",
+        "value": "",
+        "type": "secret",
         "secret_id": "wsec_6799ace1ef60109af06c4f51592a371b2a1fa96ed4e8bea794f5a7cd0e8aa1af"
       }
-    }
+    ]
   },
   "response_timeout_secs": 10,
   "dynamic_variables": {

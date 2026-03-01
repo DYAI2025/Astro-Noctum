@@ -8,6 +8,11 @@ interface SplashProps {
 const CROSSFADE_DURATION = 3; // seconds before video end to start crossfade
 const SEEN_KEY = "bazodiac_intro_seen";
 
+const VIDEOS: Record<string, string> = {
+  de: "/bazodiac_male_intro_GER.mp4",
+  en: "/bazodiac_fem_intro_ENG.mp4",
+};
+
 export function Splash({ onEnter }: SplashProps) {
   // Phases: "gate" → "video" → "animation" → "ready"
   // "gate" = initial click to unlock audio context (browser policy)
@@ -16,6 +21,7 @@ export function Splash({ onEnter }: SplashProps) {
   const [videoFading, setVideoFading] = useState(false);
   const [canSkip, setCanSkip] = useState(false);
   const [videoError, setVideoError] = useState(false);
+  const [videoSrc, setVideoSrc] = useState<string | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const hasSeenIntro = useRef(false);
@@ -129,24 +135,28 @@ export function Splash({ onEnter }: SplashProps) {
     startAnimation();
   }, [markSeen, startAnimation]);
 
-  // Gate click → start video with sound
-  const handleGateClick = useCallback(() => {
+  // Gate click → choose language and start video with sound
+  const handleGateClick = useCallback((lang: "de" | "en") => {
+    setVideoSrc(VIDEOS[lang]);
     setPhase("video");
 
-    resetVideoStallGuard();
+    // Wait for next frame so the <source> is updated before playing
+    requestAnimationFrame(() => {
+      resetVideoStallGuard();
 
-    const video = videoRef.current;
-    if (!video || videoError) {
-      // No video available, go straight to animation
-      startAnimation();
-      return;
-    }
+      const video = videoRef.current;
+      if (!video || videoError) {
+        startAnimation();
+        return;
+      }
 
-    video.muted = false;
-    video.volume = 1;
-    video.play().catch((err) => {
-      console.warn("Video play failed after interaction:", err);
-      startAnimation();
+      video.load();
+      video.muted = false;
+      video.volume = 0.8;
+      video.play().catch((err) => {
+        console.warn("Video play failed after interaction:", err);
+        startAnimation();
+      });
     });
   }, [videoError, startAnimation, resetVideoStallGuard]);
 
@@ -154,7 +164,7 @@ export function Splash({ onEnter }: SplashProps) {
     <div className="fixed inset-0 z-[100] bg-obsidian flex flex-col items-center justify-center overflow-hidden">
 
       {/* ── VIDEO LAYER (hidden until gate is passed) ── */}
-      {!videoError && (
+      {!videoError && videoSrc && (
         <video
           ref={videoRef}
           className={`absolute inset-0 w-full h-full object-cover z-30 transition-opacity duration-[3000ms] ease-in-out ${
@@ -166,11 +176,11 @@ export function Splash({ onEnter }: SplashProps) {
           onEnded={handleVideoEnded}
           onError={handleVideoError}
         >
-          <source src="/bazodiac_intro_fem_ENG.mp4" type="video/mp4" />
+          <source src={videoSrc} type="video/mp4" />
         </video>
       )}
 
-      {/* ── GATE: Initial click to unlock audio ── */}
+      {/* ── GATE: Language selection to unlock audio ── */}
       <AnimatePresence>
         {phase === "gate" && (
           <motion.div
@@ -187,18 +197,27 @@ export function Splash({ onEnter }: SplashProps) {
               transition={{ delay: 0.5, duration: 1.5 }}
               className="text-center"
             >
-              <p className="font-sans text-[10px] uppercase tracking-[0.5em] text-white/30 mb-8">
+              <p className="font-sans text-[10px] uppercase tracking-[0.5em] text-white/30 mb-10">
                 Bazodiac
               </p>
-              <button
-                onClick={handleGateClick}
-                className="group relative px-16 py-5 border border-gold/15 text-gold/80 font-sans text-[10px] tracking-[0.5em] uppercase hover:bg-gold/5 hover:border-gold/40 transition-all duration-700 backdrop-blur-sm"
-              >
-                <span className="relative z-10">Singularität initiieren</span>
-                <div className="absolute inset-0 bg-gold/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-              </button>
+              <div className="flex gap-6">
+                <button
+                  onClick={() => handleGateClick("de")}
+                  className="group relative px-12 py-5 border border-gold/15 text-gold/80 font-sans text-[10px] tracking-[0.5em] uppercase hover:bg-gold/5 hover:border-gold/40 transition-all duration-700 backdrop-blur-sm"
+                >
+                  <span className="relative z-10">German</span>
+                  <div className="absolute inset-0 bg-gold/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                </button>
+                <button
+                  onClick={() => handleGateClick("en")}
+                  className="group relative px-12 py-5 border border-gold/15 text-gold/80 font-sans text-[10px] tracking-[0.5em] uppercase hover:bg-gold/5 hover:border-gold/40 transition-all duration-700 backdrop-blur-sm"
+                >
+                  <span className="relative z-10">English</span>
+                  <div className="absolute inset-0 bg-gold/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                </button>
+              </div>
               <p className="mt-6 text-[8px] text-white/20 tracking-widest italic">
-                Mit Audio-Erlebnis
+                Choose your experience
               </p>
             </motion.div>
           </motion.div>
@@ -214,7 +233,7 @@ export function Splash({ onEnter }: SplashProps) {
           onClick={handleSkip}
           className="absolute bottom-12 right-12 z-40 px-6 py-3 border border-white/15 text-white/50 text-[9px] uppercase tracking-[0.4em] hover:text-white/80 hover:border-white/30 hover:bg-white/5 transition-all backdrop-blur-sm"
         >
-          Überspringen
+          Skip
         </motion.button>
       )}
 
@@ -308,10 +327,10 @@ export function Splash({ onEnter }: SplashProps) {
             onClick={onEnter}
             className="px-12 py-4 border border-gold/20 text-gold font-sans text-[10px] tracking-[0.4em] uppercase hover:bg-gold/5 hover:border-gold/50 transition-all backdrop-blur-sm"
           >
-            Eintreten
+            Enter
           </button>
           <p className="mt-4 text-[8px] text-white/30 tracking-widest italic">
-            Klicke, um den Kosmos zu wecken
+            Awaken the cosmos
           </p>
         </motion.div>
       </div>

@@ -5,32 +5,39 @@
   "api_schema": {
     "url": "https://astro-noctum-production.up.railway.app/api/agent/conversation",
     "method": "POST",
-    "content_type": "application/json",
-    "request_body_schema": {
-      "type": "object",
-      "required": ["user_id", "summary"],
-      "properties": {
-        "user_id": {
-          "type": "string",
-          "description": "Supabase auth UUID of the user"
-        },
-        "summary": {
-          "type": "string",
-          "description": "Concise 2-3 sentence summary of this conversation"
-        },
-        "topics": {
-          "type": "array",
-          "items": { "type": "string" },
-          "description": "Key topic tags like sun-sign, career, relationships, bazi-pillars"
-        }
+    "path_params_schema": [],
+    "query_params_schema": [],
+    "request_body_schema": [
+      {
+        "id": "user_id",
+        "type": "string",
+        "description": "Supabase auth UUID of the user",
+        "dynamic_variable": "user_id"
+      },
+      {
+        "id": "summary",
+        "type": "string",
+        "description": "Concise 2-3 sentence summary of this conversation"
+      },
+      {
+        "id": "topics",
+        "type": "array",
+        "description": "Key topic tags like sun-sign, career, relationships, bazi-pillars"
       }
-    },
-    "request_headers": {
-      "Authorization": {
+    ],
+    "request_headers": [
+      {
+        "key": "Authorization",
+        "value": "",
+        "type": "secret",
         "secret_id": "wsec_6799ace1ef60109af06c4f51592a371b2a1fa96ed4e8bea794f5a7cd0e8aa1af"
       },
-      "Content-Type": "application/json"
-    }
+      {
+        "key": "Content-Type",
+        "value": "application/json",
+        "type": "value"
+      }
+    ]
   },
   "response_timeout_secs": 10,
   "dynamic_variables": {
