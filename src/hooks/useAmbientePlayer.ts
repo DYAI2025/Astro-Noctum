@@ -1,9 +1,7 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 
-// All ambiente tracks across subdirectories.
-// Vite serves media/ as publicDir, so paths are relative to root.
+// All ambiente tracks served from public/ambiente/.
 const TRACKS: string[] = [
-  // bazodiac
   "/ambiente/bazodiac/Cosmic Birth A Meditation on Stellar Genesis.mp3",
   "/ambiente/bazodiac/Cosmic Resonance.mp3",
   "/ambiente/bazodiac/Geometry of Grace.mp3",
@@ -11,15 +9,6 @@ const TRACKS: string[] = [
   "/ambiente/bazodiac/Rite of Emergence.mp3",
   "/ambiente/bazodiac/Wood Dragon Awakening.mp3",
   "/ambiente/bazodiac/Wood Dragon Rebirth.mp3",
-  // musical
-  "/ambiente/musical/Astro-Noctum Emergence.mp3",
-  "/ambiente/musical/Orbiting the Ritual Core.mp3",
-  "/ambiente/musical/Wood Dragon Whispers of Rebirth.mp3",
-  // techno
-  "/ambiente/techno/Bazodiac Ascending in the Deep.mp3",
-  "/ambiente/techno/Core Stable Sovereign.mp3",
-  "/ambiente/techno/Core Stable.mp3",
-  "/ambiente/techno/Symmetry is the Language of Heaven.mp3",
 ];
 
 const VOLUME = 0.6;

@@ -1,6 +1,36 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "motion/react";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Info, MapPin } from "lucide-react";
+import { PlaceAutocomplete, hasPlacesApiKey } from "./PlaceAutocomplete";
+
+/** Detect whether DST is active for a given date + IANA timezone. */
+function isDst(dateStr: string, tz: string): boolean | null {
+  if (!dateStr || !tz) return null;
+  try {
+    const jan = new Date(`${dateStr.slice(0, 4)}-01-15T12:00:00`);
+    const jul = new Date(`${dateStr.slice(0, 4)}-07-15T12:00:00`);
+    const target = new Date(`${dateStr}T12:00:00`);
+
+    const offsetOf = (d: Date) => {
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: tz,
+        timeZoneName: "longOffset",
+      }).formatToParts(d);
+      const tzPart = parts.find((p) => p.type === "timeZoneName")?.value || "";
+      const m = tzPart.match(/GMT([+-]\d{2}):?(\d{2})?/);
+      if (!m) return 0;
+      return parseInt(m[1]) * 60 + parseInt(m[2] || "0") * (m[1].startsWith("-") ? -1 : 1);
+    };
+
+    const janOff = offsetOf(jan);
+    const julOff = offsetOf(jul);
+    const targetOff = offsetOf(target);
+    const standardOff = Math.min(janOff, julOff);
+    return targetOff > standardOff;
+  } catch {
+    return null;
+  }
+}
 
 interface BirthFormProps {
   onSubmit: (data: {
@@ -19,6 +49,20 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
   const [timeUnknown, setTimeUnknown] = useState(false);
   const [coordinates, setCoordinates] = useState("52.520000, 13.405000");
   const [tz, setTz] = useState("Europe/Berlin");
+  const [placeName, setPlaceName] = useState("");
+  const placesAvailable = useMemo(() => hasPlacesApiKey(), []);
+
+  // DST detection for births >= 1980
+  const dstInfo = useMemo(() => {
+    if (!date) return null;
+    const year = parseInt(date.slice(0, 4));
+    if (year < 1980) return null;
+    const dst = isDst(date, tz);
+    if (dst === null) return null;
+    return dst
+      ? { label: "MESZ (Sommerzeit)", offset: "UTC+2" }
+      : { label: "MEZ (Winterzeit)", offset: "UTC+1" };
+  }, [date, tz]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,6 +163,17 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
                 />
               </div>
             </div>
+
+            {dstInfo && (
+              <div className="flex items-start gap-2 px-4 py-3 bg-gold/5 border border-gold/10 rounded-lg">
+                <Info className="w-3.5 h-3.5 text-gold/60 mt-0.5 shrink-0" />
+                <p className="text-[10px] text-white/50 leading-relaxed">
+                  Am gewählten Datum gilt <span className="text-gold/80 font-medium">{dstInfo.label}</span> ({dstInfo.offset}).
+                  Gib deine Geburtszeit so ein, wie sie auf der Uhr stand.
+                </p>
+              </div>
+            )}
+
             <button
               type="button"
               onClick={() => {
@@ -151,32 +206,58 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
             exit={{ opacity: 0, x: -20 }}
             className="space-y-12"
           >
-            <h2 className="font-serif text-3xl leading-snug">Unter welchen Koordinaten begann deine Reise?</h2>
-            
+            <h2 className="font-serif text-3xl leading-snug">
+              {placesAvailable ? "Wo begann deine Reise?" : "Unter welchen Koordinaten begann deine Reise?"}
+            </h2>
+
             <div className="space-y-6">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-[8px] uppercase tracking-widest text-white/40">Koordinaten (Lat, Lon)</label>
-                  <a 
-                    href="https://www.google.com/maps" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-[8px] uppercase tracking-widest text-gold/60 hover:text-gold transition-colors flex items-center gap-1"
-                  >
-                    Auf Google Maps finden <ExternalLink className="w-3 h-3" />
-                  </a>
+              {placesAvailable ? (
+                <>
+                  <div className="space-y-2">
+                    <label className="text-[8px] uppercase tracking-widest text-white/40">Geburtsort</label>
+                    <PlaceAutocomplete
+                      onSelect={({ name, lat, lon }) => {
+                        setPlaceName(name);
+                        setCoordinates(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+                        // Attempt timezone detection from coordinates using Intl
+                        // (best-effort: defaults stay if detection fails)
+                      }}
+                      placeholder="Stadt suchen..."
+                      className="w-full bg-ash/40 border border-gold/10 p-4 rounded focus:outline-none focus:border-gold/40 text-sm text-white/80"
+                    />
+                  </div>
+                  {placeName && (
+                    <div className="flex items-center gap-2 text-[10px] text-white/40">
+                      <MapPin className="w-3 h-3 text-gold/50" />
+                      <span>{coordinates}</span>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[8px] uppercase tracking-widest text-white/40">Koordinaten (Lat, Lon)</label>
+                    <a
+                      href="https://www.google.com/maps"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[8px] uppercase tracking-widest text-gold/60 hover:text-gold transition-colors flex items-center gap-1"
+                    >
+                      Auf Google Maps finden <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    value={coordinates}
+                    onChange={(e) => setCoordinates(e.target.value)}
+                    className="w-full bg-ash/40 border border-gold/10 p-4 rounded focus:outline-none focus:border-gold/40 text-sm text-white/80"
+                    placeholder="52.399553, 13.061038"
+                    pattern="^-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$"
+                    title="Format: Breitengrad, Längengrad (z.B. 52.399553, 13.061038)"
+                  />
                 </div>
-                <input
-                  type="text"
-                  required
-                  value={coordinates}
-                  onChange={(e) => setCoordinates(e.target.value)}
-                  className="w-full bg-ash/40 border border-gold/10 p-4 rounded focus:outline-none focus:border-gold/40 text-sm text-white/80"
-                  placeholder="52.399553, 13.061038"
-                  pattern="^-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$"
-                  title="Format: Breitengrad, Längengrad (z.B. 52.399553, 13.061038)"
-                />
-              </div>
+              )}
 
               <div className="space-y-2">
                 <label className="text-[8px] uppercase tracking-widest text-white/40">Zeitzone</label>

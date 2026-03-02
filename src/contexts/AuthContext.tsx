@@ -12,8 +12,8 @@ interface AuthState {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  signUp: (email: string, password: string) => Promise<{ error: string | null; needsConfirmation: boolean }>;
+  signUp: (email: string, password: string) => Promise<string | null>;
+  signIn: (email: string, password: string) => Promise<string | null>;
   signOut: () => Promise<void>;
 }
 
@@ -38,52 +38,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
       setUser(s?.user ?? null);
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const signUp = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signUp({ email, password });
+    return error?.message ?? null;
+  };
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    return { error: error?.message ?? null };
-  };
-
-  const signUp = async (email: string, password: string) => {
-    try {
-      // Use server-side signup endpoint (creates user with email auto-confirmed)
-      const res = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const body = await res.json();
-
-      if (!res.ok) {
-        return { error: body.error || "Registrierung fehlgeschlagen", needsConfirmation: false };
-      }
-
-      // Server created the user with confirmed email — now sign in immediately
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (signInError) {
-        return { error: signInError.message, needsConfirmation: false };
-      }
-
-      // Session is now active, onAuthStateChange will update the state
-      return { error: null, needsConfirmation: false };
-    } catch (err: any) {
-      // Server unreachable — fall back to client-side signup
-      const { data, error } = await supabase.auth.signUp({ email, password });
-      const needsConfirmation = !data.session;
-      return { error: error?.message ?? null, needsConfirmation };
-    }
+    return error?.message ?? null;
   };
 
   const signOut = async () => {
@@ -92,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, session, loading, signIn, signUp, signOut }}
+      value={{ user, session, loading, signUp, signIn, signOut }}
     >
       {children}
     </AuthContext.Provider>
@@ -101,6 +71,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used inside <AuthProvider>");
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
 }
