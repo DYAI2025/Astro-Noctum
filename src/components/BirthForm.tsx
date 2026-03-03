@@ -262,7 +262,7 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
                     className={inputCls}
                     placeholder="52.399553, 13.061038"
                     pattern="^-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$"
-                    title="Format: Breitengrad, Längengrad"
+                    title={t("form.coordTitle")}
                   />
                 </div>
               )}
