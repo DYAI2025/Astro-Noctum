@@ -11,8 +11,8 @@
 - **External APIs:** BAFE (astrology calculations), Gemini (text generation), ElevenLabs (voice agent)
 - **Deployment:** Railway (nixpacks-based build)
 
-**UI Language:** German  
-**Aesthetic:** Dark luxury (obsidian/gold palette)
+**UI Language:** German (with English toggle)  
+**Aesthetic:** Dark luxury (obsidian/gold) for splash/auth; Morning theme (bluish-gray) for main app
 
 ---
 
@@ -22,14 +22,16 @@
 Astro-Noctum/
 ├── src/
 │   ├── components/       # React components (BirthForm, Dashboard, Orrery, etc.)
-│   ├── contexts/         # React Context providers (AuthContext)
-│   ├── hooks/            # Custom React hooks
-│   ├── lib/              # Utilities (astronomy calculations, 3D materials)
+│   ├── contexts/         # React Context providers (AuthContext, LanguageContext)
+│   ├── hooks/            # Custom React hooks (useAmbientePlayer)
+│   ├── i18n/             # Internationalization translations (de/en)
+│   ├── lib/              # Utilities (astronomy calculations, 3D materials, supabase client)
 │   ├── services/         # API clients (api.ts, gemini.ts, supabase.ts)
-│   ├── App.tsx           # Main application component
+│   ├── App.tsx           # Main application component (state-driven SPA)
 │   ├── main.tsx          # Entry point
-│   └── index.css         # Global styles + Tailwind config
-├── media/                # Static assets (served as publicDir)
+│   └── index.css         # Global styles + Tailwind v4 config
+├── media/                # Static assets
+├── public/               # Public static files
 ├── dist/                 # Production build output
 ├── server.mjs            # Express production server
 ├── vite.config.ts        # Vite configuration + dev proxy
@@ -46,7 +48,7 @@ Astro-Noctum/
 ## Building and Running
 
 ### Prerequisites
-- Node.js **20.19+** (pinned in `.nvmrc` and `package.json`)
+- Node.js **20.19+** (pinned in `.nvmrc`, `package.json`, and `nixpacks.toml`)
 - npm 10+
 
 ### Development
@@ -98,6 +100,7 @@ Create `.env.local` from `.env.example`. Variables prefixed with `VITE_` are exp
 | `SUPABASE_SERVICE_ROLE_KEY` | Server | Supabase service role key (bypasses RLS) |
 | `VITE_ELEVENLABS_AGENT_ID` | Client | ElevenLabs voice agent ID |
 | `ELEVENLABS_TOOL_SECRET` | Server | Secret token for ElevenLabs tool auth |
+| `VITE_GOOGLE_PLACES_API_KEY` | Client | Optional: Google Places API for city autocomplete |
 
 ---
 
@@ -109,7 +112,7 @@ Create `.env.local` from `.env.example`. Variables prefixed with `VITE_` are exp
 Splash → AuthGate → BirthForm → Dashboard
 ```
 
-State-driven single-page app (no router).
+State-driven single-page app (no router). Authentication via Supabase Auth.
 
 ### Data Flow
 
@@ -131,6 +134,14 @@ State-driven single-page app (no router).
 | **Vite dev server** (`npm run dev`) | Proxies `/api/calculate/*` to BAFE; `/api/auth`, `/api/profile`, `/api/agent` to local Express (port 3001) |
 | **Express production server** (`server.mjs`) | Serves `dist/`, proxies BAFE with fallback chain, handles server-side auth, ElevenLabs endpoints |
 
+### BAFE Fallback Chain
+
+The production server uses an ordered fallback chain for BAFE API requests:
+1. Internal Railway URL (`BAFE_INTERNAL_URL`) if configured
+2. Public URL (`https://bafe-production.up.railway.app`)
+
+This handles IPv6-only private networking issues gracefully.
+
 ---
 
 ## Key Modules
@@ -138,10 +149,13 @@ State-driven single-page app (no router).
 | File | Purpose |
 |------|---------|
 | `src/contexts/AuthContext.tsx` | Supabase auth provider (signIn/signUp/signOut) |
+| `src/contexts/LanguageContext.tsx` | i18n provider (German/English toggle) |
 | `src/services/api.ts` | BAFE API client with response normalization and fallback handling |
 | `src/services/gemini.ts` | Gemini Flash integration for horoscope text generation |
 | `src/services/supabase.ts` | Database operations (birth_data, astro_profiles, natal_charts) |
 | `src/components/BirthChartOrrery.tsx` | Three.js 3D solar system visualization |
+| `src/components/BirthForm.tsx` | Birth data input with Google Places autocomplete |
+| `src/components/Dashboard.tsx` | Results display, orrery, ElevenLabs widget |
 | `src/lib/astronomy/` | Keplerian orbital mechanics, star catalog, constellation data |
 | `src/lib/3d/materials.ts` | Custom GLSL shaders (sun corona, atmospheric glow, Saturn rings) |
 | `server.mjs` | Production Express server with BAFE proxy, Supabase admin auth, ElevenLabs endpoints |
@@ -180,9 +194,15 @@ See `supabase-schema.sql` for full DDL and RLS policies.
 **Tailwind v4** with custom theme tokens in `src/index.css`:
 
 ```css
+/* Dark theme (splash/auth) */
 --color-obsidian: #00050A;   /* Deep black background */
 --color-gold: #D4AF37;       /* Luxury accent */
 --color-ash: #1A1C1E;        /* Secondary dark */
+
+/* Morning theme (main app) */
+--color-dawn: #E2ECF6;       /* Light bluish-gray background */
+--color-ink: #1E2A3A;        /* Dark text */
+--color-gold-deep: #8B6914;  /* Muted gold accent */
 ```
 
 **Fonts:**
@@ -190,10 +210,10 @@ See `supabase-schema.sql` for full DDL and RLS policies.
 - Serif: Cormorant Garamond
 
 **Custom CSS Classes:**
-- `.glass-card` — Frosted glass effect
-- `.stele-card` — Decorative card style
-- `.skeleton-dust` — Animated particle background
-- `.grain-overlay` — Film grain texture
+- `.glass-card` — Frosted glass effect (dark theme)
+- `.stele-card` — Decorative card style for BaZi pillars
+- `.morning-bg` — Morning gradient background
+- `.lang-toggle` — Language switcher button group
 
 ---
 
@@ -204,6 +224,7 @@ See `supabase-schema.sql` for full DDL and RLS policies.
 - **React:** Functional components with hooks, React 19
 - **Testing:** No test suite currently configured
 - **Code Style:** Inferred from existing code — semicolons, double quotes, trailing commas in objects
+- **i18n:** All user-facing strings use the `LanguageContext` with `t()` helper
 
 ---
 
@@ -240,6 +261,19 @@ cmd = "npm run start"
 
 ---
 
+## API Endpoints (Express Server)
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/calculate/:endpoint` | POST | Proxy to BAFE (`bazi`, `western`, `fusion`, `wuxing`, `tst`) |
+| `/api/chart` | GET/POST | Proxy to BAFE chart endpoint |
+| `/api/webhook/chart` | POST | Proxy to BAFE webhook |
+| `/api/profile/:userId` | GET | ElevenLabs tool: fetch user's astro profile |
+| `/api/agent/conversation` | POST | ElevenLabs tool: save conversation summary |
+| `/api/debug-bafe` | GET | Diagnostic: probe BAFE endpoints |
+
+---
+
 ## Known Issues
 
 See `BUGS.md` for current limitations:
@@ -252,6 +286,7 @@ See `BUGS.md` for current limitations:
 
 - `README.md` — User-facing setup and deployment guide
 - `CLAUDE.md` — Developer guidance for Claude Code
+- `AGENTS.md` — Agent-specific instructions
 - `SETUP-ELEVENLABS.txt` — ElevenLabs agent configuration
 - `elevenlabs-tool.json` — ElevenLabs tool definition
 - `elevenlabs-tool-save-conversation.json` — Conversation save tool config

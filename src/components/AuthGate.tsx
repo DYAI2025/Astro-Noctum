@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { useAuth } from "../contexts/AuthContext";
+import { useLanguage } from "../contexts/LanguageContext";
 
 const EMAIL_STORAGE_KEY = "bazodiac_email";
 
 export function AuthGate() {
   const { signIn, signUp } = useAuth();
+  const { lang, setLang, t } = useLanguage();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,38 +30,32 @@ export function AuthGate() {
     e.preventDefault();
     setError(null);
 
-    // Validate password confirmation for signup
     if (mode === "signup" && password !== confirmPassword) {
-      setError("Die Passwörter stimmen nicht überein.");
+      setError(
+        lang === "de"
+          ? "Die Passwörter stimmen nicht überein."
+          : "Passwords do not match.",
+      );
       return;
     }
 
     setBusy(true);
-
-    const err =
-      mode === "login"
-        ? await signIn(email, password)
-        : await signUp(email, password);
-
+    const err = mode === "login"
+      ? await signIn(email, password)
+      : await signUp(email, password);
     setBusy(false);
 
-    if (err) {
-      setError(err);
-      return;
-    }
+    if (err) { setError(err); return; }
 
-    // Persist email for next visit
-    try {
-      localStorage.setItem(EMAIL_STORAGE_KEY, email);
-    } catch {
-      // silent
-    }
-
-    if (mode === "signup") {
-      setSignupDone(true);
-    }
+    try { localStorage.setItem(EMAIL_STORAGE_KEY, email); } catch { /* silent */ }
+    if (mode === "signup") setSignupDone(true);
   };
 
+  // ── Shared input style ─────────────────────────────────────────────────
+  const inputCls =
+    "w-full bg-white/[0.03] border border-gold/10 rounded-lg px-4 py-3 text-sm text-white/90 placeholder-white/20 focus:outline-none focus:border-gold/30 transition-colors";
+
+  // ── Email confirmed screen ─────────────────────────────────────────────
   if (signupDone) {
     return (
       <div className="fixed inset-0 z-[90] bg-obsidian flex items-center justify-center">
@@ -71,24 +67,26 @@ export function AuthGate() {
           <p className="font-sans text-[10px] uppercase tracking-[0.5em] text-gold/60 mb-6">
             Bazodiac
           </p>
-          <h2 className="font-serif text-2xl mb-4">Prüfe dein Postfach</h2>
+          <h2 className="font-serif text-2xl mb-4">
+            {lang === "de" ? "Prüfe dein Postfach" : "Check your inbox"}
+          </h2>
           <p className="text-white/50 text-sm mb-8 leading-relaxed">
-            Wir haben dir eine Bestätigungs-E-Mail gesendet. Klicke auf den Link, um dein Konto zu aktivieren.
+            {lang === "de"
+              ? "Wir haben dir eine Bestätigungs-E-Mail gesendet. Klicke auf den Link, um dein Konto zu aktivieren."
+              : "We sent you a confirmation email. Click the link to activate your account."}
           </p>
           <button
-            onClick={() => {
-              setSignupDone(false);
-              setMode("login");
-            }}
+            onClick={() => { setSignupDone(false); setMode("login"); }}
             className="px-8 py-3 border border-gold/20 text-gold text-[10px] uppercase tracking-[0.4em] hover:bg-gold/5 hover:border-gold/40 transition-all"
           >
-            Zum Login
+            {lang === "de" ? "Zum Login" : "Go to Login"}
           </button>
         </motion.div>
       </div>
     );
   }
 
+  // ── Main auth form ─────────────────────────────────────────────────────
   return (
     <div className="fixed inset-0 z-[90] bg-obsidian flex items-center justify-center">
       <motion.div
@@ -97,37 +95,64 @@ export function AuthGate() {
         transition={{ duration: 0.8 }}
         className="w-full max-w-sm px-8"
       >
+        {/* Header + language toggle */}
         <div className="text-center mb-10">
+          <div className="flex justify-center mb-5">
+            <div className="lang-toggle-dark" role="group" aria-label="Language selection">
+              <button
+                className={lang === "de" ? "active" : ""}
+                onClick={() => setLang("de")}
+              >
+                DE
+              </button>
+              <button
+                className={lang === "en" ? "active" : ""}
+                onClick={() => setLang("en")}
+              >
+                EN
+              </button>
+            </div>
+          </div>
+
           <p className="font-sans text-[10px] uppercase tracking-[0.5em] text-gold/60 mb-4">
             Bazodiac
           </p>
           <h2 className="font-serif text-2xl mb-2">
-            {mode === "login" ? "Willkommen zurück" : "Konto erstellen"}
+            {mode === "login"
+              ? (lang === "de" ? "Willkommen zurück" : "Welcome back")
+              : t("auth.title")}
           </h2>
           <p className="text-white/40 text-xs">
             {mode === "login"
-              ? "Melde dich an, um dein Chart zu sehen."
-              : "Erstelle ein Konto, um dein Chart zu speichern."}
+              ? (lang === "de"
+                  ? "Melde dich an, um dein Chart zu sehen."
+                  : "Sign in to view your chart.")
+              : (lang === "de"
+                  ? "Erstelle ein Konto, um dein Chart zu speichern."
+                  : "Create an account to save your chart.")}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Email */}
           <div>
             <label className="block text-[9px] uppercase tracking-[0.3em] text-gold/50 mb-2">
-              E-Mail
+              {t("auth.emailLabel")}
             </label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-white/[0.03] border border-gold/10 rounded-lg px-4 py-3 text-sm text-white/90 placeholder-white/20 focus:outline-none focus:border-gold/30 transition-colors"
-              placeholder="du@beispiel.de"
+              className={inputCls}
+              placeholder={t("auth.emailPlaceholder")}
             />
           </div>
+
+          {/* Password */}
           <div>
             <label className="block text-[9px] uppercase tracking-[0.3em] text-gold/50 mb-2">
-              Passwort
+              {t("auth.passwordLabel")}
             </label>
             <input
               type="password"
@@ -135,15 +160,16 @@ export function AuthGate() {
               minLength={6}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-white/[0.03] border border-gold/10 rounded-lg px-4 py-3 text-sm text-white/90 placeholder-white/20 focus:outline-none focus:border-gold/30 transition-colors"
-              placeholder="Mindestens 6 Zeichen"
+              className={inputCls}
+              placeholder={t("auth.passwordPlaceholder")}
             />
           </div>
 
+          {/* Confirm password (sign-up only) */}
           {mode === "signup" && (
             <div>
               <label className="block text-[9px] uppercase tracking-[0.3em] text-gold/50 mb-2">
-                Passwort bestätigen
+                {lang === "de" ? "Passwort bestätigen" : "Confirm password"}
               </label>
               <input
                 type="password"
@@ -151,8 +177,8 @@ export function AuthGate() {
                 minLength={6}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full bg-white/[0.03] border border-gold/10 rounded-lg px-4 py-3 text-sm text-white/90 placeholder-white/20 focus:outline-none focus:border-gold/30 transition-colors"
-                placeholder="Passwort wiederholen"
+                className={inputCls}
+                placeholder={lang === "de" ? "Passwort wiederholen" : "Repeat password"}
               />
             </div>
           )}
@@ -167,40 +193,33 @@ export function AuthGate() {
             className="w-full py-3 border border-gold/20 text-gold text-[10px] uppercase tracking-[0.4em] hover:bg-gold/5 hover:border-gold/40 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {busy
-              ? "..."
+              ? "…"
               : mode === "login"
-              ? "Anmelden"
-              : "Registrieren"}
+              ? t("auth.signInBtn")
+              : t("auth.signUpBtn")}
           </button>
         </form>
 
+        {/* Mode switch */}
         <p className="text-center mt-8 text-[10px] text-white/30">
           {mode === "login" ? (
             <>
-              Noch kein Konto?{" "}
+              {t("auth.switchToSignUp")}{" "}
               <button
-                onClick={() => {
-                  setMode("signup");
-                  setError(null);
-                  setConfirmPassword("");
-                }}
+                onClick={() => { setMode("signup"); setError(null); setConfirmPassword(""); }}
                 className="text-gold/60 hover:text-gold transition-colors underline underline-offset-2"
               >
-                Registrieren
+                {t("auth.signUpBtn")}
               </button>
             </>
           ) : (
             <>
-              Bereits registriert?{" "}
+              {t("auth.switchToSignIn")}{" "}
               <button
-                onClick={() => {
-                  setMode("login");
-                  setError(null);
-                  setConfirmPassword("");
-                }}
+                onClick={() => { setMode("login"); setError(null); setConfirmPassword(""); }}
                 className="text-gold/60 hover:text-gold transition-colors underline underline-offset-2"
               >
-                Anmelden
+                {t("auth.signInBtn")}
               </button>
             </>
           )}

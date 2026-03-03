@@ -2,146 +2,328 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* ── Theme Tokens ──────────────────────────────────────────────────────── */
+
 @theme {
   --font-sans: "Sora", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Cormorant Garamond", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  
+
+  /* Dark (legacy / splash / auth) */
   --color-obsidian: #00050A;
-  --color-gold: #D4AF37;
-  --color-ash: #1A1C1E;
+  --color-gold:     #D4AF37;
+  --color-ash:      #1A1C1E;
+
+  /* Morning (main app) */
+  --color-dawn:       #E2ECF6;
+  --color-dawn-deep:  #CDDDE9;
+  --color-ink:        #1E2A3A;
+  --color-ink-60:     rgba(30,42,58,0.60);
+  --color-gold-deep:  #8B6914;
 }
+
+/* ── CSS Custom Properties ─────────────────────────────────────────────── */
 
 :root {
-    --c-obsidian: #00050A;
-    --c-gold: #D4AF37;
-    --c-gold-glow: rgba(212, 175, 55, 0.4);
-    --c-ash: #1A1C1E;
+  /* Dark defaults */
+  --c-obsidian:  #00050A;
+  --c-gold:      #D4AF37;
+  --c-gold-glow: rgba(212,175,55,0.4);
+  --c-ash:       #1A1C1E;
 }
 
+/* ── Base ──────────────────────────────────────────────────────────────── */
+
 body {
-    background-color: var(--c-obsidian);
-    color: rgba(255, 255, 255, 0.9);
-    overflow-x: hidden;
-    -webkit-font-smoothing: antialiased;
+  background-color: var(--c-obsidian);
+  color: rgba(255,255,255,0.9);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
+
+/* ── Dark theme — Splash / Auth ─────────────────────────────────────────── */
 
 /* Film Grain Simulation */
 .grain-overlay {
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
-/* Glassmorphism */
+/* Glass card — dark context */
 .glass-card {
-    background: rgba(255, 255, 255, 0.02);
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(212, 175, 55, 0.1);
-    border-radius: 16px;
-    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  background: rgba(255,255,255,0.02);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(212,175,55,0.1);
+  border-radius: 16px;
+  transition: all 0.6s cubic-bezier(0.16,1,0.3,1);
 }
-
 .glass-card:hover {
-    border-color: rgba(212, 175, 55, 0.3);
-    background: rgba(255, 255, 255, 0.04);
-    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5), 0 0 20px rgba(212, 175, 55, 0.05);
+  border-color: rgba(212,175,55,0.3);
+  background: rgba(255,255,255,0.04);
+  box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5), 0 0 20px rgba(212,175,55,0.05);
 }
 
-/* BaZi Stelen (Steles) */
+/* BaZi Stelen — dark context */
 .stele-card {
-    position: relative;
-    padding: 2rem 1rem;
-    background: linear-gradient(180deg, rgba(212, 175, 55, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
-    border: 1px solid rgba(212, 175, 55, 0.15);
-    border-radius: 4px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    overflow: hidden;
+  position: relative;
+  padding: 2rem 1rem;
+  background: linear-gradient(180deg, rgba(212,175,55,0.05) 0%, rgba(255,255,255,0.02) 100%);
+  border: 1px solid rgba(212,175,55,0.15);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
 }
-
 .stele-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 40%;
-    height: 1px;
-    background: var(--c-gold);
-    box-shadow: 0 0 15px var(--c-gold);
-    opacity: 0.6;
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40%;
+  height: 1px;
+  background: var(--c-gold);
+  box-shadow: 0 0 15px var(--c-gold);
+  opacity: 0.6;
 }
 
-/* Breathing Animation */
+/* ── Morning theme — logged-in main app ────────────────────────────────── */
+
+/* Background gradient — bluish-gray morning sky
+   Fixed attachment prevents gradient repainting on scroll (desktop).
+   Disabled on mobile: iOS Safari breaks fixed bg-attachment. */
+.morning-bg {
+  background: linear-gradient(
+    180deg,
+    #C8DDF0 0%,
+    #D4E6F2 10%,
+    #DCEDF5 28%,
+    #E4F0F7 52%,
+    #EBF3F9 76%,
+    #F0F6FA 100%
+  );
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+@media (max-width: 767px) {
+  /* iOS Safari ignores fixed bg-attachment — revert to scroll */
+  .morning-bg { background-attachment: scroll; }
+}
+
+/* Morning glass card */
+.morning-card {
+  background: rgba(255,255,255,0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(165,195,225,0.28);
+  border-radius: 16px;
+  transition: all 0.5s cubic-bezier(0.16,1,0.3,1);
+  color: #1E2A3A;
+}
+.morning-card:hover {
+  border-color: rgba(180,150,46,0.38);
+  background: rgba(255,255,255,0.82);
+  box-shadow: 0 8px 32px -8px rgba(0,30,80,0.10), 0 0 16px rgba(212,175,55,0.06);
+}
+
+/* Morning stele (BaZi pillars — light variant) */
+.morning-stele {
+  position: relative;
+  padding: 2rem 1rem;
+  background: rgba(255,255,255,0.60);
+  border: 1px solid rgba(165,195,225,0.30);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+.morning-stele::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40%;
+  height: 1px;
+  background: #8B6914;
+  box-shadow: 0 0 10px rgba(139,105,20,0.4);
+  opacity: 0.65;
+}
+.morning-stele:hover {
+  border-color: rgba(180,150,46,0.35);
+  background: rgba(255,255,255,0.80);
+}
+
+/* Morning nav header */
+.morning-header {
+  background: rgba(200,221,240,0.70);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(165,195,225,0.30);
+}
+
+/* WuXing element bar track */
+.wuxing-bar-track {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(165,195,225,0.25);
+  overflow: hidden;
+}
+.wuxing-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 1.2s cubic-bezier(0.16,1,0.3,1);
+}
+
+/* ── Shared animations ─────────────────────────────────────────────────── */
+
 @keyframes breathe {
-    0%, 100% { opacity: 0.5; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.05); }
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.05); }
 }
-
 .breathing {
-    animation: breathe 5s ease-in-out infinite;
+  animation: breathe 5s ease-in-out infinite;
 }
 
-/* Sternstaub Skeleton Loader */
+/* Skeleton loader */
 .skeleton-dust {
-    background: linear-gradient(90deg, 
-        rgba(212, 175, 55, 0.02) 0%, 
-        rgba(212, 175, 55, 0.12) 50%, 
-        rgba(212, 175, 55, 0.02) 100%
-    );
-    background-size: 200% 100%;
-    animation: dust-slide 3s infinite ease-in-out;
-    border-radius: 2px;
-    position: relative;
-    overflow: hidden;
+  background: linear-gradient(90deg,
+    rgba(212,175,55,0.02) 0%,
+    rgba(212,175,55,0.12) 50%,
+    rgba(212,175,55,0.02) 100%
+  );
+  background-size: 200% 100%;
+  animation: dust-slide 3s infinite ease-in-out;
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
 }
-
 .skeleton-dust::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.2'/%3E%3C/svg%3E");
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.2'/%3E%3C/svg%3E");
 }
-
 @keyframes dust-slide {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+  0%   { background-position:  200% 0; }
+  100% { background-position: -200% 0; }
 }
 
-/* Layout Specifics */
+/* Morning skeleton */
+.morning-skeleton {
+  background: linear-gradient(90deg,
+    rgba(165,195,225,0.08) 0%,
+    rgba(165,195,225,0.25) 50%,
+    rgba(165,195,225,0.08) 100%
+  );
+  background-size: 200% 100%;
+  animation: dust-slide 2.5s infinite ease-in-out;
+  border-radius: 4px;
+}
+
+/* ── Layout ────────────────────────────────────────────────────────────── */
+
 .chart-grid {
-    display: grid;
-    grid-template-columns: 1.2fr 1fr;
-    gap: 3rem;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 3rem;
 }
-
 @media (max-width: 1024px) {
-    .chart-grid {
-        grid-template-columns: 1fr;
-    }
+  .chart-grid { grid-template-columns: 1fr; }
 }
 
-/* Typography refinement */
-h1, h2, h3 {
-    letter-spacing: 0.1em;
+/* Two-column morning layout */
+.morning-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
 }
+/* <767px = stacked (Tailwind md: starts at 768px) */
+@media (max-width: 767px) {
+  .morning-grid-2 { grid-template-columns: 1fr; }
+}
+
+/* ── Typography ────────────────────────────────────────────────────────── */
+
+h1, h2, h3 { letter-spacing: 0.1em; }
 
 .nav-link.active {
-    color: var(--c-gold);
-    border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+  color: var(--c-gold);
+  border-bottom: 1px solid rgba(212,175,55,0.3);
 }
 
-/* Radial Chart specific */
+/* Radial Chart */
 .radial-vector {
-    stroke-dasharray: 200;
-    stroke-dashoffset: 200;
-    animation: draw-line 3s forwards cubic-bezier(0.16, 1, 0.3, 1);
+  stroke-dasharray: 200;
+  stroke-dashoffset: 200;
+  animation: draw-line 3s forwards cubic-bezier(0.16,1,0.3,1);
+}
+@keyframes draw-line { to { stroke-dashoffset: 0; } }
+
+/* Parallax */
+#parallax-bg img { will-change: transform; }
+
+/* ── Language Toggle — light (morning header + mobile nav) ─────────────── */
+
+.lang-toggle {
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(139,105,20,0.28);
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.48);
+}
+.lang-toggle button {
+  padding: 4px 10px;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  transition: background 0.2s, color 0.2s;
+  color: rgba(30,42,58,0.48);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  line-height: 1;
+}
+.lang-toggle button.active {
+  background: rgba(139,105,20,0.11);
+  color: #8B6914;
+  font-weight: 600;
+}
+.lang-toggle button:hover:not(.active) {
+  background: rgba(139,105,20,0.05);
+  color: rgba(30,42,58,0.72);
 }
 
-@keyframes draw-line {
-    to { stroke-dashoffset: 0; }
+/* Dark variant — AuthGate (obsidian bg) */
+.lang-toggle-dark {
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(212,175,55,0.20);
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.04);
 }
-
-/* Parallax Background Movement */
-#parallax-bg img {
-    will-change: transform;
+.lang-toggle-dark button {
+  padding: 4px 10px;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  transition: background 0.2s, color 0.2s;
+  color: rgba(255,255,255,0.30);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  line-height: 1;
+}
+.lang-toggle-dark button.active {
+  background: rgba(212,175,55,0.12);
+  color: #D4AF37;
+  font-weight: 600;
+}
+.lang-toggle-dark button:hover:not(.active) {
+  color: rgba(255,255,255,0.60);
+  background: rgba(212,175,55,0.06);
 }

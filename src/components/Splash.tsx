@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "motion/react";
 
 interface SplashProps {
   onEnter: () => void;
+  /** Called when user selects DE or EN in the gate — syncs app language */
+  onLanguageSelect?: (lang: "de" | "en") => void;
 }
 
 const CROSSFADE_DURATION = 3; // seconds before video end to start crossfade
@@ -13,7 +15,7 @@ const VIDEOS: Record<string, string> = {
   en: "/bazodiac_fem_intro_ENG.mp4",
 };
 
-export function Splash({ onEnter }: SplashProps) {
+export function Splash({ onEnter, onLanguageSelect }: SplashProps) {
   // Phases: "gate" → "video" → "animation" → "ready"
   // "gate" = initial click to unlock audio context (browser policy)
   const [phase, setPhase] = useState<"gate" | "video" | "animation">("gate");
@@ -137,6 +139,8 @@ export function Splash({ onEnter }: SplashProps) {
 
   // Gate click → choose language and start video with sound
   const handleGateClick = useCallback((lang: "de" | "en") => {
+    // Propagate language selection to the app's i18n context
+    onLanguageSelect?.(lang);
     setVideoSrc(VIDEOS[lang]);
     setPhase("video");
 

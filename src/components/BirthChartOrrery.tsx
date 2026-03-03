@@ -11,6 +11,7 @@ import {
   updateMaterials,
 } from "../lib/3d/materials";
 import { Play, Pause } from "lucide-react";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface BirthChartOrreryProps {
   /** ISO date string or Date for the birth moment */
@@ -20,6 +21,7 @@ interface BirthChartOrreryProps {
 }
 
 export function BirthChartOrrery({ birthDate, height = "420px" }: BirthChartOrreryProps) {
+  const { lang, t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -277,27 +279,31 @@ export function BirthChartOrrery({ birthDate, height = "420px" }: BirthChartOrre
     };
   }, []);
 
+  const locale = lang === "de" ? "de-DE" : "en-GB";
+
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden border border-gold/10 bg-black/40">
+    <div className="relative w-full rounded-2xl overflow-hidden border border-[#8B6914]/15 bg-[#0a1628]/90 shadow-[0_4px_32px_rgba(0,20,60,0.15)]">
       {/* Label */}
       <div className="absolute top-4 left-5 z-10 pointer-events-none">
-        <p className="text-gold/60 text-[8px] uppercase tracking-[0.4em] mb-1">Dein Sonnensystem</p>
-        <p className="text-[10px] text-white/30">
-          Planetenpositionen am{" "}
-          {birthDate.toLocaleDateString("de-DE", { day: "2-digit", month: "long", year: "numeric" })}
+        <p className="text-[#8B6914]/70 text-[8px] uppercase tracking-[0.4em] mb-1">
+          {t("dashboard.orrery.sectionLabel")}
+        </p>
+        <p className="text-[10px] text-white/35">
+          {t("dashboard.orrery.datePrefix")}{" "}
+          {birthDate.toLocaleDateString(locale, { day: "2-digit", month: "long", year: "numeric" })}
         </p>
       </div>
 
       {/* Play/Pause toggle */}
       <button
         onClick={() => setIsPlaying(!isPlaying)}
-        className="absolute top-4 right-5 z-10 w-8 h-8 rounded-full border border-gold/20 flex items-center justify-center hover:bg-gold/10 hover:border-gold/40 transition-all bg-black/40 backdrop-blur-sm"
-        title={isPlaying ? "Pause" : "Zeitraffer starten"}
+        className="absolute top-4 right-5 z-10 w-8 h-8 rounded-full border border-[#8B6914]/25 flex items-center justify-center hover:bg-[#8B6914]/15 hover:border-[#8B6914]/45 transition-all bg-black/40 backdrop-blur-sm"
+        title={isPlaying ? t("dashboard.orrery.pauseTitle") : t("dashboard.orrery.playTitle")}
       >
         {isPlaying ? (
-          <Pause className="w-3 h-3 text-gold/80" />
+          <Pause className="w-3 h-3 text-[#8B6914]/80" />
         ) : (
-          <Play className="w-3 h-3 text-gold/80 ml-0.5" />
+          <Play className="w-3 h-3 text-[#8B6914]/80 ml-0.5" />
         )}
       </button>
 
@@ -306,14 +312,14 @@ export function BirthChartOrrery({ birthDate, height = "420px" }: BirthChartOrre
         {Object.entries(PLANETS)
           .filter(([key]) => key !== "earth")
           .map(([key, planet]) => (
-          <span key={key} className="flex items-center gap-1.5 text-[9px] text-white/40">
-            <span
-              className="w-2 h-2 rounded-full"
-              style={{ backgroundColor: planet.color, boxShadow: `0 0 4px ${planet.color}40` }}
-            />
-            {planet.name}
-          </span>
-        ))}
+            <span key={key} className="flex items-center gap-1.5 text-[9px] text-white/40">
+              <span
+                className="w-2 h-2 rounded-full"
+                style={{ backgroundColor: planet.color, boxShadow: `0 0 4px ${planet.color}40` }}
+              />
+              {planet.name}
+            </span>
+          ))}
       </div>
 
       {/* Three.js canvas container */}
