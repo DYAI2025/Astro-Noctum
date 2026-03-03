@@ -189,7 +189,7 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
             <button
               type="button"
               onClick={() => {
-                if (!date) { alert("Bitte gib ein gültiges Datum ein."); return; }
+                if (!date) { alert(t("form.invalidDate")); return; }
                 if (!time && !timeUnknown) {
                   const ok = window.confirm(t("form.noTime"));
                   if (ok) { setTime("12:00"); setTimeUnknown(true); setStep(2); }
