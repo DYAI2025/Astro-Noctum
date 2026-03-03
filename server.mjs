@@ -224,15 +224,19 @@ app.get("/api/profile/:userId", async (req, res) => {
   // Fetch past conversation summaries for session continuity
   let pastConversations = [];
   try {
-    const { data: convos } = await supabaseServer
+    const { data: convos, error: convosError } = await supabaseServer
       .from("agent_conversations")
       .select("summary, topics, created_at")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(5);
-    if (convos) pastConversations = convos;
+    if (convosError) {
+      console.warn("[profile] conversation fetch failed:", convosError.message || convosError);
+    } else if (convos) {
+      pastConversations = convos;
+    }
   } catch (convErr) {
-    console.warn("[profile] conversation fetch failed:", convErr.message);
+    console.warn("[profile] conversation fetch failed (thrown):", convErr.message);
   }
 
   res.json({
