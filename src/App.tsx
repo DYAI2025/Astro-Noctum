@@ -83,7 +83,7 @@ export default function App() {
       setApiIssues(results.issues);
       setBirthDateStr(data.date);
 
-      const aiInterpretation = await generateInterpretation(results);
+      const aiInterpretation = await generateInterpretation(results, lang);
       setInterpretation(aiInterpretation);
 
       if (user && !hasPersistedProfile) {
@@ -114,7 +114,7 @@ export default function App() {
     setIsLoading(true);
     setError(null);
     try {
-      const aiInterpretation = await generateInterpretation(apiData);
+      const aiInterpretation = await generateInterpretation(apiData, lang);
       setInterpretation(aiInterpretation);
     } catch (err: any) {
       console.error("AI Generation Error:", err);

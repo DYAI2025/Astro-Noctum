@@ -162,9 +162,27 @@ export function Dashboard({
   onResumeAudio,
 }: DashboardProps) {
   const { lang, t } = useLanguage();
-  const { planetariumMode } = usePlanetarium();
+  const { planetariumMode, setPlanetariumMode } = usePlanetarium();
   const [leviActive, setLeviActive] = useState(false);
   const leviSectionRef = useRef<HTMLDivElement>(null);
+
+  // ── First-visit Birth Sky welcome ────────────────────────────────
+  const FIRST_VISIT_KEY = "bazodiac-first-visit-done";
+  const [showBirthSkyWelcome, setShowBirthSkyWelcome] = useState(false);
+
+  useEffect(() => {
+    const done = localStorage.getItem(FIRST_VISIT_KEY);
+    if (!done) {
+      // First visit: activate Planetarium, show welcome
+      setPlanetariumMode(true);
+      setShowBirthSkyWelcome(true);
+      localStorage.setItem(FIRST_VISIT_KEY, "true");
+      // Auto-dismiss after 12 seconds
+      const timer = setTimeout(() => setShowBirthSkyWelcome(false), 12000);
+      return () => clearTimeout(timer);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Load ElevenLabs widget
   useEffect(() => {
@@ -324,7 +342,38 @@ export function Dashboard({
           height="460px"
           planetariumMode={planetariumMode}
           birthConstellation={birthConstellationKey}
+          autoPlay={showBirthSkyWelcome}
         />
+
+        {/* Birth Sky Welcome Banner */}
+        <AnimatePresence>
+          {showBirthSkyWelcome && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 1.2, ease: "easeOut", delay: 0.8 }}
+              className="relative -mt-20 mb-4 z-20 flex justify-center pointer-events-none"
+            >
+              <div className="bg-[#050a14]/80 backdrop-blur-xl border border-[#D4AF37]/30 rounded-2xl px-8 py-5 max-w-lg text-center shadow-[0_0_40px_rgba(212,175,55,0.08)]">
+                <p className="text-[#D4AF37] text-[10px] uppercase tracking-[0.4em] mb-2">✦ {lang === "de" ? "Dein Geburtshimmel" : "Your Birth Sky"} ✦</p>
+                <p className="text-white/80 text-sm leading-relaxed font-serif italic">
+                  {(() => {
+                    const d = orreryDate;
+                    const locale = lang === "de" ? "de-DE" : "en-GB";
+                    const dateStr = d.toLocaleDateString(locale, { day: "2-digit", month: "long", year: "numeric" });
+                    const timeStr = d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+                    // Placeholder for place — would need to be passed from BirthForm
+                    const tmpl = t("dashboard.birthSky.messageNoPlace");
+                    return tmpl
+                      .replace("{date}", dateStr)
+                      .replace("{time}", timeStr);
+                  })()}
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
 
       {/* ═══ PRIMARY GRID: Western (left) | BaZi/WuXing (right) ═══════ */}

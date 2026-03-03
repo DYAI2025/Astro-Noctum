@@ -85,6 +85,10 @@ const translationsEn: DeepStringRecord = {
       playTitle: "Start time-lapse",
       pauseTitle: "Pause",
     },
+    birthSky: {
+      message: "This is the sky above {place} on {date} at {time} — the moment you were born.",
+      messageNoPlace: "This is the sky on {date} at {time} — the moment you were born.",
+    },
     bazi: {
       sectionLabel: "Chinese Astrology",
       sectionTitle: "BaZi & WuXing",
@@ -214,6 +218,10 @@ const translationsDe: DeepStringRecord = {
       datePrefix: "Planetenpositionen am",
       playTitle: "Zeitraffer starten",
       pauseTitle: "Pause",
+    },
+    birthSky: {
+      message: "So sah der Himmel über {place} am {date} um {time} aus — dem Moment deiner Geburt.",
+      messageNoPlace: "So sah der Himmel am {date} um {time} aus — dem Moment deiner Geburt.",
     },
     bazi: {
       sectionLabel: "Chinesische Astrologie",

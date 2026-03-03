@@ -335,27 +335,30 @@ h1, h2, h3 { letter-spacing: 0.1em; }
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Background ──────────────────────────────────────────────────────────── */
+/* .planetarium and .morning-bg are on the SAME element, so no space between selectors */
+.planetarium.morning-bg,
 .planetarium .morning-bg {
   background:
     radial-gradient(ellipse at 50% 0%, rgba(20, 55, 130, 0.12) 0%, transparent 65%),
-    linear-gradient(180deg, #020509 0%, #030a18 50%, #040c1f 100%);
+    linear-gradient(180deg, #020509 0%, #030a18 50%, #040c1f 100%) !important;
   background-attachment: fixed;
 }
 @media (max-width: 767px) {
+  .planetarium.morning-bg,
   .planetarium .morning-bg { background-attachment: scroll; }
 }
 
 /* ── Cards & Steles ──────────────────────────────────────────────────────── */
 .planetarium .morning-card {
-  background: rgba(8, 16, 42, 0.84);
+  background: rgba(8, 16, 42, 0.84) !important;
   backdrop-filter: blur(22px);
   -webkit-backdrop-filter: blur(22px);
-  border: 1px solid rgba(70, 130, 220, 0.22);
-  color: rgba(215, 230, 255, 0.92);
+  border: 1px solid rgba(70, 130, 220, 0.22) !important;
+  color: rgba(215, 230, 255, 0.92) !important;
 }
 .planetarium .morning-card:hover {
-  border-color: rgba(90, 150, 240, 0.40);
-  background: rgba(12, 22, 55, 0.90);
+  border-color: rgba(90, 150, 240, 0.40) !important;
+  background: rgba(12, 22, 55, 0.90) !important;
   box-shadow: 0 8px 32px -8px rgba(0, 10, 60, 0.30), 0 0 16px rgba(70, 130, 220, 0.06);
 }
 
@@ -370,21 +373,22 @@ h1, h2, h3 { letter-spacing: 0.1em; }
 
 /* Stele (Four Pillars) */
 .planetarium .morning-stele {
-  background: rgba(6, 14, 38, 0.80);
-  border: 1px solid rgba(70, 130, 220, 0.20);
+  background: rgba(6, 14, 38, 0.80) !important;
+  border: 1px solid rgba(70, 130, 220, 0.20) !important;
 }
 .planetarium .morning-stele::before {
-  background: #D4AF37;
+  background: #D4AF37 !important;
   opacity: 0.45;
 }
 .planetarium .morning-stele:hover {
-  border-color: rgba(90, 150, 240, 0.38);
-  background: rgba(10, 20, 52, 0.88);
+  border-color: rgba(90, 150, 240, 0.38) !important;
+  background: rgba(10, 20, 52, 0.88) !important;
 }
 
 /* Header */
-.planetarium .morning-header {
-  background: rgba(3, 8, 25, 0.82);
+.planetarium .morning-header,
+.planetarium.morning-header {
+  background: rgba(3, 8, 25, 0.82) !important;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(70, 130, 220, 0.18);
@@ -458,11 +462,33 @@ h1, h2, h3 { letter-spacing: 0.1em; }
 .planetarium .border-\[\#8B6914\]\/15       { border-color: rgba(70, 130, 220, 0.22) !important; }
 .planetarium .border-\[\#8B6914\]\/20       { border-color: rgba(70, 130, 220, 0.28) !important; }
 
-/* Prose markdown in interpretation */
-.planetarium .prose-p\:text-\[\#1E2A3A\]\/62 p   { color: rgba(215,230,255,0.62) !important; }
-.planetarium .prose-headings\:text-\[\#1E2A3A\] :is(h1,h2,h3,h4) { color: rgba(215,230,255,0.92) !important; }
-.planetarium .prose-strong\:text-\[\#1E2A3A\]\/80 strong { color: rgba(215,230,255,0.80) !important; }
-.planetarium .prose-hr\:border-\[\#8B6914\]\/15 hr { border-color: rgba(70,130,220,0.22) !important; }
+/* Prose markdown in interpretation — Planetarium override */
+.planetarium .morning-card .prose,
+.planetarium .morning-card .prose * {
+  color: rgba(215, 230, 255, 0.68) !important;
+}
+.planetarium .morning-card .prose :is(h1,h2,h3,h4,h5,h6) {
+  color: rgba(215, 230, 255, 0.92) !important;
+}
+.planetarium .morning-card .prose strong {
+  color: rgba(212, 175, 55, 0.90) !important;
+}
+.planetarium .morning-card .prose hr {
+  border-color: rgba(70, 130, 220, 0.22) !important;
+}
+.planetarium .morning-card .prose a {
+  color: #D4AF37 !important;
+}
+/* Also override direct text colour on card heading */
+.planetarium .morning-card h3,
+.planetarium .morning-card h2 {
+  color: rgba(215, 230, 255, 0.92) !important;
+}
+/* Card sub-text */
+.planetarium .morning-card p,
+.planetarium .morning-card span {
+  color: inherit;
+}
 
 /* Button overrides */
 .planetarium button.border-\[\#8B6914\]\/25 {
@@ -470,6 +496,31 @@ h1, h2, h3 { letter-spacing: 0.1em; }
 }
 .planetarium button:hover.hover\:bg-\[\#8B6914\]\/10 {
   background: rgba(212, 175, 55, 0.10) !important;
+}
+
+/* Global text override — all text inside .planetarium should be light */
+.planetarium h1,
+.planetarium h2,
+.planetarium h3 {
+  color: rgba(215, 230, 255, 0.92) !important;
+}
+.planetarium p {
+  color: rgba(215, 230, 255, 0.60) !important;
+}
+.planetarium button {
+  color: inherit;
+}
+/* Restore specific gold colours */
+.planetarium .text-\[\#8B6914\],
+.planetarium [class*="text-[#8B6914]"] {
+  color: #D4AF37 !important;
+}
+
+/* Mobile bottom nav */
+.planetarium nav.fixed.bottom-0,
+.planetarium nav.fixed {
+  background: rgba(3, 8, 25, 0.88) !important;
+  border-top-color: rgba(70, 130, 220, 0.18) !important;
 }
 
 /* Planetarium toggle button active state glow */

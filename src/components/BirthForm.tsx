@@ -127,7 +127,7 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
             exit={{ opacity: 0, x: -20 }}
             className="space-y-10"
           >
-            <h2 className="font-serif text-3xl leading-snug text-[#1E2A3A]">
+            <h2 className="font-serif text-3xl leading-snug text-[#1a2434]">
               {t("form.step1Title")}
             </h2>
 
@@ -212,7 +212,7 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
             exit={{ opacity: 0, x: -20 }}
             className="space-y-10"
           >
-            <h2 className="font-serif text-3xl leading-snug text-[#1E2A3A]">
+            <h2 className="font-serif text-3xl leading-snug text-[#1a2434]">
               {placesAvailable ? t("form.step2Title") : t("form.step2TitleCoords")}
             </h2>
 

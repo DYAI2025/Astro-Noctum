@@ -73,14 +73,17 @@ Write directly to the user using "you" / "du" and address them personally.
 
 // ── Main export ────────────────────────────────────────────────────────────
 
-export async function generateInterpretation(data: unknown) {
-  // Detect language from data (German BaZi terms = DE fallback)
-  const dataStr = JSON.stringify(data);
-  const isGerman = /stamm|zweig|tier|element/i.test(dataStr);
+/**
+ * @param data   The full BAFE API results
+ * @param lang   The user's current language preference ("en" | "de")
+ */
+export async function generateInterpretation(data: unknown, lang: string = "en") {
+  const isGerman = lang === "de";
+  const fallback = isGerman ? FALLBACK_DE : FALLBACK_EN;
 
   if (!ai) {
     console.warn("Missing VITE_GEMINI_API_KEY. Using fallback interpretation.");
-    return isGerman ? FALLBACK_DE : FALLBACK_EN;
+    return fallback;
   }
 
   try {
@@ -95,9 +98,9 @@ export async function generateInterpretation(data: unknown) {
       ),
     ])) as { text?: string };
 
-    return response.text?.trim() ?? (isGerman ? FALLBACK_DE : FALLBACK_EN);
+    return response.text?.trim() ?? fallback;
   } catch (error) {
     console.warn("Gemini API failed or timed out, using fallback:", error);
-    return isGerman ? FALLBACK_DE : FALLBACK_EN;
+    return fallback;
   }
 }

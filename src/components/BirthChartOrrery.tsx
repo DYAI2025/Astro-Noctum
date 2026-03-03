@@ -101,6 +101,8 @@ interface BirthChartOrreryProps {
   height?: string;
   planetariumMode?: boolean;
   birthConstellation?: string;
+  /** Auto-start time-lapse on mount (first visit experience) */
+  autoPlay?: boolean;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -112,6 +114,7 @@ export function BirthChartOrrery({
   height = '460px',
   planetariumMode = false,
   birthConstellation,
+  autoPlay = false,
 }: BirthChartOrreryProps) {
   const { lang, t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -136,7 +139,7 @@ export function BirthChartOrrery({
   // Sync birthDate → simTime
   useEffect(() => {
     setSimTime(daysSinceJ2000(birthDate));
-    setIsPlaying(false);
+    setIsPlaying(autoPlay);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [birthDate]);
 
