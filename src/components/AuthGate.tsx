@@ -31,11 +31,7 @@ export function AuthGate() {
     setError(null);
 
     if (mode === "signup" && password !== confirmPassword) {
-      setError(
-        lang === "de"
-          ? "Die Passwörter stimmen nicht überein."
-          : "Passwords do not match.",
-      );
+      setError(t("auth.passwordMismatch"));
       return;
     }
 
