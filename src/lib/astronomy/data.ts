@@ -1,6 +1,6 @@
 // Astronomical data: planets, stars, constellation lines
 
-import { StarData, PlanetData, ConstellationLines, ConstellationNames } from "./types";
+import { StarData, PlanetData, CityData, ConstellationLines, ConstellationNames } from "./types";
 
 // ── Star Catalog — 150 brightest stars with J2000.0 coordinates ──
 
@@ -168,6 +168,11 @@ export const CONSTELLATION_LINES: ConstellationLines = {
   Virgo: [["Spica","Porrima"],["Porrima","Vindemiatrix"]],
   Aries: [["Hamal","Sheratan"]],
   Libra: [["Zubeneschamali","Zubenelgenubi"]],
+  // Zodiac constellations with sparse star data — basic connector lines
+  Cancer:      [["Acubens","Asellus Australis"]],
+  Capricornus: [["Deneb Algedi","Dabih"]],
+  Aquarius:    [["Sadalsuud","Sadalmelik"]],
+  // Pisces: only one star (Eta Piscium) in catalog — no line possible
 };
 
 // ── Constellation Names (German) ──
@@ -227,3 +232,35 @@ export const PLANETS: Record<string, PlanetData> = {
 
 export const SUN_RADIUS = 1.5;
 export const ORBIT_SCALE = 25;
+
+// ── Cities — Observer Locations ──
+
+export const CITIES: CityData[] = [
+  { name: "Berlin",      lat: 52.52,   lon: 13.405  },
+  { name: "New York",    lat: 40.713,  lon: -74.006 },
+  { name: "London",      lat: 51.507,  lon: -0.128  },
+  { name: "Paris",       lat: 48.857,  lon: 2.352   },
+  { name: "Tokyo",       lat: 35.690,  lon: 139.692 },
+  { name: "Sydney",      lat: -33.869, lon: 151.209 },
+  { name: "Los Angeles", lat: 34.052,  lon: -118.244 },
+  { name: "Mumbai",      lat: 19.076,  lon: 72.878  },
+  { name: "Dubai",       lat: 25.205,  lon: 55.271  },
+  { name: "São Paulo",   lat: -23.551, lon: -46.634 },
+  { name: "Moscow",      lat: 55.756,  lon: 37.617  },
+  { name: "Rome",        lat: 41.903,  lon: 12.496  },
+  { name: "Amsterdam",   lat: 52.370,  lon: 4.895   },
+  { name: "Vienna",      lat: 48.208,  lon: 16.374  },
+  { name: "Stockholm",   lat: 59.329,  lon: 18.069  },
+  { name: "Athens",      lat: 37.984,  lon: 23.728  },
+  { name: "Munich",      lat: 48.137,  lon: 11.576  },
+  { name: "Hamburg",     lat: 53.551,  lon: 9.994   },
+  { name: "Dresden",     lat: 51.051,  lon: 13.738  },
+  { name: "Zurich",      lat: 47.377,  lon: 8.541   },
+  { name: "Cape Town",   lat: -33.925, lon: 18.424  },
+  { name: "Buenos Aires",lat: -34.604, lon: -58.382 },
+  { name: "Mexico City", lat: 19.433,  lon: -99.133 },
+  { name: "Bangkok",     lat: 13.756,  lon: 100.502 },
+  { name: "Seoul",       lat: 37.567,  lon: 126.978 },
+  { name: "Singapore",   lat: 1.352,   lon: 103.820 },
+  { name: "Hong Kong",   lat: 22.320,  lon: 114.169 },
+];

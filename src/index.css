@@ -163,16 +163,16 @@ body {
   border-bottom: 1px solid rgba(165,195,225,0.30);
 }
 
-/* WuXing element bar track */
+/* WuXing element bar track (used in compact bar chart, Dashboard) */
 .wuxing-bar-track {
-  height: 4px;
-  border-radius: 2px;
-  background: rgba(165,195,225,0.25);
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(165,195,225,0.20);
   overflow: hidden;
 }
 .wuxing-bar-fill {
   height: 100%;
-  border-radius: 2px;
+  border-radius: 3px;
   transition: width 1.2s cubic-bezier(0.16,1,0.3,1);
 }
 
@@ -327,3 +327,205 @@ h1, h2, h3 { letter-spacing: 0.1em; }
   color: rgba(255,255,255,0.60);
   background: rgba(212,175,55,0.06);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PLANETARIUM MODE OVERRIDES
+   Applied when root div carries class="... planetarium"
+   Cascade: these rules are outside @layer, so they win over Tailwind utilities.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Background ──────────────────────────────────────────────────────────── */
+/* .planetarium and .morning-bg are on the SAME element, so no space between selectors */
+.planetarium.morning-bg,
+.planetarium .morning-bg {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(20, 55, 130, 0.12) 0%, transparent 65%),
+    linear-gradient(180deg, #020509 0%, #030a18 50%, #040c1f 100%) !important;
+  background-attachment: fixed;
+}
+@media (max-width: 767px) {
+  .planetarium.morning-bg,
+  .planetarium .morning-bg { background-attachment: scroll; }
+}
+
+/* ── Cards & Steles ──────────────────────────────────────────────────────── */
+.planetarium .morning-card {
+  background: rgba(8, 16, 42, 0.84) !important;
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid rgba(70, 130, 220, 0.22) !important;
+  color: rgba(215, 230, 255, 0.92) !important;
+}
+.planetarium .morning-card:hover {
+  border-color: rgba(90, 150, 240, 0.40) !important;
+  background: rgba(12, 22, 55, 0.90) !important;
+  box-shadow: 0 8px 32px -8px rgba(0, 10, 60, 0.30), 0 0 16px rgba(70, 130, 220, 0.06);
+}
+
+/* Special tiles (Sun Sign + Year Animal) — gold border in Planetarium Mode */
+.planetarium [data-special="true"] {
+  border: 1px solid rgba(212, 175, 55, 0.42) !important;
+  box-shadow: 0 0 18px rgba(212, 175, 55, 0.07), inset 0 0 28px rgba(212, 175, 55, 0.025);
+}
+.planetarium [data-special="true"]:hover {
+  border-color: rgba(212, 175, 55, 0.62) !important;
+}
+
+/* Stele (Four Pillars) */
+.planetarium .morning-stele {
+  background: rgba(6, 14, 38, 0.80) !important;
+  border: 1px solid rgba(70, 130, 220, 0.20) !important;
+}
+.planetarium .morning-stele::before {
+  background: #D4AF37 !important;
+  opacity: 0.45;
+}
+.planetarium .morning-stele:hover {
+  border-color: rgba(90, 150, 240, 0.38) !important;
+  background: rgba(10, 20, 52, 0.88) !important;
+}
+
+/* Header */
+.planetarium .morning-header,
+.planetarium.morning-header {
+  background: rgba(3, 8, 25, 0.82) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(70, 130, 220, 0.18);
+}
+
+/* Mobile bottom nav */
+.planetarium nav.fixed.bottom-0 {
+  background: rgba(3, 8, 25, 0.88) !important;
+  border-top: 1px solid rgba(70, 130, 220, 0.18) !important;
+}
+
+/* Skeleton */
+.planetarium .morning-skeleton {
+  background: linear-gradient(90deg,
+    rgba(70, 130, 220, 0.05) 0%,
+    rgba(70, 130, 220, 0.18) 50%,
+    rgba(70, 130, 220, 0.05) 100%
+  );
+}
+
+/* WuXing bar track */
+.planetarium .wuxing-bar-track {
+  background: rgba(70, 130, 220, 0.12);
+}
+
+/* Lang toggle (light variant becomes dark in planetarium) */
+.planetarium .lang-toggle {
+  border-color: rgba(212, 175, 55, 0.22);
+  background: rgba(255, 255, 255, 0.04);
+}
+.planetarium .lang-toggle button {
+  color: rgba(215, 230, 255, 0.35);
+}
+.planetarium .lang-toggle button.active {
+  background: rgba(212, 175, 55, 0.12);
+  color: #D4AF37;
+}
+.planetarium .lang-toggle button:hover:not(.active) {
+  color: rgba(215, 230, 255, 0.65);
+  background: rgba(212, 175, 55, 0.06);
+}
+
+/* ── Text colour overrides ───────────────────────────────────────────────── */
+/* Selectors outside @layer override Tailwind's @layer utilities cascade.     */
+
+/* Primary dark ink → light */
+.planetarium .text-\[\#1E2A3A\]             { color: rgba(215, 230, 255, 0.92) !important; }
+.planetarium .text-\[\#1E2A3A\]\/68         { color: rgba(215, 230, 255, 0.68) !important; }
+.planetarium .text-\[\#1E2A3A\]\/62         { color: rgba(215, 230, 255, 0.62) !important; }
+.planetarium .text-\[\#1E2A3A\]\/60         { color: rgba(215, 230, 255, 0.60) !important; }
+.planetarium .text-\[\#1E2A3A\]\/55         { color: rgba(215, 230, 255, 0.55) !important; }
+.planetarium .text-\[\#1E2A3A\]\/52         { color: rgba(215, 230, 255, 0.52) !important; }
+.planetarium .text-\[\#1E2A3A\]\/48         { color: rgba(215, 230, 255, 0.48) !important; }
+.planetarium .text-\[\#1E2A3A\]\/45         { color: rgba(215, 230, 255, 0.45) !important; }
+.planetarium .text-\[\#1E2A3A\]\/42         { color: rgba(215, 230, 255, 0.42) !important; }
+.planetarium .text-\[\#1E2A3A\]\/40         { color: rgba(215, 230, 255, 0.40) !important; }
+.planetarium .text-\[\#1E2A3A\]\/38         { color: rgba(215, 230, 255, 0.38) !important; }
+.planetarium .text-\[\#1E2A3A\]\/35         { color: rgba(215, 230, 255, 0.35) !important; }
+.planetarium .text-\[\#1E2A3A\]\/30         { color: rgba(215, 230, 255, 0.30) !important; }
+
+/* Gold → brighter gold on dark */
+.planetarium .text-\[\#8B6914\]             { color: #D4AF37 !important; }
+.planetarium .text-\[\#8B6914\]\/70         { color: rgba(212, 175, 55, 0.70) !important; }
+.planetarium .text-\[\#8B6914\]\/65         { color: rgba(212, 175, 55, 0.65) !important; }
+.planetarium .text-\[\#8B6914\]\/55         { color: rgba(212, 175, 55, 0.55) !important; }
+.planetarium .text-\[\#8B6914\]\/50         { color: rgba(212, 175, 55, 0.50) !important; }
+.planetarium .text-\[\#8B6914\]\/45         { color: rgba(212, 175, 55, 0.45) !important; }
+
+/* Border overrides */
+.planetarium .border-\[\#8B6914\]\/10       { border-color: rgba(70, 130, 220, 0.18) !important; }
+.planetarium .border-\[\#8B6914\]\/15       { border-color: rgba(70, 130, 220, 0.22) !important; }
+.planetarium .border-\[\#8B6914\]\/20       { border-color: rgba(70, 130, 220, 0.28) !important; }
+
+/* Prose markdown in interpretation — Planetarium override */
+.planetarium .morning-card .prose,
+.planetarium .morning-card .prose * {
+  color: rgba(215, 230, 255, 0.68) !important;
+}
+.planetarium .morning-card .prose :is(h1,h2,h3,h4,h5,h6) {
+  color: rgba(215, 230, 255, 0.92) !important;
+}
+.planetarium .morning-card .prose strong {
+  color: rgba(212, 175, 55, 0.90) !important;
+}
+.planetarium .morning-card .prose hr {
+  border-color: rgba(70, 130, 220, 0.22) !important;
+}
+.planetarium .morning-card .prose a {
+  color: #D4AF37 !important;
+}
+/* Also override direct text colour on card heading */
+.planetarium .morning-card h3,
+.planetarium .morning-card h2 {
+  color: rgba(215, 230, 255, 0.92) !important;
+}
+/* Card sub-text */
+.planetarium .morning-card p,
+.planetarium .morning-card span {
+  color: inherit;
+}
+
+/* Button overrides */
+.planetarium button.border-\[\#8B6914\]\/25 {
+  border-color: rgba(70, 130, 220, 0.30) !important;
+}
+.planetarium button:hover.hover\:bg-\[\#8B6914\]\/10 {
+  background: rgba(212, 175, 55, 0.10) !important;
+}
+
+/* Global text override — all text inside .planetarium should be light */
+.planetarium h1,
+.planetarium h2,
+.planetarium h3 {
+  color: rgba(215, 230, 255, 0.92) !important;
+}
+.planetarium p {
+  color: rgba(215, 230, 255, 0.60) !important;
+}
+.planetarium button {
+  color: inherit;
+}
+/* Restore specific gold colours */
+.planetarium .text-\[\#8B6914\],
+.planetarium [class*="text-[#8B6914]"] {
+  color: #D4AF37 !important;
+}
+
+/* Mobile bottom nav */
+.planetarium nav.fixed.bottom-0,
+.planetarium nav.fixed {
+  background: rgba(3, 8, 25, 0.88) !important;
+  border-top-color: rgba(70, 130, 220, 0.18) !important;
+}
+
+/* Planetarium toggle button active state glow */
+.planetarium-toggle-active {
+  color: #D4AF37 !important;
+  text-shadow: 0 0 8px rgba(212, 175, 55, 0.45);
+}
+

@@ -15,11 +15,13 @@ import {
   fetchAstroProfile,
 } from "./services/supabase";
 import { useAmbientePlayer } from "./hooks/useAmbientePlayer";
-import { Volume2, VolumeX, LogOut, LayoutGrid } from "lucide-react";
+import { usePlanetarium } from "./contexts/PlanetariumContext";
+import { Volume2, VolumeX, LogOut, LayoutGrid, Telescope } from "lucide-react";
 
 export default function App() {
   const { user, loading: authLoading, signOut } = useAuth();
   const { lang, setLang, t } = useLanguage();
+  const { planetariumMode, togglePlanetarium } = usePlanetarium();
 
   const [showSplash, setShowSplash] = useState(true);
   const [siteVisible, setSiteVisible] = useState(false);
@@ -81,7 +83,7 @@ export default function App() {
       setApiIssues(results.issues);
       setBirthDateStr(data.date);
 
-      const aiInterpretation = await generateInterpretation(results);
+      const aiInterpretation = await generateInterpretation(results, lang);
       setInterpretation(aiInterpretation);
 
       if (user && !hasPersistedProfile) {
@@ -112,7 +114,7 @@ export default function App() {
     setIsLoading(true);
     setError(null);
     try {
-      const aiInterpretation = await generateInterpretation(apiData);
+      const aiInterpretation = await generateInterpretation(apiData, lang);
       setInterpretation(aiInterpretation);
     } catch (err: any) {
       console.error("AI Generation Error:", err);
@@ -168,7 +170,7 @@ export default function App() {
       initial={{ opacity: 0 }}
       animate={{ opacity: siteVisible ? 1 : 0 }}
       transition={{ duration: 2, ease: "easeOut", delay: 0.3 }}
-      className="morning-bg min-h-screen text-[#1E2A3A] font-sans selection:bg-[#8B6914]/20 flex flex-col"
+      className={`morning-bg min-h-screen font-sans selection:bg-[#8B6914]/20 flex flex-col ${planetariumMode ? "planetarium text-slate-100" : "text-[#1E2A3A]"}`}
     >
       {/* ── Top Nav (Desktop) ────────────────────────────────────────── */}
       <header className="hidden md:flex fixed top-0 w-full h-20 items-center justify-between px-12 z-50 morning-header">
@@ -206,6 +208,23 @@ export default function App() {
               EN
             </button>
           </div>
+
+          <div className="w-[1px] h-4 bg-[#8B6914]/20" />
+
+          {/* Planetarium toggle — FR-P01 */}
+          <button
+            onClick={togglePlanetarium}
+            aria-pressed={planetariumMode}
+            aria-label={planetariumMode ? "Exit Planetarium Mode" : "Enter Planetarium Mode"}
+            className={`flex items-center gap-1.5 text-[9px] uppercase tracking-[0.2em] transition-all rounded-md px-2 py-1 ${
+              planetariumMode
+                ? "planetarium-toggle-active bg-[#D4AF37]/10 border border-[#D4AF37]/30"
+                : "text-[#1E2A3A]/40 hover:text-[#8B6914] hover:bg-[#8B6914]/08 border border-transparent"
+            }`}
+          >
+            <Telescope className="w-4 h-4 shrink-0" />
+            <span className="hidden lg:inline">Planetarium</span>
+          </button>
 
           <div className="w-[1px] h-4 bg-[#8B6914]/20" />
 
@@ -280,6 +299,16 @@ export default function App() {
           <LayoutGrid className="w-5 h-5" />
           <span className="text-[8px] uppercase tracking-tighter">{t("nav.atlas")}</span>
         </a>
+
+        {/* Planetarium mobile */}
+        <button
+          onClick={togglePlanetarium}
+          aria-pressed={planetariumMode}
+          aria-label="Planetarium"
+          className={planetariumMode ? "text-[#D4AF37]" : "text-[#1E2A3A]/40"}
+        >
+          <Telescope className="w-5 h-5" />
+        </button>
 
         <button
           onClick={ambiente.toggle}

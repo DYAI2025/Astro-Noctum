@@ -61,7 +61,7 @@ const translationsEn: DeepStringRecord = {
     startOver: "Start Over",
     fallbackNote: "Some calculations could not be loaded live. Fallback data was partially used:",
     welcome: "Welcome to the Atlas",
-    title: "Your current coordinate system.",
+    title: "Your Bazodiac System.",
     quote: '"The stars compel nothing — they invite. The Atlas shows the path you are already on."',
     western: {
       sectionLabel: "Western Astrology",
@@ -84,6 +84,10 @@ const translationsEn: DeepStringRecord = {
       datePrefix: "Planetary positions on",
       playTitle: "Start time-lapse",
       pauseTitle: "Pause",
+    },
+    birthSky: {
+      message: "This is the sky above {place} on {date} at {time} — the moment you were born.",
+      messageNoPlace: "This is the sky on {date} at {time} — the moment you were born.",
     },
     bazi: {
       sectionLabel: "Chinese Astrology",
@@ -112,6 +116,10 @@ const translationsEn: DeepStringRecord = {
       month: "Month",
       day: "Day",
       hour: "Hour",
+      yearDesc: "The Year Pillar holds ancestral energy and societal imprinting — the cosmic climate you were born into and the collective forces that shaped your early worldview.",
+      monthDesc: "The Month Pillar governs career, social environment and the formative conditions of your youth — the energetic current that influenced who you became in the world.",
+      dayDesc: "The Day Pillar is the self — your core identity, inner nature and the elemental force that defines your personal energy (Rì Zhù 日主).",
+      hourDesc: "The Hour Pillar reveals vision, legacy and the future you are moving toward — associated with your creative output, children and the dreams you carry.",
     },
     houses: {
       sectionTitle: "Western Houses",
@@ -187,7 +195,7 @@ const translationsDe: DeepStringRecord = {
     startOver: "Neu starten",
     fallbackNote: "Einige Berechnungen konnten nicht live geladen werden. Es wurden teilweise Fallback-Daten genutzt:",
     welcome: "Willkommen im Atlas",
-    title: "Dein aktuelles Koordinatensystem.",
+    title: "Dein Bazodiac-System.",
     quote: '"Die Sterne erzwingen nichts, sie laden ein. Der Atlas zeigt den Weg, den du bereits gehst."',
     western: {
       sectionLabel: "Westliche Astrologie",
@@ -210,6 +218,10 @@ const translationsDe: DeepStringRecord = {
       datePrefix: "Planetenpositionen am",
       playTitle: "Zeitraffer starten",
       pauseTitle: "Pause",
+    },
+    birthSky: {
+      message: "So sah der Himmel über {place} am {date} um {time} aus — dem Moment deiner Geburt.",
+      messageNoPlace: "So sah der Himmel am {date} um {time} aus — dem Moment deiner Geburt.",
     },
     bazi: {
       sectionLabel: "Chinesische Astrologie",
@@ -238,6 +250,10 @@ const translationsDe: DeepStringRecord = {
       month: "Monat",
       day: "Tag",
       hour: "Stunde",
+      yearDesc: "Die Jahres-Säule trägt Ahnenenergie und gesellschaftliche Prägung — das kosmische Klima deiner Geburt und die kollektiven Kräfte, die deine frühe Weltanschauung geformt haben.",
+      monthDesc: "Die Monats-Säule regiert Karriere, soziales Umfeld und die prägenden Bedingungen deiner Jugend — die energetische Strömung, die beeinflusst hat, wer du in der Welt wurdest.",
+      dayDesc: "Die Tages-Säule ist das Selbst — deine Kernidentität, dein inneres Wesen und die elementare Kraft, die deine persönliche Energie definiert (Rì Zhù 日主).",
+      hourDesc: "Die Stunden-Säule offenbart Vision, Vermächtnis und die Zukunft, auf die du zugehst — verbunden mit deiner kreativen Kraft, Kindern und den Träumen, die du in dir trägst.",
     },
     houses: {
       sectionTitle: "Westliche Häuser",

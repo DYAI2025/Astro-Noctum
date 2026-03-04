@@ -141,11 +141,25 @@ export async function calculateWestern(data: BirthData) {
   const ascendantDeg = raw.angles?.Ascendant;
   const ascendantSign = signFromDegrees(ascendantDeg);
 
+  // BAFE returns houses as degree values: {"1": 123.45, "2": 155.6, ...}
+  // Dashboard needs sign names per house. Convert cusp degrees → sign.
+  const normalizedHouses: Record<string, string> = {};
+  if (raw.houses && typeof raw.houses === "object") {
+    Object.entries(raw.houses).forEach(([key, deg]) => {
+      if (typeof deg === "number") {
+        normalizedHouses[key] = signFromDegrees(deg) || "";
+      } else if (typeof deg === "string") {
+        normalizedHouses[key] = deg;
+      }
+    });
+  }
+
   return {
     ...raw,
     zodiac_sign: sunSign,
     moon_sign: moonSign,
     ascendant_sign: ascendantSign,
+    houses: normalizedHouses,
   };
 }
 
@@ -164,7 +178,7 @@ export async function calculateFusion(data: BirthData) {
 
 export async function calculateWuxing(data: BirthData) {
   validateBirthData(data);
-  return postCalculation("wuxing", {
+  const raw = await postCalculation("wuxing", {
     date: data.date,
     tz: data.tz,
     lon: data.lon,
@@ -172,6 +186,30 @@ export async function calculateWuxing(data: BirthData) {
     ambiguousTime: "earlier",
     nonexistentTime: "error",
   });
+
+  // BAFE returns `wu_xing_vector: {Holz: x, Feuer: x, ...}` (German keys).
+  // Dashboard expects `elements` and `dominant_element`.
+  const vec = raw.wu_xing_vector || {};
+
+  return {
+    ...raw,
+    // Provide both German (original) AND English-keyed element counts
+    // so Dashboard's fallback chain `el.key ?? el.name.de` always hits.
+    elements: {
+      Wood:  vec.Holz   ?? vec.Wood  ?? 0,
+      Fire:  vec.Feuer  ?? vec.Fire  ?? 0,
+      Earth: vec.Erde   ?? vec.Earth ?? 0,
+      Metal: vec.Metall ?? vec.Metal ?? 0,
+      Water: vec.Wasser ?? vec.Water ?? 0,
+      // Also keep German keys for downstream lookup
+      Holz:   vec.Holz   ?? vec.Wood  ?? 0,
+      Feuer:  vec.Feuer  ?? vec.Fire  ?? 0,
+      Erde:   vec.Erde   ?? vec.Earth ?? 0,
+      Metall: vec.Metall ?? vec.Metal ?? 0,
+      Wasser: vec.Wasser ?? vec.Water ?? 0,
+    },
+    dominant_element: raw.dominant_element || "",
+  };
 }
 
 export async function calculateTst(data: BirthData) {

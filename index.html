@@ -3,14 +3,37 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bazodiac</title>
+
+    <!-- Primary Meta -->
+    <title>Bazodiac — Your Cosmic Blueprint</title>
+    <meta name="description" content="Discover your personal astrology: Western birth chart (Sun, Moon, Ascendant, Houses) combined with Chinese BaZi & WuXing — your complete cosmic coordinate system." />
+    <meta name="keywords" content="astrology, birth chart, BaZi, WuXing, Chinese astrology, horoscope, natal chart, ascendant, moon sign" />
+    <meta name="author" content="Bazodiac" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Bazodiac — Your Cosmic Blueprint" />
+    <meta property="og:description" content="Western astrology meets Chinese BaZi. Calculate your personal cosmic chart." />
+    <meta property="og:type" content="website" />
+
+    <!-- Google Analytics (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-K409QD2YSJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-K409QD2YSJ');
+    </script>
+
+    <!-- Google AdSense Auto Ads -->
+    <script async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1712273263687132"
+      crossorigin="anonymous">
+    </script>
   </head>
   <body>
     <div id="root"></div>
-    <!-- Global Film Grain Overlay -->
+    <!-- Global Film Grain Overlay (decorative, dark-theme splash) -->
     <div class="grain-overlay pointer-events-none fixed inset-0 z-[200] opacity-[0.03]"></div>
-
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

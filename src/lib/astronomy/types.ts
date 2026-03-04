@@ -1,26 +1,31 @@
-// Type definitions for the CelestialOrrery 3D visualization
+// ═══════════════════════════════════════════════════════════════════════════════
+// TYPE DEFINITIONS
+// TypeScript interfaces for astronomical and visual data
+// ═══════════════════════════════════════════════════════════════════════════════
+
+import * as THREE from 'three';
 
 export interface PlanetData {
   name: string;
-  a: number;       // Semi-major axis (AU)
-  e: number;       // Eccentricity
-  i: number;       // Inclination (degrees)
-  omega: number;   // Longitude of ascending node (degrees)
-  w: number;       // Argument of perihelion (degrees)
-  M0: number;      // Mean anomaly at epoch (degrees)
-  period: number;  // Orbital period (days)
-  radius: number;  // Visual radius for rendering
-  color: string;   // Color hex code
-  symbol: string;  // Unicode symbol
-  rings?: boolean; // Has rings (Saturn)
+  a: number;
+  e: number;
+  i: number;
+  omega: number;
+  w: number;
+  M0: number;
+  period: number;
+  radius: number;
+  color: string;
+  symbol: string;
+  rings?: boolean;
 }
 
 export interface StarData {
   name: string;
-  ra: number;   // Right Ascension (hours)
-  dec: number;  // Declination (degrees)
-  mag: number;  // Apparent magnitude
-  con: string;  // Constellation abbreviation
+  ra: number;
+  dec: number;
+  mag: number;
+  con: string;
 }
 
 export interface CityData {
@@ -46,6 +51,70 @@ export interface HorizontalCoordinates {
 }
 
 export type ViewMode = "orrery" | "transition" | "planetarium";
+
+export interface BirthData {
+  date: Date;
+  city: CityData;
+}
+
+export interface HoveredObject {
+  name: string;
+  type: "star" | "planet";
+  altitude: number;
+  azimuth: number;
+  mag?: number;
+  con?: string;
+  symbol?: string;
+  color?: string;
+  screenX: number;
+  screenY: number;
+}
+
+export interface CelestialOrreryConfig {
+  initialDate?: Date;
+  initialViewMode?: ViewMode;
+  initialSpeed?: number;
+  sunRadius?: number;
+  orbitScale?: number;
+  showOrbits?: boolean;
+  showConstellations?: boolean;
+  showConstellationNames?: boolean;
+  observerLatitude?: number;
+  observerLongitude?: number;
+  onViewModeChange?: (mode: ViewMode) => void;
+  onDateChange?: (date: Date) => void;
+  onPlanetClick?: (planetKey: string, planet: PlanetData) => void;
+  onStarClick?: (star: StarData) => void;
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+export interface CelestialOrreryAPI {
+  setViewMode: (mode: ViewMode) => void;
+  getViewMode: () => ViewMode;
+  setDate: (date: Date) => void;
+  getDate: () => Date;
+  setSpeed: (speed: number) => void;
+  getSpeed: () => number;
+  play: () => void;
+  pause: () => void;
+  togglePlayPause: () => void;
+  isPlaying: () => boolean;
+  setCameraPosition: (x: number, y: number, z: number) => void;
+  lookAt: (x: number, y: number, z: number) => void;
+  resetCamera: () => void;
+  setObserverLocation: (latitude: number, longitude: number) => void;
+  getObserverLocation: () => { latitude: number; longitude: number };
+  getPlanetPosition: (planetKey: string) => Position3D | null;
+  focusOnPlanet: (planetKey: string) => void;
+  setShowOrbits: (show: boolean) => void;
+  setShowConstellations: (show: boolean) => void;
+  setShowConstellationNames: (show: boolean) => void;
+  showBirthChart: (birthDate: string, birthTime: string, city: CityData) => void;
+  getScene: () => THREE.Scene | null;
+  getCamera: () => THREE.Camera | null;
+  getRenderer: () => THREE.WebGLRenderer | null;
+}
 
 export interface ConstellationLines {
   [constellation: string]: [string, string][];
