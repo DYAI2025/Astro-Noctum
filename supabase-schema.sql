@@ -34,16 +34,23 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- ── birth_data ────────────────────────────────────────────────────
+-- ── birth_data (ONE per user — people have exactly one birthday) ──
 CREATE TABLE IF NOT EXISTS birth_data (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL UNIQUE,
   birth_utc TEXT NOT NULL,
   lat DOUBLE PRECISION NOT NULL,
   lon DOUBLE PRECISION NOT NULL,
   place_label TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Migration: add unique constraint if table already exists
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'birth_data_user_id_key') THEN
+    ALTER TABLE birth_data ADD CONSTRAINT birth_data_user_id_key UNIQUE (user_id);
+  END IF;
+END $$;
 
 ALTER TABLE birth_data ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users manage own birth_data" ON birth_data
@@ -73,16 +80,23 @@ CREATE POLICY "Users read own astro_profile" ON astro_profiles
 CREATE POLICY "Users upsert own astro_profile" ON astro_profiles
   FOR ALL USING (auth.uid() = user_id);
 
--- ── natal_charts (calculation history) ────────────────────────────
+-- ── natal_charts (ONE per user — immutable birth chart) ───────────
 CREATE TABLE IF NOT EXISTS natal_charts (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL UNIQUE,
   payload JSONB,
   engine_version TEXT,
   zodiac TEXT DEFAULT 'tropical',
   house_system TEXT DEFAULT 'placidus',
   created_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Migration: add unique constraint if table already exists
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'natal_charts_user_id_key') THEN
+    ALTER TABLE natal_charts ADD CONSTRAINT natal_charts_user_id_key UNIQUE (user_id);
+  END IF;
+END $$;
 
 ALTER TABLE natal_charts ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users manage own charts" ON natal_charts

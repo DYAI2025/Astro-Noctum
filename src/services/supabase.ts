@@ -10,9 +10,41 @@ export interface BirthInput {
   place?: string;
 }
 
-// ── Insert astro_profiles (write-once, never overwrite) ─────────────
-// Stores the main profile row that ElevenLabs reads via /api/profile/:userId.
-// If a profile already exists for this user, the insert is silently skipped.
+// ── Fetch profile (client-side, for re-display on revisit) ──────────
+// Returns the single astro_profile row for this user, or null.
+
+export async function fetchAstroProfile(userId: string) {
+  const { data, error } = await supabase
+    .from("astro_profiles")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();    // maybeSingle returns null without error if not found
+
+  if (error) {
+    console.error("fetchAstroProfile error:", error);
+    return null;
+  }
+  return data;
+}
+
+// ── Check if user already has a profile ─────────────────────────────
+
+export async function hasAstroProfile(userId: string): Promise<boolean> {
+  const { count, error } = await supabase
+    .from("astro_profiles")
+    .select("user_id", { count: "exact", head: true })
+    .eq("user_id", userId);
+
+  if (error) {
+    console.error("hasAstroProfile error:", error);
+    return false;
+  }
+  return (count ?? 0) > 0;
+}
+
+// ── Insert astro_profiles (write-once, NEVER overwrite) ─────────────
+// astro_profiles.user_id is PRIMARY KEY → only one row per user.
+// If a profile already exists, the insert is silently skipped (23505).
 
 export async function upsertAstroProfile(
   userId: string,
@@ -20,6 +52,13 @@ export async function upsertAstroProfile(
   bafeData: any,
   interpretation: string,
 ) {
+  // First check: does profile already exist? If so, do nothing.
+  const existing = await hasAstroProfile(userId);
+  if (existing) {
+    console.log("astro_profile already exists for user, skipping insert.");
+    return;
+  }
+
   const sunSign = bafeData.western?.zodiac_sign || null;
   const moonSign = bafeData.western?.moon_sign || null;
   const ascSign = bafeData.western?.ascendant_sign || null;
@@ -37,21 +76,37 @@ export async function upsertAstroProfile(
     sun_sign: sunSign,
     moon_sign: moonSign,
     asc_sign: ascSign,
-    astro_json: { bafe: bafeData, interpretation },
+    // Store ALL data flat at the top level of astro_json for easy retrieval
+    astro_json: {
+      bazi:    bafeData.bazi,
+      western: bafeData.western,
+      fusion:  bafeData.fusion,
+      wuxing:  bafeData.wuxing,
+      tst:     bafeData.tst,
+      interpretation,
+    },
     astro_computed_at: new Date().toISOString(),
   });
 
   if (error) {
-    // 23505 = unique_violation — profile already exists, skip silently
-    if (error.code === "23505") return;
+    if (error.code === "23505") return;  // unique_violation — already exists
     console.error("insertAstroProfile error:", error);
     throw error;
   }
 }
 
-// ── Insert birth_data ───────────────────────────────────────────────
+// ── Insert birth_data (write-once per user) ─────────────────────────
+// Only inserts if no birth_data row exists for this user.
 
 export async function insertBirthData(userId: string, birth: BirthInput) {
+  // Check if already exists
+  const { count } = await supabase
+    .from("birth_data")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId);
+
+  if ((count ?? 0) > 0) return; // already has birth data
+
   const { error } = await supabase.from("birth_data").insert({
     user_id: userId,
     birth_utc: birth.date,
@@ -61,16 +116,24 @@ export async function insertBirthData(userId: string, birth: BirthInput) {
   });
 
   if (error) {
-    // Duplicate? Ignore — user may recalculate
     if (error.code === "23505") return;
     console.error("insertBirthData error:", error);
     throw error;
   }
 }
 
-// ── Insert natal_charts ─────────────────────────────────────────────
+// ── Insert natal_charts (write-once per user) ───────────────────────
+// Only inserts if no natal_chart row exists for this user.
 
 export async function insertNatalChart(userId: string, bafeData: any) {
+  // Check if already exists
+  const { count } = await supabase
+    .from("natal_charts")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId);
+
+  if ((count ?? 0) > 0) return; // already has a chart
+
   const { error } = await supabase.from("natal_charts").insert({
     user_id: userId,
     payload: bafeData,
@@ -80,24 +143,8 @@ export async function insertNatalChart(userId: string, bafeData: any) {
   });
 
   if (error) {
+    if (error.code === "23505") return;
     console.error("insertNatalChart error:", error);
     throw error;
   }
-}
-
-// ── Fetch profile (client-side, for re-display on revisit) ──────────
-
-export async function fetchAstroProfile(userId: string) {
-  const { data, error } = await supabase
-    .from("astro_profiles")
-    .select("*")
-    .eq("user_id", userId)
-    .single();
-
-  if (error) {
-    if (error.code === "PGRST116") return null; // not found
-    console.error("fetchAstroProfile error:", error);
-    return null;
-  }
-  return data;
 }
