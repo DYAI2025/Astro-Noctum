@@ -1,7 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { motion } from "motion/react";
-import { ExternalLink, Info, MapPin } from "lucide-react";
+import { ExternalLink, Info, MapPin, Map } from "lucide-react";
 import { PlaceAutocomplete, hasPlacesApiKey } from "./PlaceAutocomplete";
+import { LocationMap } from "./LocationMap";
+import { fetchTimezone } from "../services/timezone";
 import { useLanguage } from "../contexts/LanguageContext";
 
 /** Detect whether DST is active for a given date + IANA timezone. */
@@ -47,7 +49,14 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
   const [coordinates, setCoordinates] = useState("52.520000, 13.405000");
   const [tz, setTz] = useState("Europe/Berlin");
   const [placeName, setPlaceName] = useState("");
+  const [showMap, setShowMap] = useState(false);
+  const [mapCenter, setMapCenter] = useState<{ lat: number; lon: number } | undefined>(undefined);
   const placesAvailable = useMemo(() => hasPlacesApiKey(), []);
+
+  const autoDetectTimezone = useCallback(async (lat: number, lon: number) => {
+    const detectedTz = await fetchTimezone(lat, lon);
+    if (detectedTz) setTz(detectedTz);
+  }, []);
 
   const dstInfo = useMemo(() => {
     if (!date) return null;
@@ -210,15 +219,16 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="space-y-10"
+            className="space-y-8"
           >
             <h2 className="font-serif text-3xl leading-snug text-[#1a2434]">
-              {placesAvailable ? t("form.step2Title") : t("form.step2TitleCoords")}
+              {t("form.step2Title")}
             </h2>
 
-            <div className="space-y-6">
+            <div className="space-y-5">
               {placesAvailable ? (
                 <>
+                  {/* City search autocomplete */}
                   <div className="space-y-2">
                     <label className="text-[8px] uppercase tracking-widest text-[#1E2A3A]/50">
                       {t("form.placeLabel")}
@@ -227,19 +237,47 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
                       onSelect={({ name, lat, lon }) => {
                         setPlaceName(name);
                         setCoordinates(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+                        setMapCenter({ lat, lon });
+                        setShowMap(false);
+                        autoDetectTimezone(lat, lon);
                       }}
                       placeholder={t("form.placePlaceholder")}
                       className={inputCls}
                     />
                   </div>
+
+                  {/* Selected place display */}
                   {placeName && (
                     <div className="flex items-center gap-2 text-[10px] text-[#1E2A3A]/45">
-                      <MapPin className="w-3 h-3 text-[#8B6914]/50" />
-                      <span>{coordinates}</span>
+                      <MapPin className="w-3 h-3 text-[#8B6914]/50 shrink-0" />
+                      <span>{placeName}</span>
+                      <span className="text-[#1E2A3A]/25 ml-1">{coordinates}</span>
                     </div>
                   )}
+
+                  {/* Map toggle button */}
+                  <button
+                    type="button"
+                    onClick={() => setShowMap((v) => !v)}
+                    className="flex items-center gap-2 text-[9px] uppercase tracking-[0.2em] text-[#8B6914]/60 hover:text-[#8B6914] transition-colors py-2"
+                  >
+                    <Map className="w-3.5 h-3.5" />
+                    {showMap ? t("form.mapToggleClose") : t("form.mapToggleOpen")}
+                  </button>
+
+                  {/* Embedded Google Map */}
+                  <LocationMap
+                    visible={showMap}
+                    center={mapCenter}
+                    onLocationSelect={({ lat, lon, name }) => {
+                      setCoordinates(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+                      if (name) setPlaceName(name);
+                      autoDetectTimezone(lat, lon);
+                    }}
+                  />
                 </>
               ) : (
+                /* Fallback: manual coordinate input (no API key) */
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <label className="text-[8px] uppercase tracking-widest text-[#1E2A3A]/50">
@@ -267,6 +305,7 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
                 </div>
               )}
 
+              {/* Timezone (auto-detected, still editable) */}
               <div className="space-y-2">
                 <label className="text-[8px] uppercase tracking-widest text-[#1E2A3A]/50">
                   {t("form.timezoneLabel")}

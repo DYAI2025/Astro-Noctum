@@ -18,7 +18,7 @@ const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY || "";
 let scriptLoaded = false;
 let scriptPromise: Promise<void> | null = null;
 
-function loadGoogleMaps(): Promise<void> {
+export function loadGoogleMaps(): Promise<void> {
   if (scriptLoaded) return Promise.resolve();
   if (scriptPromise) return scriptPromise;
 
