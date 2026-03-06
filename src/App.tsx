@@ -46,6 +46,15 @@ export default function App() {
   const profileFetchedForRef = useRef<string | null>(null);
   const ambiente = useAmbientePlayer();
 
+  // ── Handle ?upgrade=success redirect from Stripe ────────────────────
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("upgrade") === "success") {
+      // Clean the URL so it doesn't persist on refresh
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
+
   // ═══════════════════════════════════════════════════════════════════════
   // PROFILE LOADING — runs once when user logs in
   // ═══════════════════════════════════════════════════════════════════════

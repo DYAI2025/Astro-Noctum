@@ -5,6 +5,9 @@ import {
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { BirthChartOrrery } from "./BirthChartOrrery";
+import { ShareCard } from "./ShareCard";
+import { PremiumGate } from "./PremiumGate";
+import { usePremium } from "../hooks/usePremium";
 import { useLanguage } from "../contexts/LanguageContext";
 import { WUXING_ELEMENTS, getWuxingByKey } from "../lib/astro-data/wuxing";
 import { getBranchByAnimal } from "../lib/astro-data/earthlyBranches";
@@ -162,6 +165,7 @@ export function Dashboard({
   onResumeAudio,
 }: DashboardProps) {
   const { lang, t } = useLanguage();
+  const { isPremium } = usePremium();
   const { planetariumMode, setPlanetariumMode } = usePlanetarium();
   const [leviActive, setLeviActive] = useState(false);
   const leviSectionRef = useRef<HTMLDivElement>(null);
@@ -276,6 +280,17 @@ export function Dashboard({
 
   const elevenLabsAgentId =
     import.meta.env.VITE_ELEVENLABS_AGENT_ID || "agent_1801kje0zqc8e4b89swbt7wekawv";
+
+  // ── Interpretation split (free: first 2 paragraphs, premium: full) ──
+  const interpretationParagraphs = useMemo(
+    () => interpretation?.split("\n\n") || [],
+    [interpretation],
+  );
+  const freeInterpretation = useMemo(
+    () => interpretationParagraphs.slice(0, 2).join("\n\n"),
+    [interpretationParagraphs],
+  );
+  const hasPremiumInterpretation = interpretationParagraphs.length > 2;
 
   // ── Render ────────────────────────────────────────────────────────────
 
@@ -612,114 +627,119 @@ export function Dashboard({
         </div>
       </motion.div>
 
-      {/* ═══ BAZI FOUR PILLARS (FR-05: Tooltips) ═════════════════════ */}
+      {/* ═══ BAZI FOUR PILLARS (FR-05: Tooltips) — PREMIUM ══════════ */}
       {apiData.bazi?.pillars && (
-        <motion.div className="mb-10" {...fadeIn(0.3)}>
-          <SectionDivider label="BaZi 八字" title={t("dashboard.pillars.sectionTitle")} />
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {Object.entries(apiData.bazi.pillars).map(([key, val]: [string, any]) => {
-              const pk = PILLAR_KEYS[key];
-              return (
-                // Wrapper is overflow-visible so tooltip escapes morning-stele's overflow:hidden
-                <div key={key} className="relative overflow-visible">
-                  <Tooltip content={pk ? t(pk.desc) : ""} wide dark={planetariumMode}>
-                    <div className="morning-stele group cursor-help w-full">
-                      <div className="text-[8px] uppercase tracking-[0.3em] text-[#8B6914]/55 mb-5 group-hover:text-[#8B6914] transition-colors">
-                        {pk ? t(pk.label) : key}
+        <PremiumGate teaser={t("dashboard.premium.teaserPillars")}>
+          <motion.div className="mb-10" {...fadeIn(0.3)}>
+            <SectionDivider label="BaZi 八字" title={t("dashboard.pillars.sectionTitle")} />
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {Object.entries(apiData.bazi.pillars).map(([key, val]: [string, any]) => {
+                const pk = PILLAR_KEYS[key];
+                return (
+                  // Wrapper is overflow-visible so tooltip escapes morning-stele's overflow:hidden
+                  <div key={key} className="relative overflow-visible">
+                    <Tooltip content={pk ? t(pk.desc) : ""} wide dark={planetariumMode}>
+                      <div className="morning-stele group cursor-help w-full">
+                        <div className="text-[8px] uppercase tracking-[0.3em] text-[#8B6914]/55 mb-5 group-hover:text-[#8B6914] transition-colors">
+                          {pk ? t(pk.label) : key}
+                        </div>
+                        <div className="font-serif text-2xl mb-1 text-[#1E2A3A]">{val.stem || "—"}</div>
+                        <div className="text-[10px] text-[#1E2A3A]/35 uppercase tracking-widest">{val.branch || ""}</div>
+                        {val.animal && (
+                          <div className="text-[9px] text-[#8B6914]/45 mt-1.5 tracking-wide">{val.animal}</div>
+                        )}
+                        {/* Subtle tooltip hint */}
+                        <div className="mt-3 text-[8px] text-[#8B6914]/30 tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+                          ↑ Info
+                        </div>
                       </div>
-                      <div className="font-serif text-2xl mb-1 text-[#1E2A3A]">{val.stem || "—"}</div>
-                      <div className="text-[10px] text-[#1E2A3A]/35 uppercase tracking-widest">{val.branch || ""}</div>
-                      {val.animal && (
-                        <div className="text-[9px] text-[#8B6914]/45 mt-1.5 tracking-wide">{val.animal}</div>
-                      )}
-                      {/* Subtle tooltip hint */}
-                      <div className="mt-3 text-[8px] text-[#8B6914]/30 tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-                        ↑ Info
+                    </Tooltip>
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        </PremiumGate>
+      )}
+
+      {/* ═══ WUXING BALANCE (FR-06: % fix + hover tooltips) — PREMIUM ═ */}
+      <PremiumGate teaser={t("dashboard.premium.teaserWuxing")}>
+        <motion.div className="mb-10" {...fadeIn(0.35)}>
+          <SectionDivider label="WuXing 五行" title={t("dashboard.wuxing.sectionTitle")} />
+          <p className="text-xs text-[#1E2A3A]/45 mb-6 leading-relaxed max-w-2xl">
+            {t("dashboard.wuxing.sectionDesc")}
+          </p>
+
+          <div className="morning-card p-6 md:p-8">
+            <div className="space-y-4">
+              {WUXING_ELEMENTS.map((el) => {
+                const count  = Number(wuxingCounts[el.key] ?? wuxingCounts[el.name.de] ?? 0);
+                // FR-06 Bug fix: true percentage of total (sums to 100%)
+                const pctLabel = totalCount > 0 ? Math.round((count / totalCount) * 100) : 0;
+                // Bar visual: scaled to max so dominant bar is always prominent
+                const pctBar   = hasWuxingData ? (count / maxCount) * 100 : 0;
+                const isDom    = el.key === dominantEl || el.name.de === dominantEl;
+
+                return (
+                  <Tooltip key={el.key} content={el.description[lang]} wide dark={planetariumMode}>
+                    <div className="flex items-center gap-4 cursor-help group">
+                      {/* Identity */}
+                      <div className="w-28 md:w-36 shrink-0 flex items-center gap-2.5">
+                        <span className="text-2xl font-serif leading-none select-none" style={{ color: el.color }}>
+                          {el.chinese}
+                        </span>
+                        <div className="min-w-0">
+                          <div className="text-xs font-medium text-[#1E2A3A] truncate group-hover:text-[#1E2A3A]/80 transition-colors">
+                            {el.name[lang]}
+                          </div>
+                          <div className="text-[10px] text-[#1E2A3A]/35">{el.pinyin}</div>
+                        </div>
+                      </div>
+
+                      {/* Bar */}
+                      <div className="flex-1 wuxing-bar-track">
+                        {hasWuxingData ? (
+                          <motion.div
+                            className="wuxing-bar-fill"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${Math.max(pctBar, pctBar > 0 ? 2 : 0)}%` }}
+                            transition={{ duration: 1.0, ease: "easeOut", delay: 0.2 }}
+                            style={{ backgroundColor: el.color }}
+                          />
+                        ) : (
+                          <div className="h-full rounded-full" style={{ backgroundColor: el.color + "20", width: "100%" }} />
+                        )}
+                      </div>
+
+                      {/* Label: correct % of total (FR-06 fix) + dominant star */}
+                      <div className="w-12 shrink-0 text-right flex items-center justify-end gap-1">
+                        {hasWuxingData && pctLabel > 0 && (
+                          <span className="text-[10px] text-[#1E2A3A]/45 font-mono">{pctLabel}%</span>
+                        )}
+                        {isDom && (
+                          <span className="text-sm" style={{ color: el.color }}>★</span>
+                        )}
                       </div>
                     </div>
                   </Tooltip>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+
+            {!hasWuxingData && (
+              <p className="mt-5 text-[10px] text-[#1E2A3A]/35 italic text-center">
+                {lang === "de"
+                  ? "Elementgewichtung wird bei Verfügbarkeit der API-Daten angezeigt. Hover für Details."
+                  : "Element weighting shown when API data is available. Hover for details."}
+              </p>
+            )}
           </div>
         </motion.div>
-      )}
+      </PremiumGate>
 
-      {/* ═══ WUXING BALANCE (FR-06: % fix + hover tooltips) ══════════ */}
-      <motion.div className="mb-10" {...fadeIn(0.35)}>
-        <SectionDivider label="WuXing 五行" title={t("dashboard.wuxing.sectionTitle")} />
-        <p className="text-xs text-[#1E2A3A]/45 mb-6 leading-relaxed max-w-2xl">
-          {t("dashboard.wuxing.sectionDesc")}
-        </p>
-
-        <div className="morning-card p-6 md:p-8">
-          <div className="space-y-4">
-            {WUXING_ELEMENTS.map((el) => {
-              const count  = Number(wuxingCounts[el.key] ?? wuxingCounts[el.name.de] ?? 0);
-              // FR-06 Bug fix: true percentage of total (sums to 100%)
-              const pctLabel = totalCount > 0 ? Math.round((count / totalCount) * 100) : 0;
-              // Bar visual: scaled to max so dominant bar is always prominent
-              const pctBar   = hasWuxingData ? (count / maxCount) * 100 : 0;
-              const isDom    = el.key === dominantEl || el.name.de === dominantEl;
-
-              return (
-                <Tooltip key={el.key} content={el.description[lang]} wide dark={planetariumMode}>
-                  <div className="flex items-center gap-4 cursor-help group">
-                    {/* Identity */}
-                    <div className="w-28 md:w-36 shrink-0 flex items-center gap-2.5">
-                      <span className="text-2xl font-serif leading-none select-none" style={{ color: el.color }}>
-                        {el.chinese}
-                      </span>
-                      <div className="min-w-0">
-                        <div className="text-xs font-medium text-[#1E2A3A] truncate group-hover:text-[#1E2A3A]/80 transition-colors">
-                          {el.name[lang]}
-                        </div>
-                        <div className="text-[10px] text-[#1E2A3A]/35">{el.pinyin}</div>
-                      </div>
-                    </div>
-
-                    {/* Bar */}
-                    <div className="flex-1 wuxing-bar-track">
-                      {hasWuxingData ? (
-                        <motion.div
-                          className="wuxing-bar-fill"
-                          initial={{ width: 0 }}
-                          animate={{ width: `${Math.max(pctBar, pctBar > 0 ? 2 : 0)}%` }}
-                          transition={{ duration: 1.0, ease: "easeOut", delay: 0.2 }}
-                          style={{ backgroundColor: el.color }}
-                        />
-                      ) : (
-                        <div className="h-full rounded-full" style={{ backgroundColor: el.color + "20", width: "100%" }} />
-                      )}
-                    </div>
-
-                    {/* Label: correct % of total (FR-06 fix) + dominant star */}
-                    <div className="w-12 shrink-0 text-right flex items-center justify-end gap-1">
-                      {hasWuxingData && pctLabel > 0 && (
-                        <span className="text-[10px] text-[#1E2A3A]/45 font-mono">{pctLabel}%</span>
-                      )}
-                      {isDom && (
-                        <span className="text-sm" style={{ color: el.color }}>★</span>
-                      )}
-                    </div>
-                  </div>
-                </Tooltip>
-              );
-            })}
-          </div>
-
-          {!hasWuxingData && (
-            <p className="mt-5 text-[10px] text-[#1E2A3A]/35 italic text-center">
-              {lang === "de"
-                ? "Elementgewichtung wird bei Verfügbarkeit der API-Daten angezeigt. Hover für Details."
-                : "Element weighting shown when API data is available. Hover for details."}
-            </p>
-          )}
-        </div>
-      </motion.div>
-
-      {/* ═══ WESTERN HOUSES (FR-07: personalised) ════════════════════ */}
+      {/* ═══ WESTERN HOUSES (FR-07: personalised) — PREMIUM ════════ */}
       {houseEntries.length > 0 && (
+        <PremiumGate teaser={t("dashboard.premium.teaserHouses")}>
         <motion.div className="mb-10" {...fadeIn(0.4)}>
           <SectionDivider
             label={t("dashboard.western.sectionLabel")}
@@ -772,6 +792,7 @@ export function Dashboard({
             })}
           </div>
         </motion.div>
+        </PremiumGate>
       )}
 
       {/* ═══ INTERPRETATION + LEVI ═══════════════════════════════════ */}
@@ -790,6 +811,8 @@ export function Dashboard({
           <h3 className="font-serif text-2xl text-[#1E2A3A] mb-5">
             {t("dashboard.interpretation.sectionTitle")}
           </h3>
+
+          {/* Free: first 2 paragraphs always visible */}
           <div className="
             text-[13px] text-[#1E2A3A]/60 leading-relaxed
             prose prose-sm max-w-none
@@ -798,11 +821,29 @@ export function Dashboard({
             prose-a:text-[#8B6914] prose-a:no-underline hover:prose-a:underline
             prose-hr:border-[#8B6914]/15
           ">
-            <ReactMarkdown>{interpretation}</ReactMarkdown>
+            <ReactMarkdown>{isPremium ? interpretation : freeInterpretation}</ReactMarkdown>
           </div>
+
+          {/* Premium: remaining paragraphs gated */}
+          {!isPremium && hasPremiumInterpretation && (
+            <PremiumGate teaser={t("dashboard.premium.teaserInterpretation")}>
+              <div className="
+                text-[13px] text-[#1E2A3A]/60 leading-relaxed
+                prose prose-sm max-w-none
+                prose-headings:text-[#1E2A3A] prose-headings:font-serif
+                prose-p:text-[#1E2A3A]/60 prose-strong:text-[#1E2A3A]/80
+                prose-a:text-[#8B6914] prose-a:no-underline hover:prose-a:underline
+                prose-hr:border-[#8B6914]/15
+                mt-4
+              ">
+                <ReactMarkdown>{interpretationParagraphs.slice(2).join("\n\n")}</ReactMarkdown>
+              </div>
+            </PremiumGate>
+          )}
         </div>
 
-        {/* Levi — 1/3 width */}
+        {/* Levi — 1/3 width — PREMIUM */}
+        <PremiumGate teaser={t("dashboard.premium.teaserLevi")}>
         <div ref={leviSectionRef} className="morning-card p-7 flex flex-col gap-6">
           <div className="flex items-start gap-4">
             <div className="relative mt-1.5 shrink-0">
@@ -858,6 +899,15 @@ export function Dashboard({
             )}
           </AnimatePresence>
         </div>
+        </PremiumGate>
+      </motion.div>
+
+      {/* ═══ SHARE CARD ═══════════════════════════════════════════════ */}
+      <motion.div className="mb-16" {...fadeIn(0.5)}>
+        <ShareCard
+          sunSign={apiData?.western?.zodiac_sign || ''}
+          moonSign={apiData?.western?.moon_sign || ''}
+        />
       </motion.div>
     </motion.div>
   );

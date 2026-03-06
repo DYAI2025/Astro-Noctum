@@ -1,7 +1,10 @@
 import express from "express";
 import path from "node:path";
+import fs from "node:fs";
+import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
+import Stripe from "stripe";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -240,6 +243,11 @@ const supabaseServer =
     ? createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
     : null;
 
+// ── Stripe ───────────────────────────────────────────────────────────
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY)
+  : null;
+
 // ── GET /api/profile/:userId — ElevenLabs Custom Tool endpoint ──────
 app.get("/api/profile/:userId", async (req, res) => {
   // Verify bearer token
@@ -376,6 +384,101 @@ app.post("/api/agent/conversation", express.json(), async (req, res) => {
   }
 
   res.json({ status: "saved" });
+});
+
+// ── Stripe: Create Checkout Session ──────────────────────────────────
+app.post("/api/checkout", express.json(), async (req, res) => {
+  if (!stripe) return res.status(503).json({ error: "Payment not configured" });
+
+  const { userId, userEmail } = req.body;
+  if (!userId) return res.status(400).json({ error: "userId required" });
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
+      mode: "payment",
+      customer_email: userEmail,
+      success_url: `${process.env.APP_URL || req.headers.origin}?upgrade=success`,
+      cancel_url: `${process.env.APP_URL || req.headers.origin}?upgrade=cancelled`,
+      metadata: { userId },
+    });
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error("[Stripe] Checkout error:", err.message);
+    res.status(500).json({ error: "Checkout failed" });
+  }
+});
+
+// ── Stripe: Webhook (raw body required for signature verification) ───
+app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async (req, res) => {
+  if (!stripe) return res.status(503).end();
+
+  const sig = req.headers["stripe-signature"];
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+  } catch (err) {
+    console.error("[Stripe] Webhook sig error:", err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object;
+    const userId = session.metadata?.userId;
+
+    if (userId && supabaseServer) {
+      const { error } = await supabaseServer
+        .from("profiles")
+        .update({
+          tier: "premium",
+          stripe_customer_id: session.customer,
+          stripe_payment_id: session.payment_intent,
+        })
+        .eq("id", userId);
+
+      if (error) console.error("[Stripe] Profile update failed:", error);
+      else console.log(`[Stripe] User ${userId} upgraded to premium`);
+    }
+  }
+
+  res.json({ received: true });
+});
+
+// ── Share URL ────────────────────────────────────────────────────────
+app.post("/api/share", express.json(), async (req, res) => {
+  const { userId } = req.body;
+  if (!userId) return res.status(400).json({ error: "userId required" });
+
+  if (!supabaseServer) {
+    return res.status(500).json({ error: "Supabase not configured on server" });
+  }
+
+  const hash = crypto.createHash("sha256").update(userId).digest("hex").slice(0, 12);
+
+  const { data: profile } = await supabaseServer
+    .from("astro_profiles")
+    .select("sun_sign, moon_sign, asc_sign")
+    .eq("user_id", userId)
+    .single();
+
+  if (!profile) return res.status(404).json({ error: "No profile found" });
+
+  res.json({
+    shareUrl: `${process.env.APP_URL || req.headers.origin}/share/${hash}`,
+    hash,
+    profile: {
+      sun_sign: profile.sun_sign,
+      moon_sign: profile.moon_sign,
+      asc_sign: profile.asc_sign,
+    },
+  });
+});
+
+// Public share page — serve the SPA so client-side handles /share/:hash
+app.get("/share/:hash", async (_req, res) => {
+  const html = await fs.promises.readFile(path.join(distPath, "index.html"), "utf-8");
+  res.send(html);
 });
 
 // ── Static files ────────────────────────────────────────────────────

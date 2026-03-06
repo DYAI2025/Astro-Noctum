@@ -146,6 +146,16 @@ const translationsEn: DeepStringRecord = {
       callBtn: "Call Levi",
       hangUpBtn: "Hang Up",
     },
+    premium: {
+      title: "Unlock Your Full Reading",
+      teaser: "Discover the complete fusion of Western astrology, BaZi, and Wu-Xing — a reading no other app can offer.",
+      teaserPillars: "See your complete four-pillar BaZi analysis and elemental balance.",
+      teaserWuxing: "Explore the full five-element balance chart with detailed breakdowns.",
+      teaserInterpretation: "Read the complete AI-generated cosmic interpretation.",
+      teaserHouses: "Discover all twelve astrological houses and their influence on your life.",
+      teaserLevi: "Talk to Levi Bazi, your personal astrological voice agent.",
+      cta: "Upgrade — 4,99 \u20AC",
+    },
   },
 } as const;
 
@@ -287,6 +297,16 @@ const translationsDe: DeepStringRecord = {
       activeDesc: "Ambient-Musik pausiert. Sprich mit Levi über dein Chart.",
       callBtn: "Call Levi",
       hangUpBtn: "Auflegen",
+    },
+    premium: {
+      title: "Dein vollständiges Reading freischalten",
+      teaser: "Entdecke die komplette Fusion aus westlicher Astrologie, BaZi und Wu-Xing — ein Reading, das keine andere App bieten kann.",
+      teaserPillars: "Sieh deine vollständige Vier-Säulen-BaZi-Analyse und das Elementgleichgewicht.",
+      teaserWuxing: "Erkunde die vollständige Fünf-Elemente-Balance mit detaillierten Aufschlüsselungen.",
+      teaserInterpretation: "Lies die vollständige KI-generierte kosmische Interpretation.",
+      teaserHouses: "Entdecke alle zwölf astrologischen Häuser und ihren Einfluss auf dein Leben.",
+      teaserLevi: "Sprich mit Levi Bazi, deinem persönlichen astrologischen Sprach-Agenten.",
+      cta: "Upgrade — 4,99 \u20AC",
     },
   },
 };
