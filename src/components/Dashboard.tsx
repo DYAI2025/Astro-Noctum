@@ -105,14 +105,14 @@ function DualSectionHeader({
   leftLabel, leftTitle, rightLabel, rightTitle,
 }: { leftLabel: string; leftTitle: string; rightLabel: string; rightTitle: string }) {
   return (
-    <div className="grid grid-cols-2 gap-6 mb-8 max-md:grid-cols-1">
-      <div className="border-b border-[#8B6914]/15 pb-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+      <div className="border-b border-[#8B6914]/15 pb-3 sm:pb-4">
         <p className="text-[#8B6914]/55 text-[8px] uppercase tracking-[0.45em] mb-1">{leftLabel}</p>
-        <h2 className="font-serif text-2xl text-[#1E2A3A]">{leftTitle}</h2>
+        <h2 className="font-serif text-xl sm:text-2xl text-[#1E2A3A]">{leftTitle}</h2>
       </div>
-      <div className="border-b border-[#8B6914]/15 pb-4">
+      <div className="border-b border-[#8B6914]/15 pb-3 sm:pb-4">
         <p className="text-[#8B6914]/55 text-[8px] uppercase tracking-[0.45em] mb-1">{rightLabel}</p>
-        <h2 className="font-serif text-2xl text-[#1E2A3A]">{rightTitle}</h2>
+        <h2 className="font-serif text-xl sm:text-2xl text-[#1E2A3A]">{rightTitle}</h2>
       </div>
     </div>
   );
@@ -120,9 +120,9 @@ function DualSectionHeader({
 
 function SectionDivider({ label, title }: { label: string; title: string }) {
   return (
-    <div className="border-b border-[#8B6914]/15 pb-4 mb-8">
+    <div className="border-b border-[#8B6914]/15 pb-3 sm:pb-4 mb-6 sm:mb-8">
       <p className="text-[#8B6914]/55 text-[8px] uppercase tracking-[0.45em] mb-1">{label}</p>
-      <h2 className="font-serif text-2xl text-[#1E2A3A]">{title}</h2>
+      <h2 className="font-serif text-xl sm:text-2xl text-[#1E2A3A]">{title}</h2>
     </div>
   );
 }
@@ -350,7 +350,7 @@ export function Dashboard({
         </p>
         <div className="flex items-start justify-between gap-4">
           {/* FR-01: Title updated via translation key */}
-          <h1 className="font-serif text-4xl md:text-5xl leading-tight text-[#1E2A3A] max-w-xl">
+          <h1 className="font-serif text-2xl sm:text-4xl md:text-5xl leading-tight text-[#1E2A3A] max-w-xl">
             {t("dashboard.title")}
           </h1>
           <button
@@ -423,7 +423,7 @@ export function Dashboard({
           <div className="flex flex-col gap-5">
 
             {/* Sun Sign — FR-03.1 / FR-P05: data-special for gold border in Planetarium */}
-            <div className="morning-card p-7 flex flex-col justify-between" data-special="true">
+            <div className="morning-card p-5 sm:p-7 flex flex-col justify-between" data-special="true">
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <motion.div
@@ -436,7 +436,7 @@ export function Dashboard({
                 </div>
 
                 {/* Sign name as primary title */}
-                <h3 className="font-serif text-2xl text-[#1E2A3A] leading-tight mb-0.5">
+                <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
                   {sunSignName || "—"}
                 </h3>
                 <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50 mb-4">
@@ -462,7 +462,7 @@ export function Dashboard({
             </div>
 
             {/* Moon Sign — FR-03.2 */}
-            <div className="morning-card p-7 flex flex-col justify-between">
+            <div className="morning-card p-5 sm:p-7 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <motion.div
@@ -474,7 +474,7 @@ export function Dashboard({
                   <Badge text={t("dashboard.western.moonLabel")} />
                 </div>
 
-                <h3 className="font-serif text-2xl text-[#1E2A3A] leading-tight mb-0.5">
+                <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
                   {moonSignName || "—"}
                 </h3>
                 <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50 mb-4">
@@ -499,7 +499,7 @@ export function Dashboard({
             </div>
 
             {/* Ascendant — FR-03.3 */}
-            <div className="morning-card p-7 flex flex-col justify-between">
+            <div className="morning-card p-5 sm:p-7 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <motion.div
@@ -511,7 +511,7 @@ export function Dashboard({
                   <Badge text={t("dashboard.western.ascLabel")} />
                 </div>
 
-                <h3 className="font-serif text-2xl text-[#1E2A3A] leading-tight mb-0.5">
+                <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
                   {ascSignName || "—"}
                 </h3>
                 <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50 mb-4">
@@ -540,13 +540,13 @@ export function Dashboard({
           <div className="flex flex-col gap-5">
 
             {/* Year Animal — FR-P05: data-special for gold border in Planetarium */}
-            <div className="morning-card p-7 flex flex-col justify-between" data-special="true">
+            <div className="morning-card p-5 sm:p-7 flex flex-col justify-between" data-special="true">
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-2xl leading-none">{yearBranch?.emoji || "✨"}</span>
                   <Badge text={t("dashboard.bazi.zodiacLabel")} />
                 </div>
-                <h3 className="font-serif text-2xl text-[#1E2A3A] mb-0.5">
+                <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] mb-0.5">
                   {yearAnimalName || "—"}
                 </h3>
                 <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50 mb-4">
@@ -575,7 +575,7 @@ export function Dashboard({
 
             {/* Dominant WuXing Element */}
             <div
-              className="morning-card p-7 flex flex-col gap-4"
+              className="morning-card p-5 sm:p-7 flex flex-col gap-4"
               style={dominantWuxing ? {
                 borderLeftColor: dominantWuxing.color + "55",
                 borderLeftWidth: "3px",
@@ -699,9 +699,9 @@ export function Dashboard({
 
                 return (
                   <Tooltip key={el.key} content={el.description[lang]} wide dark={planetariumMode}>
-                    <div className="flex items-center gap-4 cursor-help group">
+                    <div className="flex items-center gap-2 sm:gap-4 cursor-help group">
                       {/* Identity */}
-                      <div className="w-28 md:w-36 shrink-0 flex items-center gap-2.5">
+                      <div className="w-24 sm:w-28 md:w-36 shrink-0 flex items-center gap-2 sm:gap-2.5">
                         <span className="text-2xl font-serif leading-none select-none" style={{ color: el.color }}>
                           {el.chinese}
                         </span>
@@ -777,28 +777,28 @@ export function Dashboard({
               const signDisplay = sign ? getSignName(sign, lang) : "—";
 
               return (
-                <div key={houseKey} className="morning-card p-5">
+                <div key={houseKey} className="morning-card p-4 sm:p-5 overflow-hidden">
                   {/* House number + name */}
-                  <div className="flex items-baseline gap-2 mb-3">
-                    <span className="font-serif text-base text-[#8B6914] font-medium leading-none">
+                  <div className="flex items-baseline gap-1.5 sm:gap-2 mb-2 sm:mb-3 min-w-0">
+                    <span className="font-serif text-base text-[#8B6914] font-medium leading-none shrink-0">
                       {roman}
                     </span>
                     {meaning && (
-                      <span className="text-[10px] text-[#1E2A3A]/45 tracking-wide truncate">
+                      <span className="text-[9px] sm:text-[10px] text-[#1E2A3A]/45 tracking-wide truncate">
                         {meaning.name[lang]}
                       </span>
                     )}
                   </div>
 
                   {/* Sign — localised */}
-                  <div className="font-serif text-lg text-[#1E2A3A] flex items-center gap-2 mb-2">
-                    <span className="text-[#8B6914]/80">{emoji}</span>
-                    {signDisplay}
+                  <div className="font-serif text-base sm:text-lg text-[#1E2A3A] flex items-center gap-1.5 sm:gap-2 mb-2 min-w-0">
+                    <span className="text-[#8B6914]/80 shrink-0">{emoji}</span>
+                    <span className="truncate">{signDisplay}</span>
                   </div>
 
                   {/* FR-07: Personalised influence sentence */}
                   {meaning && sign && (
-                    <p className="text-[10px] text-[#1E2A3A]/40 leading-relaxed">
+                    <p className="text-[9px] sm:text-[10px] text-[#1E2A3A]/40 leading-relaxed line-clamp-2">
                       {lang === "de"
                         ? `${signDisplay} prägt das Lebensfeld ${meaning.name.de}.`
                         : `${signDisplay} shapes your house of ${meaning.name.en}.`}
@@ -814,11 +814,11 @@ export function Dashboard({
 
       {/* ═══ INTERPRETATION + LEVI ═══════════════════════════════════ */}
       <motion.div
-        className="grid md:grid-cols-3 gap-8 mb-16"
+        className="grid md:grid-cols-3 gap-5 sm:gap-8 mb-12 sm:mb-16"
         {...fadeIn(0.45)}
       >
         {/* AI Interpretation — 2/3 width (FR-08: richer prompt in gemini.ts) */}
-        <div className="morning-card p-8 md:col-span-2">
+        <div className="morning-card p-5 sm:p-8 md:col-span-2">
           <div className="flex items-center gap-4 mb-5">
             <span className="h-[1px] w-10 bg-[#8B6914]/20" />
             <span className="text-[9px] uppercase tracking-[0.4em] text-[#8B6914]/55">
@@ -859,91 +859,9 @@ export function Dashboard({
           )}
         </div>
 
-        {/* ═══ FUSION RING (BAZAHUAWA) ═══════════════════════════════ */}
-        {fusionSignal && (
-          <motion.div className="mb-16" {...fadeIn(0.5)}>
-            <div
-              className="mx-auto flex flex-col items-center gap-4 rounded-2xl px-6 py-8"
-              style={{
-                background: 'radial-gradient(ellipse at center, #0a0f1a 0%, #00050A 70%)',
-                border: '1px solid rgba(212, 175, 55, 0.12)',
-                boxShadow: '0 0 60px rgba(0,5,10,0.5), inset 0 0 30px rgba(0,0,0,0.3)',
-                maxWidth: '520px',
-              }}
-            >
-              <h2
-                className="font-serif text-xl tracking-wide"
-                style={{ color: '#D4AF37' }}
-              >
-                {lang === "de" ? "Dein Bazahuawa" : "Your Bazahuawa"}
-              </h2>
-              <FusionRing
-                signal={fusionSignal}
-                size={360}
-                showLabels={true}
-                animated={true}
-              />
-              {fusionSignal.resolution < 100 && (
-                <p className="text-sm" style={{ color: 'rgba(212, 175, 55, 0.45)' }}>
-                  {lang === "de"
-                    ? `Auflösung: ${fusionSignal.resolution}% — Absolviere weitere Tests`
-                    : `Resolution: ${fusionSignal.resolution}% — Complete more tests`}
-                </p>
-              )}
-            </div>
-          </motion.div>
-        )}
-
-        {/* ═══ QUIZ SECTION ════════════════════════════════════════════ */}
-        {onQuizComplete && (
-          <motion.div className="mb-16" {...fadeIn(0.5)}>
-            <SectionDivider
-              label={lang === "de" ? "Persönlichkeit" : "Personality"}
-              title={lang === "de" ? "Deine Persönlichkeits-Tests" : "Your Personality Tests"}
-            />
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {QUIZ_CATALOG.map((quiz) => {
-                const done = completedModules?.has(quiz.moduleId);
-                return (
-                  <button
-                    key={quiz.id}
-                    onClick={() => !done && setActiveQuiz(quiz.id)}
-                    className={`morning-card p-6 text-left transition-all ${
-                      done
-                        ? "opacity-60 cursor-default"
-                        : "hover:border-[#8B6914]/40 hover:shadow-lg cursor-pointer"
-                    }`}
-                  >
-                    <span className="text-3xl mb-3 block">{quiz.icon}</span>
-                    <h3 className="font-serif text-lg text-[#1E2A3A] mb-1">{quiz.title}</h3>
-                    <span className={`text-[9px] uppercase tracking-[0.3em] ${
-                      done ? "text-emerald-600" : "text-[#8B6914]/50"
-                    }`}>
-                      {done
-                        ? (lang === "de" ? "Abgeschlossen ✓" : "Completed ✓")
-                        : (lang === "de" ? "Starten →" : "Start →")}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
-
-        {/* Quiz Overlay */}
-        {onQuizComplete && (
-          <QuizOverlay
-            quizId={activeQuiz}
-            onComplete={(event) => {
-              onQuizComplete(event);
-            }}
-            onClose={() => setActiveQuiz(null)}
-          />
-        )}
-
         {/* Levi — 1/3 width — PREMIUM */}
         <PremiumGate teaser={t("dashboard.premium.teaserLevi")}>
-        <div ref={leviSectionRef} className="morning-card p-7 flex flex-col gap-6">
+        <div ref={leviSectionRef} className="morning-card p-5 sm:p-7 flex flex-col gap-5 sm:gap-6">
           <div className="flex items-start gap-4">
             <div className="relative mt-1.5 shrink-0">
               <div className={`w-2 h-2 rounded-full breathing ${
@@ -1000,6 +918,88 @@ export function Dashboard({
         </div>
         </PremiumGate>
       </motion.div>
+
+      {/* ═══ FUSION RING (BAZAHUAWA) ═══════════════════════════════ */}
+      {fusionSignal && (
+        <motion.div className="mb-16" {...fadeIn(0.5)}>
+          <div
+            className="mx-auto flex flex-col items-center gap-4 rounded-2xl px-4 sm:px-6 py-8"
+            style={{
+              background: 'radial-gradient(ellipse at center, #0a0f1a 0%, #00050A 70%)',
+              border: '1px solid rgba(212, 175, 55, 0.12)',
+              boxShadow: '0 0 60px rgba(0,5,10,0.5), inset 0 0 30px rgba(0,0,0,0.3)',
+              maxWidth: '520px',
+            }}
+          >
+            <h2
+              className="font-serif text-lg sm:text-xl tracking-wide"
+              style={{ color: '#D4AF37' }}
+            >
+              {lang === "de" ? "Dein Bazahuawa" : "Your Bazahuawa"}
+            </h2>
+            <FusionRing
+              signal={fusionSignal}
+              size={360}
+              showLabels={true}
+              animated={true}
+            />
+            {fusionSignal.resolution < 100 && (
+              <p className="text-xs sm:text-sm text-center" style={{ color: 'rgba(212, 175, 55, 0.45)' }}>
+                {lang === "de"
+                  ? `Auflösung: ${fusionSignal.resolution}% — Absolviere weitere Tests`
+                  : `Resolution: ${fusionSignal.resolution}% — Complete more tests`}
+              </p>
+            )}
+          </div>
+        </motion.div>
+      )}
+
+      {/* ═══ QUIZ SECTION ════════════════════════════════════════════ */}
+      {onQuizComplete && (
+        <motion.div className="mb-16" {...fadeIn(0.5)}>
+          <SectionDivider
+            label={lang === "de" ? "Persönlichkeit" : "Personality"}
+            title={lang === "de" ? "Deine Persönlichkeits-Tests" : "Your Personality Tests"}
+          />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {QUIZ_CATALOG.map((quiz) => {
+              const done = completedModules?.has(quiz.moduleId);
+              return (
+                <button
+                  key={quiz.id}
+                  onClick={() => !done && setActiveQuiz(quiz.id)}
+                  className={`morning-card p-5 sm:p-6 text-left transition-all ${
+                    done
+                      ? "opacity-60 cursor-default"
+                      : "hover:border-[#8B6914]/40 hover:shadow-lg cursor-pointer"
+                  }`}
+                >
+                  <span className="text-2xl sm:text-3xl mb-2 sm:mb-3 block">{quiz.icon}</span>
+                  <h3 className="font-serif text-base sm:text-lg text-[#1E2A3A] mb-1 truncate">{quiz.title}</h3>
+                  <span className={`text-[9px] uppercase tracking-[0.3em] ${
+                    done ? "text-emerald-600" : "text-[#8B6914]/50"
+                  }`}>
+                    {done
+                      ? (lang === "de" ? "Abgeschlossen ✓" : "Completed ✓")
+                      : (lang === "de" ? "Starten →" : "Start →")}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Quiz Overlay */}
+      {onQuizComplete && (
+        <QuizOverlay
+          quizId={activeQuiz}
+          onComplete={(event) => {
+            onQuizComplete(event);
+          }}
+          onClose={() => setActiveQuiz(null)}
+        />
+      )}
 
       {/* ═══ SHARE CARD ═══════════════════════════════════════════════ */}
       <motion.div className="mb-16" {...fadeIn(0.5)}>

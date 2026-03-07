@@ -30,7 +30,7 @@ const SECTOR_ARC = TWO_PI / SECTOR_COUNT;
 const POINTS = 360; // one per degree for smooth interpolation
 const ANGLE_STEP = TWO_PI / POINTS;
 
-const MIN_SIZE = 280;
+const MIN_SIZE = 240;
 const MAX_SIZE = 480;
 
 const DAMPING = 0.08;

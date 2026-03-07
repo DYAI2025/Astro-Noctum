@@ -242,7 +242,7 @@ body {
 }
 /* <767px = stacked (Tailwind md: starts at 768px) */
 @media (max-width: 767px) {
-  .morning-grid-2 { grid-template-columns: 1fr; }
+  .morning-grid-2 { grid-template-columns: 1fr; gap: 1rem; }
 }
 
 /* ── Typography ────────────────────────────────────────────────────────── */
