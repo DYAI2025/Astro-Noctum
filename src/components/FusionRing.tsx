@@ -10,7 +10,7 @@ import { SECTOR_COUNT, SECTORS } from '../lib/fusion-ring/constants';
 
 interface FusionRingProps {
   signal: FusionRingSignal;
-  size?: number;
+  size?: number;           // default 360
   showLabels?: boolean;
   animated?: boolean;
   className?: string;
@@ -247,7 +247,7 @@ function drawRing(
 
 export function FusionRing({
   signal,
-  size,
+  size = 360,
   showLabels = false,
   animated = false,
   className,
