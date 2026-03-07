@@ -550,9 +550,11 @@ function LoadingScreen() {
 function ResultScreen({
   profile,
   onRestart,
+  onClose,
 }: {
   profile: AnimalProfile;
   onRestart: () => void;
+  onClose: () => void;
 }) {
   return (
     <motion.div
@@ -609,12 +611,18 @@ function ResultScreen({
       </div>
 
       {/* Actions */}
-      <div className="flex flex-col gap-3 w-full max-w-sm mt-6">
+      <div className="flex gap-3 w-full max-w-sm mt-6">
         <button
           onClick={onRestart}
-          className="bg-transparent border border-[#D4AF37]/30 text-white/60 text-sm py-3 rounded-xl hover:border-[#D4AF37] hover:text-white transition-colors"
+          className="flex-1 bg-transparent border border-[#D4AF37]/30 text-white/60 text-sm py-3 rounded-xl hover:border-[#D4AF37] hover:text-white transition-colors"
         >
-          Quiz wiederholen
+          Nochmal
+        </button>
+        <button
+          onClick={onClose}
+          className="flex-1 rounded-xl bg-[#D4AF37] py-3 text-sm font-semibold text-[#00050A] shadow-[0_4px_20px_rgba(212,175,55,0.25)] transition hover:bg-[#E8C878]"
+        >
+          Fertig
         </button>
       </div>
 
@@ -699,7 +707,7 @@ export default function KrafttierQuiz({ onComplete, onClose }: KrafttierQuizProp
         {screen === 'loading' && <LoadingScreen key="loading" />}
 
         {screen === 'result' && profile && (
-          <ResultScreen key="result" profile={profile} onRestart={handleStart} />
+          <ResultScreen key="result" profile={profile} onRestart={handleStart} onClose={onClose} />
         )}
       </AnimatePresence>
     </div>

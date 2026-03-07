@@ -983,7 +983,6 @@ export function Dashboard({
           quizId={activeQuiz}
           onComplete={(event) => {
             onQuizComplete(event);
-            setActiveQuiz(null);
           }}
           onClose={() => setActiveQuiz(null)}
         />
