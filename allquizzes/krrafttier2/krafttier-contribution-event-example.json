@@ -1,0 +1,112 @@
+{
+  "specVersion": "sp.contribution.v1",
+  "eventId": "7f3a2c8e-9d1b-4e5f-8a6c-3b2d1e0f9a8b",
+  "occurredAt": "2025-12-15T14:32:00.000Z",
+  "source": {
+    "vertical": "quiz",
+    "moduleId": "quiz.krafttier.v2",
+    "domain": "quizzme.app",
+    "locale": "de-DE"
+  },
+  "payload": {
+    "markers": [
+      {
+        "id": "marker.social.pack_loyalty",
+        "weight": 0.82,
+        "evidence": {
+          "itemsAnswered": 12,
+          "confidence": 0.78
+        }
+      },
+      {
+        "id": "marker.instinct.primal_sense",
+        "weight": 0.75,
+        "evidence": {
+          "itemsAnswered": 12,
+          "confidence": 0.78
+        }
+      },
+      {
+        "id": "marker.leadership.servant_leader",
+        "weight": 0.68,
+        "evidence": {
+          "itemsAnswered": 12,
+          "confidence": 0.78
+        }
+      }
+    ],
+    "traits": [
+      {
+        "id": "trait.social.community",
+        "score": 85,
+        "band": "high",
+        "confidence": 0.78,
+        "method": "scenario"
+      },
+      {
+        "id": "trait.instinct.gut_feeling",
+        "score": 78,
+        "band": "midhigh",
+        "confidence": 0.78,
+        "method": "scenario"
+      }
+    ],
+    "tags": [
+      {
+        "id": "tag.archetype.guardian",
+        "label": "Wächter",
+        "kind": "archetype",
+        "weight": 0.85
+      },
+      {
+        "id": "tag.style.protective",
+        "label": "Beschützend",
+        "kind": "style",
+        "weight": 0.79
+      }
+    ],
+    "unlocks": [
+      {
+        "id": "unlock.crests.wolf_guardian",
+        "unlocked": true,
+        "unlockedAt": "2025-12-15T14:32:00.000Z",
+        "level": 1,
+        "sourceRef": "quiz.krafttier.v2"
+      }
+    ],
+    "summary": {
+      "title": "Der Wolf",
+      "bullets": [
+        "Hüter des Rudels",
+        "Verbündete: Adler • Bär",
+        "Herausforderung: Fuchs"
+      ],
+      "resultId": "wolf"
+    },
+    "debug": {
+      "rawScores": {
+        "mut": 28,
+        "instinkt": 35,
+        "sozial": 42,
+        "weisheit": 18,
+        "schatten": 12,
+        "klarheit": 15,
+        "freiheit": 20,
+        "neugier": 14,
+        "anpassung": 16,
+        "erdung": 32,
+        "flow": 10,
+        "freude": 8,
+        "vorsicht": 6
+      },
+      "animalScores": {
+        "wolf": 142.4,
+        "owl": 73.8,
+        "eagle": 95.5,
+        "bear": 127.0,
+        "fox": 72.8,
+        "dolphin": 58.5
+      }
+    }
+  }
+}

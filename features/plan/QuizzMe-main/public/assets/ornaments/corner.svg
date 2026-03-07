@@ -1,0 +1,30 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Corner ornament - Tarot/Alchemy style -->
+  <!-- Designed for top-left placement, rotate for other corners -->
+  <g stroke="#D4AF37" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- Outer frame curves -->
+    <path d="M 5 20 Q 5 5 20 5" />
+    <path d="M 5 30 Q 5 5 30 5" />
+
+    <!-- Inner decorative elements -->
+    <circle cx="15" cy="15" r="3" />
+    <circle cx="25" cy="25" r="2" />
+
+    <!-- Connecting flourishes -->
+    <path d="M 15 12 L 15 8" />
+    <path d="M 12 15 L 8 15" />
+
+    <!-- Small stars -->
+    <path d="M 35 10 L 36 11 L 35 12 L 34 11 Z" />
+    <path d="M 10 35 L 11 36 L 10 37 L 9 36 Z" />
+
+    <!-- Alchemy circle detail -->
+    <circle cx="40" cy="15" r="4" />
+    <line x1="38" y1="15" x2="42" y2="15" />
+    <line x1="40" y1="13" x2="40" y2="17" />
+
+    <!-- Botanical stem -->
+    <path d="M 15 40 Q 18 38 20 35" />
+    <path d="M 17 38 Q 18 37 19 36" />
+  </g>
+</svg>

@@ -1,0 +1,46 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Strong multi-layer glow for destiny gold/amber -->
+    <filter id="destiny-glow-strong" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="8" result="blur1"/>
+      <feFlood flood-color="#fbbf24" flood-opacity="0.95"/>
+      <feComposite in2="blur1" operator="in" result="glow1"/>
+
+      <feGaussianBlur in="blur1" stdDeviation="20" result="blur2"/>
+      <feFlood flood-color="#fbbf24" flood-opacity="0.8"/>
+      <feComposite in2="blur2" operator="in" result="glow2"/>
+
+      <feGaussianBlur in="blur2" stdDeviation="40" result="blur3"/>
+      <feFlood flood-color="#fbbf24" flood-opacity="0.5"/>
+      <feComposite in2="blur3" operator="in" result="glow3"/>
+
+      <feMerge>
+        <feMergeNode in="glow3"/>
+        <feMergeNode in="glow2"/>
+        <feMergeNode in="glow1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Portal symbol scaled to 128x128 with three concentric ellipses -->
+  <ellipse cx="64" cy="64" rx="45" ry="51"
+           fill="none"
+           stroke="#fbbf24"
+           stroke-width="2"
+           filter="url(#destiny-glow-strong)"/>
+
+  <ellipse cx="64" cy="64" rx="32" ry="38"
+           fill="none"
+           stroke="#fbbf24"
+           stroke-width="1.5"
+           opacity="0.7"
+           filter="url(#destiny-glow-strong)"/>
+
+  <ellipse cx="64" cy="64" rx="19" ry="23"
+           fill="none"
+           stroke="#fbbf24"
+           stroke-width="1.5"
+           opacity="0.5"
+           filter="url(#destiny-glow-strong)"/>
+</svg>

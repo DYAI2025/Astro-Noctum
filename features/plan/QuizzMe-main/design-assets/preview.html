@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Symbols Preview - Glowing Outlines</title>
+  <link rel="stylesheet" href="quiz-design-tokens.css">
+  <link rel="stylesheet" href="cosmic-nebula-background.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      color: rgb(248, 250, 252);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .container {
+      position: relative;
+      z-index: 10;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+
+    h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(to right, rgb(59, 130, 246), rgb(168, 85, 247), rgb(236, 72, 153));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: rgb(148, 163, 184);
+      margin-bottom: 3rem;
+      font-size: 1.125rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+      margin-bottom: 4rem;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(71, 85, 105, 0.3);
+      border-radius: 1rem;
+      padding: 2rem;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(8px);
+    }
+
+    .card:hover {
+      border-color: rgba(148, 163, 184, 0.5);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .card-color {
+      display: inline-block;
+      width: 80px;
+      font-size: 0.75rem;
+      color: rgb(148, 163, 184);
+      font-family: 'Courier New', monospace;
+    }
+
+    .symbol-showcase {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+      justify-content: space-around;
+      padding: 2rem 0;
+      border-top: 1px solid rgba(71, 85, 105, 0.2);
+      border-bottom: 1px solid rgba(71, 85, 105, 0.2);
+      margin: 1.5rem 0;
+    }
+
+    .symbol-item {
+      text-align: center;
+    }
+
+    .symbol-label {
+      font-size: 0.75rem;
+      color: rgb(148, 163, 184);
+      margin-top: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .card-description {
+      color: rgb(203, 213, 225);
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+
+    .controls {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(71, 85, 105, 0.3);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      margin-bottom: 3rem;
+      backdrop-filter: blur(8px);
+    }
+
+    .control-group {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .control-btn {
+      padding: 0.75rem 1.5rem;
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: rgb(147, 197, 253);
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+
+    .control-btn:hover {
+      background: rgba(59, 130, 246, 0.2);
+      border-color: rgba(59, 130, 246, 0.5);
+    }
+
+    .control-btn.active {
+      background: rgba(59, 130, 246, 0.3);
+      border-color: rgb(59, 130, 246);
+      color: white;
+    }
+
+    .info {
+      background: rgba(168, 85, 247, 0.1);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      margin-top: 3rem;
+      color: rgb(221, 214, 254);
+    }
+
+    .info h3 {
+      margin-bottom: 0.75rem;
+      color: rgb(196, 181, 253);
+    }
+
+    .info ul {
+      list-style: none;
+      padding-left: 1rem;
+    }
+
+    .info li {
+      margin-bottom: 0.5rem;
+      padding-left: 1.5rem;
+      position: relative;
+    }
+
+    .info li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: rgb(168, 85, 247);
+    }
+  </style>
+</head>
+<body>
+  <!-- Cosmic Nebula Background -->
+  <div class="quiz-nebula-bg" id="background"></div>
+
+  <div class="container">
+    <h1>Quiz Symbols Preview</h1>
+    <p class="subtitle">Glowing Outlines Brand Identity - Form Follows Function</p>
+
+    <!-- Controls -->
+    <div class="controls">
+      <div class="control-group">
+        <button class="control-btn" onclick="toggleBackground()">Toggle Nebula Animation</button>
+        <button class="control-btn active" id="sizeBtn" onclick="cycleSize()">Size: Large (64px)</button>
+      </div>
+    </div>
+
+    <!-- Quiz Symbols Grid -->
+    <div class="grid">
+      <!-- Love Languages -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Love Languages</h2>
+          <span class="card-color" style="color: rgb(255, 200, 150);">Rosa-Gold</span>
+        </div>
+        <div class="symbol-showcase">
+          <div class="symbol-item">
+            <div class="quiz-symbol quiz-symbol--large quiz-symbol--love quiz-symbol--default" id="love-large">
+              <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="32" cy="32" r="28" fill="rgba(255, 200, 150, 0.05)" opacity="0.3"/>
+                <path d="M32 52 L20 38 Q14 32 14 24 Q14 16 20 16 Q26 16 32 22 Q38 16 44 16 Q50 16 50 24 Q50 32 44 38 Z"
+                      fill="none" stroke="rgb(248, 250, 252)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                      style="filter: drop-shadow(0 0 8px rgba(255, 200, 150, 0.6)) drop-shadow(0 0 16px rgba(255, 200, 150, 0.3));"/>
+                <path d="M32 56 Q18 48 12 36" fill="none" stroke="rgba(248, 250, 252, 0.6)" stroke-width="1" stroke-linecap="round" opacity="0.7"
+                      style="filter: drop-shadow(0 0 6px rgba(255, 200, 150, 0.4));"/>
+                <path d="M32 56 Q46 48 52 36" fill="none" stroke="rgba(248, 250, 252, 0.6)" stroke-width="1" stroke-linecap="round" opacity="0.7"
+                      style="filter: drop-shadow(0 0 6px rgba(255, 200, 150, 0.4));"/>
+                <circle cx="32" cy="18" r="2" fill="rgb(255, 200, 150)" opacity="0.8"
+                        style="filter: drop-shadow(0 0 4px rgba(255, 200, 150, 0.8));"/>
+              </svg>
+            </div>
+            <div class="symbol-label">64px Default</div>
+          </div>
+        </div>
+        <p class="card-description">Herz-Outline mit konzentrischen Wellen und Funken-Akzent. Symbolisiert Emotionalität und Nähe.</p>
+      </div>
+
+      <!-- Social Role -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Social Role</h2>
+          <span class="card-color" style="color: rgb(59, 130, 246);">Königsblau</span>
+        </div>
+        <div class="symbol-showcase">
+          <div class="symbol-item">
+            <div class="quiz-symbol quiz-symbol--large quiz-symbol--social-role quiz-symbol--default" id="social-large">
+              <object data="social-role-symbol.svg" type="image/svg+xml" width="64" height="64"></object>
+            </div>
+            <div class="symbol-label">64px Default</div>
+          </div>
+        </div>
+        <p class="card-description">Figur im Kreis mit drei Orbital-Punkten als soziale Verbindungen. Repräsentiert Gesellschaft und Rollenbilder.</p>
+      </div>
+
+      <!-- RPG Identity -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">RPG Identity</h2>
+          <span class="card-color" style="color: rgb(168, 85, 247);">Violett</span>
+        </div>
+        <div class="symbol-showcase">
+          <div class="symbol-item">
+            <div class="quiz-symbol quiz-symbol--large quiz-symbol--rpg quiz-symbol--default" id="rpg-large">
+              <object data="rpg-identity-symbol.svg" type="image/svg+xml" width="64" height="64"></object>
+            </div>
+            <div class="symbol-label">64px Default</div>
+          </div>
+        </div>
+        <p class="card-description">Schwert mit magischer Aura und Rune. Verkörpert Fantasy, Magie und Spielwelt-Identität.</p>
+      </div>
+
+      <!-- Personality -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Personality</h2>
+          <span class="card-color" style="color: rgb(16, 185, 129);">Smaragd</span>
+        </div>
+        <div class="symbol-showcase">
+          <div class="symbol-item">
+            <div class="quiz-symbol quiz-symbol--large quiz-symbol--personality quiz-symbol--default" id="personality-large">
+              <object data="personality-symbol.svg" type="image/svg+xml" width="64" height="64"></object>
+            </div>
+            <div class="symbol-label">64px Default</div>
+          </div>
+        </div>
+        <p class="card-description">Kopf-Profil mit innerem Kristall/Stern. Symbolisiert inneres Universum, Wachstum und Balance.</p>
+      </div>
+
+      <!-- Celebrity Soulmate -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Celebrity Soulmate</h2>
+          <span class="card-color" style="color: rgb(236, 72, 153);">Magenta</span>
+        </div>
+        <div class="symbol-showcase">
+          <div class="symbol-item">
+            <div class="quiz-symbol quiz-symbol--large quiz-symbol--celebrity quiz-symbol--default" id="celebrity-large">
+              <object data="celebrity-soulmate-symbol.svg" type="image/svg+xml" width="64" height="64"></object>
+            </div>
+            <div class="symbol-label">64px Default</div>
+          </div>
+        </div>
+        <p class="card-description">Maske/Krone mit Glamour-Sternen. Verkörpert Spotlight, Pop-Kultur und Celebrity-Flair.</p>
+      </div>
+
+      <!-- Destiny -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Destiny</h2>
+          <span class="card-color" style="color: rgb(251, 191, 36);">Gold/Amber</span>
+        </div>
+        <div class="symbol-showcase">
+          <div class="symbol-item">
+            <div class="quiz-symbol quiz-symbol--large quiz-symbol--destiny quiz-symbol--default" id="destiny-large">
+              <object data="destiny-symbol.svg" type="image/svg+xml" width="64" height="64"></object>
+            </div>
+            <div class="symbol-label">64px Default</div>
+          </div>
+        </div>
+        <p class="card-description">Torbogen mit Pfad nach oben und Zielstern. Symbolisiert Schicksal, Bestimmung und astrologische Vibes.</p>
+      </div>
+    </div>
+
+    <!-- Info Box -->
+    <div class="info">
+      <h3>Design-Prinzipien</h3>
+      <ul>
+        <li><strong>Minimalistisch:</strong> 1 Hauptform + max. 2-3 Zusatz-Elemente</li>
+        <li><strong>Skalierbar:</strong> Funktioniert von 20px bis 96px</li>
+        <li><strong>Erkennbar:</strong> Sofort verständlich auch bei kleinen Größen</li>
+        <li><strong>Nicht verspielt:</strong> Klar, fokussiert, form follows function</li>
+        <li><strong>Subtiler Background:</strong> Cosmic Nebula für Tiefe, nie dominant</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    let isAnimated = false;
+    let currentSize = 'large'; // large, medium, small
+
+    function toggleBackground() {
+      const bg = document.getElementById('background');
+      isAnimated = !isAnimated;
+
+      if (isAnimated) {
+        bg.className = 'quiz-nebula-bg--animated';
+      } else {
+        bg.className = 'quiz-nebula-bg';
+      }
+    }
+
+    function cycleSize() {
+      const sizes = ['large', 'medium', 'small'];
+      const sizeLabels = {
+        large: 'Large (64px)',
+        medium: 'Medium (40px)',
+        small: 'Small (20px)'
+      };
+
+      const currentIndex = sizes.indexOf(currentSize);
+      const nextIndex = (currentIndex + 1) % sizes.length;
+      currentSize = sizes[nextIndex];
+
+      // Update button text
+      document.getElementById('sizeBtn').textContent = `Size: ${sizeLabels[currentSize]}`;
+
+      // Update all symbols
+      const symbols = document.querySelectorAll('.quiz-symbol');
+      symbols.forEach(symbol => {
+        symbol.classList.remove('quiz-symbol--large', 'quiz-symbol--medium', 'quiz-symbol--small');
+        symbol.classList.add(`quiz-symbol--${currentSize}`);
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deine Aurafarben | QuizzMe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ══════════════════════════════════════════════════════════════════
+       QUIZZME DESIGN SYSTEM - AURA FARBEN QUIZ
+       ══════════════════════════════════════════════════════════════════ */
+    
+    :root {
+      /* Colors */
+      --gold-primary: #D2A95A;
+      --gold-dark: #A77D38;
+      --gold-light: #E8C87A;
+      --emerald-deep: #053B3F;
+      --emerald-forest: #0A4A4F;
+      --sage: #6CA192;
+      --midnight-deep: #041726;
+      --midnight-medium: #0A2540;
+      --midnight-soft: #132F4C;
+      --cream-pure: #F7F0E6;
+      --cream-warm: #F2E3CF;
+      --cream-deep: #EDE4D3;
+      --cream-muted: #E5D9C3;
+      --text-on-dark: #F7F3EA;
+      --text-on-dark-muted: #A8B5A0;
+      --text-on-light: #271C16;
+      --text-on-light-muted: #5A4D3F;
+      
+      /* Aura Colors */
+      --aura-rot: #C45D4A;
+      --aura-orange: #E07B39;
+      --aura-gelb: #D4AF37;
+      --aura-gruen: #4A8F6F;
+      --aura-blau: #4A7EB5;
+      --aura-indigo: #5C4D9A;
+      --aura-violett: #8B5A9F;
+      --aura-tuerkis: #3AA19A;
+      --aura-rosa: #D4789A;
+      
+      /* Typography */
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --font-sans: 'Inter', -apple-system, sans-serif;
+      
+      /* Spacing */
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.25rem;
+      --space-6: 1.5rem;
+      --space-8: 2rem;
+      --space-10: 2.5rem;
+      --space-12: 3rem;
+      
+      /* Animation */
+      --duration-normal: 250ms;
+      --duration-slow: 400ms;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    /* ══════════════════════════════════════════════════════════════════
+       SCREEN CONTAINERS
+       ══════════════════════════════════════════════════════════════════ */
+    
+    .screen {
+      display: none;
+      min-height: 100vh;
+      padding: var(--space-6);
+    }
+    
+    .screen.active {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.5s var(--ease-out);
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* ══════════════════════════════════════════════════════════════════
+       THEME: MODERN ALCHEMY (Intro + Result)
+       ══════════════════════════════════════════════════════════════════ */
+    
+    .theme-alchemy {
+      background: linear-gradient(165deg, var(--emerald-deep) 0%, var(--midnight-deep) 50%, #031119 100%);
+      color: var(--text-on-dark);
+    }
+    
+    .theme-alchemy::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(ellipse at 20% 30%, rgba(210, 169, 90, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 70%, rgba(108, 161, 146, 0.06) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    .theme-alchemy .content {
+      position: relative;
+      z-index: 1;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+    }
+    
+    /* ══════════════════════════════════════════════════════════════════
+       THEME: BOTANICAL (Quiz Flow)
+       ══════════════════════════════════════════════════════════════════ */
+    
+    .theme-botanical {
+      background: var(--emerald-deep);
+      padding: var(--space-4);
+    }
+    
+    .botanical-frame {
+      background: linear-gradient(180deg, var(--cream-pure) 0%, var(--cream-warm) 100%);
+      border-radius: 24px;
+      padding: var(--space-6);
+      width: 100%;
+      max-width: 480px;
+      min-height: calc(100vh - var(--space-8));
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    
+    /* ══════════════════════════════════════════════════════════════════
+       INTRO SCREEN
+       ══════════════════════════════════════════════════════════════════ */
+    
+    .intro-icon {
+      width: 120px;
+      height: 120px;
+      margin-bottom: var(--space-8);
+      animation: pulse 3s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 20px rgba(210, 169, 90, 0.3)); }
+      50% { transform: scale(1.05); filter: drop-shadow(0 0 40px rgba(210, 169, 90, 0.5)); }
+    }
+    
+    .intro-title {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 5vw, 2.75rem);
+      font-weight: 500;
+      color: var(--gold-primary);
+      margin-bottom: var(--space-4);
+      line-height: 1.2;
+    }
+    
+    .intro-subtitle {
+      font-size: 1.125rem;
+      color: var(--text-on-dark-muted);
+      margin-bottom: var(--space-10);
+      line-height: 1.6;
+      max-width: 380px;
+    }
+    
+    .intro-meta {
+      display: flex;
+      gap: var(--space-6);
+      margin-bottom: var(--space-10);
+      font-size: 0.875rem;
+      color: var(--text-on-dark-muted);
+    }
+    
+    .intro-meta span {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    
+    /* ══════════════════════════════════════════════════════════════════
+       BUTTONS
+       ══════════════════════════════════════════════════════════════════ */
+    
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-dark) 100%);
+      color: var(--midnight-deep);
+      font-family: var(--font-sans);
+      font-size: 1rem;
+      font-weight: 600;
+      padding: var(--space-4) var(--space-8);
+      border: none;
+      border-radius: 100px;
+      cursor: pointer;
+      transition: all var(--duration-normal) var(--ease-out);
+      box-shadow: 0 4px 20px rgba(210, 169, 90, 0.3);
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(210, 169, 90, 0.4);
+    }
+    
+    .btn-secondary {
+      background: transparent;
+      color: var(--gold-primary);
+      font-family: var(--font-sans);
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: var(--space-3) var(--space-6);
+      border: 1px solid rgba(210, 169, 90, 0.3);
+      border-radius: 100px;
+      cursor: pointer;
+      transition: all var(--duration-normal) var(--ease-out);
+    }
+    
+    .btn-secondary:hover {
+      border-color: var(--gold-primary);
+      background: rgba(210, 169, 90, 0.1);
+    }
+    
+    /* ══════════════════════════════════════════════════════════════════
+       PROGRESS BAR
+       ══════════════════════════════════════════════════════════════════ */
+    
+    .progress-container {
+      margin-bottom: var(--space-6);
+    }
+    
+    .progress-text {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-on-light-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: var(--space-2);
+    }
+    
+    .progress-bar {
+      height: 4px;
+      background: var(--cream-muted);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--emerald-deep), var(--sage));
+      border-radius: 100px;
+      transition: width var(--duration-slow) var(--ease-out);
+    }
+    
+    /* ══════════════════════════════════════════════════════════════════
+       QUESTION AREA
+       ══════════════════════════════════════════════════════════════════ */
+    
+    .question-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .question-number {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--sage);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: var(--space-3);
+    }
+    
+    .question-text {
+      font-family: var(--font-serif);
+      font-size: clamp(1.25rem, 3vw, 1.5rem);
+      font-weight: 500;
+      color: var(--text-on-light);
+      line-height: 1.4;
+      margin-bottom: var(--space-6);
+    }
+    
+    .question-context {
+      font-size: 0.9375rem;
+      color: var(--text-on-light-muted);
+      font-style: italic;
+      margin-bottom: var(--space-6);
+      padding: var(--space-4);
+      background: rgba(108, 161, 146, 0.08);
+      border-radius: 12px;
+      border-left: 3px solid var(--sage);
+    }
+    
+    /* ══════════════════════════════════════════════════════════════════
+       ANSWER OPTIONS
+       ══════════════════════════════════════════════════════════════════ */
+    
+    .options-container {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    
+    .option-card {
+      background: #FFFFFF;
+      border: 2px solid var(--cream-muted);
+      border-radius: 16px;
+      padding: var(--space-4) var(--space-5);
+      cursor: pointer;
+      transition: all var(--duration-normal) var(--ease-out);
+      text-align: left;
+    }
+    
+    .option-card:hover {
+      border-color: var(--sage);
+      transform: translateX(4px);
+      box-shadow: 0 4px 16px rgba(108, 161, 146, 0.15);
+    }
+    
+    .option-card.selected {
+      border-color: var(--emerald-deep);
+      background: linear-gradient(135deg, rgba(5, 59, 63, 0.05) 0%, rgba(108, 161, 146, 0.08) 100%);
+    }
+    
+    .option-label {
+      font-weight: 500;
+      color: var(--text-on-light);
+      font-size: 0.9375rem;
+      line-height: 1.5;
+    }
+    
+    /* ══════════════════════════════════════════════════════════════════
+       MICRO-WIN FEEDBACK
+       ══════════════════════════════════════════════════════════════════ */
+    
+    .micro-win {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      color: var(--gold-primary);
+      text-shadow: 0 0 30px rgba(210, 169, 90, 0.5);
+      pointer-events: none;
+      z-index: 100;
+      opacity: 0;
+    }
+    
+    .micro-win.show {
+      animation: microWin 0.8s var(--ease-out) forwards;
+    }
+    
+    @keyframes microWin {
+      0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+      30% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+      100% { transform: translate(-50%, -60%) scale(1); opacity: 0; }
+    }
+    
+    /* ══════════════════════════════════════════════════════════════════
+       LOADING/CALCULATION SCREEN
+       ══════════════════════════════════════════════════════════════════ */
+    
+    .loading-content {
+      text-align: center;
+    }
+    
+    .aura-orb {
+      width: 200px;
+      height: 200px;
+      margin: 0 auto var(--space-8);
+      position: relative;
+    }
+    
+    .aura-orb-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(210, 169, 90, 0.3) 0%, transparent 70%);
+      animation: orbPulse 2s ease-in-out infinite;
+    }
+    
+    .aura-orb::before,
+    .aura-orb::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      animation: orbRing 3s linear infinite;
+    }
+    
+    .aura-orb::before {
+      top: 10%;
+      left: 10%;
+      width: 80%;
+      height: 80%;
+      border: 2px solid rgba(210, 169, 90, 0.2);
+    }
+    
+    .aura-orb::after {
+      top: -5%;
+      left: -5%;
+      width: 110%;
+      height: 110%;
+      border: 1px solid rgba(108, 161, 146, 0.15);
+      animation-direction: reverse;
+      animation-duration: 4s;
+    }
+    
+    @keyframes orbPulse {
+      0%, 100% { transform: scale(0.95); opacity: 0.7; }
+      50% { transform: scale(1.05); opacity: 1; }
+    }
+    
+    @keyframes orbRing {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+      font-family: var(--font-serif);
+      font-size: 1.375rem;
+      color: var(--gold-primary);
+      margin-bottom: var(--space-3);
+    }
+    
+    .loading-subtext {
+      font-size: 0.9375rem;
+      color: var(--text-on-dark-muted);
+    }
+    
+    /* ══════════════════════════════════════════════════════════════════
+       RESULT SCREEN
+       ══════════════════════════════════════════════════════════════════ */
+    
+    .result-content {
+      max-width: 420px;
+      width: 100%;
+    }
+    
+    .result-card {
+      background: linear-gradient(165deg, var(--midnight-medium) 0%, var(--midnight-soft) 100%);
+      border: 1px solid rgba(210, 169, 90, 0.25);
+      border-radius: 24px;
+      padding: var(--space-8) var(--space-6);
+      margin-bottom: var(--space-6);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .result-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse at 50% 0%, var(--result-color-glow, rgba(210, 169, 90, 0.15)) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    
+    .result-badge {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold-primary);
+      margin-bottom: var(--space-4);
+    }
+    
+    .result-aura-visual {
+      width: 140px;
+      height: 140px;
+      margin: 0 auto var(--space-6);
+      position: relative;
+    }
+    
+    .aura-glow {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--result-color, var(--gold-primary)) 0%, transparent 70%);
+      opacity: 0.6;
+      animation: resultGlow 3s ease-in-out infinite;
+    }
+    
+    .aura-core {
+      position: absolute;
+      top: 25%;
+      left: 25%;
+      width: 50%;
+      height: 50%;
+      border-radius: 50%;
+      background: var(--result-color, var(--gold-primary));
+      box-shadow: 0 0 40px var(--result-color, var(--gold-primary));
+    }
+    
+    @keyframes resultGlow {
+      0%, 100% { transform: scale(1); opacity: 0.6; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+    }
+    
+    .result-title {
+      font-family: var(--font-serif);
+      font-size: clamp(1.75rem, 4vw, 2.25rem);
+      font-weight: 600;
+      color: var(--text-on-dark);
+      margin-bottom: var(--space-2);
+    }
+    
+    .result-archetype {
+      font-family: var(--font-serif);
+      font-size: 1.125rem;
+      font-style: italic;
+      color: var(--gold-primary);
+      margin-bottom: var(--space-6);
+    }
+    
+    .result-tagline {
+      font-size: 1rem;
+      color: var(--text-on-dark-muted);
+      line-height: 1.6;
+      margin-bottom: var(--space-6);
+      padding: 0 var(--space-4);
+    }
+    
+    /* Secondary Color + Element */
+    .result-extras {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-6);
+      margin-bottom: var(--space-6);
+      padding: var(--space-4);
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+    }
+    
+    .extra-item {
+      text-align: center;
+    }
+    
+    .extra-label {
+      font-size: 0.6875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-on-dark-muted);
+      margin-bottom: var(--space-2);
+    }
+    
+    .extra-value {
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      color: var(--text-on-dark);
+    }
+    
+    .extra-dot {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: var(--space-2);
+      vertical-align: middle;
+    }
+    
+    /* Stats */
+    .result-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-3);
+      margin-bottom: var(--space-6);
+    }
+    
+    .stat-item {
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: var(--space-3);
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-family: var(--font-serif);
+      font-size: 1.25rem;
+      color: var(--gold-primary);
+    }
+    
+    .stat-label {
+      font-size: 0.6875rem;
+      color: var(--text-on-dark-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    /* Compatibility */
+    .result-compat {
+      padding: var(--space-4);
+      background: rgba(108, 161, 146, 0.1);
+      border-radius: 12px;
+      margin-bottom: var(--space-6);
+    }
+    
+    .compat-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--sage);
+      margin-bottom: var(--space-3);
+    }
+    
+    .compat-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-2);
+    }
+    
+    .compat-row:last-child {
+      margin-bottom: 0;
+    }
+    
+    .compat-icon {
+      font-size: 1rem;
+    }
+    
+    .compat-text {
+      font-size: 0.875rem;
+      color: var(--text-on-dark-muted);
+    }
+    
+    .compat-colors {
+      display: flex;
+      gap: var(--space-2);
+      margin-left: auto;
+    }
+    
+    .compat-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.2);
+    }
+    
+    /* Actions */
+    .result-actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    
+    /* Ko-Kreation Text (Full Description) */
+    .result-description {
+      background: rgba(0,0,0,0.15);
+      border-radius: 16px;
+      padding: var(--space-6);
+      margin-bottom: var(--space-6);
+      text-align: left;
+    }
+    
+    .description-toggle {
+      width: 100%;
+      background: none;
+      border: none;
+      color: var(--gold-primary);
+      font-family: var(--font-sans);
+      font-size: 0.875rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      padding: var(--space-3);
+      margin-bottom: var(--space-4);
+    }
+    
+    .description-content {
+      display: none;
+      font-size: 0.9375rem;
+      color: var(--text-on-dark-muted);
+      line-height: 1.8;
+    }
+    
+    .description-content.show {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    .description-content p {
+      margin-bottom: var(--space-4);
+    }
+    
+    /* Disclaimer */
+    .disclaimer {
+      font-size: 0.75rem;
+      color: var(--text-on-dark-muted);
+      opacity: 0.7;
+      margin-top: var(--space-6);
+      text-align: center;
+    }
+    
+    /* ══════════════════════════════════════════════════════════════════
+       DEBUG PANEL
+       ══════════════════════════════════════════════════════════════════ */
+    
+    .debug-panel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.95);
+      color: #0f0;
+      font-family: monospace;
+      font-size: 11px;
+      padding: var(--space-3);
+      max-height: 150px;
+      overflow-y: auto;
+      display: none;
+      z-index: 1000;
+    }
+    
+    .debug-panel.show {
+      display: block;
+    }
+    
+    /* ══════════════════════════════════════════════════════════════════
+       RESPONSIVE
+       ══════════════════════════════════════════════════════════════════ */
+    
+    @media (max-width: 480px) {
+      .theme-botanical {
+        padding: var(--space-2);
+      }
+      
+      .botanical-frame {
+        padding: var(--space-4);
+        border-radius: 20px;
+        min-height: calc(100vh - var(--space-4));
+      }
+      
+      .result-card {
+        padding: var(--space-6) var(--space-4);
+      }
+      
+      .result-stats {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- ══════════════════════════════════════════════════════════════════
+       INTRO SCREEN
+       ══════════════════════════════════════════════════════════════════ -->
+  <div id="intro-screen" class="screen theme-alchemy active">
+    <div class="content">
+      <svg class="intro-icon" viewBox="0 0 120 120" fill="none">
+        <defs>
+          <radialGradient id="auraGrad1" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#D2A95A" stop-opacity="0.8"/>
+            <stop offset="100%" stop-color="#D2A95A" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="goldLine" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#E8C87A"/>
+            <stop offset="100%" stop-color="#A77D38"/>
+          </linearGradient>
+        </defs>
+        <circle cx="60" cy="60" r="50" fill="url(#auraGrad1)"/>
+        <circle cx="60" cy="60" r="35" stroke="url(#goldLine)" stroke-width="1.5" fill="none" opacity="0.6"/>
+        <circle cx="60" cy="60" r="20" stroke="url(#goldLine)" stroke-width="1" fill="none" opacity="0.4"/>
+        <circle cx="60" cy="60" r="8" fill="#D2A95A"/>
+        <path d="M60 20 L60 10 M60 110 L60 100 M20 60 L10 60 M110 60 L100 60" stroke="#D2A95A" stroke-width="1" opacity="0.5"/>
+        <path d="M32 32 L26 26 M88 32 L94 26 M32 88 L26 94 M88 88 L94 94" stroke="#D2A95A" stroke-width="1" opacity="0.3"/>
+      </svg>
+      
+      <h1 class="intro-title">Deine Aurafarben</h1>
+      <p class="intro-subtitle">Entdecke das unsichtbare Licht, das dich umgibt — und die Farbe, in der deine Seele spricht.</p>
+      
+      <div class="intro-meta">
+        <span>⏱ 3 Min</span>
+        <span>✦ 12 Fragen</span>
+      </div>
+      
+      <button class="btn-primary" onclick="startQuiz()">Enthülle deine Aura</button>
+    </div>
+  </div>
+  
+  <!-- ══════════════════════════════════════════════════════════════════
+       QUIZ SCREEN
+       ══════════════════════════════════════════════════════════════════ -->
+  <div id="quiz-screen" class="screen theme-botanical">
+    <div class="botanical-frame">
+      <div class="progress-container">
+        <div class="progress-text">Frage <span id="current-q">1</span> von 12</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill" style="width: 8.33%"></div>
+        </div>
+      </div>
+      
+      <div class="question-area">
+        <div class="question-number" id="question-number">ENERGIEFLUSS</div>
+        <h2 class="question-text" id="question-text"></h2>
+        <div class="question-context" id="question-context"></div>
+        
+        <div class="options-container" id="options-container"></div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- ══════════════════════════════════════════════════════════════════
+       LOADING SCREEN
+       ══════════════════════════════════════════════════════════════════ -->
+  <div id="loading-screen" class="screen theme-alchemy">
+    <div class="content loading-content">
+      <div class="aura-orb">
+        <div class="aura-orb-inner"></div>
+      </div>
+      <p class="loading-text">Deine Aura kristallisiert sich...</p>
+      <p class="loading-subtext" id="loading-phase">Energieströme werden analysiert</p>
+    </div>
+  </div>
+  
+  <!-- ══════════════════════════════════════════════════════════════════
+       RESULT SCREEN
+       ══════════════════════════════════════════════════════════════════ -->
+  <div id="result-screen" class="screen theme-alchemy">
+    <div class="content result-content">
+      <div class="result-card" id="result-card">
+        <div class="result-badge">✦ DEINE AURA ✦</div>
+        
+        <div class="result-aura-visual">
+          <div class="aura-glow"></div>
+          <div class="aura-core"></div>
+        </div>
+        
+        <h1 class="result-title" id="result-color-name"></h1>
+        <p class="result-archetype" id="result-archetype"></p>
+        <p class="result-tagline" id="result-tagline"></p>
+        
+        <div class="result-extras">
+          <div class="extra-item">
+            <div class="extra-label">Zweitfarbe</div>
+            <div class="extra-value">
+              <span class="extra-dot" id="secondary-dot"></span>
+              <span id="secondary-color-name"></span>
+            </div>
+          </div>
+          <div class="extra-item">
+            <div class="extra-label">Element</div>
+            <div class="extra-value" id="result-element"></div>
+          </div>
+        </div>
+        
+        <div class="result-stats" id="result-stats"></div>
+        
+        <div class="result-compat" id="result-compat"></div>
+        
+        <div class="result-description">
+          <button class="description-toggle" onclick="toggleDescription()">
+            <span>Mehr über deine Aura erfahren</span>
+            <span id="toggle-icon">▼</span>
+          </button>
+          <div class="description-content" id="description-content"></div>
+        </div>
+      </div>
+      
+      <div class="result-actions">
+        <button class="btn-primary" onclick="shareResult()">Teile dein Ergebnis</button>
+        <button class="btn-secondary" onclick="restartQuiz()">Erneut starten</button>
+      </div>
+      
+      <p class="disclaimer">Dieser Test dient der spielerischen Selbstreflexion und stellt keine psychologische Diagnose dar.</p>
+    </div>
+  </div>
+  
+  <!-- Micro-Win Feedback -->
+  <div class="micro-win" id="micro-win"></div>
+  
+  <!-- Debug Panel (Triple-Click to toggle) -->
+  <div class="debug-panel" id="debug-panel"></div>
+  
+  <!-- ══════════════════════════════════════════════════════════════════
+       QUIZ ENGINE
+       ══════════════════════════════════════════════════════════════════ -->
+  <script>
+    // ════════════════════════════════════════════════════════════════════
+    // QUIZ DATA
+    // ════════════════════════════════════════════════════════════════════
+    
+    const QUIZ_DATA = {
+      meta: {
+        id: "aura-farben-quiz",
+        title: "Deine Aurafarben",
+        subtitle: "Entdecke das unsichtbare Licht deiner Seele",
+        version: "1.0.0",
+        engine: "custom_dimensional",
+        disclaimer: "Dieser Test dient der spielerischen Selbstreflexion und stellt keine psychologische Diagnose dar."
+      },
+      
+      dimensions: [
+        { id: "energiefluss", pole_low: "introjektion", pole_high: "projektion", label: "Energiefluss" },
+        { id: "rhythmus", pole_low: "konstanz", pole_high: "dynamik", label: "Rhythmus" },
+        { id: "wahrnehmung", pole_low: "analyse", pole_high: "intuition", label: "Wahrnehmung" },
+        { id: "resonanz", pole_low: "absorption", pole_high: "emission", label: "Resonanz" }
+      ],
+      
+      questions: [
+        // ENERGIEFLUSS (Q1-Q3)
+        {
+          id: "q1",
+          dimension: "energiefluss",
+          text: "Es ist früher Morgen. Du wachst auf, noch bevor der Wecker klingelt.",
+          context: "In diesen ersten Momenten des Tages zeigt sich, wie deine Energie natürlich fließt.",
+          options: [
+            { id: "a", text: "Ich bleibe noch liegen, lasse die Gedanken kommen und gehen. Der Tag kann warten.", scores: { energiefluss: 1 } },
+            { id: "b", text: "Ich checke kurz das Handy — nicht aus Stress, sondern aus Neugier auf die Welt.", scores: { energiefluss: 4 } },
+            { id: "c", text: "Ich stehe auf und starte meinen Tag. Energie, die still liegt, fühlt sich verschwendet an.", scores: { energiefluss: 5 } },
+            { id: "d", text: "Ich spüre erst in mich hinein. Wie fühlt sich heute an? Dann entscheide ich, wie ich beginne.", scores: { energiefluss: 2 } }
+          ]
+        },
+        {
+          id: "q2",
+          dimension: "energiefluss",
+          text: "Du verbringst einen Tag allein. Niemand erwartet etwas von dir.",
+          context: "Wie du mit unstrukturierter Zeit umgehst, offenbart deine innere Energierichtung.",
+          options: [
+            { id: "a", text: "Ich genieße die Stille. Zeit zum Lesen, Nachdenken, einfach Sein.", scores: { energiefluss: 1 } },
+            { id: "b", text: "Ich plane irgendwann rauszugehen. Ein Café, ein Park — Menschen beobachten.", scores: { energiefluss: 3 } },
+            { id: "c", text: "Ich rufe jemanden an oder schreibe Nachrichten. Alleinsein ist schön, aber geteilte Energie ist besser.", scores: { energiefluss: 5 } },
+            { id: "d", text: "Ich mache ein Projekt, das ich vor mir hergeschoben habe. Endlich Raum dafür.", scores: { energiefluss: 2 } }
+          ]
+        },
+        {
+          id: "q3",
+          dimension: "energiefluss",
+          text: "Nach einem langen, intensiven Tag fühlst du dich erschöpft.",
+          context: "Wie du Energie zurückgewinnst, zeigt, woher deine Kraft wirklich kommt.",
+          options: [
+            { id: "a", text: "Ich brauche absolute Ruhe. Kopfhörer rein, Welt aus.", scores: { energiefluss: 1 } },
+            { id: "b", text: "Ein ruhiger Spaziergang hilft. Bewegung ohne Ziel.", scores: { energiefluss: 2 } },
+            { id: "c", text: "Ich brauche einen Menschen, dem ich alles erzählen kann. Das Aussprechen hilft.", scores: { energiefluss: 4 } },
+            { id: "d", text: "Ich gehe unter Leute — ein Abend mit Freunden lädt mich auf, selbst wenn ich müde bin.", scores: { energiefluss: 5 } }
+          ]
+        },
+        
+        // RHYTHMUS (Q4-Q6)
+        {
+          id: "q4",
+          dimension: "rhythmus",
+          text: "Ein Projekt, an dem du arbeitest, verläuft anders als geplant.",
+          context: "Wie du mit Veränderung umgehst, offenbart deinen inneren Rhythmus.",
+          options: [
+            { id: "a", text: "Ich passe mich an. Pläne sind Richtungen, keine Gesetze.", scores: { rhythmus: 5 } },
+            { id: "b", text: "Ich halte kurz inne und überdenke die Strategie. Dann weiter.", scores: { rhythmus: 3 } },
+            { id: "c", text: "Ich versuche, zum ursprünglichen Plan zurückzukehren. Struktur gibt mir Sicherheit.", scores: { rhythmus: 1 } },
+            { id: "d", text: "Ich sehe es als Chance — manchmal führen Umwege zu besseren Zielen.", scores: { rhythmus: 4 } }
+          ]
+        },
+        {
+          id: "q5",
+          dimension: "rhythmus",
+          text: "Du betrittst einen Raum voller Fremder bei einer Veranstaltung.",
+          context: "Dein erstes Instinkt in neuen sozialen Situationen spiegelt deinen Lebensrhythmus.",
+          options: [
+            { id: "a", text: "Ich beobachte erst. Wer ist hier? Wie ist die Dynamik? Dann wähle ich.", scores: { rhythmus: 1 } },
+            { id: "b", text: "Ich suche eine vertraute Ecke oder eine Aufgabe — das Buffet checken, zum Beispiel.", scores: { rhythmus: 2 } },
+            { id: "c", text: "Ich gehe auf die erste Person zu, die offen wirkt. Smalltalk ist eine Fähigkeit.", scores: { rhythmus: 4 } },
+            { id: "d", text: "Ich lasse mich treiben. Gespräche passieren oder nicht. Kein Druck.", scores: { rhythmus: 5 } }
+          ]
+        },
+        {
+          id: "q6",
+          dimension: "rhythmus",
+          text: "Wie würdest du deinen idealen Lebensweg beschreiben?",
+          context: "Diese Metapher zeigt, wie du Stabilität und Wandel in Balance bringst.",
+          options: [
+            { id: "a", text: "Ein tiefes Tal mit hohen Bergen drumherum. Geschützt, ruhig, mein Reich.", scores: { rhythmus: 1 } },
+            { id: "b", text: "Ein Fluss, der sich durch verschiedene Landschaften windet. Stetig, aber wandelnd.", scores: { rhythmus: 3 } },
+            { id: "c", text: "Ein Vogel, der von Ast zu Ast springt. Freiheit, Neugier, Leichtigkeit.", scores: { rhythmus: 5 } },
+            { id: "d", text: "Ein Baum mit tiefen Wurzeln und Ästen, die sich dem Wind beugen.", scores: { rhythmus: 2 } }
+          ]
+        },
+        
+        // WAHRNEHMUNG (Q7-Q9)
+        {
+          id: "q7",
+          dimension: "wahrnehmung",
+          text: "Du musst eine wichtige Entscheidung treffen.",
+          context: "Wie du zu Klarheit kommst, zeigt deinen bevorzugten Wahrnehmungsmodus.",
+          options: [
+            { id: "a", text: "Ich sammle Fakten, mache vielleicht eine Pro-Contra-Liste. Daten beruhigen.", scores: { wahrnehmung: 1 } },
+            { id: "b", text: "Ich spüre in meinen Bauch. Die Antwort ist da, ich muss sie nur hören.", scores: { wahrnehmung: 5 } },
+            { id: "c", text: "Ich spreche mit Menschen, die ich respektiere. Ihre Perspektiven helfen.", scores: { wahrnehmung: 3 } },
+            { id: "d", text: "Ich schlafe eine Nacht darüber. Die Antwort kommt, wenn ich loslasse.", scores: { wahrnehmung: 4 } }
+          ]
+        },
+        {
+          id: "q8",
+          dimension: "wahrnehmung",
+          text: "Du begegnest jemandem zum ersten Mal.",
+          context: "Der erste Eindruck offenbart, wie du die Welt wahrnimmst.",
+          options: [
+            { id: "a", text: "Ich achte auf Körpersprache, Energie — das Ungesagte sagt mehr als Worte.", scores: { wahrnehmung: 5 } },
+            { id: "b", text: "Ich höre zu, was sie sagen und wie. Die Wortwahl verrät viel.", scores: { wahrnehmung: 2 } },
+            { id: "c", text: "Ich beobachte, wie sie mit anderen interagieren. Kontext ist alles.", scores: { wahrnehmung: 1 } },
+            { id: "d", text: "Ich folge meinem Gefühl. Manchmal weiß man einfach, ob es passt.", scores: { wahrnehmung: 4 } }
+          ]
+        },
+        {
+          id: "q9",
+          dimension: "wahrnehmung",
+          text: "Wenn du an deine erfolgreichsten Momente denkst:",
+          context: "Woher kam die Klarheit in deinen Sternstunden?",
+          options: [
+            { id: "a", text: "Sie kamen aus sorgfältiger Vorbereitung. Ich hatte einen Plan.", scores: { wahrnehmung: 1 } },
+            { id: "b", text: "Ich wusste einfach, was zu tun war. Keine Erklärung, nur Gewissheit.", scores: { wahrnehmung: 5 } },
+            { id: "c", text: "Ich habe auf andere gehört und zur richtigen Zeit das Richtige getan.", scores: { wahrnehmung: 3 } },
+            { id: "d", text: "Es war eine Mischung — Vorbereitung trifft auf Instinkt im entscheidenden Moment.", scores: { wahrnehmung: 4 } }
+          ]
+        },
+        
+        // RESONANZ (Q10-Q12)
+        {
+          id: "q10",
+          dimension: "resonanz",
+          text: "Du bist in einem Gespräch mit einem Freund, der gerade etwas Schwieriges durchmacht.",
+          context: "Wie du auf emotionale Nähe reagierst, zeigt deine soziale Resonanz.",
+          options: [
+            { id: "a", text: "Ich höre zu und halte den Raum. Manchmal ist Präsenz wichtiger als Worte.", scores: { resonanz: 1 } },
+            { id: "b", text: "Ich spüre ihren Schmerz fast körperlich. Empathie ist kein Schalter.", scores: { resonanz: 2 } },
+            { id: "c", text: "Ich versuche zu helfen — konkrete Vorschläge, Lösungen, Perspektiven.", scores: { resonanz: 4 } },
+            { id: "d", text: "Ich teile eigene Erfahrungen. Manchmal hilft zu wissen, dass man nicht allein ist.", scores: { resonanz: 5 } }
+          ]
+        },
+        {
+          id: "q11",
+          dimension: "resonanz",
+          text: "Du betrittst einen Raum nach einem emotionalen Gespräch zwischen anderen.",
+          context: "Wie du auf Atmosphären reagierst, zeigt deine energetische Sensibilität.",
+          options: [
+            { id: "a", text: "Ich spüre sofort, dass etwas war. Die Luft fühlt sich anders an.", scores: { resonanz: 1 } },
+            { id: "b", text: "Ich bemerke es erst, wenn jemand etwas sagt oder sich seltsam verhält.", scores: { resonanz: 4 } },
+            { id: "c", text: "Ich nehme es wahr, aber es beeinflusst mich nicht stark. Ich bin bei mir.", scores: { resonanz: 5 } },
+            { id: "d", text: "Ich nehme die Schwere mit. Es dauert, bis ich sie wieder loswerde.", scores: { resonanz: 2 } }
+          ]
+        },
+        {
+          id: "q12",
+          dimension: "resonanz",
+          text: "Wenn du an deine Rolle in Gruppen denkst:",
+          context: "Deine natürliche Position im sozialen Gefüge offenbart deine Resonanzfrequenz.",
+          options: [
+            { id: "a", text: "Ich bin oft der Ruhepol. Andere kommen zu mir, wenn sie Halt brauchen.", scores: { resonanz: 1 } },
+            { id: "b", text: "Ich passe mich an. Jede Gruppe braucht etwas anderes, und ich fülle die Lücke.", scores: { resonanz: 2 } },
+            { id: "c", text: "Ich bringe Energie ein. Oft bin ich es, der Ideen oder Pläne vorantreibt.", scores: { resonanz: 5 } },
+            { id: "d", text: "Ich verbinde Menschen. Ich sehe, wer zusammenpasst, und baue Brücken.", scores: { resonanz: 4 } }
+          ]
+        }
+      ],
+      
+      profiles: {
+        rot: {
+          id: "rot",
+          color: "#C45D4A",
+          title: "Leuchtendes Rot",
+          archetype: "Die Lebendige Flamme",
+          tagline: "Du bist die Kraft, die Räume verändert, noch bevor du ein Wort sagst — pure Lebensenergie in menschlicher Form.",
+          element: "feuer",
+          stats: [
+            { label: "Präsenz", value: "97%" },
+            { label: "Leidenschaft", value: "94%" },
+            { label: "Ungeduld", value: "78%" },
+            { label: "Magnetismus", value: "∞" }
+          ],
+          allies: ["orange", "gelb"],
+          nemesis: ["blau", "violett"],
+          description: `Rot ist die Farbe des Anfangs — des ersten Atemzugs, des ersten Herzschlags, des ersten Funkens, der alles in Bewegung setzt. Deine Aura vibriert in dieser Urfrequenz: pure, ungefilterte Lebenskraft.
+
+Du bist mit dem Wurzelchakra verbunden — jenem Energiezentrum, das uns im Körper verankert, im Hier und Jetzt, in der physischen Realität. Bei dir ist diese Verbindung außergewöhnlich stark. Du lebst nicht im Konjunktiv. Du bist hier.
+
+Dein Geschenk ist die Fähigkeit zur Präsenz. Wenn du einen Raum betrittst, verändert sich die Atmosphäre. Nicht durch Lautstärke — manchmal gerade durch deine Stille. Es ist eine Kraft, die andere spüren, bevor sie dich sehen.
+
+Der Schatten des Roten ist die Ungeduld. Die brennende Frustration, wenn andere langsamer sind. Die Tendenz, zu handeln, bevor du nachgedacht hast. Manchmal brennt die Flamme zu heiß und verzehrt, was sie eigentlich wärmen sollte.
+
+Deine Aura flüstert: "Du musst niemandem beweisen, dass du lebendig bist. Du bist es. Atme. Und wähle, wohin du deine Flamme trägst."`
+        },
+        
+        orange: {
+          id: "orange",
+          color: "#E07B39",
+          title: "Warmes Orange",
+          archetype: "Der Kreative Strom",
+          tagline: "Du bist die Freude, die ansteckend ist — der Mensch, neben dem sich das Leben ein bisschen mehr nach Abenteuer anfühlt.",
+          element: "feuer",
+          stats: [
+            { label: "Kreativität", value: "96%" },
+            { label: "Spontanität", value: "91%" },
+            { label: "Beständigkeit", value: "43%" },
+            { label: "Lebensfreude", value: "∞" }
+          ],
+          allies: ["rot", "gelb"],
+          nemesis: ["indigo", "blau"],
+          description: `Orange ist die Farbe des Spiels, der Freude, der unbeschwerten Kreativität. Deine Aura pulsiert in dieser warmen Frequenz wie ein ewiger Sonnenuntergang — lebendig, einladend, nie ganz greifbar.
+
+Du trägst das Sakralchakra in besonderer Intensität — das Zentrum der Emotionen, der Sinnlichkeit, der schöpferischen Kraft. Bei dir fließt diese Energie frei und ungezwungen. Du erschaffst, weil es sich gut anfühlt. Du verbindest dich, weil Nähe natürlich ist.
+
+Dein Geschenk ist die Fähigkeit, andere zum Leuchten zu bringen. In deiner Nähe erlauben sich Menschen, leichter zu sein. Du erinnerst sie daran, dass das Leben nicht nur Arbeit ist.
+
+Der Schatten des Oranges ist die Unbeständigkeit. Die Schwierigkeit, bei einer Sache zu bleiben, wenn der Reiz des Neuen lockt. Manchmal verwechselst du Tiefe mit Langeweile.
+
+Deine Aura flüstert: "Deine Leichtigkeit ist keine Oberflächlichkeit. Sie ist ein Geschenk. Aber vergiss nicht: Auch der Strom braucht ein Bett, um zu fließen."`
+        },
+        
+        gelb: {
+          id: "gelb",
+          color: "#D4AF37",
+          title: "Goldgelb",
+          archetype: "Der Leuchtende Intellekt",
+          tagline: "Du bist die Sonne im Raum — Klarheit, Wärme und die Kraft, andere zum Wachsen zu bringen.",
+          element: "feuer",
+          stats: [
+            { label: "Innere Klarheit", value: "94%" },
+            { label: "Schöpferkraft", value: "87%" },
+            { label: "Ungeduld", value: "103%" },
+            { label: "Versteckte Tiefe", value: "∞" }
+          ],
+          allies: ["indigo", "gruen"],
+          nemesis: ["rot", "orange"],
+          description: `Goldgelb ist die Farbe der Sonne, des Verstandes, der klaren Erkenntnis. Deine Aura strahlt in dieser Frequenz wie das erste Licht nach der Morgendämmerung — hell, warm, erhellend.
+
+Du bist mit dem Solarplexus-Chakra verbunden — dem Zentrum der persönlichen Macht, des Selbstwerts, der geistigen Klarheit. Bei dir brennt dieses Feuer mit besonderer Intensität. Du verstehst Dinge, bevor andere sie erklären können. Du siehst Muster, wo andere Chaos sehen.
+
+Dein Geschenk ist die Fähigkeit zur Synthese. Du nimmst komplexe Ideen und machst sie zugänglich. In deiner Nähe verstehen Menschen Dinge, die sie vorher nicht greifen konnten.
+
+Der Schatten des Gelbs ist die Ungeduld mit jenen, die langsamer denken. Die Tendenz, zu viel allein tragen zu wollen. Manchmal vergisst die Sonne, dass auch sie Dunkelheit braucht, um zu leuchten.
+
+Deine Aura flüstert: "Vertraue deinem inneren Kompass. Er hat dich hierher geführt — und er wird dich weiterführen."`
+        },
+        
+        gruen: {
+          id: "gruen",
+          color: "#4A8F6F",
+          title: "Tiefes Grün",
+          archetype: "Der Stille Heiler",
+          tagline: "Du bist der Baum, an dem sich andere ausruhen — ohne zu wissen, wie tief deine Wurzeln reichen.",
+          element: "erde",
+          stats: [
+            { label: "Heilende Präsenz", value: "98%" },
+            { label: "Stilles Verständnis", value: "91%" },
+            { label: "Heimlicher Neid", value: "23%" },
+            { label: "Wurzeltiefe", value: "∞" }
+          ],
+          allies: ["blau", "gelb"],
+          nemesis: ["violett", "rot"],
+          description: `Grün ist die Farbe der Mitte — zwischen Himmel und Erde, zwischen Geben und Nehmen. Deine Aura vibriert in diesem Spektrum wie ein Wald nach dem Regen: lebendig, erneuernd, still kraftvoll.
+
+Du trägst das Herzchakra in seiner reinsten Form. Nicht das sentimentale, überflutete Herz — sondern das Herz, das hält. Das aushält. Das Raum schafft, in dem andere atmen können, ohne dass du dabei ersticken musst.
+
+Dein Geschenk ist die Fähigkeit zur echten Präsenz. Wenn du zuhörst, dann hörst du. Wenn du hältst, dann hältst du. Diese Qualität ist seltener, als du denkst.
+
+Der Schatten des Grüns ist die Neigung, dich selbst zu vergessen, während du andere nährst. Die stille Frage, ob du genug gibst. Der Neid, der manchmal aufsteigt, wenn du siehst, wie leicht sich andere nehmen, was sie brauchen.
+
+Deine Aura flüstert: "Du bist nicht hier, um zu retten. Du bist hier, um Raum zu halten — auch für dich selbst."`
+        },
+        
+        blau: {
+          id: "blau",
+          color: "#4A7EB5",
+          title: "Klares Blau",
+          archetype: "Die Ruhige Wahrheit",
+          tagline: "Du bist der stille See, in dem andere ihr Spiegelbild finden — auch wenn sie nicht immer bereit sind, hinzusehen.",
+          element: "wasser",
+          stats: [
+            { label: "Authentizität", value: "95%" },
+            { label: "Innere Ruhe", value: "89%" },
+            { label: "Ausdrucksschwere", value: "34%" },
+            { label: "Tiefe", value: "∞" }
+          ],
+          allies: ["gruen", "indigo"],
+          nemesis: ["orange", "rot"],
+          description: `Blau ist die Farbe der Weite — des Himmels über dir, des Ozeans, der Unendlichkeit. Deine Aura schwingt in dieser Frequenz wie ein klarer Wintertag: ruhig, weiträumig, von einer Schönheit, die keinen Beweis braucht.
+
+Du bist mit dem Halschakra verbunden — dem Zentrum der Wahrheit, der Kommunikation, des authentischen Ausdrucks. Bei dir hat dieses Chakra eine besondere Tiefe. Nicht die Tiefe des Vielredens — sondern die Tiefe der Worte, die wirklich zählen.
+
+Dein Geschenk ist die Fähigkeit zur Wahrhaftigkeit. Du sagst, was du meinst. Du meinst, was du sagst. In einer Welt der Oberflächen bist du die Erinnerung daran, dass Tiefe existiert.
+
+Der Schatten des Blauen ist die Schwierigkeit, in den Fluss zu kommen. Die Tendenz, Gedanken zu lange zu halten, bevor du sie teilst. Manchmal wird die Stille zur Mauer.
+
+Deine Aura flüstert: "Deine Worte haben Gewicht. Aber manchmal braucht die Welt nicht deine perfekte Wahrheit — manchmal braucht sie nur deine ehrliche Stimme."`
+        },
+        
+        indigo: {
+          id: "indigo",
+          color: "#5C4D9A",
+          title: "Mystisches Indigo",
+          archetype: "Der Wanderer zwischen Welten",
+          tagline: "Du siehst, was hinter den Dingen liegt — und trägst das Gewicht des Wissens mit Anmut.",
+          element: "aether",
+          stats: [
+            { label: "Intuitive Treffsicherheit", value: "97%" },
+            { label: "Drittes-Auge-Aktivität", value: "89%" },
+            { label: "Soziale Tarnung", value: "64%" },
+            { label: "Verborgene Welten", value: "1.247" }
+          ],
+          allies: ["violett", "gelb"],
+          nemesis: ["orange", "rot"],
+          description: `Indigo ist keine alltägliche Farbe. Sie liegt im Spektrum zwischen Blau und Violett — an der Schwelle zur Unsichtbarkeit. Deine Aura vibriert in dieser Frequenz wie der Himmel in der letzten Stunde vor der Nacht: tiefgründig, übergangsreich, voller unausgesprochener Wahrheiten.
+
+Du bist mit dem Stirnchakra verbunden — dem dritten Auge, das nicht mit den physischen Augen sieht. Du nimmst Zwischentöne wahr, die anderen entgehen. Die Pause zwischen den Worten. Die Absicht hinter der Geste.
+
+Dein Geschenk ist die Fähigkeit zur Wahrnehmung jenseits des Offensichtlichen. Du verstehst Dinge, bevor du sie erklären kannst. Und manchmal ist das Verstehen einsam.
+
+Der Schatten des Indigo ist die Isolation. Die Versuchung, dich in deiner eigenen Wahrnehmungswelt zu verlieren. Die Schwierigkeit, andere dort abzuholen, wo sie stehen.
+
+Deine Aura flüstert: "Dein Sehen ist ein Geschenk. Aber vergiss nicht, dass auch das Herz ein Auge hat."`
+        },
+        
+        violett: {
+          id: "violett",
+          color: "#8B5A9F",
+          title: "Transzendentes Violett",
+          archetype: "Der Kosmische Träumer",
+          tagline: "Du lebst mit einem Fuß in einer Welt, die andere nur ahnen können — und bist die Brücke zwischen dem Hier und dem Dahinter.",
+          element: "aether",
+          stats: [
+            { label: "Spirituelle Offenheit", value: "99%" },
+            { label: "Kreative Vision", value: "93%" },
+            { label: "Erdung", value: "41%" },
+            { label: "Kosmische Downloads", value: "∞" }
+          ],
+          allies: ["indigo", "tuerkis"],
+          nemesis: ["rot", "gruen"],
+          description: `Violett ist die Farbe der Transformation — der Punkt, an dem das sichtbare Licht in das Unsichtbare übergeht. Deine Aura schwingt in dieser höchsten Frequenz des Spektrums: ätherisch, transformativ, grenzüberschreitend.
+
+Du trägst das Kronenchakra in besonderer Intensität — jene Verbindung zum Größeren, zum Kosmischen, zum Numinosen. Bei dir ist diese Antenne fein eingestellt. Du empfängst, was andere nicht hören.
+
+Dein Geschenk ist die Fähigkeit zur Vision. Du siehst Möglichkeiten, die noch nicht existieren. Du träumst Welten, bevor sie wahr werden können.
+
+Der Schatten des Violetts ist die Schwierigkeit, geerdet zu bleiben. Die Versuchung, in den höheren Sphären zu verweilen und die Mühen des Alltags zu meiden. Manchmal vergisst der Träumer, dass auch Träume im Körper beginnen.
+
+Deine Aura flüstert: "Du bist hier, um Brücken zu bauen — zwischen dem, was ist, und dem, was sein könnte. Aber vergiss nicht, auf welcher Seite du stehst."`
+        },
+        
+        tuerkis: {
+          id: "tuerkis",
+          color: "#3AA19A",
+          title: "Schimmerndes Türkis",
+          archetype: "Der Harmonische Kommunikator",
+          tagline: "Du bist die Brücke zwischen Herz und Verstand — ein Übersetzer zwischen Welten, die nicht wissen, dass sie sich brauchen.",
+          element: "wasser",
+          stats: [
+            { label: "Empathische Intelligenz", value: "96%" },
+            { label: "Kommunikationsklarheit", value: "92%" },
+            { label: "Entscheidungsstärke", value: "58%" },
+            { label: "Heilende Worte", value: "∞" }
+          ],
+          allies: ["gruen", "blau"],
+          nemesis: ["rot", "orange"],
+          description: `Türkis ist die Farbe der Integration — dort, wo das nährende Grün des Herzens auf das klare Blau der Kommunikation trifft. Deine Aura schillert in diesem besonderen Zwischenreich: flüssig, heilend, verbindend.
+
+Du vereinst das Herzchakra mit dem Halschakra auf eine Weise, die selten ist. Du kannst fühlen und das Gefühlte in Worte fassen. Du verstehst und kannst das Verstandene vermitteln.
+
+Dein Geschenk ist die Fähigkeit zur heilenden Kommunikation. Deine Worte erreichen Menschen dort, wo sie es brauchen. Du bist die Person, die sagt, was alle denken, aber niemand auszusprechen wagt.
+
+Der Schatten des Türkis ist das Zwischen-den-Stühlen-Sitzen. Die Schwierigkeit, Stellung zu beziehen, wenn beide Seiten Recht haben. Manchmal paralysiert dich die Fähigkeit, alles zu verstehen.
+
+Deine Aura flüstert: "Du musst nicht wählen zwischen Herz und Verstand. Du bist beides. Und genau das braucht die Welt."`
+        },
+        
+        rosa: {
+          id: "rosa",
+          color: "#D4789A",
+          title: "Sanftes Rosa",
+          archetype: "Der Bedingungslose Liebende",
+          tagline: "Du bist die Erinnerung daran, dass Sanftheit eine Stärke ist — und dass wahre Liebe keine Bedingungen kennt.",
+          element: "wasser",
+          stats: [
+            { label: "Bedingungslose Liebe", value: "97%" },
+            { label: "Emotionale Intelligenz", value: "94%" },
+            { label: "Selbstschutz", value: "34%" },
+            { label: "Herzöffnung", value: "∞" }
+          ],
+          allies: ["gruen", "violett"],
+          nemesis: ["rot", "gelb"],
+          description: `Rosa ist die Farbe der bedingungslosen Liebe — nicht der romantischen, sondern der tiefen, alles umfassenden Güte. Deine Aura schwingt in diesem zarten Spektrum wie der erste Moment eines Sonnenaufgangs: sanft, hoffnungsvoll, erneuernd.
+
+Du trägst eine besondere Ausprägung des Herzchakras — eines, das über persönliche Beziehungen hinausreicht. Du liebst nicht, weil du etwas bekommst. Du liebst, weil du nicht anders kannst.
+
+Dein Geschenk ist die Fähigkeit zur Güte ohne Agenda. In deiner Nähe fühlen sich Menschen angenommen, wie sie sind. Du urteilst nicht — du verstehst.
+
+Der Schatten des Rosas ist die Verletzbarkeit. Die Tendenz, dein Herz so weit zu öffnen, dass du vergisst, es zu schützen. Manchmal verwechselst du Liebe mit Selbstaufgabe.
+
+Deine Aura flüstert: "Deine Sanftheit ist deine Stärke. Aber vergiss nicht: Du verdienst dieselbe Liebe, die du gibst."`
+        }
+      },
+      
+      elements: {
+        feuer: { name: "Feuer", symbol: "🔥", description: "Das Feuer in dir ist keine Zerstörung — es ist Alchemie. Du transformierst, was du berührst." },
+        wasser: { name: "Wasser", symbol: "💧", description: "Wie Wasser nimmst du die Form deiner Umgebung an, ohne deine Essenz zu verlieren." },
+        erde: { name: "Erde", symbol: "🌿", description: "Du bist der Anker, auch wenn du es selbst nicht siehst. In einer Welt des Wandels bist du das, was bleibt." },
+        luft: { name: "Luft", symbol: "🌬️", description: "Du denkst in Möglichkeiten, atmest in Freiheit. Der Wind braucht manchmal einen Ort zum Ruhen." },
+        aether: { name: "Äther", symbol: "✨", description: "Du gehörst zu keinem Element vollständig — und zu allen gleichzeitig. Das macht dich zum Wanderer zwischen Welten." }
+      }
+    };
+    
+    // ════════════════════════════════════════════════════════════════════
+    // QUIZ STATE
+    // ════════════════════════════════════════════════════════════════════
+    
+    let currentQuestion = 0;
+    let answers = [];
+    let dimensionScores = {
+      energiefluss: 0,
+      rhythmus: 0,
+      wahrnehmung: 0,
+      resonanz: 0
+    };
+    let debugMode = false;
+    let clickCount = 0;
+    let clickTimeout;
+    
+    const microWinMessages = [
+      "✨ Die Energie fließt...",
+      "🌙 Interessant...",
+      "💫 Deine Aura formt sich...",
+      "🔮 Ein Muster entsteht...",
+      "⭐ Weiter so...",
+      "🌟 Tiefe Einblicke...",
+      "✦ Die Farben werden klarer...",
+      "🌌 Fast da..."
+    ];
+    
+    // ════════════════════════════════════════════════════════════════════
+    // NAVIGATION
+    // ════════════════════════════════════════════════════════════════════
+    
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+    }
+    
+    function startQuiz() {
+      currentQuestion = 0;
+      answers = [];
+      dimensionScores = { energiefluss: 0, rhythmus: 0, wahrnehmung: 0, resonanz: 0 };
+      showScreen('quiz-screen');
+      renderQuestion();
+    }
+    
+    function restartQuiz() {
+      showScreen('intro-screen');
+    }
+    
+    // ════════════════════════════════════════════════════════════════════
+    // QUIZ RENDERING
+    // ════════════════════════════════════════════════════════════════════
+    
+    function renderQuestion() {
+      const q = QUIZ_DATA.questions[currentQuestion];
+      const dim = QUIZ_DATA.dimensions.find(d => d.id === q.dimension);
+      
+      document.getElementById('current-q').textContent = currentQuestion + 1;
+      document.getElementById('progress-fill').style.width = `${((currentQuestion + 1) / QUIZ_DATA.questions.length) * 100}%`;
+      document.getElementById('question-number').textContent = dim.label.toUpperCase();
+      document.getElementById('question-text').textContent = q.text;
+      document.getElementById('question-context').textContent = q.context;
+      
+      const container = document.getElementById('options-container');
+      container.innerHTML = q.options.map(opt => `
+        <button class="option-card" onclick="selectOption('${q.id}', '${opt.id}', ${JSON.stringify(opt.scores).replace(/"/g, '&quot;')})">
+          <span class="option-label">${opt.text}</span>
+        </button>
+      `).join('');
+    }
+    
+    function selectOption(questionId, optionId, scores) {
+      // Store answer
+      answers.push({ questionId, optionId, scores });
+      
+      // Update dimension scores
+      for (const [dim, score] of Object.entries(scores)) {
+        dimensionScores[dim] += score;
+      }
+      
+      // Show micro-win
+      showMicroWin();
+      
+      // Visual feedback
+      const cards = document.querySelectorAll('.option-card');
+      cards.forEach(card => {
+        if (card.querySelector('.option-label').textContent.includes(
+          QUIZ_DATA.questions[currentQuestion].options.find(o => o.id === optionId).text.substring(0, 20)
+        )) {
+          card.classList.add('selected');
+        }
+      });
+      
+      // Next question or results
+      setTimeout(() => {
+        currentQuestion++;
+        if (currentQuestion < QUIZ_DATA.questions.length) {
+          renderQuestion();
+        } else {
+          showLoading();
+        }
+      }, 400);
+      
+      logDebug(`Q${currentQuestion + 1}: ${optionId} → ${JSON.stringify(scores)}`);
+    }
+    
+    function showMicroWin() {
+      const el = document.getElementById('micro-win');
+      el.textContent = microWinMessages[Math.floor(Math.random() * microWinMessages.length)];
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 800);
+    }
+    
+    // ════════════════════════════════════════════════════════════════════
+    // LOADING & CALCULATION
+    // ════════════════════════════════════════════════════════════════════
+    
+    function showLoading() {
+      showScreen('loading-screen');
+      
+      const phases = [
+        "Energieströme werden analysiert",
+        "Farbfrequenzen werden gemessen",
+        "Chakra-Resonanz wird berechnet",
+        "Element-Affinität wird bestimmt",
+        "Deine Aura kristallisiert sich..."
+      ];
+      
+      let phase = 0;
+      const interval = setInterval(() => {
+        phase++;
+        if (phase < phases.length) {
+          document.getElementById('loading-phase').textContent = phases[phase];
+        } else {
+          clearInterval(interval);
+          calculateResult();
+        }
+      }, 600);
+    }
+    
+    function calculateResult() {
+      // Normalize scores to 0-1 range (each dimension has 3 questions, max 15 points)
+      const maxPerDimension = 15;
+      const normalized = {};
+      for (const [dim, score] of Object.entries(dimensionScores)) {
+        normalized[dim] = score / maxPerDimension;
+      }
+      
+      logDebug(`Raw scores: ${JSON.stringify(dimensionScores)}`);
+      logDebug(`Normalized: ${JSON.stringify(normalized)}`);
+      
+      // Determine primary color based on dimension combinations
+      const profile = determineAuraProfile(normalized);
+      const secondaryProfile = determineSecondaryColor(normalized, profile.id);
+      const element = determineElement(normalized);
+      
+      logDebug(`Result: ${profile.id}, Secondary: ${secondaryProfile.id}, Element: ${element.name}`);
+      
+      // Emit ContributionEvent
+      emitContributionEvent(profile, secondaryProfile, element, normalized);
+      
+      // Render result
+      renderResult(profile, secondaryProfile, element, normalized);
+      showScreen('result-screen');
+    }
+    
+    function determineAuraProfile(n) {
+      // Scoring matrix based on dimensional combinations
+      const scores = {
+        rot: (n.energiefluss * 0.4) + (n.rhythmus * 0.3) + (n.resonanz * 0.3),
+        orange: (n.energiefluss * 0.3) + (n.rhythmus * 0.4) + (n.wahrnehmung * 0.3),
+        gelb: (n.energiefluss * 0.25) + ((1-n.rhythmus) * 0.25) + ((1-n.wahrnehmung) * 0.5),
+        gruen: ((1-n.energiefluss) * 0.4) + ((1-n.rhythmus) * 0.3) + ((1-n.resonanz) * 0.3),
+        blau: ((1-n.energiefluss) * 0.3) + ((1-n.rhythmus) * 0.3) + ((1-n.wahrnehmung) * 0.4),
+        indigo: ((1-n.energiefluss) * 0.3) + (n.rhythmus * 0.2) + (n.wahrnehmung * 0.5),
+        violett: ((1-n.energiefluss) * 0.2) + (n.rhythmus * 0.3) + (n.wahrnehmung * 0.3) + ((1-n.resonanz) * 0.2),
+        tuerkis: (Math.abs(n.energiefluss - 0.5) < 0.2 ? 0.3 : 0) + ((1-n.resonanz) * 0.35) + ((1-n.wahrnehmung) * 0.35),
+        rosa: ((1-n.energiefluss) * 0.3) + ((1-n.rhythmus) * 0.2) + (n.wahrnehmung * 0.25) + ((1-n.resonanz) * 0.25)
+      };
+      
+      // Find highest score
+      let maxScore = 0;
+      let result = 'gruen';
+      for (const [color, score] of Object.entries(scores)) {
+        if (score > maxScore) {
+          maxScore = score;
+          result = color;
+        }
+      }
+      
+      logDebug(`Color scores: ${JSON.stringify(scores)}`);
+      
+      return QUIZ_DATA.profiles[result];
+    }
+    
+    function determineSecondaryColor(n, primaryId) {
+      // Find the second-best match
+      const scores = {
+        rot: (n.energiefluss * 0.4) + (n.rhythmus * 0.3) + (n.resonanz * 0.3),
+        orange: (n.energiefluss * 0.3) + (n.rhythmus * 0.4) + (n.wahrnehmung * 0.3),
+        gelb: (n.energiefluss * 0.25) + ((1-n.rhythmus) * 0.25) + ((1-n.wahrnehmung) * 0.5),
+        gruen: ((1-n.energiefluss) * 0.4) + ((1-n.rhythmus) * 0.3) + ((1-n.resonanz) * 0.3),
+        blau: ((1-n.energiefluss) * 0.3) + ((1-n.rhythmus) * 0.3) + ((1-n.wahrnehmung) * 0.4),
+        indigo: ((1-n.energiefluss) * 0.3) + (n.rhythmus * 0.2) + (n.wahrnehmung * 0.5),
+        violett: ((1-n.energiefluss) * 0.2) + (n.rhythmus * 0.3) + (n.wahrnehmung * 0.3) + ((1-n.resonanz) * 0.2),
+        tuerkis: (Math.abs(n.energiefluss - 0.5) < 0.2 ? 0.3 : 0) + ((1-n.resonanz) * 0.35) + ((1-n.wahrnehmung) * 0.35),
+        rosa: ((1-n.energiefluss) * 0.3) + ((1-n.rhythmus) * 0.2) + (n.wahrnehmung * 0.25) + ((1-n.resonanz) * 0.25)
+      };
+      
+      delete scores[primaryId];
+      
+      let maxScore = 0;
+      let result = 'tuerkis';
+      for (const [color, score] of Object.entries(scores)) {
+        if (score > maxScore) {
+          maxScore = score;
+          result = color;
+        }
+      }
+      
+      return QUIZ_DATA.profiles[result];
+    }
+    
+    function determineElement(n) {
+      // Element based on dominant dimension patterns
+      const elementScores = {
+        feuer: (n.rhythmus * 0.5) + (n.energiefluss * 0.5),
+        wasser: ((1-n.resonanz) * 0.5) + (n.wahrnehmung * 0.5),
+        erde: ((1-n.rhythmus) * 0.5) + ((1-n.energiefluss) * 0.5),
+        luft: (n.energiefluss * 0.5) + ((1-n.wahrnehmung) * 0.5),
+        aether: (Math.abs(n.energiefluss - 0.5) < 0.15 ? 0.4 : 0) + (n.wahrnehmung * 0.6)
+      };
+      
+      let maxScore = 0;
+      let result = 'erde';
+      for (const [element, score] of Object.entries(elementScores)) {
+        if (score > maxScore) {
+          maxScore = score;
+          result = element;
+        }
+      }
+      
+      return QUIZ_DATA.elements[result];
+    }
+    
+    // ════════════════════════════════════════════════════════════════════
+    // RESULT RENDERING
+    // ════════════════════════════════════════════════════════════════════
+    
+    function renderResult(profile, secondary, element, normalized) {
+      // Set CSS variables for dynamic coloring
+      const card = document.getElementById('result-card');
+      card.style.setProperty('--result-color', profile.color);
+      card.style.setProperty('--result-color-glow', profile.color + '40');
+      
+      document.querySelector('.aura-glow').style.background = `radial-gradient(circle, ${profile.color} 0%, transparent 70%)`;
+      document.querySelector('.aura-core').style.background = profile.color;
+      document.querySelector('.aura-core').style.boxShadow = `0 0 40px ${profile.color}`;
+      
+      // Text content
+      document.getElementById('result-color-name').textContent = profile.title;
+      document.getElementById('result-archetype').textContent = `„${profile.archetype}"`;
+      document.getElementById('result-tagline').textContent = profile.tagline;
+      
+      // Secondary + Element
+      document.getElementById('secondary-dot').style.background = secondary.color;
+      document.getElementById('secondary-color-name').textContent = secondary.title.split(' ')[1] || secondary.title;
+      document.getElementById('result-element').textContent = `${element.symbol} ${element.name}`;
+      
+      // Stats
+      const statsContainer = document.getElementById('result-stats');
+      statsContainer.innerHTML = profile.stats.map(stat => `
+        <div class="stat-item">
+          <div class="stat-value">${stat.value}</div>
+          <div class="stat-label">${stat.label}</div>
+        </div>
+      `).join('');
+      
+      // Compatibility
+      const compatContainer = document.getElementById('result-compat');
+      compatContainer.innerHTML = `
+        <div class="compat-title">Aura-Kompatibilität</div>
+        <div class="compat-row">
+          <span class="compat-icon">💫</span>
+          <span class="compat-text">Harmoniert mit</span>
+          <div class="compat-colors">
+            ${profile.allies.map(a => `<span class="compat-dot" style="background: ${QUIZ_DATA.profiles[a].color}"></span>`).join('')}
+          </div>
+        </div>
+        <div class="compat-row">
+          <span class="compat-icon">⚡</span>
+          <span class="compat-text">Spannung mit</span>
+          <div class="compat-colors">
+            ${profile.nemesis.map(n => `<span class="compat-dot" style="background: ${QUIZ_DATA.profiles[n].color}"></span>`).join('')}
+          </div>
+        </div>
+      `;
+      
+      // Description
+      document.getElementById('description-content').innerHTML = profile.description.split('\n\n').map(p => `<p>${p}</p>`).join('');
+    }
+    
+    function toggleDescription() {
+      const content = document.getElementById('description-content');
+      const icon = document.getElementById('toggle-icon');
+      content.classList.toggle('show');
+      icon.textContent = content.classList.contains('show') ? '▲' : '▼';
+    }
+    
+    // ════════════════════════════════════════════════════════════════════
+    // CONTRIBUTION EVENT (Pipeline Integration)
+    // ════════════════════════════════════════════════════════════════════
+    
+    function emitContributionEvent(profile, secondary, element, normalized) {
+      const event = {
+        specVersion: "sp.contribution.v1",
+        eventId: crypto.randomUUID ? crypto.randomUUID() : 'evt-' + Date.now(),
+        occurredAt: new Date().toISOString(),
+        source: {
+          vertical: "quiz",
+          moduleId: "quiz.aura-farben.v1",
+          domain: window.location.hostname,
+          locale: "de-DE"
+        },
+        payload: {
+          markers: [
+            { id: `marker.aura.${profile.id}`, weight: 1.0, evidence: { itemsAnswered: 12, confidence: 0.85 } },
+            { id: `marker.aura.${secondary.id}`, weight: 0.6, evidence: { itemsAnswered: 12, confidence: 0.70 } },
+            { id: `marker.element.${element.name.toLowerCase()}`, weight: 0.8 },
+            { id: normalized.energiefluss > 0.5 ? "marker.energy.projective" : "marker.energy.introjective", weight: Math.abs(normalized.energiefluss - 0.5) * 2 },
+            { id: normalized.rhythmus > 0.5 ? "marker.rhythm.dynamic" : "marker.rhythm.constant", weight: Math.abs(normalized.rhythmus - 0.5) * 2 },
+            { id: normalized.wahrnehmung > 0.5 ? "marker.perception.intuitive" : "marker.perception.analytical", weight: Math.abs(normalized.wahrnehmung - 0.5) * 2 },
+            { id: normalized.resonanz > 0.5 ? "marker.resonance.emissive" : "marker.resonance.absorptive", weight: Math.abs(normalized.resonanz - 0.5) * 2 }
+          ],
+          traits: [
+            { id: "trait.aura.energiefluss", score: Math.round(normalized.energiefluss * 99 + 1), band: getBand(normalized.energiefluss), method: "scenario" },
+            { id: "trait.aura.rhythmus", score: Math.round(normalized.rhythmus * 99 + 1), band: getBand(normalized.rhythmus), method: "scenario" },
+            { id: "trait.aura.wahrnehmung", score: Math.round(normalized.wahrnehmung * 99 + 1), band: getBand(normalized.wahrnehmung), method: "scenario" },
+            { id: "trait.aura.resonanz", score: Math.round(normalized.resonanz * 99 + 1), band: getBand(normalized.resonanz), method: "scenario" }
+          ],
+          tags: [
+            { id: `tag.aura.${profile.id}`, label: profile.title, kind: "archetype", weight: 1.0 },
+            { id: `tag.element.${element.name.toLowerCase()}`, label: element.name, kind: "astro", weight: 0.8 }
+          ],
+          unlocks: [
+            { id: `unlock.aura.${profile.id}`, unlocked: true, unlockedAt: new Date().toISOString(), level: 1, sourceRef: "aura-farben-quiz" }
+          ],
+          summary: {
+            title: profile.archetype,
+            bullets: [
+              `Primäre Aura: ${profile.title}`,
+              `Zweitfarbe: ${secondary.title}`,
+              `Element: ${element.name}`,
+              profile.tagline.substring(0, 80) + "..."
+            ],
+            resultId: profile.id
+          },
+          debug: {
+            rawScores: dimensionScores,
+            normalizedScores: normalized
+          }
+        }
+      };
+      
+      // Persist to localStorage
+      try {
+        const history = JSON.parse(localStorage.getItem('quizzme_contributions') || '[]');
+        history.push(event);
+        localStorage.setItem('quizzme_contributions', JSON.stringify(history.slice(-50)));
+      } catch (e) {
+        console.warn('localStorage not available');
+      }
+      
+      // Dispatch CustomEvent for pipeline
+      window.dispatchEvent(new CustomEvent('quizzme:contribution', { detail: event }));
+      
+      logDebug(`ContributionEvent emitted: ${event.eventId}`);
+      console.log('📊 ContributionEvent:', event);
+      
+      return event;
+    }
+    
+    function getBand(value) {
+      if (value <= 0.2) return "low";
+      if (value <= 0.4) return "midlow";
+      if (value <= 0.6) return "mid";
+      if (value <= 0.8) return "midhigh";
+      return "high";
+    }
+    
+    // ════════════════════════════════════════════════════════════════════
+    // SHARING
+    // ════════════════════════════════════════════════════════════════════
+    
+    function shareResult() {
+      const title = document.getElementById('result-color-name').textContent;
+      const text = `Meine Aura leuchtet in ${title}! ✨ Entdecke deine Aurafarbe: `;
+      
+      if (navigator.share) {
+        navigator.share({
+          title: 'Meine Aurafarbe | QuizzMe',
+          text: text,
+          url: window.location.href
+        });
+      } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(text + window.location.href).then(() => {
+          alert('Link kopiert! Teile ihn mit deinen Freunden.');
+        });
+      }
+    }
+    
+    // ════════════════════════════════════════════════════════════════════
+    // DEBUG
+    // ════════════════════════════════════════════════════════════════════
+    
+    function logDebug(msg) {
+      if (debugMode) {
+        const panel = document.getElementById('debug-panel');
+        panel.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${msg}</div>`;
+        panel.scrollTop = panel.scrollHeight;
+      }
+      console.log(`[AURA-DEBUG] ${msg}`);
+    }
+    
+    // Triple-click to toggle debug
+    document.addEventListener('click', () => {
+      clickCount++;
+      clearTimeout(clickTimeout);
+      clickTimeout = setTimeout(() => {
+        if (clickCount >= 3) {
+          debugMode = !debugMode;
+          document.getElementById('debug-panel').classList.toggle('show', debugMode);
+          logDebug('Debug mode: ' + (debugMode ? 'ON' : 'OFF'));
+        }
+        clickCount = 0;
+      }, 400);
+    });
+    
+    // ════════════════════════════════════════════════════════════════════
+    // INIT
+    // ════════════════════════════════════════════════════════════════════
+    
+    console.log('🔮 Aura-Farben-Quiz v1.0 loaded');
+    console.log('📊 ContributionEvent spec: sp.contribution.v1');
+    console.log('💡 Triple-click anywhere to toggle debug panel');
+  </script>
+</body>
+</html>

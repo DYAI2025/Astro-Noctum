@@ -1,0 +1,57 @@
+{
+  "description": "Test Case 2 (12.03.1983, 16:26 MEZ, Hannover)",
+  "note": "VALUES MUST BE CALIBRATED against actual Swiss Ephemeris output before production use!",
+  "input": {
+    "year": 1983,
+    "month": 3,
+    "day": 12,
+    "hour": 16,
+    "minute": 26,
+    "second": 0,
+    "latitude": 52.3759,
+    "longitude": 9.732,
+    "timezone": "Europe/Berlin"
+  },
+  "expected": {
+    "ascendant": {
+      "tolerance": 0.01,
+      "sign": "Jungfrau",
+      "longitude": 152.846
+    },
+    "mc": {
+      "tolerance": 0.01,
+      "sign": "Stier",
+      "longitude": 53.3311
+    },
+    "sun": {
+      "tolerance": 0.05,
+      "sign": "Fische",
+      "longitude": 351.4845
+    },
+    "moon": {
+      "tolerance": 0.1,
+      "sign": "Wassermann",
+      "longitude": 327.8034
+    },
+    "bazi": {
+      "year": {
+        "stem": "Gui",
+        "branch": "Hai",
+        "animal": "Pig"
+      },
+      "day": {
+        "stem": "Ji",
+        "branch": "Hai"
+      },
+      "dayMaster": {
+        "element": "Earth",
+        "polarity": "Yin"
+      }
+    }
+  },
+  "calibration_required": false,
+  "source": "Calibrated against Swiss Ephemeris output",
+  "critical": true,
+  "calibrated_at": "2025-12-31T04:45:30.252Z",
+  "calibrated_with": "2.10.03"
+}

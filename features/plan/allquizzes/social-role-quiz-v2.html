@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wer bist du für andere? | QuizzMe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ══════════════════════════════════════════════════════════════════════
+       QUIZZME DESIGN SYSTEM - SOCIAL ROLE QUIZ
+       ══════════════════════════════════════════════════════════════════════ */
+    
+    :root {
+      /* GOLD SPECTRUM */
+      --gold-primary: #D2A95A;
+      --gold-dark: #A77D38;
+      --gold-light: #E8C87A;
+      --gold-muted: #C4A86C;
+      
+      /* EMERALD/TEAL SPECTRUM */
+      --emerald-deep: #053B3F;
+      --emerald-forest: #0A4A4F;
+      --teal-muted: #1C5B5C;
+      --sage: #6CA192;
+      --sage-light: #8FB8A8;
+      
+      /* MIDNIGHT SPECTRUM */
+      --midnight-deep: #041726;
+      --midnight-medium: #0A2540;
+      --midnight-soft: #132F4C;
+      
+      /* CREAM/PARCHMENT SPECTRUM */
+      --cream-pure: #F7F0E6;
+      --cream-warm: #F2E3CF;
+      --cream-deep: #EDE4D3;
+      --cream-muted: #E5D9C3;
+      
+      /* TEXT */
+      --text-on-dark: #F7F3EA;
+      --text-on-dark-muted: #A8B5A0;
+      --text-on-light: #271C16;
+      --text-on-light-muted: #5A4D3F;
+      
+      /* TYPOGRAPHY */
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      
+      /* SPACING */
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.25rem;
+      --space-6: 1.5rem;
+      --space-8: 2rem;
+      --space-10: 2.5rem;
+      --space-12: 3rem;
+      
+      /* RADIUS */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --radius-2xl: 24px;
+      --radius-full: 9999px;
+      
+      /* ANIMATION */
+      --duration-fast: 150ms;
+      --duration-normal: 250ms;
+      --duration-slow: 400ms;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      transition: background var(--duration-slow) var(--ease-out);
+    }
+    
+    /* ═══════════════════════════════════════════════════════════════
+       THEME: BOTANICAL GARDEN (Quiz Flow)
+       ═══════════════════════════════════════════════════════════════ */
+    body.theme-botanical {
+      background: linear-gradient(180deg, var(--cream-pure) 0%, var(--cream-warm) 100%);
+      color: var(--text-on-light);
+    }
+    
+    /* ═══════════════════════════════════════════════════════════════
+       THEME: MODERN ALCHEMY (Results)
+       ═══════════════════════════════════════════════════════════════ */
+    body.theme-alchemy {
+      background: linear-gradient(165deg, var(--emerald-deep) 0%, var(--midnight-deep) 50%, #031119 100%);
+      color: var(--text-on-dark);
+    }
+    
+    .hidden { display: none !important; }
+    
+    .container {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: var(--space-6);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    
+    /* ═══════════════════════════════════════════════════════════════
+       INTRO SCREEN
+       ═══════════════════════════════════════════════════════════════ */
+    .intro {
+      text-align: center;
+    }
+    
+    .intro-icon {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto var(--space-8);
+      position: relative;
+    }
+    
+    .intro-icon svg {
+      width: 100%;
+      height: 100%;
+    }
+    
+    .intro-icon .orbit {
+      animation: orbit 20s linear infinite;
+      transform-origin: 50px 50px;
+    }
+    
+    @keyframes orbit {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    .intro h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 5vw, 2.75rem);
+      font-weight: 500;
+      color: var(--emerald-deep);
+      margin-bottom: var(--space-4);
+      line-height: 1.2;
+    }
+    
+    .intro .subtitle {
+      font-size: 1.125rem;
+      color: var(--text-on-light-muted);
+      margin-bottom: var(--space-2);
+      line-height: 1.6;
+    }
+    
+    .intro .meta {
+      font-size: 0.875rem;
+      color: var(--sage);
+      margin-bottom: var(--space-10);
+      display: flex;
+      justify-content: center;
+      gap: var(--space-4);
+    }
+    
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      background: var(--emerald-deep);
+      color: var(--cream-pure);
+      border: none;
+      padding: var(--space-4) var(--space-8);
+      font-family: var(--font-sans);
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: var(--radius-xl);
+      cursor: pointer;
+      transition: all var(--duration-normal) var(--ease-out);
+      box-shadow: 0 4px 20px rgba(5, 59, 63, 0.3);
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(5, 59, 63, 0.4);
+      background: var(--emerald-forest);
+    }
+    
+    .disclaimer {
+      font-size: 0.75rem;
+      color: var(--text-on-light-muted);
+      margin-top: var(--space-8);
+      opacity: 0.7;
+    }
+    
+    /* ═══════════════════════════════════════════════════════════════
+       QUIZ SCREEN
+       ═══════════════════════════════════════════════════════════════ */
+    .quiz-frame {
+      background: white;
+      border-radius: var(--radius-2xl);
+      padding: var(--space-8);
+      box-shadow: 0 4px 24px rgba(39, 28, 22, 0.08);
+      border: 1px solid var(--cream-muted);
+    }
+    
+    .progress-container {
+      margin-bottom: var(--space-8);
+    }
+    
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-3);
+    }
+    
+    .progress-label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-on-light-muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    
+    .progress-track {
+      height: 6px;
+      background: var(--cream-deep);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--sage) 0%, var(--emerald-deep) 100%);
+      border-radius: var(--radius-full);
+      transition: width var(--duration-slow) var(--ease-out);
+    }
+    
+    .question-container {
+      transition: opacity var(--duration-normal) var(--ease-out);
+    }
+    
+    .question-container.fading {
+      opacity: 0.4;
+    }
+    
+    .scenario {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 0.9375rem;
+      color: var(--sage);
+      margin-bottom: var(--space-4);
+      padding-left: var(--space-4);
+      border-left: 2px solid var(--gold-primary);
+    }
+    
+    .question-text {
+      font-family: var(--font-serif);
+      font-size: clamp(1.375rem, 3vw, 1.625rem);
+      font-weight: 500;
+      color: var(--emerald-deep);
+      line-height: 1.4;
+      margin-bottom: var(--space-8);
+    }
+    
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    
+    .option-btn {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      padding: var(--space-4) var(--space-5);
+      background: var(--cream-pure);
+      border: 1px solid var(--cream-muted);
+      border-radius: var(--radius-lg);
+      color: var(--text-on-light);
+      font-family: var(--font-sans);
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      text-align: left;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+    
+    .option-btn:hover {
+      background: white;
+      border-color: var(--gold-primary);
+      box-shadow: 0 2px 12px rgba(210, 169, 90, 0.15);
+      transform: translateX(4px);
+    }
+    
+
+    
+    /* ═══════════════════════════════════════════════════════════════
+       SUSPENSE SCREEN
+       ═══════════════════════════════════════════════════════════════ */
+    .suspense {
+      text-align: center;
+    }
+    
+    .suspense-orb {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto var(--space-8);
+      position: relative;
+    }
+    
+    .suspense-orb::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--sage);
+      border-radius: 50%;
+      animation: suspensePulse 1.5s ease-in-out infinite;
+    }
+    
+    .suspense-orb::after {
+      content: '✦';
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      color: white;
+    }
+    
+    @keyframes suspensePulse {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.15); opacity: 1; }
+    }
+    
+    .suspense-text {
+      font-family: var(--font-serif);
+      font-size: 1.25rem;
+      font-style: italic;
+      color: var(--emerald-deep);
+    }
+    
+    /* ═══════════════════════════════════════════════════════════════
+       REVEAL SCREEN
+       ═══════════════════════════════════════════════════════════════ */
+    .reveal {
+      text-align: center;
+    }
+    
+    .reveal-orb {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto var(--space-8);
+      position: relative;
+    }
+    
+    .reveal-ping {
+      position: absolute;
+      inset: 0;
+      background: var(--gold-primary);
+      border-radius: 50%;
+      animation: revealPing 1.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+    
+    .reveal-core {
+      position: absolute;
+      inset: 20px;
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold-primary) 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      box-shadow: 0 0 40px rgba(210, 169, 90, 0.5);
+    }
+    
+    @keyframes revealPing {
+      0% { transform: scale(1); opacity: 0.3; }
+      75%, 100% { transform: scale(1.8); opacity: 0; }
+    }
+    
+    .reveal-text {
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      color: var(--emerald-deep);
+    }
+    
+    /* ═══════════════════════════════════════════════════════════════
+       RESULT SCREEN (Theme: Alchemy)
+       ═══════════════════════════════════════════════════════════════ */
+    .result-card {
+      background: rgba(19, 47, 76, 0.6);
+      border: 1px solid rgba(210, 169, 90, 0.25);
+      border-radius: var(--radius-2xl);
+      padding: var(--space-8);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(4, 23, 38, 0.6);
+    }
+    
+    .result-header {
+      text-align: center;
+      margin-bottom: var(--space-8);
+    }
+    
+    .result-icon {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto var(--space-6);
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold-primary) 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      box-shadow: 0 0 50px rgba(210, 169, 90, 0.4);
+    }
+    
+    .result-label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold-primary);
+      margin-bottom: var(--space-2);
+    }
+    
+    .result-title {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 6vw, 2.5rem);
+      font-weight: 600;
+      color: var(--text-on-dark);
+      margin-bottom: var(--space-3);
+    }
+    
+    .result-tagline {
+      font-family: var(--font-serif);
+      font-size: 1.125rem;
+      font-style: italic;
+      color: var(--gold-light);
+    }
+    
+    .result-description {
+      font-size: 1rem;
+      line-height: 1.7;
+      color: var(--text-on-dark-muted);
+      margin-bottom: var(--space-8);
+      text-align: center;
+    }
+    
+    /* Stats Section */
+    .stats-section {
+      margin-bottom: var(--space-8);
+    }
+    
+    .stats-title {
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      color: var(--gold-primary);
+      text-align: center;
+      margin-bottom: var(--space-5);
+      letter-spacing: 0.05em;
+    }
+    
+    .stats-grid {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+    
+    .stat-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+    
+    .stat-label {
+      font-size: 0.8125rem;
+      color: var(--text-on-dark-muted);
+      width: 120px;
+      flex-shrink: 0;
+    }
+    
+    .stat-bar-track {
+      flex: 1;
+      height: 8px;
+      background: rgba(247, 243, 234, 0.1);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    
+    .stat-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--sage) 0%, var(--gold-primary) 100%);
+      border-radius: var(--radius-full);
+      transition: width 1s var(--ease-out);
+    }
+    
+    .stat-value {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--gold-light);
+      width: 40px;
+      text-align: right;
+    }
+    
+    /* Powers Section */
+    .powers-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-4);
+      margin-bottom: var(--space-8);
+    }
+    
+    .power-card {
+      background: rgba(5, 59, 63, 0.4);
+      border: 1px solid rgba(210, 169, 90, 0.15);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+    }
+    
+    .power-card.superpower {
+      border-color: rgba(108, 161, 146, 0.4);
+    }
+    
+    .power-card.shadow {
+      border-color: rgba(196, 93, 74, 0.3);
+    }
+    
+    .power-label {
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: var(--space-2);
+    }
+    
+    .power-card.superpower .power-label { color: var(--sage); }
+    .power-card.shadow .power-label { color: #C45D4A; }
+    
+    .power-text {
+      font-family: var(--font-serif);
+      font-size: 0.9375rem;
+      color: var(--text-on-dark);
+      line-height: 1.4;
+    }
+    
+    /* Compatibility Section */
+    .compatibility-section {
+      margin-bottom: var(--space-8);
+    }
+    
+    .compatibility-title {
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      color: var(--gold-primary);
+      text-align: center;
+      margin-bottom: var(--space-5);
+    }
+    
+    .compatibility-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-4);
+    }
+    
+    .compat-card {
+      background: rgba(5, 59, 63, 0.3);
+      border-radius: var(--radius-md);
+      padding: var(--space-3);
+      text-align: center;
+    }
+    
+    .compat-label {
+      font-size: 0.6875rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: var(--space-2);
+    }
+    
+    .compat-card.allies .compat-label { color: var(--sage); }
+    .compat-card.nemesis .compat-label { color: var(--gold-muted); }
+    
+    .compat-roles {
+      font-family: var(--font-serif);
+      font-size: 0.875rem;
+      color: var(--text-on-dark);
+    }
+    
+    /* Actions */
+    .result-actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    
+    .btn-gold {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold-primary) 100%);
+      color: var(--midnight-deep);
+      border: none;
+      padding: var(--space-4);
+      font-family: var(--font-sans);
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: all var(--duration-normal) var(--ease-out);
+    }
+    
+    .btn-gold:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(210, 169, 90, 0.4);
+    }
+    
+    .btn-ghost {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      background: transparent;
+      color: var(--text-on-dark-muted);
+      border: 1px solid rgba(247, 243, 234, 0.2);
+      padding: var(--space-3);
+      font-family: var(--font-sans);
+      font-size: 0.875rem;
+      font-weight: 500;
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+    
+    .btn-ghost:hover {
+      border-color: var(--gold-primary);
+      color: var(--gold-primary);
+    }
+    
+    /* Responsive */
+    @media (max-width: 480px) {
+      .container { padding: var(--space-4); }
+      .quiz-frame { padding: var(--space-5); }
+      .result-card { padding: var(--space-5); }
+      .powers-grid { grid-template-columns: 1fr; }
+      .compatibility-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body class="theme-botanical">
+  
+  <!-- ══════════════════════════════════════════════════════════════════
+       INTRO SCREEN
+       ══════════════════════════════════════════════════════════════════ -->
+  <div id="intro-screen" class="container">
+    <div class="intro">
+      <div class="intro-icon">
+        <svg viewBox="0 0 100 100" fill="none">
+          <!-- Central node -->
+          <circle cx="50" cy="50" r="12" fill="#053B3F"/>
+          <circle cx="50" cy="50" r="8" fill="#D2A95A"/>
+          
+          <!-- Orbiting nodes -->
+          <g class="orbit">
+            <circle cx="50" cy="15" r="6" fill="#6CA192" opacity="0.8"/>
+            <circle cx="80" cy="35" r="5" fill="#D2A95A" opacity="0.6"/>
+            <circle cx="80" cy="65" r="4" fill="#6CA192" opacity="0.7"/>
+            <circle cx="50" cy="85" r="5" fill="#D2A95A" opacity="0.6"/>
+            <circle cx="20" cy="65" r="6" fill="#6CA192" opacity="0.8"/>
+            <circle cx="20" cy="35" r="4" fill="#D2A95A" opacity="0.7"/>
+          </g>
+          
+          <!-- Connection lines -->
+          <circle cx="50" cy="50" r="35" stroke="#053B3F" stroke-width="1" fill="none" opacity="0.2"/>
+          <circle cx="50" cy="50" r="25" stroke="#D2A95A" stroke-width="0.5" fill="none" opacity="0.3"/>
+        </svg>
+      </div>
+      
+      <h1>Wer bist du für andere?</h1>
+      <p class="subtitle">Der Fels, die Flamme, der Spiegel? Entdecke deine soziale Rolle.</p>
+      
+      <div class="meta">
+        <span class="meta-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 2"/>
+          </svg>
+          2-3 Min
+        </span>
+        <span class="meta-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4"/>
+            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+          </svg>
+          10 Fragen
+        </span>
+      </div>
+      
+      <button class="btn-primary" onclick="startQuiz()">
+        <span>Entdecke deine Rolle</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </button>
+      
+      <p class="disclaimer">Dieser Test dient der spielerischen Selbstreflexion und stellt keine psychologische Diagnose dar.</p>
+    </div>
+  </div>
+  
+  <!-- ══════════════════════════════════════════════════════════════════
+       QUIZ SCREEN
+       ══════════════════════════════════════════════════════════════════ -->
+  <div id="quiz-screen" class="container hidden">
+    <div class="quiz-frame">
+      <div class="progress-container">
+        <div class="progress-header">
+          <span class="progress-label">Frage <span id="q-num">1</span> von 10</span>
+          <span class="progress-label"><span id="progress-pct">10</span>%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-bar" style="width: 10%"></div>
+        </div>
+      </div>
+      
+      <div id="question-container" class="question-container">
+        <p id="scenario" class="scenario"></p>
+        <h2 id="question-text" class="question-text"></h2>
+        <div id="options" class="options"></div>
+      </div>
+    </div>
+  </div>
+  
+
+  
+  <!-- ══════════════════════════════════════════════════════════════════
+       SUSPENSE SCREEN
+       ══════════════════════════════════════════════════════════════════ -->
+  <div id="suspense-screen" class="container hidden">
+    <div class="suspense">
+      <div class="suspense-orb"></div>
+      <p id="suspense-text" class="suspense-text"></p>
+    </div>
+  </div>
+  
+  <!-- ══════════════════════════════════════════════════════════════════
+       REVEAL SCREEN
+       ══════════════════════════════════════════════════════════════════ -->
+  <div id="reveal-screen" class="container hidden">
+    <div class="reveal">
+      <div class="reveal-orb">
+        <div class="reveal-ping"></div>
+        <div class="reveal-core">✦</div>
+      </div>
+      <p class="reveal-text">Deine Rolle nimmt Gestalt an...</p>
+    </div>
+  </div>
+  
+  <!-- ══════════════════════════════════════════════════════════════════
+       RESULT SCREEN
+       ══════════════════════════════════════════════════════════════════ -->
+  <div id="result-screen" class="container hidden">
+    <div class="result-card">
+      <div class="result-header">
+        <div class="result-icon" id="result-icon"></div>
+        <p class="result-label">Deine soziale Rolle</p>
+        <h1 class="result-title" id="result-title"></h1>
+        <p class="result-tagline" id="result-tagline"></p>
+      </div>
+      
+      <p class="result-description" id="result-description"></p>
+      
+      <div class="stats-section">
+        <h3 class="stats-title">Dein Profil</h3>
+        <div class="stats-grid" id="stats-grid"></div>
+      </div>
+      
+      <div class="powers-grid">
+        <div class="power-card superpower">
+          <p class="power-label">⚡ Superkraft</p>
+          <p class="power-text" id="superpower"></p>
+        </div>
+        <div class="power-card shadow">
+          <p class="power-label">🌑 Schattenseite</p>
+          <p class="power-text" id="shadow"></p>
+        </div>
+      </div>
+      
+      <div class="compatibility-section">
+        <h3 class="compatibility-title">Kompatibilität</h3>
+        <div class="compatibility-grid">
+          <div class="compat-card allies">
+            <p class="compat-label">✨ Verbündete</p>
+            <p class="compat-roles" id="allies"></p>
+          </div>
+          <div class="compat-card nemesis">
+            <p class="compat-label">⚔️ Herausfordernd</p>
+            <p class="compat-roles" id="nemesis"></p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="result-actions">
+        <button class="btn-gold" onclick="shareResult()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="18" cy="5" r="3"/>
+            <circle cx="6" cy="12" r="3"/>
+            <circle cx="18" cy="19" r="3"/>
+            <path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/>
+          </svg>
+          Teile dein Ergebnis
+        </button>
+        <button class="btn-ghost" onclick="restart()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 4v6h6M23 20v-6h-6"/>
+            <path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/>
+          </svg>
+          Erneut starten
+        </button>
+      </div>
+      
+
+    </div>
+  </div>
+  
+  <script>
+    // ══════════════════════════════════════════════════════════════════════
+    // QUIZ ENGINE WITH CONTRIBUTIONEVEMT OUTPUT
+    // ══════════════════════════════════════════════════════════════════════
+    
+    let currentQ = 0;
+    let scores = {
+      stability: 0,  // Der Fels
+      fire: 0,       // Die Flamme
+      truth: 0,      // Der Spiegel
+      harbor: 0,     // Der Hafen
+      compass: 0,    // Der Kompass
+      bridge: 0      // Die Brücke
+    };
+    let currentResult = null;
+    let contributionEvent = null;
+    
+    // Suspense-Nachrichten
+    const suspenseMessages = [
+      "Ein Muster zeichnet sich ab...",
+      "Deine Rolle wird klarer..."
+    ];
+    
+    // ══════════════════════════════════════════════════════════════════════
+    // QUESTIONS (10 Fragen, min 3 pro Dimension)
+    // ══════════════════════════════════════════════════════════════════════
+    const questions = [
+      {
+        scenario: "Ein Freund ruft dich nachts an. Seine Stimme klingt gebrochen.",
+        text: "Was ist dein erster Impuls?",
+        options: [
+          { text: "Sofort ruhig werden. Meine Ruhe ist jetzt sein Anker.", scores: { stability: 3, harbor: 1 }, icon: "🪨" },
+          { text: "Ich bin in 15 Minuten da. Mit Snacks.", scores: { fire: 3, bridge: 1 }, icon: "🔥" },
+          { text: "Okay, erzähl. Ich höre zu, ohne zu urteilen.", scores: { harbor: 3, bridge: 1 }, icon: "⚓" },
+          { text: "Was brauchst du gerade wirklich? Reden oder Lösung?", scores: { compass: 3, truth: 1 }, icon: "🧭" }
+        ]
+      },
+      {
+        scenario: "In einer Gruppendiskussion verhärten sich die Fronten.",
+        text: "Wie reagierst du?",
+        options: [
+          { text: "Ich finde den gemeinsamen Nenner, den alle übersehen.", scores: { bridge: 3, compass: 1 }, icon: "🌉" },
+          { text: "Ich sage, was ich wirklich denke – auch wenn's unbequem ist.", scores: { truth: 3, stability: 1 }, icon: "🪞" },
+          { text: "Ich bringe Humor rein, um die Spannung zu lösen.", scores: { fire: 3, harbor: 1 }, icon: "🔥" },
+          { text: "Ich bleibe neutral und lasse die anderen ausreden.", scores: { stability: 3, harbor: 1 }, icon: "🪨" }
+        ]
+      },
+      {
+        scenario: "Jemand, den du magst, trifft eine fragwürdige Entscheidung.",
+        text: "Wie gehst du damit um?",
+        options: [
+          { text: "Ich sage es direkt. Echte Freundschaft verträgt Wahrheit.", scores: { truth: 3, compass: 1 }, icon: "🪞" },
+          { text: "Ich frage nach ihren Gründen, bevor ich urteile.", scores: { harbor: 2, bridge: 2 }, icon: "⚓" },
+          { text: "Ich unterstütze sie – und bin da, wenn's schiefgeht.", scores: { stability: 3, fire: 1 }, icon: "🪨" },
+          { text: "Ich helfe ihr, die Konsequenzen durchzudenken.", scores: { compass: 3, truth: 1 }, icon: "🧭" }
+        ]
+      },
+      {
+        scenario: "Du lernst jemanden Neuen kennen, der zurückhaltend wirkt.",
+        text: "Wie verhältst du dich?",
+        options: [
+          { text: "Ich gebe Raum. Wer reden will, findet mich.", scores: { harbor: 3, stability: 1 }, icon: "⚓" },
+          { text: "Ich stelle offene Fragen und höre genau zu.", scores: { bridge: 3, compass: 1 }, icon: "🌉" },
+          { text: "Ich erzähle von mir, um Vertrauen zu schaffen.", scores: { fire: 3, bridge: 1 }, icon: "🔥" },
+          { text: "Ich beobachte erstmal und schätze die Lage ein.", scores: { compass: 2, truth: 2 }, icon: "🧭" }
+        ]
+      },
+      {
+        scenario: "Ein Projekt im Team läuft völlig aus dem Ruder.",
+        text: "Was ist deine natürliche Reaktion?",
+        options: [
+          { text: "Ich strukturiere das Chaos und setze Prioritäten.", scores: { compass: 3, stability: 1 }, icon: "🧭" },
+          { text: "Ich spreche an, was alle denken aber keiner sagt.", scores: { truth: 3, bridge: 1 }, icon: "🪞" },
+          { text: "Ich motiviere das Team und halte die Stimmung oben.", scores: { fire: 3, harbor: 1 }, icon: "🔥" },
+          { text: "Ich bleibe ruhig und zeige, dass Panik nichts bringt.", scores: { stability: 3, compass: 1 }, icon: "🪨" }
+        ]
+      },
+      {
+        scenario: "Zwei Menschen, die du magst, haben Streit miteinander.",
+        text: "Was tust du?",
+        options: [
+          { text: "Ich höre beiden Seiten zu, ohne Partei zu ergreifen.", scores: { harbor: 3, bridge: 1 }, icon: "⚓" },
+          { text: "Ich versuche, beide an einen Tisch zu bringen.", scores: { bridge: 3, compass: 1 }, icon: "🌉" },
+          { text: "Ich sage beiden ehrlich, was ich von der Situation halte.", scores: { truth: 3, stability: 1 }, icon: "🪞" },
+          { text: "Ich halte mich raus, bis sich die Wogen geglättet haben.", scores: { stability: 2, compass: 2 }, icon: "🪨" }
+        ]
+      },
+      {
+        scenario: "Ein Freund steckt in einer Sinnkrise und weiß nicht weiter.",
+        text: "Wie hilfst du?",
+        options: [
+          { text: "Ich stelle die richtigen Fragen, um ihm Klarheit zu geben.", scores: { compass: 3, truth: 1 }, icon: "🧭" },
+          { text: "Ich bin einfach da. Manchmal reicht Präsenz.", scores: { harbor: 3, stability: 1 }, icon: "⚓" },
+          { text: "Ich erinnere ihn an seine Stärken und bisherigen Erfolge.", scores: { fire: 3, bridge: 1 }, icon: "🔥" },
+          { text: "Ich sage ihm meine ehrliche Meinung zu seiner Situation.", scores: { truth: 3, compass: 1 }, icon: "🪞" }
+        ]
+      },
+      {
+        scenario: "Du bist auf einer Party, wo du kaum jemanden kennst.",
+        text: "Wie verhältst du dich?",
+        options: [
+          { text: "Ich finde schnell die interessantesten Menschen.", scores: { bridge: 3, fire: 1 }, icon: "🌉" },
+          { text: "Ich werde zur Energiequelle – Musik, Gespräche, Lachen.", scores: { fire: 3, bridge: 1 }, icon: "🔥" },
+          { text: "Ich beobachte erstmal die Dynamik im Raum.", scores: { compass: 2, truth: 2 }, icon: "🧭" },
+          { text: "Ich finde einen ruhigen Ort und führe tiefe Einzelgespräche.", scores: { harbor: 3, stability: 1 }, icon: "⚓" }
+        ]
+      },
+      {
+        scenario: "Ein guter Freund hat dich enttäuscht.",
+        text: "Wie reagierst du?",
+        options: [
+          { text: "Ich konfrontiere ihn direkt und offen.", scores: { truth: 3, stability: 1 }, icon: "🪞" },
+          { text: "Ich brauche Zeit, um meine Gefühle zu sortieren.", scores: { stability: 3, harbor: 1 }, icon: "🪨" },
+          { text: "Ich versuche, seine Perspektive zu verstehen.", scores: { harbor: 2, compass: 2 }, icon: "⚓" },
+          { text: "Ich rede mit jemand anderem darüber, um Klarheit zu finden.", scores: { bridge: 2, fire: 2 }, icon: "🌉" }
+        ]
+      },
+      {
+        scenario: "Wenn du an Freundschaft denkst...",
+        text: "Was ist dir am wichtigsten?",
+        options: [
+          { text: "Dass sie genauso für mich da sind, wie ich für sie.", scores: { harbor: 2, stability: 2 }, icon: "⚓" },
+          { text: "Ehrlichkeit. Auch wenn's unbequem ist.", scores: { truth: 3, compass: 1 }, icon: "🪞" },
+          { text: "Jemanden, der meine Energie matcht.", scores: { fire: 3, bridge: 1 }, icon: "🔥" },
+          { text: "Menschen, die mich verstehen ohne viele Worte.", scores: { bridge: 2, harbor: 2 }, icon: "🌉" }
+        ]
+      }
+    ];
+    
+    // ══════════════════════════════════════════════════════════════════════
+    // ROLES (6 Profile)
+    // ══════════════════════════════════════════════════════════════════════
+    const roles = {
+      rock: {
+        id: "rock",
+        name: "DER FELS",
+        emoji: "🪨",
+        tagline: "In dir finden andere Boden unter den Füßen.",
+        description: "Wenn alles wackelt, stehst du. Nicht weil dir nichts anhaben kann – sondern weil du weißt: Jemand muss der Ruhepol sein. Menschen kommen zu dir, wenn die Welt zu laut wird. Nicht für Ratschläge. Für Ruhe.",
+        superpower: "Stabilität in Chaos bringen",
+        shadow: "Du trägst oft mehr als du zeigst",
+        traits: [
+          { id: "trait.social.reliability", label: "Verlässlichkeit", score: 85 },
+          { id: "trait.social.inner_calm", label: "Innere Ruhe", score: 78 },
+          { id: "trait.social.quiet_strength", label: "Stille Stärke", score: 72 }
+        ],
+        allies: "Die Flamme • Der Hafen",
+        nemesis: "Der Spiegel",
+        markers: [
+          { id: "marker.social.stability_anchor", weight: 0.85 },
+          { id: "marker.social.emotional_regulation", weight: 0.72 },
+          { id: "marker.social.dependability", weight: 0.78 }
+        ],
+        tags: [
+          { id: "tag.archetype.anchor", label: "Anker", kind: "archetype", weight: 0.9 },
+          { id: "tag.shadow.burden_bearer", label: "Lastträger", kind: "shadow", weight: 0.4 }
+        ],
+        unlock: { id: "unlock.crests.social_rock", level: 2 }
+      },
+      flame: {
+        id: "flame",
+        name: "DIE FLAMME",
+        emoji: "🔥",
+        tagline: "Du bringst Licht in Räume, die es vergessen haben.",
+        description: "Wo du bist, ist Energie. Nicht die laute Art – die ansteckende. Du erinnerst Menschen daran, dass das Leben auch leicht sein darf. Dass Lachen eine Form von Mut ist.",
+        superpower: "Menschen aus ihrer Schwere holen",
+        shadow: "Wer trägt dich, wenn du selbst schwer wirst?",
+        traits: [
+          { id: "trait.social.energy", label: "Lebensenergie", score: 92 },
+          { id: "trait.social.spontaneity", label: "Spontanität", score: 85 },
+          { id: "trait.social.infectious_joy", label: "Ansteckende Freude", score: 78 }
+        ],
+        allies: "Der Fels • Die Brücke",
+        nemesis: "Der Kompass",
+        markers: [
+          { id: "marker.social.energy_source", weight: 0.92 },
+          { id: "marker.social.mood_elevator", weight: 0.78 },
+          { id: "marker.social.spontaneous_connection", weight: 0.65 }
+        ],
+        tags: [
+          { id: "tag.archetype.catalyst", label: "Katalysator", kind: "archetype", weight: 0.85 },
+          { id: "tag.shadow.self_neglect", label: "Selbstvernachlässigung", kind: "shadow", weight: 0.35 }
+        ],
+        unlock: { id: "unlock.crests.social_flame", level: 2 }
+      },
+      mirror: {
+        id: "mirror",
+        name: "DER SPIEGEL",
+        emoji: "🪞",
+        tagline: "Du zeigst Menschen, wer sie wirklich sind.",
+        description: "Bullshit hat bei dir keine Chance. Nicht weil du hart bist – weil du ehrlich bist. Menschen kommen zu dir, wenn sie die Wahrheit brauchen, nicht Bestätigung.",
+        superpower: "Klarheit schenken durch Wahrheit",
+        shadow: "Nicht jeder ist bereit für deinen Blick",
+        traits: [
+          { id: "trait.social.directness", label: "Direktheit", score: 88 },
+          { id: "trait.social.clarity", label: "Klarsicht", score: 82 },
+          { id: "trait.social.honesty", label: "Unbequeme Ehrlichkeit", score: 75 }
+        ],
+        allies: "Der Kompass • Der Fels",
+        nemesis: "Der Hafen",
+        markers: [
+          { id: "marker.social.truth_teller", weight: 0.88 },
+          { id: "marker.social.clarity_giver", weight: 0.75 },
+          { id: "marker.social.authentic_feedback", weight: 0.68 }
+        ],
+        tags: [
+          { id: "tag.archetype.truth_seeker", label: "Wahrheitssucher", kind: "archetype", weight: 0.88 },
+          { id: "tag.shadow.harsh_truth", label: "Unbarmherzige Wahrheit", kind: "shadow", weight: 0.45 }
+        ],
+        unlock: { id: "unlock.crests.social_mirror", level: 2 }
+      },
+      harbor: {
+        id: "harbor",
+        name: "DER HAFEN",
+        emoji: "⚓",
+        tagline: "Bei dir kann man anlegen. Ohne Erklärung.",
+        description: "Du bist der Ort, an dem Menschen sein dürfen, wie sie sind. Keine Masken nötig. Du urteilst nicht, du bist da. Menschen verlassen dich leichter, als sie kamen.",
+        superpower: "Bedingungsloser Raum für andere sein",
+        shadow: "Du vergisst manchmal, dass du auch Hafen brauchst",
+        traits: [
+          { id: "trait.social.acceptance", label: "Akzeptanz", score: 90 },
+          { id: "trait.social.presence", label: "Präsenz", score: 85 },
+          { id: "trait.social.emotional_safety", label: "Emotionale Sicherheit", score: 80 }
+        ],
+        allies: "Der Spiegel • Die Flamme",
+        nemesis: "Die Brücke",
+        markers: [
+          { id: "marker.social.safe_space", weight: 0.90 },
+          { id: "marker.social.non_judgmental", weight: 0.82 },
+          { id: "marker.social.emotional_container", weight: 0.75 }
+        ],
+        tags: [
+          { id: "tag.archetype.safe_haven", label: "Sicherer Hafen", kind: "archetype", weight: 0.90 },
+          { id: "tag.shadow.self_sacrifice", label: "Selbstaufgabe", kind: "shadow", weight: 0.38 }
+        ],
+        unlock: { id: "unlock.crests.social_harbor", level: 2 }
+      },
+      compass: {
+        id: "compass",
+        name: "DER KOMPASS",
+        emoji: "🧭",
+        tagline: "Du hilfst anderen, ihren Weg zu finden.",
+        description: "Menschen kommen zu dir, wenn sie sich verirrt haben. Nicht für Anweisungen – für Orientierung. Du siehst Muster, wo andere nur Chaos sehen.",
+        superpower: "Richtung geben ohne zu bestimmen",
+        shadow: "Wer zeigt dir den Weg, wenn du suchst?",
+        traits: [
+          { id: "trait.social.wisdom", label: "Weisheit", score: 85 },
+          { id: "trait.social.patience", label: "Geduld", score: 80 },
+          { id: "trait.social.strategic_thinking", label: "Strategisches Denken", score: 78 }
+        ],
+        allies: "Der Spiegel • Der Hafen",
+        nemesis: "Die Flamme",
+        markers: [
+          { id: "marker.social.guide", weight: 0.85 },
+          { id: "marker.social.pattern_recognition", weight: 0.72 },
+          { id: "marker.social.mentorship", weight: 0.68 }
+        ],
+        tags: [
+          { id: "tag.archetype.sage", label: "Weiser", kind: "archetype", weight: 0.85 },
+          { id: "tag.shadow.own_path_lost", label: "Eigener Weg verloren", kind: "shadow", weight: 0.32 }
+        ],
+        unlock: { id: "unlock.crests.social_compass", level: 2 }
+      },
+      bridge: {
+        id: "bridge",
+        name: "DIE BRÜCKE",
+        emoji: "🌉",
+        tagline: "Du verbindest Menschen, die sich sonst nie gefunden hätten.",
+        description: "Du bist der Grund, warum Fremde Freunde werden. Du siehst, wer zu wem passt. In jeder Gruppe bist du der soziale Klebstoff.",
+        superpower: "Unsichtbare Verbindungen sichtbar machen",
+        shadow: "Du vergisst dich selbst über dem Verbinden",
+        traits: [
+          { id: "trait.social.social_intelligence", label: "Soziale Intelligenz", score: 92 },
+          { id: "trait.social.empathy", label: "Empathie", score: 85 },
+          { id: "trait.social.people_reading", label: "Menschenkenntnis", score: 80 }
+        ],
+        allies: "Die Flamme • Der Kompass",
+        nemesis: "Der Fels",
+        markers: [
+          { id: "marker.social.connector", weight: 0.92 },
+          { id: "marker.social.social_glue", weight: 0.78 },
+          { id: "marker.social.network_builder", weight: 0.70 }
+        ],
+        tags: [
+          { id: "tag.archetype.connector", label: "Verbinder", kind: "archetype", weight: 0.92 },
+          { id: "tag.shadow.identity_diffusion", label: "Identitätsverlust", kind: "shadow", weight: 0.35 }
+        ],
+        unlock: { id: "unlock.crests.social_bridge", level: 2 }
+      }
+    };
+    
+    // ══════════════════════════════════════════════════════════════════════
+    // QUIZ FUNCTIONS
+    // ══════════════════════════════════════════════════════════════════════
+    
+    function startQuiz() {
+      document.getElementById('intro-screen').classList.add('hidden');
+      document.getElementById('quiz-screen').classList.remove('hidden');
+      renderQuestion();
+    }
+    
+    function renderQuestion() {
+      const q = questions[currentQ];
+      document.getElementById('q-num').textContent = currentQ + 1;
+      document.getElementById('progress-pct').textContent = Math.round(((currentQ + 1) / questions.length) * 100);
+      document.getElementById('progress-bar').style.width = ((currentQ + 1) / questions.length) * 100 + '%';
+      document.getElementById('scenario').textContent = q.scenario;
+      document.getElementById('question-text').textContent = q.text;
+      
+      const optionsHTML = q.options.map((opt, i) => `
+        <button class="option-btn" onclick="selectOption(${i})">
+          <span>${opt.text}</span>
+        </button>
+      `).join('');
+      
+      document.getElementById('options').innerHTML = optionsHTML;
+    }
+    
+    function selectOption(index) {
+      const q = questions[currentQ];
+      const opt = q.options[index];
+      
+      // Update scores
+      Object.entries(opt.scores).forEach(([key, val]) => {
+        scores[key] += val;
+      });
+      
+      // Fade out question
+      document.getElementById('question-container').classList.add('fading');
+      
+      setTimeout(() => {
+        if (currentQ < questions.length - 1) {
+          // Check suspense points
+          if (currentQ === 4 || currentQ === 7) {
+            showSuspense();
+          } else {
+            currentQ++;
+            document.getElementById('question-container').classList.remove('fading');
+            renderQuestion();
+          }
+        } else {
+          showReveal();
+        }
+      }, 600);
+    }
+    
+    function showSuspense() {
+      document.getElementById('quiz-screen').classList.add('hidden');
+      document.getElementById('suspense-screen').classList.remove('hidden');
+      
+      const idx = currentQ === 4 ? 0 : 1;
+      document.getElementById('suspense-text').textContent = suspenseMessages[idx];
+      
+      setTimeout(() => {
+        document.getElementById('suspense-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+        currentQ++;
+        document.getElementById('question-container').classList.remove('fading');
+        renderQuestion();
+      }, 1800);
+    }
+    
+    function showReveal() {
+      // Switch to Alchemy theme for reveal
+      document.body.classList.remove('theme-botanical');
+      document.body.classList.add('theme-alchemy');
+      
+      document.getElementById('quiz-screen').classList.add('hidden');
+      document.getElementById('reveal-screen').classList.remove('hidden');
+      
+      setTimeout(() => {
+        calculateResult();
+      }, 2200);
+    }
+    
+    function calculateResult() {
+      const roleMapping = {
+        stability: 'rock',
+        fire: 'flame',
+        truth: 'mirror',
+        harbor: 'harbor',
+        compass: 'compass',
+        bridge: 'bridge'
+      };
+      
+      // Find dominant trait
+      let maxScore = 0;
+      let dominantTrait = 'stability';
+      
+      Object.entries(scores).forEach(([trait, score]) => {
+        if (score > maxScore) {
+          maxScore = score;
+          dominantTrait = trait;
+        }
+      });
+      
+      currentResult = roles[roleMapping[dominantTrait]];
+      
+      // Generate ContributionEvent
+      contributionEvent = generateContributionEvent(currentResult, scores);
+      
+      document.getElementById('reveal-screen').classList.add('hidden');
+      document.getElementById('result-screen').classList.remove('hidden');
+      
+      renderResult();
+    }
+    
+    // ══════════════════════════════════════════════════════════════════════
+    // CONTRIBUTIONEVEMT GENERATOR (Pipeline Output)
+    // ══════════════════════════════════════════════════════════════════════
+    
+    function generateContributionEvent(result, rawScores) {
+      const now = new Date().toISOString();
+      const eventId = crypto.randomUUID();
+      
+      // Calculate total score for normalization
+      const totalScore = Object.values(rawScores).reduce((a, b) => a + b, 0);
+      const maxPossibleScore = questions.length * 4; // max 4 points per question
+      
+      // Normalize raw scores to 1-100
+      function normalizeScore(score) {
+        return Math.round(Math.max(1, Math.min(100, (score / maxPossibleScore) * 100 + 25)));
+      }
+      
+      // Get band for score
+      function getBand(score) {
+        if (score <= 20) return "low";
+        if (score <= 40) return "midlow";
+        if (score <= 60) return "mid";
+        if (score <= 80) return "midhigh";
+        return "high";
+      }
+      
+      // Build traits array with normalized scores
+      const traits = result.traits.map(t => ({
+        id: t.id,
+        score: t.score,
+        band: getBand(t.score),
+        confidence: 0.75,
+        method: "scenario"
+      }));
+      
+      // Add dimension-specific traits
+      const dimensionTraits = [
+        { id: "trait.social.stability", score: normalizeScore(rawScores.stability), label: "Stabilität" },
+        { id: "trait.social.energy", score: normalizeScore(rawScores.fire), label: "Energie" },
+        { id: "trait.social.truth_orientation", score: normalizeScore(rawScores.truth), label: "Wahrheitsorientierung" },
+        { id: "trait.social.safe_space", score: normalizeScore(rawScores.harbor), label: "Sicherheitsraum" },
+        { id: "trait.social.guidance", score: normalizeScore(rawScores.compass), label: "Orientierung" },
+        { id: "trait.social.connection", score: normalizeScore(rawScores.bridge), label: "Verbindung" }
+      ];
+      
+      dimensionTraits.forEach(dt => {
+        traits.push({
+          id: dt.id,
+          score: dt.score,
+          band: getBand(dt.score),
+          confidence: 0.8,
+          method: "scenario"
+        });
+      });
+      
+      // Build markers from result
+      const markers = result.markers.map(m => ({
+        id: m.id,
+        weight: m.weight,
+        evidence: {
+          itemsAnswered: questions.length,
+          confidence: 0.78
+        }
+      }));
+      
+      // Add primary role marker
+      markers.push({
+        id: `marker.social.role.${result.id}`,
+        weight: 0.95,
+        evidence: {
+          itemsAnswered: questions.length,
+          confidence: 0.85
+        }
+      });
+      
+      // Build tags
+      const tags = result.tags.map(t => ({
+        id: t.id,
+        label: t.label,
+        kind: t.kind,
+        weight: t.weight
+      }));
+      
+      // Add role tag
+      tags.push({
+        id: `tag.role.${result.id}`,
+        label: result.name.replace("DER ", "").replace("DIE ", ""),
+        kind: "archetype",
+        weight: 1.0
+      });
+      
+      // Build unlock
+      const unlocks = [{
+        id: result.unlock.id,
+        unlocked: true,
+        unlockedAt: now,
+        level: result.unlock.level,
+        sourceRef: "quiz.social_role.v2"
+      }];
+      
+      // Build summary
+      const summary = {
+        title: result.name,
+        bullets: [
+          result.tagline,
+          `Superkraft: ${result.superpower}`,
+          `Schattenseite: ${result.shadow}`
+        ],
+        resultId: result.id
+      };
+      
+      // Assemble ContributionEvent
+      return {
+        specVersion: "sp.contribution.v1",
+        eventId: eventId,
+        occurredAt: now,
+        source: {
+          vertical: "quiz",
+          moduleId: "quiz.social_role.v2",
+          domain: "quiz.quizzme.io",
+          locale: "de-DE",
+          build: "1.0.0"
+        },
+        payload: {
+          markers: markers,
+          traits: traits,
+          tags: tags,
+          unlocks: unlocks,
+          summary: summary,
+          debug: {
+            rawScores: rawScores,
+            dominantRole: result.id,
+            totalQuestions: questions.length
+          }
+        }
+      };
+    }
+    
+    // ══════════════════════════════════════════════════════════════════════
+    // RESULT RENDERING
+    // ══════════════════════════════════════════════════════════════════════
+    
+    function renderResult() {
+      const r = currentResult;
+      
+      // Header
+      document.getElementById('result-icon').textContent = r.emoji;
+      document.getElementById('result-title').textContent = r.name;
+      document.getElementById('result-tagline').textContent = r.tagline;
+      document.getElementById('result-description').textContent = r.description;
+      
+      // Powers
+      document.getElementById('superpower').textContent = r.superpower;
+      document.getElementById('shadow').textContent = r.shadow;
+      
+      // Stats
+      const statsHTML = r.traits.map(t => `
+        <div class="stat-row">
+          <span class="stat-label">${t.label}</span>
+          <div class="stat-bar-track">
+            <div class="stat-bar-fill" style="width: 0%"></div>
+          </div>
+          <span class="stat-value">${t.score}</span>
+        </div>
+      `).join('');
+      document.getElementById('stats-grid').innerHTML = statsHTML;
+      
+      // Animate stat bars
+      setTimeout(() => {
+        const bars = document.querySelectorAll('.stat-bar-fill');
+        r.traits.forEach((t, i) => {
+          if (bars[i]) bars[i].style.width = t.score + '%';
+        });
+      }, 100);
+      
+      // Compatibility
+      document.getElementById('allies').textContent = r.allies;
+      document.getElementById('nemesis').textContent = r.nemesis;
+    }
+    
+    function shareResult() {
+      const r = currentResult;
+      const text = `${r.emoji} Ich bin ${r.name}\n\n"${r.tagline}"\n\nFinde heraus, wer DU für andere bist 👇`;
+      
+      if (navigator.share) {
+        navigator.share({
+          title: 'Wer bist du für andere?',
+          text: text
+        });
+      } else {
+        navigator.clipboard.writeText(text).then(() => {
+          alert('In die Zwischenablage kopiert!');
+        });
+      }
+    }
+    
+    function restart() {
+      currentQ = 0;
+      scores = { stability: 0, fire: 0, truth: 0, harbor: 0, compass: 0, bridge: 0 };
+      currentResult = null;
+      contributionEvent = null;
+      
+      document.body.classList.remove('theme-alchemy');
+      document.body.classList.add('theme-botanical');
+      
+      document.getElementById('result-screen').classList.add('hidden');
+      document.getElementById('intro-screen').classList.remove('hidden');
+    }
+    
+    // ══════════════════════════════════════════════════════════════════════
+    // EXPORT FUNCTION (für externe Integration)
+    // ══════════════════════════════════════════════════════════════════════
+    
+    window.getContributionEvent = function() {
+      return contributionEvent;
+    };
+    
+    // Dispatch event when result is ready (für Pipeline-Integration)
+    window.dispatchQuizResult = function() {
+      if (contributionEvent) {
+        window.dispatchEvent(new CustomEvent('quizContribution', { 
+          detail: contributionEvent 
+        }));
+        console.log('📤 ContributionEvent dispatched:', contributionEvent);
+      }
+    };
+  </script>
+</body>
+</html>

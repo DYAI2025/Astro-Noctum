@@ -1,0 +1,580 @@
+{
+  "meta": {
+    "id": "quiz.energiestein.v1",
+    "title": "Dein Energiestein",
+    "description": "Welcher Kristall resoniert mit deiner Seele? Entdecke den Stein, der deine verborgene Essenz widerspiegelt.",
+    "engine": "custom",
+    "skin": "Modern Alchemy",
+    "tone": "mysterious",
+    "language": "de",
+    "version": "1.0",
+    "clusterId": "cluster.naturkind.v1",
+    "clusterPosition": 4,
+    "estimatedMinutes": 3,
+    "disclaimer": "Dieser Test dient der spielerischen Selbstreflexion und stellt keine psychologische oder esoterische Diagnose dar."
+  },
+
+  "dimensions": [
+    {
+      "id": "clarity",
+      "name": "Klarheit",
+      "pole_low": "Intuitiv",
+      "pole_high": "Analytisch",
+      "description": "Wie du Wahrheit erfasst – durch Fühlen oder Denken"
+    },
+    {
+      "id": "energy",
+      "name": "Energie",
+      "pole_low": "Sanft",
+      "pole_high": "Intensiv",
+      "description": "Die Qualität deiner inneren Kraft – ruhig fließend oder vulkanisch"
+    },
+    {
+      "id": "focus",
+      "name": "Fokus",
+      "pole_low": "Innen",
+      "pole_high": "Außen",
+      "description": "Wohin deine Aufmerksamkeit natürlich wandert – zur inneren Welt oder zur äußeren"
+    }
+  ],
+
+  "questions": [
+    {
+      "id": "q1",
+      "text": "Du betrittst eine Kristallhöhle. Welches Licht zieht dich zuerst an?",
+      "options": [
+        {
+          "text": "Ein sanftes violettes Glimmen aus der Tiefe",
+          "scores": { "clarity": 2, "energy": 1, "focus": 3 }
+        },
+        {
+          "text": "Klare, weiße Lichtreflexionen an den Wänden",
+          "scores": { "clarity": 5, "energy": 2, "focus": 2 }
+        },
+        {
+          "text": "Warme, goldene Strahlen durch einen Spalt",
+          "scores": { "clarity": 3, "energy": 4, "focus": 4 }
+        },
+        {
+          "text": "Tiefes Schwarz mit einzelnen Funken",
+          "scores": { "clarity": 1, "energy": 5, "focus": 1 }
+        }
+      ]
+    },
+    {
+      "id": "q2",
+      "text": "Wenn du einen Stein in der Hand hältst, was spürst du am liebsten?",
+      "options": [
+        {
+          "text": "Eine beruhigende Kühle, die mich erdet",
+          "scores": { "clarity": 4, "energy": 1, "focus": 2 }
+        },
+        {
+          "text": "Ein leichtes Kribbeln wie elektrische Spannung",
+          "scores": { "clarity": 2, "energy": 5, "focus": 4 }
+        },
+        {
+          "text": "Eine sanfte Wärme, die durch mich fließt",
+          "scores": { "clarity": 3, "energy": 3, "focus": 3 }
+        },
+        {
+          "text": "Das Gewicht und die Präsenz des Moments",
+          "scores": { "clarity": 1, "energy": 2, "focus": 1 }
+        }
+      ]
+    },
+    {
+      "id": "q3",
+      "text": "In einem wichtigen Gespräch – was ist dir am wichtigsten?",
+      "options": [
+        {
+          "text": "Die Wahrheit klar und direkt auszusprechen",
+          "scores": { "clarity": 5, "energy": 4, "focus": 4 }
+        },
+        {
+          "text": "Die Gefühle des anderen zu verstehen und zu spiegeln",
+          "scores": { "clarity": 2, "energy": 2, "focus": 2 }
+        },
+        {
+          "text": "Eine Lösung zu finden, die alle weiterbringt",
+          "scores": { "clarity": 4, "energy": 3, "focus": 5 }
+        },
+        {
+          "text": "Raum für das Ungesagte zu lassen",
+          "scores": { "clarity": 1, "energy": 1, "focus": 1 }
+        }
+      ]
+    },
+    {
+      "id": "q4",
+      "text": "Ein unerwartetes Problem taucht auf. Deine erste Reaktion?",
+      "options": [
+        {
+          "text": "Tief durchatmen und die Ruhe in mir finden",
+          "scores": { "clarity": 2, "energy": 1, "focus": 1 }
+        },
+        {
+          "text": "Sofort analysieren: Was sind die Optionen?",
+          "scores": { "clarity": 5, "energy": 4, "focus": 5 }
+        },
+        {
+          "text": "Vertrauen, dass sich der richtige Weg zeigt",
+          "scores": { "clarity": 1, "energy": 2, "focus": 2 }
+        },
+        {
+          "text": "Die Energie nutzen, um ins Handeln zu kommen",
+          "scores": { "clarity": 3, "energy": 5, "focus": 4 }
+        }
+      ]
+    },
+    {
+      "id": "q5",
+      "text": "Was beschreibt deine Art zu träumen am besten?",
+      "options": [
+        {
+          "text": "Lebhafte, farbige Bilder voller Symbolik",
+          "scores": { "clarity": 2, "energy": 3, "focus": 2 }
+        },
+        {
+          "text": "Klare Szenarien, fast wie Filme",
+          "scores": { "clarity": 4, "energy": 2, "focus": 4 }
+        },
+        {
+          "text": "Tiefe Gefühle ohne klare Bilder",
+          "scores": { "clarity": 1, "energy": 2, "focus": 1 }
+        },
+        {
+          "text": "Intensive Erlebnisse, an die ich mich lebhaft erinnere",
+          "scores": { "clarity": 3, "energy": 5, "focus": 3 }
+        }
+      ]
+    },
+    {
+      "id": "q6",
+      "text": "Du findest einen alten Schlüssel. Was denkst du zuerst?",
+      "options": [
+        {
+          "text": "Welche Tür er wohl öffnet?",
+          "scores": { "clarity": 4, "energy": 3, "focus": 5 }
+        },
+        {
+          "text": "Wer ihn wohl verloren hat?",
+          "scores": { "clarity": 2, "energy": 2, "focus": 3 }
+        },
+        {
+          "text": "Er fühlt sich bedeutsam an – ich behalte ihn",
+          "scores": { "clarity": 1, "energy": 1, "focus": 1 }
+        },
+        {
+          "text": "Ich werde herausfinden, was er öffnet",
+          "scores": { "clarity": 3, "energy": 5, "focus": 4 }
+        }
+      ]
+    },
+    {
+      "id": "q7",
+      "text": "Welche Umgebung gibt dir am meisten Energie?",
+      "options": [
+        {
+          "text": "Ein stiller Berggipfel über den Wolken",
+          "scores": { "clarity": 5, "energy": 2, "focus": 2 }
+        },
+        {
+          "text": "Ein lebendiger Markt voller Menschen und Farben",
+          "scores": { "clarity": 2, "energy": 5, "focus": 5 }
+        },
+        {
+          "text": "Ein uralter Wald, in dem die Zeit stehen bleibt",
+          "scores": { "clarity": 1, "energy": 2, "focus": 1 }
+        },
+        {
+          "text": "Am Meer, wo Wellen kommen und gehen",
+          "scores": { "clarity": 3, "energy": 3, "focus": 3 }
+        }
+      ]
+    },
+    {
+      "id": "q8",
+      "text": "Ein Freund ist in einer Krise. Wie hilfst du am besten?",
+      "options": [
+        {
+          "text": "Ich höre zu und bin einfach da",
+          "scores": { "clarity": 2, "energy": 1, "focus": 2 }
+        },
+        {
+          "text": "Ich helfe ihm, die Situation klar zu sehen",
+          "scores": { "clarity": 5, "energy": 3, "focus": 4 }
+        },
+        {
+          "text": "Ich ermutige ihn, seiner Intuition zu vertrauen",
+          "scores": { "clarity": 1, "energy": 2, "focus": 1 }
+        },
+        {
+          "text": "Ich schlage konkrete Schritte vor",
+          "scores": { "clarity": 4, "energy": 4, "focus": 5 }
+        }
+      ]
+    },
+    {
+      "id": "q9",
+      "text": "Was zieht dich an einem Menschen am meisten an?",
+      "options": [
+        {
+          "text": "Eine ruhige, tiefe Präsenz",
+          "scores": { "clarity": 2, "energy": 1, "focus": 1 }
+        },
+        {
+          "text": "Scharfer Verstand und klare Kommunikation",
+          "scores": { "clarity": 5, "energy": 3, "focus": 4 }
+        },
+        {
+          "text": "Warme Herzlichkeit und Einfühlungsvermögen",
+          "scores": { "clarity": 3, "energy": 2, "focus": 3 }
+        },
+        {
+          "text": "Leidenschaft und Tatendrang",
+          "scores": { "clarity": 2, "energy": 5, "focus": 5 }
+        }
+      ]
+    },
+    {
+      "id": "q10",
+      "text": "Du stehst an einer Kreuzung. Ein Weg ist klar, einer im Nebel. Du wählst...",
+      "options": [
+        {
+          "text": "Den klaren Weg – ich weiß gern, wohin ich gehe",
+          "scores": { "clarity": 5, "energy": 3, "focus": 5 }
+        },
+        {
+          "text": "Den Nebel – das Mysterium ruft mich",
+          "scores": { "clarity": 1, "energy": 3, "focus": 1 }
+        },
+        {
+          "text": "Ich warte einen Moment und spüre hinein",
+          "scores": { "clarity": 2, "energy": 1, "focus": 2 }
+        },
+        {
+          "text": "Ich gehe los, egal wohin – Bewegung zählt",
+          "scores": { "clarity": 3, "energy": 5, "focus": 4 }
+        }
+      ]
+    }
+  ],
+
+  "profiles": [
+    {
+      "id": "amethyst",
+      "title": "Amethyst",
+      "tagline": "Der Kristall der tiefen Intuition",
+      "color": "#9B72AA",
+      "matchCondition": {
+        "clarity": "low",
+        "energy": "low-mid",
+        "focus": "low-mid"
+      },
+      "description": "Dein Energiestein ist der Amethyst – der Hüter zwischen Welten. Wie das violette Schimmern in der Dämmerung trägst du eine natürliche Verbindung zum Unsichtbaren in dir. Andere spüren in deiner Nähe eine Tiefe, die sie beruhigt und gleichzeitig fasziniert. Du verarbeitest das Leben nicht an der Oberfläche, sondern lässt es durch die Filter deiner Seele sickern. Deine Träume sind lebhaft, deine Ahnungen oft treffend. Der Amethyst lädt dich ein, diesem inneren Kompass noch mehr zu vertrauen.",
+      "stats": {
+        "intuition": "92%",
+        "ruhe": "Grenzenlos",
+        "klarheit": "Mondlicht",
+        "transformation": "Aktiv"
+      },
+      "compatibility": {
+        "allies": ["Mondstein", "Labradorit"],
+        "neutral": ["Rosenquarz", "Bergkristall"],
+        "tension": ["Tigerauge", "Citrin"]
+      },
+      "shareText": "Mein Energiestein ist AMETHYST – der Kristall der tiefen Intuition. ✨ Welcher Stein resoniert mit dir?",
+      "markers": [
+        { "id": "marker.stone.amethyst", "weight": 1.0 },
+        { "id": "marker.stone.intuition", "weight": 0.85 },
+        { "id": "marker.stone.spiritual", "weight": 0.7 }
+      ]
+    },
+    {
+      "id": "bergkristall",
+      "title": "Bergkristall",
+      "tagline": "Der Kristall der absoluten Klarheit",
+      "color": "#E8E8E8",
+      "matchCondition": {
+        "clarity": "high",
+        "energy": "low-mid",
+        "focus": "mid-high"
+      },
+      "description": "Dein Energiestein ist der Bergkristall – rein, klar, ungefiltert. Wie ein Fenster, das Licht ohne Verzerrung durchlässt, hast du die Gabe, Dinge so zu sehen, wie sie wirklich sind. Diese Klarheit ist dein Geschenk und manchmal auch deine Last, denn nicht jeder möchte die Wahrheit unverhüllt sehen. Der Bergkristall verstärkt, was ist – er macht das Gute heller und das Ungeklärte sichtbarer. Nutze diese Kraft weise: Sie reinigt nicht nur deinen eigenen Geist, sondern hilft auch anderen, Licht in ihre Schatten zu bringen.",
+      "stats": {
+        "klarheit": "100%",
+        "verstärkung": "Maximal",
+        "reinheit": "Kristallin",
+        "fokus": "Laserstrahl"
+      },
+      "compatibility": {
+        "allies": ["Citrin", "Tigerauge"],
+        "neutral": ["Amethyst", "Mondstein"],
+        "tension": ["Obsidian", "Labradorit"]
+      },
+      "shareText": "Mein Energiestein ist BERGKRISTALL – der Kristall der absoluten Klarheit. 💎 Welcher Stein resoniert mit dir?",
+      "markers": [
+        { "id": "marker.stone.bergkristall", "weight": 1.0 },
+        { "id": "marker.stone.clarity", "weight": 0.9 },
+        { "id": "marker.stone.amplification", "weight": 0.75 }
+      ]
+    },
+    {
+      "id": "rosenquarz",
+      "title": "Rosenquarz",
+      "tagline": "Der Kristall der bedingungslosen Liebe",
+      "color": "#F4B4C4",
+      "matchCondition": {
+        "clarity": "mid",
+        "energy": "low",
+        "focus": "mid"
+      },
+      "description": "Dein Energiestein ist der Rosenquarz – sanft und doch so kraftvoll wie die Liebe selbst. Du trägst ein offenes Herz durch die Welt, und das ist mutiger, als die meisten ahnen. Wo andere Mauern bauen, baust du Brücken. Deine Wärme ist keine Schwäche – sie ist deine Superkraft. Der Rosenquarz erinnert dich daran, dass diese Liebe auch dir selbst gehört. In einer Welt, die oft hart erscheint, bist du der sanfte Beweis, dass Weichheit eine Stärke ist.",
+      "stats": {
+        "mitgefühl": "∞",
+        "wärme": "Sonnenuntergang",
+        "heilung": "88%",
+        "selbstliebe": "Wachsend"
+      },
+      "compatibility": {
+        "allies": ["Mondstein", "Amethyst"],
+        "neutral": ["Bergkristall", "Citrin"],
+        "tension": ["Obsidian", "Tigerauge"]
+      },
+      "shareText": "Mein Energiestein ist ROSENQUARZ – der Kristall der bedingungslosen Liebe. 💗 Welcher Stein resoniert mit dir?",
+      "markers": [
+        { "id": "marker.stone.rosenquarz", "weight": 1.0 },
+        { "id": "marker.stone.love", "weight": 0.9 },
+        { "id": "marker.stone.healing", "weight": 0.8 }
+      ]
+    },
+    {
+      "id": "obsidian",
+      "title": "Obsidian",
+      "tagline": "Der Kristall des Schattenwächters",
+      "color": "#2D2D2D",
+      "matchCondition": {
+        "clarity": "low",
+        "energy": "high",
+        "focus": "low"
+      },
+      "description": "Dein Energiestein ist der Obsidian – geboren aus Feuer, geformt in Sekunden, stark wie die Wahrheit. Du hast keine Angst vor der Dunkelheit, denn du weißt: Dort liegt oft das Wertvollste verborgen. Obsidian zeigt dir, was andere lieber nicht sehen wollen – und du hast den Mut, hinzuschauen. Dieser Stein schneidet durch Illusionen wie durch Butter. Er schützt nicht durch Abschirmung, sondern durch radikale Ehrlichkeit. Mit ihm an deiner Seite findest du die Stärke in deinen Schatten.",
+      "stats": {
+        "schutz": "Absolut",
+        "wahrheit": "Ungeschönt",
+        "tiefe": "Abgrund",
+        "transformation": "Vulkanisch"
+      },
+      "compatibility": {
+        "allies": ["Tigerauge", "Labradorit"],
+        "neutral": ["Amethyst", "Bergkristall"],
+        "tension": ["Rosenquarz", "Citrin"]
+      },
+      "shareText": "Mein Energiestein ist OBSIDIAN – der Kristall des Schattenwächters. 🖤 Welcher Stein resoniert mit dir?",
+      "markers": [
+        { "id": "marker.stone.obsidian", "weight": 1.0 },
+        { "id": "marker.stone.protection", "weight": 0.85 },
+        { "id": "marker.stone.shadow_work", "weight": 0.8 }
+      ]
+    },
+    {
+      "id": "tigerauge",
+      "title": "Tigerauge",
+      "tagline": "Der Kristall des fokussierten Willens",
+      "color": "#C4914B",
+      "matchCondition": {
+        "clarity": "mid-high",
+        "energy": "high",
+        "focus": "high"
+      },
+      "description": "Dein Energiestein ist das Tigerauge – schimmernd zwischen Gold und Erde, wachsam und entschlossen. Du bist jemand, der Dinge in Bewegung bringt. Nicht durch Lärm, sondern durch präzise Klarheit und den Mut, zu handeln, wenn andere noch zögern. Das Tigerauge vereint das Feuer des Willens mit der Erdung der Vernunft. Du siehst Chancen, wo andere Hindernisse sehen, und du hast die Ausdauer, drantzubleiben. Dieser Stein erinnert dich: Fokus ist keine Einschränkung – er ist Freiheit.",
+      "stats": {
+        "fokus": "Laserstrahl",
+        "willenskraft": "94%",
+        "erdung": "Tief verwurzelt",
+        "erfolg": "In Sicht"
+      },
+      "compatibility": {
+        "allies": ["Bergkristall", "Citrin"],
+        "neutral": ["Obsidian", "Labradorit"],
+        "tension": ["Amethyst", "Mondstein"]
+      },
+      "shareText": "Mein Energiestein ist TIGERAUGE – der Kristall des fokussierten Willens. 🐅 Welcher Stein resoniert mit dir?",
+      "markers": [
+        { "id": "marker.stone.tigerauge", "weight": 1.0 },
+        { "id": "marker.stone.willpower", "weight": 0.9 },
+        { "id": "marker.stone.grounding", "weight": 0.75 }
+      ]
+    },
+    {
+      "id": "mondstein",
+      "title": "Mondstein",
+      "tagline": "Der Kristall der sanften Zyklen",
+      "color": "#B8C4D4",
+      "matchCondition": {
+        "clarity": "low-mid",
+        "energy": "low",
+        "focus": "low-mid"
+      },
+      "description": "Dein Energiestein ist der Mondstein – schimmernd wie der Nachthimmel, verbunden mit dem Rhythmus des Lebens selbst. Du verstehst intuitiv, dass alles Phasen hat: Wachstum und Ruhe, Fülle und Leere, Licht und Schatten. Diese Weisheit macht dich zu einem Anker in unruhigen Zeiten. Der Mondstein flüstert dir zu, dass du nicht gegen die Gezeiten kämpfen musst – du kannst mit ihnen fließen. Deine Empfänglichkeit ist keine Passivität, sondern eine tiefe Form der Stärke.",
+      "stats": {
+        "intuition": "Mondphasen",
+        "empfänglichkeit": "Offen",
+        "rhythmus": "Natürlich",
+        "weisheit": "Leise"
+      },
+      "compatibility": {
+        "allies": ["Amethyst", "Rosenquarz"],
+        "neutral": ["Labradorit", "Bergkristall"],
+        "tension": ["Tigerauge", "Citrin"]
+      },
+      "shareText": "Mein Energiestein ist MONDSTEIN – der Kristall der sanften Zyklen. 🌙 Welcher Stein resoniert mit dir?",
+      "markers": [
+        { "id": "marker.stone.mondstein", "weight": 1.0 },
+        { "id": "marker.stone.cycles", "weight": 0.85 },
+        { "id": "marker.stone.receptivity", "weight": 0.8 }
+      ]
+    },
+    {
+      "id": "labradorit",
+      "title": "Labradorit",
+      "tagline": "Der Kristall der verborgenen Farben",
+      "color": "#4A6670",
+      "matchCondition": {
+        "clarity": "low",
+        "energy": "mid-high",
+        "focus": "mid"
+      },
+      "description": "Dein Energiestein ist der Labradorit – unscheinbar auf den ersten Blick, dann plötzlich ein Feuerwerk aus Farben. Du bist komplexer, als andere vermuten, und das ist deine geheime Stärke. Wie der Labradorit zeigst du verschiedenen Menschen verschiedene Facetten, ohne je unwahr zu sein. Dieser Stein ist der Hüter der Magie im Alltäglichen. Er erinnert dich daran, dass Transformation nicht immer laut sein muss – manchmal geschieht sie im Stillen, bis plötzlich alles im neuen Licht erscheint.",
+      "stats": {
+        "magie": "Verborgen",
+        "wandlung": "Irisierend",
+        "tiefe": "Unergründlich",
+        "schutz": "Schimmernd"
+      },
+      "compatibility": {
+        "allies": ["Amethyst", "Obsidian"],
+        "neutral": ["Mondstein", "Tigerauge"],
+        "tension": ["Bergkristall", "Citrin"]
+      },
+      "shareText": "Mein Energiestein ist LABRADORIT – der Kristall der verborgenen Farben. ✨ Welcher Stein resoniert mit dir?",
+      "markers": [
+        { "id": "marker.stone.labradorit", "weight": 1.0 },
+        { "id": "marker.stone.transformation", "weight": 0.85 },
+        { "id": "marker.stone.mystery", "weight": 0.8 }
+      ]
+    },
+    {
+      "id": "citrin",
+      "title": "Citrin",
+      "tagline": "Der Kristall der strahlenden Fülle",
+      "color": "#F5C542",
+      "matchCondition": {
+        "clarity": "mid-high",
+        "energy": "high",
+        "focus": "mid-high"
+      },
+      "description": "Dein Energiestein ist der Citrin – flüssiges Sonnenlicht, gefangen in Kristallform. Du trägst eine natürliche Leuchtkraft in dir, die andere anzieht wie Motten das Licht. Citrin ist der Stein der Manifestation: Er verwandelt Gedanken in Realität, Ideen in Taten. Deine Energie ist ansteckend, dein Optimismus keine Naivität, sondern bewusste Entscheidung. Dieser Stein erinnert dich daran, dass Fülle kein Nullsummenspiel ist – je mehr du strahlst, desto mehr Licht gibt es für alle.",
+      "stats": {
+        "energie": "Solar",
+        "optimismus": "96%",
+        "manifestation": "Aktiv",
+        "ausstrahlung": "Magnetisch"
+      },
+      "compatibility": {
+        "allies": ["Tigerauge", "Bergkristall"],
+        "neutral": ["Rosenquarz", "Mondstein"],
+        "tension": ["Obsidian", "Amethyst"]
+      },
+      "shareText": "Mein Energiestein ist CITRIN – der Kristall der strahlenden Fülle. ☀️ Welcher Stein resoniert mit dir?",
+      "markers": [
+        { "id": "marker.stone.citrin", "weight": 1.0 },
+        { "id": "marker.stone.abundance", "weight": 0.9 },
+        { "id": "marker.stone.manifestation", "weight": 0.85 }
+      ]
+    }
+  ],
+
+  "scoring": {
+    "method": "dimensional_mapping",
+    "maxScorePerQuestion": 5,
+    "totalQuestions": 10,
+    "bands": {
+      "low": { "min": 0, "max": 0.39 },
+      "mid": { "min": 0.40, "max": 0.69 },
+      "high": { "min": 0.70, "max": 1.0 }
+    },
+    "profileMapping": {
+      "low-low-low": "amethyst",
+      "low-low-mid": "mondstein",
+      "low-low-high": "rosenquarz",
+      "low-mid-low": "labradorit",
+      "low-mid-mid": "amethyst",
+      "low-mid-high": "labradorit",
+      "low-high-low": "obsidian",
+      "low-high-mid": "obsidian",
+      "low-high-high": "labradorit",
+      "mid-low-low": "mondstein",
+      "mid-low-mid": "rosenquarz",
+      "mid-low-high": "rosenquarz",
+      "mid-mid-low": "amethyst",
+      "mid-mid-mid": "rosenquarz",
+      "mid-mid-high": "tigerauge",
+      "mid-high-low": "labradorit",
+      "mid-high-mid": "citrin",
+      "mid-high-high": "tigerauge",
+      "high-low-low": "mondstein",
+      "high-low-mid": "bergkristall",
+      "high-low-high": "bergkristall",
+      "high-mid-low": "bergkristall",
+      "high-mid-mid": "bergkristall",
+      "high-mid-high": "tigerauge",
+      "high-high-low": "obsidian",
+      "high-high-mid": "citrin",
+      "high-high-high": "citrin"
+    }
+  },
+
+  "share_config": {
+    "platforms": ["native", "clipboard", "twitter", "facebook", "whatsapp"],
+    "hashtags": ["QuizzMe", "Energiestein", "Kristall", "Persönlichkeitstest"],
+    "utmSource": "quiz_share",
+    "utmMedium": "social",
+    "utmCampaign": "energiestein_v1",
+    "viralTriggers": {
+      "compatibilityMatrix": true,
+      "tagYourStone": "Tagge jemanden, der auch ein {result} ist!",
+      "nemesisChallenge": "Finde deinen Kristall-Gegenpol!"
+    }
+  },
+
+  "contribution_event_template": {
+    "specVersion": "sp.contribution.v1",
+    "source": {
+      "vertical": "quiz",
+      "moduleId": "quiz.energiestein.v1",
+      "domain": "quizzme.app",
+      "locale": "de-DE"
+    },
+    "payloadTemplate": {
+      "markers": "{{profile.markers}}",
+      "traits": [
+        { "id": "trait.stone.clarity", "score": "{{scores.clarity.normalized}}", "band": "{{scores.clarity.band}}" },
+        { "id": "trait.stone.energy", "score": "{{scores.energy.normalized}}", "band": "{{scores.energy.band}}" },
+        { "id": "trait.stone.focus", "score": "{{scores.focus.normalized}}", "band": "{{scores.focus.band}}" }
+      ],
+      "tags": [
+        { "id": "tag.stone.{{profile.id}}", "label": "{{profile.title}}" },
+        { "id": "tag.category.naturkind", "label": "Naturkind" }
+      ],
+      "unlocks": [
+        { "id": "unlock.stone.{{profile.id}}", "unlocked": true, "level": 1 }
+      ]
+    },
+    "clusterProgress": {
+      "clusterId": "cluster.naturkind.v1",
+      "quizId": "quiz.energiestein.v1"
+    }
+  }
+}

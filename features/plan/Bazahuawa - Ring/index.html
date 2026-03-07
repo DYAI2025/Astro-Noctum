@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motion Ring | NASA Multi-Stream Ink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-[#f4f4f4] text-[#1a1a1a] overflow-hidden selection:bg-black selection:text-white font-sans">
+    
+    <main class="relative w-full h-screen flex flex-col md:flex-row">
+        <!-- Canvas Layer -->
+        <div id="canvas-container" class="relative flex-1 flex items-center justify-center p-8 bg-white/20">
+            <canvas id="motion-ring-canvas"></canvas>
+            
+            <!-- Technical Overlay -->
+            <div class="absolute bottom-8 left-8 font-mono text-[10px] uppercase tracking-widest opacity-40 pointer-events-none">
+                <div id="status-fps">FPS: --</div>
+                <div id="status-points">Points: --</div>
+                <div id="status-perf" class="text-red-600 hidden font-bold">PERF LOW: DEGRADED</div>
+            </div>
+
+            <!-- NASA Data Feed Overlay -->
+            <div id="nasa-feed" class="absolute top-8 left-8 font-mono text-[10px] opacity-0 transition-opacity duration-500 pointer-events-none">
+                <div class="flex items-center gap-2 mb-4 text-black font-bold">
+                    <span class="w-2 h-2 rounded-full bg-black animate-pulse"></span>
+                    NASA DONKI MULTI-STREAM
+                </div>
+                <div id="stream-status-list" class="space-y-1 opacity-60">
+                    <!-- Dynamic Stream Status -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar UI -->
+        <aside class="w-full md:w-80 bg-white border-l border-black/5 p-6 flex flex-col gap-6 overflow-y-auto shadow-2xl z-10">
+            <header class="flex justify-between items-start">
+                <div>
+                    <h1 class="text-xl font-light tracking-tighter uppercase">Motion Ring <span class="font-bold">v2</span></h1>
+                    <p class="text-[11px] opacity-50 mt-1 leading-relaxed text-balance">NASA-Driven Dynamic Coupling (DDC) Engine.</p>
+                </div>
+                <button id="btn-show-debug" title="Toggle Debug Overlay" class="p-2 hover:bg-black hover:text-white transition-colors">
+                    <i data-lucide="layers" class="w-4 h-4"></i>
+                </button>
+            </header>
+
+            <!-- Mode Switcher -->
+            <div class="flex bg-zinc-100 p-1 rounded-sm">
+                <button id="mode-manual" class="flex-1 py-1.5 text-[10px] font-bold uppercase tracking-widest bg-white shadow-sm ring-1 ring-black/5">Manual</button>
+                <button id="mode-nasa" class="flex-1 py-1.5 text-[10px] font-bold uppercase tracking-widest opacity-40 hover:opacity-100 transition-opacity">NASA Live</button>
+            </div>
+
+            <!-- Controls (Manual Mode) -->
+            <section id="manual-controls" class="flex flex-col gap-6 transition-all duration-300">
+                <div class="space-y-3">
+                    <label class="text-[10px] font-bold uppercase tracking-widest flex justify-between">
+                        Radius <span id="val-radius" class="opacity-50">180</span>
+                    </label>
+                    <input type="range" id="ctrl-radius" min="50" max="300" value="180" class="w-full accent-black">
+                </div>
+                
+                <div class="space-y-3">
+                    <label class="text-[10px] font-bold uppercase tracking-widest flex justify-between">
+                        Sensitivity <span id="val-sensitivity" class="opacity-50">1.0</span>
+                    </label>
+                    <input type="range" id="ctrl-sensitivity" min="0.1" max="5.0" step="0.1" value="1.0" class="w-full accent-black">
+                </div>
+
+                <div class="space-y-3">
+                    <label class="text-[10px] font-bold uppercase tracking-widest flex justify-between">
+                        Points <span id="val-points" class="opacity-50">240</span>
+                    </label>
+                    <input type="range" id="ctrl-points" min="40" max="600" value="240" class="w-full accent-black">
+                </div>
+                
+                <div class="pt-4 border-t border-black/5">
+                    <label class="text-[10px] font-bold uppercase tracking-widest flex justify-between mb-4">
+                        Global Signal <span id="val-signal" class="opacity-50">0.00</span>
+                    </label>
+                    <div class="flex items-center gap-4">
+                        <span class="text-[10px] opacity-40">-1</span>
+                        <input type="range" id="ctrl-signal" min="-1" max="1" step="0.01" value="0" class="flex-1 accent-black">
+                        <span class="text-[10px] opacity-40">+1</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- NASA Info (NASA Mode) -->
+            <section id="nasa-controls" class="hidden flex flex-col gap-4 py-4 border-t border-black/5 animate-in fade-in slide-in-from-bottom-2">
+                <p class="text-[11px] leading-relaxed opacity-60">
+                    Real-time cross-influence dynamics across 10 DONKI channels. High activity in one sector bleeds into neighbors.
+                </p>
+                <div id="nasa-monitor" class="space-y-2 max-h-[250px] overflow-y-auto pr-2 scrollbar-thin">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- API Actions -->
+            <section class="mt-auto space-y-2">
+                <button id="btn-toggle" class="w-full py-3 bg-black text-white text-[11px] font-bold uppercase tracking-widest hover:bg-zinc-800 transition-colors">
+                    Stop Engine
+                </button>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="btn-pulse" class="py-2 border border-black/10 text-[10px] uppercase font-bold hover:bg-black hover:text-white transition-all">Pulse</button>
+                    <button id="btn-reset" class="py-2 border border-black/10 text-[10px] uppercase font-bold hover:bg-black hover:text-white transition-all">Reset</button>
+                </div>
+            </section>
+        </aside>
+    </main>
+
+    <script type="module" src="playground.js"></script>
+</body>
+</html>

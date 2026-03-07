@@ -1,0 +1,141 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradient for energy sword core -->
+    <linearGradient id="sword-energy-core" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="rgb(220, 180, 255)" stop-opacity="1"/>
+      <stop offset="30%" stop-color="rgb(192, 132, 252)" stop-opacity="1"/>
+      <stop offset="60%" stop-color="rgb(168, 85, 247)" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="rgb(126, 34, 206)" stop-opacity="0.6"/>
+    </linearGradient>
+
+    <!-- Gradient for lightning bolts -->
+    <linearGradient id="lightning-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgb(233, 213, 255)" stop-opacity="1"/>
+      <stop offset="50%" stop-color="rgb(192, 132, 252)" stop-opacity="1"/>
+      <stop offset="100%" stop-color="rgb(168, 85, 247)" stop-opacity="0.9"/>
+    </linearGradient>
+
+    <!-- Radial gradient for aura -->
+    <radialGradient id="aura-glow" cx="50%" cy="50%">
+      <stop offset="0%" stop-color="rgb(192, 132, 252)" stop-opacity="0.8"/>
+      <stop offset="50%" stop-color="rgb(168, 85, 247)" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="rgb(126, 34, 206)" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Layer 1: Outer aura glow -->
+  <ellipse cx="64" cy="64" rx="48" ry="56"
+           fill="url(#aura-glow)"
+           opacity="0.3"
+           style="filter: blur(24px);"/>
+
+  <!-- Layer 2: Energy sword blade (filled) -->
+  <path d="M64 20 L68 56 L66 64 L68 72 L64 108 L60 72 L62 64 L60 56 Z"
+        fill="url(#sword-energy-core)"
+        style="filter: drop-shadow(0 0 8px rgba(168, 85, 247, 1))
+                        drop-shadow(0 0 20px rgba(168, 85, 247, 0.8))
+                        drop-shadow(0 0 40px rgba(168, 85, 247, 0.5));"/>
+
+  <!-- Layer 3: Bright sword outline -->
+  <path d="M64 20 L68 56 L66 64 L68 72 L64 108 L60 72 L62 64 L60 56 Z"
+        fill="none"
+        stroke="rgb(248, 250, 252)"
+        stroke-width="1.5"
+        opacity="0.9"
+        style="filter: drop-shadow(0 0 4px rgba(233, 213, 255, 1));"/>
+
+  <!-- Layer 4: Lightning bolts branching from sword (left side) -->
+  <g opacity="0.85">
+    <!-- Main left bolt -->
+    <path d="M60 40 L48 48 L52 52 L40 64 L48 64 L36 76"
+          fill="none"
+          stroke="url(#lightning-gradient)"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="miter"
+          style="filter: drop-shadow(0 0 6px rgba(192, 132, 252, 0.9))
+                          drop-shadow(0 0 12px rgba(168, 85, 247, 0.6));"/>
+
+    <!-- Secondary left bolt -->
+    <path d="M60 56 L50 62 L46 70"
+          fill="none"
+          stroke="url(#lightning-gradient)"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          style="filter: drop-shadow(0 0 4px rgba(192, 132, 252, 0.8));"/>
+  </g>
+
+  <!-- Layer 5: Lightning bolts branching from sword (right side) -->
+  <g opacity="0.85">
+    <!-- Main right bolt -->
+    <path d="M68 40 L80 48 L76 52 L88 64 L80 64 L92 76"
+          fill="none"
+          stroke="url(#lightning-gradient)"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="miter"
+          style="filter: drop-shadow(0 0 6px rgba(192, 132, 252, 0.9))
+                          drop-shadow(0 0 12px rgba(168, 85, 247, 0.6));"/>
+
+    <!-- Secondary right bolt -->
+    <path d="M68 56 L78 62 L82 70"
+          fill="none"
+          stroke="url(#lightning-gradient)"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          style="filter: drop-shadow(0 0 4px rgba(192, 132, 252, 0.8));"/>
+  </g>
+
+  <!-- Layer 6: Cross-guard/hilt -->
+  <g opacity="0.95">
+    <rect x="48" y="62" width="32" height="4"
+          rx="2"
+          fill="rgb(192, 132, 252)"
+          style="filter: drop-shadow(0 0 6px rgba(168, 85, 247, 0.9));"/>
+    <rect x="48" y="62" width="32" height="4"
+          rx="2"
+          fill="none"
+          stroke="rgb(248, 250, 252)"
+          stroke-width="1"/>
+  </g>
+
+  <!-- Layer 7: Energy particles around blade -->
+  <g opacity="0.6">
+    <!-- Top particles -->
+    <circle cx="58" cy="32" r="1.5" fill="rgb(233, 213, 255)"
+            style="filter: drop-shadow(0 0 3px rgba(192, 132, 252, 1));"/>
+    <circle cx="70" cy="36" r="1.5" fill="rgb(233, 213, 255)"
+            style="filter: drop-shadow(0 0 3px rgba(192, 132, 252, 1));"/>
+
+    <!-- Middle particles -->
+    <circle cx="56" cy="64" r="1.5" fill="rgb(233, 213, 255)"
+            style="filter: drop-shadow(0 0 3px rgba(192, 132, 252, 1));"/>
+    <circle cx="72" cy="64" r="1.5" fill="rgb(233, 213, 255)"
+            style="filter: drop-shadow(0 0 3px rgba(192, 132, 252, 1));"/>
+
+    <!-- Bottom particles -->
+    <circle cx="58" cy="92" r="1.5" fill="rgb(233, 213, 255)"
+            style="filter: drop-shadow(0 0 3px rgba(192, 132, 252, 1));"/>
+    <circle cx="70" cy="96" r="1.5" fill="rgb(233, 213, 255)"
+            style="filter: drop-shadow(0 0 3px rgba(192, 132, 252, 1));"/>
+  </g>
+
+  <!-- Layer 8: Inner energy streaks (vertical highlights) -->
+  <g opacity="0.4">
+    <line x1="64" y1="24" x2="64" y2="60"
+          stroke="rgb(233, 213, 255)"
+          stroke-width="1"
+          stroke-linecap="round"/>
+    <line x1="64" y1="68" x2="64" y2="104"
+          stroke="rgb(233, 213, 255)"
+          stroke-width="1"
+          stroke-linecap="round"/>
+  </g>
+
+  <!-- Layer 9: Crystal pommel at bottom -->
+  <circle cx="64" cy="110" r="4"
+          fill="rgb(192, 132, 252)"
+          stroke="rgb(248, 250, 252)"
+          stroke-width="1"
+          style="filter: drop-shadow(0 0 6px rgba(168, 85, 247, 0.9));"/>
+</svg>

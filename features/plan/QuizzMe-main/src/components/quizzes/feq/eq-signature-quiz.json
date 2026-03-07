@@ -1,0 +1,501 @@
+{
+  "meta": {
+    "id": "quiz.eq_signature.v1",
+    "title": "Deine Emotionale Signatur",
+    "subtitle": "Entdecke dein einzigartiges Muster, wie du Gefühle wahrnimmst, verstehst und in Kraft verwandelst",
+    "version": "1.0.0",
+    "language": "de",
+    "engine": "custom_weighted",
+    "skin": "eq_signature",
+    "tone": "mysterious_warm",
+    "target_audience": "Frauen 20-40, Selbsterkenntnis, Persönlichkeitsentwicklung",
+    "estimated_duration": "3-4 Minuten",
+    "question_count": 12,
+    "profile_count": 6,
+    "scientific_basis": [
+      "Mayer-Salovey Four-Branch Model",
+      "Bar-On EQ-i 2.0 Framework",
+      "Emotional Granularity Research (Lisa Feldman Barrett)",
+      "ESCI Behavioral Indicators"
+    ],
+    "disclaimer": "Dieser Test dient der spielerischen Selbstreflexion und stellt keine psychologische Diagnose dar. Er basiert auf Forschung zu emotionaler Intelligenz, ersetzt aber keine professionelle Beratung."
+  },
+  "dimensions": [
+    {
+      "id": "perception",
+      "name": "Emotionale Wahrnehmung",
+      "description": "Wie präzise du Gefühle in dir und anderen erkennst",
+      "pole_low": "Pragmatisch",
+      "pole_high": "Hochsensibel",
+      "scientific_reference": "Branch 1: Perceiving Emotions (Mayer & Salovey)",
+      "behavioral_indicators": [
+        "Emotionale Granularität - präzise Unterscheidung ähnlicher Gefühle",
+        "Erkennen nonverbaler Signale (Mimik, Körpersprache, Tonfälle)",
+        "Körperliche Wahrnehmung emotionaler Zustände",
+        "Empathische Resonanz mit anderen"
+      ]
+    },
+    {
+      "id": "regulation",
+      "name": "Emotionale Steuerung",
+      "description": "Wie du Gefühle bewusst lenkst und modulierst",
+      "pole_low": "Expressiv",
+      "pole_high": "Reguliert",
+      "scientific_reference": "Branch 4: Managing Emotions (Mayer & Salovey) + EQ-i Self-Management",
+      "behavioral_indicators": [
+        "Impulskontrolle - Pause zwischen Stimulus und Reaktion",
+        "Kognitive Neubewertung (Cognitive Reappraisal)",
+        "Emotionale Distanzierung bei Bedarf",
+        "Stresstoleranz und Recovery"
+      ]
+    },
+    {
+      "id": "utilization",
+      "name": "Strategische Nutzung",
+      "description": "Wie du Emotionen als Werkzeug einsetzt",
+      "pole_low": "Intuitiv",
+      "pole_high": "Strategisch",
+      "scientific_reference": "Branch 2: Facilitating Thought (Mayer & Salovey)",
+      "behavioral_indicators": [
+        "Emotions-Transformation (z.B. Nervosität → Energie)",
+        "Stimmungsnutzung für kognitive Aufgaben",
+        "Sozial-strategischer Einsatz von Emotionen",
+        "Motivation und Zielverfolgung durch Emotionen"
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "scenario": "Selbstwahrnehmung",
+      "text": "Du wachst mit einem diffusen Unbehagen auf. Kein klarer Grund, nur ein Gefühl. Was passiert in dir?",
+      "measures": ["perception", "regulation"],
+      "options": [
+        {
+          "text": "Ich halte inne und frage mich: Ist das Angst? Traurigkeit? Erschöpfung? Ich versuche, das Gefühl präzise zu benennen.",
+          "scores": { "perception": 5, "regulation": 3, "utilization": 2 }
+        },
+        {
+          "text": "Ich starte meinen Tag und schaue, ob sich das Gefühl von selbst auflöst. Manchmal verschwinden diese Stimmungen einfach.",
+          "scores": { "perception": 1, "regulation": 4, "utilization": 3 }
+        },
+        {
+          "text": "Ich nutze das Gefühl als Signal: Vielleicht sollte ich heute sanfter mit mir sein oder bestimmte Termine anders angehen.",
+          "scores": { "perception": 3, "regulation": 4, "utilization": 5 }
+        },
+        {
+          "text": "Ich spreche sofort mit jemandem darüber – beim Aussprechen wird mir oft klar, was los ist.",
+          "scores": { "perception": 4, "regulation": 2, "utilization": 3 }
+        }
+      ]
+    },
+    {
+      "id": "q2",
+      "scenario": "Soziale Wahrnehmung",
+      "text": "Du betrittst einen Raum und spürst sofort: Die Stimmung ist anders als erwartet. Die Menschen wirken angespannt. Was nimmst du wahr?",
+      "measures": ["perception", "utilization"],
+      "options": [
+        {
+          "text": "Ich registriere subtile Details: verschränkte Arme, gemiedene Blicke, die zu ruhige Stimme meiner Kollegin. Wie ein Puzzle, das sich zusammenfügt.",
+          "scores": { "perception": 5, "regulation": 2, "utilization": 3 }
+        },
+        {
+          "text": "Ich bemerke, dass etwas nicht stimmt, fokussiere mich aber bewusst auf meine eigene Aufgabe. Nicht mein Zirkus, nicht meine Affen.",
+          "scores": { "perception": 2, "regulation": 5, "utilization": 2 }
+        },
+        {
+          "text": "Ich überlege strategisch: Wie wirkt sich diese Spannung auf meine Ziele heute aus? Sollte ich bestimmte Themen verschieben?",
+          "scores": { "perception": 3, "regulation": 3, "utilization": 5 }
+        },
+        {
+          "text": "Ich frage direkt: 'Hey, ist alles okay? Die Stimmung wirkt heute anders.' Lieber klären als rätseln.",
+          "scores": { "perception": 3, "regulation": 1, "utilization": 4 }
+        }
+      ]
+    },
+    {
+      "id": "q3",
+      "scenario": "Impulskontrolle",
+      "text": "Jemand macht eine Bemerkung, die dich trifft – vielleicht unfair, vielleicht absichtlich. Du spürst, wie Ärger in dir hochsteigt. Was passiert dann?",
+      "measures": ["regulation", "perception"],
+      "options": [
+        {
+          "text": "Ich spüre den Ärger intensiv, fast körperlich. Mein Herz schlägt schneller. Ich muss erstmal durchatmen, bevor ich reagieren kann.",
+          "scores": { "perception": 5, "regulation": 3, "utilization": 2 }
+        },
+        {
+          "text": "Ich schalte innerlich einen Gang runter. Ich registriere den Ärger, aber erlaube ihm nicht, meine Reaktion zu diktieren.",
+          "scores": { "perception": 3, "regulation": 5, "utilization": 3 }
+        },
+        {
+          "text": "Ich kontere sofort. Wenn jemand unter die Gürtellinie geht, darf er wissen, wie das ankommt.",
+          "scores": { "perception": 3, "regulation": 1, "utilization": 2 }
+        },
+        {
+          "text": "Ich frage mich: Will ich jetzt gewinnen oder will ich verstehen? Manchmal nutze ich die Pause, um die Person besser einzuschätzen.",
+          "scores": { "perception": 4, "regulation": 4, "utilization": 5 }
+        }
+      ]
+    },
+    {
+      "id": "q4",
+      "scenario": "Emotionale Granularität",
+      "text": "Ein Freund fragt: 'Wie geht's dir?' – und du merkst, dass 'gut' oder 'schlecht' die Antwort nicht trifft. Wie beschreibst du deinen Zustand?",
+      "measures": ["perception"],
+      "options": [
+        {
+          "text": "Ich finde präzise Worte: 'Ich bin melancholisch-nachdenklich, aber nicht traurig. Eher wie... herbstliche Nostalgie.'",
+          "scores": { "perception": 5, "regulation": 2, "utilization": 3 }
+        },
+        {
+          "text": "Ich sage 'kompliziert' und lasse es dabei. Nicht jedes Gefühl braucht ein Label.",
+          "scores": { "perception": 2, "regulation": 4, "utilization": 2 }
+        },
+        {
+          "text": "Ich beschreibe es über den Körper: 'Ich hab so ein Kribbeln im Bauch – halb aufgeregt, halb nervös. Keine Ahnung, was das ist.'",
+          "scores": { "perception": 4, "regulation": 2, "utilization": 2 }
+        },
+        {
+          "text": "Ich nutze die Frage als Anlass, um mit dem Freund tiefer zu sprechen. Oft klärt sich das Gefühl im Dialog.",
+          "scores": { "perception": 3, "regulation": 3, "utilization": 5 }
+        }
+      ]
+    },
+    {
+      "id": "q5",
+      "scenario": "Emotionsnutzung",
+      "text": "Du musst eine wichtige Präsentation halten. Wie gehst du emotional in diese Situation?",
+      "measures": ["utilization", "regulation"],
+      "options": [
+        {
+          "text": "Ich versuche, komplett ruhig zu sein. Nervosität ist der Feind klarer Gedanken.",
+          "scores": { "perception": 2, "regulation": 5, "utilization": 2 }
+        },
+        {
+          "text": "Ich transformiere die Nervosität in Energie. Das Kribbeln ist wie Strom – ich lenke es in meine Stimme, meine Präsenz.",
+          "scores": { "perception": 4, "regulation": 3, "utilization": 5 }
+        },
+        {
+          "text": "Ich fühle alles intensiv – die Aufregung, die Unsicherheit, die Hoffnung. Das macht mich authentisch, auch wenn es anstrengend ist.",
+          "scores": { "perception": 5, "regulation": 1, "utilization": 3 }
+        },
+        {
+          "text": "Ich visualisiere den besten Ausgang und baue mir damit positive Emotionen auf. Die Vorstellung von Erfolg gibt mir Kraft.",
+          "scores": { "perception": 3, "regulation": 4, "utilization": 5 }
+        }
+      ]
+    },
+    {
+      "id": "q6",
+      "scenario": "Empathie",
+      "text": "Eine Freundin erzählt von einem Problem. Du merkst: Sie will eigentlich nicht deinen Rat, sondern etwas anderes. Was tust du?",
+      "measures": ["perception", "utilization"],
+      "options": [
+        {
+          "text": "Ich spüre genau, was sie braucht – Präsenz, nicht Lösungen. Ich höre zu und spiegle ihre Gefühle zurück, ohne zu urteilen.",
+          "scores": { "perception": 5, "regulation": 3, "utilization": 4 }
+        },
+        {
+          "text": "Ich frage nach: 'Was brauchst du gerade von mir? Zuhören oder Ideen?' Ich will sichergehen, dass ich richtig helfe.",
+          "scores": { "perception": 3, "regulation": 4, "utilization": 5 }
+        },
+        {
+          "text": "Ich muss aufpassen, dass ich ihre Gefühle nicht zu stark übernehme. Manchmal absorbiere ich die Stimmung anderer.",
+          "scores": { "perception": 5, "regulation": 1, "utilization": 2 }
+        },
+        {
+          "text": "Ich gebe trotzdem Rat. Manchmal wissen Menschen nicht, was sie brauchen – und ein guter Gedanke kann den Knoten lösen.",
+          "scores": { "perception": 2, "regulation": 3, "utilization": 3 }
+        }
+      ]
+    },
+    {
+      "id": "q7",
+      "scenario": "Konfliktnavigation",
+      "text": "Zwei Menschen, die dir wichtig sind, streiten sich. Du stehst dazwischen. Was ist dein innerer Kompass?",
+      "measures": ["regulation", "utilization"],
+      "options": [
+        {
+          "text": "Ich spüre beide Seiten körperlich – ihre Anspannung, ihre Verletzung. Ich bin wie ein Schwamm für die Energie im Raum.",
+          "scores": { "perception": 5, "regulation": 1, "utilization": 2 }
+        },
+        {
+          "text": "Ich distanziere mich emotional und analysiere: Was ist hier der eigentliche Konflikt unter der Oberfläche?",
+          "scores": { "perception": 3, "regulation": 5, "utilization": 4 }
+        },
+        {
+          "text": "Ich überlege, wie ich die Situation de-eskalieren kann. Welche Worte oder Gesten könnten jetzt helfen?",
+          "scores": { "perception": 3, "regulation": 3, "utilization": 5 }
+        },
+        {
+          "text": "Ich warte ab. Nicht jeder Konflikt braucht meine Intervention. Manchmal ist Raushalten die beste Strategie.",
+          "scores": { "perception": 2, "regulation": 5, "utilization": 3 }
+        }
+      ]
+    },
+    {
+      "id": "q8",
+      "scenario": "Stressreaktion",
+      "text": "Deadline-Druck. Zu viel zu tun, zu wenig Zeit. Wie verhältst du dich zu deinem eigenen Stresslevel?",
+      "measures": ["perception", "regulation", "utilization"],
+      "options": [
+        {
+          "text": "Ich merke es erst, wenn mein Körper Alarm schlägt – Kopfschmerzen, Magenprobleme. Vorher bin ich im Tunnel.",
+          "scores": { "perception": 1, "regulation": 2, "utilization": 2 }
+        },
+        {
+          "text": "Ich beobachte meinen Stress wie einen Wetterbericht: 'Okay, Sturmwarnung – Zeit für kurze Pausen und viel Wasser.'",
+          "scores": { "perception": 4, "regulation": 5, "utilization": 4 }
+        },
+        {
+          "text": "Ich nutze den Adrenalinstoß. Unter Druck bin ich fokussierter, schneller, kreativer. Stress kann ein Verbündeter sein.",
+          "scores": { "perception": 3, "regulation": 3, "utilization": 5 }
+        },
+        {
+          "text": "Ich spüre den Stress intensiv und teile ihn mit anderen. Gemeinsam Dampf ablassen hilft mir mehr als Alleinkämpfen.",
+          "scores": { "perception": 4, "regulation": 2, "utilization": 3 }
+        }
+      ]
+    },
+    {
+      "id": "q9",
+      "scenario": "Emotionales Verstehen",
+      "text": "Jemand reagiert auf eine harmlose Situation völlig überzogen. Dein erster Gedanke ist...",
+      "measures": ["perception", "regulation"],
+      "options": [
+        {
+          "text": "'Da steckt mehr dahinter.' Ich frage mich, welche Vorgeschichte diese Reaktion erklären könnte.",
+          "scores": { "perception": 5, "regulation": 4, "utilization": 4 }
+        },
+        {
+          "text": "'Interessant, aber nicht mein Problem.' Ich registriere es, aber lasse mich nicht davon tangieren.",
+          "scores": { "perception": 2, "regulation": 5, "utilization": 2 }
+        },
+        {
+          "text": "'Wie kann ich das nutzen?' Vielleicht offenbart diese Reaktion etwas, das für unsere Beziehung wichtig ist.",
+          "scores": { "perception": 3, "regulation": 3, "utilization": 5 }
+        },
+        {
+          "text": "Ich bin selbst verunsichert. Starke Emotionen anderer bringen mich aus dem Gleichgewicht.",
+          "scores": { "perception": 4, "regulation": 1, "utilization": 1 }
+        }
+      ]
+    },
+    {
+      "id": "q10",
+      "scenario": "Freude teilen",
+      "text": "Dir passiert etwas richtig Gutes – eine Beförderung, ein persönlicher Erfolg. Wie gehst du mit dieser Freude um?",
+      "measures": ["utilization", "regulation"],
+      "options": [
+        {
+          "text": "Ich koste das Gefühl aus, verstärke es bewusst. Ich erlaube mir, strahlend, überschwänglich, vielleicht sogar laut zu sein.",
+          "scores": { "perception": 4, "regulation": 2, "utilization": 5 }
+        },
+        {
+          "text": "Ich genieße es innerlich, bleibe aber nach außen gelassen. Zu viel Freude zeigen fühlt sich verletzlich an.",
+          "scores": { "perception": 3, "regulation": 5, "utilization": 3 }
+        },
+        {
+          "text": "Ich teile es sofort – der Wert der Freude verdoppelt sich, wenn sie geteilt wird.",
+          "scores": { "perception": 4, "regulation": 2, "utilization": 4 }
+        },
+        {
+          "text": "Ich analysiere: Was genau hat dieses Gefühl ausgelöst? Wie kann ich das replizieren?",
+          "scores": { "perception": 3, "regulation": 4, "utilization": 5 }
+        }
+      ]
+    },
+    {
+      "id": "q11",
+      "scenario": "Emotionale Erschöpfung",
+      "text": "Nach einem intensiven Gespräch oder einem Tag voller Menschen merkst du: Dein emotionaler Tank ist leer. Was regeneriert dich?",
+      "measures": ["perception", "regulation"],
+      "options": [
+        {
+          "text": "Absolute Stille und Alleinsein. Ich muss das alles erstmal sortieren und verarbeiten, was ich aufgenommen habe.",
+          "scores": { "perception": 5, "regulation": 3, "utilization": 2 }
+        },
+        {
+          "text": "Eine klare, ablenkende Aktivität – Sport, Putzen, etwas Handfestes. Das erdet mich.",
+          "scores": { "perception": 2, "regulation": 5, "utilization": 3 }
+        },
+        {
+          "text": "Ein Wechsel der emotionalen Tonlage: Wenn ich drained bin von schwerem Input, brauche ich leichten Output – Comedy, Musik, Tanz.",
+          "scores": { "perception": 3, "regulation": 4, "utilization": 5 }
+        },
+        {
+          "text": "Mehr Verbindung, aber anders: Ich rufe jemanden an, der mich auflädt statt auslaugt.",
+          "scores": { "perception": 4, "regulation": 2, "utilization": 4 }
+        }
+      ]
+    },
+    {
+      "id": "q12",
+      "scenario": "Integration",
+      "text": "Wenn du an dein Verhältnis zu Emotionen denkst – wie würdest du es beschreiben?",
+      "measures": ["perception", "regulation", "utilization"],
+      "options": [
+        {
+          "text": "Intensiv und immersiv. Ich fühle alles – meins, deins, das des Raumes. Mein Radar ist immer an.",
+          "scores": { "perception": 5, "regulation": 1, "utilization": 3 }
+        },
+        {
+          "text": "Kontrolliert und bewusst. Ich beobachte meine Emotionen, aber sie steuern mich nicht. Ich steuere sie.",
+          "scores": { "perception": 3, "regulation": 5, "utilization": 4 }
+        },
+        {
+          "text": "Strategisch und adaptive. Emotionen sind Daten und Werkzeuge – ich lerne, sie immer besser einzusetzen.",
+          "scores": { "perception": 3, "regulation": 4, "utilization": 5 }
+        },
+        {
+          "text": "Ehrlich gesagt: kompliziert. Manchmal überwältigt, manchmal taub. Ein work in progress.",
+          "scores": { "perception": 3, "regulation": 2, "utilization": 2 }
+        }
+      ]
+    }
+  ],
+  "profiles": [
+    {
+      "id": "resonator",
+      "title": "Der Resonator",
+      "tagline": "Du spürst, was andere noch nicht sagen können",
+      "pattern": {
+        "primary": "perception",
+        "secondary": null,
+        "threshold": { "perception": 70, "regulation": null, "utilization": null }
+      },
+      "description": "Du bist ein emotionaler Seismograph – fein kalibriert für die subtilen Schwingungen, die andere gar nicht registrieren. Noch bevor jemand spricht, hast du die Atmosphäre gelesen.",
+      "deep_insight": {
+        "scientific_basis": "Dein Profil zeigt außergewöhnlich hohe Werte in der emotionalen Granularität – der Fähigkeit, zwischen ähnlichen Gefühlen präzise zu unterscheiden. Forschung zeigt, dass Menschen mit hoher Granularität weniger anfällig für intensive negative Emotionen sind.",
+        "challenge": "Die Forschung zur emotionalen Ansteckung zeigt, dass hochsensible Wahrnehmung ohne bewusste Regulation zur Übernahme fremder Gefühlszustände führen kann.",
+        "growth_path": "Nicht weniger fühlen – sondern bewusster filtern. Rituale zur emotionalen Hygiene können dir helfen, deinen 'Schwamm' regelmäßig auszuwringen."
+      },
+      "compatibility": {
+        "ally": "Der Regulator",
+        "tension": "Der Stratege"
+      }
+    },
+    {
+      "id": "regulator",
+      "title": "Der Regulator",
+      "tagline": "Du bist der ruhige Pol im Sturm",
+      "pattern": {
+        "primary": "regulation",
+        "secondary": null,
+        "threshold": { "perception": null, "regulation": 70, "utilization": null }
+      },
+      "description": "Du bist der emotionale Thermostat – fähig, die Temperatur zu spüren und zu justieren, ohne selbst zu überhitzen oder einzufrieren.",
+      "deep_insight": {
+        "scientific_basis": "Dein Profil zeigt starke präfrontale Regulation – die Fähigkeit deines Kortex, die emotionalen Impulse der Amygdala zu modulieren. In der Forschung nennt man das kognitive Neubewertung (Cognitive Reappraisal).",
+        "challenge": "Studien zeigen ein erhöhtes Risiko für emotionale Suppression, wenn Regulation zu Unterdrückung wird.",
+        "growth_path": "Der Unterschied zwischen 'Emotion regulieren' und 'Emotion unterdrücken' ist fein aber entscheidend. Situationen erkennen, in denen volle Expressivität klüger ist als Kontrolle."
+      },
+      "compatibility": {
+        "ally": "Der Resonator",
+        "tension": "Der Navigator"
+      }
+    },
+    {
+      "id": "strategist",
+      "title": "Der Stratege",
+      "tagline": "Du wandelst Gefühle in Treibstoff",
+      "pattern": {
+        "primary": "utilization",
+        "secondary": null,
+        "threshold": { "perception": null, "regulation": null, "utilization": 70 }
+      },
+      "description": "Du betrachtest Emotionen nicht als Zufälle, sondern als Ressourcen. Nervosität? Transformierst du in fokussierte Energie. Ärger? Kanalisierst du in Durchsetzungskraft.",
+      "deep_insight": {
+        "scientific_basis": "Dein Profil zeigt hohe Werte in der emotionalen Facilitation – dem zweiten Zweig der emotionalen Intelligenz. Du verstehst intuitiv, dass verschiedene Stimmungen verschiedene Denkstile begünstigen.",
+        "challenge": "Die nächste Stufe liegt paradoxerweise im Nicht-Nutzen. Manche Gefühle verlieren ihren Wert, wenn sie instrumentalisiert werden.",
+        "growth_path": "Räume schaffen, in denen Fühlen keinem Zweck dienen muss."
+      },
+      "compatibility": {
+        "ally": "Der Navigator",
+        "tension": "Der Resonator"
+      }
+    },
+    {
+      "id": "navigator",
+      "title": "Der Navigator",
+      "tagline": "Du liest die sozialen Strömungen",
+      "pattern": {
+        "primary": "utilization",
+        "secondary": "perception",
+        "threshold": { "perception": 60, "regulation": null, "utilization": 60 }
+      },
+      "description": "Du bist der emotionale Diplomat – begabt darin, die unsichtbaren Ströme zwischen Menschen zu lesen und zu navigieren.",
+      "deep_insight": {
+        "scientific_basis": "Dein Profil zeigt ausgeprägte soziale Intelligenz – die Fähigkeit, nicht nur einzelne Emotionen, sondern ganze emotionale Systeme zu lesen. Im ESCI-Framework nennt man das Organizational Awareness.",
+        "challenge": "Das Fokussieren auf Andere kann zur Vernachlässigung eigener emotionaler Bedürfnisse führen.",
+        "growth_path": "Die Integration von Außen- und Innenfokus. Zeit, dieselbe Aufmerksamkeit deinem eigenen emotionalen Terrain zu widmen."
+      },
+      "compatibility": {
+        "ally": "Der Stratege",
+        "tension": "Der Regulator"
+      }
+    },
+    {
+      "id": "alchemist",
+      "title": "Der Alchemist",
+      "tagline": "Du verwandelst Blei in Gold – emotional",
+      "pattern": {
+        "balanced": true,
+        "minimum_average": 60,
+        "maximum_variance": 30
+      },
+      "description": "Du vereinst, was andere trennen. In dir treffen sich intensive Wahrnehmung, bewusste Steuerung und strategische Nutzung – eine seltene Integration.",
+      "deep_insight": {
+        "scientific_basis": "Dein Profil zeigt eine seltene Balance über alle vier Zweige der emotionalen Intelligenz hinweg. In der Forschung nennt man das einen integrierten EI-Stil mit hoher psychologischer Flexibilität.",
+        "challenge": "Diese Vielseitigkeit kann auch Orientierungslosigkeit bedeuten. Manchmal weißt du nicht, welchen Modus du wählen sollst.",
+        "growth_path": "Paradoxerweise liegt dein Wachstum manchmal in der Vereinfachung. Nicht jede Situation braucht das volle alchemistische Arsenal."
+      },
+      "compatibility": {
+        "ally": "Alle Typen",
+        "tension": "Eigene Komplexität"
+      }
+    },
+    {
+      "id": "seeker",
+      "title": "Der Suchende",
+      "tagline": "Du bist auf dem Weg zu dir selbst",
+      "pattern": {
+        "fallback": true,
+        "maximum_average": 50,
+        "or_high_variance": true
+      },
+      "description": "Du bist ehrlich mit dir: Dein Verhältnis zu Emotionen ist noch in Arbeit. Das ist kein Defizit – es ist Potenzial.",
+      "deep_insight": {
+        "scientific_basis": "Dein Profil zeigt emotionale Variabilität – unterschiedliche Reaktionsmuster je nach Kontext. Das ist nicht Inkonsistenz, sondern Flexibilität im Entstehen.",
+        "challenge": "Emotionale Intelligenz ist nicht fix, sondern entwickelt sich bis ins mittlere Erwachsenenalter weiter.",
+        "growth_path": "Fokus auf Selbstbeobachtung ohne Selbstverurteilung. Ein Emotions-Tagebuch für 30 Tage kann Muster aufzeigen."
+      },
+      "compatibility": {
+        "ally": "Der Alchemist",
+        "tension": "Eigene Ungeduld"
+      }
+    }
+  ],
+  "scoring_algorithm": {
+    "type": "weighted_sum",
+    "normalization": "percentage_of_max",
+    "band_thresholds": {
+      "low": [1, 20],
+      "midlow": [21, 40],
+      "mid": [41, 60],
+      "midhigh": [61, 80],
+      "high": [81, 100]
+    },
+    "profile_selection": {
+      "method": "pattern_matching",
+      "priority_order": ["alchemist", "seeker", "resonator", "regulator", "strategist", "navigator"]
+    }
+  },
+  "share_config": {
+    "format": "trading_card",
+    "aspect_ratio": "9:16",
+    "cta_primary": "Teile deine Signatur",
+    "cta_viral": "Tagge deinen emotionalen Gegenpol!",
+    "hashtags": ["EQSignatur", "EmotionaleIntelligenz", "QuizzMe"]
+  }
+}

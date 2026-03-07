@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Symbols - Einfache Vorschau</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 2rem;
+      background: rgb(2, 6, 23);
+      color: white;
+      font-family: system-ui, sans-serif;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 3rem;
+      background: linear-gradient(to right, #3b82f6, #a855f7, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .symbol-card {
+      background: rgba(15, 23, 42, 0.8);
+      border: 2px solid rgba(71, 85, 105, 0.5);
+      border-radius: 1rem;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .symbol-card h2 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.5rem;
+    }
+
+    .symbol-card .color {
+      font-size: 0.9rem;
+      opacity: 0.7;
+      margin-bottom: 1.5rem;
+      font-family: monospace;
+    }
+
+    .symbol-card svg {
+      max-width: 120px;
+      height: auto;
+      margin: 1.5rem 0;
+    }
+
+    .symbol-card p {
+      color: #cbd5e1;
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎨 Quiz Symbols - Glowing Outlines</h1>
+
+  <div class="grid">
+    <!-- Love Languages -->
+    <div class="symbol-card">
+      <h2>❤️ Love Languages</h2>
+      <div class="color">Rosa-Gold (255, 200, 150)</div>
+
+      <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="32" cy="32" r="28" fill="rgba(255, 200, 150, 0.05)" opacity="0.3"/>
+        <path d="M32 52 L20 38 Q14 32 14 24 Q14 16 20 16 Q26 16 32 22 Q38 16 44 16 Q50 16 50 24 Q50 32 44 38 Z"
+              fill="none" stroke="rgb(248, 250, 252)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              style="filter: drop-shadow(0 0 8px rgba(255, 200, 150, 0.6)) drop-shadow(0 0 16px rgba(255, 200, 150, 0.3));"/>
+        <path d="M32 56 Q18 48 12 36" fill="none" stroke="rgba(248, 250, 252, 0.6)" stroke-width="1" stroke-linecap="round" opacity="0.7"
+              style="filter: drop-shadow(0 0 6px rgba(255, 200, 150, 0.4));"/>
+        <path d="M32 56 Q46 48 52 36" fill="none" stroke="rgba(248, 250, 252, 0.6)" stroke-width="1" stroke-linecap="round" opacity="0.7"
+              style="filter: drop-shadow(0 0 6px rgba(255, 200, 150, 0.4));"/>
+        <circle cx="32" cy="18" r="2" fill="rgb(255, 200, 150)" opacity="0.8"
+                style="filter: drop-shadow(0 0 4px rgba(255, 200, 150, 0.8));"/>
+      </svg>
+
+      <p>Herz mit konzentrischen Wellen + Funken-Akzent</p>
+    </div>
+
+    <!-- Social Role -->
+    <div class="symbol-card">
+      <h2>👥 Social Role</h2>
+      <div class="color">Königsblau (59, 130, 246)</div>
+
+      <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="32" cy="32" r="16" fill="none" stroke="rgb(248, 250, 252)" stroke-width="2.5"
+                style="filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.6)) drop-shadow(0 0 16px rgba(59, 130, 246, 0.3));"/>
+        <circle cx="32" cy="28" r="4" fill="none" stroke="rgb(248, 250, 252)" stroke-width="1.5"/>
+        <path d="M26 36 Q32 34 38 36" fill="none" stroke="rgb(248, 250, 252)" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="32" cy="10" r="2.5" fill="none" stroke="rgba(248, 250, 252, 0.8)" stroke-width="1.5" opacity="0.9"
+                style="filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.5));"/>
+        <circle cx="14" cy="32" r="2.5" fill="none" stroke="rgba(248, 250, 252, 0.8)" stroke-width="1.5" opacity="0.9"
+                style="filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.5));"/>
+        <circle cx="50" cy="32" r="2.5" fill="none" stroke="rgba(248, 250, 252, 0.8)" stroke-width="1.5" opacity="0.9"
+                style="filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.5));"/>
+        <path d="M32 16 L32 10" stroke="rgba(59, 130, 246, 0.3)" stroke-width="1" stroke-dasharray="2 2"/>
+        <path d="M18 32 L14 32" stroke="rgba(59, 130, 246, 0.3)" stroke-width="1" stroke-dasharray="2 2"/>
+        <path d="M46 32 L50 32" stroke="rgba(59, 130, 246, 0.3)" stroke-width="1" stroke-dasharray="2 2"/>
+      </svg>
+
+      <p>Figur im Kreis mit 3 Orbital-Punkten als soziale Verbindungen</p>
+    </div>
+
+    <!-- RPG Identity -->
+    <div class="symbol-card">
+      <h2>⚔️ RPG Identity</h2>
+      <div class="color">Violett (168, 85, 247)</div>
+
+      <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="32" cy="32" r="22" fill="none" stroke="rgba(168, 85, 247, 0.3)" stroke-width="1" stroke-dasharray="4 4" opacity="0.5"
+                style="filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.4));"/>
+        <path d="M32 12 L32 42" stroke="rgb(248, 250, 252)" stroke-width="2.5" stroke-linecap="round"
+              style="filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.6)) drop-shadow(0 0 16px rgba(168, 85, 247, 0.3));"/>
+        <path d="M30 14 L30 40" stroke="rgba(248, 250, 252, 0.4)" stroke-width="0.5" stroke-linecap="round"/>
+        <path d="M34 14 L34 40" stroke="rgba(248, 250, 252, 0.4)" stroke-width="0.5" stroke-linecap="round"/>
+        <path d="M32 12 L28 18 L32 16 L36 18 Z" fill="none" stroke="rgb(248, 250, 252)" stroke-width="2" stroke-linejoin="round"
+              style="filter: drop-shadow(0 0 6px rgba(168, 85, 247, 0.5));"/>
+        <rect x="22" y="40" width="20" height="2" rx="1" fill="none" stroke="rgb(248, 250, 252)" stroke-width="2"
+              style="filter: drop-shadow(0 0 6px rgba(168, 85, 247, 0.6));"/>
+        <rect x="30" y="42" width="4" height="8" rx="1" fill="none" stroke="rgb(248, 250, 252)" stroke-width="1.5"/>
+        <circle cx="32" cy="52" r="3" fill="none" stroke="rgb(248, 250, 252)" stroke-width="2"
+                style="filter: drop-shadow(0 0 6px rgba(168, 85, 247, 0.5));"/>
+        <circle cx="32" cy="26" r="1.5" fill="rgb(168, 85, 247)" opacity="0.9"
+                style="filter: drop-shadow(0 0 4px rgba(168, 85, 247, 0.9));"/>
+        <circle cx="20" cy="28" r="1" fill="rgba(168, 85, 247, 0.6)" opacity="0.8"/>
+        <circle cx="44" cy="32" r="1" fill="rgba(168, 85, 247, 0.6)" opacity="0.8"/>
+        <circle cx="26" cy="42" r="1" fill="rgba(168, 85, 247, 0.6)" opacity="0.8"/>
+      </svg>
+
+      <p>Schwert mit magischer Aura + Rune</p>
+    </div>
+
+    <!-- Personality -->
+    <div class="symbol-card">
+      <h2>🧠 Personality</h2>
+      <div class="color">Smaragdgrün (16, 185, 129)</div>
+
+      <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <path d="M 42 18 Q 48 18 48 28 Q 48 36 44 42 Q 40 46 34 46 L 28 46 Q 22 44 18 38 Q 16 32 18 26 Q 20 18 28 18 Z"
+              fill="none" stroke="rgb(248, 250, 252)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              style="filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.6)) drop-shadow(0 0 16px rgba(16, 185, 129, 0.3));"/>
+        <path d="M 0 -5 L 2 -2 L 5 0 L 2 2 L 0 5 L -2 2 L -5 0 L -2 -2 Z" transform="translate(32, 28)"
+              fill="rgba(16, 185, 129, 0.3)" stroke="rgb(16, 185, 129)" stroke-width="1.5"
+              style="filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.8));"/>
+        <circle cx="32" cy="28" r="2" fill="rgb(16, 185, 129)" opacity="0.7"/>
+        <path d="M 32 23 L 32 18" stroke="rgba(16, 185, 129, 0.5)" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
+        <path d="M 28 26 L 24 22" stroke="rgba(16, 185, 129, 0.5)" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
+        <path d="M 36 26 L 40 22" stroke="rgba(16, 185, 129, 0.5)" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
+        <ellipse cx="32" cy="30" rx="18" ry="16" fill="none" stroke="rgba(16, 185, 129, 0.2)" stroke-width="1" opacity="0.4"/>
+      </svg>
+
+      <p>Kopf-Profil mit innerem Kristall/Stern</p>
+    </div>
+
+    <!-- Celebrity Soulmate -->
+    <div class="symbol-card">
+      <h2>👑 Celebrity Soulmate</h2>
+      <div class="color">Magenta (236, 72, 153)</div>
+
+      <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <path d="M 20 28 Q 20 22 24 20 Q 28 18 32 18 Q 36 18 40 20 Q 44 22 44 28 L 44 38 Q 44 42 40 44 Q 36 46 32 46 Q 28 46 24 44 Q 20 42 20 38 Z"
+              fill="none" stroke="rgb(248, 250, 252)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              style="filter: drop-shadow(0 0 8px rgba(236, 72, 153, 0.6)) drop-shadow(0 0 16px rgba(236, 72, 153, 0.3));"/>
+        <path d="M 24 20 L 26 14 L 28 18 L 32 12 L 36 18 L 38 14 L 40 20" fill="none" stroke="rgb(248, 250, 252)" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 6px rgba(236, 72, 153, 0.5));"/>
+        <path d="M 26 30 Q 28 28 30 30" stroke="rgba(248, 250, 252, 0.8)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        <path d="M 34 30 Q 36 28 38 30" stroke="rgba(248, 250, 252, 0.8)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        <path d="M 0 -3 L 1 -1 L 3 0 L 1 1 L 0 3 L -1 1 L -3 0 L -1 -1 Z" transform="translate(16, 26)"
+              fill="rgba(236, 72, 153, 0.6)" stroke="rgb(236, 72, 153)" stroke-width="0.5"
+              style="filter: drop-shadow(0 0 4px rgba(236, 72, 153, 0.8));"/>
+        <path d="M 0 -2.5 L 0.8 -0.8 L 2.5 0 L 0.8 0.8 L 0 2.5 L -0.8 0.8 L -2.5 0 L -0.8 -0.8 Z" transform="translate(48, 32)"
+              fill="rgba(236, 72, 153, 0.6)" stroke="rgb(236, 72, 153)" stroke-width="0.5"
+              style="filter: drop-shadow(0 0 4px rgba(236, 72, 153, 0.8));"/>
+        <path d="M 0 -2 L 0.6 -0.6 L 2 0 L 0.6 0.6 L 0 2 L -0.6 0.6 L -2 0 L -0.6 -0.6 Z" transform="translate(32, 50)"
+              fill="rgba(236, 72, 153, 0.6)" stroke="rgb(236, 72, 153)" stroke-width="0.5"
+              style="filter: drop-shadow(0 0 4px rgba(236, 72, 153, 0.8));"/>
+        <circle cx="32" cy="12" r="1.5" fill="rgb(236, 72, 153)" opacity="0.9"
+                style="filter: drop-shadow(0 0 3px rgba(236, 72, 153, 0.9));"/>
+      </svg>
+
+      <p>Maske/Krone mit Glamour-Sternen</p>
+    </div>
+
+    <!-- Destiny -->
+    <div class="symbol-card">
+      <h2>✨ Destiny</h2>
+      <div class="color">Gold/Amber (251, 191, 36)</div>
+
+      <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <path d="M 22 52 L 22 36 Q 22 24 32 24 Q 42 24 42 36 L 42 52" fill="none" stroke="rgb(248, 250, 252)" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round"
+              style="filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.6)) drop-shadow(0 0 16px rgba(251, 191, 36, 0.3));"/>
+        <path d="M 26 52 L 26 38 Q 26 28 32 28 Q 38 28 38 38 L 38 52" fill="none" stroke="rgba(248, 250, 252, 0.5)" stroke-width="1"
+              stroke-linecap="round" opacity="0.7"/>
+        <path d="M 32 52 L 32 20" stroke="rgba(251, 191, 36, 0.8)" stroke-width="2" stroke-linecap="round"
+              style="filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.7));"/>
+        <path d="M 32 20 L 28 26 L 32 23 L 36 26 Z" fill="none" stroke="rgb(251, 191, 36)" stroke-width="1.5" stroke-linejoin="round"
+              style="filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.8));"/>
+        <path d="M 0 -4 L 1 -1 L 4 0 L 1 1 L 0 4 L -1 1 L -4 0 L -1 -1 Z" transform="translate(32, 14)"
+              fill="rgba(251, 191, 36, 0.4)" stroke="rgb(251, 191, 36)" stroke-width="1.5"
+              style="filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.9));"/>
+        <circle cx="32" cy="14" r="2" fill="rgb(251, 191, 36)" opacity="0.8"/>
+        <circle cx="20" cy="44" r="1.5" fill="rgba(251, 191, 36, 0.5)" opacity="0.6"/>
+        <circle cx="44" cy="44" r="1.5" fill="rgba(251, 191, 36, 0.5)" opacity="0.6"/>
+        <circle cx="18" cy="36" r="1" fill="rgba(251, 191, 36, 0.4)" opacity="0.5"/>
+        <circle cx="46" cy="36" r="1" fill="rgba(251, 191, 36, 0.4)" opacity="0.5"/>
+      </svg>
+
+      <p>Torbogen mit Pfad nach oben + Zielstern</p>
+    </div>
+  </div>
+</body>
+</html>

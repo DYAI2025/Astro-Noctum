@@ -1,0 +1,163 @@
+/* Scoped styles for Astro Sheet */
+.astro-scope {
+  --bg-paper: #F6F3EE;
+  --navy: #0E1B33;
+  --muted: #5A6477;
+  --stroke: #E6E0D8;
+  --holo-violet: #8F7AD1;
+  --holo-cyan: #7AA7A1;
+  --holo-gold: #C9A46A;
+
+  color: var(--navy);
+  background-color: var(--bg-paper);
+  min-height: 100vh;
+  position: relative;
+  
+  font-family: var(--font-astro-sans), sans-serif;
+}
+
+.astro-scope .serif {
+  font-family: var(--font-astro-serif), serif;
+}
+
+.astro-scope .mono {
+  font-family: var(--font-astro-mono), monospace;
+}
+
+.astro-scope .bg-pattern {
+  background-image: radial-gradient(var(--navy) 0.5px, transparent 0.5px);
+  background-size: 40px 40px;
+  opacity: 0.03;
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.astro-scope .premium-card {
+  background: #FFFFFF;
+  border: 1px solid var(--stroke);
+  border-radius: 2.5rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px -10px rgba(14, 27, 51, 0.05);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.astro-scope .premium-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    var(--holo-violet) 25%, 
+    var(--holo-cyan) 50%, 
+    var(--holo-gold) 75%, 
+    transparent 100%
+  );
+  opacity: 0.6;
+  z-index: 10;
+}
+
+.astro-scope .dark-premium-card {
+  background: var(--navy);
+  border-radius: 2.5rem;
+  position: relative;
+  overflow: hidden;
+  color: #FFFFFF;
+  box-shadow: 0 20px 40px -15px rgba(14, 27, 51, 0.3);
+}
+
+.astro-scope .dark-premium-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    var(--holo-violet), 
+    var(--holo-cyan), 
+    var(--holo-gold)
+  );
+  opacity: 0.8;
+  z-index: 10;
+}
+
+.astro-scope .cluster-title {
+  font-size: 8rem;
+  line-height: 1;
+  opacity: 0.04; /* Low contrast for background writing */
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+  letter-spacing: 0.25em;
+  color: var(--navy);
+  font-weight: 300;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.astro-scope .animate-spin-slow {
+  animation: rotate 180s linear infinite;
+}
+
+@keyframes revealUp {
+  from { opacity: 0; transform: translateY(30px); filter: blur(10px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+.astro-scope .animate-reveal {
+  animation: revealUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes scan-shine {
+  0% { left: -100%; opacity: 0; }
+  20% { opacity: 0.4; }
+  80% { opacity: 0.4; }
+  100% { left: 100%; opacity: 0; }
+}
+.astro-scope .scan-shine-effect {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 40%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(122, 167, 161, 0.3), 
+    rgba(255, 255, 255, 0.1),
+    rgba(122, 167, 161, 0.3),
+    transparent
+  );
+  transform: skewX(-20deg);
+  pointer-events: none;
+  z-index: 20;
+  animation: scan-shine 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.astro-scope .segmented-bar {
+  display: flex;
+  gap: 2px;
+  height: 6px;
+  width: 100%;
+}
+.astro-scope .segment {
+  flex: 1;
+  height: 100%;
+  background: var(--stroke);
+  border-radius: 1px;
+  transition: background 1s ease-out;
+}
+.astro-scope .segment.active {
+  background: var(--navy);
+}
+
+/* Scrollbar scoped */
+.astro-scope ::-webkit-scrollbar { width: 6px; }
+.astro-scope ::-webkit-scrollbar-track { background: var(--bg-paper); }
+.astro-scope ::-webkit-scrollbar-thumb { background: var(--stroke); border-radius: 10px; }
+.astro-scope ::-webkit-scrollbar-thumb:hover { background: var(--muted); }

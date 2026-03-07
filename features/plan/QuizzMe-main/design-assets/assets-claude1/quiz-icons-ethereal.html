@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Icons – Ethereal Line Collection</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            min-height: 100vh;
+            background: #050508;
+            font-family: 'Helvetica Neue', sans-serif;
+            color: #888;
+            padding: 60px 40px;
+        }
+        
+        h1 {
+            font-size: 14px;
+            font-weight: 300;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 60px;
+            text-align: center;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 50px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .icon-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .icon-frame {
+            width: 160px;
+            height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at center, rgba(20,20,30,0.8) 0%, transparent 70%);
+            border-radius: 8px;
+        }
+        
+        .icon-frame svg {
+            width: 120px;
+            height: 120px;
+        }
+        
+        .icon-label {
+            font-size: 11px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: #555;
+        }
+        
+        .section {
+            margin-bottom: 80px;
+        }
+        
+        .section-title {
+            font-size: 11px;
+            letter-spacing: 0.5em;
+            text-transform: uppercase;
+            color: #444;
+            margin-bottom: 40px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #1a1a1a;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ethereal Line Icons</h1>
+    
+    <div class="section">
+        <div class="section-title">Kern-Symbole</div>
+        <div class="grid">
+            
+            <!-- HERZ -->
+            <div class="icon-cell">
+                <div class="icon-frame">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <filter id="glow-rose" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                                <feFlood flood-color="#e88a9c" flood-opacity="0.8"/>
+                                <feComposite in2="blur" operator="in"/>
+                                <feMerge>
+                                    <feMergeNode/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <path d="M50 80 C25 60 15 45 15 32 C15 20 25 12 37 12 C45 12 50 18 50 25 C50 18 55 12 63 12 C75 12 85 20 85 32 C85 45 75 60 50 80 Z" 
+                              fill="none" 
+                              stroke="#e88a9c" 
+                              stroke-width="1.5"
+                              filter="url(#glow-rose)"/>
+                    </svg>
+                </div>
+                <span class="icon-label">Herz</span>
+            </div>
+            
+            <!-- BLITZ -->
+            <div class="icon-cell">
+                <div class="icon-frame">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <filter id="glow-amber" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                                <feFlood flood-color="#f0b866" flood-opacity="0.85"/>
+                                <feComposite in2="blur" operator="in"/>
+                                <feMerge>
+                                    <feMergeNode/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <path d="M58 10 L30 48 L48 48 L42 90 L70 45 L52 45 L66 10 Z" 
+                              fill="none" 
+                              stroke="#f0b866" 
+                              stroke-width="1.5"
+                              stroke-linejoin="round"
+                              filter="url(#glow-amber)"/>
+                    </svg>
+                </div>
+                <span class="icon-label">Blitz</span>
+            </div>
+            
+            <!-- STERN -->
+            <div class="icon-cell">
+                <div class="icon-frame">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <filter id="glow-gold" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                                <feFlood flood-color="#d4af6a" flood-opacity="0.85"/>
+                                <feComposite in2="blur" operator="in"/>
+                                <feMerge>
+                                    <feMergeNode/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <path d="M50 12 L56 40 L85 40 L62 56 L70 85 L50 68 L30 85 L38 56 L15 40 L44 40 Z" 
+                              fill="none" 
+                              stroke="#d4af6a" 
+                              stroke-width="1.5"
+                              stroke-linejoin="round"
+                              filter="url(#glow-gold)"/>
+                    </svg>
+                </div>
+                <span class="icon-label">Stern</span>
+            </div>
+            
+            <!-- GELD -->
+            <div class="icon-cell">
+                <div class="icon-frame">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <filter id="glow-emerald" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                                <feFlood flood-color="#6abf8a" flood-opacity="0.8"/>
+                                <feComposite in2="blur" operator="in"/>
+                                <feMerge>
+                                    <feMergeNode/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <circle cx="50" cy="50" r="35" fill="none" stroke="#6abf8a" stroke-width="1.5" filter="url(#glow-emerald)"/>
+                        <path d="M50 22 L50 78 M38 32 C38 32 42 28 50 28 C60 28 64 34 64 40 C64 48 54 50 50 50 C46 50 36 52 36 62 C36 70 42 74 50 74 C58 74 62 70 62 70" 
+                              fill="none" 
+                              stroke="#6abf8a" 
+                              stroke-width="1.5"
+                              stroke-linecap="round"
+                              filter="url(#glow-emerald)"/>
+                    </svg>
+                </div>
+                <span class="icon-label">Geld</span>
+            </div>
+            
+            <!-- SONNE -->
+            <div class="icon-cell">
+                <div class="icon-frame">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <filter id="glow-sun" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                                <feFlood flood-color="#e8c466" flood-opacity="0.85"/>
+                                <feComposite in2="blur" operator="in"/>
+                                <feMerge>
+                                    <feMergeNode/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <circle cx="50" cy="50" r="18" fill="none" stroke="#e8c466" stroke-width="1.5" filter="url(#glow-sun)"/>
+                        <g stroke="#e8c466" stroke-width="1.5" stroke-linecap="round" filter="url(#glow-sun)">
+                            <line x1="50" y1="10" x2="50" y2="24"/>
+                            <line x1="50" y1="76" x2="50" y2="90"/>
+                            <line x1="10" y1="50" x2="24" y2="50"/>
+                            <line x1="76" y1="50" x2="90" y2="50"/>
+                            <line x1="22" y1="22" x2="32" y2="32"/>
+                            <line x1="68" y1="68" x2="78" y2="78"/>
+                            <line x1="22" y1="78" x2="32" y2="68"/>
+                            <line x1="68" y1="32" x2="78" y2="22"/>
+                        </g>
+                    </svg>
+                </div>
+                <span class="icon-label">Sonne</span>
+            </div>
+            
+            <!-- WOLKE -->
+            <div class="icon-cell">
+                <div class="icon-frame">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <filter id="glow-silver" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                                <feFlood flood-color="#a0a8b8" flood-opacity="0.75"/>
+                                <feComposite in2="blur" operator="in"/>
+                                <feMerge>
+                                    <feMergeNode/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <path d="M25 65 C12 65 12 50 22 46 C18 36 28 26 42 28 C46 16 70 16 74 30 C88 30 92 48 78 52 C84 62 76 70 65 68 L25 65 Z" 
+                              fill="none" 
+                              stroke="#a0a8b8" 
+                              stroke-width="1.5"
+                              stroke-linejoin="round"
+                              filter="url(#glow-silver)"/>
+                    </svg>
+                </div>
+                <span class="icon-label">Wolke</span>
+            </div>
+            
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">Erweiterte Symbole</div>
+        <div class="grid">
+            
+            <!-- MOND -->
+            <div class="icon-cell">
+                <div class="icon-frame">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <filter id="glow-violet" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                                <feFlood flood-color="#b8a0d8" flood-opacity="0.8"/>
+                                <feComposite in2="blur" operator="in"/>
+                                <feMerge>
+                                    <feMergeNode/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <path d="M60 15 C80 20 90 40 90 55 C90 78 72 90 50 90 C28 90 12 74 12 52 C12 32 26 16 48 12 C38 24 38 44 50 56 C60 66 75 62 60 15 Z" 
+                              fill="none" 
+                              stroke="#b8a0d8" 
+                              stroke-width="1.5"
+                              filter="url(#glow-violet)"/>
+                    </svg>
+                </div>
+                <span class="icon-label">Mond</span>
+            </div>
+            
+            <!-- FLAMME -->
+            <div class="icon-cell">
+                <div class="icon-frame">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <filter id="glow-flame" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                                <feFlood flood-color="#e8886a" flood-opacity="0.85"/>
+                                <feComposite in2="blur" operator="in"/>
+                                <feMerge>
+                                    <feMergeNode/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <path d="M50 10 C62 28 78 38 76 58 C74 78 62 88 50 88 C38 88 26 78 24 58 C22 38 38 28 50 10" 
+                              fill="none" 
+                              stroke="#e8886a" 
+                              stroke-width="1.5"
+                              filter="url(#glow-flame)"/>
+                        <path d="M50 52 C44 58 42 68 46 76 C48 80 52 80 54 76 C58 68 56 58 50 52" 
+                              fill="none" 
+                              stroke="#e8886a" 
+                              stroke-width="1.5"
+                              filter="url(#glow-flame)"/>
+                    </svg>
+                </div>
+                <span class="icon-label">Flamme</span>
+            </div>
+            
+            <!-- TROPFEN -->
+            <div class="icon-cell">
+                <div class="icon-frame">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <filter id="glow-aqua" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                                <feFlood flood-color="#68c4d8" flood-opacity="0.8"/>
+                                <feComposite in2="blur" operator="in"/>
+                                <feMerge>
+                                    <feMergeNode/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <path d="M50 10 C50 10 80 50 80 65 C80 82 66 90 50 90 C34 90 20 82 20 65 C20 50 50 10 50 10 Z" 
+                              fill="none" 
+                              stroke="#68c4d8" 
+                              stroke-width="1.5"
+                              filter="url(#glow-aqua)"/>
+                    </svg>
+                </div>
+                <span class="icon-label">Tropfen</span>
+            </div>
+            
+            <!-- KRONE -->
+            <div class="icon-cell">
+                <div class="icon-frame">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <filter id="glow-royal" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                                <feFlood flood-color="#d4a86a" flood-opacity="0.85"/>
+                                <feComposite in2="blur" operator="in"/>
+                                <feMerge>
+                                    <feMergeNode/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <path d="M15 70 L22 35 L38 52 L50 28 L62 52 L78 35 L85 70 Z" 
+                              fill="none" 
+                              stroke="#d4a86a" 
+                              stroke-width="1.5"
+                              stroke-linejoin="round"
+                              filter="url(#glow-royal)"/>
+                        <line x1="15" y1="78" x2="85" y2="78" stroke="#d4a86a" stroke-width="1.5" filter="url(#glow-royal)"/>
+                    </svg>
+                </div>
+                <span class="icon-label">Krone</span>
+            </div>
+            
+            <!-- DIAMANT -->
+            <div class="icon-cell">
+                <div class="icon-frame">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <filter id="glow-ice" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                                <feFlood flood-color="#88d0e8" flood-opacity="0.8"/>
+                                <feComposite in2="blur" operator="in"/>
+                                <feMerge>
+                                    <feMergeNode/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <path d="M50 12 L82 38 L50 88 L18 38 Z" 
+                              fill="none" 
+                              stroke="#88d0e8" 
+                              stroke-width="1.5"
+                              stroke-linejoin="round"
+                              filter="url(#glow-ice)"/>
+                        <line x1="18" y1="38" x2="82" y2="38" stroke="#88d0e8" stroke-width="1" filter="url(#glow-ice)"/>
+                        <line x1="50" y1="12" x2="50" y2="88" stroke="#88d0e8" stroke-width="1" opacity="0.5" filter="url(#glow-ice)"/>
+                    </svg>
+                </div>
+                <span class="icon-label">Diamant</span>
+            </div>
+            
+            <!-- AUGE -->
+            <div class="icon-cell">
+                <div class="icon-frame">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <filter id="glow-mystic" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                                <feFlood flood-color="#a088c8" flood-opacity="0.8"/>
+                                <feComposite in2="blur" operator="in"/>
+                                <feMerge>
+                                    <feMergeNode/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <path d="M8 50 C22 28 36 20 50 20 C64 20 78 28 92 50 C78 72 64 80 50 80 C36 80 22 72 8 50 Z" 
+                              fill="none" 
+                              stroke="#a088c8" 
+                              stroke-width="1.5"
+                              filter="url(#glow-mystic)"/>
+                        <circle cx="50" cy="50" r="15" fill="none" stroke="#a088c8" stroke-width="1.5" filter="url(#glow-mystic)"/>
+                        <circle cx="50" cy="50" r="6" fill="none" stroke="#a088c8" stroke-width="1.5" filter="url(#glow-mystic)"/>
+                    </svg>
+                </div>
+                <span class="icon-label">Auge</span>
+            </div>
+            
+            <!-- UNENDLICH -->
+            <div class="icon-cell">
+                <div class="icon-frame">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <filter id="glow-pink" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                                <feFlood flood-color="#d888b0" flood-opacity="0.8"/>
+                                <feComposite in2="blur" operator="in"/>
+                                <feMerge>
+                                    <feMergeNode/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <path d="M50 50 C50 35 62 28 74 28 C88 28 92 40 92 50 C92 60 88 72 74 72 C62 72 50 65 50 50 C50 35 38 28 26 28 C12 28 8 40 8 50 C8 60 12 72 26 72 C38 72 50 65 50 50 Z" 
+                              fill="none" 
+                              stroke="#d888b0" 
+                              stroke-width="1.5"
+                              filter="url(#glow-pink)"/>
+                    </svg>
+                </div>
+                <span class="icon-label">Unendlich</span>
+            </div>
+            
+            <!-- SCHILD -->
+            <div class="icon-cell">
+                <div class="icon-frame">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <filter id="glow-steel" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                                <feFlood flood-color="#7898c8" flood-opacity="0.8"/>
+                                <feComposite in2="blur" operator="in"/>
+                                <feMerge>
+                                    <feMergeNode/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <path d="M50 12 L82 24 L82 50 C82 72 68 86 50 92 C32 86 18 72 18 50 L18 24 Z" 
+                              fill="none" 
+                              stroke="#7898c8" 
+                              stroke-width="1.5"
+                              stroke-linejoin="round"
+                              filter="url(#glow-steel)"/>
+                    </svg>
+                </div>
+                <span class="icon-label">Schild</span>
+            </div>
+            
+            <!-- KOMPASS -->
+            <div class="icon-cell">
+                <div class="icon-frame">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <filter id="glow-compass" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2" result="blur"/>
+                                <feFlood flood-color="#a8b8c8" flood-opacity="0.75"/>
+                                <feComposite in2="blur" operator="in"/>
+                                <feMerge>
+                                    <feMergeNode/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <circle cx="50" cy="50" r="38" fill="none" stroke="#a8b8c8" stroke-width="1.5" filter="url(#glow-compass)"/>
+                        <path d="M50 16 L54 50 L50 54 L46 50 Z" fill="none" stroke="#c87878" stroke-width="1.5" filter="url(#glow-compass)"/>
+                        <path d="M50 84 L54 50 L50 46 L46 50 Z" fill="none" stroke="#a8b8c8" stroke-width="1.5" filter="url(#glow-compass)"/>
+                        <circle cx="50" cy="50" r="4" fill="none" stroke="#a8b8c8" stroke-width="1" filter="url(#glow-compass)"/>
+                    </svg>
+                </div>
+                <span class="icon-label">Kompass</span>
+            </div>
+            
+            <!-- SCHLÜSSEL -->
+            <div class="icon-cell">
+                <div class="icon-frame">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <filter id="glow-brass" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                                <feFlood flood-color="#c8a868" flood-opacity="0.8"/>
+                                <feComposite in2="blur" operator="in"/>
+                                <feMerge>
+                                    <feMergeNode/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <circle cx="30" cy="30" r="16" fill="none" stroke="#c8a868" stroke-width="1.5" filter="url(#glow-brass)"/>
+                        <circle cx="30" cy="30" r="6" fill="none" stroke="#c8a868" stroke-width="1" filter="url(#glow-brass)"/>
+                        <line x1="42" y1="42" x2="82" y2="82" stroke="#c8a868" stroke-width="1.5" stroke-linecap="round" filter="url(#glow-brass)"/>
+                        <line x1="68" y1="68" x2="78" y2="58" stroke="#c8a868" stroke-width="1.5" stroke-linecap="round" filter="url(#glow-brass)"/>
+                        <line x1="76" y1="76" x2="86" y2="66" stroke="#c8a868" stroke-width="1.5" stroke-linecap="round" filter="url(#glow-brass)"/>
+                    </svg>
+                </div>
+                <span class="icon-label">Schlüssel</span>
+            </div>
+            
+            <!-- BALANCE -->
+            <div class="icon-cell">
+                <div class="icon-frame">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <filter id="glow-balance" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                                <feFlood flood-color="#c8b888" flood-opacity="0.8"/>
+                                <feComposite in2="blur" operator="in"/>
+                                <feMerge>
+                                    <feMergeNode/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <line x1="50" y1="18" x2="50" y2="82" stroke="#c8b888" stroke-width="1.5" filter="url(#glow-balance)"/>
+                        <line x1="18" y1="35" x2="82" y2="35" stroke="#c8b888" stroke-width="1.5" filter="url(#glow-balance)"/>
+                        <path d="M18 35 L10 58 L26 58 Z" fill="none" stroke="#c8b888" stroke-width="1.5" stroke-linejoin="round" filter="url(#glow-balance)"/>
+                        <path d="M82 35 L74 58 L90 58 Z" fill="none" stroke="#c8b888" stroke-width="1.5" stroke-linejoin="round" filter="url(#glow-balance)"/>
+                        <rect x="42" y="82" width="16" height="6" fill="none" stroke="#c8b888" stroke-width="1.5" filter="url(#glow-balance)"/>
+                    </svg>
+                </div>
+                <span class="icon-label">Balance</span>
+            </div>
+            
+            <!-- AUFSTIEG -->
+            <div class="icon-cell">
+                <div class="icon-frame">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <filter id="glow-rise" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                                <feFlood flood-color="#78c888" flood-opacity="0.8"/>
+                                <feComposite in2="blur" operator="in"/>
+                                <feMerge>
+                                    <feMergeNode/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <path d="M50 12 L78 45 L62 45 L62 88 L38 88 L38 45 L22 45 Z" 
+                              fill="none" 
+                              stroke="#78c888" 
+                              stroke-width="1.5"
+                              stroke-linejoin="round"
+                              filter="url(#glow-rise)"/>
+                    </svg>
+                </div>
+                <span class="icon-label">Aufstieg</span>
+            </div>
+            
+        </div>
+    </div>
+    
+</body>
+</html>

@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="botanical">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deine Emotionale Signatur | QuizzMe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold-primary: #D2A95A;
+      --gold-dark: #A77D38;
+      --gold-light: #E8C87A;
+      --emerald-deep: #053B3F;
+      --emerald-forest: #0A4A4F;
+      --sage: #6CA192;
+      --midnight-deep: #041726;
+      --midnight-medium: #0A2540;
+      --cream-pure: #F7F0E6;
+      --cream-warm: #F2E3CF;
+      --cream-deep: #EDE4D3;
+      --cream-muted: #E5D9C3;
+      --text-on-dark: #F7F3EA;
+      --text-on-light: #271C16;
+      --text-on-light-muted: #5A4D3F;
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --radius-2xl: 24px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: linear-gradient(180deg, var(--cream-pure) 0%, var(--cream-warm) 100%);
+      min-height: 100vh;
+      color: var(--text-on-light);
+    }
+
+    .quiz-container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    /* Intro Screen */
+    .intro-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 90vh;
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .intro-icon {
+      width: 120px;
+      height: 120px;
+      margin-bottom: 32px;
+    }
+
+    .intro-icon svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .intro-title {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 5vw, 2.5rem);
+      font-weight: 600;
+      color: var(--emerald-deep);
+      margin-bottom: 16px;
+      line-height: 1.2;
+    }
+
+    .intro-subtitle {
+      font-size: 1.1rem;
+      color: var(--text-on-light-muted);
+      margin-bottom: 32px;
+      max-width: 320px;
+      line-height: 1.6;
+    }
+
+    .intro-meta {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 40px;
+      font-size: 0.875rem;
+      color: var(--text-on-light-muted);
+    }
+
+    .intro-meta span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-start {
+      background: var(--emerald-deep);
+      color: var(--cream-pure);
+      border: none;
+      padding: 16px 48px;
+      font-family: var(--font-serif);
+      font-size: 1.125rem;
+      font-weight: 600;
+      border-radius: var(--radius-xl);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px rgba(5, 59, 63, 0.2);
+    }
+
+    .btn-start:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(5, 59, 63, 0.3);
+    }
+
+    /* Question Screen */
+    .question-screen {
+      display: none;
+      flex-direction: column;
+      min-height: 90vh;
+      padding: 20px 0;
+    }
+
+    .question-screen.active {
+      display: flex;
+    }
+
+    .progress-container {
+      margin-bottom: 32px;
+    }
+
+    .progress-text {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-on-light-muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .progress-bar {
+      height: 4px;
+      background: var(--cream-muted);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--emerald-deep) 0%, var(--sage) 100%);
+      border-radius: 2px;
+      transition: width 0.4s ease;
+    }
+
+    .question-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .question-scenario {
+      background: white;
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px rgba(39, 28, 22, 0.06);
+      border: 1px solid var(--cream-muted);
+    }
+
+    .scenario-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--gold-dark);
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .question-text {
+      font-family: var(--font-serif);
+      font-size: clamp(1.25rem, 4vw, 1.5rem);
+      font-weight: 500;
+      line-height: 1.4;
+      color: var(--text-on-light);
+    }
+
+    .options-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .option-card {
+      background: white;
+      border: 2px solid var(--cream-muted);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      text-align: left;
+    }
+
+    .option-card:hover {
+      border-color: var(--sage);
+      transform: translateX(4px);
+    }
+
+    .option-card.selected {
+      border-color: var(--emerald-deep);
+      background: linear-gradient(135deg, rgba(5, 59, 63, 0.05) 0%, rgba(108, 161, 146, 0.08) 100%);
+    }
+
+    .option-text {
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: var(--text-on-light);
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .btn-nav {
+      flex: 1;
+      padding: 14px 24px;
+      border-radius: var(--radius-lg);
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .btn-back {
+      background: transparent;
+      border: 2px solid var(--cream-muted);
+      color: var(--text-on-light-muted);
+    }
+
+    .btn-back:hover {
+      border-color: var(--sage);
+      color: var(--emerald-deep);
+    }
+
+    .btn-next {
+      background: var(--emerald-deep);
+      border: 2px solid var(--emerald-deep);
+      color: var(--cream-pure);
+    }
+
+    .btn-next:hover:not(:disabled) {
+      background: var(--emerald-forest);
+    }
+
+    .btn-next:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* Result Screen */
+    .result-screen {
+      display: none;
+      background: linear-gradient(165deg, var(--emerald-deep) 0%, var(--midnight-deep) 50%, #031119 100%);
+      min-height: 100vh;
+      margin: -20px;
+      padding: 40px 20px;
+      color: var(--text-on-dark);
+    }
+
+    .result-screen.active {
+      display: block;
+    }
+
+    .result-card {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    .result-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .result-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--gold-primary);
+      margin-bottom: 16px;
+    }
+
+    .result-title {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 6vw, 2.75rem);
+      font-weight: 600;
+      color: var(--cream-pure);
+      margin-bottom: 8px;
+      text-shadow: 0 0 40px rgba(210, 169, 90, 0.3);
+    }
+
+    .result-tagline {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 1.1rem;
+      color: var(--gold-light);
+    }
+
+    .result-icon {
+      width: 160px;
+      height: 160px;
+      margin: 0 auto 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .result-icon svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 0 30px rgba(210, 169, 90, 0.4));
+    }
+
+    /* Trait Bars */
+    .traits-section {
+      background: rgba(5, 59, 63, 0.4);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 1px solid rgba(210, 169, 90, 0.2);
+    }
+
+    .traits-title {
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      color: var(--gold-primary);
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .trait-row {
+      margin-bottom: 16px;
+    }
+
+    .trait-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .trait-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .trait-name {
+      font-size: 0.85rem;
+      color: var(--cream-pure);
+    }
+
+    .trait-score {
+      font-size: 0.85rem;
+      color: var(--gold-primary);
+      font-weight: 600;
+    }
+
+    .trait-bar {
+      height: 8px;
+      background: rgba(247, 243, 234, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .trait-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold-dark) 0%, var(--gold-primary) 50%, var(--gold-light) 100%);
+      border-radius: 4px;
+      transition: width 1s ease;
+    }
+
+    /* Description */
+    .result-description {
+      background: rgba(247, 243, 234, 0.05);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 1px solid rgba(210, 169, 90, 0.15);
+    }
+
+    .description-text {
+      font-size: 1rem;
+      line-height: 1.7;
+      color: var(--text-on-dark);
+    }
+
+    .description-text p {
+      margin-bottom: 16px;
+    }
+
+    .description-text p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Deep Insight Section */
+    .deep-insight {
+      background: linear-gradient(135deg, rgba(210, 169, 90, 0.1) 0%, rgba(108, 161, 146, 0.1) 100%);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 1px solid rgba(210, 169, 90, 0.25);
+    }
+
+    .deep-insight-title {
+      font-family: var(--font-serif);
+      font-size: 1.1rem;
+      color: var(--gold-primary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .deep-insight-text {
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: var(--cream-pure);
+    }
+
+    .deep-insight-text p {
+      margin-bottom: 12px;
+    }
+
+    /* Compatibility */
+    .compatibility-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .compat-card {
+      background: rgba(5, 59, 63, 0.4);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      border: 1px solid rgba(210, 169, 90, 0.15);
+    }
+
+    .compat-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 8px;
+    }
+
+    .compat-allies .compat-label {
+      color: var(--sage);
+    }
+
+    .compat-tension .compat-label {
+      color: #C45D4A;
+    }
+
+    .compat-type {
+      font-family: var(--font-serif);
+      font-size: 0.95rem;
+      color: var(--cream-pure);
+    }
+
+    /* Stats */
+    .stats-section {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: rgba(5, 59, 63, 0.3);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      text-align: center;
+      border: 1px solid rgba(210, 169, 90, 0.1);
+    }
+
+    .stat-value {
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--gold-primary);
+    }
+
+    .stat-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-on-dark);
+      margin-top: 4px;
+    }
+
+    /* Actions */
+    .result-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn-share {
+      background: var(--gold-primary);
+      color: var(--midnight-deep);
+      border: none;
+      padding: 16px 32px;
+      font-family: var(--font-serif);
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: var(--radius-xl);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-share:hover {
+      background: var(--gold-light);
+      transform: translateY(-2px);
+    }
+
+    .btn-restart {
+      background: transparent;
+      border: 1px solid rgba(210, 169, 90, 0.3);
+      color: var(--gold-primary);
+      padding: 14px 32px;
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      font-weight: 500;
+      border-radius: var(--radius-xl);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-restart:hover {
+      border-color: var(--gold-primary);
+    }
+
+    /* Disclaimer */
+    .disclaimer {
+      margin-top: 32px;
+      padding: 16px;
+      background: rgba(247, 243, 234, 0.03);
+      border-radius: var(--radius-lg);
+      text-align: center;
+    }
+
+    .disclaimer-text {
+      font-size: 0.75rem;
+      color: rgba(247, 243, 234, 0.5);
+      line-height: 1.5;
+    }
+
+    /* Debug Panel */
+    .debug-panel {
+      display: none;
+      margin-top: 24px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      font-family: monospace;
+      font-size: 0.75rem;
+    }
+
+    .debug-panel.visible {
+      display: block;
+    }
+
+    .debug-title {
+      color: var(--gold-primary);
+      margin-bottom: 8px;
+    }
+
+    .debug-content {
+      color: var(--sage);
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .loading {
+      animation: pulse 1.5s ease infinite;
+    }
+
+    /* Hide screens by default */
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    .intro-screen.active {
+      display: flex;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    
+    <!-- INTRO SCREEN -->
+    <div class="intro-screen screen active" id="intro">
+      <div class="intro-icon">
+        <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="60" cy="60" r="55" stroke="#D2A95A" stroke-width="1.5" opacity="0.3"/>
+          <circle cx="60" cy="60" r="45" stroke="#053B3F" stroke-width="1"/>
+          <!-- Heart with waves -->
+          <path d="M60 85 C60 85 35 65 35 50 C35 40 45 35 60 50 C75 35 85 40 85 50 C85 65 60 85 60 85Z" 
+                stroke="#D2A95A" stroke-width="2" fill="none"/>
+          <!-- Inner resonance -->
+          <circle cx="60" cy="55" r="8" stroke="#6CA192" stroke-width="1" opacity="0.6"/>
+          <circle cx="60" cy="55" r="15" stroke="#6CA192" stroke-width="0.5" opacity="0.4"/>
+          <circle cx="60" cy="55" r="22" stroke="#6CA192" stroke-width="0.5" opacity="0.2"/>
+          <!-- Eye symbol -->
+          <ellipse cx="60" cy="55" rx="12" ry="6" stroke="#053B3F" stroke-width="1.5"/>
+          <circle cx="60" cy="55" r="3" fill="#053B3F"/>
+        </svg>
+      </div>
+      <h1 class="intro-title">Deine Emotionale Signatur</h1>
+      <p class="intro-subtitle">Entdecke dein einzigartiges Muster, wie du Gefühle wahrnimmst, verstehst und in Kraft verwandelst.</p>
+      <div class="intro-meta">
+        <span>🎯 12 Fragen</span>
+        <span>⏱️ 3–4 Minuten</span>
+      </div>
+      <button class="btn-start" onclick="startQuiz()">Signatur enthüllen</button>
+    </div>
+
+    <!-- QUESTION SCREEN -->
+    <div class="question-screen screen" id="question">
+      <div class="progress-container">
+        <div class="progress-text">
+          <span>Frage <span id="currentQ">1</span> von 12</span>
+          <span id="progressPercent">8%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width: 8%"></div>
+        </div>
+      </div>
+
+      <div class="question-wrapper">
+        <div class="question-scenario">
+          <div class="scenario-label" id="scenarioLabel">Szenario</div>
+          <p class="question-text" id="questionText"></p>
+        </div>
+
+        <div class="options-container" id="optionsContainer"></div>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn-nav btn-back" id="btnBack" onclick="prevQuestion()">← Zurück</button>
+        <button class="btn-nav btn-next" id="btnNext" onclick="nextQuestion()" disabled>Weiter →</button>
+      </div>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div class="result-screen screen" id="result">
+      <div class="result-card">
+        <div class="result-header">
+          <div class="result-label">Deine Emotionale Signatur</div>
+          <h2 class="result-title" id="resultTitle"></h2>
+          <p class="result-tagline" id="resultTagline"></p>
+        </div>
+
+        <div class="result-icon" id="resultIcon"></div>
+
+        <div class="traits-section">
+          <div class="traits-title">Dein EQ-Profil</div>
+          <div id="traitBars"></div>
+        </div>
+
+        <div class="result-description">
+          <p class="description-text" id="resultDescription"></p>
+        </div>
+
+        <div class="deep-insight">
+          <div class="deep-insight-title">
+            <span>🔮</span> Was das wirklich bedeutet
+          </div>
+          <div class="deep-insight-text" id="deepInsight"></div>
+        </div>
+
+        <div class="stats-section" id="statsSection"></div>
+
+        <div class="compatibility-section">
+          <div class="compat-card compat-allies">
+            <div class="compat-label">Harmoniert mit</div>
+            <div class="compat-type" id="compatAlly"></div>
+          </div>
+          <div class="compat-card compat-tension">
+            <div class="compat-label">Herausfordernd mit</div>
+            <div class="compat-type" id="compatTension"></div>
+          </div>
+        </div>
+
+        <div class="result-actions">
+          <button class="btn-share" onclick="shareResult()">✨ Signatur teilen</button>
+          <button class="btn-restart" onclick="restartQuiz()">Quiz neu starten</button>
+        </div>
+
+        <div class="disclaimer">
+          <p class="disclaimer-text">
+            Dieser Test dient der spielerischen Selbstreflexion und stellt <strong>keine</strong> psychologische Diagnose dar. 
+            Er basiert auf Forschung zu emotionaler Intelligenz, ersetzt aber keine professionelle Beratung.
+          </p>
+        </div>
+
+        <div class="debug-panel" id="debugPanel">
+          <div class="debug-title">📊 ContributionEvent (JSON)</div>
+          <pre class="debug-content" id="debugContent"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================
+    // QUIZ DATA
+    // ============================================
+    
+    const quizConfig = {
+      moduleId: "quiz.eq_signature.v1",
+      dimensions: [
+        { 
+          id: "perception", 
+          name: "Emotionale Wahrnehmung",
+          description: "Wie präzise du Gefühle in dir und anderen erkennst",
+          poleHigh: "Hochsensibel",
+          poleLow: "Pragmatisch"
+        },
+        { 
+          id: "regulation", 
+          name: "Emotionale Steuerung",
+          description: "Wie du Gefühle bewusst lenkst und modulierst",
+          poleHigh: "Reguliert",
+          poleLow: "Expressiv"
+        },
+        { 
+          id: "utilization", 
+          name: "Strategische Nutzung",
+          description: "Wie du Emotionen als Werkzeug einsetzt",
+          poleHigh: "Strategisch",
+          poleLow: "Intuitiv"
+        }
+      ]
+    };
+
+    const questions = [
+      {
+        id: "q1",
+        scenario: "Selbstwahrnehmung",
+        text: "Du wachst mit einem diffusen Unbehagen auf. Kein klarer Grund, nur ein Gefühl. Was passiert in dir?",
+        options: [
+          { 
+            text: "Ich halte inne und frage mich: Ist das Angst? Traurigkeit? Erschöpfung? Ich versuche, das Gefühl präzise zu benennen.", 
+            scores: { perception: 5, regulation: 3, utilization: 2 }
+          },
+          { 
+            text: "Ich starte meinen Tag und schaue, ob sich das Gefühl von selbst auflöst. Manchmal verschwinden diese Stimmungen einfach.", 
+            scores: { perception: 1, regulation: 4, utilization: 3 }
+          },
+          { 
+            text: "Ich nutze das Gefühl als Signal: Vielleicht sollte ich heute sanfter mit mir sein oder bestimmte Termine anders angehen.", 
+            scores: { perception: 3, regulation: 4, utilization: 5 }
+          },
+          { 
+            text: "Ich spreche sofort mit jemandem darüber – beim Aussprechen wird mir oft klar, was los ist.", 
+            scores: { perception: 4, regulation: 2, utilization: 3 }
+          }
+        ]
+      },
+      {
+        id: "q2",
+        scenario: "Soziale Wahrnehmung",
+        text: "Du betrittst einen Raum und spürst sofort: Die Stimmung ist anders als erwartet. Die Menschen wirken angespannt. Was nimmst du wahr?",
+        options: [
+          { 
+            text: "Ich registriere subtile Details: verschränkte Arme, gemiedene Blicke, die zu ruhige Stimme meiner Kollegin. Wie ein Puzzle, das sich zusammenfügt.", 
+            scores: { perception: 5, regulation: 2, utilization: 3 }
+          },
+          { 
+            text: "Ich bemerke, dass etwas nicht stimmt, fokussiere mich aber bewusst auf meine eigene Aufgabe. Nicht mein Zirkus, nicht meine Affen.", 
+            scores: { perception: 2, regulation: 5, utilization: 2 }
+          },
+          { 
+            text: "Ich überlege strategisch: Wie wirkt sich diese Spannung auf meine Ziele heute aus? Sollte ich bestimmte Themen verschieben?", 
+            scores: { perception: 3, regulation: 3, utilization: 5 }
+          },
+          { 
+            text: "Ich frage direkt: 'Hey, ist alles okay? Die Stimmung wirkt heute anders.' Lieber klären als rätseln.", 
+            scores: { perception: 3, regulation: 1, utilization: 4 }
+          }
+        ]
+      },
+      {
+        id: "q3",
+        scenario: "Impulskontrolle",
+        text: "Jemand macht eine Bemerkung, die dich trifft – vielleicht unfair, vielleicht absichtlich. Du spürst, wie Ärger in dir hochsteigt. Was passiert dann?",
+        options: [
+          { 
+            text: "Ich spüre den Ärger intensiv, fast körperlich. Mein Herz schlägt schneller. Ich muss erstmal durchatmen, bevor ich reagieren kann.", 
+            scores: { perception: 5, regulation: 3, utilization: 2 }
+          },
+          { 
+            text: "Ich schalte innerlich einen Gang runter. Ich registriere den Ärger, aber erlaube ihm nicht, meine Reaktion zu diktieren.", 
+            scores: { perception: 3, regulation: 5, utilization: 3 }
+          },
+          { 
+            text: "Ich kontere sofort. Wenn jemand unter die Gürtellinie geht, darf er wissen, wie das ankommt.", 
+            scores: { perception: 3, regulation: 1, utilization: 2 }
+          },
+          { 
+            text: "Ich frage mich: Will ich jetzt gewinnen oder will ich verstehen? Manchmal nutze ich die Pause, um die Person besser einzuschätzen.", 
+            scores: { perception: 4, regulation: 4, utilization: 5 }
+          }
+        ]
+      },
+      {
+        id: "q4",
+        scenario: "Emotionale Granularität",
+        text: "Ein Freund fragt: 'Wie geht's dir?' – und du merkst, dass 'gut' oder 'schlecht' die Antwort nicht trifft. Wie beschreibst du deinen Zustand?",
+        options: [
+          { 
+            text: "Ich finde präzise Worte: 'Ich bin melancholisch-nachdenklich, aber nicht traurig. Eher wie... herbstliche Nostalgie.'", 
+            scores: { perception: 5, regulation: 2, utilization: 3 }
+          },
+          { 
+            text: "Ich sage 'kompliziert' und lasse es dabei. Nicht jedes Gefühl braucht ein Label.", 
+            scores: { perception: 2, regulation: 4, utilization: 2 }
+          },
+          { 
+            text: "Ich beschreibe es über den Körper: 'Ich hab so ein Kribbeln im Bauch – halb aufgeregt, halb nervös. Keine Ahnung, was das ist.'", 
+            scores: { perception: 4, regulation: 2, utilization: 2 }
+          },
+          { 
+            text: "Ich nutze die Frage als Anlass, um mit dem Freund tiefer zu sprechen. Oft klärt sich das Gefühl im Dialog.", 
+            scores: { perception: 3, regulation: 3, utilization: 5 }
+          }
+        ]
+      },
+      {
+        id: "q5",
+        scenario: "Emotionsnutzung",
+        text: "Du musst eine wichtige Präsentation halten. Wie gehst du emotional in diese Situation?",
+        options: [
+          { 
+            text: "Ich versuche, komplett ruhig zu sein. Nervosität ist der Feind klarer Gedanken.", 
+            scores: { perception: 2, regulation: 5, utilization: 2 }
+          },
+          { 
+            text: "Ich transformiere die Nervosität in Energie. Das Kribbeln ist wie Strom – ich lenke es in meine Stimme, meine Präsenz.", 
+            scores: { perception: 4, regulation: 3, utilization: 5 }
+          },
+          { 
+            text: "Ich fühle alles intensiv – die Aufregung, die Unsicherheit, die Hoffnung. Das macht mich authentisch, auch wenn es anstrengend ist.", 
+            scores: { perception: 5, regulation: 1, utilization: 3 }
+          },
+          { 
+            text: "Ich visualisiere den besten Ausgang und baue mir damit positive Emotionen auf. Die Vorstellung von Erfolg gibt mir Kraft.", 
+            scores: { perception: 3, regulation: 4, utilization: 5 }
+          }
+        ]
+      },
+      {
+        id: "q6",
+        scenario: "Empathie",
+        text: "Eine Freundin erzählt von einem Problem. Du merkst: Sie will eigentlich nicht deinen Rat, sondern etwas anderes. Was tust du?",
+        options: [
+          { 
+            text: "Ich spüre genau, was sie braucht – Präsenz, nicht Lösungen. Ich höre zu und spiegle ihre Gefühle zurück, ohne zu urteilen.", 
+            scores: { perception: 5, regulation: 3, utilization: 4 }
+          },
+          { 
+            text: "Ich frage nach: 'Was brauchst du gerade von mir? Zuhören oder Ideen?' Ich will sichergehen, dass ich richtig helfe.", 
+            scores: { perception: 3, regulation: 4, utilization: 5 }
+          },
+          { 
+            text: "Ich muss aufpassen, dass ich ihre Gefühle nicht zu stark übernehme. Manchmal absorbiere ich die Stimmung anderer.", 
+            scores: { perception: 5, regulation: 1, utilization: 2 }
+          },
+          { 
+            text: "Ich gebe trotzdem Rat. Manchmal wissen Menschen nicht, was sie brauchen – und ein guter Gedanke kann den Knoten lösen.", 
+            scores: { perception: 2, regulation: 3, utilization: 3 }
+          }
+        ]
+      },
+      {
+        id: "q7",
+        scenario: "Konfliktnavigation",
+        text: "Zwei Menschen, die dir wichtig sind, streiten sich. Du stehst dazwischen. Was ist dein innerer Kompass?",
+        options: [
+          { 
+            text: "Ich spüre beide Seiten körperlich – ihre Anspannung, ihre Verletzung. Ich bin wie ein Schwamm für die Energie im Raum.", 
+            scores: { perception: 5, regulation: 1, utilization: 2 }
+          },
+          { 
+            text: "Ich distanziere mich emotional und analysiere: Was ist hier der eigentliche Konflikt unter der Oberfläche?", 
+            scores: { perception: 3, regulation: 5, utilization: 4 }
+          },
+          { 
+            text: "Ich überlege, wie ich die Situation de-eskalieren kann. Welche Worte oder Gesten könnten jetzt helfen?", 
+            scores: { perception: 3, regulation: 3, utilization: 5 }
+          },
+          { 
+            text: "Ich warte ab. Nicht jeder Konflikt braucht meine Intervention. Manchmal ist Raushalten die beste Strategie.", 
+            scores: { perception: 2, regulation: 5, utilization: 3 }
+          }
+        ]
+      },
+      {
+        id: "q8",
+        scenario: "Stressreaktion",
+        text: "Deadline-Druck. Zu viel zu tun, zu wenig Zeit. Wie verhältst du dich zu deinem eigenen Stresslevel?",
+        options: [
+          { 
+            text: "Ich merke es erst, wenn mein Körper Alarm schlägt – Kopfschmerzen, Magenprobleme. Vorher bin ich im Tunnel.", 
+            scores: { perception: 1, regulation: 2, utilization: 2 }
+          },
+          { 
+            text: "Ich beobachte meinen Stress wie einen Wetterbericht: 'Okay, Sturmwarnung – Zeit für kurze Pausen und viel Wasser.'", 
+            scores: { perception: 4, regulation: 5, utilization: 4 }
+          },
+          { 
+            text: "Ich nutze den Adrenalinstoß. Unter Druck bin ich fokussierter, schneller, kreativer. Stress kann ein Verbündeter sein.", 
+            scores: { perception: 3, regulation: 3, utilization: 5 }
+          },
+          { 
+            text: "Ich spüre den Stress intensiv und teile ihn mit anderen. Gemeinsam Dampf ablassen hilft mir mehr als Alleinkämpfen.", 
+            scores: { perception: 4, regulation: 2, utilization: 3 }
+          }
+        ]
+      },
+      {
+        id: "q9",
+        scenario: "Emotionales Verstehen",
+        text: "Jemand reagiert auf eine harmlose Situation völlig überzogen. Dein erster Gedanke ist...",
+        options: [
+          { 
+            text: "'Da steckt mehr dahinter.' Ich frage mich, welche Vorgeschichte diese Reaktion erklären könnte.", 
+            scores: { perception: 5, regulation: 4, utilization: 4 }
+          },
+          { 
+            text: "'Interessant, aber nicht mein Problem.' Ich registriere es, aber lasse mich nicht davon tangieren.", 
+            scores: { perception: 2, regulation: 5, utilization: 2 }
+          },
+          { 
+            text: "'Wie kann ich das nutzen?' Vielleicht offenbart diese Reaktion etwas, das für unsere Beziehung wichtig ist.", 
+            scores: { perception: 3, regulation: 3, utilization: 5 }
+          },
+          { 
+            text: "Ich bin selbst verunsichert. Starke Emotionen anderer bringen mich aus dem Gleichgewicht.", 
+            scores: { perception: 4, regulation: 1, utilization: 1 }
+          }
+        ]
+      },
+      {
+        id: "q10",
+        scenario: "Freude teilen",
+        text: "Dir passiert etwas richtig Gutes – eine Beförderung, ein persönlicher Erfolg. Wie gehst du mit dieser Freude um?",
+        options: [
+          { 
+            text: "Ich koste das Gefühl aus, verstärke es bewusst. Ich erlaube mir, strahlend, überschwänglich, vielleicht sogar laut zu sein.", 
+            scores: { perception: 4, regulation: 2, utilization: 5 }
+          },
+          { 
+            text: "Ich genieße es innerlich, bleibe aber nach außen gelassen. Zu viel Freude zeigen fühlt sich verletzlich an.", 
+            scores: { perception: 3, regulation: 5, utilization: 3 }
+          },
+          { 
+            text: "Ich teile es sofort – der Wert der Freude verdoppelt sich, wenn sie geteilt wird.", 
+            scores: { perception: 4, regulation: 2, utilization: 4 }
+          },
+          { 
+            text: "Ich analysiere: Was genau hat dieses Gefühl ausgelöst? Wie kann ich das replizieren?", 
+            scores: { perception: 3, regulation: 4, utilization: 5 }
+          }
+        ]
+      },
+      {
+        id: "q11",
+        scenario: "Emotionale Erschöpfung",
+        text: "Nach einem intensiven Gespräch oder einem Tag voller Menschen merkst du: Dein emotionaler Tank ist leer. Was regeneriert dich?",
+        options: [
+          { 
+            text: "Absolute Stille und Alleinsein. Ich muss das alles erstmal sortieren und verarbeiten, was ich aufgenommen habe.", 
+            scores: { perception: 5, regulation: 3, utilization: 2 }
+          },
+          { 
+            text: "Eine klare, ablenkende Aktivität – Sport, Putzen, etwas Handfestes. Das erdet mich.", 
+            scores: { perception: 2, regulation: 5, utilization: 3 }
+          },
+          { 
+            text: "Ein Wechsel der emotionalen Tonlage: Wenn ich drained bin von schwerem Input, brauche ich leichten Output – Comedy, Musik, Tanz.", 
+            scores: { perception: 3, regulation: 4, utilization: 5 }
+          },
+          { 
+            text: "Mehr Verbindung, aber anders: Ich rufe jemanden an, der mich auflädt statt auslaugt.", 
+            scores: { perception: 4, regulation: 2, utilization: 4 }
+          }
+        ]
+      },
+      {
+        id: "q12",
+        scenario: "Integration",
+        text: "Wenn du an dein Verhältnis zu Emotionen denkst – wie würdest du es beschreiben?",
+        options: [
+          { 
+            text: "Intensiv und immersiv. Ich fühle alles – meins, deins, das des Raumes. Mein Radar ist immer an.", 
+            scores: { perception: 5, regulation: 1, utilization: 3 }
+          },
+          { 
+            text: "Kontrolliert und bewusst. Ich beobachte meine Emotionen, aber sie steuern mich nicht. Ich steuere sie.", 
+            scores: { perception: 3, regulation: 5, utilization: 4 }
+          },
+          { 
+            text: "Strategisch und adaptive. Emotionen sind Daten und Werkzeuge – ich lerne, sie immer besser einzusetzen.", 
+            scores: { perception: 3, regulation: 4, utilization: 5 }
+          },
+          { 
+            text: "Ehrlich gesagt: kompliziert. Manchmal überwältigt, manchmal taub. Ein work in progress.", 
+            scores: { perception: 3, regulation: 2, utilization: 2 }
+          }
+        ]
+      }
+    ];
+
+    const profiles = {
+      resonator: {
+        id: "resonator",
+        title: "Der Resonator",
+        tagline: "Du spürst, was andere noch nicht sagen können",
+        icon: `<svg viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="80" cy="80" r="70" stroke="#D2A95A" stroke-width="1" opacity="0.3"/>
+          <circle cx="80" cy="80" r="50" stroke="#D2A95A" stroke-width="0.5" opacity="0.5"/>
+          <circle cx="80" cy="80" r="30" stroke="#D2A95A" stroke-width="1"/>
+          <circle cx="80" cy="80" r="10" fill="#D2A95A" opacity="0.8"/>
+          <!-- Waves emanating -->
+          <path d="M80 40 Q95 55 80 70" stroke="#6CA192" stroke-width="1" fill="none" opacity="0.6"/>
+          <path d="M80 40 Q65 55 80 70" stroke="#6CA192" stroke-width="1" fill="none" opacity="0.6"/>
+          <path d="M120 80 Q105 95 80 80" stroke="#6CA192" stroke-width="1" fill="none" opacity="0.6"/>
+          <path d="M40 80 Q55 95 80 80" stroke="#6CA192" stroke-width="1" fill="none" opacity="0.6"/>
+        </svg>`,
+        description: `Du bist ein emotionaler Seismograph – fein kalibriert für die subtilen Schwingungen, die andere gar nicht registrieren. Noch bevor jemand spricht, hast du die Atmosphäre gelesen. Du unterscheidest mühelos zwischen „erschöpft" und „resigniert", zwischen „nervös" und „aufgeregt".
+
+Diese Gabe macht dich zu einem natürlichen Vertrauensanker. Menschen fühlen sich gesehen in deiner Gegenwart, oft ohne zu wissen warum. Du spiegelst zurück, was sie selbst noch nicht in Worte fassen können.
+
+Gleichzeitig trägst du oft die emotionale Last deiner Umgebung mit. Deine Herausforderung liegt nicht im Fühlen, sondern im Abgrenzen – zu lernen, welche Gefühle deine sind und welche du nur aufnimmst.`,
+        deepInsight: `<p><strong>Die Wissenschaft hinter deiner Signatur:</strong> Dein Profil zeigt außergewöhnlich hohe Werte in der <em>emotionalen Granularität</em> – der Fähigkeit, zwischen ähnlichen Gefühlen präzise zu unterscheiden. Forschung zeigt, dass Menschen mit hoher Granularität weniger anfällig für intensive negative Emotionen sind, weil sie Gefühle besser "diagnostizieren" können.</p>
+<p>Deine Herausforderung: Die Forschung zur <em>emotionalen Ansteckung</em> zeigt, dass hochsensible Wahrnehmung ohne bewusste Regulation zur Übernahme fremder Gefühlszustände führen kann. Der Schlüssel liegt im Erkennen der Grenze: "Ist dieses Gefühl meines oder habe ich es aufgenommen?"</p>
+<p><strong>Dein Entwicklungspfad:</strong> Nicht weniger fühlen – sondern bewusster filtern. Rituale zur emotionalen Hygiene können dir helfen, deinen "Schwamm" regelmäßig auszuwringen.</p>`,
+        ally: "Der Regulator",
+        tension: "Der Stratege",
+        stats: [
+          { value: "95%", label: "Empathie-Radar" },
+          { value: "∞", label: "Nuancen-Erkennung" },
+          { value: "12+", label: "Gefühlsvokabular" },
+          { value: "↕️", label: "Emotionale Wellen" }
+        ]
+      },
+      regulator: {
+        id: "regulator",
+        title: "Der Regulator",
+        tagline: "Du bist der ruhige Pol im Sturm",
+        icon: `<svg viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="80" cy="80" r="70" stroke="#D2A95A" stroke-width="1" opacity="0.3"/>
+          <!-- Balance scale -->
+          <line x1="80" y1="40" x2="80" y2="120" stroke="#D2A95A" stroke-width="2"/>
+          <line x1="50" y1="70" x2="110" y2="70" stroke="#D2A95A" stroke-width="2"/>
+          <circle cx="50" cy="85" r="15" stroke="#6CA192" stroke-width="1.5" fill="none"/>
+          <circle cx="110" cy="85" r="15" stroke="#6CA192" stroke-width="1.5" fill="none"/>
+          <!-- Center anchor -->
+          <circle cx="80" cy="70" r="6" fill="#D2A95A"/>
+          <path d="M80 40 L75 50 L85 50 Z" fill="#D2A95A"/>
+        </svg>`,
+        description: `Du bist der emotionale Thermostat – fähig, die Temperatur zu spüren und zu justieren, ohne selbst zu überhitzen oder einzufrieren. Während andere von Gefühlen mitgerissen werden, behältst du die Fähigkeit, zu wählen, wie du reagierst.
+
+Das bedeutet nicht, dass du weniger fühlst – du fühlst mit Abstand. Du beobachtest deine eigenen Emotionen wie ein freundlicher Wissenschaftler: neugierig, aber nicht identifiziert. Diese Distanz ist deine Superkraft in Krisen.
+
+Menschen suchen dich in chaotischen Situationen, weil du stabilisierst. Deine Herausforderung: Manchmal kann Kontrolle zur Mauer werden. Zu lernen, wann Loslassen klüger ist als Regulieren, ist dein Wachstumspfad.`,
+        deepInsight: `<p><strong>Die Wissenschaft hinter deiner Signatur:</strong> Dein Profil zeigt starke präfrontale Regulation – die Fähigkeit deines Kortex, die emotionalen Impulse der Amygdala zu modulieren. In der Forschung nennt man das <em>kognitive Neubewertung</em> (Cognitive Reappraisal).</p>
+<p>Studien zeigen, dass Menschen mit deinem Profil bessere kardiovaskuläre Gesundheit und stabilere Beziehungen haben – aber auch ein erhöhtes Risiko für <em>emotionale Suppression</em>, wenn Regulation zu Unterdrückung wird.</p>
+<p><strong>Dein Entwicklungspfad:</strong> Der Unterschied zwischen "Emotion regulieren" und "Emotion unterdrücken" ist fein aber entscheidend. Deine nächste Stufe: Situationen erkennen, in denen volle Expressivität klüger ist als Kontrolle. Manchmal ist das "Sich-gehen-lassen" die reifste Wahl.</p>`,
+        ally: "Der Resonator",
+        tension: "Der Navigator",
+        stats: [
+          { value: "💎", label: "Kristallklare Ruhe" },
+          { value: "2.5s", label: "Reaktionspause" },
+          { value: "88%", label: "Impulskontrolle" },
+          { value: "⚖️", label: "Innere Balance" }
+        ]
+      },
+      strategist: {
+        id: "strategist",
+        title: "Der Stratege",
+        tagline: "Du wandelst Gefühle in Treibstoff",
+        icon: `<svg viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="80" cy="80" r="70" stroke="#D2A95A" stroke-width="1" opacity="0.3"/>
+          <!-- Chess piece inspired -->
+          <path d="M80 35 L70 55 L90 55 Z" stroke="#D2A95A" stroke-width="2" fill="none"/>
+          <rect x="65" y="55" width="30" height="10" stroke="#D2A95A" stroke-width="1.5" fill="none"/>
+          <path d="M60 65 Q80 85 100 65" stroke="#6CA192" stroke-width="1.5" fill="none"/>
+          <rect x="55" y="95" width="50" height="25" stroke="#D2A95A" stroke-width="1.5" fill="none"/>
+          <!-- Arrows showing direction -->
+          <path d="M45 80 L30 80 L35 75 M30 80 L35 85" stroke="#6CA192" stroke-width="1"/>
+          <path d="M115 80 L130 80 L125 75 M130 80 L125 85" stroke="#6CA192" stroke-width="1"/>
+        </svg>`,
+        description: `Du betrachtest Emotionen nicht als Zufälle, sondern als Ressourcen. Nervosität? Transformierst du in fokussierte Energie. Ärger? Kanalisierst du in Durchsetzungskraft. Du hast verstanden: Jedes Gefühl trägt Information und Energie – beides lässt sich nutzen.
+
+Das macht dich effektiv in High-Stakes-Situationen. Du liest nicht nur den emotionalen Zustand eines Raumes, du fragst dich auch: Wie kann ich diese Dynamik bewegen?
+
+Deine Herausforderung: Manchmal ist "Nutzen" nicht die richtige Linse. Es gibt Gefühle, die einfach gefühlt werden wollen – ohne Agenda, ohne Optimierung. Zu lernen, wann Fühlen Selbstzweck sein darf, ist dein Wachstumsfeld.`,
+        deepInsight: `<p><strong>Die Wissenschaft hinter deiner Signatur:</strong> Dein Profil zeigt hohe Werte in der <em>emotionalen Facilitation</em> – dem zweiten Zweig der emotionalen Intelligenz nach Mayer & Salovey. Du verstehst intuitiv, dass verschiedene Stimmungen verschiedene Denkstile begünstigen.</p>
+<p>Forschung bestätigt: Leichte negative Stimmung fördert analytisches Denken, positive Stimmung kreatives Brainstorming. Du nutzt dieses Wissen praktisch – bewusst oder unbewusst.</p>
+<p><strong>Dein Entwicklungspfad:</strong> Die nächste Stufe für dich liegt paradoxerweise im <em>Nicht-Nutzen</em>. Manche Gefühle – Trauer, Liebe, Ehrfurcht – verlieren ihren Wert, wenn sie instrumentalisiert werden. Dein Wachstum: Räume schaffen, in denen Fühlen keinem Zweck dienen muss.</p>`,
+        ally: "Der Navigator",
+        tension: "Der Resonator",
+        stats: [
+          { value: "→", label: "Emotions-Transformation" },
+          { value: "92%", label: "Energie-Konversion" },
+          { value: "5D", label: "Schachzüge voraus" },
+          { value: "🎯", label: "Ziel-Fokus" }
+        ]
+      },
+      navigator: {
+        id: "navigator",
+        title: "Der Navigator",
+        tagline: "Du liest die sozialen Strömungen",
+        icon: `<svg viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="80" cy="80" r="70" stroke="#D2A95A" stroke-width="1" opacity="0.3"/>
+          <!-- Compass -->
+          <circle cx="80" cy="80" r="40" stroke="#D2A95A" stroke-width="1.5" fill="none"/>
+          <path d="M80 45 L75 80 L80 95 L85 80 Z" fill="#D2A95A" opacity="0.8"/>
+          <circle cx="80" cy="80" r="5" fill="#6CA192"/>
+          <!-- Cardinal points -->
+          <circle cx="80" cy="35" r="3" fill="#6CA192" opacity="0.6"/>
+          <circle cx="80" cy="125" r="3" fill="#6CA192" opacity="0.6"/>
+          <circle cx="35" cy="80" r="3" fill="#6CA192" opacity="0.6"/>
+          <circle cx="125" cy="80" r="3" fill="#6CA192" opacity="0.6"/>
+        </svg>`,
+        description: `Du bist der emotionale Diplomat – begabt darin, die unsichtbaren Ströme zwischen Menschen zu lesen und zu navigieren. Wo andere nur ein Gespräch sehen, siehst du Dynamiken, Allianzen, unausgesprochene Spannungen.
+
+Dieses Talent macht dich zum natürlichen Vermittler. Du kannst Brücken bauen, Konflikte entschärfen, die richtigen Worte zum richtigen Zeitpunkt finden. Du fragst nicht nur "Was fühlt diese Person?", sondern "Was braucht diese Situation?".
+
+Deine Herausforderung: Im Fokus auf das große Bild kannst du deine eigenen Gefühle vernachlässigen. Du managest die Emotionen aller außer deinen eigenen. Zu lernen, dass auch dein Innenleben Aufmerksamkeit verdient, ist dein Entwicklungspfad.`,
+        deepInsight: `<p><strong>Die Wissenschaft hinter deiner Signatur:</strong> Dein Profil zeigt ausgeprägte <em>soziale Intelligenz</em> – die Fähigkeit, nicht nur einzelne Emotionen, sondern ganze emotionale Systeme zu lesen. Im ESCI-Framework (Emotional and Social Competency Inventory) nennt man das <em>Organizational Awareness</em>.</p>
+<p>Studien zeigen, dass Menschen mit deinem Profil besonders effektiv in Führungsrollen sind, weil sie "lesen können, was der Raum braucht". Risiko: Das Fokussieren auf Andere kann zur Vernachlässigung eigener emotionaler Bedürfnisse führen.</p>
+<p><strong>Dein Entwicklungspfad:</strong> Die Integration von Außen- und Innenfokus. Du bist Meister im Navigieren fremder Gefühle – Zeit, dieselbe Aufmerksamkeit deinem eigenen emotionalen Terrain zu widmen. Was brauchst <em>du</em>?</p>`,
+        ally: "Der Stratege",
+        tension: "Der Regulator",
+        stats: [
+          { value: "360°", label: "Raumwahrnehmung" },
+          { value: "🌊", label: "Strömungs-Leser" },
+          { value: "∞", label: "Brückenbau-Skills" },
+          { value: "🧭", label: "Sozial-Kompass" }
+        ]
+      },
+      alchemist: {
+        id: "alchemist",
+        title: "Der Alchemist",
+        tagline: "Du verwandelst Blei in Gold – emotional",
+        icon: `<svg viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="80" cy="80" r="70" stroke="#D2A95A" stroke-width="1" opacity="0.3"/>
+          <!-- Alchemical symbol -->
+          <path d="M80 35 L60 75 L80 115 L100 75 Z" stroke="#D2A95A" stroke-width="1.5" fill="none"/>
+          <circle cx="80" cy="75" r="20" stroke="#6CA192" stroke-width="1.5" fill="none"/>
+          <!-- Transformation arrows -->
+          <path d="M50 60 C40 70 40 90 50 100" stroke="#D2A95A" stroke-width="1" fill="none" opacity="0.6"/>
+          <path d="M110 60 C120 70 120 90 110 100" stroke="#D2A95A" stroke-width="1" fill="none" opacity="0.6"/>
+          <!-- Inner fire -->
+          <path d="M80 65 Q75 75 80 85 Q85 75 80 65" fill="#D2A95A" opacity="0.6"/>
+        </svg>`,
+        description: `Du vereinst, was andere trennen. In dir treffen sich intensive Wahrnehmung, bewusste Steuerung und strategische Nutzung – eine seltene Integration. Du fühlst tief, kannst aber auch Abstand nehmen. Du analysierst, ohne die Wärme zu verlieren.
+
+Das macht dich zu einem emotionalen Alchemisten: Du kannst schwierige Erfahrungen in Wachstum verwandeln, Konflikte in Nähe, Schmerz in Weisheit. Nicht durch Vermeidung, sondern durch Transmutation.
+
+Deine Herausforderung: Diese Vielseitigkeit kann auch Orientierungslosigkeit bedeuten. Manchmal weißt du nicht, welchen Modus du wählen sollst. Zu lernen, dass du nicht immer alles integrieren musst – dass auch Einseitigkeit okay ist – ist dein Wachstumsfeld.`,
+        deepInsight: `<p><strong>Die Wissenschaft hinter deiner Signatur:</strong> Dein Profil zeigt eine seltene Balance über alle vier Zweige der emotionalen Intelligenz hinweg – Wahrnehmung, Nutzung, Verstehen und Regulation arbeiten bei dir integriert zusammen.</p>
+<p>In der Forschung nennt man das einen "integrierten EI-Stil". Menschen mit diesem Profil zeigen oft hohe <em>psychologische Flexibilität</em> – die Fähigkeit, je nach Kontext unterschiedliche emotionale Strategien zu wählen.</p>
+<p><strong>Dein Entwicklungspfad:</strong> Paradoxerweise liegt dein Wachstum manchmal in der <em>Vereinfachung</em>. Nicht jede Situation braucht das volle alchemistische Arsenal. Manchmal ist "einfach fühlen" oder "einfach handeln" die reifste Wahl – ohne die Integration erzwingen zu müssen.</p>`,
+        ally: "Alle Typen",
+        tension: "Eigene Komplexität",
+        stats: [
+          { value: "🔮", label: "Transmutation" },
+          { value: "∿", label: "Flex-Kapazität" },
+          { value: "4D", label: "EI-Integration" },
+          { value: "✧", label: "Seltene Balance" }
+        ]
+      },
+      seeker: {
+        id: "seeker",
+        title: "Der Suchende",
+        tagline: "Du bist auf dem Weg zu dir selbst",
+        icon: `<svg viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="80" cy="80" r="70" stroke="#D2A95A" stroke-width="1" opacity="0.3"/>
+          <!-- Path/journey -->
+          <path d="M40 120 Q50 100 60 90 Q80 70 100 80 Q120 90 120 60" stroke="#6CA192" stroke-width="2" fill="none" stroke-dasharray="4 4"/>
+          <!-- Question mark integrated -->
+          <path d="M75 55 Q90 50 90 65 Q90 75 80 80" stroke="#D2A95A" stroke-width="2" fill="none"/>
+          <circle cx="80" cy="95" r="3" fill="#D2A95A"/>
+          <!-- Emerging light -->
+          <circle cx="120" cy="50" r="8" stroke="#D2A95A" stroke-width="1" fill="none" opacity="0.6"/>
+          <circle cx="120" cy="50" r="4" fill="#D2A95A" opacity="0.4"/>
+        </svg>`,
+        description: `Du bist ehrlich mit dir: Dein Verhältnis zu Emotionen ist noch in Arbeit. Manchmal überwältigend, manchmal taub. Mal zu viel Kontrolle, mal zu wenig. Du bist mitten im Prozess, dich selbst emotional zu entdecken.
+
+Das ist kein Defizit – es ist Potenzial. Du hast die Selbstreflexion, um zu erkennen, dass es Wachstumsfelder gibt. Viele Menschen erreichen diesen Punkt nie. Du fragst dich, was andere nie fragen.
+
+Dein Geschenk ist Offenheit. Du bist nicht festgefahren in einem Muster, sondern beweglich, lernend, wachsend. Die Suchenden werden oft zu den tiefsten Wissenden – weil sie den ganzen Weg selbst gegangen sind.`,
+        deepInsight: `<p><strong>Die Wissenschaft hinter deiner Signatur:</strong> Dein Profil zeigt, was Forscher <em>emotionale Variabilität</em> nennen – unterschiedliche Reaktionsmuster je nach Kontext. Das ist nicht Inkonsistenz, sondern Flexibilität im Entstehen.</p>
+<p>Wichtig: Emotionale Intelligenz ist nicht fix, sondern entwickelt sich bis ins mittlere Erwachsenenalter weiter (manche Studien zeigen Peaks um die 50). Du bist nicht "fertig" – niemand ist das.</p>
+<p><strong>Dein Entwicklungspfad:</strong> Fokus auf Selbstbeobachtung ohne Selbstverurteilung. Führe ein "Emotions-Tagebuch" für 30 Tage: Was hast du gefühlt? Wie hast du reagiert? Was hättest du rückblickend anders gemacht? Die Muster, die entstehen, zeigen dir deinen natürlichen Stil – und wo du wachsen kannst.</p>`,
+        ally: "Der Alchemist",
+        tension: "Eigene Ungeduld",
+        stats: [
+          { value: "🌱", label: "Growth Mindset" },
+          { value: "→", label: "In Bewegung" },
+          { value: "∞", label: "Potenzial" },
+          { value: "?", label: "Offene Fragen" }
+        ]
+      }
+    };
+
+    // ============================================
+    // QUIZ STATE
+    // ============================================
+    
+    let currentQuestion = 0;
+    let answers = [];
+
+    // ============================================
+    // QUIZ FUNCTIONS
+    // ============================================
+
+    function startQuiz() {
+      document.getElementById('intro').classList.remove('active');
+      document.getElementById('question').classList.add('active');
+      showQuestion(0);
+    }
+
+    function showQuestion(index) {
+      currentQuestion = index;
+      const q = questions[index];
+      
+      document.getElementById('currentQ').textContent = index + 1;
+      document.getElementById('progressPercent').textContent = Math.round(((index + 1) / questions.length) * 100) + '%';
+      document.getElementById('progressFill').style.width = ((index + 1) / questions.length * 100) + '%';
+      
+      document.getElementById('scenarioLabel').textContent = q.scenario;
+      document.getElementById('questionText').textContent = q.text;
+      
+      const container = document.getElementById('optionsContainer');
+      container.innerHTML = '';
+      
+      q.options.forEach((opt, i) => {
+        const card = document.createElement('div');
+        card.className = 'option-card';
+        if (answers[index] === i) {
+          card.classList.add('selected');
+        }
+        card.innerHTML = `<p class="option-text">${opt.text}</p>`;
+        card.onclick = () => selectOption(i);
+        container.appendChild(card);
+      });
+      
+      document.getElementById('btnBack').style.visibility = index === 0 ? 'hidden' : 'visible';
+      document.getElementById('btnNext').disabled = answers[index] === undefined;
+      document.getElementById('btnNext').textContent = index === questions.length - 1 ? 'Ergebnis anzeigen →' : 'Weiter →';
+    }
+
+    function selectOption(optionIndex) {
+      answers[currentQuestion] = optionIndex;
+      
+      document.querySelectorAll('.option-card').forEach((card, i) => {
+        card.classList.toggle('selected', i === optionIndex);
+      });
+      
+      document.getElementById('btnNext').disabled = false;
+    }
+
+    function nextQuestion() {
+      if (currentQuestion < questions.length - 1) {
+        showQuestion(currentQuestion + 1);
+      } else {
+        calculateResult();
+      }
+    }
+
+    function prevQuestion() {
+      if (currentQuestion > 0) {
+        showQuestion(currentQuestion - 1);
+      }
+    }
+
+    function calculateResult() {
+      // Sum up dimension scores
+      const scores = {
+        perception: 0,
+        regulation: 0,
+        utilization: 0
+      };
+      
+      const maxPossible = {
+        perception: 0,
+        regulation: 0,
+        utilization: 0
+      };
+
+      questions.forEach((q, qIndex) => {
+        const selectedOption = q.options[answers[qIndex]];
+        if (selectedOption) {
+          scores.perception += selectedOption.scores.perception;
+          scores.regulation += selectedOption.scores.regulation;
+          scores.utilization += selectedOption.scores.utilization;
+        }
+        
+        // Calculate max possible for each dimension
+        const maxScores = q.options.reduce((max, opt) => ({
+          perception: Math.max(max.perception, opt.scores.perception),
+          regulation: Math.max(max.regulation, opt.scores.regulation),
+          utilization: Math.max(max.utilization, opt.scores.utilization)
+        }), { perception: 0, regulation: 0, utilization: 0 });
+        
+        maxPossible.perception += maxScores.perception;
+        maxPossible.regulation += maxScores.regulation;
+        maxPossible.utilization += maxScores.utilization;
+      });
+
+      // Normalize to 1-100
+      const normalizedScores = {
+        perception: Math.round((scores.perception / maxPossible.perception) * 99 + 1),
+        regulation: Math.round((scores.regulation / maxPossible.regulation) * 99 + 1),
+        utilization: Math.round((scores.utilization / maxPossible.utilization) * 99 + 1)
+      };
+
+      // Determine profile based on dominant dimension and pattern
+      let profileId = determineProfile(normalizedScores);
+      
+      showResult(profileId, normalizedScores, scores);
+    }
+
+    function determineProfile(scores) {
+      const { perception, regulation, utilization } = scores;
+      const avg = (perception + regulation + utilization) / 3;
+      
+      // Check for balanced "Alchemist" profile
+      const variance = Math.abs(perception - avg) + Math.abs(regulation - avg) + Math.abs(utilization - avg);
+      if (variance < 30 && avg > 60) {
+        return 'alchemist';
+      }
+      
+      // Check for "Seeker" - low overall or high variance with low average
+      if (avg < 50 || (variance > 50 && avg < 60)) {
+        return 'seeker';
+      }
+      
+      // Determine by dominant pattern
+      const dominant = Math.max(perception, regulation, utilization);
+      
+      if (perception === dominant && perception > regulation + 10) {
+        return 'resonator';
+      }
+      
+      if (regulation === dominant && regulation > perception + 10) {
+        return 'regulator';
+      }
+      
+      if (utilization === dominant && utilization > perception + 5) {
+        return 'strategist';
+      }
+      
+      // Mixed high scores
+      if (utilization > 60 && perception > 60) {
+        return 'navigator';
+      }
+      
+      if (perception > 70) return 'resonator';
+      if (regulation > 70) return 'regulator';
+      if (utilization > 70) return 'strategist';
+      
+      return 'navigator';
+    }
+
+    function getBand(score) {
+      if (score <= 20) return { band: "low", symbol: "❄️" };
+      if (score <= 40) return { band: "midlow", symbol: "🌿" };
+      if (score <= 60) return { band: "mid", symbol: "🌤️" };
+      if (score <= 80) return { band: "midhigh", symbol: "🔥" };
+      return { band: "high", symbol: "⚡" };
+    }
+
+    function showResult(profileId, normalizedScores, rawScores) {
+      const profile = profiles[profileId];
+      
+      document.getElementById('question').classList.remove('active');
+      document.getElementById('result').classList.add('active');
+      
+      document.getElementById('resultTitle').textContent = profile.title;
+      document.getElementById('resultTagline').textContent = profile.tagline;
+      document.getElementById('resultIcon').innerHTML = profile.icon;
+      document.getElementById('resultDescription').innerHTML = profile.description;
+      document.getElementById('deepInsight').innerHTML = profile.deepInsight;
+      document.getElementById('compatAlly').textContent = profile.ally;
+      document.getElementById('compatTension').textContent = profile.tension;
+      
+      // Render trait bars
+      const traitBarsHtml = `
+        <div class="trait-row">
+          <div class="trait-header">
+            <span class="trait-name">Emotionale Wahrnehmung</span>
+            <span class="trait-score">${normalizedScores.perception}/100 ${getBand(normalizedScores.perception).symbol}</span>
+          </div>
+          <div class="trait-bar">
+            <div class="trait-fill" style="width: ${normalizedScores.perception}%"></div>
+          </div>
+        </div>
+        <div class="trait-row">
+          <div class="trait-header">
+            <span class="trait-name">Emotionale Steuerung</span>
+            <span class="trait-score">${normalizedScores.regulation}/100 ${getBand(normalizedScores.regulation).symbol}</span>
+          </div>
+          <div class="trait-bar">
+            <div class="trait-fill" style="width: ${normalizedScores.regulation}%"></div>
+          </div>
+        </div>
+        <div class="trait-row">
+          <div class="trait-header">
+            <span class="trait-name">Strategische Nutzung</span>
+            <span class="trait-score">${normalizedScores.utilization}/100 ${getBand(normalizedScores.utilization).symbol}</span>
+          </div>
+          <div class="trait-bar">
+            <div class="trait-fill" style="width: ${normalizedScores.utilization}%"></div>
+          </div>
+        </div>
+      `;
+      document.getElementById('traitBars').innerHTML = traitBarsHtml;
+      
+      // Render stats
+      const statsHtml = profile.stats.map(stat => `
+        <div class="stat-card">
+          <div class="stat-value">${stat.value}</div>
+          <div class="stat-label">${stat.label}</div>
+        </div>
+      `).join('');
+      document.getElementById('statsSection').innerHTML = statsHtml;
+      
+      // Generate and store ContributionEvent
+      const contributionEvent = generateContributionEvent(profileId, normalizedScores, rawScores);
+      
+      // Store in localStorage
+      localStorage.setItem('eq_signature_result', JSON.stringify(contributionEvent));
+      
+      // Dispatch custom event
+      window.dispatchEvent(new CustomEvent('quizContribution', { 
+        detail: contributionEvent 
+      }));
+      
+      // Show debug panel (remove in production)
+      document.getElementById('debugPanel').classList.add('visible');
+      document.getElementById('debugContent').textContent = JSON.stringify(contributionEvent, null, 2);
+    }
+
+    function generateContributionEvent(profileId, normalizedScores, rawScores) {
+      const profile = profiles[profileId];
+      
+      return {
+        specVersion: "sp.contribution.v1",
+        eventId: crypto.randomUUID(),
+        occurredAt: new Date().toISOString(),
+        source: {
+          vertical: "quiz",
+          moduleId: "quiz.eq_signature.v1",
+          domain: "quiz.quizzme.io",
+          locale: "de-DE"
+        },
+        payload: {
+          markers: [
+            { 
+              id: "marker.eq.perception_sensitivity", 
+              weight: (normalizedScores.perception - 50) / 50,
+              evidence: { itemsAnswered: 12, confidence: 0.85 }
+            },
+            { 
+              id: "marker.eq.regulation_capacity", 
+              weight: (normalizedScores.regulation - 50) / 50,
+              evidence: { itemsAnswered: 12, confidence: 0.85 }
+            },
+            { 
+              id: "marker.eq.strategic_utilization", 
+              weight: (normalizedScores.utilization - 50) / 50,
+              evidence: { itemsAnswered: 12, confidence: 0.85 }
+            },
+            {
+              id: `marker.eq.profile.${profileId}`,
+              weight: 1.0,
+              evidence: { itemsAnswered: 12, confidence: 0.9 }
+            }
+          ],
+          traits: [
+            { 
+              id: "trait.eq.perception", 
+              score: normalizedScores.perception, 
+              band: getBand(normalizedScores.perception).band,
+              confidence: 0.85,
+              method: "scenario"
+            },
+            { 
+              id: "trait.eq.regulation", 
+              score: normalizedScores.regulation, 
+              band: getBand(normalizedScores.regulation).band,
+              confidence: 0.85,
+              method: "scenario"
+            },
+            { 
+              id: "trait.eq.utilization", 
+              score: normalizedScores.utilization, 
+              band: getBand(normalizedScores.utilization).band,
+              confidence: 0.85,
+              method: "scenario"
+            }
+          ],
+          tags: [
+            { 
+              id: `tag.eq.archetype.${profileId}`, 
+              label: profile.title, 
+              kind: "archetype", 
+              weight: 1.0 
+            },
+            {
+              id: `tag.eq.style.${normalizedScores.perception > 70 ? 'sensitive' : normalizedScores.regulation > 70 ? 'controlled' : 'adaptive'}`,
+              label: normalizedScores.perception > 70 ? 'Hochsensibel' : normalizedScores.regulation > 70 ? 'Kontrolliert' : 'Adaptiv',
+              kind: "style",
+              weight: 0.8
+            }
+          ],
+          unlocks: [
+            { 
+              id: `unlock.badges.eq_${profileId}`, 
+              unlocked: true, 
+              level: profileId === 'alchemist' ? 3 : 2,
+              sourceRef: "quiz.eq_signature.v1",
+              unlockedAt: new Date().toISOString()
+            }
+          ],
+          summary: {
+            title: profile.title,
+            bullets: [
+              profile.tagline,
+              `Wahrnehmung: ${normalizedScores.perception}% ${getBand(normalizedScores.perception).symbol}`,
+              `Steuerung: ${normalizedScores.regulation}% ${getBand(normalizedScores.regulation).symbol}`,
+              `Nutzung: ${normalizedScores.utilization}% ${getBand(normalizedScores.utilization).symbol}`
+            ],
+            resultId: profileId
+          },
+          debug: {
+            rawAnswersHash: btoa(JSON.stringify(answers)).slice(0, 16),
+            rawScores: rawScores
+          }
+        }
+      };
+    }
+
+    function shareResult() {
+      const result = JSON.parse(localStorage.getItem('eq_signature_result'));
+      const profile = profiles[result.payload.summary.resultId];
+      
+      const shareText = `Meine Emotionale Signatur: ${profile.title} ✨\n\n"${profile.tagline}"\n\nEntdecke deine eigene EQ-Signatur:`;
+      
+      if (navigator.share) {
+        navigator.share({
+          title: 'Meine Emotionale Signatur',
+          text: shareText,
+          url: window.location.href
+        });
+      } else {
+        navigator.clipboard.writeText(shareText + '\n' + window.location.href);
+        alert('Link kopiert! Teile dein Ergebnis.');
+      }
+    }
+
+    function restartQuiz() {
+      currentQuestion = 0;
+      answers = [];
+      document.getElementById('result').classList.remove('active');
+      document.getElementById('intro').classList.add('active');
+      document.getElementById('debugPanel').classList.remove('visible');
+    }
+  </script>
+</body>
+</html>

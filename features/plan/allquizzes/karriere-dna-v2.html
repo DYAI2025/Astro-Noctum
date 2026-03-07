@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karriere-DNA | QuizzMe – Entdecke deinen beruflichen Code</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* QuizzMe Modern Alchemy - DNA Edition */
+            --bg-deep: #041726;
+            --bg-emerald: #053B3F;
+            --bg-gradient: linear-gradient(165deg, #041726 0%, #053B3F 50%, #041726 100%);
+            
+            --gold-primary: #D2A95A;
+            --gold-dark: #A77D38;
+            --gold-light: #E8C87A;
+            --gold-glow: rgba(210, 169, 90, 0.3);
+            
+            --dna-silver: #C0D8E8;
+            --dna-glow: rgba(192, 216, 232, 0.2);
+            
+            --sage: #6CA192;
+            --teal: #1C5B5C;
+            
+            --cream: #F7F0E6;
+            --cream-dark: #E8DCC8;
+            
+            --text-light: #F7F3EA;
+            --text-muted: #8A9A8F;
+            
+            --card-shadow: 0 12px 48px rgba(4, 23, 38, 0.6);
+            --glow-gold: 0 0 60px rgba(210, 169, 90, 0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-light);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Cosmic DNA Background */
+        .cosmos-bg {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .cosmos-bg::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(1px 1px at 10% 20%, rgba(210, 169, 90, 0.6) 0%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 30% 70%, rgba(192, 216, 232, 0.5) 0%, transparent 100%),
+                radial-gradient(1px 1px at 50% 30%, rgba(247, 240, 230, 0.4) 0%, transparent 100%),
+                radial-gradient(2px 2px at 70% 60%, rgba(210, 169, 90, 0.5) 0%, transparent 100%),
+                radial-gradient(1px 1px at 90% 15%, rgba(192, 216, 232, 0.4) 0%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 15% 85%, rgba(210, 169, 90, 0.4) 0%, transparent 100%),
+                radial-gradient(1px 1px at 85% 45%, rgba(247, 240, 230, 0.3) 0%, transparent 100%);
+            animation: twinkle 6s ease-in-out infinite alternate;
+        }
+
+        /* DNA Helix Overlay */
+        .dna-helix {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 100%;
+            opacity: 0.08;
+            pointer-events: none;
+        }
+
+        .dna-helix::before,
+        .dna-helix::after {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent 0px,
+                transparent 30px,
+                var(--dna-silver) 32px,
+                transparent 34px
+            );
+        }
+
+        .dna-helix::before {
+            animation: helixRotate 20s linear infinite;
+            transform: perspective(300px) rotateY(20deg);
+        }
+
+        .dna-helix::after {
+            animation: helixRotate 20s linear infinite reverse;
+            transform: perspective(300px) rotateY(-20deg);
+        }
+
+        @keyframes helixRotate {
+            from { transform: perspective(300px) rotateY(20deg) translateY(0); }
+            to { transform: perspective(300px) rotateY(20deg) translateY(-60px); }
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        /* Orbital Rings */
+        .orbital-ring {
+            position: absolute;
+            border: 1px solid var(--gold-glow);
+            border-radius: 50%;
+            animation: orbit 30s linear infinite;
+        }
+
+        .orbital-ring:nth-child(1) {
+            width: 300px; height: 300px;
+            top: 10%; left: -100px;
+        }
+
+        .orbital-ring:nth-child(2) {
+            width: 400px; height: 400px;
+            bottom: 5%; right: -150px;
+            animation-duration: 40s;
+            animation-direction: reverse;
+        }
+
+        @keyframes orbit {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 440px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            animation: fadeSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .screen.active { display: flex; }
+
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .brand-wordmark {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            margin-bottom: 48px;
+            opacity: 0.9;
+        }
+
+        .dna-emblem {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 32px;
+            position: relative;
+        }
+
+        .dna-emblem svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 20px var(--dna-glow));
+        }
+
+        .welcome-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2rem, 8vw, 2.6rem);
+            font-weight: 500;
+            line-height: 1.15;
+            margin-bottom: 16px;
+            color: var(--cream);
+        }
+
+        .welcome-title em {
+            font-style: italic;
+            color: var(--gold-primary);
+        }
+
+        .welcome-subtitle {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+            max-width: 320px;
+            margin-bottom: 40px;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold-primary) 50%, var(--gold-light) 100%);
+            color: var(--bg-deep);
+            border: none;
+            padding: 16px 48px;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px var(--gold-glow);
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px var(--gold-glow);
+        }
+
+        .quiz-meta {
+            display: flex;
+            gap: 24px;
+            margin-top: 32px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .quiz-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Progress */
+        .progress-container {
+            padding: 20px 0;
+        }
+
+        .progress-bar {
+            height: 3px;
+            background: rgba(210, 169, 90, 0.15);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--gold-dark), var(--gold-primary));
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 12px var(--gold-glow);
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Question */
+        .question-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 16px 0 24px;
+        }
+
+        .question-number {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.85rem;
+            color: var(--gold-primary);
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+            opacity: 0.8;
+        }
+
+        .question-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.3rem, 5vw, 1.6rem);
+            font-weight: 400;
+            line-height: 1.4;
+            color: var(--cream);
+            margin-bottom: 32px;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: auto;
+        }
+
+        .option-btn {
+            background: rgba(5, 59, 63, 0.6);
+            border: 1px solid rgba(210, 169, 90, 0.2);
+            padding: 18px 20px;
+            border-radius: 12px;
+            color: var(--text-light);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            backdrop-filter: blur(8px);
+        }
+
+        .option-btn:hover {
+            background: rgba(5, 59, 63, 0.8);
+            border-color: var(--gold-primary);
+            transform: translateX(4px);
+        }
+
+        .option-btn.selected {
+            background: linear-gradient(135deg, rgba(210, 169, 90, 0.15), rgba(210, 169, 90, 0.08));
+            border-color: var(--gold-primary);
+            box-shadow: 0 0 20px var(--gold-glow);
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .dna-loader {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 32px;
+            position: relative;
+        }
+
+        .dna-loader svg {
+            width: 100%;
+            height: 100%;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        .loading-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            color: var(--cream);
+            margin-bottom: 8px;
+        }
+
+        .loading-sub {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Result Screen */
+        .result-screen {
+            padding: 20px 0;
+        }
+
+        .result-card {
+            background: linear-gradient(180deg, rgba(5, 59, 63, 0.9) 0%, rgba(4, 23, 38, 0.95) 100%);
+            border: 1px solid rgba(210, 169, 90, 0.25);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow), var(--glow-gold);
+        }
+
+        .card-header {
+            padding: 32px 24px;
+            text-align: center;
+            background: linear-gradient(180deg, rgba(210, 169, 90, 0.08) 0%, transparent 100%);
+            border-bottom: 1px solid rgba(210, 169, 90, 0.15);
+        }
+
+        .result-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            background: rgba(210, 169, 90, 0.1);
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(210, 169, 90, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .profile-emblem {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 20px;
+        }
+
+        .profile-emblem svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 16px var(--gold-glow));
+        }
+
+        .profile-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            font-weight: 500;
+            color: var(--cream);
+            margin-bottom: 8px;
+        }
+
+        .profile-tagline {
+            font-size: 0.9rem;
+            color: var(--gold-primary);
+            font-style: italic;
+        }
+
+        .card-body {
+            padding: 24px;
+        }
+
+        .profile-description {
+            font-size: 0.9rem;
+            line-height: 1.7;
+            color: var(--text-light);
+            margin-bottom: 24px;
+            opacity: 0.9;
+        }
+
+        /* Trait Scores Section */
+        .traits-section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(210, 169, 90, 0.15);
+        }
+
+        .trait-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .trait-icon {
+            width: 24px;
+            height: 24px;
+            color: var(--gold-primary);
+            opacity: 0.8;
+        }
+
+        .trait-content {
+            flex: 1;
+        }
+
+        .trait-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .trait-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .trait-bar {
+            flex: 1;
+            height: 6px;
+            background: rgba(210, 169, 90, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .trait-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .trait-bar-fill.gold { background: linear-gradient(90deg, var(--gold-dark), var(--gold-primary)); }
+        .trait-bar-fill.sage { background: linear-gradient(90deg, #4A7C6F, var(--sage)); }
+        .trait-bar-fill.teal { background: linear-gradient(90deg, #144545, var(--teal)); }
+
+        .trait-score {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--cream);
+            min-width: 32px;
+            text-align: right;
+        }
+
+        .trait-band {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-left: 4px;
+        }
+
+        /* Tags Section */
+        .tags-section {
+            margin-bottom: 24px;
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag {
+            font-size: 0.75rem;
+            padding: 6px 12px;
+            border-radius: 16px;
+            background: rgba(210, 169, 90, 0.1);
+            border: 1px solid rgba(210, 169, 90, 0.2);
+            color: var(--cream);
+        }
+
+        .tag.archetype { border-color: var(--gold-primary); color: var(--gold-primary); }
+        .tag.style { border-color: var(--sage); color: var(--sage); }
+        .tag.shadow { border-color: #8B7355; color: #C4A87C; }
+
+        /* Compatibility Section */
+        .compatibility-section {
+            margin-bottom: 24px;
+        }
+
+        .compat-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(210, 169, 90, 0.08);
+        }
+
+        .compat-row:last-child { border-bottom: none; }
+
+        .compat-icon {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: rgba(210, 169, 90, 0.1);
+        }
+
+        .compat-icon svg {
+            width: 14px;
+            height: 14px;
+            fill: var(--gold-primary);
+        }
+
+        .compat-content { flex: 1; }
+
+        .compat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .compat-value {
+            font-size: 0.85rem;
+            color: var(--cream);
+            margin-top: 2px;
+        }
+
+        /* Careers Section */
+        .careers-section {
+            margin-bottom: 24px;
+        }
+
+        .career-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .career-tag {
+            font-size: 0.75rem;
+            padding: 8px 14px;
+            border-radius: 8px;
+            background: rgba(108, 161, 146, 0.15);
+            border: 1px solid rgba(108, 161, 146, 0.3);
+            color: var(--sage);
+        }
+
+        /* Share Section */
+        .share-section {
+            padding: 20px 24px 24px;
+            text-align: center;
+            background: rgba(4, 23, 38, 0.5);
+            border-top: 1px solid rgba(210, 169, 90, 0.1);
+        }
+
+        .share-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .share-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .share-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: rgba(210, 169, 90, 0.1);
+            border: 1px solid rgba(210, 169, 90, 0.3);
+            color: var(--gold-primary);
+        }
+
+        .share-btn:hover {
+            background: rgba(210, 169, 90, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .restart-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            cursor: pointer;
+            padding: 8px 16px;
+            transition: color 0.2s;
+        }
+
+        .restart-btn:hover { color: var(--cream); }
+
+        /* Pipeline Debug (hidden by default) */
+        .pipeline-debug {
+            display: none;
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.7rem;
+            color: var(--sage);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .pipeline-debug.visible { display: block; }
+
+        /* Unlock Badge */
+        .unlock-section {
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .unlock-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, rgba(210, 169, 90, 0.15), rgba(210, 169, 90, 0.05));
+            border: 1px solid var(--gold-primary);
+            border-radius: 12px;
+            box-shadow: 0 0 24px var(--gold-glow);
+        }
+
+        .unlock-badge svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--gold-primary);
+        }
+
+        .unlock-text {
+            font-size: 0.8rem;
+            color: var(--gold-primary);
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="cosmos-bg">
+        <div class="dna-helix"></div>
+        <div class="orbital-ring"></div>
+        <div class="orbital-ring"></div>
+    </div>
+
+    <div class="container">
+        <!-- Welcome Screen -->
+        <div id="welcome" class="screen welcome-screen active">
+            <div class="brand-wordmark">QuizzMe</div>
+            
+            <div class="dna-emblem">
+                <svg viewBox="0 0 100 100" fill="none">
+                    <defs>
+                        <linearGradient id="dnaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#C0D8E8"/>
+                            <stop offset="50%" stop-color="#D2A95A"/>
+                            <stop offset="100%" stop-color="#C0D8E8"/>
+                        </linearGradient>
+                    </defs>
+                    <circle cx="50" cy="50" r="45" stroke="url(#dnaGrad)" stroke-width="1" fill="none" opacity="0.3"/>
+                    <circle cx="50" cy="50" r="35" stroke="url(#dnaGrad)" stroke-width="0.5" fill="none" opacity="0.2"/>
+                    <path d="M35 20 Q50 35 65 20 Q50 35 35 50 Q50 65 65 50 Q50 65 35 80 Q50 65 65 80" 
+                          stroke="url(#dnaGrad)" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    <path d="M38 25 L62 25 M36 40 L64 40 M36 60 L64 60 M38 75 L62 75" 
+                          stroke="#D2A95A" stroke-width="1.5" opacity="0.6"/>
+                    <circle cx="35" cy="20" r="3" fill="#D2A95A"/>
+                    <circle cx="65" cy="20" r="3" fill="#C0D8E8"/>
+                    <circle cx="35" cy="50" r="3" fill="#C0D8E8"/>
+                    <circle cx="65" cy="50" r="3" fill="#D2A95A"/>
+                    <circle cx="35" cy="80" r="3" fill="#D2A95A"/>
+                    <circle cx="65" cy="80" r="3" fill="#C0D8E8"/>
+                </svg>
+            </div>
+            
+            <h1 class="welcome-title">Deine<br><em>Karriere-DNA</em></h1>
+            <p class="welcome-subtitle">
+                Entschlüssle deinen beruflichen Genetik-Code. 
+                Welche Kräfte treiben dich? Welcher Archetyp prägt deinen Weg?
+            </p>
+            
+            <button class="start-btn" onclick="startQuiz()">Code entschlüsseln</button>
+            
+            <div class="quiz-meta">
+                <span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+                    </svg>
+                    ~2 Min
+                </span>
+                <span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+                    </svg>
+                    10 Fragen
+                </span>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz" class="screen quiz-screen">
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div class="progress-text">
+                    <span id="progress-current">1 / 10</span>
+                    <span id="progress-percent">0%</span>
+                </div>
+            </div>
+            
+            <div class="question-container">
+                <div class="question-number" id="question-number">FRAGE 01</div>
+                <h2 class="question-text" id="question-text"></h2>
+                <div class="options-container" id="options-container"></div>
+            </div>
+        </div>
+
+        <!-- Loading Screen -->
+        <div id="loading" class="screen loading-screen">
+            <div class="dna-loader">
+                <svg viewBox="0 0 60 60" fill="none">
+                    <circle cx="30" cy="30" r="25" stroke="#D2A95A" stroke-width="2" fill="none" opacity="0.3"/>
+                    <path d="M20 15 Q30 25 40 15 Q30 25 20 35 Q30 45 40 35 Q30 45 20 55" 
+                          stroke="#D2A95A" stroke-width="2" fill="none" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <p class="loading-text">DNA wird sequenziert...</p>
+            <p class="loading-sub">Dein beruflicher Code wird entschlüsselt</p>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result" class="screen result-screen">
+            <div class="result-card" id="result-card"></div>
+            <div class="pipeline-debug" id="pipeline-debug"></div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // KARRIERE-DNA QUIZ - ContributionEvent Pipeline Compatible
+        // Spec: sp.contribution.v1
+        // ============================================================
+
+        const quizData = {
+            meta: {
+                id: "quiz.career_dna.v1",
+                title: "Karriere-DNA",
+                subtitle: "Entschlüssle deinen beruflichen Code",
+                engine: "custom",
+                skin: "Cosmic DNA",
+                locale: "de-DE",
+                disclaimer: "Dieser Test dient der spielerischen Selbstreflexion und stellt KEINE psychologische oder berufliche Diagnose dar."
+            },
+            
+            // Dimensionen gemäß Pipeline-Spec
+            dimensions: [
+                { id: "d_achievement", name: "Leistungsorientierung", pole_low: "Prozess", pole_high: "Ergebnis", traitId: "trait.career.achievement" },
+                { id: "d_autonomy", name: "Autonomie", pole_low: "Struktur", pole_high: "Freiheit", traitId: "trait.career.autonomy" },
+                { id: "d_influence", name: "Einfluss", pole_low: "Fachtiefe", pole_high: "Führung", traitId: "trait.career.influence" }
+            ],
+            
+            questions: [
+                {
+                    id: "q1",
+                    text: "Ein wichtiges Projekt steht an. Was motiviert dich am meisten?",
+                    options: [
+                        { id: "q1_a", text: "Das Ergebnis sehen und den Erfolg messen", scores: { d_achievement: 5, d_autonomy: 1, d_influence: 2 } },
+                        { id: "q1_b", text: "Mein eigenes System entwickeln", scores: { d_achievement: 2, d_autonomy: 5, d_influence: 1 } },
+                        { id: "q1_c", text: "Das Team zum Erfolg führen", scores: { d_achievement: 3, d_autonomy: 1, d_influence: 5 } },
+                        { id: "q1_d", text: "Den Prozess perfektionieren", scores: { d_achievement: 1, d_autonomy: 3, d_influence: 2 } }
+                    ]
+                },
+                {
+                    id: "q2",
+                    text: "Dein idealer Montag beginnt mit...",
+                    options: [
+                        { id: "q2_a", text: "Einer klaren Zielliste, die ich abhaken kann", scores: { d_achievement: 5, d_autonomy: 2, d_influence: 1 } },
+                        { id: "q2_b", text: "Zeit für Deep Work ohne Meetings", scores: { d_achievement: 2, d_autonomy: 5, d_influence: 0 } },
+                        { id: "q2_c", text: "Einem inspirierenden Team-Kickoff", scores: { d_achievement: 2, d_autonomy: 0, d_influence: 5 } },
+                        { id: "q2_d", text: "Flexibilität, um auf das Wichtigste zu reagieren", scores: { d_achievement: 1, d_autonomy: 4, d_influence: 3 } }
+                    ]
+                },
+                {
+                    id: "q3",
+                    text: "Wenn ein Projekt scheitert, ist dein erster Gedanke...",
+                    options: [
+                        { id: "q3_a", text: "\"Was hätte ich anders machen können?\"", scores: { d_achievement: 4, d_autonomy: 3, d_influence: 1 } },
+                        { id: "q3_b", text: "\"Welche Systeme haben versagt?\"", scores: { d_achievement: 2, d_autonomy: 5, d_influence: 2 } },
+                        { id: "q3_c", text: "\"Wie baue ich das Team wieder auf?\"", scores: { d_achievement: 1, d_autonomy: 0, d_influence: 5 } },
+                        { id: "q3_d", text: "\"Was können wir daraus lernen?\"", scores: { d_achievement: 3, d_autonomy: 2, d_influence: 3 } }
+                    ]
+                },
+                {
+                    id: "q4",
+                    text: "Anerkennung bedeutet für dich...",
+                    options: [
+                        { id: "q4_a", text: "Messbare Ergebnisse, die für sich sprechen", scores: { d_achievement: 5, d_autonomy: 3, d_influence: 1 } },
+                        { id: "q4_b", text: "Respekt für meine Expertise", scores: { d_achievement: 2, d_autonomy: 5, d_influence: 2 } },
+                        { id: "q4_c", text: "Das Vertrauen, andere zu führen", scores: { d_achievement: 2, d_autonomy: 1, d_influence: 5 } },
+                        { id: "q4_d", text: "Die Freiheit, meinen Weg zu gehen", scores: { d_achievement: 1, d_autonomy: 5, d_influence: 1 } }
+                    ]
+                },
+                {
+                    id: "q5",
+                    text: "In fünf Jahren siehst du dich...",
+                    options: [
+                        { id: "q5_a", text: "An der Spitze meines Feldes", scores: { d_achievement: 5, d_autonomy: 2, d_influence: 3 } },
+                        { id: "q5_b", text: "Mit meinem eigenen Unternehmen/Projekt", scores: { d_achievement: 3, d_autonomy: 5, d_influence: 3 } },
+                        { id: "q5_c", text: "Eine Organisation transformierend", scores: { d_achievement: 3, d_autonomy: 1, d_influence: 5 } },
+                        { id: "q5_d", text: "Als gefragter Experte in meiner Nische", scores: { d_achievement: 4, d_autonomy: 4, d_influence: 2 } }
+                    ]
+                },
+                {
+                    id: "q6",
+                    text: "Dein größter beruflicher Albtraum?",
+                    options: [
+                        { id: "q6_a", text: "Stagnation ohne Fortschritt", scores: { d_achievement: 5, d_autonomy: 2, d_influence: 2 } },
+                        { id: "q6_b", text: "In bürokratischen Strukturen gefangen sein", scores: { d_achievement: 1, d_autonomy: 5, d_influence: 1 } },
+                        { id: "q6_c", text: "Keinen Einfluss auf Entscheidungen haben", scores: { d_achievement: 2, d_autonomy: 1, d_influence: 5 } },
+                        { id: "q6_d", text: "Bedeutungslose Arbeit verrichten", scores: { d_achievement: 3, d_autonomy: 3, d_influence: 3 } }
+                    ]
+                },
+                {
+                    id: "q7",
+                    text: "Bei einer Gehaltsverhandlung ist dir am wichtigsten...",
+                    options: [
+                        { id: "q7_a", text: "Die Zahl muss meine Leistung widerspiegeln", scores: { d_achievement: 5, d_autonomy: 2, d_influence: 2 } },
+                        { id: "q7_b", text: "Mehr Flexibilität und Remote-Optionen", scores: { d_achievement: 1, d_autonomy: 5, d_influence: 1 } },
+                        { id: "q7_c", text: "Ein größerer Verantwortungsbereich", scores: { d_achievement: 2, d_autonomy: 1, d_influence: 5 } },
+                        { id: "q7_d", text: "Budget für meine eigenen Projekte", scores: { d_achievement: 3, d_autonomy: 4, d_influence: 3 } }
+                    ]
+                },
+                {
+                    id: "q8",
+                    text: "Feedback nimmst du am liebsten...",
+                    options: [
+                        { id: "q8_a", text: "Mit konkreten Zahlen und Benchmarks", scores: { d_achievement: 5, d_autonomy: 2, d_influence: 1 } },
+                        { id: "q8_b", text: "Als Anregung, die ich selbst einordne", scores: { d_achievement: 2, d_autonomy: 5, d_influence: 1 } },
+                        { id: "q8_c", text: "Im persönlichen Gespräch auf Augenhöhe", scores: { d_achievement: 2, d_autonomy: 2, d_influence: 4 } },
+                        { id: "q8_d", text: "Regelmäßig und strukturiert", scores: { d_achievement: 3, d_autonomy: 1, d_influence: 3 } }
+                    ]
+                },
+                {
+                    id: "q9",
+                    text: "Dein Arbeitsstil ist eher...",
+                    options: [
+                        { id: "q9_a", text: "Sprint-basiert: Intensiv, dann erholen", scores: { d_achievement: 4, d_autonomy: 4, d_influence: 2 } },
+                        { id: "q9_b", text: "Flow-orientiert: Tiefe über Breite", scores: { d_achievement: 2, d_autonomy: 5, d_influence: 1 } },
+                        { id: "q9_c", text: "Kollaborativ: Im Austausch entstehen die besten Ideen", scores: { d_achievement: 2, d_autonomy: 1, d_influence: 5 } },
+                        { id: "q9_d", text: "Systematisch: Konstanter Rhythmus", scores: { d_achievement: 3, d_autonomy: 2, d_influence: 2 } }
+                    ]
+                },
+                {
+                    id: "q10",
+                    text: "Was würdest du am ehesten aufgeben?",
+                    options: [
+                        { id: "q10_a", text: "Work-Life-Balance für den großen Durchbruch", scores: { d_achievement: 5, d_autonomy: 2, d_influence: 3 } },
+                        { id: "q10_b", text: "Sicherheit für Unabhängigkeit", scores: { d_achievement: 2, d_autonomy: 5, d_influence: 2 } },
+                        { id: "q10_c", text: "Komfort für eine Führungsrolle", scores: { d_achievement: 3, d_autonomy: 1, d_influence: 5 } },
+                        { id: "q10_d", text: "Nichts davon – Balance ist essentiell", scores: { d_achievement: 2, d_autonomy: 3, d_influence: 2 } }
+                    ]
+                }
+            ],
+            
+            profiles: [
+                {
+                    id: "visionaer",
+                    title: "Der Visionär",
+                    tagline: "Du siehst die Zukunft, bevor andere sie erahnen.",
+                    emblem: "visionaer",
+                    description: "Deine Karriere-DNA ist geprägt von einem unerschütterlichen Drang, Großes zu erschaffen. Du kombinierst strategisches Denken mit der Kühnheit, eigene Wege zu gehen. Wo andere Risiken sehen, erkennst du Möglichkeiten. Deine größte Stärke liegt in deiner Fähigkeit, Menschen für deine Vision zu begeistern – ohne dabei deine Unabhängigkeit zu opfern.",
+                    traits: [
+                        { id: "trait.career.achievement", label: "Leistungsorientierung", baseScore: 85 },
+                        { id: "trait.career.autonomy", label: "Autonomie", baseScore: 82 },
+                        { id: "trait.career.influence", label: "Einfluss", baseScore: 70 }
+                    ],
+                    markers: [
+                        { id: "marker.career.high_achiever", weight: 0.85 },
+                        { id: "marker.career.autonomous", weight: 0.75 },
+                        { id: "marker.career.strategic_thinker", weight: 0.70 }
+                    ],
+                    tags: [
+                        { id: "tag.archetype.visionaer", label: "Visionär", kind: "archetype" },
+                        { id: "tag.style.strategic", label: "Strategisch", kind: "style" },
+                        { id: "tag.shadow.impatience", label: "Ungeduld", kind: "shadow" }
+                    ],
+                    unlock: { id: "unlock.crests.career_visionaer", level: 2 },
+                    compatibility: { allies: ["Architekt", "Katalysator"], nemesis: "Wächter" },
+                    careers: ["Gründer:in", "Strategieberatung", "Produktentwicklung", "Venture Capital"],
+                    matching: { d_achievement: { min: 35 }, d_autonomy: { min: 30 } }
+                },
+                {
+                    id: "architekt",
+                    title: "Der Architekt",
+                    tagline: "Du baust Systeme, die Bestand haben.",
+                    emblem: "architekt",
+                    description: "Präzision und Autonomie sind die Grundpfeiler deiner Karriere-DNA. Du hast ein Auge für das große Ganze und die Geduld, es Stück für Stück zu verwirklichen. In deiner idealen Welt arbeitest du konzentriert an komplexen Problemen – mit der Freiheit, deine eigenen Methoden zu wählen. Dein Vermächtnis sind Systeme und Strukturen, die auch ohne dich funktionieren.",
+                    traits: [
+                        { id: "trait.career.achievement", label: "Leistungsorientierung", baseScore: 72 },
+                        { id: "trait.career.autonomy", label: "Autonomie", baseScore: 88 },
+                        { id: "trait.career.influence", label: "Einfluss", baseScore: 55 }
+                    ],
+                    markers: [
+                        { id: "marker.career.autonomous", weight: 0.90 },
+                        { id: "marker.career.systematic", weight: 0.80 },
+                        { id: "marker.cognition.analytical", weight: 0.70 }
+                    ],
+                    tags: [
+                        { id: "tag.archetype.architekt", label: "Architekt", kind: "archetype" },
+                        { id: "tag.style.systematic", label: "Systematisch", kind: "style" },
+                        { id: "tag.shadow.perfectionism", label: "Perfektionismus", kind: "shadow" }
+                    ],
+                    unlock: { id: "unlock.crests.career_architekt", level: 2 },
+                    compatibility: { allies: ["Visionär", "Navigator"], nemesis: "Katalysator" },
+                    careers: ["Software-Architektur", "Wissenschaft", "Unternehmensberater", "Freiberufler"],
+                    matching: { d_autonomy: { min: 35 }, d_achievement: { min: 25 } }
+                },
+                {
+                    id: "katalysator",
+                    title: "Der Katalysator",
+                    tagline: "Du entfachst Potenzial in Menschen und Organisationen.",
+                    emblem: "katalysator",
+                    description: "Deine Karriere-DNA ist von Einfluss und Verbindung geprägt. Du weißt, dass die größten Erfolge durch Menschen entstehen – und du hast das Talent, sie zu inspirieren und zusammenzubringen. Deine Energie ist ansteckend, dein Netzwerk ist dein Kapital. Du führst nicht durch Titel, sondern durch Überzeugung.",
+                    traits: [
+                        { id: "trait.career.achievement", label: "Leistungsorientierung", baseScore: 68 },
+                        { id: "trait.career.autonomy", label: "Autonomie", baseScore: 52 },
+                        { id: "trait.career.influence", label: "Einfluss", baseScore: 90 }
+                    ],
+                    markers: [
+                        { id: "marker.career.influencer", weight: 0.90 },
+                        { id: "marker.social.extroversion", weight: 0.75 },
+                        { id: "marker.career.collaborative", weight: 0.80 }
+                    ],
+                    tags: [
+                        { id: "tag.archetype.katalysator", label: "Katalysator", kind: "archetype" },
+                        { id: "tag.style.collaborative", label: "Kollaborativ", kind: "style" },
+                        { id: "tag.shadow.approval_seeking", label: "Anerkennungssuche", kind: "shadow" }
+                    ],
+                    unlock: { id: "unlock.crests.career_katalysator", level: 2 },
+                    compatibility: { allies: ["Visionär", "Wächter"], nemesis: "Architekt" },
+                    careers: ["Führungskraft", "HR Leadership", "Community Building", "Vertrieb"],
+                    matching: { d_influence: { min: 35 } }
+                },
+                {
+                    id: "navigator",
+                    title: "Der Navigator",
+                    tagline: "Du findest den Weg, auch wenn die Karte fehlt.",
+                    emblem: "navigator",
+                    description: "Deine Karriere-DNA vereint das Beste aus allen Welten. Du bist anpassungsfähig, ohne beliebig zu sein. Du verstehst es, zwischen Ambitionen, Teamdynamik und persönlicher Freiheit zu balancieren. In komplexen Situationen behältst du den Überblick und findest pragmatische Lösungen, die alle voranbringen.",
+                    traits: [
+                        { id: "trait.career.achievement", label: "Leistungsorientierung", baseScore: 65 },
+                        { id: "trait.career.autonomy", label: "Autonomie", baseScore: 68 },
+                        { id: "trait.career.influence", label: "Einfluss", baseScore: 65 }
+                    ],
+                    markers: [
+                        { id: "marker.career.adaptable", weight: 0.80 },
+                        { id: "marker.cognition.pragmatic", weight: 0.75 },
+                        { id: "marker.career.balanced", weight: 0.70 }
+                    ],
+                    tags: [
+                        { id: "tag.archetype.navigator", label: "Navigator", kind: "archetype" },
+                        { id: "tag.style.adaptable", label: "Anpassungsfähig", kind: "style" },
+                        { id: "tag.shadow.indecision", label: "Unentschlossenheit", kind: "shadow" }
+                    ],
+                    unlock: { id: "unlock.crests.career_navigator", level: 1 },
+                    compatibility: { allies: ["Architekt", "Wächter"], nemesis: "Visionär" },
+                    careers: ["Projektmanagement", "Consulting", "Produktmanagement", "Operations"],
+                    matching: { d_achievement: { min: 20, max: 35 }, d_autonomy: { min: 20, max: 35 }, d_influence: { min: 20, max: 35 } }
+                },
+                {
+                    id: "waechter",
+                    title: "Der Wächter",
+                    tagline: "Du sicherst, was andere aufbauen.",
+                    emblem: "waechter",
+                    description: "Deine Karriere-DNA ist von Verlässlichkeit und Tiefe geprägt. Während andere dem nächsten Trend hinterherjagen, schaffst du bleibende Werte durch Beständigkeit und Expertise. Du bist der Anker in jedem Team – derjenige, auf den man sich verlassen kann, wenn es darauf ankommt. Deine Stärke liegt im bewussten Verzicht auf schnelle Erfolge zugunsten nachhaltiger Wirkung.",
+                    traits: [
+                        { id: "trait.career.achievement", label: "Leistungsorientierung", baseScore: 55 },
+                        { id: "trait.career.autonomy", label: "Autonomie", baseScore: 50 },
+                        { id: "trait.career.influence", label: "Einfluss", baseScore: 58 }
+                    ],
+                    markers: [
+                        { id: "marker.career.reliable", weight: 0.85 },
+                        { id: "marker.career.expert", weight: 0.80 },
+                        { id: "marker.cognition.detail_oriented", weight: 0.75 }
+                    ],
+                    tags: [
+                        { id: "tag.archetype.waechter", label: "Wächter", kind: "archetype" },
+                        { id: "tag.style.thorough", label: "Gründlich", kind: "style" },
+                        { id: "tag.shadow.risk_aversion", label: "Risikoscheu", kind: "shadow" }
+                    ],
+                    unlock: { id: "unlock.crests.career_waechter", level: 1 },
+                    compatibility: { allies: ["Katalysator", "Navigator"], nemesis: "Visionär" },
+                    careers: ["Qualitätssicherung", "Compliance", "Finanzwesen", "Fachspezialist"],
+                    matching: { d_achievement: { max: 28 }, d_autonomy: { max: 28 } }
+                }
+            ],
+
+            share_config: {
+                card_format: "9:16",
+                include_compatibility: true,
+                cta_text: "Finde heraus, welcher Karriere-Typ du bist!"
+            }
+        };
+
+        // Emblems SVG
+        const emblems = {
+            visionaer: `<svg viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="28" stroke="#D2A95A" stroke-width="1"/><path d="M30 10 L35 25 L50 25 L38 35 L42 50 L30 40 L18 50 L22 35 L10 25 L25 25 Z" fill="#D2A95A" opacity="0.8"/><circle cx="30" cy="28" r="6" stroke="#D2A95A" stroke-width="2" fill="none"/></svg>`,
+            architekt: `<svg viewBox="0 0 60 60" fill="none"><rect x="10" y="10" width="40" height="40" stroke="#D2A95A" stroke-width="1" fill="none"/><path d="M15 45 L30 20 L45 45" stroke="#D2A95A" stroke-width="2" fill="none"/><line x1="20" y1="37" x2="40" y2="37" stroke="#D2A95A" stroke-width="1.5"/><line x1="25" y1="30" x2="35" y2="30" stroke="#D2A95A" stroke-width="1.5"/></svg>`,
+            katalysator: `<svg viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="10" stroke="#D2A95A" stroke-width="2"/><circle cx="15" cy="20" r="6" stroke="#D2A95A" stroke-width="1.5" fill="none"/><circle cx="45" cy="20" r="6" stroke="#D2A95A" stroke-width="1.5" fill="none"/><circle cx="15" cy="42" r="6" stroke="#D2A95A" stroke-width="1.5" fill="none"/><circle cx="45" cy="42" r="6" stroke="#D2A95A" stroke-width="1.5" fill="none"/><path d="M20 23 L24 27 M36 27 L40 23 M20 39 L24 33 M36 33 L40 39" stroke="#D2A95A" stroke-width="1"/></svg>`,
+            navigator: `<svg viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="25" stroke="#D2A95A" stroke-width="1"/><path d="M30 8 L33 30 L30 52 L27 30 Z" fill="#D2A95A" opacity="0.6"/><path d="M8 30 L30 27 L52 30 L30 33 Z" fill="#D2A95A" opacity="0.4"/><circle cx="30" cy="30" r="4" fill="#D2A95A"/></svg>`,
+            waechter: `<svg viewBox="0 0 60 60" fill="none"><path d="M30 5 L50 15 L50 35 C50 45 40 52 30 55 C20 52 10 45 10 35 L10 15 Z" stroke="#D2A95A" stroke-width="2" fill="none"/><path d="M25 30 L28 33 L35 25" stroke="#D2A95A" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`
+        };
+
+        // State
+        let currentQuestion = 0;
+        let scores = { d_achievement: 0, d_autonomy: 0, d_influence: 0 };
+        let selectedAnswers = [];
+
+        // Helper: Generate UUID
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+                const r = Math.random() * 16 | 0;
+                return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+            });
+        }
+
+        // Helper: Score to Band (0-100 -> 5 Bands)
+        function scoreToBand(score) {
+            if (score <= 20) return "low";
+            if (score <= 40) return "midlow";
+            if (score <= 60) return "mid";
+            if (score <= 80) return "midhigh";
+            return "high";
+        }
+
+        // Helper: Raw score to 1-100 normalized
+        function normalizeScore(rawScore, maxPossible) {
+            return Math.round(Math.max(1, Math.min(100, (rawScore / maxPossible) * 100)));
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function startQuiz() {
+            currentQuestion = 0;
+            scores = { d_achievement: 0, d_autonomy: 0, d_influence: 0 };
+            selectedAnswers = [];
+            showScreen('quiz');
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const question = quizData.questions[currentQuestion];
+            const total = quizData.questions.length;
+            const progress = ((currentQuestion) / total) * 100;
+            
+            document.getElementById('progress-fill').style.width = `${progress}%`;
+            document.getElementById('progress-current').textContent = `${currentQuestion + 1} / ${total}`;
+            document.getElementById('progress-percent').textContent = `${Math.round(progress)}%`;
+            document.getElementById('question-number').textContent = `FRAGE ${String(currentQuestion + 1).padStart(2, '0')}`;
+            document.getElementById('question-text').textContent = question.text;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = question.options.map(option => `
+                <button class="option-btn" onclick="selectOption('${option.id}', ${JSON.stringify(option.scores).replace(/"/g, '&quot;')})">
+                    ${option.text}
+                </button>
+            `).join('');
+        }
+
+        function selectOption(optionId, optionScores) {
+            Object.entries(optionScores).forEach(([dimension, score]) => {
+                scores[dimension] += score;
+            });
+            
+            selectedAnswers.push(optionId);
+            
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            event.target.classList.add('selected');
+            
+            setTimeout(() => {
+                if (currentQuestion < quizData.questions.length - 1) {
+                    currentQuestion++;
+                    renderQuestion();
+                } else {
+                    showLoading();
+                }
+            }, 300);
+        }
+
+        function showLoading() {
+            showScreen('loading');
+            setTimeout(() => {
+                const result = calculateResult();
+                renderResult(result.profile, result.contributionEvent);
+                showScreen('result');
+            }, 2500);
+        }
+
+        function calculateResult() {
+            // Max possible per dimension (10 questions × max 5 points)
+            const maxPossible = 50;
+            
+            // Normalize scores to 1-100
+            const normalizedScores = {
+                d_achievement: normalizeScore(scores.d_achievement, maxPossible),
+                d_autonomy: normalizeScore(scores.d_autonomy, maxPossible),
+                d_influence: normalizeScore(scores.d_influence, maxPossible)
+            };
+
+            // Find best matching profile
+            let bestMatch = null;
+            let bestScore = -1;
+            
+            quizData.profiles.forEach(profile => {
+                let matchScore = 0;
+                const m = profile.matching;
+                
+                Object.entries(m).forEach(([dim, criteria]) => {
+                    const rawScore = scores[dim];
+                    if (criteria.min !== undefined && rawScore >= criteria.min) matchScore += 2;
+                    if (criteria.max !== undefined && rawScore <= criteria.max) matchScore += 2;
+                    if (criteria.min === undefined && criteria.max !== undefined && rawScore <= criteria.max) matchScore += 1;
+                    if (criteria.max === undefined && criteria.min !== undefined && rawScore >= criteria.min) matchScore += 1;
+                });
+                
+                if (matchScore > bestScore) {
+                    bestScore = matchScore;
+                    bestMatch = profile;
+                }
+            });
+
+            // Fallback logic
+            if (!bestMatch || bestScore < 2) {
+                if (scores.d_achievement >= 35 && scores.d_autonomy >= 30) {
+                    bestMatch = quizData.profiles.find(p => p.id === 'visionaer');
+                } else if (scores.d_influence >= 35) {
+                    bestMatch = quizData.profiles.find(p => p.id === 'katalysator');
+                } else if (scores.d_autonomy >= 35) {
+                    bestMatch = quizData.profiles.find(p => p.id === 'architekt');
+                } else if (scores.d_achievement <= 25 && scores.d_autonomy <= 25) {
+                    bestMatch = quizData.profiles.find(p => p.id === 'waechter');
+                } else {
+                    bestMatch = quizData.profiles.find(p => p.id === 'navigator');
+                }
+            }
+
+            // Build ContributionEvent (sp.contribution.v1)
+            const contributionEvent = buildContributionEvent(bestMatch, normalizedScores);
+
+            return { profile: bestMatch, contributionEvent };
+        }
+
+        // ============================================================
+        // BUILD CONTRIBUTION EVENT - Pipeline Spec: sp.contribution.v1
+        // ============================================================
+        function buildContributionEvent(profile, normalizedScores) {
+            const now = new Date().toISOString();
+            
+            // Calculate confidence based on answer consistency
+            const confidence = Math.min(0.95, 0.6 + (selectedAnswers.length / quizData.questions.length) * 0.35);
+
+            // Build traits array from normalized scores
+            const traits = quizData.dimensions.map(dim => ({
+                id: dim.traitId,
+                score: normalizedScores[dim.id],
+                band: scoreToBand(normalizedScores[dim.id]),
+                confidence: confidence,
+                method: "forced_choice"
+            }));
+
+            // Build markers from profile + calculated weights
+            const markers = profile.markers.map(m => ({
+                id: m.id,
+                weight: Math.min(1, m.weight * (confidence + 0.1)),
+                evidence: {
+                    itemsAnswered: selectedAnswers.length,
+                    confidence: confidence
+                }
+            }));
+
+            // Build tags
+            const tags = profile.tags.map(t => ({
+                id: t.id,
+                label: t.label,
+                kind: t.kind,
+                weight: t.kind === "archetype" ? 1.0 : 0.7
+            }));
+
+            // Build unlock
+            const unlocks = [{
+                id: profile.unlock.id,
+                unlocked: true,
+                unlockedAt: now,
+                level: profile.unlock.level,
+                sourceRef: quizData.meta.id
+            }];
+
+            // Assemble the ContributionEvent
+            const event = {
+                specVersion: "sp.contribution.v1",
+                eventId: generateUUID(),
+                occurredAt: now,
+                source: {
+                    vertical: "quiz",
+                    moduleId: quizData.meta.id,
+                    domain: window.location.hostname || "quiz.quizzme.app",
+                    locale: quizData.meta.locale,
+                    build: "1.0.0"
+                },
+                payload: {
+                    markers: markers,
+                    traits: traits,
+                    tags: tags,
+                    unlocks: unlocks,
+                    summary: {
+                        title: profile.title,
+                        bullets: [
+                            profile.tagline,
+                            `Leistung: ${normalizedScores.d_achievement}%`,
+                            `Autonomie: ${normalizedScores.d_autonomy}%`,
+                            `Einfluss: ${normalizedScores.d_influence}%`
+                        ],
+                        resultId: profile.id
+                    },
+                    debug: {
+                        rawAnswersHash: btoa(selectedAnswers.join(',')).slice(0, 16),
+                        rawScores: { ...scores }
+                    }
+                }
+            };
+
+            // Emit event (for pipeline integration)
+            emitContributionEvent(event);
+
+            return event;
+        }
+
+        // ============================================================
+        // EMIT CONTRIBUTION EVENT - Integration Point
+        // ============================================================
+        function emitContributionEvent(event) {
+            // 1. Store in localStorage for persistence
+            const storageKey = 'quizzme_contributions';
+            const existing = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            existing.push(event);
+            localStorage.setItem(storageKey, JSON.stringify(existing.slice(-50))); // Keep last 50
+
+            // 2. Dispatch CustomEvent for SPA integration
+            window.dispatchEvent(new CustomEvent('quizzme:contribution', {
+                detail: event,
+                bubbles: true
+            }));
+
+            // 3. PostMessage for iframe/cross-domain integration
+            if (window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'QUIZZME_CONTRIBUTION',
+                    payload: event
+                }, '*');
+            }
+
+            // 4. Console log for debugging
+            console.log('[QuizzMe] ContributionEvent emitted:', event);
+
+            // 5. Optional: Send to backend API
+            // fetch('/api/contributions', { method: 'POST', body: JSON.stringify(event) });
+        }
+
+        // ============================================================
+        // RENDER RESULT
+        // ============================================================
+        function renderResult(profile, contributionEvent) {
+            const traits = contributionEvent.payload.traits;
+            const tags = contributionEvent.payload.tags;
+            const unlock = contributionEvent.payload.unlocks[0];
+            
+            const card = document.getElementById('result-card');
+            
+            card.innerHTML = `
+                <div class="card-header">
+                    <span class="result-badge">Dein Karriere-Code</span>
+                    <div class="profile-emblem">${emblems[profile.emblem]}</div>
+                    <h1 class="profile-title">${profile.title}</h1>
+                    <p class="profile-tagline">${profile.tagline}</p>
+                </div>
+                
+                <div class="card-body">
+                    <p class="profile-description">${profile.description}</p>
+                    
+                    <!-- Unlock Badge -->
+                    <div class="unlock-section">
+                        <div class="unlock-badge">
+                            <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                            <span class="unlock-text">Wappen freigeschaltet: Level ${unlock.level}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Trait Scores -->
+                    <div class="traits-section">
+                        <div class="section-title">Deine DNA-Werte</div>
+                        ${traits.map((trait, i) => `
+                            <div class="trait-row">
+                                <div class="trait-icon">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        ${i === 0 ? '<path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>' : 
+                                          i === 1 ? '<circle cx="12" cy="12" r="10"/>' : 
+                                          '<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>'}
+                                    </svg>
+                                </div>
+                                <div class="trait-content">
+                                    <div class="trait-label">${trait.id.split('.').pop().replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>
+                                    <div class="trait-bar-container">
+                                        <div class="trait-bar">
+                                            <div class="trait-bar-fill ${['gold', 'sage', 'teal'][i]}" style="width: 0%"></div>
+                                        </div>
+                                        <span class="trait-score">${trait.score}<span class="trait-band">${trait.band}</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <!-- Tags -->
+                    <div class="tags-section">
+                        <div class="section-title">Deine Marker</div>
+                        <div class="tags-container">
+                            ${tags.map(tag => `<span class="tag ${tag.kind}">${tag.label}</span>`).join('')}
+                        </div>
+                    </div>
+                    
+                    <!-- Compatibility -->
+                    <div class="compatibility-section">
+                        <div class="section-title">Kompatibilität</div>
+                        <div class="compat-row">
+                            <div class="compat-icon">
+                                <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                            </div>
+                            <div class="compat-content">
+                                <div class="compat-label">Verbündete</div>
+                                <div class="compat-value">${profile.compatibility.allies.join(' & ')}</div>
+                            </div>
+                        </div>
+                        <div class="compat-row">
+                            <div class="compat-icon">
+                                <svg viewBox="0 0 24 24"><path d="M12 2v20M2 12h20"/></svg>
+                            </div>
+                            <div class="compat-content">
+                                <div class="compat-label">Herausforderung</div>
+                                <div class="compat-value">${profile.compatibility.nemesis}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Careers -->
+                    <div class="careers-section">
+                        <div class="section-title">Karrierepfade</div>
+                        <div class="career-tags">
+                            ${profile.careers.map(c => `<span class="career-tag">${c}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="share-section">
+                    <p class="share-text">Teile deinen Karriere-Code</p>
+                    <div class="share-buttons">
+                        <button class="share-btn" onclick="copyResult('${profile.title}', '${profile.tagline}')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                            Kopieren
+                        </button>
+                        <button class="share-btn" onclick="shareNative('${profile.title}', '${profile.tagline}')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+                            Teilen
+                        </button>
+                        <button class="share-btn" onclick="toggleDebug()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                            Debug
+                        </button>
+                    </div>
+                    <button class="restart-btn" onclick="startQuiz()">Nochmal entschlüsseln</button>
+                </div>
+            `;
+
+            // Store event for debug view
+            window._lastContributionEvent = contributionEvent;
+
+            // Animate trait bars
+            setTimeout(() => {
+                traits.forEach((trait, index) => {
+                    setTimeout(() => {
+                        const bars = document.querySelectorAll('.trait-bar-fill');
+                        if (bars[index]) {
+                            bars[index].style.width = `${trait.score}%`;
+                        }
+                    }, index * 200);
+                });
+            }, 400);
+        }
+
+        function toggleDebug() {
+            const debugDiv = document.getElementById('pipeline-debug');
+            debugDiv.classList.toggle('visible');
+            if (debugDiv.classList.contains('visible') && window._lastContributionEvent) {
+                debugDiv.innerHTML = `<strong>ContributionEvent (sp.contribution.v1):</strong>\n\n${JSON.stringify(window._lastContributionEvent, null, 2)}`;
+            }
+        }
+
+        function copyResult(title, tagline) {
+            const text = `🧬 Meine Karriere-DNA: ${title}\n\n„${tagline}"\n\nEntdecke deinen Karriere-Code: ${window.location.href}`;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('In die Zwischenablage kopiert!');
+            });
+        }
+
+        function shareNative(title, tagline) {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Meine Karriere-DNA | QuizzMe',
+                    text: `🧬 ${title} – „${tagline}"`,
+                    url: window.location.href
+                });
+            } else {
+                copyResult(title, tagline);
+            }
+        }
+    </script>
+</body>
+</html>

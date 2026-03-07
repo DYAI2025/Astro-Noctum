@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Symbols - Final Selection</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(to bottom, rgb(2, 6, 23), rgb(15, 23, 42));
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: rgb(248, 250, 252);
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      background: linear-gradient(to right, rgb(252, 211, 77), rgb(236, 72, 153), rgb(168, 85, 247));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: rgb(148, 163, 184);
+      margin-bottom: 3rem;
+      font-size: 1.1rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-bottom: 4rem;
+    }
+
+    .card {
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(148, 163, 184, 0.4);
+    }
+
+    .card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      color: rgb(226, 232, 240);
+    }
+
+    .symbol-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 200px;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .symbol-container img {
+      width: 160px;
+      height: 160px;
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover .symbol-container img {
+      transform: scale(1.1);
+    }
+
+    .description {
+      color: rgb(148, 163, 184);
+      line-height: 1.6;
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+    }
+
+    .source-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-top: 0.5rem;
+      background: rgba(34, 197, 94, 0.2);
+      color: rgb(134, 239, 172);
+      border: 1px solid rgba(34, 197, 94, 0.4);
+    }
+
+    .source-badge.mixed {
+      background: rgba(59, 130, 246, 0.2);
+      color: rgb(147, 197, 253);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+    }
+
+    .color-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-top: 0.5rem;
+      margin-left: 0.5rem;
+    }
+
+    .love .color-badge {
+      background: rgba(255, 200, 150, 0.2);
+      color: rgb(255, 220, 180);
+      border: 1px solid rgba(255, 200, 150, 0.4);
+    }
+
+    .social .color-badge {
+      background: rgba(59, 130, 246, 0.2);
+      color: rgb(147, 197, 253);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+    }
+
+    .rpg .color-badge {
+      background: rgba(168, 85, 247, 0.2);
+      color: rgb(216, 180, 254);
+      border: 1px solid rgba(168, 85, 247, 0.4);
+    }
+
+    .personality .color-badge {
+      background: rgba(16, 185, 129, 0.2);
+      color: rgb(110, 231, 183);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .celebrity .color-badge {
+      background: rgba(236, 72, 153, 0.2);
+      color: rgb(251, 207, 232);
+      border: 1px solid rgba(236, 72, 153, 0.4);
+    }
+
+    .destiny .color-badge {
+      background: rgba(251, 191, 36, 0.2);
+      color: rgb(252, 211, 77);
+      border: 1px solid rgba(251, 191, 36, 0.4);
+    }
+
+    .info-section {
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .info-section h3 {
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+      color: rgb(226, 232, 240);
+    }
+
+    .info-section ul {
+      list-style: none;
+      color: rgb(148, 163, 184);
+      line-height: 1.8;
+    }
+
+    .info-section li::before {
+      content: "✓ ";
+      color: rgb(34, 197, 94);
+      font-weight: bold;
+      margin-right: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Quiz Symbols - Finale Auswahl</h1>
+    <p class="subtitle">Kombination aus Claude v2 & assets-claude1</p>
+
+    <div class="info-section">
+      <h3>Symbol-Quellen</h3>
+      <ul>
+        <li><strong>Love Languages, Social Role, RPG Identity:</strong> Claude v2 (cosmic/detailed style)</li>
+        <li><strong>Personality, Celebrity, Destiny:</strong> assets-claude1 (ethereal line style) mit starken Glows</li>
+        <li>Alle Symbole: 128x128 viewBox, 3-4x stärkere Glows via Multi-Layer Filter</li>
+      </ul>
+    </div>
+
+    <div class="grid">
+      <!-- Love Languages - Claude v2 -->
+      <div class="card love">
+        <h2>Love Languages</h2>
+        <div class="symbol-container">
+          <img src="love-languages-symbol-v2.svg" alt="Love Languages Symbol">
+        </div>
+        <p class="description">
+          Cosmic heart nebula mit gefülltem Gradient-Core, energy waves, und inner sparkles.
+        </p>
+        <div class="source-badge">Claude v2</div>
+        <div class="color-badge">Rosa-Gold</div>
+      </div>
+
+      <!-- Social Role - Claude v2 -->
+      <div class="card social">
+        <h2>Social Role</h2>
+        <div class="symbol-container">
+          <img src="social-role-symbol-v2.svg" alt="Social Role Symbol">
+        </div>
+        <p class="description">
+          Astro wheel mit spiral galaxy center, 12 cardinal points, und orbital rings.
+        </p>
+        <div class="source-badge">Claude v2</div>
+        <div class="color-badge">Königsblau</div>
+      </div>
+
+      <!-- RPG Identity - Claude v2 -->
+      <div class="card rpg">
+        <h2>RPG Identity</h2>
+        <div class="symbol-container">
+          <img src="rpg-identity-symbol-v2.svg" alt="RPG Identity Symbol">
+        </div>
+        <p class="description">
+          Energy weapon (sword) mit branching lightning bolts, particles, und crystal pommel.
+        </p>
+        <div class="source-badge">Claude v2</div>
+        <div class="color-badge">Violett</div>
+      </div>
+
+      <!-- Personality - assets-claude1 + v2 glows -->
+      <div class="card personality">
+        <h2>Personality</h2>
+        <div class="symbol-container">
+          <img src="personality-symbol-v2.svg" alt="Personality Symbol">
+        </div>
+        <p class="description">
+          Atom mit drei orbital ellipses und central nucleus - Wissenschaft/Persönlichkeit Symbolik.
+        </p>
+        <div class="source-badge mixed">assets-claude1 + v2 glows</div>
+        <div class="color-badge">Smaragdgrün</div>
+      </div>
+
+      <!-- Celebrity Soulmate - assets-claude1 + v2 glows -->
+      <div class="card celebrity">
+        <h2>Celebrity Soulmate</h2>
+        <div class="symbol-container">
+          <img src="celebrity-soulmate-symbol-v2.svg" alt="Celebrity Soulmate Symbol">
+        </div>
+        <p class="description">
+          Five-pointed star - klassisches Symbol für Fame, Stars, und Celebrity Status.
+        </p>
+        <div class="source-badge mixed">assets-claude1 + v2 glows</div>
+        <div class="color-badge">Magenta</div>
+      </div>
+
+      <!-- Destiny - assets-claude1 + v2 glows -->
+      <div class="card destiny">
+        <h2>Destiny</h2>
+        <div class="symbol-container">
+          <img src="destiny-symbol-v2.svg" alt="Destiny Symbol">
+        </div>
+        <p class="description">
+          Portal mit drei concentric ellipses - Gateway zur Zukunft und zum Schicksal.
+        </p>
+        <div class="source-badge mixed">assets-claude1 + v2 glows</div>
+        <div class="color-badge">Gold/Amber</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

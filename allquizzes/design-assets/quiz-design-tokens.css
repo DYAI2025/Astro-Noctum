@@ -1,0 +1,298 @@
+/**
+ * Quiz Vertical - Design Tokens
+ * Glowing Outlines Brand Identity
+ *
+ * Verwendung:
+ * - Alle Quiz-Symbole nutzen diese Tokens
+ * - Glow-Intensitäten: subtle (default) → medium (hover) → strong (CTA pulse)
+ * - Farben sind RGB-Tupel für rgba() Verwendung
+ */
+
+:root {
+  /* ============================================
+     BASE COLORS - Outline & Background
+     ============================================ */
+
+  /* Basis-Outline für alle Symbole (helles Weiß) */
+  --quiz-outline-base: rgb(248, 250, 252); /* slate-50 */
+  --quiz-outline-width: 2px;
+  --quiz-outline-width-thick: 2.5px;
+  --quiz-outline-width-thin: 1.5px;
+
+  /* Dark background (bleibt bestehen) */
+  --quiz-bg-dark: rgb(2, 6, 23); /* slate-950 */
+
+  /* ============================================
+     GLOW COLORS per Quiz-Typ (RGB-Tupel)
+     ============================================ */
+
+  /* Love Languages - Warmes Rosa-Gold */
+  --quiz-glow-love-r: 255;
+  --quiz-glow-love-g: 200;
+  --quiz-glow-love-b: 150;
+  --quiz-glow-love: rgb(var(--quiz-glow-love-r), var(--quiz-glow-love-g), var(--quiz-glow-love-b));
+
+  /* Social Role - Königsblau */
+  --quiz-glow-social-r: 59;
+  --quiz-glow-social-g: 130;
+  --quiz-glow-social-b: 246;
+  --quiz-glow-social: rgb(var(--quiz-glow-social-r), var(--quiz-glow-social-g), var(--quiz-glow-social-b));
+
+  /* RPG Identity - Mystisches Violett */
+  --quiz-glow-rpg-r: 168;
+  --quiz-glow-rpg-g: 85;
+  --quiz-glow-rpg-b: 247;
+  --quiz-glow-rpg: rgb(var(--quiz-glow-rpg-r), var(--quiz-glow-rpg-g), var(--quiz-glow-rpg-b));
+
+  /* Personality - Smaragdgrün */
+  --quiz-glow-personality-r: 16;
+  --quiz-glow-personality-g: 185;
+  --quiz-glow-personality-b: 129;
+  --quiz-glow-personality: rgb(var(--quiz-glow-personality-r), var(--quiz-glow-personality-g), var(--quiz-glow-personality-b));
+
+  /* Celebrity Soulmate - Magenta */
+  --quiz-glow-celebrity-r: 236;
+  --quiz-glow-celebrity-g: 72;
+  --quiz-glow-celebrity-b: 153;
+  --quiz-glow-celebrity: rgb(var(--quiz-glow-celebrity-r), var(--quiz-glow-celebrity-g), var(--quiz-glow-celebrity-b));
+
+  /* Destiny - Gold/Amber */
+  --quiz-glow-destiny-r: 251;
+  --quiz-glow-destiny-g: 191;
+  --quiz-glow-destiny-b: 36;
+  --quiz-glow-destiny: rgb(var(--quiz-glow-destiny-r), var(--quiz-glow-destiny-g), var(--quiz-glow-destiny-b));
+
+  /* ============================================
+     GLOW INTENSITY PRESETS
+     ============================================ */
+
+  /* Subtle Glow (Default state) - 3-4x stronger than v1 */
+  --glow-blur-subtle: 12px;
+  --glow-opacity-subtle: 0.7;
+
+  /* Medium Glow (Hover state) - increased intensity */
+  --glow-blur-medium: 20px;
+  --glow-opacity-medium: 0.8;
+
+  /* Strong Glow (CTA/Important elements) - maximum visibility */
+  --glow-blur-strong: 32px;
+  --glow-opacity-strong: 0.9;
+
+  /* Extra Strong (only for pulsing CTAs) - cosmic intensity */
+  --glow-blur-extra: 48px;
+  --glow-opacity-extra: 0.95;
+
+  /* ============================================
+     GLOW EFFECT UTILITIES
+     ============================================ */
+
+  /* Single layer glow - für subtile Effekte */
+  --glow-single: 0 0 var(--glow-blur-subtle) rgba(var(--glow-r), var(--glow-g), var(--glow-b), var(--glow-opacity-subtle));
+
+  /* Double layer glow - standard für Symbole */
+  --glow-double:
+    0 0 var(--glow-blur-subtle) rgba(var(--glow-r), var(--glow-g), var(--glow-b), var(--glow-opacity-medium)),
+    0 0 calc(var(--glow-blur-subtle) * 2) rgba(var(--glow-r), var(--glow-g), var(--glow-b), var(--glow-opacity-subtle));
+
+  /* Triple layer glow - für Hover */
+  --glow-triple:
+    0 0 var(--glow-blur-medium) rgba(var(--glow-r), var(--glow-g), var(--glow-b), var(--glow-opacity-strong)),
+    0 0 var(--glow-blur-strong) rgba(var(--glow-r), var(--glow-g), var(--glow-b), var(--glow-opacity-medium)),
+    0 0 var(--glow-blur-extra) rgba(var(--glow-r), var(--glow-g), var(--glow-b), 0.2);
+
+  /* ============================================
+     SIZE PRESETS für Symbole
+     ============================================ */
+
+  --quiz-symbol-size-small: 20px;   /* Headers, Progress */
+  --quiz-symbol-size-medium: 40px;  /* Cards Mobile */
+  --quiz-symbol-size-large: 64px;   /* Cards Desktop */
+  --quiz-symbol-size-hero: 96px;    /* Optional: Sehr große Darstellung */
+
+  /* ============================================
+     ANIMATION DURATIONS
+     ============================================ */
+
+  --glow-transition-duration: 300ms;
+  --glow-pulse-duration: 2000ms;
+  --glow-pulse-easing: cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+/* ============================================
+   COMPONENT CLASSES - Quiz Symbol Variants
+   ============================================ */
+
+/* Base class für alle Quiz-Symbole */
+.quiz-symbol {
+  display: inline-block;
+  position: relative;
+  transition: filter var(--glow-transition-duration) ease;
+}
+
+.quiz-symbol svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ============================================
+   SIZE VARIANTS
+   ============================================ */
+
+.quiz-symbol--small {
+  width: var(--quiz-symbol-size-small);
+  height: var(--quiz-symbol-size-small);
+}
+
+.quiz-symbol--medium {
+  width: var(--quiz-symbol-size-medium);
+  height: var(--quiz-symbol-size-medium);
+}
+
+.quiz-symbol--large {
+  width: var(--quiz-symbol-size-large);
+  height: var(--quiz-symbol-size-large);
+}
+
+.quiz-symbol--hero {
+  width: var(--quiz-symbol-size-hero);
+  height: var(--quiz-symbol-size-hero);
+}
+
+/* ============================================
+   GLOW VARIANTS per Quiz-Typ
+   ============================================ */
+
+/* Love Languages */
+.quiz-symbol--love {
+  --glow-r: var(--quiz-glow-love-r);
+  --glow-g: var(--quiz-glow-love-g);
+  --glow-b: var(--quiz-glow-love-b);
+}
+
+/* Social Role */
+.quiz-symbol--social-role {
+  --glow-r: var(--quiz-glow-social-r);
+  --glow-g: var(--quiz-glow-social-g);
+  --glow-b: var(--quiz-glow-social-b);
+}
+
+/* RPG Identity */
+.quiz-symbol--rpg {
+  --glow-r: var(--quiz-glow-rpg-r);
+  --glow-g: var(--quiz-glow-rpg-g);
+  --glow-b: var(--quiz-glow-rpg-b);
+}
+
+/* Personality */
+.quiz-symbol--personality {
+  --glow-r: var(--quiz-glow-personality-r);
+  --glow-g: var(--quiz-glow-personality-g);
+  --glow-b: var(--quiz-glow-personality-b);
+}
+
+/* Celebrity Soulmate */
+.quiz-symbol--celebrity {
+  --glow-r: var(--quiz-glow-celebrity-r);
+  --glow-g: var(--quiz-glow-celebrity-g);
+  --glow-b: var(--quiz-glow-celebrity-b);
+}
+
+/* Destiny */
+.quiz-symbol--destiny {
+  --glow-r: var(--quiz-glow-destiny-r);
+  --glow-g: var(--quiz-glow-destiny-g);
+  --glow-b: var(--quiz-glow-destiny-b);
+}
+
+/* ============================================
+   INTERACTIVE STATES
+   ============================================ */
+
+/* Default state - subtle glow */
+.quiz-symbol--default {
+  filter: drop-shadow(var(--glow-double));
+}
+
+/* Muted variant für Headers */
+.quiz-symbol--muted {
+  filter: drop-shadow(var(--glow-single));
+  opacity: 0.8;
+}
+
+/* Hover state - stronger glow */
+.quiz-symbol--default:hover,
+.quiz-symbol--interactive:hover {
+  filter: drop-shadow(var(--glow-triple));
+}
+
+/* CTA variant mit Puls-Animation */
+.quiz-symbol--cta {
+  filter: drop-shadow(var(--glow-double));
+  animation: quiz-symbol-pulse var(--glow-pulse-duration) var(--glow-pulse-easing) infinite;
+}
+
+@keyframes quiz-symbol-pulse {
+  0%, 100% {
+    filter: drop-shadow(var(--glow-double));
+  }
+  50% {
+    filter: drop-shadow(var(--glow-triple));
+  }
+}
+
+/* Pulsierender CTA nur auf Hover */
+.quiz-symbol--cta-hover:hover {
+  animation: quiz-symbol-pulse-fast 1000ms ease-in-out infinite;
+}
+
+@keyframes quiz-symbol-pulse-fast {
+  0%, 100% {
+    filter: drop-shadow(var(--glow-double));
+  }
+  50% {
+    filter: drop-shadow(var(--glow-triple));
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY & REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .quiz-symbol--cta,
+  .quiz-symbol--cta-hover:hover {
+    animation: none;
+  }
+
+  .quiz-symbol {
+    transition: none;
+  }
+}
+
+/* ============================================
+   USAGE EXAMPLES (als Kommentare)
+   ============================================ */
+
+/*
+Example 1 - Large Love Languages Symbol on Card:
+
+<div class="quiz-symbol quiz-symbol--large quiz-symbol--love quiz-symbol--default">
+  <svg>...</svg>
+</div>
+
+Example 2 - Small muted Social Role Symbol in Header:
+
+<div class="quiz-symbol quiz-symbol--small quiz-symbol--social-role quiz-symbol--muted">
+  <svg>...</svg>
+</div>
+
+Example 3 - CTA Button mit pulsierendem RPG Symbol:
+
+<button class="quiz-cta">
+  <div class="quiz-symbol quiz-symbol--medium quiz-symbol--rpg quiz-symbol--cta-hover">
+    <svg>...</svg>
+  </div>
+  <span>Start Quest</span>
+</button>
+*/

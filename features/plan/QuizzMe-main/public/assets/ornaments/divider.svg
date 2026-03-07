@@ -1,0 +1,32 @@
+<svg width="300" height="40" viewBox="0 0 300 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Divider flourish - horizontal ornament for section breaks -->
+  <g stroke="#D4AF37" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- Central diamond -->
+    <path d="M 150 15 L 155 20 L 150 25 L 145 20 Z" />
+    <circle cx="150" cy="20" r="3" />
+
+    <!-- Left flourish -->
+    <path d="M 140 20 Q 130 18 120 20" />
+    <path d="M 120 20 Q 110 22 100 20" />
+    <path d="M 100 20 Q 85 18 70 20" />
+
+    <!-- Right flourish (mirrored) -->
+    <path d="M 160 20 Q 170 18 180 20" />
+    <path d="M 180 20 Q 190 22 200 20" />
+    <path d="M 200 20 Q 215 18 230 20" />
+
+    <!-- End caps with small circles -->
+    <circle cx="60" cy="20" r="2" />
+    <circle cx="240" cy="20" r="2" />
+
+    <!-- Decorative leaves -->
+    <path d="M 135 18 Q 132 16 130 18" />
+    <path d="M 135 22 Q 132 24 130 22" />
+    <path d="M 165 18 Q 168 16 170 18" />
+    <path d="M 165 22 Q 168 24 170 22" />
+
+    <!-- Small stars -->
+    <path d="M 90 20 L 91 21 L 90 22 L 89 21 Z" />
+    <path d="M 210 20 L 211 21 L 210 22 L 209 21 Z" />
+  </g>
+</svg>

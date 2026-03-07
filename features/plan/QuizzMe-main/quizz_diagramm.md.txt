@@ -1,0 +1,28 @@
+erDiagram
+  profiles {
+    uuid id PK
+    text display_name
+    text avatar_url
+    timestamptz created_at
+    timestamptz updated_at
+  }
+
+  profile_snapshots {
+    uuid id PK
+    uuid user_id FK
+    jsonb snapshot
+    timestamptz created_at
+  }
+
+  quiz_results {
+    uuid id PK
+    uuid user_id FK
+    text quiz_id
+    text profile_id
+    jsonb markers
+    jsonb big_five_deltas
+    timestamptz completed_at
+  }
+
+  profiles ||--o{ profile_snapshots : has
+  profiles ||--o{ quiz_results : has

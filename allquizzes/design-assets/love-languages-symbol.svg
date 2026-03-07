@@ -1,0 +1,68 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Glow filter for the outline -->
+    <filter id="glow-love" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Stronger glow for hover state -->
+    <filter id="glow-love-hover" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background subtle glow (optional, very faint) -->
+  <circle cx="32" cy="32" r="28" fill="rgba(255, 200, 150, 0.05)" opacity="0.3"/>
+
+  <!-- Main heart shape - outline only -->
+  <path
+    d="M32 52 L20 38 Q14 32 14 24 Q14 16 20 16 Q26 16 32 22 Q38 16 44 16 Q50 16 50 24 Q50 32 44 38 Z"
+    fill="none"
+    stroke="rgb(248, 250, 252)"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    filter="url(#glow-love)"
+    style="filter: drop-shadow(0 0 8px rgba(255, 200, 150, 0.6)) drop-shadow(0 0 16px rgba(255, 200, 150, 0.3));"
+  />
+
+  <!-- Concentric wave detail 1 - outer -->
+  <path
+    d="M32 56 Q18 48 12 36"
+    fill="none"
+    stroke="rgba(248, 250, 252, 0.6)"
+    stroke-width="1"
+    stroke-linecap="round"
+    opacity="0.7"
+    style="filter: drop-shadow(0 0 6px rgba(255, 200, 150, 0.4));"
+  />
+
+  <path
+    d="M32 56 Q46 48 52 36"
+    fill="none"
+    stroke="rgba(248, 250, 252, 0.6)"
+    stroke-width="1"
+    stroke-linecap="round"
+    opacity="0.7"
+    style="filter: drop-shadow(0 0 6px rgba(255, 200, 150, 0.4));"
+  />
+
+  <!-- Small accent spark at top center -->
+  <circle
+    cx="32"
+    cy="18"
+    r="2"
+    fill="rgb(255, 200, 150)"
+    opacity="0.8"
+    style="filter: drop-shadow(0 0 4px rgba(255, 200, 150, 0.8));"
+  />
+</svg>

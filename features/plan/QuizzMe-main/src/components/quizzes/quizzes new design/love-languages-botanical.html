@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welche Sprache spricht dein Herz?</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --emerald-900: #1B4332;
+      --emerald-800: #2D5A45;
+      --emerald-700: #3D6B4F;
+      --emerald-600: #4A7C59;
+      --emerald-500: #5A8F68;
+      --emerald-100: #D8E9DE;
+      --emerald-50: #EBF3ED;
+      --gold-600: #9A7B2C;
+      --gold-500: #B8942F;
+      --gold-400: #D4AA33;
+      --gold-100: #FAF6E9;
+      --stone-100: #F5F5F4;
+      --stone-200: #E7E5E4;
+      --stone-50: #FAFAF9;
+    }
+    
+    body {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      min-height: 100vh;
+      background: linear-gradient(180deg, var(--stone-50) 0%, white 50%, rgba(235, 243, 237, 0.3) 100%);
+      color: var(--emerald-800);
+    }
+    
+    .screen {
+      display: none;
+      min-height: 100vh;
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .screen.active {
+      display: flex;
+      flex-direction: column;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes fadeOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-10px); }
+    }
+    
+    .corner-ornament {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      opacity: 0.4;
+    }
+    
+    .corner-ornament.top-left { top: 0; left: 0; }
+    .corner-ornament.top-right { top: 0; right: 0; transform: rotate(90deg); }
+    .corner-ornament.bottom-left { bottom: 0; left: 0; transform: rotate(-90deg); }
+    .corner-ornament.bottom-right { bottom: 0; right: 0; transform: rotate(180deg); }
+    
+    /* Intro Screen */
+    .intro-screen {
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .intro-content {
+      max-width: 400px;
+      text-align: center;
+    }
+    
+    .heart-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 2rem;
+      color: var(--emerald-700);
+      opacity: 0.7;
+    }
+    
+    .ornament-divider {
+      width: 200px;
+      height: 20px;
+      margin: 0 auto 1.5rem;
+      color: var(--gold-500);
+      opacity: 0.6;
+    }
+    
+    .intro-title {
+      font-size: 1.875rem;
+      font-weight: 300;
+      color: var(--emerald-900);
+      margin-bottom: 0.75rem;
+      letter-spacing: 0.05em;
+    }
+    
+    .intro-subtitle {
+      font-size: 1rem;
+      color: var(--emerald-600);
+      opacity: 0.7;
+      margin-bottom: 1.5rem;
+    }
+    
+    .intro-meta {
+      font-size: 0.875rem;
+      color: var(--emerald-600);
+      opacity: 0.5;
+      margin-bottom: 2.5rem;
+    }
+    
+    .intro-meta p {
+      margin-bottom: 0.75rem;
+    }
+    
+    .intro-meta .small {
+      font-size: 0.75rem;
+      max-width: 280px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    
+    .start-btn {
+      background: linear-gradient(135deg, var(--emerald-700) 0%, var(--emerald-800) 100%);
+      color: white;
+      border: none;
+      padding: 1rem 3rem;
+      font-size: 1rem;
+      font-family: inherit;
+      border-radius: 9999px;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 25px rgba(45, 90, 69, 0.2);
+    }
+    
+    .start-btn:hover {
+      transform: scale(1.05);
+      background: linear-gradient(135deg, var(--emerald-600) 0%, var(--emerald-700) 100%);
+    }
+    
+    /* Quiz Screen */
+    .quiz-screen {
+      background: linear-gradient(180deg, var(--stone-50) 0%, white 50%, rgba(235, 243, 237, 0.2) 100%);
+    }
+    
+    .progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--emerald-100);
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--emerald-500) 0%, var(--gold-500) 100%);
+      transition: width 0.5s ease;
+    }
+    
+    .quiz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      margin-top: 0.5rem;
+      color: var(--emerald-600);
+      opacity: 0.5;
+      font-size: 0.875rem;
+    }
+    
+    .quiz-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      max-width: 480px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    
+    .question-context {
+      text-align: center;
+      font-size: 0.875rem;
+      color: var(--emerald-600);
+      opacity: 0.6;
+      font-style: italic;
+      margin-bottom: 1rem;
+    }
+    
+    .question-text {
+      text-align: center;
+      font-size: 1.25rem;
+      font-weight: 300;
+      color: var(--emerald-900);
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+    
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    
+    .option-btn {
+      width: 100%;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      background: white;
+      border: 2px solid var(--stone-200);
+      border-radius: 1rem;
+      font-family: inherit;
+      font-size: 0.875rem;
+      color: var(--emerald-800);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      line-height: 1.5;
+    }
+    
+    .option-btn:hover:not(:disabled) {
+      border-color: var(--emerald-500);
+      background: rgba(235, 243, 237, 0.5);
+    }
+    
+    .option-btn.selected {
+      border-color: var(--emerald-500);
+      background: var(--emerald-50);
+      transform: scale(0.98);
+    }
+    
+    .option-btn:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+    
+    /* Result Screen */
+    .result-screen {
+      padding-bottom: 2rem;
+    }
+    
+    .result-content {
+      max-width: 480px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    
+    .result-header {
+      text-align: center;
+      padding-top: 2rem;
+      margin-bottom: 2rem;
+    }
+    
+    .result-symbol {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      font-weight: 300;
+    }
+    
+    .result-title {
+      font-size: 2rem;
+      font-weight: 300;
+      margin-bottom: 0.75rem;
+      letter-spacing: 0.05em;
+    }
+    
+    .result-language {
+      display: inline-block;
+      padding: 0.5rem 1.25rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+    }
+    
+    .result-tagline {
+      font-style: italic;
+      opacity: 0.7;
+      font-size: 0.875rem;
+      padding: 0 1rem;
+      color: var(--emerald-700);
+    }
+    
+    .result-card {
+      background: white;
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      border: 2px solid transparent;
+    }
+    
+    .result-card.description {
+      background: rgba(232, 240, 236, 0.5);
+    }
+    
+    .result-card h3 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--emerald-600);
+      opacity: 0.6;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .result-description {
+      font-size: 0.875rem;
+      line-height: 1.8;
+      color: var(--emerald-800);
+      opacity: 0.85;
+      white-space: pre-line;
+    }
+    
+    .stats-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .stat-label {
+      font-size: 0.875rem;
+      color: var(--emerald-700);
+      opacity: 0.8;
+    }
+    
+    .stat-value {
+      font-family: monospace;
+      font-size: 0.875rem;
+    }
+    
+    .compatibility-section {
+      margin-bottom: 0.5rem;
+    }
+    
+    .compatibility-section:last-child {
+      margin-bottom: 0;
+    }
+    
+    .compatibility-label {
+      font-size: 0.75rem;
+      opacity: 0.7;
+      margin-bottom: 0.25rem;
+    }
+    
+    .compatibility-value {
+      font-size: 0.875rem;
+      color: var(--emerald-800);
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .action-btn {
+      flex: 1;
+      padding: 0.875rem 1rem;
+      border-radius: 1rem;
+      font-family: inherit;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+    
+    .action-btn.secondary {
+      background: var(--stone-100);
+      color: var(--emerald-700);
+      border-color: var(--stone-200);
+    }
+    
+    .action-btn.secondary:hover {
+      background: var(--stone-200);
+    }
+    
+    .action-btn.primary {
+      background: var(--emerald-700);
+      color: white;
+    }
+    
+    .action-btn.primary:hover {
+      opacity: 0.9;
+    }
+    
+    .disclaimer {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--emerald-600);
+      opacity: 0.4;
+      line-height: 1.6;
+      padding: 0 1rem;
+    }
+    
+    .small-divider {
+      width: 120px;
+      height: 20px;
+      margin: 0 auto 1rem;
+      color: var(--emerald-600);
+      opacity: 0.3;
+    }
+  </style>
+</head>
+<body>
+  <!-- Corner Ornaments SVG -->
+  <svg style="display: none;">
+    <symbol id="corner-ornament" viewBox="0 0 80 80">
+      <path d="M5 75 Q5 5 75 5" stroke="currentColor" stroke-width="0.5" fill="none" opacity="0.4"/>
+      <path d="M15 75 Q15 15 75 15" stroke="currentColor" stroke-width="0.5" fill="none" opacity="0.3"/>
+      <circle cx="10" cy="10" r="2" fill="currentColor" opacity="0.3"/>
+      <path d="M20 60 Q30 50 25 35 Q20 20 35 25" stroke="currentColor" stroke-width="0.5" fill="none" opacity="0.4"/>
+      <circle cx="35" cy="25" r="1.5" fill="currentColor" opacity="0.3"/>
+    </symbol>
+    <symbol id="divider" viewBox="0 0 200 20">
+      <path d="M0 10 Q50 5 100 10 Q150 15 200 10" stroke="currentColor" stroke-width="0.5" fill="none" opacity="0.4"/>
+      <circle cx="100" cy="10" r="3" fill="currentColor" opacity="0.3"/>
+      <circle cx="85" cy="10" r="1.5" fill="currentColor" opacity="0.2"/>
+      <circle cx="115" cy="10" r="1.5" fill="currentColor" opacity="0.2"/>
+      <path d="M90 10 Q100 5 110 10" stroke="currentColor" stroke-width="0.5" fill="none" opacity="0.3"/>
+      <path d="M90 10 Q100 15 110 10" stroke="currentColor" stroke-width="0.5" fill="none" opacity="0.3"/>
+    </symbol>
+    <symbol id="heart" viewBox="0 0 60 60">
+      <path d="M30 52 C15 40 5 30 5 20 C5 12 12 5 20 5 C25 5 28 8 30 12 C32 8 35 5 40 5 C48 5 55 12 55 20 C55 30 45 40 30 52Z" stroke="currentColor" stroke-width="1" fill="none" opacity="0.6"/>
+      <path d="M30 48 C18 38 10 30 10 22 C10 16 15 10 22 10 C26 10 28 12 30 15 C32 12 34 10 38 10 C45 10 50 16 50 22 C50 30 42 38 30 48Z" stroke="currentColor" stroke-width="0.5" fill="currentColor" opacity="0.15"/>
+    </symbol>
+    <symbol id="leaf" viewBox="0 0 20 30">
+      <path d="M10 2 Q18 10 15 20 Q12 28 10 28 Q8 28 5 20 Q2 10 10 2" stroke="currentColor" stroke-width="0.5" fill="none" opacity="0.5"/>
+      <path d="M10 5 L10 25" stroke="currentColor" stroke-width="0.3" opacity="0.3"/>
+    </symbol>
+  </svg>
+
+  <!-- Intro Screen -->
+  <div id="intro-screen" class="screen intro-screen active">
+    <svg class="corner-ornament top-left" style="color: var(--emerald-700);"><use href="#corner-ornament"/></svg>
+    <svg class="corner-ornament top-right" style="color: var(--emerald-700);"><use href="#corner-ornament"/></svg>
+    <svg class="corner-ornament bottom-left" style="color: var(--emerald-700);"><use href="#corner-ornament"/></svg>
+    <svg class="corner-ornament bottom-right" style="color: var(--emerald-700);"><use href="#corner-ornament"/></svg>
+    
+    <div class="intro-content">
+      <svg class="heart-icon"><use href="#heart"/></svg>
+      <svg class="ornament-divider"><use href="#divider"/></svg>
+      <h1 class="intro-title">Welche Sprache spricht dein Herz?</h1>
+      <p class="intro-subtitle">Entdecke deinen Liebenden-Archetyp</p>
+      <svg class="ornament-divider" style="width: 160px; opacity: 0.4;"><use href="#divider"/></svg>
+      <div class="intro-meta">
+        <p>12 Fragen · 2-3 Minuten</p>
+        <p class="small">Entdecke, welche Sprache dein Herz spricht – und warum manche Menschen dich sofort verstehen.</p>
+      </div>
+      <button class="start-btn" onclick="startQuiz()">Beginnen</button>
+      <svg class="ornament-divider" style="width: 100px; margin-top: 2.5rem; opacity: 0.3;"><use href="#divider"/></svg>
+    </div>
+  </div>
+
+  <!-- Quiz Screen -->
+  <div id="quiz-screen" class="screen quiz-screen">
+    <svg class="corner-ornament top-left" style="color: var(--emerald-700); width: 60px; height: 60px;"><use href="#corner-ornament"/></svg>
+    <svg class="corner-ornament top-right" style="color: var(--emerald-700); width: 60px; height: 60px;"><use href="#corner-ornament"/></svg>
+    
+    <div class="progress-bar">
+      <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+    </div>
+    
+    <div class="quiz-header">
+      <span id="question-counter">1 von 12</span>
+      <svg style="width: 60px; height: 15px; color: var(--gold-500); opacity: 0.4;"><use href="#divider"/></svg>
+      <span id="progress-percent">8%</span>
+    </div>
+    
+    <div class="quiz-content">
+      <p id="question-context" class="question-context"></p>
+      <h2 id="question-text" class="question-text"></h2>
+      <div id="options" class="options"></div>
+    </div>
+    
+    <svg class="small-divider"><use href="#divider"/></svg>
+  </div>
+
+  <!-- Result Screen -->
+  <div id="result-screen" class="screen result-screen">
+    <svg class="corner-ornament top-left" style="color: var(--emerald-700);"><use href="#corner-ornament"/></svg>
+    <svg class="corner-ornament top-right" style="color: var(--emerald-700);"><use href="#corner-ornament"/></svg>
+    
+    <div class="result-content">
+      <div class="result-header">
+        <div id="result-symbol" class="result-symbol">✧</div>
+        <h1 id="result-title" class="result-title">Die Dichterin</h1>
+        <svg class="ornament-divider" style="width: 100px; margin-bottom: 1rem;"><use href="#divider"/></svg>
+        <span id="result-language" class="result-language">Worte der Anerkennung</span>
+        <p id="result-tagline" class="result-tagline">„Du liebst in Sätzen, die andere nie vergessen werden."</p>
+      </div>
+      
+      <div class="result-card description">
+        <p id="result-description" class="result-description"></p>
+      </div>
+      
+      <div class="result-card" style="border-color: rgba(45, 90, 69, 0.1);">
+        <h3><svg style="width: 16px; height: 24px;"><use href="#leaf"/></svg> Deine Stats</h3>
+        <div id="result-stats" class="stats-list"></div>
+      </div>
+      
+      <div class="result-card" style="border-color: rgba(45, 90, 69, 0.1);">
+        <h3><svg style="width: 20px; height: 20px;"><use href="#heart"/></svg> Kompatibilität</h3>
+        <div class="compatibility-section">
+          <p class="compatibility-label" style="color: var(--emerald-600);">Seelenverwandte:</p>
+          <p id="result-allies" class="compatibility-value"></p>
+        </div>
+        <div class="compatibility-section">
+          <p class="compatibility-label" style="color: var(--gold-600);">Herausforderung:</p>
+          <p id="result-nemesis" class="compatibility-value"></p>
+        </div>
+      </div>
+      
+      <div class="action-buttons">
+        <button class="action-btn secondary" onclick="restart()">Nochmal</button>
+        <button class="action-btn primary" onclick="share()">Teilen</button>
+      </div>
+      
+      <svg class="small-divider"><use href="#divider"/></svg>
+      <p class="disclaimer">Dieser Test dient der spielerischen Selbstreflexion und stellt keine psychologische Bewertung dar.</p>
+    </div>
+  </div>
+
+  <script>
+    const quizData = {
+      questions: [
+        {
+          context: "Es ist spät. Dein Mensch hatte einen schweren Tag.",
+          text: "Was tust du instinktiv?",
+          options: [
+            { text: "Ich sage die Worte, die niemand sonst findet", scores: { intensity: 0, expression: 0, connection: 1 } },
+            { text: "Ich halte einfach still – meine Arme sagen alles", scores: { intensity: 1, expression: 1, connection: 2 } },
+            { text: "Ich handle: Tee, Decke, das Handy auf lautlos", scores: { intensity: 0, expression: 2, connection: 1 } },
+            { text: "Ich bleibe einfach da – meine Präsenz ist das Geschenk", scores: { intensity: 1, expression: 1, connection: 1 } }
+          ]
+        },
+        {
+          context: "Du denkst an einen perfekten Moment mit jemandem, den du liebst.",
+          text: "Was siehst du?",
+          options: [
+            { text: "Ein Gespräch, das die Zeit vergessen lässt", scores: { intensity: 0, expression: 0, connection: 1 } },
+            { text: "Hände, die sich finden, ohne hinzusehen", scores: { intensity: 2, expression: 1, connection: 2 } },
+            { text: "Ein Ort, den wir gemeinsam gebaut haben", scores: { intensity: 1, expression: 2, connection: 1 } },
+            { text: "Stille, die sich wie Zuhause anfühlt", scores: { intensity: 0, expression: 1, connection: 2 } }
+          ]
+        },
+        {
+          context: "Du erhältst ein Geschenk von jemandem, der dich liebt.",
+          text: "Was berührt dich am meisten?",
+          options: [
+            { text: "Die Karte – was jemand schreibt, vergesse ich nie", scores: { intensity: 1, expression: 0, connection: 1 } },
+            { text: "Die Mühe – dass jemand Zeit investiert hat", scores: { intensity: 0, expression: 2, connection: 1 } },
+            { text: "Das Objekt selbst – ein greifbarer Beweis der Liebe", scores: { intensity: 1, expression: 1, connection: 0 } },
+            { text: "Der Moment des Gebens – die Nähe dabei", scores: { intensity: 2, expression: 1, connection: 2 } }
+          ]
+        },
+        {
+          context: "Du spürst, dass etwas zwischen euch nicht stimmt.",
+          text: "Wie reagierst du?",
+          options: [
+            { text: "Ich brauche das Gespräch – Ungesagtes brennt", scores: { intensity: 2, expression: 0, connection: 1 } },
+            { text: "Ich brauche Nähe – Worte können lügen, Körper nicht", scores: { intensity: 2, expression: 1, connection: 2 } },
+            { text: "Ich tue etwas – Handeln ist meine Sprache der Versöhnung", scores: { intensity: 1, expression: 2, connection: 1 } },
+            { text: "Ich brauche Raum – um zu verstehen, was ich fühle", scores: { intensity: 0, expression: 1, connection: 0 } }
+          ]
+        },
+        {
+          context: "Jemand fragt dich: 'Woran erkenne ich, dass du mich liebst?'",
+          text: "Deine ehrlichste Antwort:",
+          options: [
+            { text: "An dem, was ich dir sage, wenn niemand zuhört", scores: { intensity: 1, expression: 0, connection: 1 } },
+            { text: "Daran, dass ich da bin – auch wenn es unbequem ist", scores: { intensity: 0, expression: 2, connection: 2 } },
+            { text: "An meinen Händen auf deiner Haut", scores: { intensity: 2, expression: 1, connection: 2 } },
+            { text: "Daran, dass ich dich sehe – wirklich sehe", scores: { intensity: 1, expression: 0, connection: 1 } }
+          ]
+        },
+        {
+          context: "Du hast drei Stunden ungestörte Zeit mit deinem Menschen.",
+          text: "Was wählst du?",
+          options: [
+            { text: "Reden, bis wir vergessen haben, wo wir angefangen haben", scores: { intensity: 1, expression: 0, connection: 1 } },
+            { text: "Nebeneinander existieren – lesen, atmen, sein", scores: { intensity: 0, expression: 1, connection: 1 } },
+            { text: "Etwas zusammen erschaffen oder erleben", scores: { intensity: 1, expression: 2, connection: 1 } },
+            { text: "Berührung ohne Ziel – einfach nah sein", scores: { intensity: 2, expression: 1, connection: 2 } }
+          ]
+        },
+        {
+          context: "Ein alter Freund fragt, was deine größte Stärke in Beziehungen ist.",
+          text: "Welche Wahrheit würdest du zugeben?",
+          options: [
+            { text: "Ich kann Dinge in Worte fassen, die andere nur fühlen", scores: { intensity: 1, expression: 0, connection: 1 } },
+            { text: "Ich zeige Liebe durch das, was ich tue, nicht was ich sage", scores: { intensity: 0, expression: 2, connection: 1 } },
+            { text: "Ich bin physisch präsent in einer Welt voller Ablenkung", scores: { intensity: 2, expression: 1, connection: 2 } },
+            { text: "Ich gebe Raum – echte Liebe erstickt nicht", scores: { intensity: 0, expression: 1, connection: 0 } }
+          ]
+        },
+        {
+          context: "Du erinnerst dich an den Moment, als du wusstest: Das ist Liebe.",
+          text: "Was hat es verraten?",
+          options: [
+            { text: "Ein Satz, der alles verändert hat", scores: { intensity: 2, expression: 0, connection: 1 } },
+            { text: "Eine Geste, so klein, dass nur ich sie bemerkt habe", scores: { intensity: 0, expression: 2, connection: 1 } },
+            { text: "Die Art, wie sich mein Körper in ihrer Nähe entspannt hat", scores: { intensity: 1, expression: 1, connection: 2 } },
+            { text: "Die Stille, die plötzlich nicht mehr leer war", scores: { intensity: 0, expression: 1, connection: 2 } }
+          ]
+        },
+        {
+          context: "Du musst eine Liebesszene aus einem Film wählen, die dich am meisten trifft.",
+          text: "Welche?",
+          options: [
+            { text: "Das Geständnis – endlich ausgesprochene Wahrheit", scores: { intensity: 2, expression: 0, connection: 1 } },
+            { text: "Der Kuss im Regen – Körper sprechen lauter", scores: { intensity: 2, expression: 1, connection: 2 } },
+            { text: "Das Opfer – jemand tut das Unmögliche für den anderen", scores: { intensity: 1, expression: 2, connection: 1 } },
+            { text: "Der letzte Tanz – Zeit anhalten, nur wir zwei", scores: { intensity: 1, expression: 1, connection: 2 } }
+          ]
+        },
+        {
+          context: "Dein Herz wurde einmal gebrochen.",
+          text: "Was hat am meisten gefehlt?",
+          options: [
+            { text: "Die Worte – 'Ich liebe dich' wurde eine Floskel", scores: { intensity: 1, expression: 0, connection: 1 } },
+            { text: "Die Berührung – wir waren Mitbewohner, nicht Liebende", scores: { intensity: 2, expression: 1, connection: 2 } },
+            { text: "Die Taten – Versprechen ohne Handlung sind Lügen", scores: { intensity: 0, expression: 2, connection: 1 } },
+            { text: "Die Zeit – wir hatten keine Stunden mehr füreinander", scores: { intensity: 1, expression: 1, connection: 2 } }
+          ]
+        },
+        {
+          context: "Liebe ist für dich...",
+          text: "Wähle das Bild, das am stärksten resoniert:",
+          options: [
+            { text: "Eine Flamme – sie muss genährt werden, oder sie erlischt", scores: { intensity: 2, expression: 0, connection: 1 } },
+            { text: "Ein Ozean – tief, manchmal stürmisch, immer größer als ich", scores: { intensity: 2, expression: 1, connection: 2 } },
+            { text: "Ein Baum – Wurzeln brauchen Zeit, aber dann halten sie", scores: { intensity: 0, expression: 2, connection: 1 } },
+            { text: "Der Wind – man sieht ihn nicht, aber man spürt, wenn er fehlt", scores: { intensity: 1, expression: 1, connection: 0 } }
+          ]
+        },
+        {
+          context: "Letzte Frage. Vervollständige den Satz:",
+          text: "Ich weiß, dass ich geliebt werde, wenn...",
+          options: [
+            { text: "...jemand die Worte findet, die ich selbst nicht aussprechen kann", scores: { intensity: 1, expression: 0, connection: 1 } },
+            { text: "...jemand mich berührt, als wäre ich kostbar", scores: { intensity: 2, expression: 1, connection: 2 } },
+            { text: "...jemand handelt, bevor ich fragen muss", scores: { intensity: 0, expression: 2, connection: 1 } },
+            { text: "...jemand seine Zeit wählt, mich zu wählen", scores: { intensity: 1, expression: 1, connection: 2 } }
+          ]
+        }
+      ],
+      profiles: [
+        {
+          id: "the_poet",
+          title: "Die Dichterin",
+          symbol: "✧",
+          tagline: "Du liebst in Sätzen, die andere nie vergessen werden.",
+          loveLanguage: "Worte der Anerkennung",
+          description: "Es gibt Menschen, die Liebe aussprechen wie ein Geständnis – und dann gibt es dich. Du hast verstanden, dass Worte keine leeren Hüllen sind. Sie sind Brücken. Schlüssel. Manchmal sogar Tore zu vergessenen Räumen der Seele.\n\nIn bestimmten Momenten findest du Formulierungen, die andere ihr Leben lang suchen. Das ist keine Fähigkeit, die man lernt – es ist die Art, wie dein Herz verdrahtet ist.\n\nDu bist eine der wenigen, die das Unsagbare sagbar machen. In einer Welt voller Small Talk bist du das tiefe Gespräch um 3 Uhr nachts.",
+          stats: [
+            { label: "Ungesendete Nachrichten", value: "94%" },
+            { label: "Emotionale Präzision", value: "97%" },
+            { label: "Komplimente annehmen", value: "12%" }
+          ],
+          allies: ["Das Refugium", "Die Hüterin"],
+          nemesis: "Die Architektin",
+          accent: "#2D5A45",
+          accentLight: "#E8F0EC"
+        },
+        {
+          id: "the_flame",
+          title: "Die Flamme",
+          symbol: "❋",
+          tagline: "Du liebst mit dem ganzen Körper – Haut spricht lauter als Worte.",
+          loveLanguage: "Körperliche Nähe",
+          description: "Für dich ist Liebe kein Konzept. Sie ist physisch. Spürbar. Eine Hand auf dem Rücken im richtigen Moment sagt mehr als tausend Textnachrichten.\n\nDu verstehst etwas, das viele vergessen haben: Wir sind Körper. Und Körper brauchen Berührung wie Pflanzen Licht. Wenn du umarmst, dann richtig. Wenn du die Hand hältst, ist es ein Statement.\n\nDu bist die Erinnerung daran, dass wir nicht nur Geist sind. In einer Welt der Distanz bist du radikale Nähe.",
+          stats: [
+            { label: "Umarmungs-Intensität", value: "200%" },
+            { label: "Händchenhalten-Reflex", value: "Auto" },
+            { label: "Kuscheln", value: "Olympisch" }
+          ],
+          allies: ["Das Refugium", "Die Flamme"],
+          nemesis: "Der Leuchtturm",
+          accent: "#8B6914",
+          accentLight: "#FBF7E8"
+        },
+        {
+          id: "the_architect",
+          title: "Die Architektin",
+          symbol: "◇",
+          tagline: "Du baust Liebe – Stein für Stein, Tat für Tat.",
+          loveLanguage: "Hilfsbereitschaft",
+          description: "Während andere von Liebe reden, baust du sie. Jeden Tag. In kleinen Handlungen, die niemand sieht. Der Kaffee, der fertig ist, bevor sie aufwacht. Das Auto, das getankt am Straßenrand steht.\n\nFür dich ist Liebe ein Verb, kein Substantiv. Sie existiert nur in der Handlung. Das macht dich unglaublich verlässlich – und manchmal unsichtbar.\n\nDu bist der Beweis, dass Liebe kein Gefühl ist, sondern eine Entscheidung. Jeden Tag neu.",
+          stats: [
+            { label: "Probleme vorab gelöst", value: "87%" },
+            { label: "Zeigen statt Sagen", value: "99%" },
+            { label: "To-Do-Listen für andere", value: "Viele" }
+          ],
+          allies: ["Die Hüterin", "Die Architektin"],
+          nemesis: "Die Dichterin",
+          accent: "#3D6B4F",
+          accentLight: "#E5EDE8"
+        },
+        {
+          id: "the_sanctuary",
+          title: "Das Refugium",
+          symbol: "○",
+          tagline: "Du liebst, indem du bleibst – deine Präsenz ist das Geschenk.",
+          loveLanguage: "Zweisamkeit",
+          description: "In einer Welt, die immer lauter wird, bist du der ruhige Raum. Deine Art zu lieben ist die vielleicht unterschätzteste von allen: Du bist einfach da. Mit deiner ungeteilten Aufmerksamkeit.\n\nFür dich ist der größte Liebesbeweis, wenn jemand seine Zeit wählt, bei dir zu sein. Zeit ist endlich. Aufmerksamkeit ist kostbar.\n\nDu bist der Beweis, dass Anwesenheit die radikalste Form der Zuwendung ist.",
+          stats: [
+            { label: "Handy ignorieren", value: "100%" },
+            { label: "'Kurze' Gespräche", value: "4h+" },
+            { label: "Präsenz-Sensibilität", value: "Seismograph" }
+          ],
+          allies: ["Die Dichterin", "Die Flamme"],
+          nemesis: "Die Hüterin",
+          accent: "#4A7C59",
+          accentLight: "#EBF3ED"
+        },
+        {
+          id: "the_keeper",
+          title: "Die Hüterin",
+          symbol: "✦",
+          tagline: "Du liebst in Symbolen – jedes Geschenk ist ein Stück deiner Seele.",
+          loveLanguage: "Geschenke",
+          description: "Für dich ist ein Geschenk niemals 'nur' ein Gegenstand. Es ist verdichtete Aufmerksamkeit. Der Beweis, dass jemand zugehört hat. Dass jemand dich gesehen hat.\n\nDu gibst genauso, wie du empfängst: durchdacht. Jedes Geschenk ist eine kleine Forschungsarbeit. Was braucht dieser Mensch? Was sagt 'Ich kenne dich'?\n\nDu bist der Beweis, dass Aufmerksamkeit die wertvollste Währung ist.",
+          stats: [
+            { label: "Erinnerung an Details", value: "Elefant" },
+            { label: "Geschenk-Recherche", value: "FBI-Level" },
+            { label: "Gespeicherte Ideen", value: "Archiv" }
+          ],
+          allies: ["Die Architektin", "Die Dichterin"],
+          nemesis: "Das Refugium",
+          accent: "#9A7B2C",
+          accentLight: "#FAF6E9"
+        },
+        {
+          id: "the_lighthouse",
+          title: "Der Leuchtturm",
+          symbol: "◈",
+          tagline: "Du liebst aus der Distanz – dein Licht reicht weiter, als du weißt.",
+          loveLanguage: "Freiheit & Konstanz",
+          description: "Du verstehst etwas, das viele als Widerspruch sehen: Liebe braucht Raum. Nicht weil du weniger fühlst, sondern weil du weißt, dass Nähe ohne Freiheit zur Fessel wird.\n\nDu liebst, indem du leuchtest – konstant, verlässlich – aber du verschlingst nicht. Du fühlst intensiv – du brauchst nur nicht die konstante Bestätigung durch Nähe.\n\nDu bist der Beweis, dass Liebe nicht klammern muss, um echt zu sein.",
+          stats: [
+            { label: "Alleinsein-Bedürfnis", value: "Vital" },
+            { label: "Liebe ohne Besitz", value: "Selten" },
+            { label: "Konstanz über Jahre", value: "Fels" }
+          ],
+          allies: ["Die Architektin", "Der Leuchtturm"],
+          nemesis: "Die Flamme",
+          accent: "#3B5249",
+          accentLight: "#E7EDEA"
+        }
+      ]
+    };
+
+    let currentQuestion = 0;
+    let scores = { intensity: 0, expression: 0, connection: 0 };
+    let selectedOption = null;
+
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+    }
+
+    function startQuiz() {
+      currentQuestion = 0;
+      scores = { intensity: 0, expression: 0, connection: 0 };
+      showScreen('quiz-screen');
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      const q = quizData.questions[currentQuestion];
+      const total = quizData.questions.length;
+      const progress = ((currentQuestion + 1) / total) * 100;
+      
+      document.getElementById('question-counter').textContent = `${currentQuestion + 1} von ${total}`;
+      document.getElementById('progress-percent').textContent = `${Math.round(progress)}%`;
+      document.getElementById('progress-fill').style.width = `${progress}%`;
+      document.getElementById('question-context').textContent = q.context;
+      document.getElementById('question-text').textContent = q.text;
+      
+      const optionsContainer = document.getElementById('options');
+      optionsContainer.innerHTML = '';
+      
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.textContent = opt.text;
+        btn.onclick = () => selectOption(idx, opt.scores);
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    function selectOption(idx, optScores) {
+      if (selectedOption !== null) return;
+      selectedOption = idx;
+      
+      const buttons = document.querySelectorAll('.option-btn');
+      buttons.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === idx) btn.classList.add('selected');
+      });
+      
+      scores.intensity += optScores.intensity;
+      scores.expression += optScores.expression;
+      scores.connection += optScores.connection;
+      
+      setTimeout(() => {
+        selectedOption = null;
+        if (currentQuestion < quizData.questions.length - 1) {
+          currentQuestion++;
+          renderQuestion();
+        } else {
+          showResult();
+        }
+      }, 500);
+    }
+
+    function getProfile() {
+      const matchers = [
+        { id: "the_poet", match: (s) => s.expression <= 8 && s.connection >= 8 },
+        { id: "the_flame", match: (s) => s.intensity >= 14 && s.connection >= 16 },
+        { id: "the_architect", match: (s) => s.expression >= 14 && s.intensity <= 10 },
+        { id: "the_sanctuary", match: (s) => s.connection >= 14 && s.intensity <= 12 && s.expression >= 6 && s.expression <= 14 },
+        { id: "the_keeper", match: (s) => s.connection <= 10 && s.expression >= 6 && s.expression <= 14 },
+        { id: "the_lighthouse", match: (s) => s.connection <= 8 && s.intensity <= 10 }
+      ];
+      
+      for (const m of matchers) {
+        if (m.match(scores)) {
+          return quizData.profiles.find(p => p.id === m.id);
+        }
+      }
+      
+      if (scores.intensity > 12 && scores.connection > 12) return quizData.profiles.find(p => p.id === "the_flame");
+      if (scores.expression > 12) return quizData.profiles.find(p => p.id === "the_architect");
+      if (scores.connection > 12) return quizData.profiles.find(p => p.id === "the_sanctuary");
+      if (scores.connection <= 12 && scores.intensity <= 12) return quizData.profiles.find(p => p.id === "the_lighthouse");
+      return quizData.profiles.find(p => p.id === "the_poet");
+    }
+
+    function showResult() {
+      const profile = getProfile();
+      
+      document.getElementById('result-symbol').textContent = profile.symbol;
+      document.getElementById('result-symbol').style.color = profile.accent;
+      document.getElementById('result-title').textContent = profile.title;
+      document.getElementById('result-title').style.color = profile.accent;
+      document.getElementById('result-language').textContent = profile.loveLanguage;
+      document.getElementById('result-language').style.backgroundColor = profile.accentLight;
+      document.getElementById('result-language').style.color = profile.accent;
+      document.getElementById('result-tagline').textContent = `„${profile.tagline}"`;
+      document.getElementById('result-description').textContent = profile.description;
+      
+      const statsContainer = document.getElementById('result-stats');
+      statsContainer.innerHTML = '';
+      profile.stats.forEach(stat => {
+        const row = document.createElement('div');
+        row.className = 'stat-row';
+        row.innerHTML = `
+          <span class="stat-label">${stat.label}</span>
+          <span class="stat-value" style="color: ${profile.accent}">${stat.value}</span>
+        `;
+        statsContainer.appendChild(row);
+      });
+      
+      document.getElementById('result-allies').textContent = profile.allies.join(' · ');
+      document.getElementById('result-nemesis').textContent = profile.nemesis;
+      
+      document.querySelector('.action-btn.primary').style.backgroundColor = profile.accent;
+      
+      showScreen('result-screen');
+    }
+
+    function restart() {
+      showScreen('intro-screen');
+    }
+
+    function share() {
+      const profile = getProfile();
+      if (navigator.share) {
+        navigator.share({
+          title: `Ich bin ${profile.title}`,
+          text: profile.tagline,
+          url: window.location.href
+        });
+      }
+    }
+  </script>
+</body>
+</html>

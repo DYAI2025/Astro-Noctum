@@ -1,0 +1,129 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Spiral galaxy gradient for center -->
+    <radialGradient id="galaxy-core" cx="50%" cy="50%">
+      <stop offset="0%" stop-color="rgb(220, 240, 255)" stop-opacity="1"/>
+      <stop offset="30%" stop-color="rgb(150, 200, 255)" stop-opacity="0.95"/>
+      <stop offset="60%" stop-color="rgb(59, 130, 246)" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="rgb(29, 78, 216)" stop-opacity="0.2"/>
+    </radialGradient>
+
+    <!-- Blue glow gradient for outer elements -->
+    <linearGradient id="blue-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgb(59, 130, 246)" stop-opacity="0.9"/>
+      <stop offset="50%" stop-color="rgb(96, 165, 250)" stop-opacity="1"/>
+      <stop offset="100%" stop-color="rgb(59, 130, 246)" stop-opacity="0.9"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Layer 1: Outer ambient glow -->
+  <circle cx="64" cy="64" r="52"
+          fill="none"
+          stroke="rgb(59, 130, 246)"
+          stroke-width="0.5"
+          opacity="0.15"
+          style="filter: blur(20px);"/>
+
+  <!-- Layer 2: Main outer circle (astro wheel) -->
+  <circle cx="64" cy="64" r="52"
+          fill="none"
+          stroke="rgb(248, 250, 252)"
+          stroke-width="2"
+          style="filter: drop-shadow(0 0 8px rgba(59, 130, 246, 1))
+                          drop-shadow(0 0 20px rgba(59, 130, 246, 0.8))
+                          drop-shadow(0 0 40px rgba(59, 130, 246, 0.5));"/>
+
+  <!-- Layer 3: Inner circle -->
+  <circle cx="64" cy="64" r="36"
+          fill="none"
+          stroke="rgb(248, 250, 252)"
+          stroke-width="1.5"
+          opacity="0.8"
+          style="filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.7));"/>
+
+  <!-- Layer 4: Spiral galaxy center (filled) -->
+  <circle cx="64" cy="64" r="16"
+          fill="url(#galaxy-core)"
+          style="filter: drop-shadow(0 0 8px rgba(150, 200, 255, 1))
+                          drop-shadow(0 0 16px rgba(59, 130, 246, 0.8));"/>
+
+  <!-- Layer 5: Spiral arms within galaxy -->
+  <g opacity="0.7">
+    <path d="M64 64 Q68 60 72 58"
+          fill="none"
+          stroke="rgb(220, 240, 255)"
+          stroke-width="1.5"
+          stroke-linecap="round"/>
+    <path d="M64 64 Q60 68 58 72"
+          fill="none"
+          stroke="rgb(220, 240, 255)"
+          stroke-width="1.5"
+          stroke-linecap="round"/>
+    <path d="M64 64 Q60 60 56 58"
+          fill="none"
+          stroke="rgb(220, 240, 255)"
+          stroke-width="1.5"
+          stroke-linecap="round"/>
+    <path d="M64 64 Q68 68 72 70"
+          fill="none"
+          stroke="rgb(220, 240, 255)"
+          stroke-width="1.5"
+          stroke-linecap="round"/>
+  </g>
+
+  <!-- Layer 6: 12 cardinal points (zodiac-style) -->
+  <g stroke="rgb(248, 250, 252)" stroke-width="1.5" fill="none" opacity="0.9">
+    <!-- Top (12 o'clock) -->
+    <circle cx="64" cy="12" r="3" fill="url(#blue-glow)"
+            style="filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.9));"/>
+    <!-- 1 o'clock -->
+    <circle cx="90" cy="19" r="2.5" fill="url(#blue-glow)"
+            style="filter: drop-shadow(0 0 3px rgba(59, 130, 246, 0.8));"/>
+    <!-- 2 o'clock -->
+    <circle cx="109" cy="38" r="2.5" fill="url(#blue-glow)"
+            style="filter: drop-shadow(0 0 3px rgba(59, 130, 246, 0.8));"/>
+    <!-- Right (3 o'clock) -->
+    <circle cx="116" cy="64" r="3" fill="url(#blue-glow)"
+            style="filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.9));"/>
+    <!-- 4 o'clock -->
+    <circle cx="109" cy="90" r="2.5" fill="url(#blue-glow)"
+            style="filter: drop-shadow(0 0 3px rgba(59, 130, 246, 0.8));"/>
+    <!-- 5 o'clock -->
+    <circle cx="90" cy="109" r="2.5" fill="url(#blue-glow)"
+            style="filter: drop-shadow(0 0 3px rgba(59, 130, 246, 0.8));"/>
+    <!-- Bottom (6 o'clock) -->
+    <circle cx="64" cy="116" r="3" fill="url(#blue-glow)"
+            style="filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.9));"/>
+    <!-- 7 o'clock -->
+    <circle cx="38" cy="109" r="2.5" fill="url(#blue-glow)"
+            style="filter: drop-shadow(0 0 3px rgba(59, 130, 246, 0.8));"/>
+    <!-- 8 o'clock -->
+    <circle cx="19" cy="90" r="2.5" fill="url(#blue-glow)"
+            style="filter: drop-shadow(0 0 3px rgba(59, 130, 246, 0.8));"/>
+    <!-- Left (9 o'clock) -->
+    <circle cx="12" cy="64" r="3" fill="url(#blue-glow)"
+            style="filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.9));"/>
+    <!-- 10 o'clock -->
+    <circle cx="19" cy="38" r="2.5" fill="url(#blue-glow)"
+            style="filter: drop-shadow(0 0 3px rgba(59, 130, 246, 0.8));"/>
+    <!-- 11 o'clock -->
+    <circle cx="38" cy="19" r="2.5" fill="url(#blue-glow)"
+            style="filter: drop-shadow(0 0 3px rgba(59, 130, 246, 0.8));"/>
+  </g>
+
+  <!-- Layer 7: Connection lines from center to cardinal points -->
+  <g stroke="rgb(59, 130, 246)" stroke-width="0.5" opacity="0.3" stroke-dasharray="2,2">
+    <line x1="64" y1="64" x2="64" y2="12"/>
+    <line x1="64" y1="64" x2="116" y2="64"/>
+    <line x1="64" y1="64" x2="64" y2="116"/>
+    <line x1="64" y1="64" x2="12" y2="64"/>
+  </g>
+
+  <!-- Layer 8: Rotating orbital ring (middle) -->
+  <circle cx="64" cy="64" r="44"
+          fill="none"
+          stroke="rgb(96, 165, 250)"
+          stroke-width="0.5"
+          opacity="0.5"
+          stroke-dasharray="4,8"/>
+</svg>

@@ -1,0 +1,481 @@
+{
+  "product": "QuizzMe — Light‑Grimoire Character Sheet",
+  "actor": "Quiz‑Teilnehmer:in (primär), Creator/Coach (sekundär)",
+  "goal": "Ein brand‑konformes, helles Character‑Sheet (/character), das psyche_profile_v1 robust rendert, derived_stats_v1 berechnet und After‑Quiz‑Änderungen (Deltas) subtil und barrierearm sichtbar macht.",
+  "activities": [
+    {
+      "id": "A1",
+      "title": "Character Sheet nutzen",
+      "steps": [
+        {
+          "id": "S1",
+          "title": "Character Sheet öffnen"
+        },
+        {
+          "id": "S2",
+          "title": "Profil laden & ableiten"
+        },
+        {
+          "id": "S3",
+          "title": "Kernwerte verstehen"
+        },
+        {
+          "id": "S4",
+          "title": "Klima‑Achsen lesen"
+        },
+        {
+          "id": "S5",
+          "title": "Abgeleitete Werte sehen"
+        },
+        {
+          "id": "S6",
+          "title": "Archetypen & Story lesen (optional)"
+        },
+        {
+          "id": "S7",
+          "title": "After‑Quiz Deltas erkennen"
+        },
+        {
+          "id": "S8",
+          "title": "Teilen / Link kopieren"
+        }
+      ]
+    },
+    {
+      "id": "A2",
+      "title": "System & Qualität sichern",
+      "steps": [
+        {
+          "id": "T1",
+          "title": "Theme‑Tokens & Typografie"
+        },
+        {
+          "id": "T2",
+          "title": "Ornament‑Assets"
+        },
+        {
+          "id": "T3",
+          "title": "Motion & Reduced‑Motion"
+        },
+        {
+          "id": "T4",
+          "title": "Accessibility (WCAG AA)"
+        },
+        {
+          "id": "T5",
+          "title": "Tests (Unit/Component/E2E)"
+        },
+        {
+          "id": "T6",
+          "title": "Performance"
+        },
+        {
+          "id": "T7",
+          "title": "Handoff & Dokumentation"
+        }
+      ]
+    }
+  ],
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "Light‑Grimoire Theme‑Tokens anlegen (BG/TEXT/BORDER/ACCENTS)",
+      "activity_id": "A2",
+      "step_id": "T1",
+      "ac": [
+        "Given das Projekt lädt das Light‑Grimoire Theme",
+        "When /character gerendert wird",
+        "Then BG_BASE ist ein helles Pergament (z. B. #F7F0E6 → #F2E3CF) und TEXT_PRIMARY ist dark‑ink (#271C16 oder #053B3F).",
+        "Given UI‑Komponenten nutzen Tokens",
+        "When Gold verwendet wird",
+        "Then Gold wird nur für Linien/Icons/Borders genutzt und nie als Fließtext."
+      ]
+    },
+    {
+      "id": "US-002",
+      "title": "Font‑Setup: Serif‑Headlines + Sans‑Body inkl. Typo‑Scale",
+      "activity_id": "A2",
+      "step_id": "T1",
+      "ac": [
+        "Given die Seite rendert Überschriften und Body‑Text",
+        "When eine Section‑Headline (H2/H3) dargestellt wird",
+        "Then sie nutzt die Serif‑Font‑Family und eine definierte Scale.",
+        "Given numerische Werte werden angezeigt",
+        "When Zahlen gerendert werden",
+        "Then sie nutzen tabular-nums für stabile Layouts."
+      ]
+    },
+    {
+      "id": "US-024",
+      "title": "FRAME_MODE Token: optionaler Hybrid‑Frame (dünner Emerald‑Rand)",
+      "activity_id": "A2",
+      "step_id": "T1",
+      "ac": [
+        "Given FRAME_MODE=light",
+        "When /character angezeigt wird",
+        "Then es gibt keinen dunklen Randrahmen um die Seite.",
+        "Given FRAME_MODE=hybrid",
+        "When /character angezeigt wird",
+        "Then ein sehr dünner Emerald‑Frame ist sichtbar, ohne den Kontrast zu reduzieren."
+      ]
+    },
+    {
+      "id": "US-003",
+      "title": "/character Route + Grid Scaffold (Desktop 12‑col: 7/5, Mobile Stack)",
+      "activity_id": "A1",
+      "step_id": "S1",
+      "ac": [
+        "Given ein:e Nutzer:in navigiert zu /character",
+        "When die Seite geladen ist",
+        "Then Header (Row A) ist 12‑spaltig und darunter Row B/C jeweils 7/5‑Split (Desktop) bzw. Stack (Mobile).",
+        "Given ein schmaler Viewport",
+        "When Mobile Breakpoint aktiv ist",
+        "Then alle Sektionen erscheinen untereinander in definierter Reihenfolge (Core → Klima → Derived → Archetype → Footer)."
+      ]
+    },
+    {
+      "id": "US-004",
+      "title": "TypeScript Types für psyche_profile_v1 + optionale Felder",
+      "activity_id": "A1",
+      "step_id": "S2",
+      "ac": [
+        "Given psyche_profile_v1 wird im Frontend verarbeitet",
+        "When Types kompiliert werden",
+        "Then optionale Felder (z. B. archetype_mix, narrative_snippet, last_delta) sind als optional typisiert.",
+        "Given Wertebereiche sind dokumentiert",
+        "When ein Wert verwendet wird",
+        "Then es ist klar ob er 0..1 oder 0..100 ist."
+      ]
+    },
+    {
+      "id": "US-005",
+      "title": "Profile Fetch Hook + Graceful Degradation (keine Crashes ohne optional fields)",
+      "activity_id": "A1",
+      "step_id": "S2",
+      "ac": [
+        "Given /api/profile/psyche liefert psyche_profile_v1",
+        "When die Response geladen wird",
+        "Then das UI rendert ohne Fehler und zeigt Fallbacks, wenn optionale Felder fehlen.",
+        "Given die API ist langsam",
+        "When der Request noch läuft",
+        "Then ein Skeleton/Loading State erscheint ohne Layout‑Shift."
+      ]
+    },
+    {
+      "id": "US-006",
+      "title": "Derived Stats im Frontend berechnen (vitality, willpower, chaos, harmony) + Unit Tests",
+      "activity_id": "A1",
+      "step_id": "S2",
+      "ac": [
+        "Given psyche_state Werte liegen in 0..1 vor",
+        "When derived_stats_v1 berechnet wird",
+        "Then vitality=avg(clarity, connection), willpower=avg(courage, order), chaos=shadow und harmony=1-abs(shadow-connection) werden auf 0..100 gemappt.",
+        "Given Grenzwerte 0 und 1",
+        "When calcDerivedStats ausgeführt wird",
+        "Then das Ergebnis bleibt immer innerhalb 0..100."
+      ]
+    },
+    {
+      "id": "US-007",
+      "title": "Header Copy & Struktur (Titel + Untertitel) nach Spec",
+      "activity_id": "A1",
+      "step_id": "S1",
+      "ac": [
+        "Given /character wird gerendert",
+        "When der Header angezeigt wird",
+        "Then Titel ist „Dein Character Sheet“ und Untertitel ist „Dein Avatar ist ein Klima, kein Label.“",
+        "Given Screenreader nutzen die Seite",
+        "When sie den Header ansteuern",
+        "Then semantische Headings sind korrekt (H1/H2)."
+      ]
+    },
+    {
+      "id": "US-009",
+      "title": "StatBarRow (reusable): Prozent‑Mapping, Tooltip, Delta‑Chip",
+      "activity_id": "A1",
+      "step_id": "S3",
+      "ac": [
+        "Given ein Kernwert (0..1) wird angezeigt",
+        "When die Bar gerendert wird",
+        "Then die Bar und Zahl zeigen 0..100 korrekt an.",
+        "Given Tooltip ist vorhanden",
+        "When Nutzer:in mit Keyboard fokussiert",
+        "Then Tooltip ist erreichbar und besitzt aria‑Relation.",
+        "Given der Wert ist Top‑Mover",
+        "When last_delta oder diff dies markiert",
+        "Then ein Delta‑Chip mit +/- erscheint."
+      ]
+    },
+    {
+      "id": "US-008",
+      "title": "CoreStatsCard: 5 Kernwerte mit Tooltips, tabular‑nums und Update‑State",
+      "activity_id": "A1",
+      "step_id": "S3",
+      "ac": [
+        "Given psyche_state enthält clarity, courage, connection, order, shadow",
+        "When CoreStatsCard gerendert wird",
+        "Then genau 5 Rows werden angezeigt mit Label, Bar und Prozentzahl.",
+        "Given ein Wert aktualisiert sich",
+        "When ein neues Profil ankommt",
+        "Then die betroffenen Rows können markiert/animiert werden (ohne Layout‑Shift)."
+      ]
+    },
+    {
+      "id": "US-010",
+      "title": "ClimateCard + AxisRail: 5 Achsen mit Links/Rechts‑Labels und Marker (0..1)",
+      "activity_id": "A1",
+      "step_id": "S4",
+      "ac": [
+        "Given visual_axes_v1 enthält mindestens 5 Achsenwerte in 0..1",
+        "When ClimateCard gerendert wird",
+        "Then jede Achse zeigt einen Rail mit Markerposition entsprechend dem Wert.",
+        "Given Labels links/rechts",
+        "When Nutzer:in die Achse liest",
+        "Then die Achse ist verständlich (Labels + Kurzbeschreibung via Tooltip/Info)."
+      ]
+    },
+    {
+      "id": "US-011",
+      "title": "MetaBadgesRow: intensity/tempo + shadow_confirmed ab confidence >= 0.65",
+      "activity_id": "A1",
+      "step_id": "S4",
+      "ac": [
+        "Given intensity/tempo Werte sind vorhanden",
+        "When Badges gerendert werden",
+        "Then sie mappen auf leise/spürbar/stark und ruhig/beweglich/dynamisch gemäß Schwellen.",
+        "Given shadow_confidence < 0.65",
+        "When die Zeile gerendert wird",
+        "Then shadow_confirmed Badge ist verborgen oder als „unbestimmt“ muted dokumentiert.",
+        "Given shadow_confidence >= 0.65",
+        "When gerendert wird",
+        "Then shadow_confirmed wird angezeigt."
+      ]
+    },
+    {
+      "id": "US-012",
+      "title": "DerivedStatsCard: 4 Sekundärwerte als StatPills (0..100)",
+      "activity_id": "A1",
+      "step_id": "S5",
+      "ac": [
+        "Given derived_stats_v1 wurde berechnet",
+        "When DerivedStatsCard gerendert wird",
+        "Then Vitality, Willpower, Chaos, Harmony erscheinen als 4 Pills mit stabiler Ausrichtung.",
+        "Given lange Labels oder kleine Viewports",
+        "When die Seite gerendert wird",
+        "Then das Layout bricht nicht und bleibt lesbar."
+      ]
+    },
+    {
+      "id": "US-013",
+      "title": "ArchetypeStoryCard: optional rendern, Formulierung als Modus/Anteil (nie Label)",
+      "activity_id": "A1",
+      "step_id": "S6",
+      "ac": [
+        "Given archetype_mix und narrative_snippet sind vorhanden",
+        "When ArchetypeStoryCard angezeigt wird",
+        "Then Top‑Archetyp + sekundäre Anteile + 1–2 Zeilen Story werden angezeigt.",
+        "Given optionale Felder fehlen",
+        "When die Seite gerendert wird",
+        "Then es gibt keinen Crash; Card ist verborgen oder zeigt einen neutralen Platzhalter.",
+        "Given Copy‑Text wird gerendert",
+        "When Archetypen benannt werden",
+        "Then Formulierung nutzt Modus/Anteil („Du neigst zu…“) statt „Du bist X“."
+      ]
+    },
+    {
+      "id": "US-014",
+      "title": "Footer CTAs: mindestens „Link kopieren“ (optional „Teilen“)",
+      "activity_id": "A1",
+      "step_id": "S8",
+      "ac": [
+        "Given /character wird angezeigt",
+        "When Nutzer:in „Link kopieren“ klickt",
+        "Then der aktuelle URL wird in die Zwischenablage kopiert und es gibt Feedback (Toast/Inline).",
+        "Given Clipboard API ist nicht verfügbar",
+        "When Nutzer:in klickt",
+        "Then es gibt einen Fallback (selektierbarer Link)."
+      ]
+    },
+    {
+      "id": "US-015",
+      "title": "AfterQuizDeltaBanner: Top‑Mover (1–3) anzeigen, 8–12s sichtbar, manuell schließbar",
+      "activity_id": "A1",
+      "step_id": "S7",
+      "ac": [
+        "Given ein neues Profil nach Quiz‑Completion wird geliefert",
+        "When Deltas bestimmt wurden",
+        "Then ein Banner zeigt 1–3 Top‑Mover mit +/- und bleibt 8–12 Sekunden sichtbar.",
+        "Given Nutzer:in schließt das Banner",
+        "When Close geklickt wird",
+        "Then das Banner verschwindet sofort und bleibt bis zum nächsten Update geschlossen."
+      ]
+    },
+    {
+      "id": "US-016",
+      "title": "Movers‑Berechnung: bevorzugt last_delta, sonst Snapshot‑Diff (robust)",
+      "activity_id": "A1",
+      "step_id": "S7",
+      "ac": [
+        "Given last_delta ist vorhanden",
+        "When Movers berechnet werden",
+        "Then Top‑Mover basieren auf last_delta.",
+        "Given last_delta fehlt",
+        "When ein neues Profil ankommt",
+        "Then Movers werden aus Snapshot‑Diff berechnet und liefern max. 3 Dimensionen."
+      ]
+    },
+    {
+      "id": "US-017",
+      "title": "Delta‑Driven Animation System: duration clamp + reduced motion (<=250ms)",
+      "activity_id": "A2",
+      "step_id": "T3",
+      "ac": [
+        "Given ein Delta mit magnitude delta_mag (0..1) liegt vor",
+        "When die Animation gestartet wird",
+        "Then duration_ms = clamp(450, 1400, 450 + 1200 * delta_mag) wird verwendet.",
+        "Given prefers-reduced-motion ist aktiv",
+        "When Updates passieren",
+        "Then nur Crossfade + Number Tween <=250ms, keine orbit/jitter."
+      ]
+    },
+    {
+      "id": "US-018",
+      "title": "Highlight Rules: Movers Outline Glow (1s) + Delta‑Chip (2.5s)",
+      "activity_id": "A1",
+      "step_id": "S7",
+      "ac": [
+        "Given Movers wurden bestimmt",
+        "When Update eintrifft",
+        "Then die betroffenen Rows/Rails erhalten ein Outline‑Glow für ca. 1s und Delta‑Chip bleibt ca. 2.5s sichtbar.",
+        "Given reduced motion aktiv",
+        "When Update eintrifft",
+        "Then Highlight ist statisch/kurz und bleibt <=250ms animiert."
+      ]
+    },
+    {
+      "id": "US-019",
+      "title": "Ornament Layer: Corner‑Ornaments + Constellation‑Watermark (Opacity 4–8%)",
+      "activity_id": "A2",
+      "step_id": "T2",
+      "ac": [
+        "Given Ornament‑SVGs sind eingebunden",
+        "When /character gerendert wird",
+        "Then Hintergrund‑Watermark ist sehr subtil (Opacity 4–8%) und beeinträchtigt Lesbarkeit nicht.",
+        "Given Cards werden gerendert",
+        "When Corner‑Ornaments aktiv sind",
+        "Then Ornamente skalieren responsiv und werden nicht abgeschnitten."
+      ]
+    },
+    {
+      "id": "US-020",
+      "title": "A11y Pass: Fokus, Keyboard, Tooltips, Kontrast (WCAG AA)",
+      "activity_id": "A2",
+      "step_id": "T4",
+      "ac": [
+        "Given Nutzer:in navigiert nur per Keyboard",
+        "When /character genutzt wird",
+        "Then Fokusreihenfolge ist logisch, alle Controls erreichbar, Hit‑Area >= 44px für Buttons.",
+        "Given ein Kontrastcheck",
+        "When normaler Text geprüft wird",
+        "Then Kontrast ist mindestens 4.5:1 und Gold wird nicht als Textfarbe genutzt."
+      ]
+    },
+    {
+      "id": "US-025",
+      "title": "ChangeLogAccordion minimal: Banner‑CTA öffnet Details (v1)",
+      "activity_id": "A1",
+      "step_id": "S7",
+      "ac": [
+        "Given das Delta‑Banner zeigt eine CTA „Details“",
+        "When CTA geklickt wird",
+        "Then ein Accordion/Panel öffnet sich und zeigt die zuletzt geänderten Dimensionen.",
+        "Given keine Daten verfügbar",
+        "When geöffnet wird",
+        "Then es erscheint ein neutraler Placeholder."
+      ]
+    },
+    {
+      "id": "US-026",
+      "title": "Result‑Page CTA: „Deinen Charakterbogen ansehen“ + Query invalidation",
+      "activity_id": "A1",
+      "step_id": "S1",
+      "ac": [
+        "Given Quiz ist abgeschlossen und Result‑Page wird angezeigt",
+        "When Nutzer:in auf „Deinen Charakterbogen ansehen“ klickt",
+        "Then Navigation zu /character erfolgt.",
+        "Given Quiz‑Completion triggert ein Update",
+        "When /character geöffnet wird",
+        "Then neueste Werte sind sichtbar und (falls Delta) Banner erscheint."
+      ]
+    },
+    {
+      "id": "US-021",
+      "title": "E2E Test: Quiz complete → /character → Banner + neue Werte",
+      "activity_id": "A2",
+      "step_id": "T5",
+      "ac": [
+        "Given ein E2E‑Test simuliert Quiz‑Completion",
+        "When /character geöffnet wird",
+        "Then Banner erscheint und mindestens ein Wert ist gegenüber Snapshot geändert."
+      ]
+    },
+    {
+      "id": "US-022",
+      "title": "Component Test: Render ohne optionale Felder (archetype_mix, narrative_snippet, last_delta)",
+      "activity_id": "A2",
+      "step_id": "T5",
+      "ac": [
+        "Given psyche_profile_v1 ohne optionale Felder",
+        "When CharacterSheetPage gerendert wird",
+        "Then es gibt keinen Crash und die Seite bleibt nutzbar."
+      ]
+    },
+    {
+      "id": "US-029",
+      "title": "Responsive Snapshot Baseline (Desktop/Mobile) + manuelle Screenshots",
+      "activity_id": "A2",
+      "step_id": "T5",
+      "ac": [
+        "Given Desktop und Mobile Viewports",
+        "When Snapshots erstellt werden",
+        "Then Layout‑Struktur entspricht Row A–D und Reihenfolge ist korrekt."
+      ]
+    },
+    {
+      "id": "US-023",
+      "title": "Performance: SVG optimiert, non‑critical Assets lazy‑loaded",
+      "activity_id": "A2",
+      "step_id": "T6",
+      "ac": [
+        "Given Ornament‑SVGs werden geladen",
+        "When die Seite initial lädt",
+        "Then kritische UI lädt ohne Verzögerung; non‑critical Assets werden lazy‑geladen.",
+        "Given SVG Dateien",
+        "When build optimiert",
+        "Then Dateigrößen sind klein (stroke‑based, keine schweren Texturen)."
+      ]
+    },
+    {
+      "id": "US-028",
+      "title": "Lighthouse Accessibility Gate (>=90) für /character",
+      "activity_id": "A2",
+      "step_id": "T5",
+      "ac": [
+        "Given CI oder lokaler Audit läuft",
+        "When Lighthouse auf /character ausgeführt wird",
+        "Then Accessibility Score ist >= 90."
+      ]
+    },
+    {
+      "id": "US-027",
+      "title": "Handoff Paket: Tokens, Komponentenliste, Ornament‑Assets, Copy‑Strings, QA‑Checklist",
+      "activity_id": "A2",
+      "step_id": "T7",
+      "ac": [
+        "Given Engineer/Agent übernimmt",
+        "When docs/handoff/character-sheet.md gelesen wird",
+        "Then Implementierung/Änderungen sind ohne Rückfragen möglich."
+      ]
+    }
+  ]
+}

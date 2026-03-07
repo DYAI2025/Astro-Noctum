@@ -1,0 +1,11 @@
+{
+  "birth_date": "1990-05-15",
+  "birth_time": "12:00:00",
+  "birth_location": {
+    "lat": 52.52,
+    "lon": 13.40
+  },
+  "iana_time_zone": "Europe/Berlin",
+  "house_system": "P",
+  "strict_mode": true
+}

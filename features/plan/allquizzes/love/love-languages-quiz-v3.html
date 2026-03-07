@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Welche Sprache spricht dein Herz? | QuizzMe</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --midnight: #041726;
+      --deep-ocean: #0a2540;
+      --emerald: #053B3F;
+      --gold: #D2A95A;
+      --gold-light: #E8C878;
+      --gold-dim: rgba(210, 169, 90, 0.3);
+      --cream: #F5F0E8;
+      --cream-dark: #E8DFD0;
+      --pearl: #FDFBF7;
+      --text-dark: #1a1a1a;
+      --text-muted: #666;
+      --shadow-gold: 0 4px 20px rgba(210, 169, 90, 0.25);
+      --shadow-deep: 0 8px 32px rgba(4, 23, 38, 0.4);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--midnight);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .serif {
+      font-family: 'Cormorant Garamond', serif;
+    }
+
+    /* Background Pattern */
+    .bg-pattern {
+      position: fixed;
+      inset: 0;
+      background: 
+        radial-gradient(ellipse at 20% 20%, rgba(210, 169, 90, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(5, 59, 63, 0.15) 0%, transparent 50%),
+        linear-gradient(180deg, var(--midnight) 0%, var(--deep-ocean) 50%, var(--midnight) 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Floating particles */
+    .particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: var(--gold);
+      border-radius: 50%;
+      opacity: 0;
+      animation: float-particle 8s infinite;
+    }
+
+    @keyframes float-particle {
+      0%, 100% { opacity: 0; transform: translateY(100vh) scale(0); }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.6; }
+      100% { opacity: 0; transform: translateY(-20vh) scale(1); }
+    }
+
+    /* Main Container */
+    .container {
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      width: 100%;
+      max-width: 400px;
+      margin-bottom: 24px;
+      padding-top: 20px;
+    }
+
+    .progress-bar {
+      height: 4px;
+      background: rgba(210, 169, 90, 0.2);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 100%);
+      border-radius: 2px;
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 12px rgba(210, 169, 90, 0.5);
+    }
+
+    .progress-text {
+      text-align: center;
+      color: var(--gold);
+      font-size: 12px;
+      margin-top: 8px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* Card Base */
+    .card {
+      width: 100%;
+      max-width: 400px;
+      background: var(--cream);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow-deep);
+      position: relative;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border: 2px solid var(--gold-dim);
+      border-radius: 20px;
+      pointer-events: none;
+    }
+
+    /* Ornamental corners */
+    .corner-ornament {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      opacity: 0.6;
+    }
+
+    .corner-ornament.top-left {
+      top: 8px;
+      left: 8px;
+      border-top: 2px solid var(--gold);
+      border-left: 2px solid var(--gold);
+    }
+
+    .corner-ornament.top-right {
+      top: 8px;
+      right: 8px;
+      border-top: 2px solid var(--gold);
+      border-right: 2px solid var(--gold);
+    }
+
+    .corner-ornament.bottom-left {
+      bottom: 8px;
+      left: 8px;
+      border-bottom: 2px solid var(--gold);
+      border-left: 2px solid var(--gold);
+    }
+
+    .corner-ornament.bottom-right {
+      bottom: 8px;
+      right: 8px;
+      border-bottom: 2px solid var(--gold);
+      border-right: 2px solid var(--gold);
+    }
+
+    /* Intro Screen */
+    .intro {
+      padding: 48px 32px;
+      text-align: center;
+    }
+
+    .intro-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 24px;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-gold);
+      animation: pulse-glow 3s infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 4px 20px rgba(210, 169, 90, 0.3); }
+      50% { box-shadow: 0 4px 40px rgba(210, 169, 90, 0.5); }
+    }
+
+    .intro-icon svg {
+      width: 40px;
+      height: 40px;
+      fill: var(--midnight);
+    }
+
+    .intro h1 {
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--midnight);
+      margin-bottom: 12px;
+      line-height: 1.2;
+    }
+
+    .intro-subtitle {
+      color: var(--emerald);
+      font-size: 14px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .intro-description {
+      color: var(--text-muted);
+      font-size: 15px;
+      line-height: 1.7;
+      margin-bottom: 32px;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 16px 32px;
+      background: linear-gradient(135deg, var(--midnight) 0%, var(--deep-ocean) 100%);
+      color: var(--gold);
+      border: none;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border: 1px solid var(--gold-dim);
+      border-radius: 12px;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-gold);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    /* Question Screen */
+    .question-card {
+      padding: 32px 24px;
+    }
+
+    .question-context {
+      color: var(--emerald);
+      font-size: 13px;
+      font-style: italic;
+      text-align: center;
+      margin-bottom: 16px;
+      padding: 12px 16px;
+      background: rgba(5, 59, 63, 0.08);
+      border-radius: 8px;
+      border-left: 3px solid var(--gold);
+    }
+
+    .question-text {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--midnight);
+      text-align: center;
+      margin-bottom: 28px;
+      line-height: 1.4;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .option {
+      width: 100%;
+      padding: 16px 20px;
+      background: var(--pearl);
+      border: 2px solid transparent;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--text-dark);
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      line-height: 1.5;
+    }
+
+    .option:hover {
+      background: white;
+      border-color: var(--gold-dim);
+      transform: translateX(4px);
+    }
+
+    .option.selected {
+      background: linear-gradient(135deg, var(--midnight) 0%, var(--deep-ocean) 100%);
+      color: var(--cream);
+      border-color: var(--gold);
+      transform: scale(0.98);
+    }
+
+    /* Loading Screen */
+    .loading {
+      padding: 64px 32px;
+      text-align: center;
+    }
+
+    .loading-orb {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 32px;
+      background: radial-gradient(circle at 30% 30%, var(--gold-light) 0%, var(--gold) 50%, var(--emerald) 100%);
+      border-radius: 50%;
+      animation: orb-pulse 2s infinite ease-in-out;
+      box-shadow: 
+        0 0 40px rgba(210, 169, 90, 0.4),
+        inset 0 0 30px rgba(255,255,255,0.2);
+    }
+
+    @keyframes orb-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    .loading h2 {
+      color: var(--midnight);
+      font-size: 22px;
+      margin-bottom: 16px;
+    }
+
+    .loading-dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .loading-dots span {
+      width: 8px;
+      height: 8px;
+      background: var(--gold);
+      border-radius: 50%;
+      animation: dot-bounce 1.4s infinite ease-in-out both;
+    }
+
+    .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes dot-bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+
+    /* Result Screen */
+    .result-card {
+      padding: 0;
+    }
+
+    .result-header {
+      background: linear-gradient(135deg, var(--midnight) 0%, var(--deep-ocean) 100%);
+      padding: 32px 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .result-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+
+    .result-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      background: rgba(210, 169, 90, 0.2);
+      border: 1px solid var(--gold-dim);
+      border-radius: 20px;
+      color: var(--gold);
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .result-title {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--cream);
+      margin-bottom: 8px;
+    }
+
+    .result-language {
+      color: var(--gold);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .result-body {
+      padding: 24px;
+    }
+
+    .result-tagline {
+      font-style: italic;
+      color: var(--emerald);
+      font-size: 16px;
+      text-align: center;
+      padding: 16px;
+      background: rgba(5, 59, 63, 0.06);
+      border-radius: 12px;
+      margin-bottom: 24px;
+      border-left: 3px solid var(--gold);
+    }
+
+    .result-description {
+      color: var(--text-dark);
+      font-size: 14px;
+      line-height: 1.8;
+      margin-bottom: 24px;
+      white-space: pre-line;
+    }
+
+    /* Stats Section */
+    .stats-section {
+      background: var(--pearl);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .stats-title {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(210, 169, 90, 0.2);
+    }
+
+    .stat-row:last-child {
+      border-bottom: none;
+    }
+
+    .stat-label {
+      color: var(--text-dark);
+      font-size: 13px;
+    }
+
+    .stat-value {
+      color: var(--gold);
+      font-weight: 600;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px;
+    }
+
+    /* Trait Bars */
+    .traits-section {
+      background: var(--pearl);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .trait-item {
+      margin-bottom: 16px;
+    }
+
+    .trait-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .trait-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .trait-name {
+      font-size: 13px;
+      color: var(--text-dark);
+    }
+
+    .trait-score {
+      font-size: 13px;
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    .trait-bar {
+      height: 8px;
+      background: rgba(210, 169, 90, 0.2);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .trait-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 100%);
+      border-radius: 4px;
+      transition: width 1s ease-out;
+    }
+
+    /* Compatibility Section */
+    .compatibility-section {
+      background: var(--pearl);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .compat-row {
+      margin-bottom: 12px;
+    }
+
+    .compat-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .compat-label {
+      font-size: 11px;
+      color: var(--emerald);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .compat-label.nemesis {
+      color: var(--gold);
+    }
+
+    .compat-value {
+      font-size: 14px;
+      color: var(--text-dark);
+    }
+
+    /* Action Buttons */
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .btn-secondary {
+      flex: 1;
+      padding: 14px 20px;
+      background: transparent;
+      border: 2px solid var(--gold-dim);
+      border-radius: 12px;
+      color: var(--midnight);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+      background: var(--gold-dim);
+    }
+
+    .btn-share {
+      flex: 1;
+      padding: 14px 20px;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+      border: none;
+      border-radius: 12px;
+      color: var(--midnight);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-gold);
+    }
+
+    .btn-share:hover {
+      transform: translateY(-2px);
+    }
+
+    .disclaimer {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      padding: 0 16px;
+    }
+
+    /* Animation Classes */
+    .fade-in {
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide-out {
+      animation: slideOut 0.3s ease-in forwards;
+    }
+
+    @keyframes slideOut {
+      to { opacity: 0; transform: translateX(-30px); }
+    }
+
+    /* Hidden */
+    .hidden {
+      display: none !important;
+    }
+
+    /* Debug Panel (hidden by default) */
+    .debug-panel {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.9);
+      color: #0f0;
+      padding: 12px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 11px;
+      max-width: 300px;
+      max-height: 200px;
+      overflow: auto;
+      z-index: 9999;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Background -->
+  <div class="bg-pattern"></div>
+  <div class="particles" id="particles"></div>
+
+  <!-- Main Container -->
+  <div class="container">
+    <!-- Progress -->
+    <div class="progress-container hidden" id="progressContainer">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+      </div>
+      <div class="progress-text" id="progressText">Frage 1 von 12</div>
+    </div>
+
+    <!-- Intro Screen -->
+    <div class="card fade-in" id="introScreen">
+      <div class="corner-ornament top-left"></div>
+      <div class="corner-ornament top-right"></div>
+      <div class="corner-ornament bottom-left"></div>
+      <div class="corner-ornament bottom-right"></div>
+      <div class="intro">
+        <div class="intro-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        </div>
+        <p class="intro-subtitle serif">Entdecke deinen Archetyp</p>
+        <h1 class="serif">Welche Sprache spricht dein Herz?</h1>
+        <p class="intro-description">
+          Jeder Mensch gibt und empfängt Liebe auf eine eigene Art. 
+          Entdecke in 12 Fragen, welcher Liebenden-Archetyp dein Wesen prägt.
+        </p>
+        <button class="btn-primary" onclick="startQuiz()">
+          Mein Herz befragen →
+        </button>
+      </div>
+    </div>
+
+    <!-- Question Screen -->
+    <div class="card hidden" id="questionScreen">
+      <div class="corner-ornament top-left"></div>
+      <div class="corner-ornament top-right"></div>
+      <div class="corner-ornament bottom-left"></div>
+      <div class="corner-ornament bottom-right"></div>
+      <div class="question-card">
+        <div class="question-context" id="questionContext"></div>
+        <h2 class="question-text serif" id="questionText"></h2>
+        <div class="options" id="optionsContainer"></div>
+      </div>
+    </div>
+
+    <!-- Loading Screen -->
+    <div class="card hidden" id="loadingScreen">
+      <div class="loading">
+        <div class="loading-orb"></div>
+        <h2 class="serif">Dein Herz enthüllt sich...</h2>
+        <div class="loading-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result Screen -->
+    <div class="card hidden" id="resultScreen">
+      <div class="result-card">
+        <div class="result-header">
+          <span class="result-badge">Dein Archetyp</span>
+          <h1 class="result-title serif" id="resultTitle"></h1>
+          <p class="result-language" id="resultLanguage"></p>
+        </div>
+        <div class="result-body">
+          <p class="result-tagline serif" id="resultTagline"></p>
+          <p class="result-description" id="resultDescription"></p>
+          
+          <!-- Trait Bars -->
+          <div class="traits-section">
+            <h3 class="stats-title">Deine Liebes-Dimensionen</h3>
+            <div id="traitBars"></div>
+          </div>
+
+          <!-- Stats -->
+          <div class="stats-section">
+            <h3 class="stats-title">Deine Stats</h3>
+            <div id="statsContainer"></div>
+          </div>
+
+          <!-- Compatibility -->
+          <div class="compatibility-section">
+            <h3 class="stats-title">Kompatibilität</h3>
+            <div id="compatContainer"></div>
+          </div>
+
+          <!-- Actions -->
+          <div class="actions">
+            <button class="btn-secondary" onclick="restartQuiz()">Nochmal</button>
+            <button class="btn-share" onclick="shareResult()">Teilen ✨</button>
+          </div>
+
+          <p class="disclaimer">
+            Dieser Test dient der spielerischen Selbstreflexion und stellt <strong>keine</strong> psychologische Diagnose dar.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Debug Panel -->
+  <div class="debug-panel" id="debugPanel"></div>
+
+  <script>
+    // =============================================
+    // QUIZ DATA - Love Languages (Gary Chapman based)
+    // =============================================
+    const quizData = {
+      meta: {
+        id: "quiz.love_languages.v1",
+        title: "Welche Sprache spricht dein Herz?",
+        subtitle: "Entdecke deinen Liebenden-Archetyp",
+        engine: "custom",
+        locale: "de-DE",
+        version: "1.0.0"
+      },
+      
+      // Dimensions: 3 psychological axes
+      dimensions: [
+        { 
+          id: "d1", 
+          name: "Expression", 
+          pole_low: "Verbal", 
+          pole_high: "Physical",
+          traitId: "trait.love.expression_mode"
+        },
+        { 
+          id: "d2", 
+          name: "Connection", 
+          pole_low: "Independence", 
+          pole_high: "Togetherness",
+          traitId: "trait.love.connection_depth"
+        },
+        { 
+          id: "d3", 
+          name: "Intensity", 
+          pole_low: "Subtle", 
+          pole_high: "Passionate",
+          traitId: "trait.love.intensity_level"
+        }
+      ],
+
+      questions: [
+        {
+          id: "q1",
+          context: "Es ist spät. Dein Mensch hatte einen schweren Tag.",
+          text: "Was tust du instinktiv?",
+          options: [
+            { id: "a", text: "Ich sage die Worte, die niemand sonst findet", scores: { d1: 0, d2: 2, d3: 1 } },
+            { id: "b", text: "Ich halte einfach still – meine Arme sagen alles", scores: { d1: 3, d2: 3, d3: 2 } },
+            { id: "c", text: "Ich handle: Tee, Decke, das Handy auf lautlos", scores: { d1: 2, d2: 2, d3: 0 } },
+            { id: "d", text: "Ich bleibe einfach da – meine Präsenz ist das Geschenk", scores: { d1: 1, d2: 3, d3: 1 } }
+          ]
+        },
+        {
+          id: "q2",
+          context: "Du denkst an einen perfekten Moment mit jemandem, den du liebst.",
+          text: "Was siehst du?",
+          options: [
+            { id: "a", text: "Ein Gespräch, das die Zeit vergessen lässt", scores: { d1: 0, d2: 2, d3: 1 } },
+            { id: "b", text: "Hände, die sich finden, ohne hinzusehen", scores: { d1: 3, d2: 3, d3: 2 } },
+            { id: "c", text: "Ein Ort, den wir gemeinsam gebaut haben", scores: { d1: 2, d2: 2, d3: 1 } },
+            { id: "d", text: "Stille, die sich wie Zuhause anfühlt", scores: { d1: 1, d2: 3, d3: 0 } }
+          ]
+        },
+        {
+          id: "q3",
+          context: "Du erhältst ein Geschenk von jemandem, der dich liebt.",
+          text: "Was berührt dich am meisten?",
+          options: [
+            { id: "a", text: "Die Karte – was jemand schreibt, vergesse ich nie", scores: { d1: 0, d2: 1, d3: 2 } },
+            { id: "b", text: "Die Mühe – dass jemand Zeit investiert hat", scores: { d1: 2, d2: 2, d3: 1 } },
+            { id: "c", text: "Das Objekt selbst – ein greifbarer Beweis der Liebe", scores: { d1: 1, d2: 1, d3: 1 } },
+            { id: "d", text: "Der Moment des Gebens – die Nähe dabei", scores: { d1: 3, d2: 3, d3: 2 } }
+          ]
+        },
+        {
+          id: "q4",
+          context: "Du spürst, dass etwas zwischen euch nicht stimmt.",
+          text: "Wie reagierst du?",
+          options: [
+            { id: "a", text: "Ich brauche das Gespräch – Ungesagtes brennt", scores: { d1: 0, d2: 2, d3: 3 } },
+            { id: "b", text: "Ich brauche Nähe – Worte können lügen, Körper nicht", scores: { d1: 3, d2: 3, d3: 3 } },
+            { id: "c", text: "Ich tue etwas – Handeln ist meine Sprache der Versöhnung", scores: { d1: 2, d2: 2, d3: 1 } },
+            { id: "d", text: "Ich brauche Raum – um zu verstehen, was ich fühle", scores: { d1: 1, d2: 0, d3: 0 } }
+          ]
+        },
+        {
+          id: "q5",
+          context: "Jemand fragt: 'Woran erkenne ich, dass du mich liebst?'",
+          text: "Deine ehrlichste Antwort:",
+          options: [
+            { id: "a", text: "An dem, was ich dir sage, wenn niemand zuhört", scores: { d1: 0, d2: 2, d3: 2 } },
+            { id: "b", text: "Daran, dass ich da bin – auch wenn es unbequem ist", scores: { d1: 2, d2: 3, d3: 1 } },
+            { id: "c", text: "An meinen Händen auf deiner Haut", scores: { d1: 3, d2: 2, d3: 3 } },
+            { id: "d", text: "Daran, dass ich dich sehe – wirklich sehe", scores: { d1: 1, d2: 3, d3: 1 } }
+          ]
+        },
+        {
+          id: "q6",
+          context: "Du hast drei Stunden ungestörte Zeit mit deinem Menschen.",
+          text: "Was wählst du?",
+          options: [
+            { id: "a", text: "Reden, bis wir vergessen haben, wo wir angefangen haben", scores: { d1: 0, d2: 3, d3: 2 } },
+            { id: "b", text: "Nebeneinander existieren – lesen, atmen, sein", scores: { d1: 1, d2: 2, d3: 0 } },
+            { id: "c", text: "Etwas zusammen erschaffen oder erleben", scores: { d1: 2, d2: 3, d3: 2 } },
+            { id: "d", text: "Berührung ohne Ziel – einfach nah sein", scores: { d1: 3, d2: 3, d3: 2 } }
+          ]
+        },
+        {
+          id: "q7",
+          context: "Ein alter Freund fragt nach deiner größten Stärke in Beziehungen.",
+          text: "Welche Wahrheit würdest du zugeben?",
+          options: [
+            { id: "a", text: "Ich kann Dinge in Worte fassen, die andere nur fühlen", scores: { d1: 0, d2: 2, d3: 2 } },
+            { id: "b", text: "Ich zeige Liebe durch das, was ich tue, nicht sage", scores: { d1: 2, d2: 2, d3: 1 } },
+            { id: "c", text: "Ich bin physisch präsent in einer Welt voller Ablenkung", scores: { d1: 3, d2: 3, d3: 2 } },
+            { id: "d", text: "Ich gebe Raum – echte Liebe erstickt nicht", scores: { d1: 1, d2: 1, d3: 0 } }
+          ]
+        },
+        {
+          id: "q8",
+          context: "Du erinnerst dich an den Moment, als du wusstest: Das ist Liebe.",
+          text: "Was hat es verraten?",
+          options: [
+            { id: "a", text: "Ein Satz, der alles verändert hat", scores: { d1: 0, d2: 2, d3: 3 } },
+            { id: "b", text: "Eine Geste, so klein, dass nur ich sie bemerkt habe", scores: { d1: 2, d2: 2, d3: 1 } },
+            { id: "c", text: "Die Art, wie sich mein Körper in ihrer Nähe entspannt hat", scores: { d1: 3, d2: 3, d3: 2 } },
+            { id: "d", text: "Die Stille, die plötzlich nicht mehr leer war", scores: { d1: 1, d2: 3, d3: 1 } }
+          ]
+        },
+        {
+          id: "q9",
+          context: "Du musst eine Liebesszene aus einem Film wählen, die dich am meisten trifft.",
+          text: "Welche?",
+          options: [
+            { id: "a", text: "Das Geständnis – endlich ausgesprochene Wahrheit", scores: { d1: 0, d2: 2, d3: 3 } },
+            { id: "b", text: "Der Kuss im Regen – Körper sprechen lauter", scores: { d1: 3, d2: 2, d3: 3 } },
+            { id: "c", text: "Das Opfer – jemand tut das Unmögliche für den anderen", scores: { d1: 2, d2: 3, d3: 2 } },
+            { id: "d", text: "Der letzte Tanz – Zeit anhalten, nur wir zwei", scores: { d1: 1, d2: 3, d3: 2 } }
+          ]
+        },
+        {
+          id: "q10",
+          context: "Dein Herz wurde einmal gebrochen.",
+          text: "Was hat am meisten gefehlt?",
+          options: [
+            { id: "a", text: "Die Worte – 'Ich liebe dich' wurde eine Floskel", scores: { d1: 0, d2: 1, d3: 2 } },
+            { id: "b", text: "Die Berührung – wir waren Mitbewohner, nicht Liebende", scores: { d1: 3, d2: 2, d3: 3 } },
+            { id: "c", text: "Die Taten – Versprechen ohne Handlung sind Lügen", scores: { d1: 2, d2: 2, d3: 1 } },
+            { id: "d", text: "Die Zeit – wir hatten keine Stunden mehr füreinander", scores: { d1: 1, d2: 3, d3: 2 } }
+          ]
+        },
+        {
+          id: "q11",
+          context: "Liebe ist für dich...",
+          text: "Wähle das Bild, das am stärksten resoniert:",
+          options: [
+            { id: "a", text: "Eine Flamme – sie muss genährt werden, oder sie erlischt", scores: { d1: 0, d2: 2, d3: 3 } },
+            { id: "b", text: "Ein Ozean – tief, manchmal stürmisch, immer größer als ich", scores: { d1: 3, d2: 3, d3: 3 } },
+            { id: "c", text: "Ein Baum – Wurzeln brauchen Zeit, aber dann halten sie", scores: { d1: 2, d2: 3, d3: 1 } },
+            { id: "d", text: "Der Wind – man sieht ihn nicht, aber man spürt, wenn er fehlt", scores: { d1: 1, d2: 2, d3: 0 } }
+          ]
+        },
+        {
+          id: "q12",
+          context: "Letzte Frage. Vervollständige den Satz:",
+          text: "Ich weiß, dass ich geliebt werde, wenn...",
+          options: [
+            { id: "a", text: "...jemand die Worte findet, die ich selbst nicht aussprechen kann", scores: { d1: 0, d2: 2, d3: 2 } },
+            { id: "b", text: "...jemand mich berührt, als wäre ich kostbar", scores: { d1: 3, d2: 3, d3: 3 } },
+            { id: "c", text: "...jemand handelt, bevor ich fragen muss", scores: { d1: 2, d2: 2, d3: 1 } },
+            { id: "d", text: "...jemand seine Zeit wählt, mich zu wählen", scores: { d1: 1, d2: 3, d3: 2 } }
+          ]
+        }
+      ],
+
+      profiles: [
+        {
+          id: "the_poet",
+          title: "Der Dichter",
+          loveLanguage: "Worte der Anerkennung",
+          tagline: "Du liebst in Sätzen, die andere nie vergessen werden.",
+          description: `Es gibt Menschen, die Liebe aussprechen wie ein Geständnis – und dann gibt es dich. Du hast verstanden, dass Worte keine leeren Hüllen sind. Sie sind Brücken. Schlüssel. Manchmal sogar Waffen.
+
+In bestimmten Momenten findest du Formulierungen, die andere ihr Leben lang suchen. Das ist keine Fähigkeit, die man lernt – es ist die Art, wie dein Herz verdrahtet ist.
+
+Du bist einer der wenigen, die das Unsagbare sagbar machen. In einer Welt voller Small Talk bist du das tiefe Gespräch um 3 Uhr nachts.`,
+          stats: [
+            { label: "Ungesendete Nachrichten", value: "94%" },
+            { label: "Emotionale Präzision", value: "97%" },
+            { label: "Komplimente annehmen", value: "12%" }
+          ],
+          allies: ["Das Refugium", "Der Hüter"],
+          nemesis: "Der Architekt",
+          matching: { d1: { max: 10 }, d2: { min: 18 }, d3: { min: 15 } },
+          markers: [
+            { id: "marker.love.words_of_affirmation", weight: 0.9 },
+            { id: "marker.love.verbal_expression", weight: 0.85 },
+            { id: "marker.social.deep_communication", weight: 0.7 }
+          ],
+          tags: [
+            { id: "tag.archetype.poet", label: "Der Dichter", kind: "archetype" },
+            { id: "tag.shadow.overthinking", label: "Grübeln", kind: "shadow" }
+          ],
+          unlock: { id: "unlock.crests.love_poet", level: 2 }
+        },
+        {
+          id: "the_flame",
+          title: "Die Flamme",
+          loveLanguage: "Körperliche Nähe",
+          tagline: "Du liebst mit dem ganzen Körper – Haut spricht lauter als Worte.",
+          description: `Für dich ist Berührung keine Option – sie ist Notwendigkeit. Nicht aus Bedürftigkeit, sondern weil dein Nervensystem so programmiert ist: Liebe, die nicht gefühlt werden kann, ist für dich schwer zu glauben.
+
+Du spürst Verbindung physisch. Eine Hand auf deinem Rücken sagt mehr als tausend Textnachrichten. Ein Abend ohne Berührung fühlt sich an wie ein Gespräch, bei dem niemand zuhört.
+
+In einer Welt, die Distanz normalisiert hat, bist du ein Reminder: Körper lügen nicht. Und Nähe ist kein Luxus – sie ist Grundnahrung.`,
+          stats: [
+            { label: "Umarmungen pro Tag", value: "∞" },
+            { label: "Fernbeziehungs-Toleranz", value: "8%" },
+            { label: "Körperliche Intuition", value: "96%" }
+          ],
+          allies: ["Der Dichter", "Das Refugium"],
+          nemesis: "Der Wanderer",
+          matching: { d1: { min: 25 }, d3: { min: 20 } },
+          markers: [
+            { id: "marker.love.physical_touch", weight: 0.95 },
+            { id: "marker.love.sensory_connection", weight: 0.8 },
+            { id: "marker.emotion.body_awareness", weight: 0.75 }
+          ],
+          tags: [
+            { id: "tag.archetype.flame", label: "Die Flamme", kind: "archetype" },
+            { id: "tag.shadow.touch_dependency", label: "Berührungsabhängigkeit", kind: "shadow" }
+          ],
+          unlock: { id: "unlock.crests.love_flame", level: 2 }
+        },
+        {
+          id: "the_architect",
+          title: "Der Architekt",
+          loveLanguage: "Hilfsbereitschaft",
+          tagline: "Du baust Liebe mit deinen Händen, nicht mit Worten.",
+          description: `Während andere Liebe erklären, erschaffst du sie. Für dich ist ein reparierter Wasserhahn eine Liebeserklärung. Ein vorbereitetes Abendessen ist Poesie. Ein gelöstes Problem ist Intimität.
+
+Du verstehst: Worte kosten nichts. Taten kosten Zeit, Energie, Aufmerksamkeit. Und das ist die einzige Währung, die zählt.
+
+Dein Schatten: Du könntest vergessen, dass manche Menschen Worte hören müssen, auch wenn deine Handlungen schreien. Balance ist dein Entwicklungsfeld.`,
+          stats: [
+            { label: "Probleme gelöst", value: "∞" },
+            { label: "Verbal-Romantik", value: "23%" },
+            { label: "Zuverlässigkeit", value: "99%" }
+          ],
+          allies: ["Der Hüter"],
+          nemesis: "Der Dichter",
+          matching: { d1: { min: 15, max: 25 }, d2: { min: 18 } },
+          markers: [
+            { id: "marker.love.acts_of_service", weight: 0.9 },
+            { id: "marker.love.practical_support", weight: 0.85 },
+            { id: "marker.social.reliability", weight: 0.8 }
+          ],
+          tags: [
+            { id: "tag.archetype.architect", label: "Der Architekt", kind: "archetype" },
+            { id: "tag.shadow.emotional_avoidance", label: "Emotionale Vermeidung", kind: "shadow" }
+          ],
+          unlock: { id: "unlock.crests.love_architect", level: 2 }
+        },
+        {
+          id: "the_refuge",
+          title: "Das Refugium",
+          loveLanguage: "Qualitätszeit",
+          tagline: "Deine Präsenz ist das wertvollste Geschenk.",
+          description: `Du hast verstanden, was die meisten übersehen: In einer Welt endloser Ablenkungen ist ungeteilte Aufmerksamkeit die radikalste Form der Liebe.
+
+Wenn du jemandem deine Zeit schenkst, schenkst du ihm einen Teil deines Lebens, den du nie zurückbekommst. Diese Transaktion nimmst du ernst.
+
+Du bist der sichere Hafen, nach dem andere suchen. Der Raum, in dem man einfach sein kann, ohne performen zu müssen. Das ist eine seltene Gabe.`,
+          stats: [
+            { label: "Präsenz-Qualität", value: "98%" },
+            { label: "Multitasking-Score", value: "4%" },
+            { label: "Tiefe Gespräche", value: "∞" }
+          ],
+          allies: ["Der Dichter", "Die Flamme"],
+          nemesis: "Der Architekt",
+          matching: { d2: { min: 25 }, d3: { max: 18 } },
+          markers: [
+            { id: "marker.love.quality_time", weight: 0.95 },
+            { id: "marker.love.undivided_attention", weight: 0.85 },
+            { id: "marker.social.presence", weight: 0.8 }
+          ],
+          tags: [
+            { id: "tag.archetype.refuge", label: "Das Refugium", kind: "archetype" },
+            { id: "tag.shadow.time_possessiveness", label: "Zeit-Besitzanspruch", kind: "shadow" }
+          ],
+          unlock: { id: "unlock.crests.love_refuge", level: 2 }
+        },
+        {
+          id: "the_guardian",
+          title: "Der Hüter",
+          loveLanguage: "Geschenke",
+          tagline: "Du machst das Unsichtbare greifbar.",
+          description: `Für dich sind Geschenke nicht materialistisch – sie sind Beweise. Tangible Erinnerungen daran, dass jemand an einen anderen gedacht hat, als er nicht da war.
+
+Du verstehst die symbolische Kraft von Objekten. Ein richtig gewähltes Geschenk zeigt: Ich kenne dich. Ich sehe dich. Ich erinnere mich.
+
+Deine Superkraft: Du merkst dir Details, die andere überhören. Der erwähnte Autor. Die Lieblingsblume. Der unerfüllte Wunsch. Und dann handelst du.`,
+          stats: [
+            { label: "Geschenk-Trefferquote", value: "94%" },
+            { label: "Detail-Erinnerung", value: "97%" },
+            { label: "Spontane Überraschungen", value: "88%" }
+          ],
+          allies: ["Der Architekt", "Der Dichter"],
+          nemesis: "Der Wanderer",
+          matching: { d1: { min: 8, max: 20 }, d2: { min: 12 }, d3: { min: 10 } },
+          markers: [
+            { id: "marker.love.gift_giving", weight: 0.85 },
+            { id: "marker.love.symbolic_thinking", weight: 0.8 },
+            { id: "marker.cognition.detail_memory", weight: 0.75 }
+          ],
+          tags: [
+            { id: "tag.archetype.guardian", label: "Der Hüter", kind: "archetype" },
+            { id: "tag.shadow.love_buying", label: "Liebe erkaufen", kind: "shadow" }
+          ],
+          unlock: { id: "unlock.crests.love_guardian", level: 2 }
+        },
+        {
+          id: "the_wanderer",
+          title: "Der Wanderer",
+          loveLanguage: "Autonomie & Raum",
+          tagline: "Deine Liebe atmet. Sie braucht Luft, nicht Käfige.",
+          description: `Du liebst anders – nicht weniger, aber weiter. Für dich ist Bindung kein Gefängnis, sondern ein Zuhause, das man freiwillig wählt. Jeden Tag neu.
+
+Du gibst Raum, weil du weißt: Liebe, die aus Angst hält, ist keine Liebe. Du brauchst Partner, die ganz sein können, ohne dich. Nur dann kannst du wählen, bei ihnen zu sein.
+
+Dein Schatten: Manchmal verwechseln andere deine Freiheitsliebe mit Distanz. Kommunikation ist dein Schlüssel.`,
+          stats: [
+            { label: "Freiheits-Bedürfnis", value: "96%" },
+            { label: "Klammerungs-Toleranz", value: "3%" },
+            { label: "Vertrauens-Fähigkeit", value: "91%" }
+          ],
+          allies: ["Das Refugium"],
+          nemesis: "Die Flamme",
+          matching: { d2: { max: 15 }, d3: { max: 12 } },
+          markers: [
+            { id: "marker.love.autonomy_need", weight: 0.9 },
+            { id: "marker.love.space_giving", weight: 0.85 },
+            { id: "marker.social.independence", weight: 0.8 }
+          ],
+          tags: [
+            { id: "tag.archetype.wanderer", label: "Der Wanderer", kind: "archetype" },
+            { id: "tag.shadow.avoidance", label: "Vermeidung", kind: "shadow" }
+          ],
+          unlock: { id: "unlock.crests.love_wanderer", level: 2 }
+        }
+      ]
+    };
+
+    // =============================================
+    // STATE MANAGEMENT
+    // =============================================
+    let currentQuestion = 0;
+    let answers = [];
+    let scores = { d1: 0, d2: 0, d3: 0 };
+    let selectedOption = null;
+    let isTransitioning = false;
+
+    // =============================================
+    // UI FUNCTIONS
+    // =============================================
+    function createParticles() {
+      const container = document.getElementById('particles');
+      for (let i = 0; i < 30; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 8 + 's';
+        particle.style.animationDuration = (6 + Math.random() * 4) + 's';
+        container.appendChild(particle);
+      }
+    }
+
+    function startQuiz() {
+      document.getElementById('introScreen').classList.add('hidden');
+      document.getElementById('progressContainer').classList.remove('hidden');
+      document.getElementById('questionScreen').classList.remove('hidden');
+      document.getElementById('questionScreen').classList.add('fade-in');
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      const q = quizData.questions[currentQuestion];
+      const total = quizData.questions.length;
+      
+      // Update progress
+      const progress = ((currentQuestion + 1) / total) * 100;
+      document.getElementById('progressFill').style.width = progress + '%';
+      document.getElementById('progressText').textContent = `Frage ${currentQuestion + 1} von ${total}`;
+      
+      // Update question content
+      document.getElementById('questionContext').textContent = q.context;
+      document.getElementById('questionText').textContent = q.text;
+      
+      // Render options
+      const container = document.getElementById('optionsContainer');
+      container.innerHTML = '';
+      
+      q.options.forEach((opt, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'option';
+        btn.textContent = opt.text;
+        btn.onclick = () => selectOption(opt, btn);
+        container.appendChild(btn);
+      });
+      
+      selectedOption = null;
+    }
+
+    function selectOption(option, btn) {
+      if (isTransitioning) return;
+      
+      // Visual feedback
+      document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+      btn.classList.add('selected');
+      
+      // Record answer
+      selectedOption = option;
+      answers.push({
+        questionId: quizData.questions[currentQuestion].id,
+        optionId: option.id,
+        scores: option.scores
+      });
+      
+      // Update dimension scores
+      Object.keys(option.scores).forEach(dim => {
+        scores[dim] += option.scores[dim];
+      });
+      
+      // Transition to next question
+      isTransitioning = true;
+      setTimeout(() => {
+        currentQuestion++;
+        
+        if (currentQuestion < quizData.questions.length) {
+          document.getElementById('questionScreen').classList.add('slide-out');
+          setTimeout(() => {
+            document.getElementById('questionScreen').classList.remove('slide-out');
+            document.getElementById('questionScreen').classList.add('fade-in');
+            renderQuestion();
+            isTransitioning = false;
+          }, 300);
+        } else {
+          showLoading();
+        }
+      }, 400);
+    }
+
+    function showLoading() {
+      document.getElementById('progressContainer').classList.add('hidden');
+      document.getElementById('questionScreen').classList.add('hidden');
+      document.getElementById('loadingScreen').classList.remove('hidden');
+      document.getElementById('loadingScreen').classList.add('fade-in');
+      
+      setTimeout(() => {
+        calculateResult();
+      }, 2500);
+    }
+
+    // =============================================
+    // SCORING & RESULT CALCULATION
+    // =============================================
+    function calculateResult() {
+      // Find matching profile
+      let matchedProfile = null;
+      let bestMatchScore = -Infinity;
+      
+      quizData.profiles.forEach(profile => {
+        let matchScore = 0;
+        const m = profile.matching;
+        
+        // Check each dimension against matching criteria
+        Object.keys(m).forEach(dim => {
+          const dimScore = scores[dim];
+          const criteria = m[dim];
+          
+          if (criteria.min !== undefined && dimScore >= criteria.min) matchScore += 2;
+          if (criteria.max !== undefined && dimScore <= criteria.max) matchScore += 2;
+          if (criteria.min === undefined && criteria.max === undefined) matchScore += 1;
+        });
+        
+        if (matchScore > bestMatchScore) {
+          bestMatchScore = matchScore;
+          matchedProfile = profile;
+        }
+      });
+      
+      // Fallback to first profile if no match
+      if (!matchedProfile) {
+        matchedProfile = quizData.profiles[0];
+      }
+      
+      // Generate ContributionEvent
+      const event = generateContributionEvent(matchedProfile);
+      
+      // Log for debugging (can be sent to backend)
+      console.log('ContributionEvent:', JSON.stringify(event, null, 2));
+      
+      // Render result
+      renderResult(matchedProfile, event);
+    }
+
+    function generateContributionEvent(profile) {
+      const now = new Date().toISOString();
+      const maxPerDim = quizData.questions.length * 3; // Max possible score per dimension
+      
+      // Normalize scores to 1-100
+      const normalizedScores = {
+        d1: Math.round((scores.d1 / maxPerDim) * 99 + 1),
+        d2: Math.round((scores.d2 / maxPerDim) * 99 + 1),
+        d3: Math.round((scores.d3 / maxPerDim) * 99 + 1)
+      };
+      
+      // Get band for each score
+      const getBand = (score) => {
+        if (score <= 20) return 'low';
+        if (score <= 40) return 'midlow';
+        if (score <= 60) return 'mid';
+        if (score <= 80) return 'midhigh';
+        return 'high';
+      };
+      
+      // Build traits array
+      const traits = quizData.dimensions.map((dim, i) => ({
+        id: dim.traitId,
+        score: normalizedScores[dim.id],
+        band: getBand(normalizedScores[dim.id]),
+        confidence: 0.85,
+        method: 'forced_choice'
+      }));
+      
+      // Build markers from profile + computed
+      const markers = [
+        ...profile.markers.map(m => ({
+          ...m,
+          evidence: {
+            itemsAnswered: quizData.questions.length,
+            confidence: 0.85
+          }
+        })),
+        // Add dimension-derived markers
+        {
+          id: normalizedScores.d1 >= 50 ? 'marker.love.physical_expression' : 'marker.love.verbal_expression',
+          weight: Math.abs((normalizedScores.d1 - 50) / 50),
+          evidence: { confidence: 0.8 }
+        },
+        {
+          id: normalizedScores.d2 >= 50 ? 'marker.love.togetherness' : 'marker.love.independence',
+          weight: Math.abs((normalizedScores.d2 - 50) / 50),
+          evidence: { confidence: 0.8 }
+        },
+        {
+          id: normalizedScores.d3 >= 50 ? 'marker.love.passionate' : 'marker.love.subtle',
+          weight: Math.abs((normalizedScores.d3 - 50) / 50),
+          evidence: { confidence: 0.8 }
+        }
+      ];
+      
+      // Build tags
+      const tags = profile.tags.map(t => ({
+        ...t,
+        weight: t.kind === 'archetype' ? 0.95 : 0.4
+      }));
+      
+      // Build unlock
+      const unlocks = [{
+        id: profile.unlock.id,
+        unlocked: true,
+        unlockedAt: now,
+        level: profile.unlock.level,
+        sourceRef: quizData.meta.id
+      }];
+      
+      // Build summary
+      const summary = {
+        title: profile.title,
+        bullets: [
+          `Primäre Liebessprache: ${profile.loveLanguage}`,
+          `Expression-Modus: ${normalizedScores.d1 >= 50 ? 'Körperlich' : 'Verbal'} (${normalizedScores.d1}%)`,
+          `Verbindungs-Tiefe: ${normalizedScores.d2 >= 50 ? 'Intensiv' : 'Unabhängig'} (${normalizedScores.d2}%)`,
+          profile.tagline
+        ],
+        resultId: profile.id
+      };
+      
+      // Construct final event
+      return {
+        specVersion: 'sp.contribution.v1',
+        eventId: generateUUID(),
+        occurredAt: now,
+        source: {
+          vertical: 'quiz',
+          moduleId: quizData.meta.id,
+          domain: 'quiz.quizzme.io',
+          locale: quizData.meta.locale,
+          build: quizData.meta.version
+        },
+        payload: {
+          markers,
+          traits,
+          tags,
+          unlocks,
+          summary,
+          debug: {
+            rawScores: scores,
+            normalizedScores,
+            profileId: profile.id
+          }
+        }
+      };
+    }
+
+    function generateUUID() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
+    // =============================================
+    // RESULT RENDERING
+    // =============================================
+    function renderResult(profile, event) {
+      document.getElementById('loadingScreen').classList.add('hidden');
+      const resultScreen = document.getElementById('resultScreen');
+      resultScreen.classList.remove('hidden');
+      resultScreen.classList.add('fade-in');
+      
+      // Populate result data
+      document.getElementById('resultTitle').textContent = profile.title;
+      document.getElementById('resultLanguage').textContent = profile.loveLanguage;
+      document.getElementById('resultTagline').textContent = `"${profile.tagline}"`;
+      document.getElementById('resultDescription').textContent = profile.description;
+      
+      // Render trait bars
+      const traitBars = document.getElementById('traitBars');
+      traitBars.innerHTML = '';
+      
+      event.payload.traits.forEach(trait => {
+        const dim = quizData.dimensions.find(d => d.traitId === trait.id);
+        const item = document.createElement('div');
+        item.className = 'trait-item';
+        item.innerHTML = `
+          <div class="trait-header">
+            <span class="trait-name">${dim.pole_low} ↔ ${dim.pole_high}</span>
+            <span class="trait-score">${trait.score}%</span>
+          </div>
+          <div class="trait-bar">
+            <div class="trait-fill" style="width: 0%"></div>
+          </div>
+        `;
+        traitBars.appendChild(item);
+        
+        // Animate bar
+        setTimeout(() => {
+          item.querySelector('.trait-fill').style.width = trait.score + '%';
+        }, 300);
+      });
+      
+      // Render stats
+      const statsContainer = document.getElementById('statsContainer');
+      statsContainer.innerHTML = '';
+      profile.stats.forEach(stat => {
+        const row = document.createElement('div');
+        row.className = 'stat-row';
+        row.innerHTML = `
+          <span class="stat-label">${stat.label}</span>
+          <span class="stat-value">${stat.value}</span>
+        `;
+        statsContainer.appendChild(row);
+      });
+      
+      // Render compatibility
+      const compatContainer = document.getElementById('compatContainer');
+      compatContainer.innerHTML = `
+        <div class="compat-row">
+          <div class="compat-label">Allies</div>
+          <div class="compat-value">${profile.allies.join(', ')}</div>
+        </div>
+        <div class="compat-row">
+          <div class="compat-label nemesis">Nemesis</div>
+          <div class="compat-value">${profile.nemesis}</div>
+        </div>
+      `;
+      
+      // Store event for sharing
+      window.lastContributionEvent = event;
+    }
+
+    function restartQuiz() {
+      currentQuestion = 0;
+      answers = [];
+      scores = { d1: 0, d2: 0, d3: 0 };
+      selectedOption = null;
+      isTransitioning = false;
+      
+      document.getElementById('resultScreen').classList.add('hidden');
+      document.getElementById('introScreen').classList.remove('hidden');
+      document.getElementById('introScreen').classList.add('fade-in');
+    }
+
+    function shareResult() {
+      const event = window.lastContributionEvent;
+      if (!event) return;
+      
+      const shareText = `Ich bin "${event.payload.summary.title}" – ${event.payload.summary.bullets[0]}. Welche Sprache spricht dein Herz?`;
+      
+      if (navigator.share) {
+        navigator.share({
+          title: 'Mein Love Language Archetyp',
+          text: shareText,
+          url: window.location.href
+        });
+      } else {
+        // Fallback: Copy to clipboard
+        navigator.clipboard.writeText(shareText + '\n' + window.location.href).then(() => {
+          alert('In Zwischenablage kopiert!');
+        });
+      }
+    }
+
+    // =============================================
+    // INITIALIZATION
+    // =============================================
+    document.addEventListener('DOMContentLoaded', () => {
+      createParticles();
+    });
+  </script>
+</body>
+</html>

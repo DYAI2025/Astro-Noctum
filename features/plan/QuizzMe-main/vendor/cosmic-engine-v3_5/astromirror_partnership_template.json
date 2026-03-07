@@ -1,0 +1,173 @@
+{
+  "template_version": "1.0.0",
+  "template_name": "AstroMirror Partnership Analysis",
+  "description": "Wiederverwendbares Template für Premium-Partnerschaftsanalysen basierend auf Ba Zi und westlicher Astrologie",
+  "schema": {
+    "person": {
+      "name": "string (required)",
+      "birth_date": "string - Format: '24. Juni 1980'",
+      "birth_place": "string",
+      "birth_time": "string (optional) - Format: '15:20 Uhr'",
+      "day_element": "Yang-Holz | Yin-Holz | Yang-Feuer | Yin-Feuer | Yang-Erde | Yin-Erde | Yang-Metall | Yin-Metall | Yang-Wasser | Yin-Wasser",
+      "day_element_symbol": "string (optional) - Unicode-Symbol",
+      "chinese_animal": "Ratte | Ochse | Tiger | Hase | Drache | Schlange | Pferd | Ziege | Affe | Hahn | Hund | Schwein",
+      "chinese_element": "Holz | Feuer | Erde | Metall | Wasser",
+      "western_sun": "Widder | Stier | Zwillinge | Krebs | Löwe | Jungfrau | Waage | Skorpion | Schütze | Steinbock | Wassermann | Fische",
+      "western_ascendant": "string",
+      "archetype_title": "string - Poetischer Titel wie 'Der Baum im Spiegel des Wassers'",
+      "archetype_description": "string - 2-3 Sätze Beschreibung",
+      "core_traits": ["string"] ,
+      "pillars": {
+        "Jahr": "string - z.B. 'Metall-Affe'",
+        "Monat": "string",
+        "Tag": "string",
+        "Stunde": "string"
+      }
+    },
+    "element_balance": {
+      "wood": "0-100 (Prozent)",
+      "fire": "0-100",
+      "earth": "0-100",
+      "metal": "0-100",
+      "water": "0-100",
+      "_note": "Summe sollte ca. 100-150 ergeben für visuelle Klarheit"
+    },
+    "dynamics": {
+      "attraction_type": "string - Beschreibt die Anziehungskraft",
+      "tension_field": "string - Beschreibt Spannungsquellen",
+      "growth_axis": "string - Beschreibt Wachstumspotenzial",
+      "mediator_element": "Holz | Feuer | Erde | Metall | Wasser - Das ausgleichende Element",
+      "key_strengths": ["string"] ,
+      "key_challenges": ["string"]
+    },
+    "cycles": [
+      {
+        "period": "string - z.B. '2020-2030'",
+        "theme": "string - z.B. 'Konsolidierung'",
+        "development": "string - Kurze Beschreibung",
+        "element_influence": "string (optional)"
+      }
+    ],
+    "current_year_theme": "string - z.B. 'Jahr der Holz-Schlange'",
+    "current_year_prognosis": "string - 3-5 Sätze Prognose",
+    "strategies": {
+      "career": "string",
+      "behavior": "string",
+      "environment": "string",
+      "health": "string"
+    }
+  },
+  "design_tokens": {
+    "colors": {
+      "bg_obsidian": "#070708",
+      "surface_graphite": "#0F1012",
+      "gold_primary": "#D4AF37",
+      "gold_muted": "#B8975E",
+      "gold_light": "#E8D5A3",
+      "emerald_deep": "#0F3D2E",
+      "emerald_glow": "#2D8B6F",
+      "text_ivory": "#F6F0E1",
+      "text_mist": "#CFC7B8",
+      "text_dim": "#8A8578",
+      "bg_paper": "#FDFBF7",
+      "bg_cream": "#F5F1E8",
+      "text_dark": "#1A1A1A",
+      "text_secondary": "#4A4A4A"
+    },
+    "wu_xing_elements": {
+      "wood": "#2D5A3D",
+      "fire": "#8B2E2E",
+      "earth": "#8B7355",
+      "metal": "#A0A0A0",
+      "water": "#1E3A5F"
+    }
+  },
+  "pdf_structure": {
+    "pages": [
+      {
+        "number": 1,
+        "name": "title_page",
+        "content": ["Logo", "Titel", "Untertitel", "Partner-Namen", "Geburtsdaten", "Zitat"]
+      },
+      {
+        "number": 2,
+        "name": "introduction_dashboard",
+        "content": ["Einführungstext", "Kosmisches Dashboard (Vier Säulen Tabelle)"]
+      },
+      {
+        "number": 3,
+        "name": "core_identities",
+        "content": ["Kernidentität Person A", "Kernidentität Person B", "Archetyp-Beschreibungen"]
+      },
+      {
+        "number": 4,
+        "name": "element_balance",
+        "content": ["Elementare Balance Chart", "Element-Interpretationen"]
+      },
+      {
+        "number": 5,
+        "name": "inner_team",
+        "content": ["Pentagon-Diagramm", "Aspekt-Erklärungen", "Legende"]
+      },
+      {
+        "number": 6,
+        "name": "core_dynamics",
+        "content": ["Kerndynamik", "Stärken", "Herausforderungen", "Mediator-Element"]
+      },
+      {
+        "number": 7,
+        "name": "strategies_prognosis",
+        "content": ["Strategien (4 Bereiche)", "Jahresprognose", "Lebenszyklen-Tabelle"]
+      },
+      {
+        "number": 8,
+        "name": "closing",
+        "content": ["Nächste Schritte", "Kontakt", "Disclaimer", "Footer"]
+      }
+    ]
+  },
+  "usage_example": {
+    "python_import": "from astromirror_partnership_pdf import AstroMirrorPDF, PartnershipAnalysis, Person, ElementBalance, PartnershipDynamic, LifeCycle",
+    "code_example": [
+      "person_a = Person(name='Max', birth_date='1. Januar 1985', birth_place='Berlin', ...)",
+      "person_b = Person(name='Lisa', birth_date='15. Juli 1988', birth_place='München', ...)",
+      "element_balance = ElementBalance(wood=30, fire=20, earth=25, metal=25, water=35)",
+      "dynamics = PartnershipDynamic(...)",
+      "analysis = PartnershipAnalysis(person_a=person_a, person_b=person_b, element_balance=element_balance, dynamics=dynamics)",
+      "generator = AstroMirrorPDF(analysis, 'output.pdf')",
+      "generator.generate()"
+    ]
+  },
+  "archetype_library": {
+    "wood_archetypes": [
+      "Der Baum im Spiegel des Wassers",
+      "Der wachsende Pfad",
+      "Der grüne Stratege",
+      "Die flexible Wurzel"
+    ],
+    "fire_archetypes": [
+      "Die lodernde Vision",
+      "Der Funkensprung",
+      "Das transformierende Licht",
+      "Der Herzenskompass"
+    ],
+    "earth_archetypes": [
+      "Der Berg unter dem wandernden Himmel",
+      "Die nährende Mitte",
+      "Der stille Anker",
+      "Das fruchtbare Tal"
+    ],
+    "metal_archetypes": [
+      "Die klare Klinge",
+      "Der kristalline Geist",
+      "Der geschliffene Spiegel",
+      "Die präzise Feder"
+    ],
+    "water_archetypes": [
+      "Der tiefe Strom",
+      "Die stille Quelle",
+      "Das Mondlicht im See",
+      "Der fließende Pfad"
+    ]
+  }
+}

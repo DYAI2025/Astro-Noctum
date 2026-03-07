@@ -1,0 +1,46 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="auraGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#D2A95A" stop-opacity="0.6"/>
+      <stop offset="70%" stop-color="#D2A95A" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#D2A95A" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="auraLine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E8C87A"/>
+      <stop offset="100%" stop-color="#A77D38"/>
+    </linearGradient>
+    <linearGradient id="auraLine2" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6CA192"/>
+      <stop offset="100%" stop-color="#4A8F6F"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Outer glow -->
+  <circle cx="64" cy="64" r="58" fill="url(#auraGlow)"/>
+  
+  <!-- Concentric circles -->
+  <circle cx="64" cy="64" r="52" stroke="url(#auraLine)" stroke-width="1" fill="none" opacity="0.4"/>
+  <circle cx="64" cy="64" r="42" stroke="url(#auraLine)" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <circle cx="64" cy="64" r="32" stroke="url(#auraLine)" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <circle cx="64" cy="64" r="22" stroke="url(#auraLine2)" stroke-width="1.2" fill="none" opacity="0.5"/>
+  
+  <!-- Core -->
+  <circle cx="64" cy="64" r="12" fill="#D2A95A"/>
+  <circle cx="64" cy="64" r="8" fill="#E8C87A" opacity="0.8"/>
+  
+  <!-- Radial lines -->
+  <path d="M64 12 L64 4" stroke="#D2A95A" stroke-width="2" opacity="0.5"/>
+  <path d="M64 124 L64 116" stroke="#D2A95A" stroke-width="2" opacity="0.5"/>
+  <path d="M12 64 L4 64" stroke="#D2A95A" stroke-width="2" opacity="0.5"/>
+  <path d="M124 64 L116 64" stroke="#D2A95A" stroke-width="2" opacity="0.5"/>
+  
+  <!-- Diagonal accents -->
+  <path d="M27 27 L22 22" stroke="#D2A95A" stroke-width="1.5" opacity="0.35"/>
+  <path d="M101 27 L106 22" stroke="#D2A95A" stroke-width="1.5" opacity="0.35"/>
+  <path d="M27 101 L22 106" stroke="#D2A95A" stroke-width="1.5" opacity="0.35"/>
+  <path d="M101 101 L106 106" stroke="#D2A95A" stroke-width="1.5" opacity="0.35"/>
+  
+  <!-- Additional energy waves -->
+  <circle cx="64" cy="64" r="48" stroke="#6CA192" stroke-width="0.5" fill="none" opacity="0.3" stroke-dasharray="4 8"/>
+  <circle cx="64" cy="64" r="56" stroke="#6CA192" stroke-width="0.5" fill="none" opacity="0.2" stroke-dasharray="2 6"/>
+</svg>

@@ -1,0 +1,1796 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcher Star ist dein Seelenverwandter? | QuizzMe</title>
+  <meta property="og:title" content="Welcher Star ist dein Seelenverwandter?">
+  <meta property="og:description" content="Finde heraus, welcher Celebrity deine Energie teilt – wissenschaftlich fundiert, überraschend ehrlich.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* QuizzMe Brand Colors - Based on Screenshots */
+      --bg-deep: #0A1F2C;
+      --bg-teal: #0D3B3F;
+      --bg-card: #F7F3EA;
+      --bg-card-dark: #F2E8D9;
+      
+      --gold-bright: #D2A95A;
+      --gold-muted: #B8935A;
+      --gold-dark: #8B6B3D;
+      
+      --teal-accent: #1C5B5C;
+      --sage: #6CA192;
+      
+      --text-light: #F7F3EA;
+      --text-dark: #2A1F18;
+      --text-muted: #6B5D4D;
+      
+      /* Typography */
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      
+      /* Spacing */
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: var(--font-sans);
+      background: linear-gradient(170deg, var(--bg-teal) 0%, var(--bg-deep) 40%, #051219 100%);
+      min-height: 100vh;
+      color: var(--text-light);
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    /* Ornamental Background Pattern */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        radial-gradient(ellipse 600px 400px at 10% 20%, rgba(210, 169, 90, 0.08) 0%, transparent 70%),
+        radial-gradient(ellipse 500px 350px at 90% 80%, rgba(28, 91, 92, 0.12) 0%, transparent 70%),
+        radial-gradient(1.5px 1.5px at 20% 30%, rgba(210, 169, 90, 0.25) 0%, transparent 100%),
+        radial-gradient(1px 1px at 40% 70%, rgba(210, 169, 90, 0.15) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 60% 20%, rgba(247, 243, 234, 0.12) 0%, transparent 100%),
+        radial-gradient(1px 1px at 80% 60%, rgba(210, 169, 90, 0.18) 0%, transparent 100%),
+        radial-gradient(1px 1px at 15% 85%, rgba(247, 243, 234, 0.1) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 70% 45%, rgba(210, 169, 90, 0.12) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    .container {
+      max-width: 580px;
+      margin: 0 auto;
+      padding: 24px 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+    }
+    
+    /* SCREENS */
+    .screen { display: none; }
+    .screen.active { display: block; animation: fadeIn 0.4s ease; }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* ==================== INTRO SCREEN ==================== */
+    .intro { text-align: center; }
+    
+    .intro-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(210, 169, 90, 0.15);
+      border: 1px solid rgba(210, 169, 90, 0.3);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      color: var(--gold-bright);
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    
+    .intro-icon {
+      width: 140px;
+      height: 140px;
+      margin: 0 auto 1.75rem;
+      position: relative;
+    }
+    
+    .intro-icon svg {
+      width: 100%;
+      height: 100%;
+    }
+    
+    .intro h1 {
+      font-family: var(--font-serif);
+      font-size: 2.5rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: var(--gold-bright);
+      line-height: 1.15;
+      letter-spacing: -0.01em;
+    }
+    
+    .intro .subtitle {
+      font-family: var(--font-serif);
+      font-style: italic;
+      color: var(--sage);
+      font-size: 1.15rem;
+      margin-bottom: 0.75rem;
+      line-height: 1.5;
+    }
+    
+    .intro .meta {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: center;
+      gap: 1.75rem;
+      opacity: 0.8;
+    }
+    
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .meta-item svg {
+      opacity: 0.7;
+    }
+    
+    .start-btn {
+      background: linear-gradient(135deg, var(--gold-bright) 0%, var(--gold-muted) 100%);
+      color: var(--text-dark);
+      border: none;
+      padding: 1rem 2.75rem;
+      font-family: var(--font-sans);
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 24px rgba(210, 169, 90, 0.3);
+      letter-spacing: 0.02em;
+    }
+    
+    .start-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(210, 169, 90, 0.4);
+    }
+    
+    .disclaimer {
+      color: var(--teal-accent);
+      font-size: 0.7rem;
+      margin-top: 2.5rem;
+      line-height: 1.6;
+      opacity: 0.7;
+      max-width: 380px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    /* ==================== QUIZ CARD ==================== */
+    .quiz-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-xl);
+      padding: 2rem 1.75rem;
+      box-shadow: 
+        0 4px 60px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(210, 169, 90, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Corner Decorations */
+    .quiz-card::before,
+    .quiz-card::after {
+      content: '';
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border: 1.5px solid var(--gold-muted);
+      opacity: 0.4;
+    }
+    .quiz-card::before {
+      top: 12px;
+      left: 12px;
+      border-right: none;
+      border-bottom: none;
+    }
+    .quiz-card::after {
+      bottom: 12px;
+      right: 12px;
+      border-left: none;
+      border-top: none;
+    }
+    
+    /* PROGRESS */
+    .progress-container { 
+      margin-bottom: 1.75rem;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.6rem;
+      font-weight: 500;
+    }
+    
+    .progress-track {
+      height: 4px;
+      background: rgba(139, 107, 61, 0.2);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold-dark) 0%, var(--gold-bright) 100%);
+      border-radius: 999px;
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 12px rgba(210, 169, 90, 0.5);
+    }
+    
+    /* QUESTION */
+    .question-container { 
+      transition: opacity 0.3s, transform 0.3s;
+      position: relative;
+      z-index: 1;
+    }
+    .question-container.fading { 
+      opacity: 0.4;
+      transform: translateX(-10px);
+    }
+    
+    .scenario {
+      font-family: var(--font-serif);
+      font-style: italic;
+      color: var(--teal-accent);
+      font-size: 1rem;
+      margin-bottom: 0.75rem;
+      line-height: 1.5;
+    }
+    
+    .question-text {
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 1.75rem;
+      line-height: 1.3;
+    }
+    
+    /* OPTIONS */
+    .options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.875rem;
+    }
+    
+    .option-btn {
+      background: rgba(255, 255, 255, 0.7);
+      border: 1.5px solid rgba(139, 107, 61, 0.2);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.875rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      text-align: left;
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      color: var(--text-dark);
+      line-height: 1.4;
+    }
+    
+    .option-btn:hover {
+      background: rgba(255, 255, 255, 0.95);
+      border-color: var(--gold-muted);
+      transform: translateX(4px);
+      box-shadow: 0 4px 16px rgba(139, 107, 61, 0.12);
+    }
+    
+    .option-btn:active {
+      transform: translateX(2px) scale(0.98);
+    }
+    
+    .option-emoji {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-card-dark);
+      border-radius: var(--radius-sm);
+    }
+    
+    /* MICRO WIN */
+    .micro-win {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--bg-card);
+      padding: 1rem 1.5rem;
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+      z-index: 100;
+      animation: microWinPop 0.6s ease forwards;
+      border: 1px solid rgba(210, 169, 90, 0.3);
+    }
+    
+    @keyframes microWinPop {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+      20% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+      40% { transform: translate(-50%, -50%) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -60%) scale(0.9); }
+    }
+    
+    .micro-win-emoji { font-size: 1.5rem; }
+    .micro-win-text { 
+      font-family: var(--font-serif);
+      font-style: italic;
+      color: var(--text-dark);
+      font-size: 1rem;
+    }
+    
+    /* ==================== LOADING ==================== */
+    .loading { text-align: center; }
+    
+    .loading-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-xl);
+      padding: 3rem 2rem;
+      box-shadow: 0 4px 60px rgba(0, 0, 0, 0.4);
+    }
+    
+    .loading-spinner {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1.5rem;
+      position: relative;
+    }
+    
+    .loading-spinner::before,
+    .loading-spinner::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+    }
+    
+    .loading-spinner::before {
+      width: 100%;
+      height: 100%;
+      border: 3px solid var(--bg-card-dark);
+      border-top-color: var(--gold-bright);
+      animation: spin 1s linear infinite;
+    }
+    
+    .loading-spinner::after {
+      width: 60%;
+      height: 60%;
+      top: 20%;
+      left: 20%;
+      border: 2px solid var(--bg-card-dark);
+      border-bottom-color: var(--teal-accent);
+      animation: spin 1.5s linear infinite reverse;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .loading h2 {
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      color: var(--text-dark);
+      margin-bottom: 0.5rem;
+    }
+    
+    .loading p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    
+    /* ==================== RESULT SCREEN ==================== */
+    .result-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: 0 4px 60px rgba(0, 0, 0, 0.4);
+    }
+    
+    /* Result Header */
+    .result-header {
+      background: linear-gradient(135deg, var(--bg-teal) 0%, var(--bg-deep) 100%);
+      padding: 2rem 1.75rem;
+      text-align: center;
+      position: relative;
+    }
+    
+    .result-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(ellipse 300px 200px at 50% 0%, rgba(210, 169, 90, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    
+    .result-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--sage);
+      margin-bottom: 0.5rem;
+      position: relative;
+    }
+    
+    .result-name {
+      font-family: var(--font-serif);
+      font-size: 2.25rem;
+      font-weight: 600;
+      color: var(--gold-bright);
+      margin-bottom: 0.5rem;
+      position: relative;
+    }
+    
+    .result-tagline {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 1rem;
+      color: var(--text-light);
+      opacity: 0.9;
+      position: relative;
+      max-width: 320px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+    
+    .match-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(210, 169, 90, 0.2);
+      border: 1px solid rgba(210, 169, 90, 0.4);
+      padding: 8px 16px;
+      border-radius: 24px;
+      margin-top: 1rem;
+      position: relative;
+    }
+    
+    .match-percent {
+      font-family: var(--font-serif);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--gold-bright);
+    }
+    
+    .match-label {
+      font-size: 0.75rem;
+      color: var(--text-light);
+      opacity: 0.8;
+    }
+    
+    /* Result Body */
+    .result-body {
+      padding: 1.75rem;
+    }
+    
+    /* Wesentliche Natur Section (from screenshot) */
+    .nature-section {
+      margin-bottom: 1.75rem;
+    }
+    
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(139, 107, 61, 0.2);
+    }
+    
+    .trait-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .trait-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    
+    .trait-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .trait-name {
+      font-size: 0.9rem;
+      color: var(--text-dark);
+      font-weight: 500;
+    }
+    
+    .trait-value {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    
+    .trait-delta {
+      font-size: 0.75rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 8px;
+    }
+    
+    .trait-delta.positive {
+      background: rgba(108, 161, 146, 0.2);
+      color: var(--sage);
+    }
+    
+    .trait-delta.negative {
+      background: rgba(200, 100, 100, 0.15);
+      color: #C86464;
+    }
+    
+    .trait-bar-track {
+      height: 8px;
+      background: rgba(139, 107, 61, 0.15);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .trait-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold-dark) 0%, var(--gold-bright) 100%);
+      border-radius: 4px;
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Archetyp Box (from screenshot) */
+    .archetype-box {
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(139, 107, 61, 0.2);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 1.75rem;
+      text-align: center;
+      position: relative;
+    }
+    
+    .archetype-box::before,
+    .archetype-box::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border: 1px solid var(--gold-muted);
+      opacity: 0.5;
+    }
+    .archetype-box::before {
+      top: 8px;
+      left: 8px;
+      border-right: none;
+      border-bottom: none;
+    }
+    .archetype-box::after {
+      bottom: 8px;
+      right: 8px;
+      border-left: none;
+      border-top: none;
+    }
+    
+    .archetype-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+    
+    .archetype-title {
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 0.75rem;
+    }
+    
+    .archetype-description {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    
+    /* Compatibility Section */
+    .compatibility-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+    }
+    
+    .compat-card {
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(139, 107, 61, 0.15);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      text-align: center;
+    }
+    
+    .compat-card.ally {
+      border-color: rgba(108, 161, 146, 0.3);
+    }
+    
+    .compat-card.rival {
+      border-color: rgba(200, 130, 100, 0.3);
+    }
+    
+    .compat-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .compat-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+    
+    .compat-name {
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+    
+    /* Runner Ups */
+    .runner-ups-section {
+      margin-bottom: 1.5rem;
+    }
+    
+    .runner-ups-title {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+      font-weight: 500;
+    }
+    
+    .runner-ups-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .runner-up-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      background: rgba(255, 255, 255, 0.4);
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+    }
+    
+    .runner-up-name {
+      color: var(--text-dark);
+    }
+    
+    .runner-up-match {
+      color: var(--gold-dark);
+      font-weight: 600;
+    }
+    
+    /* Action Buttons */
+    .action-buttons {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    
+    .btn-primary {
+      flex: 1;
+      background: linear-gradient(135deg, var(--gold-bright) 0%, var(--gold-muted) 100%);
+      color: var(--text-dark);
+      border: none;
+      padding: 0.875rem 1.5rem;
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(210, 169, 90, 0.35);
+    }
+    
+    .btn-secondary {
+      flex: 1;
+      background: transparent;
+      color: var(--text-dark);
+      border: 1.5px solid rgba(139, 107, 61, 0.3);
+      padding: 0.875rem 1.5rem;
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    
+    .btn-secondary:hover {
+      border-color: var(--gold-muted);
+      background: rgba(210, 169, 90, 0.1);
+    }
+    
+    .result-disclaimer {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-align: center;
+      line-height: 1.5;
+      opacity: 0.7;
+    }
+    
+    /* Debug Panel (hidden by default) */
+    .debug-panel {
+      display: none;
+      background: #1a1a1a;
+      color: #00ff00;
+      font-family: monospace;
+      font-size: 0.7rem;
+      padding: 1rem;
+      margin-top: 1rem;
+      border-radius: var(--radius-md);
+      max-height: 300px;
+      overflow: auto;
+    }
+    
+    .debug-panel.visible {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- INTRO SCREEN -->
+    <div id="intro" class="screen active intro">
+      <div class="intro-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        Persönlichkeitstest
+      </div>
+      
+      <div class="intro-icon">
+        <svg viewBox="0 0 120 120" fill="none">
+          <defs>
+            <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#D2A95A"/>
+              <stop offset="100%" stop-color="#8B6B3D"/>
+            </linearGradient>
+          </defs>
+          <!-- Outer ring -->
+          <circle cx="60" cy="60" r="55" stroke="url(#goldGrad)" stroke-width="1.5" fill="none" opacity="0.4"/>
+          <circle cx="60" cy="60" r="45" stroke="url(#goldGrad)" stroke-width="1" fill="none" opacity="0.3"/>
+          <!-- Star constellation -->
+          <circle cx="60" cy="35" r="3" fill="#D2A95A"/>
+          <circle cx="40" cy="55" r="2.5" fill="#D2A95A" opacity="0.8"/>
+          <circle cx="80" cy="55" r="2.5" fill="#D2A95A" opacity="0.8"/>
+          <circle cx="45" cy="80" r="2" fill="#D2A95A" opacity="0.6"/>
+          <circle cx="75" cy="80" r="2" fill="#D2A95A" opacity="0.6"/>
+          <!-- Connection lines -->
+          <path d="M60 35 L40 55 L45 80 L75 80 L80 55 L60 35" stroke="#D2A95A" stroke-width="0.75" fill="none" opacity="0.5"/>
+          <path d="M40 55 L80 55 M45 80 L75 80" stroke="#D2A95A" stroke-width="0.5" fill="none" opacity="0.3"/>
+          <!-- Center glow -->
+          <circle cx="60" cy="60" r="12" fill="url(#goldGrad)" opacity="0.15"/>
+          <circle cx="60" cy="60" r="6" fill="#D2A95A" opacity="0.4"/>
+        </svg>
+      </div>
+      
+      <h1>Welcher Star ist dein Seelenverwandter?</h1>
+      <p class="subtitle">Finde heraus, welcher Celebrity deine Energie teilt – überraschend ehrlich.</p>
+      
+      <div class="meta">
+        <span class="meta-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          ~3 Min
+        </span>
+        <span class="meta-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+          12 Fragen
+        </span>
+      </div>
+      
+      <button class="start-btn" onclick="startQuiz()">Test starten</button>
+      
+      <p class="disclaimer">Dieser Test dient der spielerischen Selbstreflexion und stellt keine psychologische Diagnose dar.</p>
+    </div>
+    
+    <!-- QUESTION SCREEN -->
+    <div id="question" class="screen">
+      <div class="quiz-card">
+        <div class="progress-container">
+          <div class="progress-labels">
+            <span>Frage <span id="currentQ">1</span> von 12</span>
+            <span id="progressPercent">0%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+          </div>
+        </div>
+        
+        <div id="questionContainer" class="question-container">
+          <p id="scenario" class="scenario"></p>
+          <h2 id="questionText" class="question-text"></h2>
+          <div id="options" class="options-grid"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- LOADING SCREEN -->
+    <div id="loading" class="screen loading">
+      <div class="loading-card">
+        <div class="loading-spinner"></div>
+        <h2>Analysiere deine Antworten...</h2>
+        <p>Finde deinen Celebrity-Match</p>
+      </div>
+    </div>
+    
+    <!-- RESULT SCREEN -->
+    <div id="result" class="screen">
+      <div class="result-card">
+        <div class="result-header">
+          <p class="result-label">Dein Seelenverwandter</p>
+          <h1 id="resultName" class="result-name"></h1>
+          <p id="resultTagline" class="result-tagline"></p>
+          <div class="match-badge">
+            <span id="matchPercent" class="match-percent"></span>
+            <span class="match-label">Match</span>
+          </div>
+        </div>
+        
+        <div class="result-body">
+          <!-- Wesentliche Natur -->
+          <div class="nature-section">
+            <h3 class="section-title">Wesentliche Natur</h3>
+            <div id="traitBars" class="trait-bars"></div>
+          </div>
+          
+          <!-- Archetyp Box -->
+          <div class="archetype-box">
+            <p class="archetype-label">Primärer Archetyp</p>
+            <h3 id="archetypeTitle" class="archetype-title"></h3>
+            <p id="archetypeDesc" class="archetype-description"></p>
+          </div>
+          
+          <!-- Compatibility -->
+          <div class="compatibility-section">
+            <div class="compat-card ally">
+              <div class="compat-icon">🤝</div>
+              <p class="compat-label">Dein Ally</p>
+              <p id="allyName" class="compat-name"></p>
+            </div>
+            <div class="compat-card rival">
+              <div class="compat-icon">⚡</div>
+              <p class="compat-label">Spannung mit</p>
+              <p id="rivalName" class="compat-name"></p>
+            </div>
+          </div>
+          
+          <!-- Runner Ups -->
+          <div class="runner-ups-section">
+            <p class="runner-ups-title">Weitere Matches</p>
+            <div id="runnerUpsList" class="runner-ups-list"></div>
+          </div>
+          
+          <div class="action-buttons">
+            <button class="btn-primary" onclick="shareResult()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="18" cy="5" r="3"/>
+                <circle cx="6" cy="12" r="3"/>
+                <circle cx="18" cy="19" r="3"/>
+                <path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/>
+              </svg>
+              Ergebnis teilen
+            </button>
+            <button class="btn-secondary" onclick="retryQuiz()">Nochmal</button>
+          </div>
+          
+          <p class="result-disclaimer">Dieser Test dient der spielerischen Selbstreflexion und stellt keine psychologische Diagnose dar.</p>
+          
+          <!-- Debug Panel -->
+          <div id="debugPanel" class="debug-panel">
+            <pre id="debugOutput"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+
+<script>
+// ============================================
+// QUIZ CONFIG
+// ============================================
+const QUIZ_CONFIG = {
+  quizId: "celebrity-soulmate",
+  version: "2.0.0",
+  moduleId: "quiz.celebrity_soulmate.v2",
+  vertical: "quiz",
+  domain: "quiz.quizzme.io",
+  locale: "de-DE"
+};
+
+// ============================================
+// PSYCHE DIMENSIONS (based on schema)
+// ============================================
+const DIMENSIONS = {
+  E: { id: "extraversion", label: "Präsenz", traitId: "trait.social.extraversion" },
+  K: { id: "creativity", label: "Kreativität", traitId: "trait.style.creativity" },
+  B: { id: "connection", label: "Verbindung", traitId: "trait.social.connection" },
+  A: { id: "ambition", label: "Ambition", traitId: "trait.drive.ambition" }
+};
+
+// ============================================
+// CELEBRITY DATABASE
+// ============================================
+const celebrities = [
+  {
+    name: "Taylor Swift",
+    tagline: "Verletzlichkeit ist Stärke – und jedes Kapitel verdient einen Song.",
+    category: "Musik",
+    archetype: "Die Geschichtenweberin",
+    E: 7, K: 9, B: 8, A: 9,
+    traits: ["Storytelling", "Emotionale Tiefe", "Strategischer Kopf", "Loyalität"]
+  },
+  {
+    name: "Beyoncé",
+    tagline: "Perfektion ist kein Ziel, sondern ein Standard.",
+    category: "Musik",
+    archetype: "Die Königin",
+    E: 8, K: 9, B: 6, A: 10,
+    traits: ["Disziplin", "Präsenz", "Künstlerische Vision", "Führungsstärke"]
+  },
+  {
+    name: "Harry Styles",
+    tagline: "Authentizität über Konvention – immer.",
+    category: "Musik",
+    archetype: "Der Freigeist",
+    E: 8, K: 8, B: 8, A: 6,
+    traits: ["Offenheit", "Charm", "Gender-Fluid Expression", "Wärme"]
+  },
+  {
+    name: "Zendaya",
+    tagline: "Still beobachten, dann alle überraschen.",
+    category: "Film",
+    archetype: "Die Chamäleonin",
+    E: 5, K: 8, B: 7, A: 8,
+    traits: ["Unterschätzte Tiefe", "Mode-Instinkt", "Selektive Präsenz", "Wandelbarkeit"]
+  },
+  {
+    name: "Timothée Chalamet",
+    tagline: "Sensibilität ist die wahre Rebellion.",
+    category: "Film",
+    archetype: "Der Poet",
+    E: 5, K: 9, B: 6, A: 7,
+    traits: ["Künstlerseele", "Verletzliche Stärke", "Filmgeschmack", "Indie-Credibility"]
+  },
+  {
+    name: "Rihanna",
+    tagline: "Business-Mogul? Check. Icon? Unbestreitbar.",
+    category: "Musik",
+    archetype: "Die Unternehmerin",
+    E: 9, K: 8, B: 5, A: 10,
+    traits: ["Boss-Energy", "Risiko-Bereitschaft", "Trendsetting", "Unapologetic"]
+  },
+  {
+    name: "Keanu Reeves",
+    tagline: "In einer lauten Welt ist Stille die größte Aussage.",
+    category: "Film",
+    archetype: "Der Weise",
+    E: 3, K: 5, B: 9, A: 4,
+    traits: ["Bescheidenheit", "Tiefe Güte", "Mysterium", "Loyalität"]
+  },
+  {
+    name: "Lady Gaga",
+    tagline: "Monster zu sein ist ein Kompliment.",
+    category: "Musik",
+    archetype: "Die Transformistin",
+    E: 9, K: 10, B: 7, A: 9,
+    traits: ["Selbsterfindung", "Theatralik", "Aktivismus", "Verletzlichkeit zeigen"]
+  },
+  {
+    name: "Ryan Gosling",
+    tagline: "Cool ist, wenn man es nicht versucht.",
+    category: "Film",
+    archetype: "Der Stille Held",
+    E: 4, K: 7, B: 7, A: 5,
+    traits: ["Understatement", "Vielseitigkeit", "Humor", "Familienfokus"]
+  },
+  {
+    name: "Dua Lipa",
+    tagline: "Grenzen existieren nur im Kopf anderer.",
+    category: "Musik",
+    archetype: "Die Moderne Diva",
+    E: 7, K: 7, B: 6, A: 8,
+    traits: ["Selbstvertrauen", "Ästhetik-Gespür", "Durchsetzung", "Moderne Diva"]
+  },
+  {
+    name: "Elon Musk",
+    tagline: "Die Zukunft wartet nicht – also bau sie selbst.",
+    category: "Tech",
+    archetype: "Der Visionär",
+    E: 6, K: 10, B: 2, A: 10,
+    traits: ["Visionär", "Kontrovers", "Workaholic", "Risiko-Süchtig"]
+  },
+  {
+    name: "Billie Eilish",
+    tagline: "Ich flüstere, und die Welt hört zu.",
+    category: "Musik",
+    archetype: "Die Flüsterin",
+    E: 4, K: 9, B: 6, A: 6,
+    traits: ["Gen-Z-Voice", "Anti-Mainstream", "Emotionale Rohheit", "Familienband"]
+  },
+  {
+    name: "Chris Hemsworth",
+    tagline: "Sixpack optional, Humor obligatorisch.",
+    category: "Film",
+    archetype: "Der Sonnenschein",
+    E: 8, K: 5, B: 9, A: 6,
+    traits: ["Selbstironie", "Fitness-Dedication", "Dad-Vibes", "Teamplayer"]
+  },
+  {
+    name: "Adele",
+    tagline: "Herzschmerz klingt in meiner Stimme wie Poesie.",
+    category: "Musik",
+    archetype: "Die Balladenkönigin",
+    E: 6, K: 8, B: 8, A: 6,
+    traits: ["Emotionale Ehrlichkeit", "Stimm-Gewalt", "Bodenständig", "Brit-Humor"]
+  },
+  {
+    name: "Bad Bunny",
+    tagline: "Reggaeton ist nur der Anfang.",
+    category: "Musik",
+    archetype: "Der Regelbrecher",
+    E: 8, K: 8, B: 5, A: 9,
+    traits: ["Genre-Brecher", "Maskulinität neu definiert", "Kultureller Stolz", "Unberechenbar"]
+  },
+  {
+    name: "Emma Watson",
+    tagline: "Aktivismus ist keine Phase – es ist Verantwortung.",
+    category: "Film",
+    archetype: "Die Aktivistin",
+    E: 5, K: 6, B: 8, A: 7,
+    traits: ["Intellekt", "Feminismus", "Würde", "Sustainable Fashion"]
+  },
+  {
+    name: "Post Malone",
+    tagline: "Tattoos erzählen Geschichten, die Worte nicht können.",
+    category: "Musik",
+    archetype: "Der Authentische",
+    E: 6, K: 7, B: 8, A: 5,
+    traits: ["Genre-Fluid", "Authentische Weirdness", "Loyalität", "Underdog-Spirit"]
+  },
+  {
+    name: "Margot Robbie",
+    tagline: "Unterschätzt zu werden ist mein Vorteil.",
+    category: "Film",
+    archetype: "Die Macherin",
+    E: 7, K: 8, B: 7, A: 8,
+    traits: ["Produzentin-Brain", "Transformationsfähigkeit", "Aussie-Groundedness", "Harley Quinn Energy"]
+  },
+  {
+    name: "The Weeknd",
+    tagline: "In der Dunkelheit finde ich meine hellsten Ideen.",
+    category: "Musik",
+    archetype: "Der Mysteriker",
+    E: 4, K: 9, B: 4, A: 9,
+    traits: ["Mysterium", "Visuelle Welten", "Melancholie", "Selbst-Mythos"]
+  },
+  {
+    name: "Selena Gomez",
+    tagline: "Meine Verletzlichkeit ist meine Superkraft.",
+    category: "Musik",
+    archetype: "Die Empathische",
+    E: 6, K: 6, B: 9, A: 6,
+    traits: ["Mental Health Advocacy", "Warmherzigkeit", "Comeback-Stärke", "Echte Freundschaften"]
+  }
+];
+
+// ============================================
+// QUESTIONS
+// ============================================
+const questions = [
+  {
+    id: "q1",
+    scenario: "Du betrittst eine Party, auf der du kaum jemanden kennst...",
+    question: "Was ist dein erster Instinkt?",
+    options: [
+      { id: "q1a", text: "Die Tanzfläche gehört mir in 10 Minuten", emoji: "💃", scores: { E: 2, K: 1, B: 0, A: 1 }, markers: { clarity: 0.1, courage: 0.3, connection: 0.1 } },
+      { id: "q1b", text: "Erstmal strategisch umschauen, dann gezielt connecten", emoji: "👀", scores: { E: 0, K: 1, B: 1, A: 1 }, markers: { clarity: 0.2, order: 0.2 } },
+      { id: "q1c", text: "Die eine interessante Person finden und deep talken", emoji: "🎯", scores: { E: -1, K: 0, B: 2, A: 0 }, markers: { connection: 0.3, clarity: 0.1 } },
+      { id: "q1d", text: "Kurz zeigen, dann Irish Exit", emoji: "🚪", scores: { E: -2, K: 0, B: 0, A: 0 }, markers: { shadow: 0.1 } }
+    ]
+  },
+  {
+    id: "q2",
+    scenario: "Ein Freund erzählt von seinem wilden Startup-Plan...",
+    question: "Deine ehrliche Reaktion?",
+    options: [
+      { id: "q2a", text: "Ich bin dabei – wann starten wir?", emoji: "🚀", scores: { E: 1, K: 2, B: 1, A: 2 }, markers: { courage: 0.3, clarity: 0.1 } },
+      { id: "q2b", text: "Spannend! Hier sind 5 Dinge, die du bedenken solltest", emoji: "📋", scores: { E: 0, K: 1, B: 1, A: 1 }, markers: { order: 0.2, clarity: 0.2 } },
+      { id: "q2c", text: "Ich unterstütze emotional, aber mein Geld bleibt sicher", emoji: "🤗", scores: { E: 0, K: 0, B: 2, A: 0 }, markers: { connection: 0.3 } },
+      { id: "q2d", text: "Interessant... *recherchiert heimlich ob die Idee gut ist*", emoji: "🔍", scores: { E: -1, K: 1, B: 0, A: 1 }, markers: { clarity: 0.2, shadow: 0.05 } }
+    ]
+  },
+  {
+    id: "q3",
+    scenario: "Du hast einen freien Tag komplett für dich allein...",
+    question: "Wie verbringst du ihn idealerweise?",
+    options: [
+      { id: "q3a", text: "Kreativprojekt – malen, schreiben, Musik machen", emoji: "🎨", scores: { E: 0, K: 2, B: 0, A: 0 }, markers: { clarity: 0.2, courage: 0.1 } },
+      { id: "q3b", text: "Wellness, Couch, meine Lieblingsserien", emoji: "🛋️", scores: { E: -1, K: 0, B: 1, A: -1 }, markers: { connection: 0.1 } },
+      { id: "q3c", text: "Spontan was Neues ausprobieren – Kochkurs, Wandern?", emoji: "🌄", scores: { E: 1, K: 1, B: 0, A: 1 }, markers: { courage: 0.2, clarity: 0.1 } },
+      { id: "q3d", text: "Deep Work an meinen Zielen", emoji: "💻", scores: { E: -1, K: 1, B: -1, A: 2 }, markers: { order: 0.2, clarity: 0.2 } }
+    ]
+  },
+  {
+    id: "q4",
+    scenario: "Jemand kritisiert öffentlich deine Arbeit...",
+    question: "Wie gehst du damit um?",
+    options: [
+      { id: "q4a", text: "Öffentlich und eloquent kontern", emoji: "⚔️", scores: { E: 2, K: 1, B: -1, A: 1 }, markers: { courage: 0.3, shadow: 0.1 } },
+      { id: "q4b", text: "Analysieren – ist da was dran? Dann verbessern", emoji: "🔬", scores: { E: 0, K: 1, B: 0, A: 1 }, markers: { clarity: 0.3, order: 0.1 } },
+      { id: "q4c", text: "Mit Vertrauten besprechen, dann Perspektive gewinnen", emoji: "💭", scores: { E: -1, K: 0, B: 2, A: 0 }, markers: { connection: 0.3 } },
+      { id: "q4d", text: "Ignorieren – wer nicht mein Fan ist, interessiert mich nicht", emoji: "🙄", scores: { E: 0, K: 0, B: -1, A: 1 }, markers: { shadow: 0.15, courage: 0.1 } }
+    ]
+  },
+  {
+    id: "q5",
+    scenario: "Du könntest eine Superkraft haben...",
+    question: "Welche wählst du?",
+    options: [
+      { id: "q5a", text: "Gedanken lesen – endlich echtes Verstehen", emoji: "🧠", scores: { E: 0, K: 1, B: 2, A: 0 }, markers: { connection: 0.2, clarity: 0.2 } },
+      { id: "q5b", text: "Zeitreisen – Fehler korrigieren, Chancen nutzen", emoji: "⏰", scores: { E: 0, K: 2, B: 0, A: 2 }, markers: { order: 0.2, clarity: 0.2 } },
+      { id: "q5c", text: "Unsichtbarkeit – beobachten ohne beurteilt zu werden", emoji: "👻", scores: { E: -2, K: 1, B: 0, A: 0 }, markers: { shadow: 0.15 } },
+      { id: "q5d", text: "Fliegen – Freiheit und Perspektivwechsel", emoji: "🦅", scores: { E: 1, K: 1, B: 0, A: 1 }, markers: { courage: 0.2, clarity: 0.1 } }
+    ]
+  },
+  {
+    id: "q6",
+    scenario: "Bei einem Gruppenprojekt läuft es chaotisch...",
+    question: "Welche Rolle übernimmst du automatisch?",
+    options: [
+      { id: "q6a", text: "Ich strukturiere das jetzt – jemand muss ja", emoji: "📊", scores: { E: 1, K: 0, B: 1, A: 2 }, markers: { order: 0.3, clarity: 0.1 } },
+      { id: "q6b", text: "Vermitteln zwischen den Streithähnen", emoji: "🕊️", scores: { E: 0, K: 0, B: 2, A: 0 }, markers: { connection: 0.3 } },
+      { id: "q6c", text: "Die kreativen Ideen einbringen, Organisation ist für andere", emoji: "💡", scores: { E: 0, K: 2, B: 0, A: 0 }, markers: { clarity: 0.2, courage: 0.1 } },
+      { id: "q6d", text: "Meinen Teil abliefern und hoffen, dass es passt", emoji: "✅", scores: { E: -1, K: 0, B: 0, A: 1 }, markers: { order: 0.1, shadow: 0.05 } }
+    ]
+  },
+  {
+    id: "q7",
+    scenario: "Dein Social-Media-Stil ist am ehesten...",
+    question: "Wie zeigst du dich online?",
+    options: [
+      { id: "q7a", text: "Kuratiert ästhetisch – mein Feed ist Kunst", emoji: "🖼️", scores: { E: 1, K: 2, B: 0, A: 1 }, markers: { clarity: 0.2, order: 0.1 } },
+      { id: "q7b", text: "Authentisch chaotisch – Stories > Posts", emoji: "📱", scores: { E: 1, K: 0, B: 1, A: 0 }, markers: { courage: 0.15, connection: 0.1 } },
+      { id: "q7c", text: "Strategische Präsenz für meine Ziele", emoji: "📈", scores: { E: 0, K: 1, B: 0, A: 2 }, markers: { order: 0.2, clarity: 0.1 } },
+      { id: "q7d", text: "Minimal bis gar nicht – mein echtes Leben ist privat", emoji: "🔒", scores: { E: -2, K: 0, B: 1, A: 0 }, markers: { shadow: 0.1, connection: 0.1 } }
+    ]
+  },
+  {
+    id: "q8",
+    scenario: "Du hast unerwartet 10.000€ gewonnen...",
+    question: "Was passiert damit?",
+    options: [
+      { id: "q8a", text: "Investieren – das Geld soll für mich arbeiten", emoji: "💰", scores: { E: 0, K: 1, B: 0, A: 2 }, markers: { order: 0.2, clarity: 0.1 } },
+      { id: "q8b", text: "Epic Trip mit meinen Liebsten", emoji: "✈️", scores: { E: 1, K: 0, B: 2, A: 0 }, markers: { connection: 0.3 } },
+      { id: "q8c", text: "Ein verrücktes Projekt finanzieren, das mir am Herzen liegt", emoji: "🎪", scores: { E: 0, K: 2, B: 1, A: 1 }, markers: { courage: 0.2, clarity: 0.15 } },
+      { id: "q8d", text: "Sicherheit aufbauen – Notgroschen aufstocken", emoji: "🏦", scores: { E: -1, K: 0, B: 0, A: 1 }, markers: { order: 0.2, shadow: 0.05 } }
+    ]
+  },
+  {
+    id: "q9",
+    scenario: "In einer Beziehung ist dir am wichtigsten...",
+    question: "Was ist non-negotiable?",
+    options: [
+      { id: "q9a", text: "Intellektuelle Tiefe – endlose Gespräche um 3 Uhr nachts", emoji: "🌙", scores: { E: 0, K: 2, B: 1, A: 0 }, markers: { clarity: 0.2, connection: 0.2 } },
+      { id: "q9b", text: "Loyalität – durch dick und dünn", emoji: "🤝", scores: { E: 0, K: 0, B: 2, A: 0 }, markers: { connection: 0.3 } },
+      { id: "q9c", text: "Gemeinsame Ambitionen – wir pushen uns gegenseitig", emoji: "🏆", scores: { E: 1, K: 1, B: 0, A: 2 }, markers: { courage: 0.15, order: 0.1 } },
+      { id: "q9d", text: "Freiheit – Liebe ohne Käfig", emoji: "🦋", scores: { E: 1, K: 1, B: 0, A: 0 }, markers: { courage: 0.2, shadow: 0.05 } }
+    ]
+  },
+  {
+    id: "q10",
+    scenario: "Jemand verwechselt deinen Namen auf einer Bühne...",
+    question: "Wie reagierst du?",
+    options: [
+      { id: "q10a", text: "Charmant korrigieren und den Moment besitzen", emoji: "😎", scores: { E: 2, K: 1, B: 0, A: 1 }, markers: { courage: 0.25, clarity: 0.1 } },
+      { id: "q10b", text: "Später ansprechen – nicht hier peinlich machen", emoji: "⏳", scores: { E: -1, K: 0, B: 1, A: 0 }, markers: { order: 0.1, connection: 0.1 } },
+      { id: "q10c", text: "Drüber lachen und weitermachen", emoji: "😂", scores: { E: 1, K: 0, B: 1, A: 0 }, markers: { courage: 0.1, connection: 0.15 } },
+      { id: "q10d", text: "Inner cringe, aber smooth wechseln", emoji: "😬", scores: { E: 1, K: 1, B: 0, A: 0 }, markers: { shadow: 0.1, order: 0.05 } }
+    ]
+  },
+  {
+    id: "q11",
+    scenario: "Du hast eine kontroverse Meinung...",
+    question: "Wie gehst du damit um?",
+    options: [
+      { id: "q11a", text: "Laut und stolz vertreten – authentisch bleiben", emoji: "📢", scores: { E: 2, K: 1, B: -1, A: 0 }, markers: { courage: 0.3, shadow: 0.1 } },
+      { id: "q11b", text: "Nur mit engen Freunden teilen", emoji: "🤫", scores: { E: -1, K: 0, B: 1, A: 0 }, markers: { connection: 0.2 } },
+      { id: "q11c", text: "Diplomatisch verpacken, aber aussprechen", emoji: "🎁", scores: { E: 1, K: 0, B: 1, A: 1 }, markers: { clarity: 0.15, order: 0.1, courage: 0.1 } },
+      { id: "q11d", text: "Für mich behalten – nicht jeder muss alles wissen", emoji: "🔐", scores: { E: -2, K: 0, B: 0, A: 1 }, markers: { shadow: 0.1, order: 0.1 } }
+    ]
+  },
+  {
+    id: "q12",
+    scenario: "Eine riesige Chance kommt, aber das Timing ist schlecht...",
+    question: "Was tust du?",
+    options: [
+      { id: "q12a", text: "Zugreifen – solche Chancen kommen nicht oft", emoji: "⚡", scores: { E: 1, K: 1, B: -1, A: 2 }, markers: { courage: 0.3, clarity: 0.1 } },
+      { id: "q12b", text: "Ablehnen – die bestehenden Commitments zählen", emoji: "🤝", scores: { E: -1, K: 0, B: 2, A: 0 }, markers: { connection: 0.25, order: 0.1 } },
+      { id: "q12c", text: "Verhandeln – vielleicht geht beides", emoji: "🎭", scores: { E: 1, K: 1, B: 0, A: 1 }, markers: { clarity: 0.2, courage: 0.1 } },
+      { id: "q12d", text: "Rat holen bei Menschen, denen ich vertraue", emoji: "💬", scores: { E: 0, K: 0, B: 2, A: 0 }, markers: { connection: 0.3 } }
+    ]
+  }
+];
+
+// ============================================
+// MICRO WINS
+// ============================================
+const microWins = [
+  { emoji: "✨", text: "Interessant..." },
+  { emoji: "🔮", text: "Spannende Wahl" },
+  { emoji: "💫", text: "Das sagt viel aus" },
+  { emoji: "🌟", text: "Typisch du?" },
+  { emoji: "⚡", text: "Erkennbar" },
+  { emoji: "🎯", text: "Punkt für dich" },
+  { emoji: "🌙", text: "Tief" },
+  { emoji: "🔥", text: "Hot take" },
+  { emoji: "💎", text: "Rar" },
+  { emoji: "🎭", text: "Facettenreich" },
+  { emoji: "🌈", text: "Bunt" },
+  { emoji: "⭐", text: "Fast da..." }
+];
+
+// ============================================
+// QUIZ ENGINE STATE
+// ============================================
+let currentQuestion = 0;
+let scores = { E: 5, K: 5, B: 5, A: 5 };
+let psycheMarkers = { clarity: 0, courage: 0, connection: 0, order: 0, shadow: 0 };
+let answeredQuestions = [];
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+function generateUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+function normalizeScore(rawScore, min, max) {
+  // Normalize raw score (1-10) to 1-100
+  return Math.round(((rawScore - min) / (max - min)) * 99 + 1);
+}
+
+function getScoreBand(score) {
+  if (score <= 20) return "low";
+  if (score <= 40) return "midlow";
+  if (score <= 60) return "mid";
+  if (score <= 80) return "midhigh";
+  return "high";
+}
+
+function calculateConfidence(itemsAnswered, targetItems = 12) {
+  return Math.min(1, itemsAnswered / targetItems);
+}
+
+// ============================================
+// UI FUNCTIONS
+// ============================================
+
+function showScreen(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+}
+
+function startQuiz() {
+  currentQuestion = 0;
+  scores = { E: 5, K: 5, B: 5, A: 5 };
+  psycheMarkers = { clarity: 0, courage: 0, connection: 0, order: 0, shadow: 0 };
+  answeredQuestions = [];
+  showScreen('question');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[currentQuestion];
+  document.getElementById('currentQ').textContent = currentQuestion + 1;
+  const progress = ((currentQuestion) / questions.length) * 100;
+  document.getElementById('progressPercent').textContent = Math.round(progress) + '%';
+  document.getElementById('progressFill').style.width = progress + '%';
+  
+  document.getElementById('scenario').textContent = q.scenario;
+  document.getElementById('questionText').textContent = q.question;
+  
+  const optionsContainer = document.getElementById('options');
+  optionsContainer.innerHTML = q.options.map((opt, idx) => `
+    <button class="option-btn" onclick="selectOption(${idx})">
+      <span class="option-emoji">${opt.emoji}</span>
+      <span>${opt.text}</span>
+    </button>
+  `).join('');
+}
+
+function selectOption(idx) {
+  const q = questions[currentQuestion];
+  const opt = q.options[idx];
+  
+  // Update dimension scores
+  scores.E += opt.scores.E;
+  scores.K += opt.scores.K;
+  scores.B += opt.scores.B;
+  scores.A += opt.scores.A;
+  
+  // Clamp scores to 1-10
+  scores.E = Math.max(1, Math.min(10, scores.E));
+  scores.K = Math.max(1, Math.min(10, scores.K));
+  scores.B = Math.max(1, Math.min(10, scores.B));
+  scores.A = Math.max(1, Math.min(10, scores.A));
+  
+  // Accumulate psyche markers
+  if (opt.markers) {
+    Object.keys(opt.markers).forEach(key => {
+      psycheMarkers[key] += opt.markers[key];
+    });
+  }
+  
+  // Track answered questions
+  answeredQuestions.push({
+    questionId: q.id,
+    answerId: opt.id,
+    scores: { ...opt.scores },
+    markers: opt.markers ? { ...opt.markers } : {}
+  });
+  
+  showMicroWin();
+  
+  setTimeout(() => {
+    currentQuestion++;
+    if (currentQuestion < questions.length) {
+      document.getElementById('questionContainer').classList.add('fading');
+      setTimeout(() => {
+        renderQuestion();
+        document.getElementById('questionContainer').classList.remove('fading');
+      }, 200);
+    } else {
+      showLoading();
+    }
+  }, 600);
+}
+
+function showMicroWin() {
+  const win = microWins[currentQuestion % microWins.length];
+  const div = document.createElement('div');
+  div.className = 'micro-win';
+  div.innerHTML = `
+    <span class="micro-win-emoji">${win.emoji}</span>
+    <span class="micro-win-text">${win.text}</span>
+  `;
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 600);
+}
+
+function showLoading() {
+  showScreen('loading');
+  setTimeout(calculateResult, 2500);
+}
+
+// ============================================
+// RESULT CALCULATION
+// ============================================
+
+function calculateResult() {
+  // Calculate celebrity matches
+  const matches = celebrities.map(celeb => {
+    const distance = Math.sqrt(
+      Math.pow(scores.E - celeb.E, 2) +
+      Math.pow(scores.K - celeb.K, 2) +
+      Math.pow(scores.B - celeb.B, 2) +
+      Math.pow(scores.A - celeb.A, 2)
+    );
+    const matchPercent = Math.round(Math.max(0, 100 - (distance * 5.5)));
+    return { ...celeb, distance, matchPercent };
+  });
+  
+  matches.sort((a, b) => a.distance - b.distance);
+  
+  const topMatch = matches[0];
+  const runnerUps = matches.slice(1, 6);
+  
+  const ally = findAlly(topMatch, matches);
+  const rival = findRival(topMatch, matches);
+  
+  // Generate ContributionEvent
+  const contributionEvent = generateContributionEvent(topMatch, matches);
+  
+  // Display result
+  displayResult(topMatch, runnerUps, ally, rival, contributionEvent);
+  
+  // Emit event (log to console, or send to backend)
+  console.log('ContributionEvent:', JSON.stringify(contributionEvent, null, 2));
+  
+  // Store in localStorage for Character Sheet
+  try {
+    localStorage.setItem('lastQuizContribution', JSON.stringify(contributionEvent));
+    
+    // Dispatch custom event for other components
+    window.dispatchEvent(new CustomEvent('quizContribution', { detail: contributionEvent }));
+  } catch (e) {
+    console.warn('Could not store contribution event:', e);
+  }
+}
+
+function findAlly(main, allMatches) {
+  const candidates = allMatches.filter(c => 
+    c.name !== main.name &&
+    Math.abs(c.E - main.E) <= 2 &&
+    c.category !== main.category
+  );
+  return candidates[Math.floor(Math.random() * Math.min(5, candidates.length))] || allMatches[2];
+}
+
+function findRival(main, allMatches) {
+  const candidates = allMatches.filter(c => 
+    c.name !== main.name &&
+    (Math.abs(c.E - main.E) >= 3 || Math.abs(c.A - main.A) >= 3)
+  );
+  return candidates[Math.floor(Math.random() * Math.min(5, candidates.length))] || allMatches[allMatches.length - 5];
+}
+
+// ============================================
+// CONTRIBUTION EVENT GENERATOR
+// ============================================
+
+function generateContributionEvent(topMatch, allMatches) {
+  const now = new Date().toISOString();
+  const confidence = calculateConfidence(questions.length);
+  
+  // Normalize trait scores (1-10 → 1-100)
+  const traitScores = [
+    {
+      id: DIMENSIONS.E.traitId,
+      score: normalizeScore(scores.E, 1, 10),
+      band: getScoreBand(normalizeScore(scores.E, 1, 10)),
+      confidence: confidence,
+      method: "scenario"
+    },
+    {
+      id: DIMENSIONS.K.traitId,
+      score: normalizeScore(scores.K, 1, 10),
+      band: getScoreBand(normalizeScore(scores.K, 1, 10)),
+      confidence: confidence,
+      method: "scenario"
+    },
+    {
+      id: DIMENSIONS.B.traitId,
+      score: normalizeScore(scores.B, 1, 10),
+      band: getScoreBand(normalizeScore(scores.B, 1, 10)),
+      confidence: confidence,
+      method: "scenario"
+    },
+    {
+      id: DIMENSIONS.A.traitId,
+      score: normalizeScore(scores.A, 1, 10),
+      band: getScoreBand(normalizeScore(scores.A, 1, 10)),
+      confidence: confidence,
+      method: "scenario"
+    }
+  ];
+  
+  // Normalize psyche markers to -1..+1 range
+  const maxMarkerValue = Math.max(...Object.values(psycheMarkers), 1);
+  const normalizedMarkers = Object.entries(psycheMarkers)
+    .filter(([key, value]) => value !== 0)
+    .map(([key, value]) => ({
+      id: `marker.psyche.${key}`,
+      weight: Math.max(-1, Math.min(1, value / maxMarkerValue)),
+      evidence: {
+        itemsAnswered: questions.length,
+        confidence: confidence
+      }
+    }));
+  
+  // Add celebrity-specific markers
+  normalizedMarkers.push({
+    id: `marker.celebrity.${topMatch.name.toLowerCase().replace(/\s+/g, '_')}`,
+    weight: topMatch.matchPercent / 100,
+    evidence: { itemsAnswered: questions.length, confidence: confidence }
+  });
+  
+  // Generate tags
+  const tags = [
+    {
+      id: `tag.archetype.${topMatch.archetype.toLowerCase().replace(/\s+/g, '_').replace(/[äöü]/g, c => ({ä:'ae',ö:'oe',ü:'ue'}[c]))}`,
+      label: topMatch.archetype,
+      kind: "archetype",
+      weight: 0.9
+    },
+    {
+      id: `tag.category.${topMatch.category.toLowerCase()}`,
+      label: topMatch.category,
+      kind: "style",
+      weight: 0.7
+    }
+  ];
+  
+  // Add trait-based tags
+  topMatch.traits.slice(0, 2).forEach((trait, i) => {
+    tags.push({
+      id: `tag.style.${trait.toLowerCase().replace(/\s+/g, '_').replace(/-/g, '_')}`,
+      label: trait,
+      kind: "style",
+      weight: 0.6 - (i * 0.1)
+    });
+  });
+  
+  // Shadow tag based on lowest dimension
+  const lowestDim = Object.entries(scores).sort((a, b) => a[1] - b[1])[0];
+  const shadowMap = {
+    E: { id: "tag.shadow.isolation", label: "Isolation" },
+    K: { id: "tag.shadow.rigidity", label: "Rigidität" },
+    B: { id: "tag.shadow.detachment", label: "Distanz" },
+    A: { id: "tag.shadow.drift", label: "Orientierungslosigkeit" }
+  };
+  if (lowestDim[1] <= 4) {
+    tags.push({
+      ...shadowMap[lowestDim[0]],
+      kind: "shadow",
+      weight: (5 - lowestDim[1]) / 5
+    });
+  }
+  
+  // Generate unlock
+  const unlocks = [{
+    id: `unlock.crests.celebrity_${topMatch.category.toLowerCase()}`,
+    unlocked: true,
+    unlockedAt: now,
+    level: topMatch.matchPercent >= 80 ? 3 : topMatch.matchPercent >= 60 ? 2 : 1,
+    sourceRef: QUIZ_CONFIG.moduleId
+  }];
+  
+  // Build ContributionEvent
+  return {
+    specVersion: "sp.contribution.v1",
+    eventId: generateUUID(),
+    occurredAt: now,
+    source: {
+      vertical: QUIZ_CONFIG.vertical,
+      moduleId: QUIZ_CONFIG.moduleId,
+      domain: QUIZ_CONFIG.domain,
+      locale: QUIZ_CONFIG.locale
+    },
+    payload: {
+      markers: normalizedMarkers,
+      traits: traitScores,
+      tags: tags,
+      unlocks: unlocks,
+      summary: {
+        title: topMatch.name,
+        bullets: [
+          `Dein Celebrity-Seelenverwandter ist ${topMatch.name}`,
+          `${topMatch.matchPercent}% energetische Übereinstimmung`,
+          topMatch.tagline,
+          `Archetyp: ${topMatch.archetype}`
+        ],
+        resultId: topMatch.name.toLowerCase().replace(/\s+/g, '_')
+      },
+      debug: {
+        rawScores: { ...scores },
+        rawPsycheMarkers: { ...psycheMarkers }
+      }
+    }
+  };
+}
+
+// ============================================
+// DISPLAY RESULT
+// ============================================
+
+function displayResult(match, runnerUps, ally, rival, contributionEvent) {
+  document.getElementById('resultName').textContent = match.name;
+  document.getElementById('resultTagline').textContent = `„${match.tagline}"`;
+  document.getElementById('matchPercent').textContent = match.matchPercent + '%';
+  
+  // Render trait bars (Wesentliche Natur style from screenshot)
+  const traitBars = document.getElementById('traitBars');
+  const traitData = [
+    { name: "Präsenz", value: normalizeScore(scores.E, 1, 10), dim: "E" },
+    { name: "Kreativität", value: normalizeScore(scores.K, 1, 10), dim: "K" },
+    { name: "Verbindung", value: normalizeScore(scores.B, 1, 10), dim: "B" },
+    { name: "Ambition", value: normalizeScore(scores.A, 1, 10), dim: "A" }
+  ];
+  
+  traitBars.innerHTML = traitData.map(trait => {
+    const delta = Math.round((normalizeScore(scores[trait.dim], 1, 10) - 50) / 10);
+    const deltaClass = delta >= 0 ? 'positive' : 'negative';
+    const deltaText = delta >= 0 ? `+${delta}%` : `${delta}%`;
+    
+    return `
+      <div class="trait-row">
+        <div class="trait-header">
+          <span class="trait-name">${trait.name}</span>
+          <span>
+            <span class="trait-delta ${deltaClass}">${deltaText}</span>
+            <span class="trait-value">${trait.value}%</span>
+          </span>
+        </div>
+        <div class="trait-bar-track">
+          <div class="trait-bar-fill" style="width: ${trait.value}%"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  // Archetyp box
+  document.getElementById('archetypeTitle').textContent = match.archetype;
+  document.getElementById('archetypeDesc').textContent = generateArchetypeDescription(match);
+  
+  // Compatibility
+  document.getElementById('allyName').textContent = ally.name;
+  document.getElementById('rivalName').textContent = rival.name;
+  
+  // Runner ups
+  const runnerUpsList = document.getElementById('runnerUpsList');
+  runnerUpsList.innerHTML = runnerUps.slice(0, 4).map(r => `
+    <div class="runner-up-item">
+      <span class="runner-up-name">${r.name}</span>
+      <span class="runner-up-match">${r.matchPercent}%</span>
+    </div>
+  `).join('');
+  
+  // Debug panel
+  document.getElementById('debugOutput').textContent = JSON.stringify(contributionEvent, null, 2);
+  
+  showScreen('result');
+}
+
+function generateArchetypeDescription(match) {
+  const descriptions = {
+    high_E: "Du teilst ihre Fähigkeit, Räume zu füllen und Energie zu verbreiten.",
+    low_E: "Wie du weiß auch " + match.name + ", dass wahre Stärke in der Stille liegt.",
+    high_K: "Eure Köpfe arbeiten ähnlich – unkonventionell, überraschend, manchmal genial.",
+    low_K: "Ihr beide schätzt das Bewährte und baut darauf auf.",
+    high_B: "Menschen sind für euch beide keine Ressourcen, sondern der eigentliche Punkt.",
+    low_B: "Ihr braucht beide viel Freiraum und wählt eure Menschen sehr bewusst.",
+    high_A: "Ihr teilt den unbedingten Willen, Ergebnisse zu sehen.",
+    low_A: "Für euch beide zählt der Weg mindestens so sehr wie das Ziel."
+  };
+  
+  const parts = [];
+  if (match.E >= 7) parts.push(descriptions.high_E);
+  else if (match.E <= 4) parts.push(descriptions.low_E);
+  
+  if (match.K >= 7) parts.push(descriptions.high_K);
+  else if (match.K <= 4) parts.push(descriptions.low_K);
+  
+  if (match.B >= 7) parts.push(descriptions.high_B);
+  else if (match.B <= 4) parts.push(descriptions.low_B);
+  
+  return parts.slice(0, 2).join(' ') || `Du und ${match.name} teilt eine einzigartige energetische Signatur.`;
+}
+
+// ============================================
+// SHARE & RETRY
+// ============================================
+
+function shareResult() {
+  const name = document.getElementById('resultName').textContent;
+  const percent = document.getElementById('matchPercent').textContent;
+  const text = `Mein Celebrity-Seelenverwandter ist ${name} (${percent} Match)! ✨ Finde deinen: `;
+  
+  if (navigator.share) {
+    navigator.share({
+      title: 'Mein Celebrity-Seelenverwandter',
+      text: text,
+      url: window.location.href
+    });
+  } else {
+    navigator.clipboard.writeText(text + window.location.href);
+    alert('Link kopiert! 📋');
+  }
+}
+
+function retryQuiz() {
+  showScreen('intro');
+}
+
+// Debug toggle (triple-click on disclaimer)
+document.addEventListener('DOMContentLoaded', () => {
+  const disclaimer = document.querySelector('.result-disclaimer');
+  let clicks = 0;
+  if (disclaimer) {
+    disclaimer.addEventListener('click', () => {
+      clicks++;
+      if (clicks >= 3) {
+        document.getElementById('debugPanel').classList.toggle('visible');
+        clicks = 0;
+      }
+      setTimeout(() => { clicks = 0; }, 500);
+    });
+  }
+});
+</script>
+</body>
+</html>

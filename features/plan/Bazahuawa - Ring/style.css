@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=JetBrains+Mono:wght@300&display=swap');
+
+:root {
+    --ink-black: #000000;
+    --paper-white: #f4f4f4;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+canvas {
+    max-width: 100%;
+    max-height: 100%;
+    filter: contrast(1.1); /* Slightly tighten the ink edge */
+}
+
+input[type="range"] {
+    appearance: none;
+    height: 1px;
+    background: rgba(0,0,0,0.1);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    background: black;
+    border-radius: 0;
+    cursor: pointer;
+}
+
+.font-mono {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Modal and Utility */
+.hidden { display: none !important; }
+
+#modal-react pre {
+    scrollbar-width: thin;
+    scrollbar-color: #333 #111;
+}
+
+#modal-react pre::-webkit-scrollbar {
+    width: 6px;
+}
+
+#modal-react pre::-webkit-scrollbar-thumb {
+    background: #444;
+}
+
+/* NASA Feed Glow simulation */
+@keyframes pulse-opacity {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+}
+
+.animate-pulse {
+    animation: pulse-opacity 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-delay: 0s !important;
+        animation-duration: 0s !important;
+        transition-duration: 0s !important;
+    }
+}

@@ -1,0 +1,81 @@
+/**
+ * Dark-Grimoire Theme Tokens
+ * Companion to Light-Grimoire for dark UI surfaces.
+ *
+ * Design Philosophy: Deep midnight palette with luminous accents.
+ */
+
+:root[data-theme='dark'] {
+  /* Background Tokens */
+  --dg-bg-base: #0b1523;
+  --dg-bg-card: #121f33;
+  --dg-bg-surface: #0f1a2b;
+  --dg-bg-elevated: #17263d;
+
+  /* Border Tokens */
+  --dg-border-subtle: rgba(201, 164, 106, 0.18);
+  --dg-border-medium: rgba(201, 164, 106, 0.35);
+  --dg-border-strong: #c9a46a;
+  --dg-border-emerald: rgba(16, 185, 129, 0.3);
+
+  /* Text Tokens */
+  --dg-text-primary: #f5f7fb;
+  --dg-text-secondary: #c7d2e5;
+  --dg-text-muted: #94a3b8;
+  --dg-text-emerald: #8ae0c5;
+  --dg-text-gold: #f0d39b;
+
+  /* Accent Tokens */
+  --dg-accent-gold: #d8b26a;
+  --dg-accent-gold-light: #f2d7a6;
+  --dg-accent-gold-dark: #a67b3b;
+  --dg-accent-emerald: #22c55e;
+  --dg-accent-emerald-dark: #16a34a;
+
+  /* Card System */
+  --dg-card-bg: var(--dg-bg-card);
+  --dg-card-border: var(--dg-border-medium);
+  --dg-card-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --dg-card-shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(201, 164, 106, 0.3);
+
+  /* Bars */
+  --dg-bar-track: rgba(148, 163, 184, 0.2);
+  --dg-bar-fill: linear-gradient(90deg, var(--dg-accent-gold-dark) 0%, var(--dg-accent-gold) 100%);
+  --dg-bar-emerald-fill: linear-gradient(90deg, var(--dg-accent-emerald-dark) 0%, var(--dg-accent-emerald) 100%);
+
+  /* Badges */
+  --dg-badge-bg: rgba(201, 164, 106, 0.12);
+  --dg-badge-border: var(--dg-border-medium);
+  --dg-badge-text: var(--dg-text-primary);
+
+  --dg-badge-emerald-bg: rgba(16, 185, 129, 0.12);
+  --dg-badge-emerald-border: var(--dg-border-emerald);
+  --dg-badge-emerald-text: var(--dg-text-emerald);
+
+  /* Ornament */
+  --dg-ornament-gold: var(--dg-accent-gold);
+  --dg-ornament-gold-subtle: rgba(201, 164, 106, 0.2);
+  --dg-watermark-opacity: 0.08;
+
+  /* Focus & Interactive States */
+  --dg-focus-ring: 0 0 0 3px rgba(201, 164, 106, 0.35);
+  --dg-focus-ring-emerald: 0 0 0 3px rgba(16, 185, 129, 0.35);
+
+  /* Spacing & Radius (mirrors Light-Grimoire) */
+  --dg-space-xs: 0.25rem;
+  --dg-space-sm: 0.5rem;
+  --dg-space-md: 1rem;
+  --dg-space-lg: 1.5rem;
+  --dg-space-xl: 2rem;
+  --dg-space-2xl: 3rem;
+
+  --dg-radius-sm: 0.375rem;
+  --dg-radius-md: 0.5rem;
+  --dg-radius-lg: 0.75rem;
+  --dg-radius-xl: 1rem;
+
+  /* Transition tokens */
+  --dg-transition-fast: 150ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --dg-transition-base: 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --dg-transition-slow: 500ms cubic-bezier(0.215, 0.61, 0.355, 1);
+}

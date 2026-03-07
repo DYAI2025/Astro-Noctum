@@ -1,0 +1,80 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="glow-personality" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Head profile outline -->
+  <path
+    d="M 42 18 Q 48 18 48 28 Q 48 36 44 42 Q 40 46 34 46 L 28 46 Q 22 44 18 38 Q 16 32 18 26 Q 20 18 28 18 Z"
+    fill="none"
+    stroke="rgb(248, 250, 252)"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    style="filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.6)) drop-shadow(0 0 16px rgba(16, 185, 129, 0.3));"
+  />
+
+  <!-- Inner universe - crystal/star in forehead area -->
+  <g transform="translate(32, 28)">
+    <!-- Central crystal/star -->
+    <path
+      d="M 0 -5 L 2 -2 L 5 0 L 2 2 L 0 5 L -2 2 L -5 0 L -2 -2 Z"
+      fill="rgba(16, 185, 129, 0.3)"
+      stroke="rgb(16, 185, 129)"
+      stroke-width="1.5"
+      style="filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.8));"
+    />
+
+    <!-- Inner glow -->
+    <circle
+      cx="0"
+      cy="0"
+      r="2"
+      fill="rgb(16, 185, 129)"
+      opacity="0.7"
+    />
+  </g>
+
+  <!-- Subtle energy lines emanating from the crystal (3 lines) -->
+  <path
+    d="M 32 23 L 32 18"
+    stroke="rgba(16, 185, 129, 0.5)"
+    stroke-width="1"
+    stroke-linecap="round"
+    opacity="0.6"
+  />
+
+  <path
+    d="M 28 26 L 24 22"
+    stroke="rgba(16, 185, 129, 0.5)"
+    stroke-width="1"
+    stroke-linecap="round"
+    opacity="0.6"
+  />
+
+  <path
+    d="M 36 26 L 40 22"
+    stroke="rgba(16, 185, 129, 0.5)"
+    stroke-width="1"
+    stroke-linecap="round"
+    opacity="0.6"
+  />
+
+  <!-- Subtle aura around head -->
+  <ellipse
+    cx="32"
+    cy="30"
+    rx="18"
+    ry="16"
+    fill="none"
+    stroke="rgba(16, 185, 129, 0.2)"
+    stroke-width="1"
+    opacity="0.4"
+  />
+</svg>

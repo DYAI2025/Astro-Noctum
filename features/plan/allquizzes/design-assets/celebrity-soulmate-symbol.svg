@@ -1,0 +1,95 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="glow-celebrity" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Stylized theatrical mask / crown -->
+  <!-- Mask base -->
+  <path
+    d="M 20 28 Q 20 22 24 20 Q 28 18 32 18 Q 36 18 40 20 Q 44 22 44 28 L 44 38 Q 44 42 40 44 Q 36 46 32 46 Q 28 46 24 44 Q 20 42 20 38 Z"
+    fill="none"
+    stroke="rgb(248, 250, 252)"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    style="filter: drop-shadow(0 0 8px rgba(236, 72, 153, 0.6)) drop-shadow(0 0 16px rgba(236, 72, 153, 0.3));"
+  />
+
+  <!-- Crown/tiara on top -->
+  <path
+    d="M 24 20 L 26 14 L 28 18 L 32 12 L 36 18 L 38 14 L 40 20"
+    fill="none"
+    stroke="rgb(248, 250, 252)"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    style="filter: drop-shadow(0 0 6px rgba(236, 72, 153, 0.5));"
+  />
+
+  <!-- Eyes (simple curves) -->
+  <path
+    d="M 26 30 Q 28 28 30 30"
+    stroke="rgba(248, 250, 252, 0.8)"
+    stroke-width="1.5"
+    stroke-linecap="round"
+    fill="none"
+  />
+
+  <path
+    d="M 34 30 Q 36 28 38 30"
+    stroke="rgba(248, 250, 252, 0.8)"
+    stroke-width="1.5"
+    stroke-linecap="round"
+    fill="none"
+  />
+
+  <!-- Glamour stars around the mask (3 stars) -->
+  <g transform="translate(16, 26)">
+    <!-- Left star -->
+    <path
+      d="M 0 -3 L 1 -1 L 3 0 L 1 1 L 0 3 L -1 1 L -3 0 L -1 -1 Z"
+      fill="rgba(236, 72, 153, 0.6)"
+      stroke="rgb(236, 72, 153)"
+      stroke-width="0.5"
+      style="filter: drop-shadow(0 0 4px rgba(236, 72, 153, 0.8));"
+    />
+  </g>
+
+  <g transform="translate(48, 32)">
+    <!-- Right star -->
+    <path
+      d="M 0 -2.5 L 0.8 -0.8 L 2.5 0 L 0.8 0.8 L 0 2.5 L -0.8 0.8 L -2.5 0 L -0.8 -0.8 Z"
+      fill="rgba(236, 72, 153, 0.6)"
+      stroke="rgb(236, 72, 153)"
+      stroke-width="0.5"
+      style="filter: drop-shadow(0 0 4px rgba(236, 72, 153, 0.8));"
+    />
+  </g>
+
+  <g transform="translate(32, 50)">
+    <!-- Bottom star -->
+    <path
+      d="M 0 -2 L 0.6 -0.6 L 2 0 L 0.6 0.6 L 0 2 L -0.6 0.6 L -2 0 L -0.6 -0.6 Z"
+      fill="rgba(236, 72, 153, 0.6)"
+      stroke="rgb(236, 72, 153)"
+      stroke-width="0.5"
+      style="filter: drop-shadow(0 0 4px rgba(236, 72, 153, 0.8));"
+    />
+  </g>
+
+  <!-- Subtle sparkle accent on crown -->
+  <circle
+    cx="32"
+    cy="12"
+    r="1.5"
+    fill="rgb(236, 72, 153)"
+    opacity="0.9"
+    style="filter: drop-shadow(0 0 3px rgba(236, 72, 153, 0.9));"
+  />
+</svg>

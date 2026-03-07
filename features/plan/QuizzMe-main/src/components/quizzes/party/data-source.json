@@ -1,0 +1,404 @@
+{
+  "meta": {
+    "id": "quiz.party_need.v1",
+    "title": "Dein Party-Bedürfnis 🎉",
+    "subtitle": "Wie viel Feier steckt wirklich in dir?",
+    "description": "6 ehrliche Szenarien zeigen dir, wo du auf dem Spektrum zwischen Couch und Club wirklich stehst.",
+    "language": "de",
+    "engine": "custom",
+    "skin": "Social Vibes",
+    "tone": "playful",
+    "target_audience": "Gen Z, Social Media, 18-35",
+    "questions_count": 6,
+    "profile_count": 4,
+    "estimated_duration_seconds": 90,
+    "version": "1.0.0",
+    "created_at": "2025-12-16",
+    "disclaimer": "Dieser Test dient der spielerischen Selbstreflexion und stellt keine psychologische Diagnose dar."
+  },
+
+  "dimensions": [
+    {
+      "id": "event_drive",
+      "name": "Event-Drive",
+      "pole_low": "Häuslichkeit",
+      "pole_high": "Eventlust",
+      "description": "Wie stark zieht es dich zu sozialen Events?",
+      "color_low": "#4A6741",
+      "color_high": "#E85D75"
+    },
+    {
+      "id": "stimulus_seeking",
+      "name": "Reizsuche",
+      "pole_low": "Ruhebedürfnis",
+      "pole_high": "Stimulation",
+      "description": "Wie viel sensorische Intensität brauchst du?",
+      "color_low": "#6B7A8F",
+      "color_high": "#FFB347"
+    }
+  ],
+
+  "questions": [
+    {
+      "id": "q1",
+      "text": "Freitagabend, 19:30 Uhr. Dein Handy vibriert:",
+      "scenario": "„Hey, wir sind spontan am Fluss – kommst du?" Du hattest eigentlich Netflix eingeplant.",
+      "type": "scenario",
+      "options": [
+        {
+          "id": "q1_a",
+          "text": "„Bin schon im Pyjama – nächstes Mal!" 🛋️",
+          "scoring": { "event_drive": 10, "stimulus_seeking": 15 }
+        },
+        {
+          "id": "q1_b",
+          "text": "„Wer kommt noch? Und wie laut wird's?" 🤔",
+          "scoring": { "event_drive": 45, "stimulus_seeking": 35 }
+        },
+        {
+          "id": "q1_c",
+          "text": "„Gib mir 10 Minuten!" 🏃",
+          "scoring": { "event_drive": 75, "stimulus_seeking": 60 }
+        },
+        {
+          "id": "q1_d",
+          "text": "„Ich bring die Boxen mit!" 🔊",
+          "scoring": { "event_drive": 95, "stimulus_seeking": 95 }
+        }
+      ]
+    },
+    {
+      "id": "q2",
+      "text": "Dein perfekter Samstag sieht so aus:",
+      "scenario": "Keine Verpflichtungen. 24 Stunden für dich.",
+      "type": "scenario",
+      "options": [
+        {
+          "id": "q2_a",
+          "text": "Buch, Tee, vielleicht ein langer Spaziergang allein 🌿",
+          "scoring": { "event_drive": 10, "stimulus_seeking": 20 }
+        },
+        {
+          "id": "q2_b",
+          "text": "Brunch mit 2-3 engen Freunden, dann chillen 🥐",
+          "scoring": { "event_drive": 40, "stimulus_seeking": 40 }
+        },
+        {
+          "id": "q2_c",
+          "text": "Tagsüber Flohmarkt, abends Hausparty 🎈",
+          "scoring": { "event_drive": 75, "stimulus_seeking": 70 }
+        },
+        {
+          "id": "q2_d",
+          "text": "Dayparty → Dinner → Club bis Sunrise 💫",
+          "scoring": { "event_drive": 100, "stimulus_seeking": 100 }
+        }
+      ]
+    },
+    {
+      "id": "q3",
+      "text": "Die Einladung landet in deinem Postfach:",
+      "scenario": "„Große Geburtstagsparty – 80 Leute, DJ, Open Bar."",
+      "type": "scenario",
+      "options": [
+        {
+          "id": "q3_a",
+          "text": "Innerliches „Uff" – klingt anstrengend 😅",
+          "scoring": { "event_drive": 15, "stimulus_seeking": 15 }
+        },
+        {
+          "id": "q3_b",
+          "text": "„Komm ich kurz vorbei, sage Happy Birthday" ⏱️",
+          "scoring": { "event_drive": 45, "stimulus_seeking": 30 }
+        },
+        {
+          "id": "q3_c",
+          "text": "„Ich freu mich – aber Fluchtplan hab ich" 🚪",
+          "scoring": { "event_drive": 65, "stimulus_seeking": 55 }
+        },
+        {
+          "id": "q3_d",
+          "text": "„JA! Wann? Wo? Was zieh ich an?!" 🎉",
+          "scoring": { "event_drive": 95, "stimulus_seeking": 85 }
+        }
+      ]
+    },
+    {
+      "id": "q4",
+      "text": "Du kommst von einer 3-Stunden-Party nach Hause:",
+      "scenario": "Es ist 23 Uhr. Wie fühlst du dich?",
+      "type": "scenario",
+      "options": [
+        {
+          "id": "q4_a",
+          "text": "Leer. Brauch mindestens 2 Tage Social-Detox 😮‍💨",
+          "scoring": { "event_drive": 15, "stimulus_seeking": 10 }
+        },
+        {
+          "id": "q4_b",
+          "text": "Zufrieden, aber genug für heute ✓",
+          "scoring": { "event_drive": 40, "stimulus_seeking": 35 }
+        },
+        {
+          "id": "q4_c",
+          "text": "Energetisiert – war cool, aber jetzt Ruhe 😌",
+          "scoring": { "event_drive": 60, "stimulus_seeking": 65 }
+        },
+        {
+          "id": "q4_d",
+          "text": "Hyped! Warte, wo geht's weiter hin? 🔥",
+          "scoring": { "event_drive": 95, "stimulus_seeking": 100 }
+        }
+      ]
+    },
+    {
+      "id": "q5",
+      "text": "Die Lautstärke-Frage:",
+      "scenario": "Deine ideale Abend-Atmosphäre klingt wie...",
+      "type": "scenario",
+      "options": [
+        {
+          "id": "q5_a",
+          "text": "Stille oder sanfter Regen auf dem Fensterbrett 🌧️",
+          "scoring": { "event_drive": 10, "stimulus_seeking": 5 }
+        },
+        {
+          "id": "q5_b",
+          "text": "Gespräche über gedämpfter Hintergrundmusik 🎵",
+          "scoring": { "event_drive": 35, "stimulus_seeking": 30 }
+        },
+        {
+          "id": "q5_c",
+          "text": "Lebhafter Mix – Gelächter, Musik, Gläserklirren 🥂",
+          "scoring": { "event_drive": 70, "stimulus_seeking": 75 }
+        },
+        {
+          "id": "q5_d",
+          "text": "Bass, der den Brustkorb vibrieren lässt 🎧",
+          "scoring": { "event_drive": 90, "stimulus_seeking": 100 }
+        }
+      ]
+    },
+    {
+      "id": "q6",
+      "text": "Die Wahrheits-Check-Frage:",
+      "scenario": "Wenn du ehrlich bist – spontane Einladungen machen dich...",
+      "type": "scenario",
+      "options": [
+        {
+          "id": "q6_a",
+          "text": "...eher gestresst als begeistert 😬",
+          "scoring": { "event_drive": 15, "stimulus_seeking": 20 }
+        },
+        {
+          "id": "q6_b",
+          "text": "...kommt drauf an wer fragt und was geplant ist 🧐",
+          "scoring": { "event_drive": 45, "stimulus_seeking": 40 }
+        },
+        {
+          "id": "q6_c",
+          "text": "...oft glücklicher als genervt 😊",
+          "scoring": { "event_drive": 75, "stimulus_seeking": 65 }
+        },
+        {
+          "id": "q6_d",
+          "text": "...immer ein kleiner Dopamin-Kick! 🚀",
+          "scoring": { "event_drive": 100, "stimulus_seeking": 90 }
+        }
+      ]
+    }
+  ],
+
+  "profiles": [
+    {
+      "id": "cozy_guardian",
+      "title": "Der Cozy-Hüter",
+      "emoji": "🛋️",
+      "tagline": "Dein Zuhause ist dein Königreich – und das ist ein Statement.",
+      "condition": {
+        "event_drive": { "max": 45 },
+        "stimulus_seeking": { "max": 45 }
+      },
+      "description": "Du hast verstanden, was viele erst mit 40 kapieren: Das beste Party-Outfit ist ein guter Pyjama. Während andere FOMO spüren, kennst du die Magie eines Abends ohne Zeitdruck, ohne Smalltalk, ohne das Gefühl, irgendwo sein zu *müssen*. Deine Energie ist ein seltenes Gut – und du investierst sie klug. Das bedeutet nicht, dass du Menschen nicht magst. Du magst sie nur in dosierten, qualitativ hochwertigen Portionen. Ein tiefer Abend mit einem guten Freund schlägt jede Großveranstaltung. Du weißt: Die lautesten Räume haben selten die interessantesten Gespräche.",
+      "stats": [
+        { "label": "Social Battery", "value": "Eco-Modus aktiviert", "percent": 25 },
+        { "label": "FOMO-Resistenz", "value": "Beeindruckend", "percent": 90 },
+        { "label": "Netflix-Loyalität", "value": "Platinum Member", "percent": 95 },
+        { "label": "Pyjama-Zeit", "value": "18:47 Uhr", "percent": 80 }
+      ],
+      "compatibility": {
+        "allies": ["salon_connaisseur"],
+        "allies_text": "Der Salon-Connaisseur versteht dich – gemeinsam könnt ihr großartig nichts tun.",
+        "nemesis": ["night_surfer"],
+        "nemesis_text": "Der Nacht-Surfer will dich ständig auf Partys zerren. Grenzen setzen!"
+      },
+      "share_text": "🛋️ Ich bin der Cozy-Hüter! Mein Pyjama ist meine Partyoutfit. #PartyBedürfnis",
+      "conversation_starter": "Meine letzte spontane Zusage war... *denkt nach* ...2019?"
+    },
+    {
+      "id": "salon_connaisseur",
+      "title": "Der Salon-Connaisseur",
+      "emoji": "🍷",
+      "tagline": "Du feierst schon – nur anders als die meisten.",
+      "condition": {
+        "event_drive": { "max": 55 },
+        "stimulus_seeking": { "min": 46 }
+      },
+      "description": "Du suchst Intensität, aber in der richtigen Dosierung. Eine Flasche Wein, drei Freunde und ein Gespräch bis 3 Uhr nachts – DAS ist dein Konzert. Großveranstaltungen fühlen sich für dich wie verdünnter Espresso an: Zu viel Volumen, zu wenig Substanz. Du brauchst Tiefe, nicht Breite. Das macht dich zum perfekten Gastgeber kleiner Runden. In deiner Welt heißt „feiern" nicht tanzen bis zum Morgengrauen – sondern Momente kreieren, die man nicht bei Instagram posten kann, weil sie zu persönlich sind.",
+      "stats": [
+        { "label": "Gesprächstiefe", "value": "Philosophie-Level", "percent": 95 },
+        { "label": "Crowd-Toleranz", "value": "Unter 10 Personen", "percent": 30 },
+        { "label": "Gastgeber-Skill", "value": "Legendär", "percent": 90 },
+        { "label": "Wein-zu-Gespräch-Ratio", "value": "Perfekt kalibriert", "percent": 85 }
+      ],
+      "compatibility": {
+        "allies": ["cozy_guardian", "planner"],
+        "allies_text": "Cozy-Hüter schätzen deine intimen Runden. Planer bringen Struktur in deine Salons.",
+        "nemesis": ["night_surfer"],
+        "nemesis_text": "Der Nacht-Surfer versteht nicht, warum ihr nicht 'richtig' feiern geht."
+      },
+      "share_text": "🍷 Ich bin der Salon-Connaisseur! Tiefgründige Gespräche > laute Clubs. #PartyBedürfnis",
+      "conversation_starter": "Ich hab neulich bis 4 Uhr gefeiert... zu dritt, beim Reden über das Leben."
+    },
+    {
+      "id": "planner",
+      "title": "Der Planer",
+      "emoji": "📋",
+      "tagline": "Du liebst Events – wenn du sie kommen siehst.",
+      "condition": {
+        "event_drive": { "min": 46 },
+        "stimulus_seeking": { "max": 55 }
+      },
+      "description": "Du bist kein Partymuffel – du bist ein Event-Stratege. Du liebst soziale Erlebnisse, aber zu deinen Bedingungen: geplant, kalkulierbar, mit klarem Anfang und Ende. Spontaneinladungen lösen bei dir keinen Dopamin-Kick aus, sondern einen Kalendercheck-Reflex. Das ist deine Superpower: Du bist zuverlässig dabei, wenn du „Ja" sagst – weil du nur „Ja" sagst, wenn du wirklich kannst. Du brauchst den Fluchtplan nicht aus Angst, sondern aus Respekt vor deiner Energie.",
+      "stats": [
+        { "label": "Zusage-Zuverlässigkeit", "value": "99,7%", "percent": 99 },
+        { "label": "Spontantoleranz", "value": "Mit Vorwarnung", "percent": 35 },
+        { "label": "Exit-Strategie", "value": "Immer parat", "percent": 90 },
+        { "label": "Kalender-Check-Speed", "value": "0,3 Sekunden", "percent": 95 }
+      ],
+      "compatibility": {
+        "allies": ["salon_connaisseur"],
+        "allies_text": "Der Salon-Connaisseur gibt dir die Intimität, die du für echte Verbindung brauchst.",
+        "nemesis": ["night_surfer"],
+        "nemesis_text": "Der Nacht-Surfer sagt ständig 'Sei doch mal spontan!' – du hasst diesen Satz."
+      },
+      "share_text": "📋 Ich bin der Planer! Party? Gern – wenn's im Kalender steht. #PartyBedürfnis",
+      "conversation_starter": "Frag mich zwei Wochen vorher, dann bin ich dabei. Frag mich heute... *Kalender-Blick*"
+    },
+    {
+      "id": "night_surfer",
+      "title": "Der Nacht-Surfer",
+      "emoji": "🌙",
+      "tagline": "Die Nacht ist dein Spielfeld – und du spielst bis der Referee pfeift.",
+      "condition": {
+        "event_drive": { "min": 56 },
+        "stimulus_seeking": { "min": 56 }
+      },
+      "description": "Während andere Batterien aufladen, lädst du dich an Menschen auf. Jede Einladung ist eine Chance, jede Party ein potenzielles Abenteuer. Du verstehst nicht, wie Leute JOMO haben können – für dich ist ein Abend zuhause verpasstes Leben. Das ist keine Oberflächlichkeit – du sammelst Erlebnisse wie andere Bücher. Du weißt: Die besten Geschichten passieren nach Mitternacht, die besten Freundschaften entstehen auf Tanzflächen, und die besten Ideen kommen um 4 Uhr morgens am Späti.",
+      "stats": [
+        { "label": "Social Battery", "value": "Solaranlage", "percent": 100 },
+        { "label": "FOMO-Level", "value": "Chronisch", "percent": 95 },
+        { "label": "Spontan-Bereitschaft", "value": "Immer 'Ja'", "percent": 100 },
+        { "label": "After-Hour-Erfahrung", "value": "PhD Level", "percent": 90 }
+      ],
+      "compatibility": {
+        "allies": ["planner"],
+        "allies_text": "Der Planer hält dich organisiert – und du reißt ihn aus der Komfortzone.",
+        "nemesis": ["cozy_guardian"],
+        "nemesis_text": "Der Cozy-Hüter frustriert dich mit seinen Netflix-Abenden. Akzeptiere es."
+      },
+      "share_text": "🌙 Ich bin der Nacht-Surfer! Einladung = Dopamin-Kick. #PartyBedürfnis",
+      "conversation_starter": "War gestern auf drei Events. Wie war euer Freitag? ...Netflix? Echt jetzt?"
+    }
+  ],
+
+  "scoring_logic": {
+    "method": "average",
+    "description": "Durchschnitt der Punkte pro Dimension. Profil wird durch Dimensionsbereiche bestimmt.",
+    "normalization": {
+      "min": 0,
+      "max": 100,
+      "formula": "average(dimension_points) → 1-100"
+    }
+  },
+
+  "share_config": {
+    "card_format": "9:16",
+    "card_style": "trading_card",
+    "primary_color": "#E85D75",
+    "secondary_color": "#FFB347",
+    "background": "gradient_warm_social",
+    "cta_primary": "Teile dein Ergebnis!",
+    "cta_secondary": "Tagge deine Party-Crew – wer ist euer Nacht-Surfer?",
+    "hashtags": ["PartyBedürfnis", "QuizzMe", "Persönlichkeitstest"],
+    "viral_hooks": [
+      "Bist du Team Couch oder Team Club?",
+      "Finde raus, was dein Freitag über dich verrät!",
+      "Der ehrlichste Party-Test im Internet"
+    ]
+  },
+
+  "contribution_event_template": {
+    "specVersion": "sp.contribution.v1",
+    "source": {
+      "vertical": "quiz",
+      "moduleId": "quiz.party_need.v1",
+      "locale": "de-DE"
+    },
+    "marker_mappings": [
+      {
+        "dimension": "event_drive",
+        "markers": [
+          { "threshold_max": 30, "marker_id": "marker.social.introversion_high", "weight_formula": "(50 - score) / 50" },
+          { "threshold_min": 70, "marker_id": "marker.social.extroversion_high", "weight_formula": "(score - 50) / 50" }
+        ]
+      },
+      {
+        "dimension": "stimulus_seeking",
+        "markers": [
+          { "threshold_max": 30, "marker_id": "marker.lifestyle.calm_seeker", "weight_formula": "(50 - score) / 50" },
+          { "threshold_min": 70, "marker_id": "marker.lifestyle.stimulus_seeker", "weight_formula": "(score - 50) / 50" }
+        ]
+      }
+    ],
+    "trait_mappings": [
+      { "dimension": "event_drive", "trait_id": "trait.social.event_drive" },
+      { "dimension": "stimulus_seeking", "trait_id": "trait.lifestyle.stimulus_seeking" }
+    ],
+    "tag_mappings": {
+      "cozy_guardian": [
+        { "id": "tag.style.homebody", "label": "Homebody", "kind": "style" },
+        { "id": "tag.style.quality_over_quantity", "label": "Qualität über Quantität", "kind": "style" }
+      ],
+      "salon_connaisseur": [
+        { "id": "tag.style.deep_connector", "label": "Deep Connector", "kind": "style" },
+        { "id": "tag.style.intimate_gatherings", "label": "Intime Runden", "kind": "style" }
+      ],
+      "planner": [
+        { "id": "tag.style.structured_social", "label": "Strukturierter Socializer", "kind": "style" },
+        { "id": "tag.style.reliable_presence", "label": "Zuverlässige Präsenz", "kind": "style" }
+      ],
+      "night_surfer": [
+        { "id": "tag.style.experience_collector", "label": "Erlebnis-Sammler", "kind": "style" },
+        { "id": "tag.style.social_butterfly", "label": "Social Butterfly", "kind": "style" }
+      ]
+    }
+  },
+
+  "design_tokens": {
+    "font_headline": "Cormorant Garamond",
+    "font_body": "Inter",
+    "colors": {
+      "cozy_guardian": { "primary": "#4A6741", "accent": "#8B9D83" },
+      "salon_connaisseur": { "primary": "#722F37", "accent": "#D4A574" },
+      "planner": { "primary": "#2C5F7C", "accent": "#7BA3BC" },
+      "night_surfer": { "primary": "#E85D75", "accent": "#FFB347" }
+    },
+    "icons": {
+      "cozy_guardian": "couch-home",
+      "salon_connaisseur": "wine-glass-conversation",
+      "planner": "calendar-check",
+      "night_surfer": "moon-stars"
+    }
+  }
+}

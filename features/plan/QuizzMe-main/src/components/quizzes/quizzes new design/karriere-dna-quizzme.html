@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karriere-DNA | QuizzMe – Entdecke deine wahre Natur</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* QuizzMe Modern Alchemy Color Palette */
+            --bg-emerald: #053B3F;
+            --bg-midnight: #041726;
+            --bg-gradient: linear-gradient(165deg, var(--bg-emerald) 0%, var(--bg-midnight) 100%);
+            
+            --gold-primary: #D2A95A;
+            --gold-dark: #A77D38;
+            --gold-light: #E8C87A;
+            --gold-gradient: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold-primary) 50%, var(--gold-light) 100%);
+            
+            --sage: #6CA192;
+            --teal: #1C5B5C;
+            
+            --cream-light: #F7F0E6;
+            --cream-dark: #F2E3CF;
+            --parchment: #EDE4D3;
+            
+            --text-dark: #271C16;
+            --text-light: #F7F3EA;
+            --text-muted: #8A9A8F;
+            
+            --card-shadow: 0 8px 32px rgba(4, 23, 38, 0.4);
+            --glow-gold: 0 0 40px rgba(210, 169, 90, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-light);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Constellation Background */
+        .cosmos-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .cosmos-bg::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(1px 1px at 20% 30%, rgba(247, 240, 230, 0.4) 0%, transparent 100%),
+                radial-gradient(1px 1px at 40% 70%, rgba(247, 240, 230, 0.3) 0%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 80% 20%, rgba(210, 169, 90, 0.5) 0%, transparent 100%),
+                radial-gradient(1px 1px at 65% 85%, rgba(247, 240, 230, 0.3) 0%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 10% 60%, rgba(210, 169, 90, 0.4) 0%, transparent 100%),
+                radial-gradient(1px 1px at 90% 50%, rgba(247, 240, 230, 0.35) 0%, transparent 100%),
+                radial-gradient(1px 1px at 50% 10%, rgba(247, 240, 230, 0.3) 0%, transparent 100%),
+                radial-gradient(2px 2px at 30% 45%, rgba(210, 169, 90, 0.5) 0%, transparent 100%),
+                radial-gradient(1px 1px at 70% 40%, rgba(247, 240, 230, 0.25) 0%, transparent 100%),
+                radial-gradient(1px 1px at 25% 80%, rgba(247, 240, 230, 0.3) 0%, transparent 100%);
+            animation: twinkle 8s ease-in-out infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        /* Decorative constellation lines */
+        .constellation-line {
+            position: absolute;
+            background: linear-gradient(90deg, transparent, rgba(210, 169, 90, 0.15), transparent);
+            height: 1px;
+            transform-origin: left center;
+        }
+
+        .cosmos-bg .constellation-line:nth-child(1) {
+            width: 120px;
+            top: 15%;
+            left: 5%;
+            transform: rotate(35deg);
+        }
+
+        .cosmos-bg .constellation-line:nth-child(2) {
+            width: 80px;
+            top: 75%;
+            right: 10%;
+            transform: rotate(-20deg);
+        }
+
+        .cosmos-bg .constellation-line:nth-child(3) {
+            width: 100px;
+            top: 45%;
+            left: 80%;
+            transform: rotate(60deg);
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            animation: fadeSlideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeSlideIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(24px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .brand-wordmark {
+            font-family: 'Playfair Display', serif;
+            font-size: 14px;
+            font-weight: 400;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .welcome-emblem {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 32px;
+            position: relative;
+        }
+
+        .welcome-emblem svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .welcome-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.2rem, 7vw, 2.8rem);
+            font-weight: 400;
+            line-height: 1.15;
+            margin-bottom: 16px;
+            color: var(--cream-light);
+        }
+
+        .welcome-title em {
+            font-style: italic;
+            color: var(--gold-primary);
+        }
+
+        .welcome-subtitle {
+            font-size: 1rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+            max-width: 320px;
+            margin-bottom: 48px;
+        }
+
+        .welcome-features {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 48px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 14px;
+            color: var(--cream-light);
+            opacity: 0.85;
+        }
+
+        .feature-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(210, 169, 90, 0.12);
+            border: 1px solid rgba(210, 169, 90, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .feature-icon svg {
+            width: 18px;
+            height: 18px;
+            stroke: var(--gold-primary);
+            fill: none;
+            stroke-width: 1.5;
+        }
+
+        .btn-primary {
+            background: var(--gold-gradient);
+            color: var(--text-dark);
+            border: none;
+            padding: 18px 52px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 20px rgba(210, 169, 90, 0.35);
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(210, 169, 90, 0.5);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            padding: 16px 0 28px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .progress-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .progress-count {
+            font-family: 'Playfair Display', serif;
+            font-size: 15px;
+            color: var(--gold-primary);
+        }
+
+        .progress-bar {
+            height: 3px;
+            background: rgba(210, 169, 90, 0.15);
+            border-radius: 100px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gold-gradient);
+            border-radius: 100px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 12px rgba(210, 169, 90, 0.5);
+        }
+
+        /* Question Card */
+        .question-card {
+            background: linear-gradient(145deg, var(--cream-light) 0%, var(--cream-dark) 100%);
+            border: 1px solid var(--gold-primary);
+            border-radius: 24px;
+            padding: 32px 24px;
+            box-shadow: var(--card-shadow), var(--glow-gold);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .question-text {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.35rem, 4.5vw, 1.6rem);
+            font-weight: 400;
+            line-height: 1.4;
+            margin-bottom: 28px;
+            color: var(--text-dark);
+            text-align: center;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .option-btn {
+            background: var(--cream-light);
+            border: 1px solid rgba(167, 125, 56, 0.3);
+            padding: 18px 20px;
+            border-radius: 14px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text-dark);
+            box-shadow: 0 2px 8px rgba(39, 28, 22, 0.06);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .option-btn::before {
+            content: "";
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid rgba(167, 125, 56, 0.4);
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .option-btn:hover {
+            background: linear-gradient(135deg, rgba(210, 169, 90, 0.1) 0%, rgba(210, 169, 90, 0.05) 100%);
+            border-color: var(--gold-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(39, 28, 22, 0.1);
+        }
+
+        .option-btn:hover::before {
+            border-color: var(--gold-primary);
+        }
+
+        .option-btn.selected {
+            background: var(--gold-gradient);
+            border-color: var(--gold-dark);
+            color: var(--text-dark);
+        }
+
+        .option-btn.selected::before {
+            background: var(--text-dark);
+            border-color: var(--text-dark);
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .loading-constellation {
+            width: 140px;
+            height: 140px;
+            position: relative;
+            margin-bottom: 40px;
+        }
+
+        .loading-constellation svg {
+            width: 100%;
+            height: 100%;
+            animation: rotateConstellation 20s linear infinite;
+        }
+
+        @keyframes rotateConstellation {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 24px;
+            height: 24px;
+            background: var(--gold-gradient);
+            border-radius: 50%;
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { 
+                transform: translate(-50%, -50%) scale(1);
+                box-shadow: 0 0 20px rgba(210, 169, 90, 0.5);
+            }
+            50% { 
+                transform: translate(-50%, -50%) scale(1.15);
+                box-shadow: 0 0 40px rgba(210, 169, 90, 0.8);
+            }
+        }
+
+        .loading-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            color: var(--cream-light);
+            margin-bottom: 8px;
+        }
+
+        .loading-subtext {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* Result Screen */
+        .result-screen {
+            padding: 16px 0;
+        }
+
+        .result-card {
+            background: linear-gradient(165deg, var(--cream-light) 0%, var(--parchment) 100%);
+            border: 2px solid var(--gold-primary);
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow), var(--glow-gold);
+            position: relative;
+        }
+
+        /* Decorative corners */
+        .result-card::before,
+        .result-card::after {
+            content: "";
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border: 1px solid rgba(167, 125, 56, 0.3);
+            pointer-events: none;
+        }
+
+        .result-card::before {
+            top: 12px;
+            left: 12px;
+            border-right: none;
+            border-bottom: none;
+            border-radius: 8px 0 0 0;
+        }
+
+        .result-card::after {
+            bottom: 12px;
+            right: 12px;
+            border-left: none;
+            border-top: none;
+            border-radius: 0 0 8px 0;
+        }
+
+        .card-header {
+            padding: 36px 28px 28px;
+            text-align: center;
+            position: relative;
+            background: linear-gradient(180deg, rgba(210, 169, 90, 0.1) 0%, transparent 100%);
+        }
+
+        .result-badge {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gold-dark);
+            background: rgba(210, 169, 90, 0.15);
+            padding: 6px 14px;
+            border-radius: 100px;
+            margin-bottom: 20px;
+        }
+
+        .profile-emblem {
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+
+        .profile-emblem svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .profile-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.9rem;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .profile-tagline {
+            font-size: 15px;
+            color: var(--gold-dark);
+            font-style: italic;
+            max-width: 280px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        .card-body {
+            padding: 24px 28px;
+        }
+
+        .profile-description {
+            font-size: 14px;
+            line-height: 1.75;
+            color: var(--text-dark);
+            opacity: 0.85;
+            margin-bottom: 28px;
+            text-align: center;
+        }
+
+        /* Stats Section */
+        .stats-section {
+            background: rgba(5, 59, 63, 0.06);
+            border: 1px solid rgba(167, 125, 56, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--gold-dark);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(167, 125, 56, 0.3) 0%, transparent 100%);
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-dark);
+            opacity: 0.8;
+        }
+
+        .stat-bar {
+            flex: 1;
+            height: 8px;
+            background: rgba(39, 28, 22, 0.08);
+            border-radius: 100px;
+            margin: 0 14px;
+            overflow: hidden;
+        }
+
+        .stat-bar-fill {
+            height: 100%;
+            border-radius: 100px;
+            transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-bar-fill.gold { background: var(--gold-gradient); }
+        .stat-bar-fill.sage { background: linear-gradient(90deg, var(--teal), var(--sage)); }
+        .stat-bar-fill.emerald { background: linear-gradient(90deg, #0a4a4f, #10b981); }
+        .stat-bar-fill.muted { background: linear-gradient(90deg, #9a8b7a, #bfae9b); }
+
+        .stat-value {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dark);
+            min-width: 36px;
+            text-align: right;
+        }
+
+        /* Compatibility Section */
+        .compatibility-section {
+            background: rgba(5, 59, 63, 0.06);
+            border: 1px solid rgba(167, 125, 56, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .compat-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 0;
+        }
+
+        .compat-row:first-of-type {
+            border-bottom: 1px solid rgba(167, 125, 56, 0.15);
+        }
+
+        .compat-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: rgba(210, 169, 90, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .compat-icon svg {
+            width: 14px;
+            height: 14px;
+            stroke: var(--gold-dark);
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .compat-content {
+            flex: 1;
+        }
+
+        .compat-label {
+            font-size: 11px;
+            color: var(--gold-dark);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .compat-value {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        /* Career Paths */
+        .careers-section {
+            background: rgba(5, 59, 63, 0.06);
+            border: 1px solid rgba(167, 125, 56, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .career-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .career-tag {
+            background: rgba(210, 169, 90, 0.12);
+            border: 1px solid rgba(210, 169, 90, 0.3);
+            padding: 8px 14px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--gold-dark);
+        }
+
+        /* Share Section */
+        .share-section {
+            padding: 24px 28px;
+            text-align: center;
+            border-top: 1px solid rgba(167, 125, 56, 0.2);
+        }
+
+        .share-text {
+            font-size: 13px;
+            color: var(--text-dark);
+            opacity: 0.7;
+            margin-bottom: 16px;
+        }
+
+        .share-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .share-btn {
+            background: linear-gradient(145deg, var(--cream-light) 0%, var(--cream-dark) 100%);
+            border: 1px solid rgba(167, 125, 56, 0.4);
+            padding: 14px 22px;
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .share-btn:hover {
+            background: var(--gold-gradient);
+            border-color: var(--gold-dark);
+            transform: translateY(-1px);
+        }
+
+        .restart-btn {
+            background: transparent;
+            border: 1px solid rgba(39, 28, 22, 0.2);
+            padding: 12px 24px;
+            border-radius: 100px;
+            font-size: 13px;
+            color: var(--text-dark);
+            opacity: 0.6;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            margin-top: 16px;
+        }
+
+        .restart-btn:hover {
+            opacity: 1;
+            border-color: var(--gold-primary);
+        }
+
+        /* Disclaimer */
+        .disclaimer {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 20px;
+            line-height: 1.7;
+        }
+
+        /* Responsive */
+        @media (max-width: 420px) {
+            .container {
+                padding: 16px;
+            }
+            
+            .question-card {
+                padding: 24px 20px;
+            }
+            
+            .option-btn {
+                padding: 16px 18px;
+                font-size: 13px;
+            }
+
+            .card-body {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cosmos-bg">
+        <div class="constellation-line"></div>
+        <div class="constellation-line"></div>
+        <div class="constellation-line"></div>
+    </div>
+    
+    <div class="container">
+        <!-- Welcome Screen -->
+        <div id="welcome-screen" class="screen welcome-screen active">
+            <div class="brand-wordmark">QuizzMe</div>
+            
+            <div class="welcome-emblem">
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- DNA Helix stylized as constellation -->
+                    <circle cx="50" cy="50" r="45" stroke="#D2A95A" stroke-width="0.5" opacity="0.3"/>
+                    <circle cx="50" cy="50" r="35" stroke="#D2A95A" stroke-width="0.5" opacity="0.2"/>
+                    <!-- DNA strands -->
+                    <path d="M30 20 Q50 35 70 20 Q50 35 30 50 Q50 65 70 50 Q50 65 30 80" stroke="#D2A95A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                    <path d="M70 20 Q50 35 30 20 Q50 35 70 50 Q50 65 30 50 Q50 65 70 80" stroke="#D2A95A" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.5"/>
+                    <!-- Connection dots -->
+                    <circle cx="30" cy="20" r="2.5" fill="#D2A95A"/>
+                    <circle cx="70" cy="20" r="2" fill="#D2A95A" opacity="0.6"/>
+                    <circle cx="30" cy="50" r="2" fill="#D2A95A" opacity="0.6"/>
+                    <circle cx="70" cy="50" r="2.5" fill="#D2A95A"/>
+                    <circle cx="30" cy="80" r="2" fill="#D2A95A" opacity="0.6"/>
+                    <circle cx="70" cy="80" r="2.5" fill="#D2A95A"/>
+                    <!-- Central star -->
+                    <circle cx="50" cy="50" r="4" fill="#D2A95A"/>
+                </svg>
+            </div>
+            
+            <h1 class="welcome-title">Deine <em>Karriere-DNA</em></h1>
+            <p class="welcome-subtitle">Entdecke deinen beruflichen Archetyp – und verstehe, welche Umgebung dich wirklich zum Strahlen bringt.</p>
+            
+            <div class="welcome-features">
+                <div class="feature-item">
+                    <span class="feature-icon">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+                    </span>
+                    <span>10 Fragen, unter 3 Minuten</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">
+                        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    </span>
+                    <span>Basierend auf Motivationspsychologie</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">
+                        <svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+                    </span>
+                    <span>Dein persönliches Karriere-Profil</span>
+                </div>
+            </div>
+            
+            <button class="btn-primary" onclick="startQuiz()">Quiz starten</button>
+        </div>
+
+        <!-- Question Screen -->
+        <div id="question-screen" class="screen">
+            <div class="progress-container">
+                <div class="progress-header">
+                    <span class="progress-label">Fortschritt</span>
+                    <span class="progress-count" id="progress-count">1 / 10</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill" style="width: 10%"></div>
+                </div>
+            </div>
+            
+            <div class="question-card">
+                <h2 class="question-text" id="question-text"></h2>
+                <div class="options-container" id="options-container"></div>
+            </div>
+        </div>
+
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="screen loading-screen">
+            <div class="loading-constellation">
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Outer circle -->
+                    <circle cx="50" cy="50" r="45" stroke="#D2A95A" stroke-width="0.5" stroke-dasharray="4 4"/>
+                    <!-- Constellation points -->
+                    <circle cx="50" cy="8" r="2" fill="#D2A95A"/>
+                    <circle cx="85" cy="30" r="1.5" fill="#D2A95A" opacity="0.7"/>
+                    <circle cx="85" cy="70" r="2" fill="#D2A95A"/>
+                    <circle cx="50" cy="92" r="1.5" fill="#D2A95A" opacity="0.7"/>
+                    <circle cx="15" cy="70" r="2" fill="#D2A95A"/>
+                    <circle cx="15" cy="30" r="1.5" fill="#D2A95A" opacity="0.7"/>
+                    <!-- Connection lines -->
+                    <line x1="50" y1="8" x2="85" y2="30" stroke="#D2A95A" stroke-width="0.5" opacity="0.4"/>
+                    <line x1="85" y1="30" x2="85" y2="70" stroke="#D2A95A" stroke-width="0.5" opacity="0.4"/>
+                    <line x1="85" y1="70" x2="50" y2="92" stroke="#D2A95A" stroke-width="0.5" opacity="0.4"/>
+                    <line x1="50" y1="92" x2="15" y2="70" stroke="#D2A95A" stroke-width="0.5" opacity="0.4"/>
+                    <line x1="15" y1="70" x2="15" y2="30" stroke="#D2A95A" stroke-width="0.5" opacity="0.4"/>
+                    <line x1="15" y1="30" x2="50" y2="8" stroke="#D2A95A" stroke-width="0.5" opacity="0.4"/>
+                    <!-- Inner pattern -->
+                    <circle cx="50" cy="50" r="20" stroke="#D2A95A" stroke-width="0.5" opacity="0.3"/>
+                </svg>
+                <div class="loading-center"></div>
+            </div>
+            <p class="loading-text">Die Sterne deuten deine DNA...</p>
+            <p class="loading-subtext">Einen Moment Geduld</p>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="screen result-screen">
+            <div class="result-card" id="result-card">
+                <!-- Dynamisch befüllt -->
+            </div>
+            
+            <p class="disclaimer">Dieser Test dient der spielerischen Selbstreflexion und stellt keine psychologische Diagnose oder Berufsberatung dar.</p>
+        </div>
+    </div>
+
+    <script>
+        // Quiz Data
+        const quizData = {
+            meta: {
+                id: "karriere-dna-v1",
+                title: "Deine Karriere-DNA",
+                engine: "custom",
+                skin: "QuizzMe Modern Alchemy"
+            },
+            dimensions: [
+                { id: "achievement", name: "Leistungsstreben", pole_low: "Stabilität", pole_high: "Ambition" },
+                { id: "autonomy", name: "Autonomiebedürfnis", pole_low: "Struktur", pole_high: "Freiheit" },
+                { id: "influence", name: "Wirkungsradius", pole_low: "Fokus", pole_high: "Einfluss" }
+            ],
+            questions: [
+                {
+                    id: "q1",
+                    text: "Du bekommst ein überraschendes Jobangebot. Was zählt für dich am meisten?",
+                    options: [
+                        { id: "q1_a", text: "Die Chance, wirklich etwas Neues aufzubauen", scores: { achievement: 3, autonomy: 2, influence: 1 } },
+                        { id: "q1_b", text: "Mehr Verantwortung und ein größeres Team", scores: { achievement: 2, autonomy: 0, influence: 3 } },
+                        { id: "q1_c", text: "Freiraum, Dinge auf meine Art zu machen", scores: { achievement: 1, autonomy: 3, influence: 0 } },
+                        { id: "q1_d", text: "Ein klarer Karrierepfad mit Sicherheit", scores: { achievement: 0, autonomy: 0, influence: 1 } }
+                    ]
+                },
+                {
+                    id: "q2",
+                    text: "Dein Team ist uneins über die Richtung eines Projekts. Wie reagierst du?",
+                    options: [
+                        { id: "q2_a", text: "Ich übernehme die Führung und setze eine Vision", scores: { achievement: 2, autonomy: 1, influence: 3 } },
+                        { id: "q2_b", text: "Ich bringe alle an einen Tisch und moderiere", scores: { achievement: 1, autonomy: 0, influence: 2 } },
+                        { id: "q2_c", text: "Ich arbeite meinen Teil unabhängig weiter", scores: { achievement: 1, autonomy: 3, influence: 0 } },
+                        { id: "q2_d", text: "Ich warte auf eine Entscheidung von oben", scores: { achievement: 0, autonomy: 0, influence: 0 } }
+                    ]
+                },
+                {
+                    id: "q3",
+                    text: "Was treibt dich morgens wirklich an, zur Arbeit zu gehen?",
+                    options: [
+                        { id: "q3_a", text: "Die Aussicht, heute ein Problem zu knacken", scores: { achievement: 3, autonomy: 1, influence: 0 } },
+                        { id: "q3_b", text: "Mein Team – ich will für sie da sein", scores: { achievement: 1, autonomy: 0, influence: 2 } },
+                        { id: "q3_c", text: "Mein eigenes Projekt voranbringen", scores: { achievement: 2, autonomy: 3, influence: 0 } },
+                        { id: "q3_d", text: "Stabilität und die Routine, die mir gut tut", scores: { achievement: 0, autonomy: 0, influence: 0 } }
+                    ]
+                },
+                {
+                    id: "q4",
+                    text: "Du hast eine bahnbrechende Idee. Was ist dein erster Impuls?",
+                    options: [
+                        { id: "q4_a", text: "Sofort mit der Umsetzung beginnen – alleine, wenn nötig", scores: { achievement: 3, autonomy: 3, influence: 0 } },
+                        { id: "q4_b", text: "Verbündete suchen und die Idee verbreiten", scores: { achievement: 2, autonomy: 0, influence: 3 } },
+                        { id: "q4_c", text: "Erst gründlich durchdenken und perfektionieren", scores: { achievement: 2, autonomy: 2, influence: 0 } },
+                        { id: "q4_d", text: "Meinen Vorgesetzten fragen, ob das passt", scores: { achievement: 0, autonomy: 0, influence: 1 } }
+                    ]
+                },
+                {
+                    id: "q5",
+                    text: "Was wäre für dich das schlimmste Arbeitsumfeld?",
+                    options: [
+                        { id: "q5_a", text: "Einer, wo meine Ideen nie umgesetzt werden", scores: { achievement: 3, autonomy: 2, influence: 1 } },
+                        { id: "q5_b", text: "Einer, wo ich keinen Einfluss auf Entscheidungen habe", scores: { achievement: 1, autonomy: 0, influence: 3 } },
+                        { id: "q5_c", text: "Einer, wo ich ständig kontrolliert werde", scores: { achievement: 1, autonomy: 3, influence: 0 } },
+                        { id: "q5_d", text: "Einer, wo alles unberechenbar und chaotisch ist", scores: { achievement: 0, autonomy: 0, influence: 0 } }
+                    ]
+                },
+                {
+                    id: "q6",
+                    text: "Du bekommst eine Beförderung angeboten: mehr Geld, aber weniger eigene Projekte. Deine Reaktion?",
+                    options: [
+                        { id: "q6_a", text: "Ablehnen – meine Arbeit ist mir wichtiger als Status", scores: { achievement: 2, autonomy: 3, influence: 0 } },
+                        { id: "q6_b", text: "Annehmen – Einfluss ist der nächste Schritt", scores: { achievement: 1, autonomy: 0, influence: 3 } },
+                        { id: "q6_c", text: "Verhandeln – beides geht doch sicher", scores: { achievement: 3, autonomy: 2, influence: 2 } },
+                        { id: "q6_d", text: "Annehmen – Sicherheit und Geld sind wichtig", scores: { achievement: 0, autonomy: 0, influence: 1 } }
+                    ]
+                },
+                {
+                    id: "q7",
+                    text: "Wenn du an deinen idealen Arbeitstag denkst – wie sieht er aus?",
+                    options: [
+                        { id: "q7_a", text: "Deep Work an einem komplexen Problem, Kopfhörer auf", scores: { achievement: 2, autonomy: 3, influence: 0 } },
+                        { id: "q7_b", text: "Strategie-Sessions mit dem Leadership-Team", scores: { achievement: 2, autonomy: 0, influence: 3 } },
+                        { id: "q7_c", text: "Schnelle Iterationen an meinem Projekt, sichtbare Fortschritte", scores: { achievement: 3, autonomy: 2, influence: 0 } },
+                        { id: "q7_d", text: "Klare Aufgaben, gute Gespräche mit Kollegen, pünktlich Feierabend", scores: { achievement: 0, autonomy: 1, influence: 1 } }
+                    ]
+                },
+                {
+                    id: "q8",
+                    text: "Du hast unerwartet einen freien Nachmittag. Was tust du?",
+                    options: [
+                        { id: "q8_a", text: "Arbeite an meinem Side Project – endlich Zeit für meine Vision", scores: { achievement: 3, autonomy: 3, influence: 1 } },
+                        { id: "q8_b", text: "Lese ein Fachbuch oder belege einen Online-Kurs", scores: { achievement: 2, autonomy: 1, influence: 0 } },
+                        { id: "q8_c", text: "Treffe mich mit meinem Netzwerk – Kaffee mit einem Mentor", scores: { achievement: 1, autonomy: 0, influence: 2 } },
+                        { id: "q8_d", text: "Genieße die Auszeit – auch mal abschalten können ist wichtig", scores: { achievement: 0, autonomy: 1, influence: 0 } }
+                    ]
+                },
+                {
+                    id: "q9",
+                    text: "Was würde dich in einem Job am meisten frustrieren?",
+                    options: [
+                        { id: "q9_a", text: "Keine Entscheidungsgewalt – immer nur ausführen, was andere beschließen", scores: { achievement: 2, autonomy: 2, influence: 3 } },
+                        { id: "q9_b", text: "Oberflächliche Arbeit – nie richtig in die Tiefe gehen können", scores: { achievement: 1, autonomy: 1, influence: 0 } },
+                        { id: "q9_c", text: "Zu viele Meetings und Abstimmungen – nichts geht voran", scores: { achievement: 2, autonomy: 3, influence: 0 } },
+                        { id: "q9_d", text: "Ständige Unsicherheit – nie wissen, wie es nächstes Jahr aussieht", scores: { achievement: 0, autonomy: 0, influence: 1 } }
+                    ]
+                },
+                {
+                    id: "q10",
+                    text: "In 10 Jahren wärst du am glücklichsten, wenn du:",
+                    options: [
+                        { id: "q10_a", text: "Dein eigenes Unternehmen erfolgreich aufgebaut hast", scores: { achievement: 3, autonomy: 3, influence: 2 } },
+                        { id: "q10_b", text: "Als Koryphäe auf deinem Gebiet international anerkannt bist", scores: { achievement: 2, autonomy: 2, influence: 0 } },
+                        { id: "q10_c", text: "Eine Organisation leitest und eine Kultur geprägt hast", scores: { achievement: 2, autonomy: 0, influence: 3 } },
+                        { id: "q10_d", text: "Work-Life-Balance gefunden hast mit einem sicheren, erfüllenden Job", scores: { achievement: 0, autonomy: 1, influence: 0 } }
+                    ]
+                }
+            ],
+            profiles: [
+                {
+                    id: "visionaer",
+                    title: "Der Visionär",
+                    emblem: "rocket",
+                    tagline: "Du siehst Möglichkeiten, wo andere Mauern sehen.",
+                    description: "Deine Karriere-DNA ist auf Disruption programmiert. Du brauchst keine Erlaubnis, du brauchst Freiraum. In dir brennt der Wunsch, etwas zu schaffen, das vorher nicht existierte – und die Welt ein Stück weit neu zu definieren.",
+                    stats: [
+                        { label: "Risikobereitschaft", value: 94, color: "gold" },
+                        { label: "Innovationsdrang", value: 89, color: "sage" },
+                        { label: "Unabhängigkeit", value: 91, color: "emerald" },
+                        { label: "Geduld mit Bürokratie", value: 23, color: "muted" }
+                    ],
+                    compatibility: {
+                        allies: ["Der Architekt", "Der Katalysator"],
+                        nemesis: "Der Wächter"
+                    },
+                    careers: ["Gründer:in", "Chief Innovation Officer", "Venture Builder", "Product Visionary"],
+                    matching: { achievement: { min: 15 }, autonomy: { min: 15 }, influence: { min: 8 } }
+                },
+                {
+                    id: "architekt",
+                    title: "Der Architekt",
+                    emblem: "crystal",
+                    tagline: "Tiefe statt Breite. Meisterschaft statt Mittelmaß.",
+                    description: "Du baust nicht auf Sand. Deine Stärke liegt in der Präzision, im Durchdringen komplexer Systeme. Während andere an der Oberfläche kratzen, tauchst du ab – und kommst mit Lösungen zurück, die andere nicht mal als Fragen erkannt haben.",
+                    stats: [
+                        { label: "Tiefgang", value: 96, color: "emerald" },
+                        { label: "Analytische Schärfe", value: 91, color: "sage" },
+                        { label: "Selbstständigkeit", value: 84, color: "gold" },
+                        { label: "Small Talk Skills", value: 31, color: "muted" }
+                    ],
+                    compatibility: {
+                        allies: ["Der Visionär", "Der Navigator"],
+                        nemesis: "Der Katalysator"
+                    },
+                    careers: ["Principal Engineer", "Forschungsleitung", "Strategieberatung", "Technical Fellow"],
+                    matching: { achievement: { min: 10 }, autonomy: { min: 12 }, influence: { max: 8 } }
+                },
+                {
+                    id: "katalysator",
+                    title: "Der Katalysator",
+                    emblem: "lightning",
+                    tagline: "Du machst Teams besser, als sie selbst glauben.",
+                    description: "Deine Superkraft? Du siehst in Menschen Potenzial, das sie selbst noch nicht kennen. Du führst nicht von oben herab – du entfachst. Und wenn du gehst, hinterlässt du Teams, die ohne dich weiterwachsen.",
+                    stats: [
+                        { label: "Führungsenergie", value: 92, color: "gold" },
+                        { label: "Empathie-Radar", value: 87, color: "emerald" },
+                        { label: "Veränderungsdrang", value: 78, color: "sage" },
+                        { label: "Einzelkämpfer-Modus", value: 28, color: "muted" }
+                    ],
+                    compatibility: {
+                        allies: ["Der Visionär", "Der Mentor"],
+                        nemesis: "Der Architekt"
+                    },
+                    careers: ["VP People", "Geschäftsführung", "Change Manager", "Head of Department"],
+                    matching: { achievement: { min: 8 }, autonomy: { max: 10 }, influence: { min: 14 } }
+                },
+                {
+                    id: "navigator",
+                    title: "Der Navigator",
+                    emblem: "compass",
+                    tagline: "Struktur ist nicht Einschränkung – sie ist Freiheit.",
+                    description: "Du bist der ruhende Pol im Chaos. Während andere hektisch reagieren, hast du längst drei Schritte vorausgedacht. Deine Stärke liegt nicht im Glanz, sondern in der Verlässlichkeit, die andere erst vermissen, wenn du fehlst.",
+                    stats: [
+                        { label: "Systemdenken", value: 94, color: "emerald" },
+                        { label: "Risikobewusstsein", value: 88, color: "sage" },
+                        { label: "Methodische Tiefe", value: 85, color: "gold" },
+                        { label: "Spontanität", value: 34, color: "muted" }
+                    ],
+                    compatibility: {
+                        allies: ["Der Architekt", "Der Wächter"],
+                        nemesis: "Der Visionär"
+                    },
+                    careers: ["Data Science Lead", "Operations Excellence", "Finance Controller", "Quality Director"],
+                    matching: { achievement: { max: 10 }, autonomy: { min: 8, max: 14 }, influence: { max: 8 } }
+                },
+                {
+                    id: "mentor",
+                    title: "Der Mentor",
+                    emblem: "plant",
+                    tagline: "Dein Erfolg? Wenn andere wachsen.",
+                    description: "Du misst dich nicht an Titeln oder Boni – du misst dich an der Entwicklung der Menschen um dich herum. Dein größter Triumph ist leise: Der Moment, wenn jemand etwas schafft, das er sich nie zugetraut hätte.",
+                    stats: [
+                        { label: "Entwicklerfähigkeit", value: 95, color: "emerald" },
+                        { label: "Geduld", value: 89, color: "sage" },
+                        { label: "Teamverbundenheit", value: 91, color: "gold" },
+                        { label: "Ego-Investment", value: 22, color: "muted" }
+                    ],
+                    compatibility: {
+                        allies: ["Der Katalysator", "Der Wächter"],
+                        nemesis: "Der Visionär"
+                    },
+                    careers: ["Learning & Development", "Coaching", "HR Business Partner", "Ausbildungsleitung"],
+                    matching: { achievement: { max: 10 }, autonomy: { max: 8 }, influence: { min: 8, max: 14 } }
+                },
+                {
+                    id: "waechter",
+                    title: "Der Wächter",
+                    emblem: "shield",
+                    tagline: "Du baust, was bleibt.",
+                    description: "Während andere den nächsten Trend jagen, sicherst du das Fundament. Du verstehst: Nicht jede Revolution ist ein Fortschritt. Deine Stärke liegt im Bewahren dessen, was funktioniert – und im klugen Verbessern.",
+                    stats: [
+                        { label: "Stabilität", value: 96, color: "emerald" },
+                        { label: "Verantwortungsgefühl", value: 92, color: "sage" },
+                        { label: "Prozessklarheit", value: 88, color: "gold" },
+                        { label: "Disruptions-Enthusiasmus", value: 19, color: "muted" }
+                    ],
+                    compatibility: {
+                        allies: ["Der Navigator", "Der Mentor"],
+                        nemesis: "Der Visionär"
+                    },
+                    careers: ["Compliance Officer", "Projektmanagement", "Betriebsleitung", "Administration"],
+                    matching: { achievement: { max: 6 }, autonomy: { max: 8 }, influence: { min: 4, max: 10 } }
+                }
+            ]
+        };
+
+        // Emblem SVGs
+        const emblems = {
+            rocket: `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="40" cy="40" r="36" stroke="#D2A95A" stroke-width="1" opacity="0.3"/>
+                <path d="M40 15 L40 55 M30 50 Q40 60 50 50" stroke="#D2A95A" stroke-width="2" fill="none" stroke-linecap="round"/>
+                <path d="M32 35 L40 20 L48 35" stroke="#D2A95A" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="40" cy="40" r="4" fill="#D2A95A" opacity="0.5"/>
+                <path d="M25 55 L30 50 M55 55 L50 50" stroke="#D2A95A" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>`,
+            crystal: `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="40" cy="40" r="36" stroke="#D2A95A" stroke-width="1" opacity="0.3"/>
+                <path d="M40 12 L55 30 L55 55 L40 68 L25 55 L25 30 Z" stroke="#D2A95A" stroke-width="2" fill="none" stroke-linejoin="round"/>
+                <path d="M40 12 L40 68 M25 30 L55 30 M25 55 L55 55" stroke="#D2A95A" stroke-width="1" opacity="0.5"/>
+                <circle cx="40" cy="40" r="3" fill="#D2A95A"/>
+            </svg>`,
+            lightning: `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="40" cy="40" r="36" stroke="#D2A95A" stroke-width="1" opacity="0.3"/>
+                <path d="M45 15 L30 42 L38 42 L35 65 L50 38 L42 38 Z" stroke="#D2A95A" stroke-width="2" fill="none" stroke-linejoin="round"/>
+                <circle cx="40" cy="40" r="3" fill="#D2A95A" opacity="0.5"/>
+            </svg>`,
+            compass: `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="40" cy="40" r="36" stroke="#D2A95A" stroke-width="1" opacity="0.3"/>
+                <circle cx="40" cy="40" r="24" stroke="#D2A95A" stroke-width="1.5" fill="none"/>
+                <path d="M40 20 L44 40 L40 60 L36 40 Z" stroke="#D2A95A" stroke-width="1.5" fill="none"/>
+                <path d="M20 40 L40 36 L60 40 L40 44 Z" stroke="#D2A95A" stroke-width="1.5" fill="none"/>
+                <circle cx="40" cy="40" r="4" fill="#D2A95A"/>
+            </svg>`,
+            plant: `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="40" cy="40" r="36" stroke="#D2A95A" stroke-width="1" opacity="0.3"/>
+                <path d="M40 65 L40 35" stroke="#D2A95A" stroke-width="2" stroke-linecap="round"/>
+                <path d="M40 45 Q25 40 25 28 Q35 32 40 45" stroke="#D2A95A" stroke-width="1.5" fill="none"/>
+                <path d="M40 35 Q55 30 55 18 Q45 22 40 35" stroke="#D2A95A" stroke-width="1.5" fill="none"/>
+                <path d="M40 55 Q50 50 52 40 Q45 44 40 55" stroke="#D2A95A" stroke-width="1.5" fill="none"/>
+                <circle cx="40" cy="20" r="2" fill="#D2A95A" opacity="0.6"/>
+            </svg>`,
+            shield: `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="40" cy="40" r="36" stroke="#D2A95A" stroke-width="1" opacity="0.3"/>
+                <path d="M40 15 L58 25 L58 45 Q58 60 40 68 Q22 60 22 45 L22 25 Z" stroke="#D2A95A" stroke-width="2" fill="none" stroke-linejoin="round"/>
+                <path d="M40 25 L40 55 M30 40 L50 40" stroke="#D2A95A" stroke-width="1.5" opacity="0.5" stroke-linecap="round"/>
+                <circle cx="40" cy="40" r="4" fill="#D2A95A"/>
+            </svg>`
+        };
+
+        // Quiz State
+        let currentQuestion = 0;
+        let scores = { achievement: 0, autonomy: 0, influence: 0 };
+        let selectedAnswers = [];
+
+        // DOM Elements
+        const screens = {
+            welcome: document.getElementById('welcome-screen'),
+            question: document.getElementById('question-screen'),
+            loading: document.getElementById('loading-screen'),
+            result: document.getElementById('result-screen')
+        };
+
+        function showScreen(screenName) {
+            Object.values(screens).forEach(screen => screen.classList.remove('active'));
+            screens[screenName].classList.add('active');
+        }
+
+        function startQuiz() {
+            currentQuestion = 0;
+            scores = { achievement: 0, autonomy: 0, influence: 0 };
+            selectedAnswers = [];
+            showScreen('question');
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const question = quizData.questions[currentQuestion];
+            const total = quizData.questions.length;
+            
+            document.getElementById('progress-count').textContent = `${currentQuestion + 1} / ${total}`;
+            document.getElementById('progress-fill').style.width = `${((currentQuestion + 1) / total) * 100}%`;
+            document.getElementById('question-text').textContent = question.text;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = question.options.map(option => `
+                <button class="option-btn" onclick="selectOption('${option.id}', ${JSON.stringify(option.scores).replace(/"/g, '&quot;')})">
+                    ${option.text}
+                </button>
+            `).join('');
+        }
+
+        function selectOption(optionId, optionScores) {
+            // Add scores
+            Object.entries(optionScores).forEach(([dimension, score]) => {
+                scores[dimension] += score;
+            });
+            
+            selectedAnswers.push(optionId);
+            
+            // Visual feedback
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            event.target.classList.add('selected');
+            
+            // Next question or finish
+            setTimeout(() => {
+                if (currentQuestion < quizData.questions.length - 1) {
+                    currentQuestion++;
+                    renderQuestion();
+                } else {
+                    showLoading();
+                }
+            }, 350);
+        }
+
+        function showLoading() {
+            showScreen('loading');
+            setTimeout(() => {
+                const profile = calculateProfile();
+                renderResult(profile);
+                showScreen('result');
+            }, 2800);
+        }
+
+        function calculateProfile() {
+            // Find best matching profile
+            let bestMatch = null;
+            let bestScore = -1;
+            
+            quizData.profiles.forEach(profile => {
+                let matchScore = 0;
+                const m = profile.matching;
+                
+                if (m.achievement) {
+                    if (m.achievement.min !== undefined && scores.achievement >= m.achievement.min) matchScore += 2;
+                    if (m.achievement.max !== undefined && scores.achievement <= m.achievement.max) matchScore += 2;
+                    if (m.achievement.min === undefined && m.achievement.max !== undefined && scores.achievement <= m.achievement.max) matchScore += 1;
+                }
+                
+                if (m.autonomy) {
+                    if (m.autonomy.min !== undefined && scores.autonomy >= m.autonomy.min) matchScore += 2;
+                    if (m.autonomy.max !== undefined && scores.autonomy <= m.autonomy.max) matchScore += 2;
+                    if (m.autonomy.min === undefined && m.autonomy.max !== undefined && scores.autonomy <= m.autonomy.max) matchScore += 1;
+                }
+                
+                if (m.influence) {
+                    if (m.influence.min !== undefined && scores.influence >= m.influence.min) matchScore += 2;
+                    if (m.influence.max !== undefined && scores.influence <= m.influence.max) matchScore += 2;
+                    if (m.influence.min === undefined && m.influence.max !== undefined && scores.influence <= m.influence.max) matchScore += 1;
+                }
+                
+                if (matchScore > bestScore) {
+                    bestScore = matchScore;
+                    bestMatch = profile;
+                }
+            });
+            
+            // Fallback based on dominant dimension
+            if (!bestMatch || bestScore < 3) {
+                if (scores.achievement >= 15 && scores.autonomy >= 15) {
+                    bestMatch = quizData.profiles.find(p => p.id === 'visionaer');
+                } else if (scores.influence >= 12) {
+                    bestMatch = quizData.profiles.find(p => p.id === 'katalysator');
+                } else if (scores.autonomy >= 12 && scores.achievement >= 10) {
+                    bestMatch = quizData.profiles.find(p => p.id === 'architekt');
+                } else if (scores.achievement <= 8 && scores.autonomy <= 8) {
+                    bestMatch = quizData.profiles.find(p => p.id === 'waechter');
+                } else {
+                    bestMatch = quizData.profiles.find(p => p.id === 'navigator');
+                }
+            }
+            
+            return bestMatch || quizData.profiles[0];
+        }
+
+        function renderResult(profile) {
+            const card = document.getElementById('result-card');
+            
+            card.innerHTML = `
+                <div class="card-header">
+                    <span class="result-badge">Dein Archetyp</span>
+                    <div class="profile-emblem">${emblems[profile.emblem]}</div>
+                    <h1 class="profile-title">${profile.title}</h1>
+                    <p class="profile-tagline">${profile.tagline}</p>
+                </div>
+                
+                <div class="card-body">
+                    <p class="profile-description">${profile.description}</p>
+                    
+                    <div class="stats-section">
+                        <div class="section-title">Deine Stats</div>
+                        ${profile.stats.map(stat => `
+                            <div class="stat-row">
+                                <span class="stat-label">${stat.label}</span>
+                                <div class="stat-bar">
+                                    <div class="stat-bar-fill ${stat.color}" style="width: 0%"></div>
+                                </div>
+                                <span class="stat-value">${stat.value}%</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="compatibility-section">
+                        <div class="section-title">Kompatibilität</div>
+                        <div class="compat-row">
+                            <div class="compat-icon">
+                                <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                            </div>
+                            <div class="compat-content">
+                                <div class="compat-label">Allies</div>
+                                <div class="compat-value">${profile.compatibility.allies.join(' & ')}</div>
+                            </div>
+                        </div>
+                        <div class="compat-row">
+                            <div class="compat-icon">
+                                <svg viewBox="0 0 24 24"><path d="M12 2v20M2 12h20"/></svg>
+                            </div>
+                            <div class="compat-content">
+                                <div class="compat-label">Herausforderung</div>
+                                <div class="compat-value">${profile.compatibility.nemesis}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="careers-section">
+                        <div class="section-title">Karrierepfade</div>
+                        <div class="career-tags">
+                            ${profile.careers.map(career => `<span class="career-tag">${career}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="share-section">
+                    <p class="share-text">Teile deinen Karriere-Archetyp</p>
+                    <div class="share-buttons">
+                        <button class="share-btn" onclick="copyResult('${profile.title}', '${profile.tagline}')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                            Kopieren
+                        </button>
+                        <button class="share-btn" onclick="shareNative('${profile.title}', '${profile.tagline}')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+                            Teilen
+                        </button>
+                    </div>
+                    <button class="restart-btn" onclick="startQuiz()">Nochmal spielen</button>
+                </div>
+            `;
+            
+            // Animate stats
+            setTimeout(() => {
+                profile.stats.forEach((stat, index) => {
+                    setTimeout(() => {
+                        const bars = document.querySelectorAll('.stat-bar-fill');
+                        if (bars[index]) {
+                            bars[index].style.width = `${stat.value}%`;
+                        }
+                    }, index * 180);
+                });
+            }, 400);
+        }
+
+        function copyResult(title, tagline) {
+            const text = `✨ Meine Karriere-DNA: ${title}\n\n„${tagline}"\n\nEntdecke deinen Karriere-Archetyp: ${window.location.href}`;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('In die Zwischenablage kopiert!');
+            });
+        }
+
+        function shareNative(title, tagline) {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Meine Karriere-DNA | QuizzMe',
+                    text: `✨ ${title} – „${tagline}"`,
+                    url: window.location.href
+                });
+            } else {
+                copyResult(title, tagline);
+            }
+        }
+    </script>
+</body>
+</html>

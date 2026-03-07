@@ -1,0 +1,12 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Moon icon - crescent with stars -->
+  <g stroke="#D4AF37" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- Crescent moon -->
+    <path d="M 12 3 C 8 3 5 6.5 5 11 C 5 15.5 8 19 12 19 C 13.5 19 15 18.5 16 17.5 C 14 17 12.5 15 12.5 12.5 C 12.5 10 14 8 16 7.5 C 15 4.5 13.5 3 12 3 Z" />
+
+    <!-- Small stars -->
+    <path d="M 18 6 L 18.5 7 L 19 6.5 L 18.5 6 Z" />
+    <path d="M 19 10 L 19.5 11 L 20 10.5 L 19.5 10 Z" />
+    <path d="M 17 13 L 17.5 14 L 18 13.5 L 17.5 13 Z" />
+  </g>
+</svg>

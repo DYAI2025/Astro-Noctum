@@ -1,0 +1,103 @@
+═══════════════════════════════════════════════════════════════════
+ASZENDENT BERECHNUNG - QUICK REFERENCE
+IAU 2000/2006 Standard | Für Voice Agents optimiert
+═══════════════════════════════════════════════════════════════════
+
+INPUT (alles in UTC!):
+  Jahr, Monat, Tag, Stunde, Minute, Sekunde (UTC)
+  Latitude (Breite in Grad, Nord +, Süd -)
+  Longitude (Länge in Grad, Ost +, West -)
+
+───────────────────────────────────────────────────────────────────
+FORMEL (6 Schritte):
+───────────────────────────────────────────────────────────────────
+
+1. JULIAN DATE:
+   Falls M ≤ 2: Y=Y-1, M=M+12
+   A = floor(Y/100), B = 2-A+floor(A/4)
+   D = Tag + (h+m/60+s/3600)/24
+   JD = floor(365.25×(Y+4716)) + floor(30.6001×(M+1)) + D + B - 1524.5
+
+2. TERRESTRIAL TIME:
+   ΔT ≈ 50.54 s (für 1980)
+   JD_TT = JD + ΔT/86400
+   T = (JD_TT - 2451545.0) / 36525
+
+3. GMST (Greenwich Mean Sidereal Time):
+   D = JD - 2451545.0
+   GMST = 280.46061837 + 360.98564736629×D + 0.000387933×T² - T³/38710000
+   GMST = GMST mod 360
+
+4. LST (Local Sidereal Time):
+   LST = (GMST + Longitude) mod 360
+
+5. OBLIQUITY:
+   ε = 23.439291111 - T×(0.0130125 + T×(0.00000164 - T×0.000000503))
+
+6. ASZENDENT:
+   θ_rad = LST × π/180
+   ε_rad = ε × π/180
+   φ_rad = Latitude × π/180
+
+   y = cos(θ_rad)
+   x = -(sin(θ_rad)×cos(ε_rad) + tan(φ_rad)×sin(ε_rad))
+
+   ASC = atan2(y,x) × 180/π
+
+   Falls ASC < 0: ASC = ASC + 360
+   Falls ASC ≥ 360: ASC = ASC - 360
+
+───────────────────────────────────────────────────────────────────
+KRITISCH:
+───────────────────────────────────────────────────────────────────
+
+⚠️  NIEMALS manuelle Quadrantenkorrektur!
+    atan2(y,x) gibt automatisch korrekten Quadranten!
+
+⚠️  UTC verwenden, NICHT Lokalzeit!
+    15:20 MESZ (UTC+2) → 13:20 UTC
+
+⚠️  Koordinaten-Vorzeichen:
+    Nord/Ost = +, Süd/West = -
+
+───────────────────────────────────────────────────────────────────
+ZODIAC ZUORDNUNG:
+───────────────────────────────────────────────────────────────────
+
+0°-30°: Widder      | 180°-210°: Waage
+30°-60°: Stier      | 210°-240°: Skorpion
+60°-90°: Zwillinge  | 240°-270°: Schütze
+90°-120°: Krebs     | 270°-300°: Steinbock
+120°-150°: Löwe     | 300°-330°: Wassermann
+150°-180°: Jungfrau | 330°-360°: Fische
+
+Zeichen = Zodiac[floor(ASC/30)]
+Grad = floor(ASC mod 30)
+Minute = floor((ASC mod 30 - Grad) × 60)
+
+───────────────────────────────────────────────────────────────────
+BEISPIEL: 24.06.1980, 13:20 UTC, Hannover (52.3759°N, 9.7320°E)
+───────────────────────────────────────────────────────────────────
+
+1. JD = 2444415.055556
+2. T = -0.195207, JD_TT = 2444415.056141
+3. GMST = 112.8497°
+4. LST = 122.5817°
+5. ε = 23.4418°
+6. y = -0.5385, x = -1.2892
+   ASC = atan2(-0.5385, -1.2892) = -157.33° → 202.67°
+
+ERGEBNIS: 202.67° = Waage 22°40'
+
+───────────────────────────────────────────────────────────────────
+KONSTANTEN:
+───────────────────────────────────────────────────────────────────
+
+π = 3.14159265358979323846
+DEG2RAD = 0.01745329251994329577
+RAD2DEG = 57.29577951308232087680
+J2000.0 = JD 2451545.0 (2000-01-01 12:00 TT)
+
+───────────────────────────────────────────────────────────────────
+GENAUIGKEIT: ±0.5° typisch, ±0.1° mit präzisem ΔT
+───────────────────────────────────────────────────────────────────

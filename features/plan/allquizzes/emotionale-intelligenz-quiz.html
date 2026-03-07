@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuizzMe — Dein Emotionaler Fingerabdruck</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --emerald: #053B3F;
+    --emerald-light: #0a5c62;
+    --gold: #D2A95A;
+    --gold-soft: #e8c97d;
+    --cream: #F7F0E6;
+    --cream-dark: #EDE4D6;
+    --ink: #1a1a1a;
+    --ink-soft: #4a4a4a;
+    --sage: #7a9e7e;
+    --rose: #c4727f;
+    --lavender: #8b7eb8;
+    --amber: #c4944a;
+    --font-display: 'Cormorant Garamond', Georgia, serif;
+    --font-body: 'Inter', -apple-system, sans-serif;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --shadow-soft: 0 4px 24px rgba(5,59,63,0.08);
+    --shadow-card: 0 8px 40px rgba(5,59,63,0.12);
+    --transition: 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ═══ SCREENS ═══ */
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* ═══ INTRO ═══ */
+  .intro-screen {
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+    background: linear-gradient(175deg, var(--cream) 0%, var(--cream-dark) 60%, #d9e8d6 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .intro-screen::before {
+    content: '';
+    position: absolute;
+    top: -120px;
+    right: -80px;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(5,59,63,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .intro-screen::after {
+    content: '';
+    position: absolute;
+    bottom: -60px;
+    left: -40px;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(210,169,90,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .intro-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    background: rgba(5,59,63,0.06);
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--emerald);
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .intro-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.2rem, 6vw, 3.6rem);
+    font-weight: 700;
+    color: var(--emerald);
+    line-height: 1.1;
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .intro-subtitle {
+    font-family: var(--font-display);
+    font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+    font-style: italic;
+    color: var(--ink-soft);
+    max-width: 480px;
+    line-height: 1.5;
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .intro-meta {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    position: relative;
+    z-index: 1;
+  }
+
+  .intro-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .btn-start {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 16px 48px;
+    background: var(--emerald);
+    color: var(--cream);
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    z-index: 1;
+    letter-spacing: 0.02em;
+  }
+
+  .btn-start:hover {
+    background: var(--emerald-light);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(5,59,63,0.2);
+  }
+
+  .disclaimer-intro {
+    margin-top: 2rem;
+    font-size: 0.7rem;
+    color: rgba(0,0,0,0.35);
+    max-width: 340px;
+    line-height: 1.5;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ═══ QUIZ ═══ */
+  .quiz-screen {
+    align-items: center;
+    padding: 0;
+    background: var(--cream);
+  }
+
+  .quiz-header {
+    width: 100%;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(5,59,63,0.06);
+    background: rgba(247,240,230,0.95);
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .quiz-counter {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--emerald);
+  }
+
+  .progress-track {
+    flex: 1;
+    height: 3px;
+    background: rgba(5,59,63,0.08);
+    border-radius: 4px;
+    margin: 0 1rem;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--gold);
+    border-radius: 4px;
+    transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .quiz-pct {
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+
+  .question-area {
+    flex: 1;
+    width: 100%;
+    max-width: 640px;
+    padding: 2.5rem 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    animation: fadeUp 0.5s ease-out;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .question-context {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.75rem;
+  }
+
+  .question-text {
+    font-family: var(--font-display);
+    font-size: clamp(1.3rem, 3.5vw, 1.7rem);
+    font-weight: 600;
+    color: var(--emerald);
+    line-height: 1.35;
+    margin-bottom: 2rem;
+  }
+
+  .options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .option-btn {
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: left;
+    padding: 1rem 1.25rem;
+    background: white;
+    color: var(--ink);
+    border: 1.5px solid rgba(5,59,63,0.1);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .option-btn::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--gold);
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+    border-radius: 0 2px 2px 0;
+  }
+
+  .option-btn:hover {
+    border-color: var(--emerald);
+    background: rgba(5,59,63,0.02);
+    transform: translateX(4px);
+  }
+
+  .option-btn:hover::before {
+    transform: scaleY(1);
+  }
+
+  .option-btn.selected {
+    border-color: var(--emerald);
+    background: rgba(5,59,63,0.04);
+    color: var(--emerald);
+    font-weight: 500;
+  }
+
+  .option-btn.selected::before {
+    transform: scaleY(1);
+    background: var(--emerald);
+  }
+
+  .quiz-nav {
+    padding: 1rem 1.5rem 2rem;
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .btn-back {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    padding: 10px 20px;
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .btn-back:hover { border-color: var(--ink-soft); }
+  .btn-back.hidden { visibility: hidden; }
+
+  /* ═══ MICRO-WIN ═══ */
+  .micro-win {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--emerald);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 100;
+    text-align: center;
+  }
+
+  .micro-win.show {
+    animation: microPop 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  @keyframes microPop {
+    0%   { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+    20%  { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+    60%  { transform: translate(-50%, -60%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -70%) scale(0.9); opacity: 0; }
+  }
+
+  /* ═══ RESULT ═══ */
+  .result-screen {
+    align-items: center;
+    padding: 2rem 1rem;
+    background: linear-gradient(175deg, var(--cream) 0%, var(--cream-dark) 50%, #d4ddd1 100%);
+  }
+
+  .result-card {
+    width: 100%;
+    max-width: 420px;
+    background: white;
+    border-radius: 24px;
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    animation: cardReveal 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @keyframes cardReveal {
+    from { opacity: 0; transform: translateY(40px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .card-header {
+    padding: 2rem 1.5rem 1.5rem;
+    text-align: center;
+    background: linear-gradient(180deg, var(--emerald) 0%, var(--emerald-light) 100%);
+    color: var(--cream);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 20px;
+    background: white;
+    border-radius: 24px 24px 0 0;
+  }
+
+  .card-icon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .card-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-bottom: 0.5rem;
+  }
+
+  .card-title {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.15;
+  }
+
+  .card-tagline {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1rem;
+    opacity: 0.85;
+    margin-top: 0.5rem;
+  }
+
+  .card-body { padding: 1.5rem; }
+
+  .card-description {
+    font-size: 0.88rem;
+    line-height: 1.7;
+    color: var(--ink-soft);
+    margin-bottom: 1.5rem;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat-item {
+    text-align: center;
+    padding: 0.75rem 0.5rem;
+    background: var(--cream);
+    border-radius: var(--radius-sm);
+  }
+
+  .stat-value {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--emerald);
+  }
+
+  .stat-label {
+    font-size: 0.65rem;
+    color: var(--ink-soft);
+    margin-top: 2px;
+    letter-spacing: 0.03em;
+  }
+
+  /* Trait Bars */
+  .trait-bars { margin-bottom: 1.5rem; }
+
+  .trait-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .trait-name {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+    width: 90px;
+    flex-shrink: 0;
+    text-align: right;
+  }
+
+  .trait-track {
+    flex: 1;
+    height: 6px;
+    background: var(--cream-dark);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .trait-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+    width: 0;
+  }
+
+  .trait-fill.c1 { background: var(--sage); }
+  .trait-fill.c2 { background: var(--gold); }
+  .trait-fill.c3 { background: var(--lavender); }
+
+  .trait-score {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--emerald);
+    width: 28px;
+    text-align: left;
+  }
+
+  /* Compatibility */
+  .compat-section { margin-bottom: 1.5rem; }
+
+  .compat-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 0.5rem;
+  }
+
+  .compat-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+  }
+
+  .compat-tag {
+    font-size: 0.75rem;
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-weight: 500;
+  }
+
+  .compat-tag.ally {
+    background: rgba(122,158,126,0.12);
+    color: var(--sage);
+  }
+
+  .compat-tag.tension {
+    background: rgba(196,114,127,0.12);
+    color: var(--rose);
+  }
+
+  .card-footer {
+    padding: 0 1.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .btn-share {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 14px;
+    background: var(--emerald);
+    color: var(--cream);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+  }
+
+  .btn-share:hover {
+    background: var(--emerald-light);
+    transform: translateY(-1px);
+  }
+
+  .btn-event {
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 400;
+    padding: 10px;
+    background: rgba(5,59,63,0.04);
+    color: var(--ink-soft);
+    border: 1px solid rgba(5,59,63,0.08);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+  }
+
+  .btn-event:hover { background: rgba(5,59,63,0.08); }
+
+  .disclaimer-result {
+    text-align: center;
+    font-size: 0.65rem;
+    color: rgba(0,0,0,0.3);
+    max-width: 420px;
+    margin-top: 1.5rem;
+    line-height: 1.5;
+  }
+
+  /* ═══ EVENT MODAL ═══ */
+  .event-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .event-overlay.active { display: flex; }
+
+  .event-box {
+    background: #1a1a2e;
+    color: #e0e0e0;
+    border-radius: var(--radius);
+    max-width: 600px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 1.5rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.72rem;
+    line-height: 1.6;
+    position: relative;
+  }
+
+  .event-box pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .event-close {
+    position: sticky;
+    top: 0;
+    float: right;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: #e0e0e0;
+    font-size: 1rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+  }
+
+  .event-close:hover { background: rgba(255,255,255,0.2); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ INTRO SCREEN ═══════════ -->
+<div id="intro-screen" class="screen active intro-screen">
+  <div class="intro-badge">✦ Emotionale Intelligenz</div>
+  <h1 class="intro-title">Dein Emotionaler<br>Fingerabdruck</h1>
+  <p class="intro-subtitle">
+    Wie liest du die unsichtbare Sprache der Gefühle — bei dir selbst und bei anderen?
+  </p>
+  <div class="intro-meta">
+    <span>🕐 ~3 Min</span>
+    <span>📊 12 Szenarien</span>
+    <span>🧬 6 Profile</span>
+  </div>
+  <button class="btn-start" onclick="startQuiz()">Entdecke dein Profil</button>
+  <p class="disclaimer-intro">
+    Dieser Test dient der spielerischen Selbstreflexion und stellt <strong>keine</strong> psychologische Diagnose dar.
+  </p>
+</div>
+
+<!-- ═══════════ QUIZ SCREEN ═══════════ -->
+<div id="quiz-screen" class="screen quiz-screen">
+  <div class="quiz-header">
+    <span class="quiz-counter" id="q-counter">1 / 12</span>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+    <span class="quiz-pct" id="q-pct">0 %</span>
+  </div>
+  <div class="question-area" id="question-area">
+    <div class="question-context" id="q-context"></div>
+    <h2 class="question-text" id="q-text"></h2>
+    <div class="options-list" id="options-list"></div>
+  </div>
+  <div class="quiz-nav">
+    <button class="btn-back hidden" id="btn-back" onclick="goBack()">← Zurück</button>
+    <div></div>
+  </div>
+</div>
+
+<!-- ═══════════ RESULT SCREEN ═══════════ -->
+<div id="result-screen" class="screen result-screen">
+  <div class="result-card" id="result-card"></div>
+  <p class="disclaimer-result">
+    Dieser Test dient der spielerischen Selbstreflexion und stellt <strong>keine</strong> psychologische Diagnose dar.
+    Er ersetzt keine professionelle Beratung.
+  </p>
+</div>
+
+<!-- ═══════════ EVENT MODAL ═══════════ -->
+<div class="event-overlay" id="event-overlay">
+  <div class="event-box">
+    <button class="event-close" onclick="closeEvent()">✕</button>
+    <pre id="event-json"></pre>
+  </div>
+</div>
+
+<!-- ═══════════ MICRO-WIN ═══════════ -->
+<div class="micro-win" id="micro-win"></div>
+
+<script>
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  QUIZ CONFIG                                                 ║
+// ╚══════════════════════════════════════════════════════════════╝
+const QUIZ_CONFIG = {
+  id: "quiz.emotional_intelligence.v1",
+  vertical: "quiz",
+  domain: "quiz.quizzme.io",
+  locale: "de-DE",
+  version: "1.0.0"
+};
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  DIMENSIONS                                                  ║
+// ╚══════════════════════════════════════════════════════════════╝
+const dimensions = [
+  {
+    id: "perception",
+    name: "Selbstwahrnehmung",
+    description: "Wie scharf ist dein innerer Radar?",
+    markerHigh: "marker.emotion.self_awareness",
+    markerLow: "marker.emotion.external_focus"
+  },
+  {
+    id: "regulation",
+    name: "Emotionssteuerung",
+    description: "Wie navigierst du den Sturm?",
+    markerHigh: "marker.emotion.impulse_mastery",
+    markerLow: "marker.emotion.raw_expression"
+  },
+  {
+    id: "resonance",
+    name: "Empathische Resonanz",
+    description: "Wie tief fühlst du in andere hinein?",
+    markerHigh: "marker.emotion.empathy",
+    markerLow: "marker.social.strategic_distance"
+  }
+];
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  BAZODIAC AFFINITY MAP EXTENSION                             ║
+// ║  New keywords for Emotionale Intelligenz                     ║
+// ║  → These feed directly into the Fusion Ring                  ║
+// ╚══════════════════════════════════════════════════════════════╝
+const EI_AFFINITY_KEYWORDS = {
+  // keyword:         [S0,  S1,  S2,  S3,  S4,  S5,  S6,  S7,  S8,  S9,  S10, S11]
+  'self_awareness':   [0,  .1,   0,  .3,   0,  .2,   0,  .2,   0,   0,   0,  .2 ],
+  'external_focus':   [.1,  0,  .2,  .1,   0,   0,  .3,   0,   0,   0,  .3,  0  ],
+  'impulse_mastery':  [0,  .2,   0,   0,   0,  .3,   0,   0,   0,  .4,  0,  .1 ],
+  'raw_expression':   [.3,  0,   0,   0,  .3,   0,   0,  .3,   0,   0,   0,  .1 ],
+  'empathy':          [0,   0,   0,  .4,   0,   0,  .2,   0,   0,   0,   0,  .4 ],
+  'strategic_distance':[0,  0,  .2,   0,   0,  .3,   0,   0,  .1,  .3,  .1,  0  ],
+  'emotional_clarity': [0,  0,   0,  .2,   0,  .3,   0,  .2,   0,  .1,  0,  .2 ],
+  'emotional_resilience':[.2,0,  0,   0,   0,   0,   0,   0,  .3,  .3,  0,  .2 ],
+  'emotional_attunement':[0,.1,  0,  .3,   0,   0,  .2,  .1,   0,   0,   0,  .3 ],
+  'social_navigation': [0,  0,  .2,   0,  .1,   0,  .4,   0,   0,   0,  .2, .1 ],
+  'emotional_depth':   [0,  0,   0,  .2,   0,   0,   0,  .4,   0,   0,   0,  .4 ],
+  'inner_compass':     [0,  0,   0,  .1,   0,  .2,   0,  .1,  .2,  .2,   0,  .2 ],
+};
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  12 SCENARIO QUESTIONS                                       ║
+// ╚══════════════════════════════════════════════════════════════╝
+const questions = [
+  {
+    id: "q1",
+    context: "Selbstwahrnehmung",
+    text: "Du wachst morgens auf und spürst ein diffuses Unbehagen, ohne einen konkreten Grund. Was tust du?",
+    options: [
+      {
+        text: "Ich halte inne und versuche, dem Gefühl einen Namen zu geben — Angst? Trauer? Erschöpfung?",
+        scores: { perception: 5, regulation: 3, resonance: 2 }
+      },
+      {
+        text: "Ich starte meinen Tag und warte, ob sich das Gefühl von selbst auflöst.",
+        scores: { perception: 2, regulation: 4, resonance: 2 }
+      },
+      {
+        text: "Ich schreibe jemandem, der mich gut kennt, und frage: 'Wie wirke ich gerade auf dich?'",
+        scores: { perception: 3, regulation: 2, resonance: 5 }
+      },
+      {
+        text: "Ich lenke mich bewusst ab — Sport, Musik, Arbeit. Nicht alles braucht eine Analyse.",
+        scores: { perception: 1, regulation: 5, resonance: 2 }
+      }
+    ]
+  },
+  {
+    id: "q2",
+    context: "Emotionssteuerung",
+    text: "Mitten in einer hitzigen Diskussion merkst du, dass dein Puls steigt und du gleich etwas sagen wirst, das du bereust. Was passiert als nächstes?",
+    options: [
+      {
+        text: "Ich sage 'Moment, ich brauche kurz Luft' — und meine es wörtlich.",
+        scores: { perception: 3, regulation: 5, resonance: 3 }
+      },
+      {
+        text: "Ich sage es trotzdem. Authentizität ist mir wichtiger als Diplomatie.",
+        scores: { perception: 2, regulation: 1, resonance: 2 }
+      },
+      {
+        text: "Ich registriere den Impuls, atme innerlich durch und formuliere meinen Punkt ruhiger um.",
+        scores: { perception: 4, regulation: 5, resonance: 3 }
+      },
+      {
+        text: "Ich wechsle die Perspektive: Was fühlt mein Gegenüber gerade, das diese Intensität auslöst?",
+        scores: { perception: 3, regulation: 3, resonance: 5 }
+      }
+    ]
+  },
+  {
+    id: "q3",
+    context: "Empathie",
+    text: "Eine gute Freundin erzählt dir lächelnd von ihrer Beförderung — aber irgendetwas in ihrer Stimme klingt anders. Wie reagierst du?",
+    options: [
+      {
+        text: "Ich gratuliere herzlich und warte ab, ob sie von selbst mehr erzählt.",
+        scores: { perception: 2, regulation: 3, resonance: 3 }
+      },
+      {
+        text: "Ich sage direkt: 'Du klingst, als wärst du nicht nur glücklich darüber. Was ist los?'",
+        scores: { perception: 4, regulation: 2, resonance: 5 }
+      },
+      {
+        text: "Ich spüre sofort ihre Ambivalenz und fühle sie fast körperlich in mir.",
+        scores: { perception: 5, regulation: 1, resonance: 5 }
+      },
+      {
+        text: "Ich nehme es wahr, sage aber nichts — sie wird es teilen, wenn sie bereit ist.",
+        scores: { perception: 3, regulation: 5, resonance: 3 }
+      }
+    ]
+  },
+  {
+    id: "q4",
+    context: "Emotionale Granularität",
+    text: "Wenn du beschreiben müsstest, wie du dich gerade in diesem Moment fühlst — was kommt dem am nächsten?",
+    options: [
+      {
+        text: "Ich könnte mindestens drei verschiedene Nuancen benennen, die gerade gleichzeitig da sind.",
+        scores: { perception: 5, regulation: 3, resonance: 3 }
+      },
+      {
+        text: "Ein grobes Gefühl — gut, neutral oder schlecht. Details brauche ich nicht.",
+        scores: { perception: 1, regulation: 4, resonance: 2 }
+      },
+      {
+        text: "Ich spüre vor allem die Stimmung des Raums oder der Menschen um mich herum.",
+        scores: { perception: 3, regulation: 2, resonance: 5 }
+      },
+      {
+        text: "Ich weiß es nicht genau, aber ich weiß, was ich als nächstes tun will. Das reicht mir.",
+        scores: { perception: 2, regulation: 5, resonance: 1 }
+      }
+    ]
+  },
+  {
+    id: "q5",
+    context: "Stressreaktion",
+    text: "Deadline-Chaos: Drei Projekte gleichzeitig, dein Postfach explodiert, jemand ruft an. Was ist dein erster innerer Impuls?",
+    options: [
+      {
+        text: "Ich sortiere die Prioritäten kühl durch und schiebe meine Frustration bewusst beiseite.",
+        scores: { perception: 2, regulation: 5, resonance: 1 }
+      },
+      {
+        text: "Ich spüre die aufsteigende Panik, benenne sie — und das nimmt ihr sofort etwas Kraft.",
+        scores: { perception: 5, regulation: 4, resonance: 2 }
+      },
+      {
+        text: "Ich denke zuerst: Wer in meinem Team braucht gerade am meisten Unterstützung?",
+        scores: { perception: 2, regulation: 3, resonance: 5 }
+      },
+      {
+        text: "Ich werde kurz laut, lasse den Druck ab — und bin dann sofort wieder fokussiert.",
+        scores: { perception: 2, regulation: 2, resonance: 2 }
+      }
+    ]
+  },
+  {
+    id: "q6",
+    context: "Soziale Navigation",
+    text: "Du betrittst einen Raum voller fremder Menschen bei einem Networking-Event. Was registrierst du zuerst?",
+    options: [
+      {
+        text: "Die Gesamtstimmung — entspannt, angespannt, oberflächlich, ehrlich.",
+        scores: { perception: 4, regulation: 2, resonance: 5 }
+      },
+      {
+        text: "Die Person, die am Rand steht und sich unwohl fühlt. Dort gehe ich hin.",
+        scores: { perception: 3, regulation: 2, resonance: 5 }
+      },
+      {
+        text: "Mein eigenes Gefühl: Bin ich gerade offen oder verschlossen? Daraus entscheide ich meine Strategie.",
+        scores: { perception: 5, regulation: 4, resonance: 2 }
+      },
+      {
+        text: "Die Dynamiken: Wer spricht mit wem, wo ist Energie, wo sind Allianzen?",
+        scores: { perception: 3, regulation: 3, resonance: 3 }
+      }
+    ]
+  },
+  {
+    id: "q7",
+    context: "Emotionale Ansteckung",
+    text: "Dein Partner / deine Partnerin kommt schlecht gelaunt nach Hause und sagt kein Wort. Was passiert in dir?",
+    options: [
+      {
+        text: "Ich übernehme die Stimmung fast automatisch — als hätte sich ein Schatten über den Raum gelegt.",
+        scores: { perception: 4, regulation: 1, resonance: 5 }
+      },
+      {
+        text: "Ich bemerke es, aber grenze mich innerlich ab. Ich kann helfen, ohne mitzuleiden.",
+        scores: { perception: 3, regulation: 5, resonance: 3 }
+      },
+      {
+        text: "Ich werde neugierig: Was genau ist passiert? Ich will es verstehen, nicht nur fühlen.",
+        scores: { perception: 4, regulation: 4, resonance: 4 }
+      },
+      {
+        text: "Ich schaffe bewusst eine gute Atmosphäre — Tee, Musik, Ruhe — ohne zu fragen.",
+        scores: { perception: 2, regulation: 4, resonance: 4 }
+      }
+    ]
+  },
+  {
+    id: "q8",
+    context: "Selbstregulation",
+    text: "Du erhältst eine Nachricht, die dich zutiefst verletzt. Es ist 23 Uhr. Was tust du?",
+    options: [
+      {
+        text: "Ich antworte sofort — meine Gefühle sind gültig und verdienen eine unmittelbare Reaktion.",
+        scores: { perception: 3, regulation: 1, resonance: 2 }
+      },
+      {
+        text: "Ich lege das Handy weg, schlafe eine Nacht darüber. Morgen sieht alles anders aus.",
+        scores: { perception: 2, regulation: 5, resonance: 2 }
+      },
+      {
+        text: "Ich tippe eine lange Antwort, lese sie dreimal — und lösche sie wieder. Dann schlafe ich.",
+        scores: { perception: 4, regulation: 4, resonance: 2 }
+      },
+      {
+        text: "Ich rufe jemanden an, dem ich vertraue, und verarbeite es im Gespräch.",
+        scores: { perception: 3, regulation: 3, resonance: 5 }
+      }
+    ]
+  },
+  {
+    id: "q9",
+    context: "Emotionale Nutzung",
+    text: "Du musst eine wichtige Präsentation halten. Wie gehst du mit deiner Nervosität um?",
+    options: [
+      {
+        text: "Ich deute die Nervosität in Aufregung um. Derselbe Körper, andere Geschichte.",
+        scores: { perception: 5, regulation: 5, resonance: 2 }
+      },
+      {
+        text: "Ich unterdrücke sie komplett. Profis zeigen keine Schwäche.",
+        scores: { perception: 1, regulation: 3, resonance: 1 }
+      },
+      {
+        text: "Ich teile sie offen: 'Ich bin nervös, weil mir das Thema wichtig ist.' Das verbindet.",
+        scores: { perception: 4, regulation: 3, resonance: 5 }
+      },
+      {
+        text: "Ich kanalisiere die Energie in lebendigen Vortragsstil — Nervosität wird Performance.",
+        scores: { perception: 3, regulation: 4, resonance: 3 }
+      }
+    ]
+  },
+  {
+    id: "q10",
+    context: "Konfliktnavigation",
+    text: "Zwei deiner engsten Freunde haben einen Streit und beide erwarten, dass du Partei ergreifst. Wie fühlst du dich?",
+    options: [
+      {
+        text: "Zerrissen. Ich spüre beide Seiten gleichzeitig und das macht mir körperlich zu schaffen.",
+        scores: { perception: 5, regulation: 1, resonance: 5 }
+      },
+      {
+        text: "Klar: Ich höre beiden zu, aber ich bin niemandes Richter. Jeder trägt seinen Teil.",
+        scores: { perception: 3, regulation: 5, resonance: 3 }
+      },
+      {
+        text: "Ich werde zum Übersetzer: Ich helfe jedem, die Perspektive des anderen zu verstehen.",
+        scores: { perception: 3, regulation: 4, resonance: 5 }
+      },
+      {
+        text: "Ich distanziere mich erst einmal. Nicht jeder Konflikt braucht meine Beteiligung.",
+        scores: { perception: 2, regulation: 5, resonance: 1 }
+      }
+    ]
+  },
+  {
+    id: "q11",
+    context: "Emotionale Tiefe",
+    text: "Wann fühlst du dich emotional am lebendigsten?",
+    options: [
+      {
+        text: "In Momenten absoluter Stille, wenn ich mein Innerstes ungefiltert spüren kann.",
+        scores: { perception: 5, regulation: 3, resonance: 2 }
+      },
+      {
+        text: "Wenn ich jemandem wirklich helfen konnte — und sehe, wie sich sein Gesicht verändert.",
+        scores: { perception: 3, regulation: 3, resonance: 5 }
+      },
+      {
+        text: "Nach einer Krise, die ich gemeistert habe. Der Moment der Ruhe danach.",
+        scores: { perception: 3, regulation: 5, resonance: 2 }
+      },
+      {
+        text: "In tiefen Gesprächen um 3 Uhr nachts, wo alle Masken fallen.",
+        scores: { perception: 4, regulation: 2, resonance: 5 }
+      }
+    ]
+  },
+  {
+    id: "q12",
+    context: "Integration",
+    text: "Stell dir vor, du könntest eine emotionale Superkraft dauerhaft verstärken. Welche wählst du?",
+    options: [
+      {
+        text: "Röntgenblick für die eigene Psyche — jedes Gefühl sofort erkennen und benennen.",
+        scores: { perception: 5, regulation: 3, resonance: 1 }
+      },
+      {
+        text: "Emotionaler Thermostat — in jeder Situation den perfekten inneren Zustand einstellen.",
+        scores: { perception: 2, regulation: 5, resonance: 2 }
+      },
+      {
+        text: "Empathie-Radar — fühlen, was andere fühlen, bevor sie es selbst wissen.",
+        scores: { perception: 3, regulation: 1, resonance: 5 }
+      },
+      {
+        text: "Emotionale Alchemie — jedes negative Gefühl in Antrieb oder Kreativität verwandeln.",
+        scores: { perception: 4, regulation: 5, resonance: 3 }
+      }
+    ]
+  }
+];
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  6 PROFILES                                                  ║
+// ╚══════════════════════════════════════════════════════════════╝
+const profiles = [
+  {
+    id: "seismograph",
+    title: "Der Seismograph",
+    icon: "🌊",
+    tagline: "Du spürst, was andere übersehen — und was du selbst noch nicht benennen kannst.",
+    description: "Du besitzt eine außergewöhnlich feine emotionale Wahrnehmung. Wo andere ein diffuses 'irgendwie komisch' empfinden, liest du Nuancen wie eine eigene Sprache. Dein innerer Radar ist so präzise, dass er Stimmungswechsel registriert, bevor sie an der Oberfläche ankommen — bei dir und bei anderen. Das ist keine Schwäche, sondern die Grundlage emotionaler Intelligenz in ihrer reinsten Form. Deine Herausforderung ist nicht, mehr zu fühlen, sondern das Gefühlte zu kanalisieren, ohne dich darin zu verlieren.",
+    stats: [
+      { label: "Emotionales Auflösungsvermögen", value: "HD" },
+      { label: "Stimmungs-Sensor", value: "∞" },
+      { label: "Innere Nachrichten", value: "247/Tag" }
+    ],
+    compatibility: {
+      allies: ["Der Anker", "Der Alchemist"],
+      tension: ["Das Prisma"]
+    },
+    shareText: "Ich bin der Seismograph 🌊 Ich spüre, was andere übersehen. Und du? #QuizzMe",
+    match: (s) => s.perception >= 45 && s.perception > s.regulation && s.perception > s.resonance,
+    priority: 2,
+    markers: [
+      { id: "marker.emotion.self_awareness", weight: 0.90 },
+      { id: "marker.emotion.emotional_depth", weight: 0.75 },
+      { id: "marker.emotion.emotional_clarity", weight: 0.65 }
+    ],
+    tags: [
+      { id: "tag.archetype.seismograph", label: "Seismograph", kind: "archetype", weight: 0.9 },
+      { id: "tag.style.deep_feeling", label: "Tiefes Fühlen", kind: "style", weight: 0.7 },
+      { id: "tag.shadow.overwhelm", label: "Reizüberflutung", kind: "shadow", weight: 0.4 }
+    ],
+    unlock: { id: "unlock.crests.seismograph", level: 2 }
+  },
+  {
+    id: "alchemist",
+    title: "Der Alchemist",
+    icon: "🔥",
+    tagline: "Du verwandelst innere Stürme in stille Kraft.",
+    description: "Du hast die seltene Fähigkeit, die Energie deiner Emotionen zu transformieren, statt sie nur zu unterdrücken oder auszuleben. Wo andere zwischen Explosion und Erstarren pendeln, findest du einen dritten Weg: Du nimmst das Rohmaterial deiner Gefühle und schmiedest daraus etwas Brauchbares — Klarheit, Antrieb, kreative Energie. Das macht dich nicht kalt, sondern souverän. Menschen in deiner Nähe spüren: Hier ist jemand, der sich selbst versteht und daraus eine ruhige Stärke schöpft.",
+    stats: [
+      { label: "Transmutations-Rate", value: "94%" },
+      { label: "Emotionale Alchemie", value: "Gold" },
+      { label: "Innerer Thermostat", value: "±2°" }
+    ],
+    compatibility: {
+      allies: ["Der Seismograph", "Die Brücke"],
+      tension: ["Der Spiegel"]
+    },
+    shareText: "Ich bin der Alchemist 🔥 Ich verwandle Stürme in stille Kraft. Und du? #QuizzMe",
+    match: (s) => s.regulation >= 45 && s.regulation > s.perception && s.regulation > s.resonance,
+    priority: 2,
+    markers: [
+      { id: "marker.emotion.impulse_mastery", weight: 0.88 },
+      { id: "marker.emotion.emotional_resilience", weight: 0.78 },
+      { id: "marker.emotion.inner_compass", weight: 0.60 }
+    ],
+    tags: [
+      { id: "tag.archetype.alchemist", label: "Alchemist", kind: "archetype", weight: 0.9 },
+      { id: "tag.style.calm_power", label: "Stille Kraft", kind: "style", weight: 0.7 },
+      { id: "tag.shadow.suppression", label: "Überregulation", kind: "shadow", weight: 0.35 }
+    ],
+    unlock: { id: "unlock.crests.alchemist", level: 2 }
+  },
+  {
+    id: "bridge",
+    title: "Die Brücke",
+    icon: "🌉",
+    tagline: "Du übersetzt zwischen Welten, die sich sonst nicht verstehen würden.",
+    description: "Deine emotionale Intelligenz zeigt sich weniger im stillen Spüren als im aktiven Verbinden. Du bist die Person, die in einem Raum voller Missverständnisse intuitiv weiß, welches Wort fehlt, welche Perspektive ungehört blieb, welcher Ton die Spannung löst. Du bewegst dich zwischen Empathie und Strategie — du fühlst mit, aber du verlierst dich nicht. Das macht dich zu einer natürlichen Mediatorin, Teamplayerin und emotionalen Architektin sozialer Räume.",
+    stats: [
+      { label: "Übersetzungsrate", value: "88%" },
+      { label: "Perspektiven-Wechsel", value: "5/Min" },
+      { label: "Verbindungs-Radius", value: "∞" }
+    ],
+    compatibility: {
+      allies: ["Der Alchemist", "Das Prisma"],
+      tension: ["Der Anker"]
+    },
+    shareText: "Ich bin die Brücke 🌉 Ich übersetze zwischen Welten. Und du? #QuizzMe",
+    match: (s) => s.resonance >= 40 && s.regulation >= 35 && s.resonance > s.perception,
+    priority: 3,
+    markers: [
+      { id: "marker.emotion.empathy", weight: 0.72 },
+      { id: "marker.social.social_navigation", weight: 0.82 },
+      { id: "marker.emotion.emotional_attunement", weight: 0.65 }
+    ],
+    tags: [
+      { id: "tag.archetype.bridge", label: "Brücke", kind: "archetype", weight: 0.9 },
+      { id: "tag.style.connector", label: "Verbinderin", kind: "style", weight: 0.7 },
+      { id: "tag.shadow.self_neglect", label: "Selbstvernachlässigung", kind: "shadow", weight: 0.3 }
+    ],
+    unlock: { id: "unlock.crests.bridge", level: 2 }
+  },
+  {
+    id: "compass",
+    title: "Der Kompass",
+    icon: "🧭",
+    tagline: "Dein inneres Wissen ist leise — aber es irrt sich selten.",
+    description: "Du kombinierst zwei Qualitäten, die zusammen außergewöhnlich selten sind: eine klare Selbstwahrnehmung UND die Fähigkeit, daraus ruhige Entscheidungen abzuleiten. Du brauchst keine lauten Emotionen, um zu wissen, wo du stehst. Dein emotionaler Kompass kalibriert sich ständig neu — durch Reflexion, nicht durch Drama. In Krisenzeiten bist du die Person, die andere suchen, weil du Orientierung gibst, ohne sie zu bevormunden.",
+    stats: [
+      { label: "Navigations-Präzision", value: "97%" },
+      { label: "Kalibrierungs-Zyklen", value: "∞" },
+      { label: "Entscheidungs-Latenz", value: "0.3s" }
+    ],
+    compatibility: {
+      allies: ["Der Seismograph", "Der Anker"],
+      tension: ["Das Prisma"]
+    },
+    shareText: "Ich bin der Kompass 🧭 Mein inneres Wissen ist leise, aber irrt sich selten. #QuizzMe",
+    match: (s) => s.perception >= 38 && s.regulation >= 38 && Math.abs(s.perception - s.regulation) <= 12,
+    priority: 4,
+    markers: [
+      { id: "marker.emotion.self_awareness", weight: 0.78 },
+      { id: "marker.emotion.impulse_mastery", weight: 0.72 },
+      { id: "marker.emotion.inner_compass", weight: 0.85 }
+    ],
+    tags: [
+      { id: "tag.archetype.compass", label: "Kompass", kind: "archetype", weight: 0.9 },
+      { id: "tag.style.quiet_knowing", label: "Stilles Wissen", kind: "style", weight: 0.7 },
+      { id: "tag.shadow.detachment", label: "Distanz", kind: "shadow", weight: 0.3 }
+    ],
+    unlock: { id: "unlock.crests.compass", level: 2 }
+  },
+  {
+    id: "prism",
+    title: "Das Prisma",
+    icon: "💎",
+    tagline: "Du brichst Gefühle in ihre Farben — und zeigst sie der Welt.",
+    description: "Deine emotionale Intelligenz ist expressiv. Du nimmst wahr, was in dir und anderen passiert — und hast die seltene Gabe, es auszudrücken. In Worten, Gesten, Energie. Du machst das Unsichtbare sichtbar und gibst Gefühlen eine Form, die andere wiedererkennen und dankbar aufnehmen. Du bist die Person, die sagt, was alle denken aber sich nicht trauen. Das macht dich verletzlich, aber auch unvergesslich — und unersetzlich in jedem Raum, der Echtheit braucht.",
+    stats: [
+      { label: "Ausdrucks-Bandbreite", value: "360°" },
+      { label: "Authentizitäts-Index", value: "99%" },
+      { label: "Emotionale Farben", value: "∞" }
+    ],
+    compatibility: {
+      allies: ["Die Brücke", "Der Spiegel"],
+      tension: ["Der Kompass"]
+    },
+    shareText: "Ich bin das Prisma 💎 Ich breche Gefühle in ihre Farben. Und du? #QuizzMe",
+    match: (s) => s.resonance >= 42 && s.perception >= 35 && s.resonance > s.regulation,
+    priority: 3,
+    markers: [
+      { id: "marker.emotion.empathy", weight: 0.80 },
+      { id: "marker.emotion.emotional_depth", weight: 0.72 },
+      { id: "marker.emotion.raw_expression", weight: 0.60 }
+    ],
+    tags: [
+      { id: "tag.archetype.prism", label: "Prisma", kind: "archetype", weight: 0.9 },
+      { id: "tag.style.expressive", label: "Expressiv", kind: "style", weight: 0.7 },
+      { id: "tag.shadow.emotional_flooding", label: "Emotionsflut", kind: "shadow", weight: 0.4 }
+    ],
+    unlock: { id: "unlock.crests.prism", level: 2 }
+  },
+  {
+    id: "anchor",
+    title: "Der Anker",
+    icon: "⚓",
+    tagline: "Du bist der Fels, an dem sich andere festhalten — auch im Sturm.",
+    description: "Deine emotionale Stärke liegt in der Stabilität. Nicht weil du nichts fühlst — sondern weil du gelernt hast, deine Emotionen als Hintergrundmusik zu nutzen, ohne dass sie die Kontrolle übernehmen. Du bist die Person, die in der Krise ruhig bleibt, die in der Euphorie nicht den Boden verliert, die im Schmerz handlungsfähig bleibt. Dein Geschenk an andere ist nicht Empathie im klassischen Sinne — es ist Verlässlichkeit. Und die ist seltener, als die meisten denken.",
+    stats: [
+      { label: "Stressresistenz", value: "Titan" },
+      { label: "Bodenständigkeit", value: "100%" },
+      { label: "Krisenmodus", value: "Zen" }
+    ],
+    compatibility: {
+      allies: ["Der Seismograph", "Der Kompass"],
+      tension: ["Die Brücke"]
+    },
+    shareText: "Ich bin der Anker ⚓ Der Fels im Sturm. Und du? #QuizzMe",
+    match: (s) => s.regulation >= 45 && s.resonance < 35,
+    priority: 1,
+    markers: [
+      { id: "marker.emotion.impulse_mastery", weight: 0.92 },
+      { id: "marker.emotion.emotional_resilience", weight: 0.85 },
+      { id: "marker.social.strategic_distance", weight: 0.55 }
+    ],
+    tags: [
+      { id: "tag.archetype.anchor", label: "Anker", kind: "archetype", weight: 0.9 },
+      { id: "tag.style.rock_solid", label: "Felsfest", kind: "style", weight: 0.7 },
+      { id: "tag.shadow.emotional_distance", label: "Emotionale Distanz", kind: "shadow", weight: 0.4 }
+    ],
+    unlock: { id: "unlock.crests.anchor", level: 2 }
+  }
+];
+
+// Fallback profile (balanced)
+const fallbackProfile = {
+  id: "mirror",
+  title: "Der Spiegel",
+  icon: "🪞",
+  tagline: "Du reflektierst, was andere brauchen — und findest darin dich selbst.",
+  description: "Du bist emotional vielseitig. Keine einzelne Dimension dominiert — stattdessen passt du dich intuitiv an das an, was gerade gebraucht wird. Mal bist du der ruhige Zuhörer, mal der mutige Ausspracher, mal der stille Beobachter. Diese Flexibilität ist keine Unsicherheit — sie ist emotionale Flüssigkeit. Du spiegelst nicht nur die Gefühle anderer wider, du gibst ihnen dabei eine Form, die sie selbst erkennen können. Deine Herausforderung: herauszufinden, welches Gefühl wirklich DIR gehört.",
+  stats: [
+    { label: "Adaptions-Index", value: "95%" },
+    { label: "Emotionale Modi", value: "6+" },
+    { label: "Spiegel-Klarheit", value: "HD" }
+  ],
+  compatibility: {
+    allies: ["Das Prisma", "Der Kompass"],
+    tension: ["Der Alchemist"]
+  },
+  shareText: "Ich bin der Spiegel 🪞 Ich reflektiere, was andere brauchen. Und du? #QuizzMe",
+  markers: [
+    { id: "marker.emotion.emotional_attunement", weight: 0.70 },
+    { id: "marker.social.social_navigation", weight: 0.65 },
+    { id: "marker.emotion.self_awareness", weight: 0.55 }
+  ],
+  tags: [
+    { id: "tag.archetype.mirror", label: "Spiegel", kind: "archetype", weight: 0.9 },
+    { id: "tag.style.adaptive", label: "Adaptiv", kind: "style", weight: 0.7 },
+    { id: "tag.shadow.identity_blur", label: "Identitätsnebel", kind: "shadow", weight: 0.35 }
+  ],
+  unlock: { id: "unlock.crests.mirror", level: 2 }
+};
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  STATE                                                       ║
+// ╚══════════════════════════════════════════════════════════════╝
+let currentQ = 0;
+let answers = {};
+let finalScores = {};
+let resultProfile = null;
+let contributionEvent = null;
+
+const microWins = [
+  "Spannend…", "Interessant.", "Hmm, aufschlussreich.", "Notiert ✓",
+  "Das sagt viel.", "Weiter so.", "Fast da…", "Tiefgang.",
+  "Gute Wahl.", "Erkenntnisreich.", "Noch etwas…", "Gleich geschafft."
+];
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  QUIZ ENGINE                                                 ║
+// ╚══════════════════════════════════════════════════════════════╝
+function startQuiz() {
+  show('quiz-screen');
+  renderQuestion();
+}
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  const area = document.getElementById('question-area');
+  area.style.animation = 'none';
+  void area.offsetWidth;
+  area.style.animation = 'fadeUp 0.5s ease-out';
+
+  document.getElementById('q-counter').textContent = `${currentQ + 1} / ${questions.length}`;
+  document.getElementById('q-pct').textContent = `${Math.round((currentQ / questions.length) * 100)} %`;
+  document.getElementById('progress-fill').style.width = `${(currentQ / questions.length) * 100}%`;
+  document.getElementById('q-context').textContent = q.context;
+  document.getElementById('q-text').textContent = q.text;
+
+  const list = document.getElementById('options-list');
+  list.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    if (answers[q.id] === i) btn.classList.add('selected');
+    btn.textContent = opt.text;
+    btn.onclick = () => selectOption(q.id, i, opt.scores);
+    list.appendChild(btn);
+  });
+
+  const backBtn = document.getElementById('btn-back');
+  backBtn.classList.toggle('hidden', currentQ === 0);
+}
+
+function selectOption(qId, idx, scores) {
+  answers[qId] = idx;
+
+  // Micro-win
+  showMicroWin(microWins[currentQ] || "✓");
+
+  setTimeout(() => {
+    if (currentQ < questions.length - 1) {
+      currentQ++;
+      renderQuestion();
+    } else {
+      calculateResults();
+    }
+  }, 600);
+}
+
+function goBack() {
+  if (currentQ > 0) {
+    currentQ--;
+    renderQuestion();
+  }
+}
+
+function showMicroWin(text) {
+  const el = document.getElementById('micro-win');
+  el.textContent = text;
+  el.className = 'micro-win show';
+  setTimeout(() => { el.className = 'micro-win'; }, 1300);
+}
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  SCORING + PROFILE MATCHING                                  ║
+// ╚══════════════════════════════════════════════════════════════╝
+function calculateResults() {
+  // Sum raw scores
+  const raw = { perception: 0, regulation: 0, resonance: 0 };
+  const counts = { perception: 0, regulation: 0, resonance: 0 };
+
+  for (const [qId, optIdx] of Object.entries(answers)) {
+    const q = questions.find(x => x.id === qId);
+    const scores = q.options[optIdx].scores;
+    for (const [dim, val] of Object.entries(scores)) {
+      raw[dim] += val;
+      counts[dim]++;
+    }
+  }
+
+  // Normalize to 1–100
+  for (const dim of Object.keys(raw)) {
+    const maxPossible = counts[dim] * 5;
+    finalScores[dim] = Math.round(((raw[dim] / maxPossible) * 99) + 1);
+  }
+
+  // Match profile
+  const sorted = [...profiles].sort((a, b) => a.priority - b.priority);
+  resultProfile = sorted.find(p => p.match(finalScores)) || fallbackProfile;
+
+  // Build ContributionEvent
+  buildContributionEvent();
+
+  // Show result
+  show('result-screen');
+  renderResult();
+}
+
+function scoreToWeight(score) {
+  return ((score - 50) / 50);  // -1 to +1
+}
+
+function scoreToBand(score) {
+  if (score <= 20) return { band: "low", symbol: "❄️" };
+  if (score <= 40) return { band: "midlow", symbol: "🌿" };
+  if (score <= 60) return { band: "mid", symbol: "🌤️" };
+  if (score <= 80) return { band: "midhigh", symbol: "🔥" };
+  return { band: "high", symbol: "⚡" };
+}
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  CONTRIBUTION EVENT BUILDER                                  ║
+// ║  sp.contribution.v1 → Bazodiac Fusion Ring                   ║
+// ╚══════════════════════════════════════════════════════════════╝
+function buildContributionEvent() {
+  const now = new Date().toISOString();
+  const eventId = crypto.randomUUID();
+
+  // 1. Dimension-based markers
+  const dimMarkers = [];
+  dimensions.forEach(dim => {
+    const score = finalScores[dim.id];
+    const w = scoreToWeight(score);
+    if (w >= 0) {
+      dimMarkers.push({
+        id: dim.markerHigh,
+        weight: parseFloat(Math.abs(w).toFixed(2)),
+        evidence: { itemsAnswered: questions.length, confidence: 0.82 }
+      });
+    } else {
+      dimMarkers.push({
+        id: dim.markerLow,
+        weight: parseFloat(Math.abs(w).toFixed(2)),
+        evidence: { itemsAnswered: questions.length, confidence: 0.82 }
+      });
+    }
+  });
+
+  // 2. Profile-specific markers (higher fidelity)
+  const profileMarkers = resultProfile.markers.map(m => ({
+    id: m.id,
+    weight: m.weight,
+    evidence: { itemsAnswered: questions.length, confidence: 0.85 }
+  }));
+
+  // 3. Merge (deduplicate by id, take higher weight)
+  const markerMap = {};
+  [...dimMarkers, ...profileMarkers].forEach(m => {
+    if (!markerMap[m.id] || markerMap[m.id].weight < m.weight) {
+      markerMap[m.id] = m;
+    }
+  });
+  const markers = Object.values(markerMap);
+
+  // 4. Traits
+  const traits = dimensions.map(dim => ({
+    id: `trait.emotion.${dim.id}`,
+    score: finalScores[dim.id],
+    band: scoreToBand(finalScores[dim.id]).band,
+    confidence: 0.82,
+    method: "scenario"
+  }));
+
+  // 5. Tags
+  const tags = [...resultProfile.tags];
+
+  // 6. Unlocks
+  const unlocks = [{
+    id: resultProfile.unlock.id,
+    unlocked: true,
+    unlockedAt: now,
+    level: resultProfile.unlock.level,
+    sourceRef: QUIZ_CONFIG.id
+  }];
+
+  // 7. Summary
+  const summary = {
+    title: resultProfile.title,
+    bullets: [
+      resultProfile.tagline,
+      `Wahrnehmung: ${scoreToBand(finalScores.perception).symbol} ${finalScores.perception}`,
+      `Steuerung: ${scoreToBand(finalScores.regulation).symbol} ${finalScores.regulation}`,
+      `Resonanz: ${scoreToBand(finalScores.resonance).symbol} ${finalScores.resonance}`
+    ],
+    resultId: resultProfile.id
+  };
+
+  // 8. Assemble
+  contributionEvent = {
+    specVersion: "sp.contribution.v1",
+    eventId: eventId,
+    occurredAt: now,
+    source: {
+      vertical: QUIZ_CONFIG.vertical,
+      moduleId: QUIZ_CONFIG.id,
+      domain: QUIZ_CONFIG.domain,
+      locale: QUIZ_CONFIG.locale,
+      build: QUIZ_CONFIG.version
+    },
+    payload: {
+      markers: markers,
+      traits: traits,
+      tags: tags,
+      unlocks: unlocks,
+      summary: summary,
+      debug: {
+        rawScores: finalScores,
+        profileId: resultProfile.id,
+        affinityKeywordsUsed: markers.map(m => m.id.split('.').pop())
+      }
+    }
+  };
+
+  // Emit
+  console.log('ContributionEvent emitted:', contributionEvent);
+  window.dispatchEvent(new CustomEvent('quizzme:contribution', { detail: contributionEvent }));
+
+  // Log Fusion Ring preview
+  console.log('Fusion Ring Preview (AFFINITY_MAP keywords used):', 
+    markers.map(m => {
+      const kw = m.id.split('.').pop();
+      return { keyword: kw, weight: m.weight, inMap: !!EI_AFFINITY_KEYWORDS[kw] };
+    })
+  );
+}
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  RESULT RENDERER                                             ║
+// ╚══════════════════════════════════════════════════════════════╝
+function renderResult() {
+  const p = resultProfile;
+  const card = document.getElementById('result-card');
+
+  card.innerHTML = `
+    <div class="card-header">
+      <span class="card-icon">${p.icon}</span>
+      <div class="card-label">Dein Emotionaler Fingerabdruck</div>
+      <h2 class="card-title">${p.title}</h2>
+      <p class="card-tagline">${p.tagline}</p>
+    </div>
+    <div class="card-body">
+      <p class="card-description">${p.description}</p>
+
+      <div class="trait-bars">
+        ${dimensions.map((dim, i) => {
+          const score = finalScores[dim.id];
+          return `
+            <div class="trait-row">
+              <span class="trait-name">${dim.name}</span>
+              <div class="trait-track">
+                <div class="trait-fill c${i + 1}" id="bar-${dim.id}" style="width:0%"></div>
+              </div>
+              <span class="trait-score">${score}</span>
+            </div>
+          `;
+        }).join('')}
+      </div>
+
+      <div class="stats-grid">
+        ${p.stats.map(s => `
+          <div class="stat-item">
+            <div class="stat-value">${s.value}</div>
+            <div class="stat-label">${s.label}</div>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="compat-section">
+        <div class="compat-title">Starke Kombination mit</div>
+        <div class="compat-row">
+          ${p.compatibility.allies.map(a => `<span class="compat-tag ally">${a}</span>`).join('')}
+        </div>
+        <div class="compat-title" style="margin-top:0.5rem">Produktive Spannung mit</div>
+        <div class="compat-row">
+          ${p.compatibility.tension.map(t => `<span class="compat-tag tension">${t}</span>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="card-footer">
+      <button class="btn-share" onclick="shareResult()">Teile dein Ergebnis ✦</button>
+      <button class="btn-event" onclick="showEvent()">ContributionEvent anzeigen (Dev)</button>
+    </div>
+  `;
+
+  // Animate bars
+  setTimeout(() => {
+    dimensions.forEach(dim => {
+      const bar = document.getElementById(`bar-${dim.id}`);
+      if (bar) bar.style.width = `${finalScores[dim.id]}%`;
+    });
+  }, 300);
+}
+
+function shareResult() {
+  const text = resultProfile.shareText;
+  if (navigator.share) {
+    navigator.share({ title: 'QuizzMe — Emotionaler Fingerabdruck', text: text });
+  } else {
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.querySelector('.btn-share');
+      btn.textContent = 'Kopiert! ✓';
+      setTimeout(() => { btn.textContent = 'Teile dein Ergebnis ✦'; }, 2000);
+    });
+  }
+}
+
+function showEvent() {
+  document.getElementById('event-json').textContent = JSON.stringify(contributionEvent, null, 2);
+  document.getElementById('event-overlay').classList.add('active');
+}
+
+function closeEvent() {
+  document.getElementById('event-overlay').classList.remove('active');
+}
+
+document.getElementById('event-overlay').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeEvent();
+});
+</script>
+</body>
+</html>

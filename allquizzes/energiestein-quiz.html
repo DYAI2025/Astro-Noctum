@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dein Energiestein | QuizzMe</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --emerald-deep: #0D3B2E;
+            --emerald-medium: #1A5F4A;
+            --gold-primary: #C9A962;
+            --gold-light: #E8D5A3;
+            --cream: #FAF8F5;
+            --text-dark: #1a1a1a;
+            --text-muted: #6B7280;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--emerald-deep);
+            min-height: 100vh;
+            color: var(--cream);
+            overflow-x: hidden;
+        }
+
+        .quiz-container {
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Particle Background */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--gold-primary);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.5; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* Crystal Glow Effect */
+        .crystal-glow {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(ellipse, rgba(201, 169, 98, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            padding: 24px;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Start Screen */
+        .start-screen {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .crystal-icon {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 32px;
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 20px rgba(201, 169, 98, 0.3)); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 40px rgba(201, 169, 98, 0.5)); }
+        }
+
+        .start-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--gold-primary);
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+
+        .start-subtitle {
+            font-size: 1rem;
+            color: var(--gold-light);
+            margin-bottom: 40px;
+            line-height: 1.6;
+            max-width: 320px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-light) 100%);
+            color: var(--emerald-deep);
+            border: none;
+            padding: 16px 48px;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(201, 169, 98, 0.3);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            padding: 20px 0;
+        }
+
+        .progress-bar {
+            height: 3px;
+            background: rgba(201, 169, 98, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--gold-primary), var(--gold-light));
+            transition: width 0.5s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--gold-light);
+            margin-top: 8px;
+            opacity: 0.7;
+        }
+
+        /* Question Screen */
+        .question-screen {
+            padding-top: 16px;
+        }
+
+        .question-number {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.9rem;
+            color: var(--gold-primary);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .question-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--cream);
+            text-align: center;
+            margin-bottom: 32px;
+            line-height: 1.4;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .option-btn {
+            background: rgba(201, 169, 98, 0.08);
+            border: 1px solid rgba(201, 169, 98, 0.2);
+            padding: 20px 24px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .option-btn:hover {
+            background: rgba(201, 169, 98, 0.15);
+            border-color: var(--gold-primary);
+            transform: translateX(4px);
+        }
+
+        .option-btn.selected {
+            background: rgba(201, 169, 98, 0.2);
+            border-color: var(--gold-primary);
+            box-shadow: 0 0 20px rgba(201, 169, 98, 0.2);
+        }
+
+        .option-text {
+            font-size: 1rem;
+            color: var(--cream);
+            line-height: 1.5;
+        }
+
+        /* Result Screen */
+        .result-screen {
+            padding: 20px;
+            align-items: center;
+        }
+
+        .result-card {
+            background: linear-gradient(180deg, rgba(26, 95, 74, 0.9) 0%, rgba(13, 59, 46, 0.95) 100%);
+            border: 1px solid rgba(201, 169, 98, 0.3);
+            border-radius: 24px;
+            padding: 32px 24px;
+            text-align: center;
+            width: 100%;
+            max-width: 380px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gold-primary), var(--gold-light), var(--gold-primary));
+        }
+
+        /* Corner Ornaments */
+        .corner-ornament {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            opacity: 0.4;
+        }
+
+        .corner-ornament.top-left { top: 12px; left: 12px; }
+        .corner-ornament.top-right { top: 12px; right: 12px; transform: scaleX(-1); }
+        .corner-ornament.bottom-left { bottom: 12px; left: 12px; transform: scaleY(-1); }
+        .corner-ornament.bottom-right { bottom: 12px; right: 12px; transform: scale(-1); }
+
+        .result-stone-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 24px;
+            filter: drop-shadow(0 0 30px var(--stone-color, rgba(201, 169, 98, 0.5)));
+        }
+
+        .result-label {
+            font-size: 0.75rem;
+            color: var(--gold-light);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+        }
+
+        .result-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--gold-primary);
+            margin-bottom: 8px;
+        }
+
+        .result-tagline {
+            font-size: 0.95rem;
+            color: var(--gold-light);
+            font-style: italic;
+            margin-bottom: 24px;
+        }
+
+        .result-description {
+            font-size: 0.9rem;
+            color: var(--cream);
+            line-height: 1.7;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-item {
+            background: rgba(201, 169, 98, 0.1);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--gold-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--gold-primary);
+        }
+
+        /* Compatibility */
+        .compatibility-section {
+            border-top: 1px solid rgba(201, 169, 98, 0.2);
+            padding-top: 20px;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .compat-title {
+            font-size: 0.75rem;
+            color: var(--gold-light);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+
+        .compat-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+
+        .compat-icon {
+            width: 20px;
+            text-align: center;
+        }
+
+        .compat-allies { color: #7DD3A8; }
+        .compat-neutral { color: var(--gold-light); }
+        .compat-tension { color: #E8A87C; }
+
+        /* Share Section */
+        .share-section {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .btn-share {
+            flex: 1;
+            background: var(--gold-primary);
+            color: var(--emerald-deep);
+            border: none;
+            padding: 14px 20px;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-share:hover {
+            background: var(--gold-light);
+            transform: translateY(-2px);
+        }
+
+        .btn-restart {
+            background: transparent;
+            color: var(--gold-light);
+            border: 1px solid rgba(201, 169, 98, 0.3);
+            padding: 14px 20px;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-restart:hover {
+            border-color: var(--gold-primary);
+            color: var(--gold-primary);
+        }
+
+        /* Disclaimer */
+        .disclaimer {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: 24px;
+            padding: 0 20px;
+            line-height: 1.5;
+        }
+
+        /* Cluster Teaser */
+        .cluster-teaser {
+            background: rgba(201, 169, 98, 0.08);
+            border: 1px dashed rgba(201, 169, 98, 0.3);
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 24px;
+            text-align: center;
+        }
+
+        .cluster-teaser-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1rem;
+            color: var(--gold-primary);
+            margin-bottom: 8px;
+        }
+
+        .cluster-teaser-text {
+            font-size: 0.85rem;
+            color: var(--gold-light);
+            line-height: 1.5;
+        }
+
+        .cluster-progress {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .cluster-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(201, 169, 98, 0.3);
+        }
+
+        .cluster-dot.active {
+            background: var(--gold-primary);
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--emerald-medium);
+            color: var(--cream);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            border: 1px solid var(--gold-primary);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* Debug Panel */
+        .debug-panel {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #0f0;
+            font-family: monospace;
+            font-size: 10px;
+            padding: 8px;
+            border-radius: 4px;
+            max-width: 200px;
+            display: none;
+            z-index: 9999;
+        }
+
+        body.debug .debug-panel {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Particle Background -->
+    <div class="particles" id="particles"></div>
+    <div class="crystal-glow"></div>
+
+    <div class="quiz-container">
+        <!-- Start Screen -->
+        <div class="screen start-screen active" id="startScreen">
+            <svg class="crystal-icon" viewBox="0 0 120 120" fill="none">
+                <defs>
+                    <linearGradient id="crystalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#E8D5A3"/>
+                        <stop offset="50%" stop-color="#C9A962"/>
+                        <stop offset="100%" stop-color="#A08040"/>
+                    </linearGradient>
+                </defs>
+                <path d="M60 10 L95 45 L80 110 L40 110 L25 45 Z" fill="url(#crystalGrad)" opacity="0.3"/>
+                <path d="M60 10 L95 45 L60 100 Z" fill="url(#crystalGrad)" opacity="0.5"/>
+                <path d="M60 10 L25 45 L60 100 Z" fill="url(#crystalGrad)" opacity="0.7"/>
+                <path d="M60 10 L95 45 M60 10 L25 45 M25 45 L60 100 M95 45 L60 100 M25 45 L40 110 M95 45 L80 110 M40 110 L80 110" 
+                      stroke="#C9A962" stroke-width="1.5" fill="none"/>
+                <circle cx="60" cy="55" r="8" fill="#C9A962" opacity="0.4"/>
+            </svg>
+            <h1 class="start-title">Dein Energiestein</h1>
+            <p class="start-subtitle">Welcher Kristall resoniert mit deiner Seele? Entdecke den Stein, der deine verborgene Essenz widerspiegelt.</p>
+            <button class="btn-primary" onclick="startQuiz()">Stein enthüllen</button>
+        </div>
+
+        <!-- Question Screen -->
+        <div class="screen question-screen" id="questionScreen">
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">Frage 1 von 10</div>
+            </div>
+            <div class="question-number" id="questionNumber">Frage I</div>
+            <div class="question-text" id="questionText"></div>
+            <div class="options-container" id="optionsContainer"></div>
+        </div>
+
+        <!-- Result Screen -->
+        <div class="screen result-screen" id="resultScreen">
+            <div class="result-card" id="resultCard">
+                <svg class="corner-ornament top-left" viewBox="0 0 40 40">
+                    <path d="M0 40 L0 20 Q0 0 20 0 L40 0" stroke="#C9A962" fill="none" stroke-width="1"/>
+                    <circle cx="8" cy="8" r="2" fill="#C9A962"/>
+                </svg>
+                <svg class="corner-ornament top-right" viewBox="0 0 40 40">
+                    <path d="M0 40 L0 20 Q0 0 20 0 L40 0" stroke="#C9A962" fill="none" stroke-width="1"/>
+                    <circle cx="8" cy="8" r="2" fill="#C9A962"/>
+                </svg>
+                <svg class="corner-ornament bottom-left" viewBox="0 0 40 40">
+                    <path d="M0 40 L0 20 Q0 0 20 0 L40 0" stroke="#C9A962" fill="none" stroke-width="1"/>
+                    <circle cx="8" cy="8" r="2" fill="#C9A962"/>
+                </svg>
+                <svg class="corner-ornament bottom-right" viewBox="0 0 40 40">
+                    <path d="M0 40 L0 20 Q0 0 20 0 L40 0" stroke="#C9A962" fill="none" stroke-width="1"/>
+                    <circle cx="8" cy="8" r="2" fill="#C9A962"/>
+                </svg>
+
+                <div id="stoneIcon"></div>
+                <div class="result-label">Dein Energiestein</div>
+                <h2 class="result-title" id="resultTitle"></h2>
+                <p class="result-tagline" id="resultTagline"></p>
+                <p class="result-description" id="resultDescription"></p>
+
+                <div class="stats-grid" id="statsGrid"></div>
+
+                <div class="compatibility-section">
+                    <div class="compat-title">Resonanz-Matrix</div>
+                    <div id="compatList"></div>
+                </div>
+            </div>
+
+            <div class="share-section">
+                <button class="btn-share" onclick="shareResult()">✨ Teilen</button>
+                <button class="btn-restart" onclick="restartQuiz()">↺ Neu</button>
+            </div>
+
+            <div class="cluster-teaser">
+                <div class="cluster-teaser-title">🌿 Teil des Naturkind-Clusters</div>
+                <div class="cluster-teaser-text">Dein Energiestein ist ein Puzzlestück. Entdecke auch deine Aura, dein Krafttier und dein Blumenwesen.</div>
+                <div class="cluster-progress">
+                    <div class="cluster-dot"></div>
+                    <div class="cluster-dot"></div>
+                    <div class="cluster-dot"></div>
+                    <div class="cluster-dot active"></div>
+                </div>
+            </div>
+
+            <p class="disclaimer">Dieser Test dient der spielerischen Selbstreflexion und stellt keine psychologische oder esoterische Diagnose dar.</p>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <div class="debug-panel" id="debugPanel"></div>
+
+    <script>
+    // ═══════════════════════════════════════════════════════════════════════════
+    // QUIZ DATA
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const quizData = {
+        meta: {
+            id: "quiz.energiestein.v1",
+            title: "Dein Energiestein",
+            engine: "custom",
+            version: "1.0",
+            clusterId: "cluster.naturkind.v1"
+        },
+        
+        dimensions: [
+            { id: "clarity", name: "Klarheit", poleA: "Intuitiv", poleB: "Analytisch" },
+            { id: "energy", name: "Energie", poleA: "Sanft", poleB: "Intensiv" },
+            { id: "focus", name: "Fokus", poleA: "Innen", poleB: "Außen" }
+        ],
+
+        questions: [
+            {
+                id: "q1",
+                text: "Du betrittst eine Kristallhöhle. Welches Licht zieht dich zuerst an?",
+                options: [
+                    { text: "Ein sanftes violettes Glimmen aus der Tiefe", scores: { clarity: 2, energy: 1, focus: 3 } },
+                    { text: "Klare, weiße Lichtreflexionen an den Wänden", scores: { clarity: 5, energy: 2, focus: 2 } },
+                    { text: "Warme, goldene Strahlen durch einen Spalt", scores: { clarity: 3, energy: 4, focus: 4 } },
+                    { text: "Tiefes Schwarz mit einzelnen Funken", scores: { clarity: 1, energy: 5, focus: 1 } }
+                ]
+            },
+            {
+                id: "q2",
+                text: "Wenn du einen Stein in der Hand hältst, was spürst du am liebsten?",
+                options: [
+                    { text: "Eine beruhigende Kühle, die mich erdet", scores: { clarity: 4, energy: 1, focus: 2 } },
+                    { text: "Ein leichtes Kribbeln wie elektrische Spannung", scores: { clarity: 2, energy: 5, focus: 4 } },
+                    { text: "Eine sanfte Wärme, die durch mich fließt", scores: { clarity: 3, energy: 3, focus: 3 } },
+                    { text: "Das Gewicht und die Präsenz des Moments", scores: { clarity: 1, energy: 2, focus: 1 } }
+                ]
+            },
+            {
+                id: "q3",
+                text: "In einem wichtigen Gespräch – was ist dir am wichtigsten?",
+                options: [
+                    { text: "Die Wahrheit klar und direkt auszusprechen", scores: { clarity: 5, energy: 4, focus: 4 } },
+                    { text: "Die Gefühle des anderen zu verstehen und zu spiegeln", scores: { clarity: 2, energy: 2, focus: 2 } },
+                    { text: "Eine Lösung zu finden, die alle weiterbringt", scores: { clarity: 4, energy: 3, focus: 5 } },
+                    { text: "Raum für das Ungesagte zu lassen", scores: { clarity: 1, energy: 1, focus: 1 } }
+                ]
+            },
+            {
+                id: "q4",
+                text: "Ein unerwartetes Problem taucht auf. Deine erste Reaktion?",
+                options: [
+                    { text: "Tief durchatmen und die Ruhe in mir finden", scores: { clarity: 2, energy: 1, focus: 1 } },
+                    { text: "Sofort analysieren: Was sind die Optionen?", scores: { clarity: 5, energy: 4, focus: 5 } },
+                    { text: "Vertrauen, dass sich der richtige Weg zeigt", scores: { clarity: 1, energy: 2, focus: 2 } },
+                    { text: "Die Energie nutzen, um ins Handeln zu kommen", scores: { clarity: 3, energy: 5, focus: 4 } }
+                ]
+            },
+            {
+                id: "q5",
+                text: "Was beschreibt deine Art zu träumen am besten?",
+                options: [
+                    { text: "Lebhafte, farbige Bilder voller Symbolik", scores: { clarity: 2, energy: 3, focus: 2 } },
+                    { text: "Klare Szenarien, fast wie Filme", scores: { clarity: 4, energy: 2, focus: 4 } },
+                    { text: "Tiefe Gefühle ohne klare Bilder", scores: { clarity: 1, energy: 2, focus: 1 } },
+                    { text: "Intensive Erlebnisse, an die ich mich lebhaft erinnere", scores: { clarity: 3, energy: 5, focus: 3 } }
+                ]
+            },
+            {
+                id: "q6",
+                text: "Du findest einen alten Schlüssel. Was denkst du zuerst?",
+                options: [
+                    { text: "Welche Tür er wohl öffnet?", scores: { clarity: 4, energy: 3, focus: 5 } },
+                    { text: "Wer ihn wohl verloren hat?", scores: { clarity: 2, energy: 2, focus: 3 } },
+                    { text: "Er fühlt sich bedeutsam an – ich behalte ihn", scores: { clarity: 1, energy: 1, focus: 1 } },
+                    { text: "Ich werde herausfinden, was er öffnet", scores: { clarity: 3, energy: 5, focus: 4 } }
+                ]
+            },
+            {
+                id: "q7",
+                text: "Welche Umgebung gibt dir am meisten Energie?",
+                options: [
+                    { text: "Ein stiller Berggipfel über den Wolken", scores: { clarity: 5, energy: 2, focus: 2 } },
+                    { text: "Ein lebendiger Markt voller Menschen und Farben", scores: { clarity: 2, energy: 5, focus: 5 } },
+                    { text: "Ein uralter Wald, in dem die Zeit stehen bleibt", scores: { clarity: 1, energy: 2, focus: 1 } },
+                    { text: "Am Meer, wo Wellen kommen und gehen", scores: { clarity: 3, energy: 3, focus: 3 } }
+                ]
+            },
+            {
+                id: "q8",
+                text: "Ein Freund ist in einer Krise. Wie hilfst du am besten?",
+                options: [
+                    { text: "Ich höre zu und bin einfach da", scores: { clarity: 2, energy: 1, focus: 2 } },
+                    { text: "Ich helfe ihm, die Situation klar zu sehen", scores: { clarity: 5, energy: 3, focus: 4 } },
+                    { text: "Ich ermutige ihn, seiner Intuition zu vertrauen", scores: { clarity: 1, energy: 2, focus: 1 } },
+                    { text: "Ich schlage konkrete Schritte vor", scores: { clarity: 4, energy: 4, focus: 5 } }
+                ]
+            },
+            {
+                id: "q9",
+                text: "Was zieht dich an einem Menschen am meisten an?",
+                options: [
+                    { text: "Eine ruhige, tiefe Präsenz", scores: { clarity: 2, energy: 1, focus: 1 } },
+                    { text: "Scharfer Verstand und klare Kommunikation", scores: { clarity: 5, energy: 3, focus: 4 } },
+                    { text: "Warme Herzlichkeit und Einfühlungsvermögen", scores: { clarity: 3, energy: 2, focus: 3 } },
+                    { text: "Leidenschaft und Tatendrang", scores: { clarity: 2, energy: 5, focus: 5 } }
+                ]
+            },
+            {
+                id: "q10",
+                text: "Du stehst an einer Kreuzung. Ein Weg ist klar, einer im Nebel. Du wählst...",
+                options: [
+                    { text: "Den klaren Weg – ich weiß gern, wohin ich gehe", scores: { clarity: 5, energy: 3, focus: 5 } },
+                    { text: "Den Nebel – das Mysterium ruft mich", scores: { clarity: 1, energy: 3, focus: 1 } },
+                    { text: "Ich warte einen Moment und spüre hinein", scores: { clarity: 2, energy: 1, focus: 2 } },
+                    { text: "Ich gehe los, egal wohin – Bewegung zählt", scores: { clarity: 3, energy: 5, focus: 4 } }
+                ]
+            }
+        ],
+
+        profiles: {
+            amethyst: {
+                id: "amethyst",
+                title: "Amethyst",
+                tagline: "Der Kristall der tiefen Intuition",
+                color: "#9B72AA",
+                icon: "amethyst",
+                description: "Dein Energiestein ist der Amethyst – der Hüter zwischen Welten. Wie das violette Schimmern in der Dämmerung trägst du eine natürliche Verbindung zum Unsichtbaren in dir. Andere spüren in deiner Nähe eine Tiefe, die sie beruhigt und gleichzeitig fasziniert. Du verarbeitest das Leben nicht an der Oberfläche, sondern lässt es durch die Filter deiner Seele sickern. Deine Träume sind lebhaft, deine Ahnungen oft treffend. Der Amethyst lädt dich ein, diesem inneren Kompass noch mehr zu vertrauen.",
+                stats: {
+                    intuition: "92%",
+                    ruhe: "Grenzenlos",
+                    klarheit: "Mondlicht",
+                    transformation: "Aktiv"
+                },
+                compatibility: {
+                    allies: ["Mondstein", "Labradorit"],
+                    neutral: ["Rosenquarz", "Bergkristall"],
+                    tension: ["Tigerauge", "Citrin"]
+                },
+                shareText: "Mein Energiestein ist AMETHYST – der Kristall der tiefen Intuition. ✨ Welcher Stein resoniert mit dir?"
+            },
+            bergkristall: {
+                id: "bergkristall",
+                title: "Bergkristall",
+                tagline: "Der Kristall der absoluten Klarheit",
+                color: "#E8E8E8",
+                icon: "bergkristall",
+                description: "Dein Energiestein ist der Bergkristall – rein, klar, ungefiltert. Wie ein Fenster, das Licht ohne Verzerrung durchlässt, hast du die Gabe, Dinge so zu sehen, wie sie wirklich sind. Diese Klarheit ist dein Geschenk und manchmal auch deine Last, denn nicht jeder möchte die Wahrheit unverhüllt sehen. Der Bergkristall verstärkt, was ist – er macht das Gute heller und das Ungeklärte sichtbarer. Nutze diese Kraft weise: Sie reinigt nicht nur deinen eigenen Geist, sondern hilft auch anderen, Licht in ihre Schatten zu bringen.",
+                stats: {
+                    klarheit: "100%",
+                    verstärkung: "Maximal",
+                    reinheit: "Kristallin",
+                    fokus: "Laserstrahl"
+                },
+                compatibility: {
+                    allies: ["Citrin", "Tigerauge"],
+                    neutral: ["Amethyst", "Mondstein"],
+                    tension: ["Obsidian", "Labradorit"]
+                },
+                shareText: "Mein Energiestein ist BERGKRISTALL – der Kristall der absoluten Klarheit. 💎 Welcher Stein resoniert mit dir?"
+            },
+            rosenquarz: {
+                id: "rosenquarz",
+                title: "Rosenquarz",
+                tagline: "Der Kristall der bedingungslosen Liebe",
+                color: "#F4B4C4",
+                icon: "rosenquarz",
+                description: "Dein Energiestein ist der Rosenquarz – sanft und doch so kraftvoll wie die Liebe selbst. Du trägst ein offenes Herz durch die Welt, und das ist mutiger, als die meisten ahnen. Wo andere Mauern bauen, baust du Brücken. Deine Wärme ist keine Schwäche – sie ist deine Superkraft. Der Rosenquarz erinnert dich daran, dass diese Liebe auch dir selbst gehört. In einer Welt, die oft hart erscheint, bist du der sanfte Beweis, dass Weichheit eine Stärke ist.",
+                stats: {
+                    mitgefühl: "∞",
+                    wärme: "Sonnenuntergang",
+                    heilung: "88%",
+                    selbstliebe: "Wachsend"
+                },
+                compatibility: {
+                    allies: ["Mondstein", "Amethyst"],
+                    neutral: ["Bergkristall", "Citrin"],
+                    tension: ["Obsidian", "Tigerauge"]
+                },
+                shareText: "Mein Energiestein ist ROSENQUARZ – der Kristall der bedingungslosen Liebe. 💗 Welcher Stein resoniert mit dir?"
+            },
+            obsidian: {
+                id: "obsidian",
+                title: "Obsidian",
+                tagline: "Der Kristall des Schattenwächters",
+                color: "#2D2D2D",
+                icon: "obsidian",
+                description: "Dein Energiestein ist der Obsidian – geboren aus Feuer, geformt in Sekunden, stark wie die Wahrheit. Du hast keine Angst vor der Dunkelheit, denn du weißt: Dort liegt oft das Wertvollste verborgen. Obsidian zeigt dir, was andere lieber nicht sehen wollen – und du hast den Mut, hinzuschauen. Dieser Stein schneidet durch Illusionen wie durch Butter. Er schützt nicht durch Abschirmung, sondern durch radikale Ehrlichkeit. Mit ihm an deiner Seite findest du die Stärke in deinen Schatten.",
+                stats: {
+                    schutz: "Absolut",
+                    wahrheit: "Ungeschönt",
+                    tiefe: "Abgrund",
+                    transformation: "Vulkanisch"
+                },
+                compatibility: {
+                    allies: ["Tigerauge", "Labradorit"],
+                    neutral: ["Amethyst", "Bergkristall"],
+                    tension: ["Rosenquarz", "Citrin"]
+                },
+                shareText: "Mein Energiestein ist OBSIDIAN – der Kristall des Schattenwächters. 🖤 Welcher Stein resoniert mit dir?"
+            },
+            tigerauge: {
+                id: "tigerauge",
+                title: "Tigerauge",
+                tagline: "Der Kristall des fokussierten Willens",
+                color: "#C4914B",
+                icon: "tigerauge",
+                description: "Dein Energiestein ist das Tigerauge – schimmernd zwischen Gold und Erde, wachsam und entschlossen. Du bist jemand, der Dinge in Bewegung bringt. Nicht durch Lärm, sondern durch präzise Klarheit und den Mut, zu handeln, wenn andere noch zögern. Das Tigerauge vereint das Feuer des Willens mit der Erdung der Vernunft. Du siehst Chancen, wo andere Hindernisse sehen, und du hast die Ausdauer, drantzubleiben. Dieser Stein erinnert dich: Fokus ist keine Einschränkung – er ist Freiheit.",
+                stats: {
+                    fokus: "Laserstrahl",
+                    willenskraft: "94%",
+                    erdung: "Tief verwurzelt",
+                    erfolg: "In Sicht"
+                },
+                compatibility: {
+                    allies: ["Bergkristall", "Citrin"],
+                    neutral: ["Obsidian", "Labradorit"],
+                    tension: ["Amethyst", "Mondstein"]
+                },
+                shareText: "Mein Energiestein ist TIGERAUGE – der Kristall des fokussierten Willens. 🐅 Welcher Stein resoniert mit dir?"
+            },
+            mondstein: {
+                id: "mondstein",
+                title: "Mondstein",
+                tagline: "Der Kristall der sanften Zyklen",
+                color: "#B8C4D4",
+                icon: "mondstein",
+                description: "Dein Energiestein ist der Mondstein – schimmernd wie der Nachthimmel, verbunden mit dem Rhythmus des Lebens selbst. Du verstehst intuitiv, dass alles Phasen hat: Wachstum und Ruhe, Fülle und Leere, Licht und Schatten. Diese Weisheit macht dich zu einem Anker in unruhigen Zeiten. Der Mondstein flüstert dir zu, dass du nicht gegen die Gezeiten kämpfen musst – du kannst mit ihnen fließen. Deine Empfänglichkeit ist keine Passivität, sondern eine tiefe Form der Stärke.",
+                stats: {
+                    intuition: "Mondphasen",
+                    empfänglichkeit: "Offen",
+                    rhythmus: "Natürlich",
+                    weisheit: "Leise"
+                },
+                compatibility: {
+                    allies: ["Amethyst", "Rosenquarz"],
+                    neutral: ["Labradorit", "Bergkristall"],
+                    tension: ["Tigerauge", "Citrin"]
+                },
+                shareText: "Mein Energiestein ist MONDSTEIN – der Kristall der sanften Zyklen. 🌙 Welcher Stein resoniert mit dir?"
+            },
+            labradorit: {
+                id: "labradorit",
+                title: "Labradorit",
+                tagline: "Der Kristall der verborgenen Farben",
+                color: "#4A6670",
+                icon: "labradorit",
+                description: "Dein Energiestein ist der Labradorit – unscheinbar auf den ersten Blick, dann plötzlich ein Feuerwerk aus Farben. Du bist komplexer, als andere vermuten, und das ist deine geheime Stärke. Wie der Labradorit zeigst du verschiedenen Menschen verschiedene Facetten, ohne je unwahr zu sein. Dieser Stein ist der Hüter der Magie im Alltäglichen. Er erinnert dich daran, dass Transformation nicht immer laut sein muss – manchmal geschieht sie im Stillen, bis plötzlich alles im neuen Licht erscheint.",
+                stats: {
+                    magie: "Verborgen",
+                    wandlung: "Irisierend",
+                    tiefe: "Unergründlich",
+                    schutz: "Schimmernd"
+                },
+                compatibility: {
+                    allies: ["Amethyst", "Obsidian"],
+                    neutral: ["Mondstein", "Tigerauge"],
+                    tension: ["Bergkristall", "Citrin"]
+                },
+                shareText: "Mein Energiestein ist LABRADORIT – der Kristall der verborgenen Farben. ✨ Welcher Stein resoniert mit dir?"
+            },
+            citrin: {
+                id: "citrin",
+                title: "Citrin",
+                tagline: "Der Kristall der strahlenden Fülle",
+                color: "#F5C542",
+                icon: "citrin",
+                description: "Dein Energiestein ist der Citrin – flüssiges Sonnenlicht, gefangen in Kristallform. Du trägst eine natürliche Leuchtkraft in dir, die andere anzieht wie Motten das Licht. Citrin ist der Stein der Manifestation: Er verwandelt Gedanken in Realität, Ideen in Taten. Deine Energie ist ansteckend, dein Optimismus keine Naivität, sondern bewusste Entscheidung. Dieser Stein erinnert dich daran, dass Fülle kein Nullsummenspiel ist – je mehr du strahlst, desto mehr Licht gibt es für alle.",
+                stats: {
+                    energie: "Solar",
+                    optimismus: "96%",
+                    manifestation: "Aktiv",
+                    ausstrahlung: "Magnetisch"
+                },
+                compatibility: {
+                    allies: ["Tigerauge", "Bergkristall"],
+                    neutral: ["Rosenquarz", "Mondstein"],
+                    tension: ["Obsidian", "Amethyst"]
+                },
+                shareText: "Mein Energiestein ist CITRIN – der Kristall der strahlenden Fülle. ☀️ Welcher Stein resoniert mit dir?"
+            }
+        },
+
+        // Scoring ranges for profile assignment
+        profileRanges: {
+            // clarity-energy-focus combinations
+            "low-low-low": "amethyst",
+            "low-low-mid": "mondstein",
+            "low-low-high": "rosenquarz",
+            "low-mid-low": "labradorit",
+            "low-mid-mid": "amethyst",
+            "low-mid-high": "labradorit",
+            "low-high-low": "obsidian",
+            "low-high-mid": "obsidian",
+            "low-high-high": "labradorit",
+            "mid-low-low": "mondstein",
+            "mid-low-mid": "rosenquarz",
+            "mid-low-high": "rosenquarz",
+            "mid-mid-low": "amethyst",
+            "mid-mid-mid": "rosenquarz",
+            "mid-mid-high": "tigerauge",
+            "mid-high-low": "labradorit",
+            "mid-high-mid": "citrin",
+            "mid-high-high": "tigerauge",
+            "high-low-low": "mondstein",
+            "high-low-mid": "bergkristall",
+            "high-low-high": "bergkristall",
+            "high-mid-low": "bergkristall",
+            "high-mid-mid": "bergkristall",
+            "high-mid-high": "tigerauge",
+            "high-high-low": "obsidian",
+            "high-high-mid": "citrin",
+            "high-high-high": "citrin"
+        }
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // STATE
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    let currentQuestion = 0;
+    let scores = { clarity: 0, energy: 0, focus: 0 };
+    let answers = [];
+    let result = null;
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // INITIALIZATION
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initParticles();
+        
+        // Debug mode
+        if (window.location.hash === '#debug') {
+            document.body.classList.add('debug');
+        }
+    });
+
+    function initParticles() {
+        const container = document.getElementById('particles');
+        for (let i = 0; i < 20; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 15 + 's';
+            particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+            container.appendChild(particle);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // QUIZ FLOW
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    function startQuiz() {
+        currentQuestion = 0;
+        scores = { clarity: 0, energy: 0, focus: 0 };
+        answers = [];
+        
+        showScreen('questionScreen');
+        renderQuestion();
+    }
+
+    function renderQuestion() {
+        const question = quizData.questions[currentQuestion];
+        const total = quizData.questions.length;
+        
+        // Update progress
+        const progress = ((currentQuestion) / total) * 100;
+        document.getElementById('progressFill').style.width = progress + '%';
+        document.getElementById('progressText').textContent = `Frage ${currentQuestion + 1} von ${total}`;
+        
+        // Roman numerals for style
+        const romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+        document.getElementById('questionNumber').textContent = `Frage ${romanNumerals[currentQuestion]}`;
+        
+        document.getElementById('questionText').textContent = question.text;
+        
+        const optionsContainer = document.getElementById('optionsContainer');
+        optionsContainer.innerHTML = '';
+        
+        question.options.forEach((option, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = `<span class="option-text">${option.text}</span>`;
+            btn.onclick = () => selectOption(index);
+            optionsContainer.appendChild(btn);
+        });
+        
+        updateDebugPanel();
+    }
+
+    function selectOption(index) {
+        const question = quizData.questions[currentQuestion];
+        const option = question.options[index];
+        
+        // Visual feedback
+        const buttons = document.querySelectorAll('.option-btn');
+        buttons.forEach(btn => btn.classList.remove('selected'));
+        buttons[index].classList.add('selected');
+        
+        // Store answer
+        answers.push({
+            questionId: question.id,
+            optionIndex: index,
+            scores: option.scores
+        });
+        
+        // Update scores
+        Object.keys(option.scores).forEach(dim => {
+            scores[dim] += option.scores[dim];
+        });
+        
+        // Next question or result
+        setTimeout(() => {
+            currentQuestion++;
+            if (currentQuestion < quizData.questions.length) {
+                renderQuestion();
+            } else {
+                calculateResult();
+            }
+        }, 400);
+    }
+
+    function calculateResult() {
+        const maxPerDim = quizData.questions.length * 5; // 5 is max score per question
+        
+        // Normalize to low/mid/high
+        const getLevel = (score) => {
+            const pct = score / maxPerDim;
+            if (pct < 0.4) return 'low';
+            if (pct < 0.7) return 'mid';
+            return 'high';
+        };
+        
+        const key = `${getLevel(scores.clarity)}-${getLevel(scores.energy)}-${getLevel(scores.focus)}`;
+        const profileId = quizData.profileRanges[key] || 'amethyst';
+        
+        result = quizData.profiles[profileId];
+        
+        // Emit contribution event
+        emitContributionEvent();
+        
+        renderResult();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // RESULT RENDERING
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    function renderResult() {
+        showScreen('resultScreen');
+        
+        // Set stone color
+        document.documentElement.style.setProperty('--stone-color', result.color);
+        
+        // Render icon
+        document.getElementById('stoneIcon').innerHTML = getStoneIcon(result.icon);
+        
+        document.getElementById('resultTitle').textContent = result.title;
+        document.getElementById('resultTagline').textContent = result.tagline;
+        document.getElementById('resultDescription').textContent = result.description;
+        
+        // Stats
+        const statsGrid = document.getElementById('statsGrid');
+        statsGrid.innerHTML = '';
+        Object.entries(result.stats).forEach(([key, value]) => {
+            statsGrid.innerHTML += `
+                <div class="stat-item">
+                    <div class="stat-label">${key}</div>
+                    <div class="stat-value">${value}</div>
+                </div>
+            `;
+        });
+        
+        // Compatibility
+        const compatList = document.getElementById('compatList');
+        compatList.innerHTML = `
+            <div class="compat-row compat-allies">
+                <span class="compat-icon">💫</span>
+                <span>Resoniert mit: ${result.compatibility.allies.join(', ')}</span>
+            </div>
+            <div class="compat-row compat-neutral">
+                <span class="compat-icon">〰️</span>
+                <span>Harmonisch mit: ${result.compatibility.neutral.join(', ')}</span>
+            </div>
+            <div class="compat-row compat-tension">
+                <span class="compat-icon">⚡</span>
+                <span>Spannungsfeld: ${result.compatibility.tension.join(', ')}</span>
+            </div>
+        `;
+        
+        updateDebugPanel();
+    }
+
+    function getStoneIcon(type) {
+        const colors = {
+            amethyst: ['#9B72AA', '#7D5B8C', '#5D4068'],
+            bergkristall: ['#FFFFFF', '#E8E8E8', '#D0D0D0'],
+            rosenquarz: ['#F4B4C4', '#E89AAF', '#D88099'],
+            obsidian: ['#2D2D2D', '#1A1A1A', '#0D0D0D'],
+            tigerauge: ['#C4914B', '#A67830', '#8B6020'],
+            mondstein: ['#D4DDE8', '#B8C4D4', '#9CADC0'],
+            labradorit: ['#4A6670', '#5C8090', '#3D545D'],
+            citrin: ['#F5C542', '#E8B430', '#D4A020']
+        };
+        
+        const c = colors[type] || colors.amethyst;
+        
+        return `
+            <svg class="result-stone-icon" viewBox="0 0 100 100">
+                <defs>
+                    <linearGradient id="stoneGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="${c[0]}"/>
+                        <stop offset="50%" stop-color="${c[1]}"/>
+                        <stop offset="100%" stop-color="${c[2]}"/>
+                    </linearGradient>
+                    <filter id="glow">
+                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                        <feMerge>
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+                <polygon points="50,5 85,30 75,85 25,85 15,30" fill="url(#stoneGrad)" filter="url(#glow)"/>
+                <polygon points="50,5 85,30 50,60" fill="${c[0]}" opacity="0.4"/>
+                <polygon points="50,5 15,30 50,60" fill="${c[2]}" opacity="0.3"/>
+                <line x1="50" y1="5" x2="85" y2="30" stroke="${c[0]}" stroke-width="1" opacity="0.6"/>
+                <line x1="50" y1="5" x2="15" y2="30" stroke="${c[0]}" stroke-width="1" opacity="0.6"/>
+                <line x1="15" y1="30" x2="50" y2="60" stroke="${c[0]}" stroke-width="0.5" opacity="0.4"/>
+                <line x1="85" y1="30" x2="50" y2="60" stroke="${c[0]}" stroke-width="0.5" opacity="0.4"/>
+                <line x1="50" y1="60" x2="25" y2="85" stroke="${c[0]}" stroke-width="0.5" opacity="0.3"/>
+                <line x1="50" y1="60" x2="75" y2="85" stroke="${c[0]}" stroke-width="0.5" opacity="0.3"/>
+            </svg>
+        `;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // CONTRIBUTION EVENT
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    function emitContributionEvent() {
+        const maxScore = quizData.questions.length * 5;
+        
+        const normalize = (score) => Math.round((score / maxScore) * 100);
+        const getBand = (normalized) => {
+            if (normalized < 25) return 'low';
+            if (normalized < 45) return 'low-mid';
+            if (normalized < 55) return 'mid';
+            if (normalized < 75) return 'mid-high';
+            return 'high';
+        };
+        
+        const event = {
+            specVersion: "sp.contribution.v1",
+            eventId: `energiestein-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            occurredAt: new Date().toISOString(),
+            source: {
+                vertical: "quiz",
+                moduleId: quizData.meta.id,
+                domain: "quizzme.app",
+                locale: "de-DE",
+                sessionRef: sessionStorage.getItem('sessionId') || 'anonymous'
+            },
+            payload: {
+                markers: [
+                    { id: `marker.stone.${result.id}`, weight: 1.0, confidence: 0.85 },
+                    { id: `marker.stone.energy_type.${scores.energy > scores.clarity ? 'active' : 'receptive'}`, weight: 0.7 }
+                ],
+                traits: [
+                    { id: "trait.stone.clarity", score: normalize(scores.clarity), band: getBand(normalize(scores.clarity)) },
+                    { id: "trait.stone.energy", score: normalize(scores.energy), band: getBand(normalize(scores.energy)) },
+                    { id: "trait.stone.focus", score: normalize(scores.focus), band: getBand(normalize(scores.focus)) }
+                ],
+                tags: [
+                    { id: `tag.stone.${result.id}`, label: result.title },
+                    { id: "tag.category.naturkind", label: "Naturkind" }
+                ],
+                unlocks: [
+                    { id: `unlock.stone.${result.id}`, unlocked: true, level: 1 }
+                ],
+                summary: {
+                    title: result.title,
+                    tagline: result.tagline,
+                    resultId: result.id
+                }
+            },
+            clusterProgress: {
+                clusterId: quizData.meta.clusterId,
+                quizId: quizData.meta.id,
+                completed: true
+            }
+        };
+        
+        // Dispatch event
+        window.dispatchEvent(new CustomEvent('quizzme:contribution', { detail: event }));
+        
+        // Store in localStorage for debugging/persistence
+        try {
+            const stored = JSON.parse(localStorage.getItem('quizzme_contributions') || '[]');
+            stored.push(event);
+            localStorage.setItem('quizzme_contributions', JSON.stringify(stored));
+            localStorage.setItem('quizzme_energiestein_result', JSON.stringify(result));
+        } catch (e) {
+            console.warn('Could not store contribution event:', e);
+        }
+        
+        console.log('ContributionEvent emitted:', event);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SHARING
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    async function shareResult() {
+        const shareData = {
+            title: 'Mein Energiestein | QuizzMe',
+            text: result.shareText,
+            url: window.location.href
+        };
+        
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData);
+            } else {
+                await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
+                showToast('In Zwischenablage kopiert! ✨');
+            }
+        } catch (e) {
+            if (e.name !== 'AbortError') {
+                showToast('Teilen fehlgeschlagen');
+            }
+        }
+    }
+
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function restartQuiz() {
+        showScreen('startScreen');
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // UTILITIES
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function updateDebugPanel() {
+        const panel = document.getElementById('debugPanel');
+        panel.innerHTML = `
+            <strong>Debug</strong><br>
+            Q: ${currentQuestion + 1}/${quizData.questions.length}<br>
+            Clarity: ${scores.clarity}<br>
+            Energy: ${scores.energy}<br>
+            Focus: ${scores.focus}<br>
+            ${result ? `Result: ${result.id}` : ''}
+        `;
+    }
+    </script>
+</body>
+</html>
