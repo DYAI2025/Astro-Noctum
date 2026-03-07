@@ -262,6 +262,8 @@ export function FusionRing({
   const isAnimating = useRef(false);
   const signalRef = useRef(signal);
   const showLabelsRef = useRef(showLabels);
+  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
+  const canvasDims = useRef({ width: 0, height: 0, dpr: 1 });
 
   signalRef.current = signal;
   showLabelsRef.current = showLabels;
@@ -284,7 +286,11 @@ export function FusionRing({
     canvas.style.height = `${cssSize}px`;
 
     const ctx = canvas.getContext('2d');
-    if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (ctx) {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctxRef.current = ctx;
+    }
+    canvasDims.current = { width: cssSize, height: cssSize, dpr };
 
     return { width: cssSize, height: cssSize, dpr };
   }, [size]);
@@ -302,7 +308,7 @@ export function FusionRing({
     const { width, height, dpr } = configureCanvas();
     if (width === 0) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = ctxRef.current;
     if (!ctx) return;
 
     const baseRadius = getBaseRadius(width);
@@ -320,19 +326,14 @@ export function FusionRing({
 
     const tick = () => {
       const canvas = canvasRef.current;
-      if (!canvas) {
+      const ctx = ctxRef.current;
+      if (!canvas || !ctx) {
         isAnimating.current = false;
         return;
       }
 
-      const { width, height, dpr } = configureCanvas();
+      const { width, height, dpr } = canvasDims.current;
       if (width === 0) {
-        isAnimating.current = false;
-        return;
-      }
-
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
         isAnimating.current = false;
         return;
       }
@@ -349,15 +350,7 @@ export function FusionRing({
         }
       }
 
-      drawRing(
-        ctx,
-        width,
-        height,
-        animatedRadii.current,
-        signalRef.current,
-        showLabelsRef.current,
-        dpr,
-      );
+      drawRing(ctx, width, height, animatedRadii.current, signalRef.current, showLabelsRef.current, dpr);
 
       if (stillMoving) {
         rafIdRef.current = requestAnimationFrame(tick);

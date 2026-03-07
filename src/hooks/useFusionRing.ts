@@ -20,10 +20,14 @@ export function useFusionRing(apiResults: ApiResults | null, userId?: string) {
   // Events aus Supabase laden (einmalig bei Mount)
   useEffect(() => {
     if (!userId || eventsLoaded) return;
-    loadUserEvents(userId).then(loaded => {
-      setEvents(loaded);
-      setEventsLoaded(true);
-    });
+    loadUserEvents(userId)
+      .then(loaded => {
+        setEvents(loaded);
+        setEventsLoaded(true);
+      })
+      .catch(() => {
+        setEventsLoaded(true); // Unblock UI even on failure
+      });
   }, [userId, eventsLoaded]);
 
   // W(s) aus BAFE Western-Daten

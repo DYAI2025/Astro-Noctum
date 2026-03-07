@@ -10,24 +10,21 @@ export async function saveContributionEvent(
   userId?: string,
 ): Promise<void> {
   try {
-    // Delete any previous event for the same module (quiz retake)
-    if (userId) {
-      await supabase
-        .from('contribution_events')
-        .delete()
-        .eq('user_id', userId)
-        .eq('module_id', event.source.moduleId);
-    }
+    const row = {
+      user_id: userId ?? null,
+      event_id: event.eventId,
+      module_id: event.source.moduleId,
+      occurred_at: event.occurredAt,
+      payload: event.payload,
+    };
 
-    const { error } = await supabase
-      .from('contribution_events')
-      .insert({
-        user_id: userId ?? null,
-        event_id: event.eventId,
-        module_id: event.source.moduleId,
-        occurred_at: event.occurredAt,
-        payload: event.payload,
-      });
+    const { error } = userId
+      ? await supabase
+          .from('contribution_events')
+          .upsert(row, { onConflict: 'user_id,module_id' })
+      : await supabase
+          .from('contribution_events')
+          .insert(row);
 
     if (error) {
       console.warn('Failed to save contribution event:', error.message);

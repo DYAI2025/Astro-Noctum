@@ -1,6 +1,7 @@
 import { useEffect, useCallback, Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { ContributionEvent } from '@/src/lib/lme/types';
+import { QuizErrorBoundary } from './QuizErrorBoundary';
 
 // --- Lazy-loaded quiz components ---
 const LoveLanguagesQuiz = lazy(() => import('./quizzes/LoveLanguagesQuiz'));
@@ -103,9 +104,11 @@ export default function QuizOverlay({ quizId, onComplete, onClose }: QuizOverlay
             </button>
 
             {/* Quiz content */}
-            <Suspense fallback={<QuizLoadingFallback />}>
-              <QuizComponent onComplete={onComplete} onClose={onClose} />
-            </Suspense>
+            <QuizErrorBoundary onClose={onClose}>
+              <Suspense fallback={<QuizLoadingFallback />}>
+                <QuizComponent onComplete={onComplete} onClose={onClose} />
+              </Suspense>
+            </QuizErrorBoundary>
           </motion.div>
         </motion.div>
       )}

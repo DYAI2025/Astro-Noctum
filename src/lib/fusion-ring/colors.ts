@@ -36,33 +36,6 @@ export const SECTOR_GLOW_COLORS: string[] = [
 ];
 
 /**
- * HSL-Hue Interpolation zwischen zwei Sektoren.
- * t ∈ [0, 1] — Position innerhalb der 30°-Zone.
- */
-export function lerpSectorColor(sectorLeft: number, sectorRight: number, t: number): string {
-  const cLeft = SECTOR_COLORS[sectorLeft];
-  const cRight = SECTOR_COLORS[sectorRight];
-
-  // Wenn gleiche Farbe: kein Lerp nötig
-  if (cLeft === cRight) return cLeft;
-
-  // Hex → RGB → HSL Lerp → zurück
-  const [h1, s1, l1] = hexToHSL(cLeft);
-  const [h2, s2, l2] = hexToHSL(cRight);
-
-  // Shortest-path Hue Interpolation
-  let dh = h2 - h1;
-  if (dh > 180) dh -= 360;
-  if (dh < -180) dh += 360;
-
-  const h = (h1 + dh * t + 360) % 360;
-  const s = s1 + (s2 - s1) * t;
-  const l = l1 + (l2 - l1) * t;
-
-  return `hsl(${h}, ${s}%, ${l}%)`;
-}
-
-/**
  * Converts a hex color string to HSL values.
  * Accepts both '#RRGGBB' and 'RRGGBB' formats.
  * @returns [hue 0-360, saturation 0-100, lightness 0-100]
@@ -108,4 +81,31 @@ function hexToHSL(hex: string): [number, number, number] {
   }
 
   return [h, s * 100, l * 100];
+}
+
+/** Pre-computed HSL values for SECTOR_COLORS (avoids 720 hex parses per frame). */
+const SECTOR_COLORS_HSL: [number, number, number][] = SECTOR_COLORS.map(hexToHSL);
+
+/**
+ * HSL-Hue Interpolation zwischen zwei Sektoren.
+ * t ∈ [0, 1] — Position innerhalb der 30°-Zone.
+ */
+export function lerpSectorColor(sectorLeft: number, sectorRight: number, t: number): string {
+  const cLeft = SECTOR_COLORS[sectorLeft];
+  const cRight = SECTOR_COLORS[sectorRight];
+
+  if (cLeft === cRight) return cLeft;
+
+  const [h1, s1, l1] = SECTOR_COLORS_HSL[sectorLeft];
+  const [h2, s2, l2] = SECTOR_COLORS_HSL[sectorRight];
+
+  let dh = h2 - h1;
+  if (dh > 180) dh -= 360;
+  if (dh < -180) dh += 360;
+
+  const h = (h1 + dh * t + 360) % 360;
+  const s = s1 + (s2 - s1) * t;
+  const l = l1 + (l2 - l1) * t;
+
+  return `hsl(${h}, ${s}%, ${l}%)`;
 }
