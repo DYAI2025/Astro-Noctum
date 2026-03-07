@@ -38,3 +38,10 @@ create policy "anon_insert_events"
 on public.contribution_events for insert
 to anon
 with check (user_id IS NULL);
+
+-- Update own events (required for upsert on quiz retake)
+create policy "users_update_own_events"
+on public.contribution_events for update
+to authenticated
+using (user_id = auth.uid())
+with check (user_id = auth.uid());

@@ -240,7 +240,9 @@ const ELEVENLABS_TOOL_SECRET = process.env.ELEVENLABS_TOOL_SECRET;
 
 const supabaseServer =
   SUPABASE_URL && SUPABASE_SERVICE_KEY
-    ? createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+    ? createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+        auth: { autoRefreshToken: false, persistSession: false },
+      })
     : null;
 
 // ── Stripe ───────────────────────────────────────────────────────────

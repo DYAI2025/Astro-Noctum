@@ -118,3 +118,36 @@ ALTER TABLE profiles
 ADD COLUMN IF NOT EXISTS stripe_payment_id TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_profiles_tier ON profiles(tier);
+
+-- === Contribution Events (Quiz results for Fusion Ring) ===
+CREATE TABLE IF NOT EXISTS public.contribution_events (
+  id bigint generated always as identity primary key,
+  user_id uuid references auth.users(id),
+  event_id text unique not null,
+  module_id text not null,
+  occurred_at timestamptz not null,
+  payload jsonb not null,
+  created_at timestamptz not null default now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_contribution_events_user_id ON public.contribution_events(user_id);
+CREATE INDEX IF NOT EXISTS idx_contribution_events_module_id ON public.contribution_events(module_id);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_contribution_user_module ON public.contribution_events(user_id, module_id);
+
+ALTER TABLE public.contribution_events ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "users_read_own_events" ON public.contribution_events
+  FOR SELECT TO authenticated USING (user_id = auth.uid());
+
+CREATE POLICY "users_insert_own_events" ON public.contribution_events
+  FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "users_update_own_events" ON public.contribution_events
+  FOR UPDATE TO authenticated
+  USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "users_delete_own_events" ON public.contribution_events
+  FOR DELETE TO authenticated USING (user_id = auth.uid());
+
+CREATE POLICY "anon_insert_events" ON public.contribution_events
+  FOR INSERT TO anon WITH CHECK (user_id IS NULL);

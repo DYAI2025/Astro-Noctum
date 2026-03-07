@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/src/lib/supabase';
 import { useAuth } from '@/src/contexts/AuthContext';
 
@@ -7,19 +7,33 @@ export function usePremium() {
   const [isPremium, setIsPremium] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchTier = useCallback(async () => {
     if (!user) { setIsPremium(false); setLoading(false); return; }
 
-    const fetchTier = async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('tier')
-        .eq('id', user.id)
-        .single();
-      setIsPremium(data?.tier === 'premium');
-      setLoading(false);
+    const { data } = await supabase
+      .from('profiles')
+      .select('tier')
+      .eq('id', user.id)
+      .single();
+    setIsPremium(data?.tier === 'premium');
+    setLoading(false);
+  }, [user]);
+
+  // Initial fetch
+  useEffect(() => { fetchTier(); }, [fetchTier]);
+
+  // Re-fetch when tab becomes visible (catches Stripe redirect return)
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') fetchTier();
     };
-    fetchTier();
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, [fetchTier]);
+
+  // Realtime subscription for instant update (best-effort)
+  useEffect(() => {
+    if (!user) return;
 
     const channel = supabase
       .channel('profile-tier')
@@ -31,7 +45,11 @@ export function usePremium() {
       }, (payload) => {
         setIsPremium(payload.new.tier === 'premium');
       })
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR') {
+          console.warn('Premium tier realtime subscription failed — using polling fallback');
+        }
+      });
 
     return () => { supabase.removeChannel(channel); };
   }, [user]);
