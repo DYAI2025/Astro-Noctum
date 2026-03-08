@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  Sun, Moon, ArrowUp, ArrowLeft, RefreshCw, Zap, Phone, PhoneOff,
+  Sun, Moon, ArrowUp, ArrowLeft, RefreshCw, Zap, Phone, PhoneOff, Lock,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { BirthChartOrrery } from "./BirthChartOrrery";
@@ -855,8 +855,7 @@ export function Dashboard({
           )}
         </div>
 
-        {/* Levi — 1/3 width — PREMIUM */}
-        <PremiumGate teaser={t("dashboard.premium.teaserLevi")}>
+        {/* Levi — 1/3 width — visible teaser, interaction gated */}
         <div ref={leviSectionRef} className="morning-card p-5 sm:p-7 flex flex-col gap-5 sm:gap-6">
           <div className="flex items-start gap-4">
             <div className="relative mt-1.5 shrink-0">
@@ -876,43 +875,54 @@ export function Dashboard({
             </div>
           </div>
 
-          <button
-            onClick={leviActive ? handleHangUp : handleCallLevi}
-            className={`w-full flex items-center justify-center gap-2 px-5 py-3 rounded-full text-[10px] uppercase tracking-[0.2em] font-semibold transition-all ${
-              leviActive
-                ? "bg-red-50 border border-red-300 text-red-600 hover:bg-red-100"
-                : "bg-[#8B6914]/10 border border-[#8B6914]/30 text-[#8B6914] hover:bg-[#8B6914]/[0.18]"
-            }`}
-          >
-            {leviActive
-              ? <><PhoneOff className="w-4 h-4" /> {t("dashboard.levi.hangUpBtn")}</>
-              : <><Phone className="w-4 h-4" /> {t("dashboard.levi.callBtn")}</>}
-          </button>
-
-          <AnimatePresence>
-            {leviActive && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
-                className="relative z-20 w-full flex justify-center overflow-hidden"
+          {isPremium ? (
+            <>
+              <button
+                onClick={leviActive ? handleHangUp : handleCallLevi}
+                className={`w-full flex items-center justify-center gap-2 px-5 py-3 rounded-full text-[10px] uppercase tracking-[0.2em] font-semibold transition-all ${
+                  leviActive
+                    ? "bg-red-50 border border-red-300 text-red-600 hover:bg-red-100"
+                    : "bg-[#8B6914]/10 border border-[#8B6914]/30 text-[#8B6914] hover:bg-[#8B6914]/[0.18]"
+                }`}
               >
-                {/* @ts-ignore */}
-                <elevenlabs-convai
-                  agent-id={elevenLabsAgentId}
-                  dynamic-variables={JSON.stringify({
-                    user_id: userId,
-                    chart_context: `${sunSign} / ${zodiacAnimal} / ${dominantEl}`,
-                  })}
-                >
-                {/* @ts-ignore */}
-                </elevenlabs-convai>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                {leviActive
+                  ? <><PhoneOff className="w-4 h-4" /> {t("dashboard.levi.hangUpBtn")}</>
+                  : <><Phone className="w-4 h-4" /> {t("dashboard.levi.callBtn")}</>}
+              </button>
+
+              <AnimatePresence>
+                {leviActive && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    className="relative z-20 w-full flex justify-center overflow-hidden"
+                  >
+                    {/* @ts-ignore */}
+                    <elevenlabs-convai
+                      agent-id={elevenLabsAgentId}
+                      dynamic-variables={JSON.stringify({
+                        user_id: userId,
+                        chart_context: `${sunSign} / ${zodiacAnimal} / ${dominantEl}`,
+                      })}
+                    >
+                    {/* @ts-ignore */}
+                    </elevenlabs-convai>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </>
+          ) : (
+            <PremiumGate teaser={t("dashboard.premium.teaserLevi")}>
+              <button
+                className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-full text-[10px] uppercase tracking-[0.2em] font-semibold bg-[#8B6914]/10 border border-[#8B6914]/30 text-[#8B6914]"
+              >
+                <Lock className="w-4 h-4" /> {t("dashboard.levi.callBtn")}
+              </button>
+            </PremiumGate>
+          )}
         </div>
-        </PremiumGate>
       </motion.div>
 
       {/* ═══ CLUSTER ENERGY SYSTEM ═════════════════════════════════ */}
