@@ -606,23 +606,29 @@ app.post("/api/interpret", express.json({ limit: "50kb" }), async (req, res) => 
   if (!data || typeof data !== "object") {
     return res.status(400).json({ error: "data is required" });
   }
+  const safeLang = lang === "de" ? "de" : "en";
   if (!geminiClient) {
     return res.status(503).json({ error: "Interpretation service unavailable" });
   }
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 20000);
-    const response = await geminiClient.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: buildGeminiPrompt(data, lang),
-      config: { temperature: 0.75 },
-    });
+    const response = await Promise.race([
+      geminiClient.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: buildGeminiPrompt(data, safeLang),
+        config: { temperature: 0.75 },
+      }),
+      new Promise((_, reject) => {
+        controller.signal.addEventListener('abort', () => reject(new Error('Gemini timeout')));
+      }),
+    ]);
     clearTimeout(timeout);
     const text = response.text?.trim();
     if (!text) return res.status(502).json({ error: "Empty response from AI" });
     res.json({ text });
   } catch (err) {
-    console.warn("[interpret] Gemini failed:", err.message);
+    console.warn("[interpret] Gemini failed:", err?.message ?? String(err));
     res.status(502).json({ error: "AI interpretation failed" });
   }
 });
