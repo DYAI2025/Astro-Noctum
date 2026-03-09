@@ -1,0 +1,282 @@
+@import "tailwindcss";
+@import "./styles/light-grimoire-tokens.css";
+@import "./styles/dark-grimoire-tokens.css";
+@import "./styles/light-grimoire-typography.css";
+@import "./styles/theme-variants.css";
+
+@theme {
+  /* Colors */
+  --color-alchemy-bg-emerald: var(--alchemy-bg-emerald);
+  --color-alchemy-bg-midnight: var(--alchemy-bg-midnight);
+  --color-alchemy-bg-deep: var(--alchemy-bg-deep);
+  --color-alchemy-bg-surface: var(--alchemy-bg-surface);
+
+  --color-alchemy-gold-primary: var(--alchemy-gold-primary);
+  --color-alchemy-gold-dark: var(--alchemy-gold-dark);
+  --color-alchemy-gold-light: var(--alchemy-gold-light);
+  --color-alchemy-gold-muted: var(--alchemy-gold-muted);
+
+  --color-alchemy-cream: var(--alchemy-cream);
+  --color-alchemy-parchment: var(--alchemy-parchment);
+
+  --color-alchemy-text-dark: var(--alchemy-text-dark);
+  --color-alchemy-text-light: var(--alchemy-text-light);
+
+  /* Semantic - Light Grimoire */
+  --color-bg-parchment: var(--bg-parchment);
+  --color-bg-parchment-light: var(--bg-parchment-light);
+  --color-text-ink: var(--text-ink);
+  --color-text-ink-muted: var(--text-ink-muted);
+  --color-border-gold-subtle: var(--border-gold-subtle);
+  --color-accent-emerald: var(--accent-emerald);
+
+  /* Fonts */
+  --font-serif: var(--font-serif);
+  --font-sans: var(--font-sans);
+
+  /* Spacing/Radius */
+  --radius-xl: var(--radius-xl);
+}
+
+/* ============================================
+   QuizzMe - Modern Alchemy Global Styles
+   ============================================ */
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-inter), var(--font-sans);
+    background: var(--app-surface, var(--alchemy-gradient-main));
+    color: var(--app-text, var(--alchemy-text-light));
+    min-height: 100vh;
+  }
+
+  /* Typography defaults */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-playfair), var(--font-serif);
+    font-weight: 600;
+    line-height: var(--leading-tight);
+  }
+
+  p,
+  span,
+  li,
+  label {
+    font-family: var(--font-inter), var(--font-sans);
+    line-height: var(--leading-relaxed);
+  }
+
+  /* Link defaults */
+  a {
+    color: var(--alchemy-gold-primary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+
+  a:hover {
+    color: var(--alchemy-gold-light);
+  }
+
+  /* Focus ring for accessibility */
+  :focus-visible {
+    outline: 2px solid var(--alchemy-gold-primary);
+    outline-offset: 2px;
+  }
+}
+
+/* ============================================
+   MODERN ALCHEMY UTILITIES
+   ============================================ */
+
+@layer utilities {
+
+  /* Serif Typography */
+  .font-serif {
+    font-family: var(--font-playfair), var(--font-serif);
+  }
+
+  /* Sans-serif Typography */
+  .font-sans {
+    font-family: var(--font-inter), var(--font-sans);
+  }
+
+  /* Gold gradient text */
+  .text-gold-gradient {
+    background: linear-gradient(135deg,
+        var(--alchemy-gold-light) 0%,
+        var(--alchemy-gold-primary) 50%,
+        var(--alchemy-gold-dark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Subtle gold glow effect */
+  .glow-gold {
+    filter: drop-shadow(0 0 10px rgba(210, 169, 90, 0.4));
+  }
+
+  /* Card hover lift */
+  .hover-lift {
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg), var(--glow-gold-subtle);
+  }
+
+  /* Subtle float animation */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  /* Fade in animation */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  /* Slide up animation */
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out;
+  }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px) translateX(0px);
+  }
+
+  25% {
+    transform: translateY(-15px) translateX(8px);
+  }
+
+  50% {
+    transform: translateY(-25px) translateX(-8px);
+  }
+
+  75% {
+    transform: translateY(-10px) translateX(5px);
+  }
+}
+
+@keyframes float-quiz {
+
+  0%,
+  100% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0.12;
+  }
+
+  25% {
+    transform: translateY(-30px) translateX(15px) scale(1.1);
+    opacity: 0.18;
+  }
+
+  50% {
+    transform: translateY(-20px) translateX(-15px) scale(0.9);
+    opacity: 0.08;
+  }
+
+  75% {
+    transform: translateY(-40px) translateX(10px) scale(1.05);
+    opacity: 0.15;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
+
+  100% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+
+  100% {
+    background-position: 200% center;
+  }
+}
+
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--alchemy-bg-midnight);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--alchemy-gold-muted);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--alchemy-gold-primary);
+}
+
+/* ============================================
+   SELECTION STYLING
+   ============================================ */
+
+::selection {
+  background: rgba(210, 169, 90, 0.3);
+  color: var(--alchemy-text-light);
+}

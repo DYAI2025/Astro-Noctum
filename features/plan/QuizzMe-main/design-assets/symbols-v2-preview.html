@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Symbols v2 - Preview</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(to bottom, rgb(2, 6, 23), rgb(15, 23, 42));
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: rgb(248, 250, 252);
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      background: linear-gradient(to right, rgb(252, 211, 77), rgb(236, 72, 153), rgb(168, 85, 247));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: rgb(148, 163, 184);
+      margin-bottom: 3rem;
+      font-size: 1.1rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-bottom: 4rem;
+    }
+
+    .card {
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(148, 163, 184, 0.4);
+    }
+
+    .card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      color: rgb(226, 232, 240);
+    }
+
+    .symbol-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 200px;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .symbol-container img {
+      width: 160px;
+      height: 160px;
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover .symbol-container img {
+      transform: scale(1.1);
+    }
+
+    .description {
+      color: rgb(148, 163, 184);
+      line-height: 1.6;
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+    }
+
+    .color-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-top: 0.5rem;
+    }
+
+    .love .color-badge {
+      background: rgba(255, 200, 150, 0.2);
+      color: rgb(255, 220, 180);
+      border: 1px solid rgba(255, 200, 150, 0.4);
+    }
+
+    .social .color-badge {
+      background: rgba(59, 130, 246, 0.2);
+      color: rgb(147, 197, 253);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+    }
+
+    .rpg .color-badge {
+      background: rgba(168, 85, 247, 0.2);
+      color: rgb(216, 180, 254);
+      border: 1px solid rgba(168, 85, 247, 0.4);
+    }
+
+    .personality .color-badge {
+      background: rgba(16, 185, 129, 0.2);
+      color: rgb(110, 231, 183);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .celebrity .color-badge {
+      background: rgba(236, 72, 153, 0.2);
+      color: rgb(251, 207, 232);
+      border: 1px solid rgba(236, 72, 153, 0.4);
+    }
+
+    .destiny .color-badge {
+      background: rgba(251, 191, 36, 0.2);
+      color: rgb(252, 211, 77);
+      border: 1px solid rgba(251, 191, 36, 0.4);
+    }
+
+    .features {
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .features h3 {
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+      color: rgb(226, 232, 240);
+    }
+
+    .features ul {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+
+    .features li {
+      padding: 0.75rem;
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 8px;
+      color: rgb(148, 163, 184);
+    }
+
+    .features li::before {
+      content: "✓ ";
+      color: rgb(34, 197, 94);
+      font-weight: bold;
+      margin-right: 0.5rem;
+    }
+
+    .comparison {
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 12px;
+      padding: 2rem;
+    }
+
+    .comparison h3 {
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+      color: rgb(226, 232, 240);
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    .comparison-item {
+      padding: 1rem;
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 8px;
+    }
+
+    .comparison-item h4 {
+      color: rgb(226, 232, 240);
+      margin-bottom: 0.75rem;
+      font-size: 1.1rem;
+    }
+
+    .comparison-item ul {
+      list-style: none;
+      color: rgb(148, 163, 184);
+      line-height: 1.8;
+    }
+
+    .comparison-item.v1 h4 {
+      color: rgb(248, 113, 113);
+    }
+
+    .comparison-item.v2 h4 {
+      color: rgb(34, 197, 94);
+    }
+
+    @media (max-width: 768px) {
+      .comparison-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Quiz Symbols v2 - Cosmic Redesign</h1>
+    <p class="subtitle">Stärkere Glows • Mehr Details • Reference-inspired Design</p>
+
+    <div class="features">
+      <h3>v2 Verbesserungen</h3>
+      <ul>
+        <li>3-4x stärkere Glow-Effekte mit Multi-Layer-System</li>
+        <li>ViewBox erhöht auf 128x128 für mehr Details</li>
+        <li>Gefüllte Gradient-Cores statt nur Outlines</li>
+        <li>3-5 Detail-Layer pro Symbol</li>
+        <li>Branching/radiating Energy-Effekte</li>
+        <li>Basierend auf Reference-Images (DNA helix, heart nebula, astro wheel, lightning bolt)</li>
+      </ul>
+    </div>
+
+    <div class="grid">
+      <!-- Love Languages -->
+      <div class="card love">
+        <h2>Love Languages</h2>
+        <div class="symbol-container">
+          <img src="love-languages-symbol-v2.svg" alt="Love Languages Symbol v2">
+        </div>
+        <p class="description">
+          Cosmic heart nebula mit gefülltem Gradient-Core, energy waves, und inner sparkle texture. Inspiriert von heart nebula reference.
+        </p>
+        <div class="color-badge">Rosa-Gold Glow</div>
+      </div>
+
+      <!-- Social Role -->
+      <div class="card social">
+        <h2>Social Role</h2>
+        <div class="symbol-container">
+          <img src="social-role-symbol-v2.svg" alt="Social Role Symbol v2">
+        </div>
+        <p class="description">
+          Astro wheel mit spiral galaxy center, 12 cardinal points (zodiac-style), und orbital rings. Inspiriert von kreissymbol reference.
+        </p>
+        <div class="color-badge">Königsblau Glow</div>
+      </div>
+
+      <!-- RPG Identity -->
+      <div class="card rpg">
+        <h2>RPG Identity</h2>
+        <div class="symbol-container">
+          <img src="rpg-identity-symbol-v2.svg" alt="RPG Identity Symbol v2">
+        </div>
+        <p class="description">
+          Energy weapon (sword) mit branching lightning bolts, energy particles, und crystal pommel. Inspiriert von blitz2 lightning reference.
+        </p>
+        <div class="color-badge">Violett Glow</div>
+      </div>
+
+      <!-- Personality -->
+      <div class="card personality">
+        <h2>Personality</h2>
+        <div class="symbol-container">
+          <img src="personality-symbol-v2.svg" alt="Personality Symbol v2">
+        </div>
+        <p class="description">
+          DNA double helix mit multi-segment structure, base pair connections, und node points. Inspiriert von dna3 reference.
+        </p>
+        <div class="color-badge">Smaragdgrün Glow</div>
+      </div>
+
+      <!-- Celebrity Soulmate -->
+      <div class="card celebrity">
+        <h2>Celebrity Soulmate</h2>
+        <div class="symbol-container">
+          <img src="celebrity-soulmate-symbol-v2.svg" alt="Celebrity Soulmate Symbol v2">
+        </div>
+        <p class="description">
+          Eight-pointed star mit crown/tiara, light rays, sparkles, und center gemstone. Glamour energy mit maximaler Brillanz.
+        </p>
+        <div class="color-badge">Magenta Glow</div>
+      </div>
+
+      <!-- Destiny -->
+      <div class="card destiny">
+        <h2>Destiny</h2>
+        <div class="symbol-container">
+          <img src="destiny-symbol-v2.svg" alt="Destiny Symbol v2">
+        </div>
+        <p class="description">
+          Portal archway mit glowing path/steps, keystone, energy pillars, und light rays emanating from opening.
+        </p>
+        <div class="color-badge">Gold/Amber Glow</div>
+      </div>
+    </div>
+
+    <div class="comparison">
+      <h3>v1 vs v2 Vergleich</h3>
+      <div class="comparison-grid">
+        <div class="comparison-item v1">
+          <h4>v1 (Rejected)</h4>
+          <ul>
+            <li>Zu subtile Glows (blur: 8px, opacity: 0.4)</li>
+            <li>Nur Outlines, keine Fills</li>
+            <li>ViewBox: 64x64</li>
+            <li>1-2 Detail-Layer</li>
+            <li>Einfache Geometrie</li>
+            <li>Zu dezent, nicht genug Präsenz</li>
+          </ul>
+        </div>
+        <div class="comparison-item v2">
+          <h4>v2 (Current)</h4>
+          <ul>
+            <li>Starke Glows (blur: 12-48px, opacity: 0.7-0.95)</li>
+            <li>Gefüllte Cores mit Gradienten</li>
+            <li>ViewBox: 128x128</li>
+            <li>3-5 Detail-Layer</li>
+            <li>Komplexe, filigraner Look</li>
+            <li>Cosmic/Sci-Fi Aesthetic mit starker Präsenz</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

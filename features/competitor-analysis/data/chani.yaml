@@ -1,0 +1,76 @@
+name: CHANI
+website: chaninicholas.com
+tagline: "Astrology for self-discovery, healing, and transformation"
+founded: 2020
+headquarters: Los Angeles, USA
+
+# Positioning
+primary_use_case: "Human-written astrology with ritual and journaling"
+target_audience: "Spiritually-minded millennials, queer community, astrology enthusiasts seeking authority"
+market_position: "Premium authority — personal brand of Chani Nicholas"
+
+# Pricing
+pricing_model: subscription
+free_tier: true
+free_tier_limits: "Daily horoscope, birth chart overview, weekly podcast"
+monthly_price: "$11.99/month"
+trial: "14-day free trial"
+
+# Features
+features:
+  western_astrology: 5
+  chinese_astrology: 0
+  wuxing_elements: 0
+  cross_system_fusion: 0
+  personality_quizzes: 0
+  birth_chart_visual: 4
+  daily_horoscope: 5
+  social_features: 1
+  voice_agent: 0
+  compatibility: 2
+  mobile_app: 5
+  offline_mode: 2
+  bilingual: 1
+
+# Strengths
+strengths:
+  - "All content written by Chani Nicholas — no AI"
+  - "Strong brand and trusted authority"
+  - "High editorial quality with ritual/journal prompts"
+  - "Inclusive positioning (LGBTQ+ affirming)"
+  - "Loyal podcast audience drives engagement"
+  - "Comprehensive birth chart (Chiron, Lilith, nodes)"
+
+# Weaknesses
+weaknesses:
+  - "Highest price point ($11.99/mo)"
+  - "Free tier deliberately limited"
+  - "Single-voice dependency (what if Chani stops?)"
+  - "No social features"
+  - "Only Western astrology"
+  - "English only"
+
+# Best for
+best_for:
+  - "Users wanting expert-written (not AI) astrology"
+  - "Spiritually-minded millennials"
+  - "Those who value ritual and journaling alongside astrology"
+  - "LGBTQ+ community members seeking affirming content"
+
+# Not ideal for
+not_ideal_for:
+  - "Budget-conscious users ($11.99/mo is steep)"
+  - "Users wanting multi-system or Chinese astrology"
+  - "Those preferring social/community features"
+  - "Non-English speakers"
+
+# Common complaints
+common_complaints:
+  - "Too expensive for what you get"
+  - "Free tier feels deliberately crippled"
+  - "Want more compatibility features"
+
+# Search volume indicators
+search_terms:
+  - "chani app alternative": medium
+  - "chani astrology app": high

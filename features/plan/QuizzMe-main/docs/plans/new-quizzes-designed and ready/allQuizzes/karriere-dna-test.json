@@ -1,0 +1,309 @@
+{
+  "meta": {
+    "id": "quiz.karriere_dna.v1",
+    "title": "Deine Karriere-DNA",
+    "subtitle": "Entdecke deinen beruflichen Archetyp",
+    "description": "10 strategische Szenarien enthüllen, welcher Karriere-Archetyp in dir schlummert.",
+    "language": "de",
+    "engine": "custom",
+    "skin": "Modern Alchemy",
+    "tone": "epic",
+    "target_audience": "Professionals, Karriere-Orientierte, 25-45",
+    "questions_count": 10,
+    "profile_count": 6,
+    "dimension_count": 3,
+    "estimated_duration_seconds": 180,
+    "version": "1.0.0",
+    "created_at": "2025-12-16",
+    "disclaimer": "Dieser Test dient der spielerischen Selbstreflexion und stellt keine psychologische Diagnose dar."
+  },
+
+  "dimensions": [
+    {
+      "id": "achievement",
+      "name": "Achievement",
+      "pole_low": "Zufriedenheit",
+      "pole_high": "Ambition",
+      "description": "Wie stark treibt dich der Wunsch nach Leistung und Erfolg?",
+      "max_score": 30
+    },
+    {
+      "id": "autonomy",
+      "name": "Autonomy",
+      "pole_low": "Teamorientierung",
+      "pole_high": "Unabhängigkeit",
+      "description": "Wie wichtig ist dir berufliche Selbstbestimmung?",
+      "max_score": 30
+    },
+    {
+      "id": "influence",
+      "name": "Influence",
+      "pole_low": "Fachfokus",
+      "pole_high": "Leadership",
+      "description": "Wie stark willst du andere Menschen entwickeln und führen?",
+      "max_score": 30
+    }
+  ],
+
+  "scoring_logic": {
+    "type": "multi_dimension_matching",
+    "description": "Profile werden über min/max Schwellenwerte pro Dimension gematcht",
+    "normalization": "raw_to_percent",
+    "max_per_dimension": 30,
+    "matching_priority": ["exact_match", "highest_dimension", "fallback"]
+  },
+
+  "questions": [
+    {
+      "id": "q1",
+      "text": "Dein Team hat ein Problem, das niemand lösen kann. Du...",
+      "type": "scenario",
+      "options": [
+        { "id": "q1_a", "text": "Tauchst tief ein – das wird dein Meisterstück", "scores": { "achievement": 2, "autonomy": 3, "influence": 0 } },
+        { "id": "q1_b", "text": "Holst alle zusammen und moderierst die Lösung", "scores": { "achievement": 1, "autonomy": 0, "influence": 3 } },
+        { "id": "q1_c", "text": "Delegierst an Experten und hältst dir den Rücken frei", "scores": { "achievement": 1, "autonomy": 2, "influence": 2 } },
+        { "id": "q1_d", "text": "Analysierst systematisch alle Optionen", "scores": { "achievement": 1, "autonomy": 1, "influence": 0 } }
+      ]
+    },
+    {
+      "id": "q2",
+      "text": "Ein Headhunter bietet dir die Position deines Lebens. Der Haken?",
+      "type": "scenario",
+      "options": [
+        { "id": "q2_a", "text": "Weniger Gehalt, aber volle kreative Kontrolle", "scores": { "achievement": 2, "autonomy": 3, "influence": 1 } },
+        { "id": "q2_b", "text": "Mehr Verantwortung, aber ein schwieriges Team", "scores": { "achievement": 2, "autonomy": 0, "influence": 3 } },
+        { "id": "q2_c", "text": "Höheres Risiko, aber potentiell revolutionär", "scores": { "achievement": 3, "autonomy": 3, "influence": 1 } },
+        { "id": "q2_d", "text": "Ich bleibe lieber wo ich bin – Sicherheit geht vor", "scores": { "achievement": 0, "autonomy": 0, "influence": 0 } }
+      ]
+    },
+    {
+      "id": "q3",
+      "text": "Feedback-Gespräch: Dein Chef fragt nach deinen Zielen. Du sagst:",
+      "type": "scenario",
+      "options": [
+        { "id": "q3_a", "text": "\"Ich will der beste auf meinem Gebiet werden.\"", "scores": { "achievement": 2, "autonomy": 2, "influence": 0 } },
+        { "id": "q3_b", "text": "\"Ich will ein Team aufbauen, das mich übertrifft.\"", "scores": { "achievement": 1, "autonomy": 0, "influence": 3 } },
+        { "id": "q3_c", "text": "\"Ich will Dinge erschaffen, die es noch nicht gibt.\"", "scores": { "achievement": 3, "autonomy": 3, "influence": 1 } },
+        { "id": "q3_d", "text": "\"Ich will einen positiven Impact auf Menschen haben.\"", "scores": { "achievement": 1, "autonomy": 1, "influence": 2 } }
+      ]
+    },
+    {
+      "id": "q4",
+      "text": "Montagmorgen. Was gibt dir Energie für die Woche?",
+      "type": "scenario",
+      "options": [
+        { "id": "q4_a", "text": "Ein komplexes Problem, das nur ich lösen kann", "scores": { "achievement": 2, "autonomy": 3, "influence": 0 } },
+        { "id": "q4_b", "text": "Ein wichtiges Meeting, in dem Entscheidungen fallen", "scores": { "achievement": 2, "autonomy": 1, "influence": 2 } },
+        { "id": "q4_c", "text": "Die Aussicht, dass mein Team heute einen Durchbruch hat", "scores": { "achievement": 1, "autonomy": 0, "influence": 3 } },
+        { "id": "q4_d", "text": "Ein ruhiger Start mit klarer To-Do-Liste", "scores": { "achievement": 0, "autonomy": 1, "influence": 0 } }
+      ]
+    },
+    {
+      "id": "q5",
+      "text": "Du erbst überraschend genug Geld, um nie wieder arbeiten zu müssen. Du...",
+      "type": "scenario",
+      "options": [
+        { "id": "q5_a", "text": "Gründest das Startup, von dem du immer geträumt hast", "scores": { "achievement": 3, "autonomy": 3, "influence": 2 } },
+        { "id": "q5_b", "text": "Widmest dich einem Passion Project ohne Druck", "scores": { "achievement": 1, "autonomy": 3, "influence": 0 } },
+        { "id": "q5_c", "text": "Investierst in junge Talente und wirst Mentor", "scores": { "achievement": 0, "autonomy": 1, "influence": 3 } },
+        { "id": "q5_d", "text": "Genießt das Leben und arbeitest nur noch freiwillig", "scores": { "achievement": 0, "autonomy": 2, "influence": 0 } }
+      ]
+    },
+    {
+      "id": "q6",
+      "text": "Du kannst nur eine Superkraft im Job haben. Welche?",
+      "type": "scenario",
+      "options": [
+        { "id": "q6_a", "text": "Perfekte Menschenkenntnis – du erkennst sofort Potenziale", "scores": { "achievement": 1, "autonomy": 0, "influence": 3 } },
+        { "id": "q6_b", "text": "Absolute Expertise – du bist der unbestrittene Experte", "scores": { "achievement": 2, "autonomy": 2, "influence": 0 } },
+        { "id": "q6_c", "text": "Visionäre Intuition – du siehst Chancen vor allen anderen", "scores": { "achievement": 3, "autonomy": 3, "influence": 1 } },
+        { "id": "q6_d", "text": "Unerschütterliche Ruhe – nichts bringt dich aus der Fassung", "scores": { "achievement": 0, "autonomy": 1, "influence": 1 } }
+      ]
+    },
+    {
+      "id": "q7",
+      "text": "Ein Konflikt im Team eskaliert. Deine natürliche Reaktion:",
+      "type": "scenario",
+      "options": [
+        { "id": "q7_a", "text": "Ich höre beide Seiten und finde einen Kompromiss", "scores": { "achievement": 0, "autonomy": 0, "influence": 2 } },
+        { "id": "q7_b", "text": "Ich halte mich raus – das ist nicht mein Fokusbereich", "scores": { "achievement": 1, "autonomy": 2, "influence": 0 } },
+        { "id": "q7_c", "text": "Ich treffe eine klare Entscheidung und setze sie durch", "scores": { "achievement": 2, "autonomy": 1, "influence": 3 } },
+        { "id": "q7_d", "text": "Ich eskaliere es an jemanden mit mehr Autorität", "scores": { "achievement": 0, "autonomy": 0, "influence": 0 } }
+      ]
+    },
+    {
+      "id": "q8",
+      "text": "Deine ideale Bürosituation:",
+      "type": "scenario",
+      "options": [
+        { "id": "q8_a", "text": "Eigenes Büro mit Tür – ungestörte Deep Work", "scores": { "achievement": 2, "autonomy": 3, "influence": 0 } },
+        { "id": "q8_b", "text": "Im Team-Hub – immer am Puls des Geschehens", "scores": { "achievement": 1, "autonomy": 0, "influence": 2 } },
+        { "id": "q8_c", "text": "Flexibel – mal Homeoffice, mal vor Ort", "scores": { "achievement": 1, "autonomy": 2, "influence": 1 } },
+        { "id": "q8_d", "text": "Egal – Hauptsache die Arbeit läuft", "scores": { "achievement": 0, "autonomy": 1, "influence": 0 } }
+      ]
+    },
+    {
+      "id": "q9",
+      "text": "Was würde dich in einem Job am meisten frustrieren?",
+      "type": "scenario",
+      "options": [
+        { "id": "q9_a", "text": "Keine Entscheidungsgewalt – immer nur ausführen", "scores": { "achievement": 2, "autonomy": 2, "influence": 3 } },
+        { "id": "q9_b", "text": "Oberflächliche Arbeit – nie richtig in die Tiefe gehen", "scores": { "achievement": 1, "autonomy": 1, "influence": 0 } },
+        { "id": "q9_c", "text": "Zu viele Meetings – nichts geht voran", "scores": { "achievement": 2, "autonomy": 3, "influence": 0 } },
+        { "id": "q9_d", "text": "Ständige Unsicherheit – nie wissen, wie es weitergeht", "scores": { "achievement": 0, "autonomy": 0, "influence": 1 } }
+      ]
+    },
+    {
+      "id": "q10",
+      "text": "In 10 Jahren wärst du am glücklichsten, wenn du:",
+      "type": "scenario",
+      "options": [
+        { "id": "q10_a", "text": "Dein eigenes Unternehmen erfolgreich aufgebaut hast", "scores": { "achievement": 3, "autonomy": 3, "influence": 2 } },
+        { "id": "q10_b", "text": "Als Koryphäe auf deinem Gebiet international anerkannt bist", "scores": { "achievement": 2, "autonomy": 2, "influence": 0 } },
+        { "id": "q10_c", "text": "Eine Organisation leitest und eine Kultur geprägt hast", "scores": { "achievement": 2, "autonomy": 0, "influence": 3 } },
+        { "id": "q10_d", "text": "Work-Life-Balance gefunden hast mit einem erfüllenden Job", "scores": { "achievement": 0, "autonomy": 1, "influence": 0 } }
+      ]
+    }
+  ],
+
+  "profiles": [
+    {
+      "id": "visionaer",
+      "title": "Der Visionär",
+      "icon": "🚀",
+      "tagline": "Du siehst Möglichkeiten, wo andere Mauern sehen.",
+      "description": "Deine Karriere-DNA ist auf Disruption programmiert. Du brauchst keine Erlaubnis, du brauchst Freiraum. In dir brennt der Wunsch, etwas zu schaffen, das vorher nicht existierte – und die Welt ein Stück weit neu zu definieren.",
+      "stats": [
+        { "label": "Risikobereitschaft", "value": 94, "color": "gold" },
+        { "label": "Innovationsdrang", "value": 89, "color": "purple" },
+        { "label": "Unabhängigkeit", "value": 91, "color": "blue" },
+        { "label": "Geduld mit Bürokratie", "value": 23, "color": "rose" }
+      ],
+      "compatibility": { "allies": ["architekt", "katalysator"], "nemesis": "waechter" },
+      "careers": ["Gründer:in", "Chief Innovation Officer", "Venture Builder", "Product Visionary"],
+      "matching": { "achievement": { "min": 7 }, "autonomy": { "min": 7 }, "influence": { "min": 4 } }
+    },
+    {
+      "id": "architekt",
+      "title": "Der Architekt",
+      "icon": "🔬",
+      "tagline": "Tiefe statt Breite. Meisterschaft statt Mittelmaß.",
+      "description": "Du baust nicht auf Sand. Deine Stärke liegt in der Präzision, im Durchdringen komplexer Systeme. Während andere an der Oberfläche kratzen, tauchst du ab – und kommst mit Lösungen zurück, die andere nicht mal als Fragen erkannt haben.",
+      "stats": [
+        { "label": "Tiefgang", "value": 96, "color": "blue" },
+        { "label": "Analytische Schärfe", "value": 91, "color": "purple" },
+        { "label": "Selbstständigkeit", "value": 84, "color": "gold" },
+        { "label": "Small Talk Skills", "value": 31, "color": "rose" }
+      ],
+      "compatibility": { "allies": ["visionaer", "navigator"], "nemesis": "katalysator" },
+      "careers": ["Principal Engineer", "Forschungsleitung", "Strategieberatung", "Technical Fellow"],
+      "matching": { "achievement": { "min": 5 }, "autonomy": { "min": 6 }, "influence": { "max": 4 } }
+    },
+    {
+      "id": "katalysator",
+      "title": "Der Katalysator",
+      "icon": "⚡",
+      "tagline": "Du machst Teams besser, als sie selbst glauben.",
+      "description": "Deine Superkraft? Du siehst in Menschen Potenzial, das sie selbst noch nicht kennen. Du führst nicht von oben herab – du entfachst. Und wenn du gehst, hinterlässt du Teams, die ohne dich weiterwachsen.",
+      "stats": [
+        { "label": "Führungsenergie", "value": 92, "color": "gold" },
+        { "label": "Empathie-Radar", "value": 87, "color": "emerald" },
+        { "label": "Veränderungsdrang", "value": 78, "color": "purple" },
+        { "label": "Einzelkämpfer-Modus", "value": 28, "color": "rose" }
+      ],
+      "compatibility": { "allies": ["visionaer", "mentor"], "nemesis": "architekt" },
+      "careers": ["VP People", "Geschäftsführung", "Change Manager", "Head of Department"],
+      "matching": { "achievement": { "min": 4 }, "autonomy": { "max": 5 }, "influence": { "min": 7 } }
+    },
+    {
+      "id": "navigator",
+      "title": "Der Navigator",
+      "icon": "🧭",
+      "tagline": "Struktur ist nicht Einschränkung – sie ist Freiheit.",
+      "description": "Du bist der ruhende Pol im Chaos. Während andere hektisch reagieren, hast du längst drei Schritte vorausgedacht. Deine Stärke liegt nicht im Glanz, sondern in der Verlässlichkeit, die andere erst vermissen, wenn du fehlst.",
+      "stats": [
+        { "label": "Systemdenken", "value": 94, "color": "blue" },
+        { "label": "Risikobewusstsein", "value": 88, "color": "emerald" },
+        { "label": "Methodische Tiefe", "value": 85, "color": "purple" },
+        { "label": "Spontanität", "value": 34, "color": "rose" }
+      ],
+      "compatibility": { "allies": ["architekt", "waechter"], "nemesis": "visionaer" },
+      "careers": ["Data Science Lead", "Operations Excellence", "Finance Controller", "Quality Director"],
+      "matching": { "achievement": { "max": 5 }, "autonomy": { "min": 4, "max": 7 }, "influence": { "max": 4 } }
+    },
+    {
+      "id": "mentor",
+      "title": "Der Mentor",
+      "icon": "🌱",
+      "tagline": "Dein Erfolg? Wenn andere wachsen.",
+      "description": "Du misst dich nicht an Titeln oder Boni – du misst dich an der Entwicklung der Menschen um dich herum. Dein größter Triumph ist leise: Der Moment, wenn jemand etwas schafft, das er sich nie zugetraut hätte.",
+      "stats": [
+        { "label": "Entwicklerfähigkeit", "value": 95, "color": "emerald" },
+        { "label": "Geduld", "value": 89, "color": "blue" },
+        { "label": "Teamverbundenheit", "value": 91, "color": "gold" },
+        { "label": "Ego-Investment", "value": 22, "color": "rose" }
+      ],
+      "compatibility": { "allies": ["katalysator", "waechter"], "nemesis": "visionaer" },
+      "careers": ["Learning & Development", "Coaching", "HR Business Partner", "Ausbildungsleitung"],
+      "matching": { "achievement": { "max": 5 }, "autonomy": { "max": 4 }, "influence": { "min": 4, "max": 7 } }
+    },
+    {
+      "id": "waechter",
+      "title": "Der Wächter",
+      "icon": "🏛️",
+      "tagline": "Du baust, was bleibt.",
+      "description": "Während andere den nächsten Trend jagen, sicherst du das Fundament. Du verstehst: Nicht jede Revolution ist ein Fortschritt. Deine Stärke liegt im Bewahren dessen, was funktioniert – und im klugen Verbessern.",
+      "stats": [
+        { "label": "Stabilität", "value": 96, "color": "emerald" },
+        { "label": "Verantwortungsgefühl", "value": 92, "color": "blue" },
+        { "label": "Prozessklarheit", "value": 88, "color": "gold" },
+        { "label": "Disruptions-Enthusiasmus", "value": 19, "color": "rose" }
+      ],
+      "compatibility": { "allies": ["navigator", "mentor"], "nemesis": "visionaer" },
+      "careers": ["Compliance Officer", "Projektmanagement", "Betriebsleitung", "Administration"],
+      "matching": { "achievement": { "max": 3 }, "autonomy": { "max": 4 }, "influence": { "min": 2, "max": 5 } }
+    }
+  ],
+
+  "contribution_event_template": {
+    "specVersion": "sp.contribution.v1",
+    "source": {
+      "vertical": "quiz",
+      "moduleId": "quiz.karriere_dna.v1",
+      "locale": "de-DE"
+    },
+    "profile_markers": {
+      "visionaer": ["marker.career.entrepreneur", "marker.drive.disruption", "marker.risk.high_tolerance"],
+      "architekt": ["marker.career.specialist", "marker.drive.mastery", "marker.approach.analytical"],
+      "katalysator": ["marker.career.leader", "marker.drive.people_development", "marker.approach.empathic"],
+      "navigator": ["marker.career.strategist", "marker.drive.structure", "marker.approach.methodical"],
+      "mentor": ["marker.career.developer", "marker.drive.growth", "marker.approach.nurturing"],
+      "waechter": ["marker.career.guardian", "marker.drive.stability", "marker.approach.conservative"]
+    }
+  },
+
+  "share_config": {
+    "card_format": "9:16",
+    "include_compatibility": true,
+    "include_stats": true,
+    "include_careers": true,
+    "cta_text": "Entdecke deine Karriere-DNA"
+  },
+
+  "design_tokens": {
+    "theme": "Modern Alchemy",
+    "font_headline": "Instrument Serif",
+    "font_body": "Satoshi",
+    "colors": {
+      "background": "#0a0a0f",
+      "card_background": "#1a1a24",
+      "text_primary": "#f5f5f7",
+      "text_secondary": "#a0a0a8",
+      "accent_gold": "#d4a853",
+      "accent_blue": "#4a7cff",
+      "accent_purple": "#8b5cf6",
+      "accent_emerald": "#10b981",
+      "accent_rose": "#f43f5e"
+    }
+  }
+}

@@ -1,0 +1,98 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="glow-social" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Main circle representing the individual -->
+  <circle
+    cx="32"
+    cy="32"
+    r="16"
+    fill="none"
+    stroke="rgb(248, 250, 252)"
+    stroke-width="2.5"
+    style="filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.6)) drop-shadow(0 0 16px rgba(59, 130, 246, 0.3));"
+  />
+
+  <!-- Stylized person silhouette inside circle -->
+  <!-- Head -->
+  <circle
+    cx="32"
+    cy="28"
+    r="4"
+    fill="none"
+    stroke="rgb(248, 250, 252)"
+    stroke-width="1.5"
+  />
+
+  <!-- Shoulders/torso -->
+  <path
+    d="M26 36 Q32 34 38 36"
+    fill="none"
+    stroke="rgb(248, 250, 252)"
+    stroke-width="1.5"
+    stroke-linecap="round"
+  />
+
+  <!-- Three orbital points representing social connections -->
+  <circle
+    cx="32"
+    cy="10"
+    r="2.5"
+    fill="none"
+    stroke="rgba(248, 250, 252, 0.8)"
+    stroke-width="1.5"
+    opacity="0.9"
+    style="filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.5));"
+  />
+
+  <circle
+    cx="14"
+    cy="32"
+    r="2.5"
+    fill="none"
+    stroke="rgba(248, 250, 252, 0.8)"
+    stroke-width="1.5"
+    opacity="0.9"
+    style="filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.5));"
+  />
+
+  <circle
+    cx="50"
+    cy="32"
+    r="2.5"
+    fill="none"
+    stroke="rgba(248, 250, 252, 0.8)"
+    stroke-width="1.5"
+    opacity="0.9"
+    style="filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.5));"
+  />
+
+  <!-- Connection lines (very subtle) -->
+  <path
+    d="M32 16 L32 10"
+    stroke="rgba(59, 130, 246, 0.3)"
+    stroke-width="1"
+    stroke-dasharray="2 2"
+  />
+
+  <path
+    d="M18 32 L14 32"
+    stroke="rgba(59, 130, 246, 0.3)"
+    stroke-width="1"
+    stroke-dasharray="2 2"
+  />
+
+  <path
+    d="M46 32 L50 32"
+    stroke="rgba(59, 130, 246, 0.3)"
+    stroke-width="1"
+    stroke-dasharray="2 2"
+  />
+</svg>

@@ -5,13 +5,15 @@
 export type Language = "en" | "de";
 
 // Recursive type that mirrors the structure but with string values
-type DeepStringRecord = { [key: string]: string | DeepStringRecord };
+export type DeepStringRecord = { [key: string]: string | DeepStringRecord };
 
 const translationsEn: DeepStringRecord = {
   nav: {
     atlas: "Atlas",
     signOut: "Sign out",
     langToggle: "DE",
+    pauseAudioTitle: "Pause ambient music",
+    playAudioTitle: "Play ambient music",
   },
   splash: {
     enterBtn: "Enter",
@@ -43,6 +45,8 @@ const translationsEn: DeepStringRecord = {
     timeUnknown: "Unknown (12:00)",
     coordLabel: "Coordinates (lat, lon)",
     findOnMaps: "Find on Google Maps",
+    mapToggleOpen: "Select on Google Maps",
+    mapToggleClose: "Hide map",
     timezoneLabel: "Timezone",
     nextBtn: "Continue",
     backBtn: "Back",
@@ -52,17 +56,21 @@ const translationsEn: DeepStringRecord = {
     dstNote: "On the selected date, {{label}} ({{offset}}) applies. Enter the time as shown on the clock.",
     loadingMsg: "Levi & Victoria are synchronising the ephemerides…",
     loadingTag: "Calculating planetary vectors",
+    errorCalc: "An error occurred while calculating your chart. Please check your inputs and try again.",
+    errorRegen: "An error occurred while regenerating your interpretation. Please try again.",
     validCoords: "Please enter valid coordinates in the format 'Latitude, Longitude' (e.g. 52.399553, 13.061038).",
     coordsRange: "Coordinates out of valid range. Latitude: −90 to 90, Longitude: −180 to 180.",
+    coordTitle: "Enter coordinates as Latitude, Longitude (e.g. 52.399553, 13.061038)",
     invalidTz: "Invalid timezone. Please use an IANA timezone such as Europe/Berlin.",
+    invalidDate: "Please enter a valid date.",
     noTime: "You have not entered a time. Use 12:00 as default?",
   },
   dashboard: {
     startOver: "Start Over",
     fallbackNote: "Some calculations could not be loaded live. Fallback data was partially used:",
     welcome: "Welcome to the Atlas",
-    title: "Your Bazodiac System.",
-    quote: '"The stars compel nothing — they invite. The Atlas shows the path you are already on."',
+    title: "Your Bazodiac",
+    quote: "",
     western: {
       sectionLabel: "Western Astrology",
       sectionTitle: "Your Star Signs",
@@ -138,6 +146,16 @@ const translationsEn: DeepStringRecord = {
       callBtn: "Call Levi",
       hangUpBtn: "Hang Up",
     },
+    premium: {
+      title: "Unlock Your Full Reading",
+      teaser: "Discover the complete fusion of Western astrology, BaZi, and Wu-Xing — a reading no other app can offer.",
+      teaserPillars: "See your complete four-pillar BaZi analysis and elemental balance.",
+      teaserWuxing: "Explore the full five-element balance chart with detailed breakdowns.",
+      teaserInterpretation: "Read the complete AI-generated cosmic interpretation.",
+      teaserHouses: "Discover all twelve astrological houses and their influence on your life.",
+      teaserLevi: "Talk to Levi Bazi, your personal astrological voice agent.",
+      cta: "Upgrade — 4,99 \u20AC",
+    },
   },
 } as const;
 
@@ -146,6 +164,8 @@ const translationsDe: DeepStringRecord = {
     atlas: "Atlas",
     signOut: "Abmelden",
     langToggle: "EN",
+    pauseAudioTitle: "Ambient-Musik pausieren",
+    playAudioTitle: "Ambient-Musik abspielen",
   },
   splash: {
     enterBtn: "Eintreten",
@@ -177,6 +197,8 @@ const translationsDe: DeepStringRecord = {
     timeUnknown: "Unbekannt (12:00)",
     coordLabel: "Koordinaten (Lat, Lon)",
     findOnMaps: "Auf Google Maps finden",
+    mapToggleOpen: "Auf Google Maps auswählen",
+    mapToggleClose: "Karte ausblenden",
     timezoneLabel: "Zeitzone",
     nextBtn: "Weiter",
     backBtn: "Zurück",
@@ -186,17 +208,21 @@ const translationsDe: DeepStringRecord = {
     dstNote: "Am gewählten Datum gilt {{label}} ({{offset}}). Gib deine Geburtszeit so ein, wie sie auf der Uhr stand.",
     loadingMsg: "Levi & Victoria synchronisieren die Ephemeriden…",
     loadingTag: "Berechne planetare Vektoren",
+    errorCalc: "Bei der Berechnung deines Charts ist ein Fehler aufgetreten. Bitte überprüfe deine Eingaben und versuche es erneut.",
+    errorRegen: "Bei der Neugenerierung deiner Interpretation ist ein Fehler aufgetreten. Bitte versuche es erneut.",
     validCoords: "Bitte gib gültige Koordinaten im Format 'Breitengrad, Längengrad' ein (z.B. 52.399553, 13.061038).",
     coordsRange: "Koordinaten außerhalb des gültigen Bereichs. Breitengrad: −90 bis 90, Längengrad: −180 bis 180.",
+    coordTitle: "Koordinaten als Breitengrad, Längengrad eingeben (z.B. 52.399553, 13.061038)",
     invalidTz: "Ungültige Zeitzone. Bitte nutze eine IANA-Zeitzone wie Europe/Berlin.",
+    invalidDate: "Bitte gib ein gültiges Datum ein.",
     noTime: "Du hast keine Uhrzeit angegeben. Sollen wir 12:00 Uhr als Standard verwenden?",
   },
   dashboard: {
     startOver: "Neu starten",
     fallbackNote: "Einige Berechnungen konnten nicht live geladen werden. Es wurden teilweise Fallback-Daten genutzt:",
     welcome: "Willkommen im Atlas",
-    title: "Dein Bazodiac-System.",
-    quote: '"Die Sterne erzwingen nichts, sie laden ein. Der Atlas zeigt den Weg, den du bereits gehst."',
+    title: "Dein Bazodiac",
+    quote: "",
     western: {
       sectionLabel: "Westliche Astrologie",
       sectionTitle: "Deine Sternzeichen",
@@ -271,6 +297,16 @@ const translationsDe: DeepStringRecord = {
       activeDesc: "Ambient-Musik pausiert. Sprich mit Levi über dein Chart.",
       callBtn: "Call Levi",
       hangUpBtn: "Auflegen",
+    },
+    premium: {
+      title: "Dein vollständiges Reading freischalten",
+      teaser: "Entdecke die komplette Fusion aus westlicher Astrologie, BaZi und Wu-Xing — ein Reading, das keine andere App bieten kann.",
+      teaserPillars: "Sieh deine vollständige Vier-Säulen-BaZi-Analyse und das Elementgleichgewicht.",
+      teaserWuxing: "Erkunde die vollständige Fünf-Elemente-Balance mit detaillierten Aufschlüsselungen.",
+      teaserInterpretation: "Lies die vollständige KI-generierte kosmische Interpretation.",
+      teaserHouses: "Entdecke alle zwölf astrologischen Häuser und ihren Einfluss auf dein Leben.",
+      teaserLevi: "Sprich mit Levi Bazi, deinem persönlichen astrologischen Sprach-Agenten.",
+      cta: "Upgrade — 4,99 \u20AC",
     },
   },
 };

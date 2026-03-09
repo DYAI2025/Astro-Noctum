@@ -1,0 +1,76 @@
+name: TimePassages
+website: astrograph.com
+tagline: "Professional-grade astrology for everyone"
+founded: 2013
+headquarters: USA
+
+# Positioning
+primary_use_case: "Professional astrology chart calculation and analysis"
+target_audience: "Serious astrology students and practicing astrologers"
+market_position: "Technical authority — professional tools at consumer prices"
+
+# Pricing
+pricing_model: one-time
+free_tier: true
+free_tier_limits: "Big Three, daily horoscope, current charts"
+per_chart_price: "$0.99"
+unlimited_charts: "$9.99 one-time"
+
+# Features
+features:
+  western_astrology: 5
+  chinese_astrology: 0
+  wuxing_elements: 0
+  cross_system_fusion: 0
+  personality_quizzes: 0
+  birth_chart_visual: 4
+  daily_horoscope: 4
+  social_features: 0
+  voice_agent: 0
+  compatibility: 3
+  mobile_app: 4
+  offline_mode: 3
+  bilingual: 1
+
+# Strengths
+strengths:
+  - "Professional-grade accuracy"
+  - "Written by real astrologers (not AI)"
+  - "Most affordable option ($0.99 per chart)"
+  - "Respected in astrology community"
+  - "Deep technical detail (transits, progressions, solar returns)"
+  - "No subscription — pay once"
+
+# Weaknesses
+weaknesses:
+  - "Outdated UI (plain text, black background)"
+  - "No social features"
+  - "No gamification or engagement mechanics"
+  - "Steep learning curve for beginners"
+  - "No Chinese or Eastern astrology"
+  - "Not mobile-first design"
+
+# Best for
+best_for:
+  - "Aspiring and practicing astrologers"
+  - "Users wanting professional-grade chart tools"
+  - "Budget-conscious users ($0.99/chart)"
+  - "Those who value accuracy over aesthetics"
+
+# Not ideal for
+not_ideal_for:
+  - "Beginners who need guidance"
+  - "Users wanting beautiful, modern UI"
+  - "Social astrology fans"
+  - "Anyone interested in Chinese astrology"
+
+# Common complaints
+common_complaints:
+  - "Interface looks dated"
+  - "Too technical for beginners"
+  - "No social or sharing features"
+
+# Search volume indicators
+search_terms:
+  - "timepassages alternative": low-medium
+  - "best astrology app professional": medium

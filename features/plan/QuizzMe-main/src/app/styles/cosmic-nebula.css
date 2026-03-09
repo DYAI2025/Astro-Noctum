@@ -1,0 +1,236 @@
+/**
+ * Cosmic Nebula Background - Quiz Vertical
+ *
+ * Subtiler, tiefer, kosmischer Hintergrund mit leicht farbigen Gaswolken.
+ * Ziel: Dark Mode bleibt, aber mit mehr Tiefe und Kontrast für Symbole/Text.
+ *
+ * Nicht zu dominant - die Symbole bleiben im Fokus.
+ */
+
+:root {
+  /* Base colors für Nebula */
+  --nebula-base-dark: rgb(2, 6, 23);        /* slate-950 - Basis */
+  --nebula-base-darker: rgb(1, 3, 15);      /* Noch dunkler für Tiefe */
+
+  /* Farbige Gaswolken - sehr dezent */
+  --nebula-cloud-purple: rgba(139, 92, 246, 0.03);   /* violet-500 @ 3% */
+  --nebula-cloud-blue: rgba(59, 130, 246, 0.04);     /* blue-500 @ 4% */
+  --nebula-cloud-indigo: rgba(99, 102, 241, 0.03);   /* indigo-500 @ 3% */
+  --nebula-cloud-cyan: rgba(6, 182, 212, 0.02);      /* cyan-600 @ 2% */
+
+  /* Sterne */
+  --nebula-star-white: rgba(255, 255, 255, 0.6);
+  --nebula-star-dim: rgba(255, 255, 255, 0.3);
+  --nebula-star-faint: rgba(255, 255, 255, 0.15);
+}
+
+/* ============================================
+   METHODE 1: CSS Gradient Nebula
+   Performant, einfach zu implementieren
+   ============================================ */
+
+.quiz-nebula-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background:
+    /* Hauptfarbe - sehr dunkles Basis */
+    var(--nebula-base-dark);
+}
+
+.quiz-nebula-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    /* Gaswolken als radiale Gradienten - sehr subtil */
+    radial-gradient(ellipse 800px 600px at 20% 30%, var(--nebula-cloud-purple), transparent 50%),
+    radial-gradient(ellipse 1000px 700px at 80% 60%, var(--nebula-cloud-blue), transparent 60%),
+    radial-gradient(ellipse 600px 800px at 50% 80%, var(--nebula-cloud-indigo), transparent 55%),
+    radial-gradient(ellipse 500px 500px at 70% 20%, var(--nebula-cloud-cyan), transparent 50%);
+  opacity: 0.8;
+  mix-blend-mode: screen;
+}
+
+/* Sterne Layer - mit CSS Background Pattern */
+.quiz-nebula-bg::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    /* Kleine Sterne (viele) */
+    radial-gradient(circle at 10% 20%, var(--nebula-star-faint) 1px, transparent 1px),
+    radial-gradient(circle at 25% 45%, var(--nebula-star-faint) 1px, transparent 1px),
+    radial-gradient(circle at 40% 15%, var(--nebula-star-dim) 1px, transparent 1px),
+    radial-gradient(circle at 55% 70%, var(--nebula-star-faint) 1px, transparent 1px),
+    radial-gradient(circle at 70% 35%, var(--nebula-star-white) 1px, transparent 1px),
+    radial-gradient(circle at 85% 60%, var(--nebula-star-faint) 1px, transparent 1px),
+    radial-gradient(circle at 90% 10%, var(--nebula-star-dim) 1px, transparent 1px),
+    radial-gradient(circle at 15% 80%, var(--nebula-star-faint) 1px, transparent 1px),
+    radial-gradient(circle at 35% 90%, var(--nebula-star-dim) 1px, transparent 1px),
+    radial-gradient(circle at 60% 50%, var(--nebula-star-faint) 1px, transparent 1px),
+    radial-gradient(circle at 75% 85%, var(--nebula-star-white) 1px, transparent 1px),
+    radial-gradient(circle at 92% 40%, var(--nebula-star-faint) 1px, transparent 1px);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  opacity: 0.5;
+}
+
+/* ============================================
+   METHODE 2: Enhanced Version mit Animationen
+   (Optional - nur wenn gewünscht)
+   ============================================ */
+
+.quiz-nebula-bg--animated {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background: var(--nebula-base-dark);
+  overflow: hidden;
+}
+
+.quiz-nebula-bg--animated::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background:
+    radial-gradient(ellipse 800px 600px at 20% 30%, var(--nebula-cloud-purple), transparent 50%),
+    radial-gradient(ellipse 1000px 700px at 80% 60%, var(--nebula-cloud-blue), transparent 60%),
+    radial-gradient(ellipse 600px 800px at 50% 80%, var(--nebula-cloud-indigo), transparent 55%),
+    radial-gradient(ellipse 500px 500px at 70% 20%, var(--nebula-cloud-cyan), transparent 50%);
+  opacity: 0.8;
+  mix-blend-mode: screen;
+  /* Sehr langsame, subtile Bewegung */
+  animation: nebula-drift 120s ease-in-out infinite alternate;
+}
+
+@keyframes nebula-drift {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  100% {
+    transform: translate(5%, 3%) rotate(1deg);
+  }
+}
+
+/* Sterne mit sehr subtilen Twinkle */
+.quiz-nebula-bg--animated::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    radial-gradient(circle at 10% 20%, var(--nebula-star-faint) 1px, transparent 1px),
+    radial-gradient(circle at 25% 45%, var(--nebula-star-faint) 1px, transparent 1px),
+    radial-gradient(circle at 40% 15%, var(--nebula-star-dim) 1px, transparent 1px),
+    radial-gradient(circle at 55% 70%, var(--nebula-star-faint) 1px, transparent 1px),
+    radial-gradient(circle at 70% 35%, var(--nebula-star-white) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 85% 60%, var(--nebula-star-faint) 1px, transparent 1px),
+    radial-gradient(circle at 90% 10%, var(--nebula-star-dim) 1px, transparent 1px),
+    radial-gradient(circle at 15% 80%, var(--nebula-star-faint) 1px, transparent 1px),
+    radial-gradient(circle at 35% 90%, var(--nebula-star-dim) 1px, transparent 1px),
+    radial-gradient(circle at 60% 50%, var(--nebula-star-faint) 1px, transparent 1px),
+    radial-gradient(circle at 75% 85%, var(--nebula-star-white) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 92% 40%, var(--nebula-star-faint) 1px, transparent 1px);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  opacity: 0.5;
+  animation: star-twinkle 8s ease-in-out infinite;
+}
+
+@keyframes star-twinkle {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY - Reduzierte Animation
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .quiz-nebula-bg--animated::before,
+  .quiz-nebula-bg--animated::after {
+    animation: none !important;
+  }
+}
+
+/* ============================================
+   PERFORMANCE - Mobile Optimierung
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* Auf Mobile weniger Gaswolken für bessere Performance */
+  .quiz-nebula-bg::before {
+    background:
+      radial-gradient(ellipse 600px 400px at 20% 30%, var(--nebula-cloud-purple), transparent 50%),
+      radial-gradient(ellipse 700px 500px at 80% 70%, var(--nebula-cloud-blue), transparent 60%);
+  }
+
+  /* Weniger Sterne */
+  .quiz-nebula-bg::after {
+    background-image:
+      radial-gradient(circle at 15% 25%, var(--nebula-star-faint) 1px, transparent 1px),
+      radial-gradient(circle at 40% 15%, var(--nebula-star-dim) 1px, transparent 1px),
+      radial-gradient(circle at 70% 40%, var(--nebula-star-white) 1px, transparent 1px),
+      radial-gradient(circle at 85% 70%, var(--nebula-star-faint) 1px, transparent 1px),
+      radial-gradient(circle at 25% 80%, var(--nebula-star-dim) 1px, transparent 1px),
+      radial-gradient(circle at 60% 60%, var(--nebula-star-faint) 1px, transparent 1px);
+  }
+}
+
+/* ============================================
+   USAGE EXAMPLES
+   ============================================ */
+
+/*
+Example 1 - Statischer Nebula Background (empfohlen):
+
+<div class="quiz-nebula-bg"></div>
+<main class="relative z-10">
+  <!-- Quiz Content hier -->
+</main>
+
+
+Example 2 - Animierter Nebula Background (optional):
+
+<div class="quiz-nebula-bg--animated"></div>
+<main class="relative z-10">
+  <!-- Quiz Content hier -->
+</main>
+
+
+Example 3 - Integration in Next.js Layout:
+
+// src/app/verticals/quiz/layout.tsx
+export default function QuizLayout({ children }) {
+  return (
+    <>
+      <div className="quiz-nebula-bg" />
+      <div className="relative z-10 min-h-screen">
+        {children}
+      </div>
+    </>
+  );
+}
+*/

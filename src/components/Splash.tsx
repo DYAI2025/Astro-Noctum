@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { LandingHero } from "./LandingHero";
 
 interface SplashProps {
   onEnter: () => void;
@@ -9,6 +10,7 @@ interface SplashProps {
 
 const CROSSFADE_DURATION = 3; // seconds before video end to start crossfade
 const SEEN_KEY = "bazodiac_intro_seen";
+const HERO_SEEN_KEY = "bazodiac_hero_seen";
 
 const VIDEOS: Record<string, string> = {
   de: "/bazodiac_male_intro_GER.mp4",
@@ -16,9 +18,14 @@ const VIDEOS: Record<string, string> = {
 };
 
 export function Splash({ onEnter, onLanguageSelect }: SplashProps) {
-  // Phases: "gate" → "video" → "animation" → "ready"
-  // "gate" = initial click to unlock audio context (browser policy)
-  const [phase, setPhase] = useState<"gate" | "video" | "animation">("gate");
+  // Phases: "hero" → "gate" → "video" → "animation"
+  // "hero"  = marketing/value prop scroll page
+  // "gate"  = language selection to unlock audio context
+  const [phase, setPhase] = useState<"hero" | "gate" | "video" | "animation">(() => {
+    try {
+      return localStorage.getItem(HERO_SEEN_KEY) === "true" ? "gate" : "hero";
+    } catch { return "hero"; }
+  });
   const [stage, setStage] = useState(0); // CSS animation stages (0-4)
   const [videoFading, setVideoFading] = useState(false);
   const [canSkip, setCanSkip] = useState(false);
@@ -175,7 +182,7 @@ export function Splash({ onEnter, onLanguageSelect }: SplashProps) {
             phase === "video" && !videoFading ? "opacity-100" : "opacity-0 pointer-events-none"
           } ${phase === "gate" ? "pointer-events-none" : ""}`}
           playsInline
-          preload="auto"
+          preload="none"
           onTimeUpdate={handleTimeUpdate}
           onEnded={handleVideoEnded}
           onError={handleVideoError}
@@ -183,6 +190,27 @@ export function Splash({ onEnter, onLanguageSelect }: SplashProps) {
           <source src={videoSrc} type="video/mp4" />
         </video>
       )}
+
+      {/* ── HERO: Landing Page ── */}
+      <AnimatePresence>
+        {phase === "hero" && (
+          <motion.div
+            key="hero"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8 }}
+            className="absolute inset-0 z-50 overflow-y-auto"
+          >
+            <LandingHero
+              onContinue={() => {
+                try { localStorage.setItem(HERO_SEEN_KEY, "true"); } catch {}
+                setPhase("gate");
+              }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── GATE: Language selection to unlock audio ── */}
       <AnimatePresence>
@@ -241,103 +269,273 @@ export function Splash({ onEnter, onLanguageSelect }: SplashProps) {
         </motion.button>
       )}
 
-      {/* ── CSS ANIMATION LAYER ── */}
+      {/* ── ENTER SCREEN — ephemeris scroll reveal after video ── */}
       <div
-        className={`absolute inset-0 z-20 flex flex-col items-center justify-center transition-opacity duration-[3000ms] ${
+        className={`enter-screen absolute inset-0 z-20 transition-opacity duration-[3000ms] ${
           phase === "animation" || videoFading ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
-        {/* Star Atlas Background */}
-        <div
-          className={`absolute inset-0 transition-opacity duration-[3000ms] ${
-            stage >= 2 ? "opacity-40" : "opacity-0"
-          }`}
-        >
-          <img
-            src="https://r2-bucket.flowith.net/f/77e7a2286de210ee/nocturne_atlas_star_map_index_1%404096x2286.jpeg"
-            alt="Star Atlas"
-            className="w-full h-full object-cover scale-125 blur-sm brightness-50"
-          />
+        {/* Deep space gradient base */}
+        <div className="absolute inset-0 enter-bg" />
+
+        {/* Noise texture */}
+        <div className="absolute inset-0 enter-noise pointer-events-none" />
+
+        {/* Sparse twinkling starfield */}
+        <EnterStarfield active={stage >= 1} />
+
+        {/* Subtle gold particle canvas */}
+        <EnterParticles active={stage >= 1} />
+
+        {/* ── Central composition ── */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+
+          {/* ── Ephemeris Scroll ── */}
+          <div className="relative flex flex-col items-center">
+
+            {/* Subtitle above scroll */}
+            <motion.p
+              initial={{ opacity: 0, letterSpacing: "0.2em" }}
+              animate={stage >= 2 ? { opacity: 0.6, letterSpacing: "0.6em" } : {}}
+              transition={{ duration: 3 }}
+              className="font-sans text-[8px] md:text-[10px] uppercase text-[#d4af37]/50 mb-6 md:mb-8 z-10"
+            >
+              Fusion Firmaments
+            </motion.p>
+
+            {/* Scroll container with unroll animation */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={stage >= 1 ? { opacity: 1, scale: 1 } : {}}
+              transition={{ duration: 2.5, ease: "easeOut" }}
+            >
+              <div className={`enter-scroll-wrap enter-scroll-unroll ${stage >= 2 ? "unrolled" : ""}`}>
+                {/* Top scroll rod */}
+                <div className="enter-scroll-rod enter-scroll-rod--top" />
+
+                {/* Ephemeris image */}
+                <img
+                  src="/ephemeris.jpg"
+                  alt="Ephemeris — celestial star chart"
+                  className="enter-ephemeris"
+                />
+
+                {/* Overlay for text readability */}
+                <div className="enter-scroll-overlay" />
+
+                {/* Bottom scroll rod */}
+                <div className="enter-scroll-rod enter-scroll-rod--bottom" />
+              </div>
+            </motion.div>
+
+            {/* Title below scroll */}
+            <motion.h1
+              initial={{ opacity: 0, y: 30 }}
+              animate={stage >= 3 ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
+              className="enter-title font-landing-display text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight mt-8 md:mt-12 mb-2 z-10"
+            >
+              Bazodiac
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={stage >= 3 ? { opacity: 1 } : {}}
+              transition={{ duration: 2, delay: 0.6 }}
+              className="font-serif text-xs md:text-sm tracking-[0.2em] md:tracking-[0.3em] text-[#d4af37]/40 z-10"
+            >
+              Coniunctio Caelorum
+            </motion.p>
+          </div>
+
+          {/* ── Enter button ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={stage >= 4 ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 1.5, ease: "easeOut" }}
+            className="absolute bottom-12 md:bottom-20 text-center z-10"
+          >
+            <button
+              onClick={onEnter}
+              className="enter-btn group relative px-14 py-5 border border-[#d4af37]/15 text-[#d4af37]/70 font-sans text-[10px] tracking-[0.5em] uppercase backdrop-blur-md transition-all duration-700 hover:border-[#d4af37]/35 hover:text-[#d4af37] cursor-pointer"
+            >
+              <span className="relative z-10">Enter</span>
+              <div className="absolute inset-0 bg-[#d4af37]/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+              <div className="absolute inset-0 enter-btn-glow opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+            </button>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={stage >= 4 ? { opacity: 1 } : {}}
+              transition={{ duration: 1, delay: 0.8 }}
+              className="mt-4 text-[8px] text-[#d4af37]/20 tracking-[0.4em] uppercase"
+            >
+              Awaken the cosmos
+            </motion.p>
+          </motion.div>
         </div>
 
-        {/* Singularity Point */}
-        <div className="relative flex items-center justify-center">
-          <motion.div
-            initial={{
-              opacity: 0,
-              scale: 1,
-              boxShadow: "0 0 0px 0px rgba(255,255,255,0)",
-            }}
-            animate={
-              stage === 1
-                ? {
-                    opacity: 1,
-                    scale: 1,
-                    boxShadow: "0 0 30px 4px rgba(255,255,255,0.8)",
-                  }
-                : stage >= 2
-                ? {
-                    opacity: 0.05,
-                    scale: 120,
-                    boxShadow: "0 0 30px 4px rgba(255,255,255,0.8)",
-                  }
-                : {}
-            }
-            transition={{ duration: stage === 1 ? 2 : 4, ease: "easeInOut" }}
-            className="w-1 h-1 bg-white rounded-full"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 1 }}
-            animate={stage >= 2 ? { opacity: 0.2, scale: 2 } : {}}
-            transition={{ duration: 4 }}
-            className="absolute w-0.5 h-64 bg-white/10 blur-xl rotate-45"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 1 }}
-            animate={stage >= 2 ? { opacity: 0.2, scale: 2 } : {}}
-            transition={{ duration: 4 }}
-            className="absolute w-0.5 h-64 bg-white/10 blur-xl -rotate-45"
-          />
-        </div>
-
-        {/* Title */}
-        <div className="mt-20 text-center z-10">
-          <motion.h1
-            initial={{ opacity: 0, y: 32 }}
-            animate={stage >= 3 ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 2 }}
-            className="font-serif text-3xl tracking-[0.3em] mb-4"
-          >
-            Coniunctio Caelorum Occidentalis et Orientalis
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={stage >= 3 ? { opacity: 1 } : {}}
-            transition={{ duration: 2, delay: 0.5 }}
-            className="font-sans text-[10px] uppercase tracking-[0.5em] text-gold/80"
-          >
-            Bazodiac
-          </motion.p>
-        </div>
-
-        {/* Enter Button */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={stage >= 4 ? { opacity: 1 } : {}}
-          transition={{ duration: 1 }}
-          className="absolute bottom-20 text-center"
-        >
-          <button
-            onClick={onEnter}
-            className="px-12 py-4 border border-gold/20 text-gold font-sans text-[10px] tracking-[0.4em] uppercase hover:bg-gold/5 hover:border-gold/50 transition-all backdrop-blur-sm"
-          >
-            Enter
-          </button>
-          <p className="mt-4 text-[8px] text-white/30 tracking-widest italic">
-            Awaken the cosmos
-          </p>
-        </motion.div>
+        {/* Bottom gradient fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#020617] to-transparent pointer-events-none" />
       </div>
     </div>
+  );
+}
+
+// ── Enter Screen Sub-Components ─────────────────────────────────────
+
+/** Starfield — twinkling gold dots */
+function EnterStarfield({ active }: { active: boolean }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!active) return;
+    const container = containerRef.current;
+    if (!container) return;
+
+    const stars: HTMLDivElement[] = [];
+    const count = 80;
+
+    for (let i = 0; i < count; i++) {
+      const star = document.createElement("div");
+      const size = Math.random() * 1.8 + 0.4;
+      const maxOpacity = Math.random() * 0.6 + 0.1;
+      Object.assign(star.style, {
+        position: "absolute",
+        width: `${size}px`,
+        height: `${size}px`,
+        left: `${Math.random() * 100}%`,
+        top: `${Math.random() * 100}%`,
+        borderRadius: "50%",
+        backgroundColor: "#d4af37",
+        opacity: "0",
+        boxShadow: `0 0 ${size * 3}px rgba(212,175,55,0.3)`,
+        willChange: "opacity",
+      });
+      container.appendChild(star);
+      stars.push(star);
+
+      star.animate(
+        [{ opacity: 0 }, { opacity: maxOpacity }, { opacity: 0 }],
+        {
+          duration: (Math.random() * 3 + 2) * 1000,
+          delay: Math.random() * 4000,
+          iterations: Infinity,
+          easing: "ease-in-out",
+        },
+      );
+    }
+
+    return () => { stars.forEach((s) => s.remove()); };
+  }, [active]);
+
+  return (
+    <div
+      ref={containerRef}
+      className={`absolute inset-0 pointer-events-none transition-opacity duration-[3000ms] ${
+        active ? "opacity-100" : "opacity-0"
+      }`}
+    />
+  );
+}
+
+/** Particle canvas — floating motes that drift and respond to gravity center */
+function EnterParticles({ active }: { active: boolean }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (!active) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animId = 0;
+    let width = 0;
+    let height = 0;
+
+    interface Mote {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      r: number;
+      phase: number;
+    }
+
+    let motes: Mote[] = [];
+
+    const resize = () => {
+      width = canvas.width = canvas.offsetWidth;
+      height = canvas.height = canvas.offsetHeight;
+      motes = [];
+      for (let i = 0; i < 60; i++) {
+        motes.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: (Math.random() - 0.5) * 0.15,
+          vy: (Math.random() - 0.5) * 0.15,
+          r: Math.random() * 1.2 + 0.3,
+          phase: Math.random() * Math.PI * 2,
+        });
+      }
+    };
+
+    const cx = () => width / 2;
+    const cy = () => height * 0.4;
+
+    const draw = () => {
+      ctx.clearRect(0, 0, width, height);
+
+      for (const m of motes) {
+        // Gentle pull toward center
+        const dx = cx() - m.x;
+        const dy = cy() - m.y;
+        const dist = Math.sqrt(dx * dx + dy * dy) + 1;
+        const pull = Math.min(0.003, 30 / (dist * dist));
+        m.vx += dx * pull * 0.01;
+        m.vy += dy * pull * 0.01;
+
+        // Orbital drift
+        m.vx += (-dy / dist) * 0.0004;
+        m.vy += (dx / dist) * 0.0004;
+
+        m.vx *= 0.995;
+        m.vy *= 0.995;
+        m.x += m.vx;
+        m.y += m.vy;
+
+        // Wrap
+        if (m.x < -10) m.x = width + 10;
+        if (m.x > width + 10) m.x = -10;
+        if (m.y < -10) m.y = height + 10;
+        if (m.y > height + 10) m.y = -10;
+
+        const alpha = 0.15 + Math.sin((m.phase += 0.012)) * 0.1;
+        ctx.fillStyle = `rgba(212,175,55,${alpha})`;
+        ctx.beginPath();
+        ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      animId = requestAnimationFrame(draw);
+    };
+
+    resize();
+    draw();
+    window.addEventListener("resize", resize);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", resize);
+    };
+  }, [active]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className={`absolute inset-0 w-full h-full pointer-events-none transition-opacity duration-[3000ms] ${
+        active ? "opacity-60" : "opacity-0"
+      }`}
+    />
   );
 }

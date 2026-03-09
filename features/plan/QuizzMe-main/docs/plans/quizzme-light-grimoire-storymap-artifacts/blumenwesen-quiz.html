@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="botanical">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dein inneres Blumenwesen | QuizzMe</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold-primary: #D2A95A;
+            --gold-dark: #A77D38;
+            --gold-light: #E8C87A;
+            --emerald-deep: #053B3F;
+            --emerald-forest: #0A4A4F;
+            --sage: #6CA192;
+            --sage-light: #8FB8A8;
+            --midnight-deep: #041726;
+            --cream-pure: #F7F0E6;
+            --cream-warm: #F2E3CF;
+            --cream-deep: #EDE4D3;
+            --cream-muted: #E5D9C3;
+            --text-on-dark: #F7F3EA;
+            --text-on-light: #271C16;
+            --text-on-light-muted: #5A4D3F;
+            --font-serif: 'Cormorant Garamond', Georgia, serif;
+            --font-sans: 'Inter', -apple-system, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: linear-gradient(180deg, var(--cream-pure) 0%, var(--cream-warm) 100%);
+            min-height: 100vh;
+            color: var(--text-on-light);
+        }
+
+        .quiz-container {
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: var(--cream-pure);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .botanical-frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 3px solid var(--emerald-deep);
+            margin: 8px;
+            border-radius: 16px;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .botanical-frame::before,
+        .botanical-frame::after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--gold-primary);
+        }
+
+        .botanical-frame::before {
+            top: -2px;
+            left: -2px;
+            border-right: none;
+            border-bottom: none;
+            border-radius: 14px 0 0 0;
+        }
+
+        .botanical-frame::after {
+            bottom: -2px;
+            right: -2px;
+            border-left: none;
+            border-top: none;
+            border-radius: 0 0 14px 0;
+        }
+
+        .progress-container {
+            padding: 24px 32px 16px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: var(--cream-muted);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--sage) 0%, var(--gold-primary) 100%);
+            border-radius: 2px;
+            transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .progress-text {
+            font-family: var(--font-sans);
+            font-size: 0.75rem;
+            color: var(--text-on-light-muted);
+            text-align: center;
+            margin-top: 8px;
+            letter-spacing: 0.05em;
+        }
+
+        .screen {
+            display: none;
+            padding: 24px 32px 40px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .intro-visual {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .flower-icon-large {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 24px;
+        }
+
+        .intro-title {
+            font-family: var(--font-serif);
+            font-size: clamp(1.75rem, 5vw, 2.25rem);
+            font-weight: 600;
+            color: var(--emerald-deep);
+            line-height: 1.2;
+            margin-bottom: 16px;
+        }
+
+        .intro-subtitle {
+            font-family: var(--font-serif);
+            font-size: 1.125rem;
+            color: var(--gold-dark);
+            font-style: italic;
+            margin-bottom: 24px;
+        }
+
+        .intro-text {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--text-on-light-muted);
+            margin-bottom: 32px;
+        }
+
+        .intro-text strong {
+            color: var(--emerald-deep);
+        }
+
+        .question-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .question-context {
+            font-family: var(--font-sans);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--gold-dark);
+            margin-bottom: 12px;
+        }
+
+        .question-text {
+            font-family: var(--font-serif);
+            font-size: clamp(1.25rem, 4vw, 1.5rem);
+            font-weight: 500;
+            color: var(--emerald-deep);
+            line-height: 1.4;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-card {
+            background: white;
+            border: 2px solid var(--cream-muted);
+            border-radius: 12px;
+            padding: 20px 24px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--sage);
+            transform: scaleY(0);
+            transition: transform 0.25s ease;
+        }
+
+        .option-card:hover {
+            border-color: var(--sage);
+            transform: translateX(4px);
+            box-shadow: 0 4px 20px rgba(39, 28, 22, 0.08);
+        }
+
+        .option-card:hover::before {
+            transform: scaleY(1);
+        }
+
+        .option-card.selected {
+            border-color: var(--gold-primary);
+            background: linear-gradient(135deg, rgba(210, 169, 90, 0.08) 0%, rgba(108, 161, 146, 0.08) 100%);
+        }
+
+        .option-card.selected::before {
+            background: var(--gold-primary);
+            transform: scaleY(1);
+        }
+
+        .option-text {
+            font-size: 1rem;
+            line-height: 1.5;
+            color: var(--text-on-light);
+        }
+
+        .btn {
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 16px 32px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: var(--emerald-deep);
+            color: var(--text-on-dark);
+        }
+
+        .btn-primary:hover {
+            background: var(--emerald-forest);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(5, 59, 63, 0.3);
+        }
+
+        .result-screen {
+            padding: 20px;
+        }
+
+        .result-card {
+            background: linear-gradient(165deg, var(--emerald-deep) 0%, var(--midnight-deep) 100%);
+            border-radius: 20px;
+            padding: 32px 24px;
+            color: var(--text-on-dark);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at 30% 20%, rgba(210, 169, 90, 0.15) 0%, transparent 50%),
+                        radial-gradient(ellipse at 70% 80%, rgba(108, 161, 146, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .result-label {
+            font-family: var(--font-sans);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--gold-primary);
+            text-align: center;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .result-flower-icon {
+            width: 100px;
+            height: 100px;
+            margin: 16px auto;
+            display: block;
+            position: relative;
+            z-index: 1;
+        }
+
+        .result-title {
+            font-family: var(--font-serif);
+            font-size: clamp(1.75rem, 6vw, 2.25rem);
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+            background: linear-gradient(90deg, 
+                var(--text-on-dark) 0%, 
+                var(--gold-light) 50%, 
+                var(--text-on-dark) 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .result-tagline {
+            font-family: var(--font-serif);
+            font-size: 1.125rem;
+            font-style: italic;
+            text-align: center;
+            color: var(--gold-light);
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .result-description {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: rgba(247, 243, 234, 0.9);
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 1;
+            white-space: pre-line;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(210, 169, 90, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--gold-primary);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: rgba(247, 243, 234, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .inner-child-section {
+            background: rgba(210, 169, 90, 0.1);
+            border: 1px solid rgba(210, 169, 90, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .inner-child-title {
+            font-family: var(--font-serif);
+            font-size: 1rem;
+            color: var(--gold-light);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .inner-child-text {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: rgba(247, 243, 234, 0.85);
+            font-style: italic;
+        }
+
+        .compatibility-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .compat-title {
+            font-family: var(--font-serif);
+            font-size: 1rem;
+            color: var(--gold-primary);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .compat-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 0.875rem;
+        }
+
+        .compat-emoji {
+            font-size: 1.25rem;
+        }
+
+        .compat-label {
+            color: rgba(247, 243, 234, 0.6);
+            min-width: 80px;
+        }
+
+        .compat-value {
+            color: var(--text-on-dark);
+        }
+
+        .share-section {
+            position: relative;
+            z-index: 1;
+        }
+
+        .share-text {
+            font-size: 0.875rem;
+            color: rgba(247, 243, 234, 0.7);
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .share-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .share-btn {
+            flex: 1;
+            padding: 14px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .share-btn-primary {
+            background: var(--gold-primary);
+            color: var(--emerald-deep);
+        }
+
+        .share-btn-primary:hover {
+            background: var(--gold-light);
+            transform: translateY(-2px);
+        }
+
+        .share-btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(210, 169, 90, 0.3);
+            color: var(--text-on-dark);
+        }
+
+        .share-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .disclaimer {
+            font-size: 0.7rem;
+            color: var(--text-on-light-muted);
+            text-align: center;
+            padding: 16px 24px;
+            line-height: 1.5;
+            opacity: 0.7;
+        }
+
+        .flower-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        @keyframes bloomIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .result-card {
+            animation: bloomIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @media (max-width: 400px) {
+            .quiz-container {
+                padding: 0;
+            }
+            
+            .botanical-frame {
+                margin: 4px;
+            }
+            
+            .screen {
+                padding: 20px 24px 32px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="botanical-frame"></div>
+        
+        <div class="progress-container" id="progressContainer" style="display: none;">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+            <div class="progress-text" id="progressText">Frage 1 von 10</div>
+        </div>
+
+        <div class="screen active" id="introScreen">
+            <div class="intro-visual">
+                <div class="flower-icon-large">
+                    <svg class="flower-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="50" cy="50" r="12" fill="#D2A95A" opacity="0.3"/>
+                        <circle cx="50" cy="50" r="8" fill="#D2A95A"/>
+                        <g stroke="#6CA192" stroke-width="1.5" fill="none">
+                            <ellipse cx="50" cy="28" rx="10" ry="18" transform="rotate(0 50 50)"/>
+                            <ellipse cx="50" cy="28" rx="10" ry="18" transform="rotate(72 50 50)"/>
+                            <ellipse cx="50" cy="28" rx="10" ry="18" transform="rotate(144 50 50)"/>
+                            <ellipse cx="50" cy="28" rx="10" ry="18" transform="rotate(216 50 50)"/>
+                            <ellipse cx="50" cy="28" rx="10" ry="18" transform="rotate(288 50 50)"/>
+                        </g>
+                        <path d="M50 62 Q48 75 45 88 M50 62 Q52 75 55 88" stroke="#6CA192" stroke-width="1.5" fill="none"/>
+                        <ellipse cx="40" cy="82" rx="8" ry="4" stroke="#6CA192" stroke-width="1" fill="none" transform="rotate(-30 40 82)"/>
+                        <ellipse cx="60" cy="85" rx="6" ry="3" stroke="#6CA192" stroke-width="1" fill="none" transform="rotate(20 60 85)"/>
+                    </svg>
+                </div>
+                <h1 class="intro-title">Dein inneres Blumenwesen</h1>
+                <p class="intro-subtitle">„Jede Seele trägt einen Samen in sich"</p>
+            </div>
+            
+            <p class="intro-text">
+                Tief in dir liegt ein <strong>Samen</strong> – gepflanzt in deiner Kindheit, 
+                genährt von deinen Erfahrungen, gewachsen durch jede Freude und jeden Schmerz.<br><br>
+                Dieser Test erkundet, welche <strong>Blume aus diesem Samen</strong> erblüht ist. 
+                Nicht was du tust, sondern was du <em>brauchst</em>. Nicht wer du scheinst, 
+                sondern wer du im Kern bist.<br><br>
+                <strong>10 Fragen. 3 Minuten. Eine Erkenntnis.</strong>
+            </p>
+            
+            <button class="btn btn-primary" onclick="startQuiz()">
+                Meinen Samen entdecken
+            </button>
+        </div>
+
+        <div class="screen" id="questionScreen">
+            <div class="question-header">
+                <div class="question-context" id="questionContext"></div>
+                <h2 class="question-text" id="questionText"></h2>
+            </div>
+            <div class="options-container" id="optionsContainer"></div>
+        </div>
+
+        <div class="screen result-screen" id="resultScreen">
+            <div class="result-card" id="resultCard"></div>
+            <p class="disclaimer">
+                Dieser Test dient der spielerischen Selbstreflexion und stellt <strong>keine</strong> psychologische Diagnose dar.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const quizData = {
+            meta: {
+                title: "Dein inneres Blumenwesen",
+                engine: "custom",
+                version: "1.0",
+                dimensions: ["licht", "wurzeln", "rhythmus", "wasser"]
+            },
+            
+            dimensions: [
+                { id: "licht", name: "Lichtbedürfnis", pole_low: "Schatten", pole_high: "Sonne" },
+                { id: "wurzeln", name: "Wurzeltiefe", pole_low: "Flexibel", pole_high: "Verwurzelt" },
+                { id: "rhythmus", name: "Blührhythmus", pole_low: "Geduldig", pole_high: "Spontan" },
+                { id: "wasser", name: "Wasserbedarf", pole_low: "Genügsam", pole_high: "Intensiv" }
+            ],
+            
+            questions: [
+                {
+                    id: "q1",
+                    context: "Der innere Garten",
+                    text: "Stell dir vor, deine Seele ist ein Garten. Wo steht deine innere Pflanze am liebsten?",
+                    options: [
+                        { text: "Mitten im Sonnenlicht, wo jeder sie sehen kann", scores: { licht: 5, wurzeln: 3, rhythmus: 4, wasser: 3 } },
+                        { text: "Am Rand, halb im Schatten, mit Blick aufs Ganze", scores: { licht: 2, wurzeln: 4, rhythmus: 2, wasser: 3 } },
+                        { text: "Unter einem großen Baum, geschützt und geborgen", scores: { licht: 1, wurzeln: 5, rhythmus: 2, wasser: 4 } },
+                        { text: "Überall und nirgends – ich wandere mit dem Wind", scores: { licht: 3, wurzeln: 1, rhythmus: 5, wasser: 2 } }
+                    ]
+                },
+                {
+                    id: "q2",
+                    context: "Kindheitserinnerung",
+                    text: "Wenn du an einen glücklichen Moment deiner Kindheit denkst – was brauchtest du dafür am meisten?",
+                    options: [
+                        { text: "Die volle Aufmerksamkeit eines Menschen, der mich sah", scores: { licht: 5, wurzeln: 3, rhythmus: 3, wasser: 5 } },
+                        { text: "Einen sicheren Ort, der immer gleich blieb", scores: { licht: 2, wurzeln: 5, rhythmus: 1, wasser: 3 } },
+                        { text: "Die Freiheit, einfach zu sein, ohne Erwartungen", scores: { licht: 2, wurzeln: 2, rhythmus: 5, wasser: 2 } },
+                        { text: "Zeit für mich allein, um zu träumen und zu fühlen", scores: { licht: 1, wurzeln: 3, rhythmus: 2, wasser: 4 } }
+                    ]
+                },
+                {
+                    id: "q3",
+                    context: "Emotionale Nahrung",
+                    text: "Was passiert mit dir, wenn du zu lange keine emotionale Verbindung hattest?",
+                    options: [
+                        { text: "Ich welke – ich brauche regelmäßig tiefe Gespräche", scores: { licht: 4, wurzeln: 3, rhythmus: 2, wasser: 5 } },
+                        { text: "Ich ziehe mich zurück und regeneriere mich selbst", scores: { licht: 1, wurzeln: 4, rhythmus: 2, wasser: 2 } },
+                        { text: "Ich suche mir neue Verbindungen, spontan und ungeplant", scores: { licht: 4, wurzeln: 1, rhythmus: 5, wasser: 3 } },
+                        { text: "Ich warte geduldig – die richtigen Menschen kommen zu mir", scores: { licht: 2, wurzeln: 5, rhythmus: 1, wasser: 3 } }
+                    ]
+                },
+                {
+                    id: "q4",
+                    context: "Der erste Frost",
+                    text: "Wie reagierst du, wenn das Leben plötzlich kalt und hart wird?",
+                    options: [
+                        { text: "Ich ziehe meine Blätter ein und warte auf bessere Zeiten", scores: { licht: 2, wurzeln: 5, rhythmus: 1, wasser: 3 } },
+                        { text: "Ich blühe gerade dann auf – Krisen bringen meine Stärke hervor", scores: { licht: 4, wurzeln: 3, rhythmus: 4, wasser: 4 } },
+                        { text: "Ich transformiere mich – jeder Winter macht mich weiser", scores: { licht: 2, wurzeln: 4, rhythmus: 2, wasser: 5 } },
+                        { text: "Ich biege mich mit dem Sturm, breche aber nicht", scores: { licht: 3, wurzeln: 2, rhythmus: 4, wasser: 3 } }
+                    ]
+                },
+                {
+                    id: "q5",
+                    context: "Das innere Kind spricht",
+                    text: "Was hätte dein inneres Kind am liebsten öfter gehört?",
+                    options: [
+                        { text: "„Du strahlst! Wie wunderbar, dass du da bist."", scores: { licht: 5, wurzeln: 3, rhythmus: 4, wasser: 4 } },
+                        { text: "„Du bist sicher. Ich bin immer für dich da."", scores: { licht: 2, wurzeln: 5, rhythmus: 2, wasser: 4 } },
+                        { text: "„Du darfst wild sein. Sei frei, erkunde die Welt."", scores: { licht: 3, wurzeln: 1, rhythmus: 5, wasser: 2 } },
+                        { text: "„Du bist genug. Auch leise. Auch langsam."", scores: { licht: 1, wurzeln: 4, rhythmus: 1, wasser: 3 } }
+                    ]
+                },
+                {
+                    id: "q6",
+                    context: "Wachstumsmuster",
+                    text: "Wie entfaltest du dich am besten?",
+                    options: [
+                        { text: "Schnell und sichtbar – wenn ich blühe, soll es jeder sehen", scores: { licht: 5, wurzeln: 2, rhythmus: 5, wasser: 3 } },
+                        { text: "Langsam und stetig – echtes Wachstum braucht Zeit", scores: { licht: 2, wurzeln: 5, rhythmus: 1, wasser: 3 } },
+                        { text: "In Zyklen – manchmal intensiv, manchmal ruhend", scores: { licht: 3, wurzeln: 3, rhythmus: 3, wasser: 5 } },
+                        { text: "Überraschend – ich blühe, wenn niemand damit rechnet", scores: { licht: 3, wurzeln: 2, rhythmus: 5, wasser: 2 } }
+                    ]
+                },
+                {
+                    id: "q7",
+                    context: "Tiefste Sehnsucht",
+                    text: "Wonach sehnt sich dein Herz am meisten?",
+                    options: [
+                        { text: "Gesehen und gefeiert zu werden für das, was ich bin", scores: { licht: 5, wurzeln: 2, rhythmus: 4, wasser: 4 } },
+                        { text: "Einem Ort, der sich wie Zuhause anfühlt – für immer", scores: { licht: 2, wurzeln: 5, rhythmus: 1, wasser: 3 } },
+                        { text: "Tiefe Verschmelzung mit einem anderen Herzen", scores: { licht: 2, wurzeln: 4, rhythmus: 2, wasser: 5 } },
+                        { text: "Ungebundene Freiheit und immer neue Abenteuer", scores: { licht: 4, wurzeln: 1, rhythmus: 5, wasser: 2 } }
+                    ]
+                },
+                {
+                    id: "q8",
+                    context: "Heilungskraft",
+                    text: "Was heilt dich, wenn du innerlich verletzt bist?",
+                    options: [
+                        { text: "Warmherzige Gesellschaft und liebevolle Zuwendung", scores: { licht: 4, wurzeln: 3, rhythmus: 3, wasser: 5 } },
+                        { text: "Stille und Rückzug in meine eigene Welt", scores: { licht: 1, wurzeln: 4, rhythmus: 1, wasser: 3 } },
+                        { text: "Bewegung und Veränderung – irgendwo Neues sein", scores: { licht: 3, wurzeln: 1, rhythmus: 5, wasser: 2 } },
+                        { text: "Rituale und vertraute Routinen, die mich erden", scores: { licht: 2, wurzeln: 5, rhythmus: 2, wasser: 3 } }
+                    ]
+                },
+                {
+                    id: "q9",
+                    context: "Beziehungsmuster",
+                    text: "In Beziehungen – was gibst du am meisten?",
+                    options: [
+                        { text: "Wärme und Freude – ich bringe Licht in dunkle Momente", scores: { licht: 5, wurzeln: 3, rhythmus: 4, wasser: 3 } },
+                        { text: "Stabilität und Treue – auf mich kann man sich verlassen", scores: { licht: 2, wurzeln: 5, rhythmus: 2, wasser: 3 } },
+                        { text: "Tiefe und Intensität – ich liebe ganz oder gar nicht", scores: { licht: 3, wurzeln: 4, rhythmus: 3, wasser: 5 } },
+                        { text: "Inspiration und Freiheit – ich lasse Menschen wachsen", scores: { licht: 3, wurzeln: 1, rhythmus: 5, wasser: 2 } }
+                    ]
+                },
+                {
+                    id: "q10",
+                    context: "Deine Essenz",
+                    text: "Wenn dein Leben ein Garten wäre – was wäre dein wichtigstes Geschenk an die Welt?",
+                    options: [
+                        { text: "Mein Strahlen – ich erinnere andere daran, dass Freude möglich ist", scores: { licht: 5, wurzeln: 2, rhythmus: 4, wasser: 3 } },
+                        { text: "Meine Tiefe – ich zeige, dass aus Dunkelheit Schönheit wachsen kann", scores: { licht: 1, wurzeln: 5, rhythmus: 2, wasser: 5 } },
+                        { text: "Meine Heilkraft – ich bringe Ruhe in aufgewühlte Seelen", scores: { licht: 3, wurzeln: 4, rhythmus: 1, wasser: 3 } },
+                        { text: "Meine Wildheit – ich erinnere andere an ihre eigene Freiheit", scores: { licht: 4, wurzeln: 1, rhythmus: 5, wasser: 2 } }
+                    ]
+                }
+            ],
+            
+            profiles: {
+                sunflower: {
+                    id: "sunflower",
+                    title: "Die Sonnenblume",
+                    tagline: "Du strahlst – und machst die Welt heller.",
+                    color: "#FFD93D",
+                    icon: `<svg class="flower-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="50" cy="50" r="14" fill="#8B4513"/>
+                        <circle cx="50" cy="50" r="10" fill="#654321"/>
+                        <g fill="#FFD93D">
+                            <ellipse cx="50" cy="22" rx="8" ry="20"/>
+                            <ellipse cx="50" cy="22" rx="8" ry="20" transform="rotate(30 50 50)"/>
+                            <ellipse cx="50" cy="22" rx="8" ry="20" transform="rotate(60 50 50)"/>
+                            <ellipse cx="50" cy="22" rx="8" ry="20" transform="rotate(90 50 50)"/>
+                            <ellipse cx="50" cy="22" rx="8" ry="20" transform="rotate(120 50 50)"/>
+                            <ellipse cx="50" cy="22" rx="8" ry="20" transform="rotate(150 50 50)"/>
+                            <ellipse cx="50" cy="22" rx="8" ry="20" transform="rotate(180 50 50)"/>
+                            <ellipse cx="50" cy="22" rx="8" ry="20" transform="rotate(210 50 50)"/>
+                            <ellipse cx="50" cy="22" rx="8" ry="20" transform="rotate(240 50 50)"/>
+                            <ellipse cx="50" cy="22" rx="8" ry="20" transform="rotate(270 50 50)"/>
+                            <ellipse cx="50" cy="22" rx="8" ry="20" transform="rotate(300 50 50)"/>
+                            <ellipse cx="50" cy="22" rx="8" ry="20" transform="rotate(330 50 50)"/>
+                        </g>
+                    </svg>`,
+                    description: `Dein innerer Samen wurde in Licht gepflanzt – und sehnt sich noch immer danach. Als Kind brauchtest du Aufmerksamkeit nicht aus Eitelkeit, sondern weil du in den Augen anderer gespiegelt sehen wolltest, dass du existierst und wertvoll bist.
+
+Heute strahlst du natürlich – nicht um zu blenden, sondern weil Freude deine Muttersprache ist. Du hast die seltene Gabe, andere mit deiner Präsenz aufzuwärmen.
+
+Dein inneres Kind braucht noch immer Bestätigung – und das ist keine Schwäche. Es ist der Motor deiner Großzügigkeit.`,
+                    innerChildMessage: "Du hast immer schon gestrahlt. Nicht um gesehen zu werden – sondern weil dein Licht einfach nicht anders kann. Die Welt braucht dich genau so.",
+                    stats: { Sonnenstunden: "127%", Blühfreude: "∞", Wärmeabgabe: "☀️☀️☀️" },
+                    compatibility: { allies: ["Wildblume", "Lavendel"], tension: ["Lotus"] },
+                    shareText: "Ich bin eine Sonnenblume 🌻 Mein inneres Blumenwesen strahlt, um andere zu wärmen."
+                },
+                
+                lotus: {
+                    id: "lotus",
+                    title: "Die Lotusblume",
+                    tagline: "Aus der Tiefe wächst die reinste Schönheit.",
+                    color: "#E8B4CB",
+                    icon: `<svg class="flower-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <ellipse cx="50" cy="85" rx="30" ry="10" fill="#5BA3A3" opacity="0.3"/>
+                        <g fill="#E8B4CB">
+                            <ellipse cx="50" cy="55" rx="6" ry="15"/>
+                            <ellipse cx="38" cy="58" rx="6" ry="14" transform="rotate(-20 38 58)"/>
+                            <ellipse cx="62" cy="58" rx="6" ry="14" transform="rotate(20 62 58)"/>
+                            <ellipse cx="28" cy="64" rx="5" ry="12" transform="rotate(-35 28 64)"/>
+                            <ellipse cx="72" cy="64" rx="5" ry="12" transform="rotate(35 72 64)"/>
+                        </g>
+                        <g fill="#F5D0E0">
+                            <ellipse cx="50" cy="48" rx="4" ry="10"/>
+                            <ellipse cx="42" cy="52" rx="4" ry="9" transform="rotate(-15 42 52)"/>
+                            <ellipse cx="58" cy="52" rx="4" ry="9" transform="rotate(15 58 52)"/>
+                        </g>
+                        <circle cx="50" cy="60" r="5" fill="#FFE4B5"/>
+                    </svg>`,
+                    description: `Dein Samen wurde im Schlamm gepflanzt – und genau dort hast du gelernt, dass Dunkelheit nicht das Ende ist, sondern der Anfang von allem.
+
+Als Kind hast du vermutlich früh verstanden, dass das Leben kompliziert ist. Vielleicht musstest du zu schnell erwachsen werden.
+
+Heute bist du die, zu der andere kommen, wenn sie sich verloren fühlen. Deine Tiefe ist ein Brunnen, aus dem andere trinken können.`,
+                    innerChildMessage: "Du hast so früh so viel getragen. Aber schau, was daraus gewachsen ist – reine, unzerstörbare Schönheit. Deine Wunden sind zu Weisheit geworden.",
+                    stats: { Transformationen: "∞", Tiefe: "unermesslich", Reinheit: "100%" },
+                    compatibility: { allies: ["Orchidee", "Lavendel"], tension: ["Sonnenblume"] },
+                    shareText: "Ich bin eine Lotusblume 🪷 Aus meiner Tiefe wächst Schönheit, die niemand zerstören kann."
+                },
+                
+                wildflower: {
+                    id: "wildflower",
+                    title: "Die Wildblume",
+                    tagline: "Du wächst, wo du gepflanzt wurdest – und überall sonst.",
+                    color: "#9B7ED9",
+                    icon: `<svg class="flower-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 95 Q45 75 50 60 Q55 75 50 95" fill="#6CA192"/>
+                        <g><circle cx="35" cy="35" r="8" fill="#9B7ED9"/><circle cx="35" cy="35" r="3" fill="#FFE4B5"/></g>
+                        <g><circle cx="55" cy="28" r="6" fill="#FF6B6B"/><circle cx="55" cy="28" r="2" fill="#FFE4B5"/></g>
+                        <g><circle cx="70" cy="45" r="7" fill="#87CEEB"/><circle cx="70" cy="45" r="2.5" fill="#FFE4B5"/></g>
+                        <g><circle cx="42" cy="55" r="5" fill="#FFD93D"/><circle cx="42" cy="55" r="2" fill="#8B4513"/></g>
+                        <g><circle cx="62" cy="58" r="6" fill="#E8B4CB"/><circle cx="62" cy="58" r="2" fill="#FFE4B5"/></g>
+                    </svg>`,
+                    description: `Dein Samen wurde vom Wind getragen – und landete genau dort, wo du sein solltest.
+
+Als Kind warst du vermutlich die, die nicht in Schubladen passte. Zu wild für die einen, zu sanft für die anderen. Du hast früh gelernt, dass Anpassung dich kleiner macht.
+
+Heute bist du überall zuhause und nirgends festgewurzelt. Deine Wildheit inspiriert andere, auch ihre eigenen Regeln zu schreiben.`,
+                    innerChildMessage: "Du warst nie ‚zu viel' oder ‚zu wenig'. Du warst immer genau richtig – wild, frei, ungezähmt. Die Welt hat nur nicht gewusst, wie man Wildblumen gießt.",
+                    stats: { Anpassung: "legendär", Regelbrüche: "unzählige", Freiheit: "∞" },
+                    compatibility: { allies: ["Sonnenblume", "Mohnblume"], tension: ["Orchidee"] },
+                    shareText: "Ich bin eine Wildblume 🌸 Ich wachse überall – und folge nur meinen eigenen Regeln."
+                },
+                
+                orchid: {
+                    id: "orchid",
+                    title: "Die Orchidee",
+                    tagline: "Selten, sensibel und von atemberaubender Tiefe.",
+                    color: "#DA70D6",
+                    icon: `<svg class="flower-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 95 L50 55" stroke="#6CA192" stroke-width="2"/>
+                        <ellipse cx="50" cy="35" rx="18" ry="12" fill="#DA70D6" opacity="0.6"/>
+                        <ellipse cx="50" cy="40" rx="14" ry="10" fill="#DA70D6" opacity="0.8"/>
+                        <ellipse cx="42" cy="45" rx="8" ry="15" fill="#DA70D6" transform="rotate(-30 42 45)"/>
+                        <ellipse cx="58" cy="45" rx="8" ry="15" fill="#DA70D6" transform="rotate(30 58 45)"/>
+                        <ellipse cx="50" cy="55" rx="6" ry="10" fill="#F0B0F0"/>
+                        <circle cx="50" cy="48" r="3" fill="#FFE4B5"/>
+                    </svg>`,
+                    description: `Dein Samen brauchte besondere Bedingungen – und das ist keine Schwäche, sondern ein Hinweis auf deine Einzigartigkeit.
+
+Als Kind hast du vielleicht gemerkt, dass du anders fühlst als andere. Intensiver. Feiner.
+
+Heute verstehst du: Deine Sensibilität ist keine Überlastung – sie ist ein Instrument. Du brauchst mehr Pflege als andere Blumen – aber du gibst auch mehr zurück.`,
+                    innerChildMessage: "Du warst nie ‚zu empfindlich'. Die Welt war nur zu grob für jemanden so Feines. Deine Sensibilität ist dein Geschenk.",
+                    stats: { Feinfühligkeit: "überirdisch", Seltenheit: "einzigartig", Pflegebedarf: "hoch" },
+                    compatibility: { allies: ["Lotus", "Lavendel"], tension: ["Wildblume"] },
+                    shareText: "Ich bin eine Orchidee 🪻 Selten, sensibel und von atemberaubender Tiefe."
+                },
+                
+                lavender: {
+                    id: "lavender",
+                    title: "Der Lavendel",
+                    tagline: "Deine Ruhe heilt – auch wenn du nichts tust.",
+                    color: "#9683EC",
+                    icon: `<svg class="flower-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 95 L50 40" stroke="#6CA192" stroke-width="2"/>
+                        <g fill="#9683EC">
+                            <ellipse cx="50" cy="35" rx="4" ry="6"/>
+                            <ellipse cx="50" cy="28" rx="3.5" ry="5"/>
+                            <ellipse cx="50" cy="22" rx="3" ry="4"/>
+                            <ellipse cx="50" cy="17" rx="2.5" ry="3.5"/>
+                            <ellipse cx="50" cy="13" rx="2" ry="3"/>
+                        </g>
+                        <g fill="#9683EC" opacity="0.8">
+                            <ellipse cx="44" cy="37" rx="3" ry="4" transform="rotate(-15 44 37)"/>
+                            <ellipse cx="44" cy="31" rx="2.5" ry="3.5" transform="rotate(-15 44 31)"/>
+                            <ellipse cx="56" cy="37" rx="3" ry="4" transform="rotate(15 56 37)"/>
+                            <ellipse cx="56" cy="31" rx="2.5" ry="3.5" transform="rotate(15 56 31)"/>
+                        </g>
+                    </svg>`,
+                    description: `Dein Samen wurde in kargen Boden gepflanzt – und gerade deshalb hast du gelernt, mit wenig zu gedeihen und viel zu geben.
+
+Als Kind warst du vielleicht die Ruhige im Hintergrund. Die, zu der man kam, wenn man Trost brauchte.
+
+Heute bist du der Anker für aufgewühlte Seelen. Deine bloße Präsenz beruhigt. Du brauchst nicht viel zu sagen – dein Sein reicht.`,
+                    innerChildMessage: "Du hast so viel gegeben, ohne zu fordern. Aber auch du darfst empfangen. Auch du darfst duften, ohne nützlich zu sein. Du bist genug.",
+                    stats: { Heilkraft: "still aber mächtig", Beständigkeit: "unerschütterlich", Bescheidenheit: "zu viel" },
+                    compatibility: { allies: ["Lotus", "Sonnenblume", "Orchidee"], tension: ["Mohnblume"] },
+                    shareText: "Ich bin Lavendel 💜 Meine Ruhe heilt – auch wenn ich nichts tue."
+                },
+                
+                poppy: {
+                    id: "poppy",
+                    title: "Die Mohnblume",
+                    tagline: "Du brennst hell – und hinterlässt Spuren.",
+                    color: "#FF6B6B",
+                    icon: `<svg class="flower-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 95 Q48 75 50 55" stroke="#6CA192" stroke-width="2"/>
+                        <g fill="#FF6B6B"><ellipse cx="50" cy="35" rx="22" ry="20"/></g>
+                        <g fill="#FF4545">
+                            <ellipse cx="42" cy="38" rx="12" ry="14" transform="rotate(-20 42 38)"/>
+                            <ellipse cx="58" cy="38" rx="12" ry="14" transform="rotate(20 58 38)"/>
+                            <ellipse cx="50" cy="28" rx="10" ry="12"/>
+                            <ellipse cx="38" cy="48" rx="10" ry="11" transform="rotate(-40 38 48)"/>
+                            <ellipse cx="62" cy="48" rx="10" ry="11" transform="rotate(40 62 48)"/>
+                        </g>
+                        <circle cx="50" cy="42" r="8" fill="#1a1a1a"/>
+                        <circle cx="50" cy="42" r="5" fill="#2d2d2d"/>
+                    </svg>`,
+                    description: `Dein Samen wurde in feurige Erde gepflanzt – und du hast nie gelernt, weniger zu fühlen.
+
+Als Kind warst du vielleicht intensiv. Laut in deiner Freude, unüberhörbar in deinem Schmerz. Vielleicht hat man dir gesagt, du sollst dich mäßigen.
+
+Heute weißt du: Deine Intensität ist ein Geschenk. Du lebst, während andere nur existieren. Manche finden das anstrengend. Andere nennen es lebendig.`,
+                    innerChildMessage: "Du warst nie ‚too much'. Du warst genau die richtige Menge Leben für eine Welt, die oft zu grau ist. Brenne weiter.",
+                    stats: { Intensität: "🔥🔥🔥🔥🔥", Lebensfreude: "explosiv", Drama: "ja, absichtlich" },
+                    compatibility: { allies: ["Wildblume", "Sonnenblume"], tension: ["Lavendel"] },
+                    shareText: "Ich bin eine Mohnblume 🌺 Ich brenne hell und hinterlasse Spuren."
+                }
+            }
+        };
+
+        let currentQuestion = 0;
+        let answers = [];
+        let scores = { licht: 0, wurzeln: 0, rhythmus: 0, wasser: 0 };
+
+        function startQuiz() {
+            document.getElementById('introScreen').classList.remove('active');
+            document.getElementById('questionScreen').classList.add('active');
+            document.getElementById('progressContainer').style.display = 'block';
+            showQuestion(0);
+        }
+
+        function showQuestion(index) {
+            const question = quizData.questions[index];
+            const total = quizData.questions.length;
+            
+            const progress = ((index) / total) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `Frage ${index + 1} von ${total}`;
+            
+            document.getElementById('questionContext').textContent = question.context;
+            document.getElementById('questionText').textContent = question.text;
+            
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+            
+            question.options.forEach((option, i) => {
+                const card = document.createElement('div');
+                card.className = 'option-card';
+                card.innerHTML = `<p class="option-text">${option.text}</p>`;
+                card.onclick = () => selectOption(i, option.scores);
+                container.appendChild(card);
+            });
+            
+            container.style.opacity = '0';
+            container.style.transform = 'translateY(10px)';
+            setTimeout(() => {
+                container.style.transition = 'all 0.4s ease';
+                container.style.opacity = '1';
+                container.style.transform = 'translateY(0)';
+            }, 50);
+        }
+
+        function selectOption(optionIndex, optionScores) {
+            const cards = document.querySelectorAll('.option-card');
+            cards.forEach((card, i) => {
+                card.classList.remove('selected');
+                if (i === optionIndex) card.classList.add('selected');
+            });
+            
+            answers[currentQuestion] = optionIndex;
+            
+            Object.keys(optionScores).forEach(dim => {
+                scores[dim] += optionScores[dim];
+            });
+            
+            setTimeout(() => {
+                currentQuestion++;
+                if (currentQuestion < quizData.questions.length) {
+                    showQuestion(currentQuestion);
+                } else {
+                    showResult();
+                }
+            }, 400);
+        }
+
+        function calculateProfile() {
+            const maxPossible = quizData.questions.length * 5;
+            const normalized = {
+                licht: (scores.licht / maxPossible) * 100,
+                wurzeln: (scores.wurzeln / maxPossible) * 100,
+                rhythmus: (scores.rhythmus / maxPossible) * 100,
+                wasser: (scores.wasser / maxPossible) * 100
+            };
+            
+            const profiles = quizData.profiles;
+            let bestMatch = 'wildflower';
+            let highestScore = -Infinity;
+            
+            const profilePatterns = {
+                sunflower: { licht: 0.35, wurzeln: 0.15, rhythmus: 0.25, wasser: 0.15 },
+                lotus: { licht: -0.3, wurzeln: 0.3, rhythmus: -0.2, wasser: 0.35 },
+                wildflower: { licht: 0.1, wurzeln: -0.35, rhythmus: 0.35, wasser: -0.15 },
+                orchid: { licht: -0.25, wurzeln: 0.2, rhythmus: -0.2, wasser: 0.35 },
+                lavender: { licht: 0.05, wurzeln: 0.35, rhythmus: -0.35, wasser: 0.1 },
+                poppy: { licht: 0.25, wurzeln: -0.25, rhythmus: 0.35, wasser: 0.2 }
+            };
+            
+            Object.keys(profilePatterns).forEach(profile => {
+                const pattern = profilePatterns[profile];
+                let score = 0;
+                
+                score += normalized.licht * pattern.licht;
+                score += normalized.wurzeln * pattern.wurzeln;
+                score += normalized.rhythmus * pattern.rhythmus;
+                score += normalized.wasser * pattern.wasser;
+                
+                if (score > highestScore) {
+                    highestScore = score;
+                    bestMatch = profile;
+                }
+            });
+            
+            return profiles[bestMatch];
+        }
+
+        function showResult() {
+            document.getElementById('questionScreen').classList.remove('active');
+            document.getElementById('progressContainer').style.display = 'none';
+            document.getElementById('resultScreen').classList.add('active');
+            
+            const profile = calculateProfile();
+            const card = document.getElementById('resultCard');
+            
+            card.innerHTML = `
+                <div class="result-label">Dein inneres Blumenwesen</div>
+                <div class="result-flower-icon">${profile.icon}</div>
+                <h2 class="result-title">${profile.title}</h2>
+                <p class="result-tagline">${profile.tagline}</p>
+                
+                <p class="result-description">${profile.description}</p>
+                
+                <div class="stats-grid">
+                    ${Object.entries(profile.stats).map(([key, value]) => `
+                        <div class="stat-item">
+                            <div class="stat-value">${value}</div>
+                            <div class="stat-label">${key}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="inner-child-section">
+                    <div class="inner-child-title">
+                        <span>🌱</span> Botschaft an dein inneres Kind
+                    </div>
+                    <p class="inner-child-text">${profile.innerChildMessage}</p>
+                </div>
+                
+                <div class="compatibility-section">
+                    <h3 class="compat-title">Botanische Verbindungen</h3>
+                    <div class="compat-row">
+                        <span class="compat-emoji">💚</span>
+                        <span class="compat-label">Gedeiht mit:</span>
+                        <span class="compat-value">${profile.compatibility.allies.join(', ')}</span>
+                    </div>
+                    <div class="compat-row">
+                        <span class="compat-emoji">⚡</span>
+                        <span class="compat-label">Spannung mit:</span>
+                        <span class="compat-value">${profile.compatibility.tension.join(', ')}</span>
+                    </div>
+                </div>
+                
+                <div class="share-section">
+                    <p class="share-text">Zeig der Welt, welche Blume in dir blüht:</p>
+                    <div class="share-buttons">
+                        <button class="share-btn share-btn-primary" onclick="shareResult('${profile.shareText}')">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
+                                <polyline points="16 6 12 2 8 6"/>
+                                <line x1="12" y1="2" x2="12" y2="15"/>
+                            </svg>
+                            Teilen
+                        </button>
+                        <button class="share-btn share-btn-secondary" onclick="restartQuiz()">
+                            Nochmal
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            dispatchContributionEvent(profile);
+        }
+
+        function shareResult(text) {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Mein inneres Blumenwesen',
+                    text: text,
+                    url: window.location.href
+                }).catch(() => copyToClipboard(text));
+            } else {
+                copyToClipboard(text);
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text + ' ' + window.location.href).then(() => {
+                alert('In die Zwischenablage kopiert! 🌸');
+            });
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            answers = [];
+            scores = { licht: 0, wurzeln: 0, rhythmus: 0, wasser: 0 };
+            
+            document.getElementById('resultScreen').classList.remove('active');
+            document.getElementById('introScreen').classList.add('active');
+        }
+
+        function dispatchContributionEvent(profile) {
+            const maxPossible = quizData.questions.length * 5;
+            const event = new CustomEvent('sp.contribution.v1', {
+                detail: {
+                    schema: 'sp.contribution.v1',
+                    source: 'blumenwesen-quiz',
+                    timestamp: new Date().toISOString(),
+                    payload: {
+                        markers: [`marker.flower.${profile.id}`, 'marker.quiz.blumenwesen'],
+                        traits: [
+                            { id: 'licht', score: Math.round((scores.licht / maxPossible) * 100) },
+                            { id: 'wurzeln', score: Math.round((scores.wurzeln / maxPossible) * 100) },
+                            { id: 'rhythmus', score: Math.round((scores.rhythmus / maxPossible) * 100) },
+                            { id: 'wasser', score: Math.round((scores.wasser / maxPossible) * 100) }
+                        ],
+                        tags: ['inner-child', 'botanical', 'self-reflection'],
+                        unlocks: [`flower-${profile.id}`, 'inner-child-explored']
+                    }
+                }
+            });
+            window.dispatchEvent(event);
+            console.log('ContributionEvent dispatched:', event.detail);
+        }
+    </script>
+</body>
+</html>

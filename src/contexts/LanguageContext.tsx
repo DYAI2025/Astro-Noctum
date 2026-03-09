@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from "react";
-import { Language, translations } from "../i18n/translations";
+import { Language, translations, type DeepStringRecord } from "../i18n/translations";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -46,9 +46,9 @@ function readInitialLang(): Language {
   return "en";
 }
 
-function deepGet(obj: any, keyPath: string): string {
+function deepGet(obj: DeepStringRecord, keyPath: string): string {
   const parts = keyPath.split(".");
-  let current: any = obj;
+  let current: string | DeepStringRecord = obj;
   for (const part of parts) {
     if (current == null || typeof current !== "object") return keyPath;
     current = current[part];

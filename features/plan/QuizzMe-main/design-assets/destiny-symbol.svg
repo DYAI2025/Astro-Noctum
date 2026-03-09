@@ -1,0 +1,78 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="glow-destiny" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Path/archway base -->
+  <path
+    d="M 22 52 L 22 36 Q 22 24 32 24 Q 42 24 42 36 L 42 52"
+    fill="none"
+    stroke="rgb(248, 250, 252)"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    style="filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.6)) drop-shadow(0 0 16px rgba(251, 191, 36, 0.3));"
+  />
+
+  <!-- Inner archway detail -->
+  <path
+    d="M 26 52 L 26 38 Q 26 28 32 28 Q 38 28 38 38 L 38 52"
+    fill="none"
+    stroke="rgba(248, 250, 252, 0.5)"
+    stroke-width="1"
+    stroke-linecap="round"
+    opacity="0.7"
+  />
+
+  <!-- Path/arrow leading upward through the arch -->
+  <path
+    d="M 32 52 L 32 20"
+    stroke="rgba(251, 191, 36, 0.8)"
+    stroke-width="2"
+    stroke-linecap="round"
+    style="filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.7));"
+  />
+
+  <!-- Arrow head pointing up -->
+  <path
+    d="M 32 20 L 28 26 L 32 23 L 36 26 Z"
+    fill="none"
+    stroke="rgb(251, 191, 36)"
+    stroke-width="1.5"
+    stroke-linejoin="round"
+    style="filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.8));"
+  />
+
+  <!-- Destiny star at the end point -->
+  <g transform="translate(32, 14)">
+    <!-- Star with 4 points -->
+    <path
+      d="M 0 -4 L 1 -1 L 4 0 L 1 1 L 0 4 L -1 1 L -4 0 L -1 -1 Z"
+      fill="rgba(251, 191, 36, 0.4)"
+      stroke="rgb(251, 191, 36)"
+      stroke-width="1.5"
+      style="filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.9));"
+    />
+
+    <!-- Inner glow -->
+    <circle
+      cx="0"
+      cy="0"
+      r="2"
+      fill="rgb(251, 191, 36)"
+      opacity="0.8"
+    />
+  </g>
+
+  <!-- Subtle guide lines on the sides (path markers) -->
+  <circle cx="20" cy="44" r="1.5" fill="rgba(251, 191, 36, 0.5)" opacity="0.6"/>
+  <circle cx="44" cy="44" r="1.5" fill="rgba(251, 191, 36, 0.5)" opacity="0.6"/>
+  <circle cx="18" cy="36" r="1" fill="rgba(251, 191, 36, 0.4)" opacity="0.5"/>
+  <circle cx="46" cy="36" r="1" fill="rgba(251, 191, 36, 0.4)" opacity="0.5"/>
+</svg>

@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="botanical">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Die Kunst des Charmes – Entdecke deine Signatur der Anziehung</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════════════════════════════════
+       QUIZZME DESIGN SYSTEM - CHARME QUIZ
+       ═══════════════════════════════════════════════════════════════════ */
+    
+    :root {
+      /* Colors */
+      --gold-primary: #D2A95A;
+      --gold-dark: #A77D38;
+      --gold-light: #E8C87A;
+      --emerald-deep: #053B3F;
+      --emerald-forest: #0A4A4F;
+      --sage: #6CA192;
+      --midnight-deep: #041726;
+      --midnight-soft: #132F4C;
+      --cream-pure: #F7F0E6;
+      --cream-warm: #F2E3CF;
+      --cream-muted: #E5D9C3;
+      --text-on-dark: #F7F3EA;
+      --text-on-dark-muted: #A8B5A0;
+      --text-on-light: #271C16;
+      --text-on-light-muted: #5A4D3F;
+      
+      /* Typography */
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --font-sans: 'Inter', -apple-system, sans-serif;
+      
+      /* Spacing */
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.25rem;
+      --space-6: 1.5rem;
+      --space-8: 2rem;
+      
+      /* Animation */
+      --duration-normal: 250ms;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      min-height: 100vh;
+      background: linear-gradient(180deg, var(--cream-pure) 0%, var(--cream-warm) 100%);
+      color: var(--text-on-light);
+    }
+    
+    /* Container */
+    .quiz-container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: var(--space-4);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* ═══════════════════════════════════════════════════════════════════
+       START SCREEN
+       ═══════════════════════════════════════════════════════════════════ */
+    
+    .start-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: var(--space-8) var(--space-4);
+    }
+    
+    .start-screen.hidden { display: none; }
+    
+    .start-icon {
+      width: 100px;
+      height: 100px;
+      margin-bottom: var(--space-6);
+    }
+    
+    .start-icon svg {
+      width: 100%;
+      height: 100%;
+    }
+    
+    .start-title {
+      font-family: var(--font-serif);
+      font-size: clamp(1.8rem, 5vw, 2.5rem);
+      font-weight: 500;
+      color: var(--emerald-deep);
+      margin-bottom: var(--space-4);
+      line-height: 1.2;
+    }
+    
+    .start-subtitle {
+      font-size: 1rem;
+      color: var(--text-on-light-muted);
+      max-width: 320px;
+      margin-bottom: var(--space-8);
+    }
+    
+    .start-meta {
+      display: flex;
+      gap: var(--space-6);
+      margin-bottom: var(--space-8);
+      font-size: 0.875rem;
+      color: var(--text-on-light-muted);
+    }
+    
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    
+    .btn-start {
+      background: var(--emerald-deep);
+      color: var(--cream-pure);
+      border: none;
+      padding: var(--space-4) var(--space-8);
+      font-family: var(--font-serif);
+      font-size: 1.125rem;
+      font-weight: 500;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all var(--duration-normal) var(--ease-out);
+      box-shadow: 0 4px 20px rgba(5, 59, 63, 0.25);
+    }
+    
+    .btn-start:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(5, 59, 63, 0.35);
+    }
+    
+    /* ═══════════════════════════════════════════════════════════════════
+       QUIZ FLOW
+       ═══════════════════════════════════════════════════════════════════ */
+    
+    .quiz-screen {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+    }
+    
+    .quiz-screen.active { display: flex; }
+    
+    /* Progress */
+    .progress-container {
+      margin-bottom: var(--space-6);
+    }
+    
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-on-light-muted);
+      margin-bottom: var(--space-2);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    
+    .progress-bar {
+      height: 4px;
+      background: var(--cream-muted);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--sage), var(--emerald-deep));
+      border-radius: 2px;
+      transition: width 0.4s var(--ease-out);
+    }
+    
+    /* Question */
+    .question-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .question-context {
+      font-size: 0.8rem;
+      color: var(--gold-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: var(--space-3);
+      font-weight: 500;
+    }
+    
+    .question-text {
+      font-family: var(--font-serif);
+      font-size: clamp(1.25rem, 4vw, 1.5rem);
+      font-weight: 500;
+      color: var(--emerald-deep);
+      margin-bottom: var(--space-6);
+      line-height: 1.4;
+    }
+    
+    /* Options */
+    .options-container {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    
+    .option-card {
+      background: #fff;
+      border: 2px solid var(--cream-muted);
+      border-radius: 12px;
+      padding: var(--space-4) var(--space-5);
+      cursor: pointer;
+      transition: all var(--duration-normal) var(--ease-out);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .option-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--gold-primary);
+      transform: scaleY(0);
+      transition: transform var(--duration-normal) var(--ease-out);
+    }
+    
+    .option-card:hover {
+      border-color: var(--gold-primary);
+      transform: translateX(4px);
+      box-shadow: 0 4px 16px rgba(210, 169, 90, 0.15);
+    }
+    
+    .option-card:hover::before {
+      transform: scaleY(1);
+    }
+    
+    .option-card.selected {
+      border-color: var(--emerald-deep);
+      background: rgba(5, 59, 63, 0.03);
+    }
+    
+    .option-card.selected::before {
+      background: var(--emerald-deep);
+      transform: scaleY(1);
+    }
+    
+    .option-text {
+      font-size: 0.95rem;
+      color: var(--text-on-light);
+      line-height: 1.5;
+    }
+    
+    /* ═══════════════════════════════════════════════════════════════════
+       RESULT SCREEN
+       ═══════════════════════════════════════════════════════════════════ */
+    
+    .result-screen {
+      display: none;
+      min-height: 100vh;
+      background: linear-gradient(165deg, var(--emerald-deep) 0%, var(--midnight-deep) 50%, #031119 100%);
+      color: var(--text-on-dark);
+      padding: var(--space-6) var(--space-4);
+    }
+    
+    .result-screen.active { display: block; }
+    
+    .result-card {
+      max-width: 400px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    
+    .result-badge {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--gold-primary);
+      margin-bottom: var(--space-3);
+    }
+    
+    .result-title {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 6vw, 2.75rem);
+      font-weight: 500;
+      color: var(--gold-primary);
+      margin-bottom: var(--space-2);
+      line-height: 1.2;
+    }
+    
+    .result-tagline {
+      font-family: var(--font-serif);
+      font-size: 1.1rem;
+      font-style: italic;
+      color: var(--text-on-dark-muted);
+      margin-bottom: var(--space-6);
+    }
+    
+    /* Archetype Icon */
+    .archetype-icon {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto var(--space-6);
+      position: relative;
+    }
+    
+    .archetype-icon svg {
+      width: 100%;
+      height: 100%;
+    }
+    
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-3);
+      margin-bottom: var(--space-6);
+    }
+    
+    .stat-item {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(210, 169, 90, 0.2);
+      border-radius: 8px;
+      padding: var(--space-3);
+    }
+    
+    .stat-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-on-dark-muted);
+      margin-bottom: var(--space-2);
+    }
+    
+    .stat-value {
+      font-family: var(--font-serif);
+      font-size: 1.25rem;
+      color: var(--gold-primary);
+    }
+    
+    /* Description Sections */
+    .result-section {
+      text-align: left;
+      margin-bottom: var(--space-6);
+      padding: var(--space-5);
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      border: 1px solid rgba(210, 169, 90, 0.15);
+    }
+    
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      color: var(--gold-primary);
+      margin-bottom: var(--space-3);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    
+    .section-content {
+      font-size: 0.9rem;
+      line-height: 1.7;
+      color: var(--text-on-dark);
+    }
+    
+    .section-content p {
+      margin-bottom: var(--space-3);
+    }
+    
+    .section-content p:last-child {
+      margin-bottom: 0;
+    }
+    
+    /* Deep Insight */
+    .deep-insight {
+      background: linear-gradient(135deg, rgba(210, 169, 90, 0.1), rgba(108, 161, 146, 0.1));
+      border: 1px solid rgba(210, 169, 90, 0.3);
+    }
+    
+    .deep-insight .section-title {
+      font-size: 1.1rem;
+    }
+    
+    /* Compatibility */
+    .compatibility-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-4);
+      margin-top: var(--space-4);
+    }
+    
+    .compat-column h4 {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: var(--space-2);
+    }
+    
+    .compat-allies h4 { color: var(--sage); }
+    .compat-tension h4 { color: #C45D4A; }
+    
+    .compat-list {
+      font-size: 0.85rem;
+      color: var(--text-on-dark-muted);
+    }
+    
+    /* Share */
+    .share-section {
+      margin-top: var(--space-8);
+      padding-top: var(--space-6);
+      border-top: 1px solid rgba(210, 169, 90, 0.2);
+    }
+    
+    .share-quote {
+      font-family: var(--font-serif);
+      font-size: 1.1rem;
+      font-style: italic;
+      color: var(--gold-light);
+      margin-bottom: var(--space-5);
+      padding: 0 var(--space-4);
+    }
+    
+    .btn-share {
+      background: var(--gold-primary);
+      color: var(--midnight-deep);
+      border: none;
+      padding: var(--space-4) var(--space-6);
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all var(--duration-normal) var(--ease-out);
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    
+    .btn-share:hover {
+      background: var(--gold-light);
+      transform: scale(1.02);
+    }
+    
+    .btn-restart {
+      background: transparent;
+      color: var(--text-on-dark-muted);
+      border: 1px solid rgba(210, 169, 90, 0.3);
+      padding: var(--space-3) var(--space-5);
+      font-size: 0.85rem;
+      border-radius: 50px;
+      cursor: pointer;
+      margin-top: var(--space-4);
+      transition: all var(--duration-normal) var(--ease-out);
+    }
+    
+    .btn-restart:hover {
+      border-color: var(--gold-primary);
+      color: var(--gold-primary);
+    }
+    
+    /* Disclaimer */
+    .disclaimer {
+      font-size: 0.7rem;
+      color: var(--text-on-dark-muted);
+      margin-top: var(--space-8);
+      opacity: 0.7;
+      text-align: center;
+    }
+    
+    /* ═══════════════════════════════════════════════════════════════════
+       ANIMATIONS
+       ═══════════════════════════════════════════════════════════════════ */
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .fade-in-up {
+      animation: fadeInUp 0.5s var(--ease-out) forwards;
+    }
+    
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    
+    .shimmer {
+      background: linear-gradient(90deg, 
+        var(--gold-dark) 0%, 
+        var(--gold-light) 50%, 
+        var(--gold-dark) 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: shimmer 3s linear infinite;
+    }
+    
+    /* Mobile optimizations */
+    @media (max-width: 400px) {
+      .quiz-container {
+        padding: var(--space-3);
+      }
+      
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    
+    <!-- ═══════════════════════════════════════════════════════════════════
+         START SCREEN
+         ═══════════════════════════════════════════════════════════════════ -->
+    <div class="start-screen" id="startScreen">
+      <div class="start-icon">
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Charme Symbol: Verschlungene Herzen mit Strahlen -->
+          <circle cx="50" cy="50" r="45" stroke="#D2A95A" stroke-width="0.5" opacity="0.3"/>
+          <circle cx="50" cy="50" r="35" stroke="#D2A95A" stroke-width="0.5" opacity="0.5"/>
+          <path d="M50 75 C35 60, 25 45, 35 35 C40 30, 50 32, 50 40 C50 32, 60 30, 65 35 C75 45, 65 60, 50 75Z" 
+                stroke="#053B3F" stroke-width="1.5" fill="none"/>
+          <path d="M30 50 L25 50" stroke="#D2A95A" stroke-width="1" stroke-linecap="round"/>
+          <path d="M75 50 L70 50" stroke="#D2A95A" stroke-width="1" stroke-linecap="round"/>
+          <path d="M50 25 L50 30" stroke="#D2A95A" stroke-width="1" stroke-linecap="round"/>
+          <path d="M35 32 L38 36" stroke="#D2A95A" stroke-width="0.8" stroke-linecap="round"/>
+          <path d="M65 32 L62 36" stroke="#D2A95A" stroke-width="0.8" stroke-linecap="round"/>
+          <circle cx="50" cy="50" r="3" fill="#D2A95A" opacity="0.6"/>
+        </svg>
+      </div>
+      
+      <h1 class="start-title">Die Kunst des Charmes</h1>
+      <p class="start-subtitle">Entdecke deine einzigartige Signatur der Anziehung – wie du Räume erhellst und Menschen berührst.</p>
+      
+      <div class="start-meta">
+        <div class="meta-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <span>3 Min</span>
+        </div>
+        <div class="meta-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          <span>12 Fragen</span>
+        </div>
+      </div>
+      
+      <button class="btn-start" onclick="startQuiz()">Starte die Entdeckung</button>
+    </div>
+    
+    <!-- ═══════════════════════════════════════════════════════════════════
+         QUIZ SCREEN
+         ═══════════════════════════════════════════════════════════════════ -->
+    <div class="quiz-screen" id="quizScreen">
+      <div class="progress-container">
+        <div class="progress-label">
+          <span>Frage <span id="currentQ">1</span> von 12</span>
+          <span id="progressPercent">8%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width: 8%"></div>
+        </div>
+      </div>
+      
+      <div class="question-container">
+        <div class="question-context" id="questionContext">Szenario</div>
+        <h2 class="question-text" id="questionText">Frage wird geladen...</h2>
+        
+        <div class="options-container" id="optionsContainer">
+          <!-- Options dynamically inserted -->
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- ═══════════════════════════════════════════════════════════════════
+       RESULT SCREEN
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="result-screen" id="resultScreen">
+    <div class="result-card">
+      <div class="result-badge">Deine Charme-Signatur</div>
+      <div class="archetype-icon" id="archetypeIcon"></div>
+      <h1 class="result-title shimmer" id="resultTitle">Loading...</h1>
+      <p class="result-tagline" id="resultTagline">...</p>
+      
+      <div class="stats-grid" id="statsGrid">
+        <!-- Stats dynamically inserted -->
+      </div>
+      
+      <div class="result-section" id="coreDescription">
+        <div class="section-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+          Dein Wesen
+        </div>
+        <div class="section-content" id="coreContent"></div>
+      </div>
+      
+      <div class="result-section deep-insight" id="deepInsight">
+        <div class="section-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4"/>
+            <path d="M12 8h.01"/>
+          </svg>
+          Was das wirklich bedeutet
+        </div>
+        <div class="section-content" id="deepContent"></div>
+      </div>
+      
+      <div class="result-section" id="compatSection">
+        <div class="section-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          Resonanz-Dynamik
+        </div>
+        <div class="compatibility-grid" id="compatGrid"></div>
+      </div>
+      
+      <div class="share-section">
+        <p class="share-quote" id="shareQuote">"..."</p>
+        <button class="btn-share" onclick="shareResult()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="18" cy="5" r="3"/>
+            <circle cx="6" cy="12" r="3"/>
+            <circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          Teile deine Signatur
+        </button>
+        <button class="btn-restart" onclick="restartQuiz()">Quiz wiederholen</button>
+      </div>
+      
+      <p class="disclaimer">Dieser Test dient der spielerischen Selbstreflexion und stellt keine psychologische Diagnose dar.</p>
+    </div>
+  </div>
+  
+  <script>
+    // ═══════════════════════════════════════════════════════════════════
+    // QUIZ DATA - CHARME DIMENSIONS & QUESTIONS
+    // ═══════════════════════════════════════════════════════════════════
+    
+    const quizData = {
+      meta: {
+        title: "Die Kunst des Charmes",
+        subtitle: "Entdecke deine Signatur der Anziehung",
+        engine: "custom-4dim",
+        questions_count: 12,
+        profile_count: 6
+      },
+      
+      dimensions: [
+        { id: "warmth", name: "Wärme-Orientierung", pole_low: "Selbst-zentriert", pole_high: "Andere-zentriert" },
+        { id: "resonance", name: "Resonanz-Modus", pole_low: "Verbal-intellektuell", pole_high: "Nonverbal-emotional" },
+        { id: "authenticity", name: "Authentizität", pole_low: "Performativ", pole_high: "Vulnerabel" },
+        { id: "presence", name: "Präsenz-Qualität", pole_low: "Aktivierend", pole_high: "Beruhigend" }
+      ],
+      
+      questions: [
+        {
+          id: "q1",
+          context: "Der erste Eindruck",
+          text: "Du betrittst einen Raum voller Fremder. Wie orientierst du dich?",
+          options: [
+            { text: "Ich scanne nach bekannten Gesichtern – und wenn ich keins finde, warte ich, bis jemand mich anspricht.", scores: { warmth: 2, resonance: 4, authenticity: 4, presence: 4 } },
+            { text: "Ich suche die Person, die am unsichersten wirkt, und gehe direkt auf sie zu.", scores: { warmth: 5, resonance: 4, authenticity: 5, presence: 5 } },
+            { text: "Ich positioniere mich strategisch gut sichtbar und beginne ein angeregtes Gespräch mit dem Nächstbesten.", scores: { warmth: 3, resonance: 2, authenticity: 2, presence: 1 } },
+            { text: "Ich beobachte die Dynamik des Raums – wer gehört zusammen, wo ist Energie, wo Spannung?", scores: { warmth: 3, resonance: 5, authenticity: 4, presence: 3 } }
+          ]
+        },
+        {
+          id: "q2",
+          context: "Das Geheimnis des Lächelns",
+          text: "Jemand erzählt dir einen Witz, der nicht besonders lustig ist. Was passiert in deinem Gesicht?",
+          options: [
+            { text: "Ich lache höflich mit – niemand sollte sich unwohl fühlen.", scores: { warmth: 4, resonance: 3, authenticity: 2, presence: 4 } },
+            { text: "Meine Mundwinkel heben sich, aber meine Augen verraten mich – ich kann nicht lügen.", scores: { warmth: 3, resonance: 4, authenticity: 5, presence: 3 } },
+            { text: "Ich schmunzle warm und sage: 'Das war charmant versucht.'", scores: { warmth: 5, resonance: 3, authenticity: 4, presence: 4 } },
+            { text: "Ich strahle Wärme aus und lenke geschickt auf etwas um, bei dem wir beide wirklich lachen können.", scores: { warmth: 5, resonance: 2, authenticity: 3, presence: 2 } }
+          ]
+        },
+        {
+          id: "q3",
+          context: "Die Kunst des Zuhörens",
+          text: "Jemand erzählt dir von einem Problem, das dich persönlich nicht betrifft. Wie hörst du zu?",
+          options: [
+            { text: "Ich stelle gezielte Fragen, um die Situation zu analysieren und Lösungen anzubieten.", scores: { warmth: 3, resonance: 1, authenticity: 3, presence: 2 } },
+            { text: "Ich lehne mich vor, halte Blickkontakt und lasse die Stille wirken, wenn sie nötig ist.", scores: { warmth: 5, resonance: 5, authenticity: 5, presence: 5 } },
+            { text: "Ich teile ähnliche eigene Erfahrungen, damit die Person sich weniger allein fühlt.", scores: { warmth: 4, resonance: 2, authenticity: 4, presence: 2 } },
+            { text: "Ich nicke, fasse zusammen und zeige durch meine Körpersprache, dass ich präsent bin.", scores: { warmth: 4, resonance: 4, authenticity: 3, presence: 4 } }
+          ]
+        },
+        {
+          id: "q4",
+          context: "Spannung im Raum",
+          text: "Ein Streit entwickelt sich zwischen zwei Menschen in deiner Gegenwart. Was tust du?",
+          options: [
+            { text: "Ich bringe Humor ein – ein gut getimter Kommentar kann Wunder wirken.", scores: { warmth: 4, resonance: 2, authenticity: 3, presence: 1 } },
+            { text: "Ich wende mich an die ruhigere Person und gebe ihr Raum, ihre Perspektive zu teilen.", scores: { warmth: 5, resonance: 4, authenticity: 4, presence: 5 } },
+            { text: "Ich bleibe gelassen und strahle eine Ruhe aus, die ansteckend wirkt.", scores: { warmth: 4, resonance: 5, authenticity: 4, presence: 5 } },
+            { text: "Ich strukturiere das Gespräch und schlage einen diplomatischen Kompromiss vor.", scores: { warmth: 3, resonance: 1, authenticity: 3, presence: 3 } }
+          ]
+        },
+        {
+          id: "q5",
+          context: "Der verletzliche Moment",
+          text: "Du hast einen Fehler gemacht, der anderen aufgefallen ist. Wie gehst du damit um?",
+          options: [
+            { text: "Ich gebe es offen zu und lache über mich selbst – Perfektion langweilt sowieso.", scores: { warmth: 4, resonance: 3, authenticity: 5, presence: 2 } },
+            { text: "Ich entschuldige mich aufrichtig und frage, wie ich es wieder gutmachen kann.", scores: { warmth: 5, resonance: 3, authenticity: 5, presence: 4 } },
+            { text: "Ich erkläre den Kontext meines Fehlers, damit andere ihn einordnen können.", scores: { warmth: 2, resonance: 1, authenticity: 3, presence: 2 } },
+            { text: "Ich zeige kurz Betroffenheit, aber wechsle schnell zu einer Lösung.", scores: { warmth: 3, resonance: 2, authenticity: 2, presence: 2 } }
+          ]
+        },
+        {
+          id: "q6",
+          context: "Das Kompliment",
+          text: "Du willst jemandem ehrlich sagen, was du an ihm schätzt. Wie machst du das?",
+          options: [
+            { text: "Ich sage es direkt und spezifisch: 'Was du gerade gemacht hast, war brillant, weil...'", scores: { warmth: 4, resonance: 1, authenticity: 4, presence: 2 } },
+            { text: "Ich lege meine Hand auf ihre Schulter und sage es mit warmem Blick in wenigen Worten.", scores: { warmth: 5, resonance: 5, authenticity: 4, presence: 4 } },
+            { text: "Ich erwähne es später nebenbei, fast beiläufig – große Gesten machen mich verlegen.", scores: { warmth: 3, resonance: 4, authenticity: 5, presence: 4 } },
+            { text: "Ich finde einen spielerischen Weg, es in einen Insider-Witz zwischen uns zu verwandeln.", scores: { warmth: 4, resonance: 2, authenticity: 3, presence: 1 } }
+          ]
+        },
+        {
+          id: "q7",
+          context: "Der Fremde neben dir",
+          text: "Du sitzt neben jemandem, den du nicht kennst, aber die Situation erlaubt Gespräch. Was passiert?",
+          options: [
+            { text: "Ich warte auf einen natürlichen Moment – vielleicht ein geteiltes Schmunzeln über etwas.", scores: { warmth: 4, resonance: 5, authenticity: 5, presence: 4 } },
+            { text: "Ich starte mit einer offenen Frage, die echte Neugier zeigt.", scores: { warmth: 5, resonance: 2, authenticity: 4, presence: 2 } },
+            { text: "Ich bleibe still, aber sende offene Körpersprache – wer reden will, wird es tun.", scores: { warmth: 3, resonance: 5, authenticity: 4, presence: 5 } },
+            { text: "Ich kommentiere etwas Konkretes um uns herum, um das Eis zu brechen.", scores: { warmth: 4, resonance: 2, authenticity: 3, presence: 2 } }
+          ]
+        },
+        {
+          id: "q8",
+          context: "Der schwere Tag",
+          text: "Ein Freund hat einen schlechten Tag. Du merkst es an seiner Energie. Was ist deine erste Reaktion?",
+          options: [
+            { text: "Ich frage direkt: 'Was ist los?' – Ehrlichkeit über allem.", scores: { warmth: 4, resonance: 2, authenticity: 4, presence: 2 } },
+            { text: "Ich sitze einfach neben ihm und bin da – Worte kommen, wenn sie kommen.", scores: { warmth: 5, resonance: 5, authenticity: 5, presence: 5 } },
+            { text: "Ich bringe ihm seinen Lieblingskaffee und sage: 'Du musst nichts erzählen.'", scores: { warmth: 5, resonance: 4, authenticity: 4, presence: 5 } },
+            { text: "Ich versuche, ihn abzulenken – manchmal braucht man einfach Pause vom Grübeln.", scores: { warmth: 4, resonance: 2, authenticity: 3, presence: 1 } }
+          ]
+        },
+        {
+          id: "q9",
+          context: "Im Rampenlicht",
+          text: "Du stehst im Mittelpunkt – alle Augen auf dir. Was ist dein Instinkt?",
+          options: [
+            { text: "Ich genieße es kurz, aber lenke dann schnell den Fokus auf andere.", scores: { warmth: 5, resonance: 3, authenticity: 4, presence: 3 } },
+            { text: "Ich nutze den Moment, um etwas Bedeutungsvolles zu sagen.", scores: { warmth: 3, resonance: 1, authenticity: 4, presence: 2 } },
+            { text: "Ich mache etwas Überraschendes, das Spannung bricht und alle einbezieht.", scores: { warmth: 4, resonance: 2, authenticity: 3, presence: 1 } },
+            { text: "Ich halte den Moment still, lächle und lasse meine Ruhe sprechen.", scores: { warmth: 3, resonance: 5, authenticity: 4, presence: 5 } }
+          ]
+        },
+        {
+          id: "q10",
+          context: "Die unsichtbare Verbindung",
+          text: "Du merkst, dass jemand in der Gruppe sich unwohl fühlt. Was tust du?",
+          options: [
+            { text: "Ich gehe diskret zu ihm und frage leise, ob alles okay ist.", scores: { warmth: 5, resonance: 4, authenticity: 5, presence: 5 } },
+            { text: "Ich beziehe ihn geschickt ins Gespräch ein, ohne es auffällig zu machen.", scores: { warmth: 5, resonance: 3, authenticity: 3, presence: 3 } },
+            { text: "Ich bleibe in seiner Nähe und gebe ihm durch meine Präsenz Sicherheit.", scores: { warmth: 4, resonance: 5, authenticity: 4, presence: 5 } },
+            { text: "Ich spreche ihn später unter vier Augen an – öffentlich könnte es ihm unangenehm sein.", scores: { warmth: 4, resonance: 3, authenticity: 4, presence: 4 } }
+          ]
+        },
+        {
+          id: "q11",
+          context: "Worte und Stille",
+          text: "Eine Unterhaltung nimmt eine tiefe Wendung. Wie reagierst du auf emotionale Offenheit?",
+          options: [
+            { text: "Ich teile eine eigene verletzliche Geschichte, um Gleichheit zu schaffen.", scores: { warmth: 4, resonance: 3, authenticity: 5, presence: 2 } },
+            { text: "Ich halte den Raum in Stille – manchmal ist Präsenz mehr als Worte.", scores: { warmth: 4, resonance: 5, authenticity: 4, presence: 5 } },
+            { text: "Ich drücke in Worten aus, was ich fühle: 'Das berührt mich sehr.'", scores: { warmth: 5, resonance: 2, authenticity: 5, presence: 3 } },
+            { text: "Ich frage behutsam weiter, um der Tiefe Raum zu geben.", scores: { warmth: 5, resonance: 3, authenticity: 4, presence: 4 } }
+          ]
+        },
+        {
+          id: "q12",
+          context: "Der Abschied",
+          text: "Du verlässt einen Raum. Was sollen die Menschen über dich denken?",
+          options: [
+            { text: "'Mit ihr war es nie langweilig – sie hat Energie gebracht.'", scores: { warmth: 3, resonance: 2, authenticity: 3, presence: 1 } },
+            { text: "'In ihrer Nähe habe ich mich wohler gefühlt.'", scores: { warmth: 5, resonance: 5, authenticity: 4, presence: 5 } },
+            { text: "'Sie hat mich wirklich gesehen und verstanden.'", scores: { warmth: 5, resonance: 4, authenticity: 5, presence: 4 } },
+            { text: "'Sie ist klug und charmant – ich würde gern mehr Zeit mit ihr verbringen.'", scores: { warmth: 4, resonance: 2, authenticity: 3, presence: 2 } }
+          ]
+        }
+      ],
+      
+      profiles: [
+        {
+          id: "herzoffner",
+          title: "Der Herzöffner",
+          tagline: "In deiner Gegenwart tauen selbst Eisberge auf.",
+          icon: "heart-rays",
+          condition: { warmth: [4, 5], resonance: [4, 5], authenticity: [4, 5], presence: [4, 5] },
+          stats: {
+            "Wärme-Radius": "∞",
+            "Duchenne-Lächeln": "94%",
+            "Stille-Komfort": "Meister",
+            "Präsenz-Tiefe": "9/10"
+          },
+          core: `Du bist das menschliche Äquivalent eines offenen Kaminfeuers. Menschen entspannen sich in deiner Gegenwart, oft ohne zu wissen warum. Dein Geheimnis? Du machst nichts – du bist einfach. Deine Augen lachen mit, wenn dein Mund lächelt. Du hörst nicht nur zu, du hörst hinein.
+
+Was andere als "Charisma" missverstehen, ist bei dir etwas Einfacheres und Seltenes: authentische Menschenfreundlichkeit ohne Agenda. Du interessierst dich für Menschen nicht, weil du etwas von ihnen willst, sondern weil jeder Mensch ein Universum ist, das dich neugierig macht.`,
+          deep: `Dein Charme ist keine Technik – er ist die natürliche Konsequenz einer inneren Haltung. Du hast früh verstanden, dass Menschen nicht „gewonnen" werden müssen, sondern dass Verbindung passiert, wenn man sich selbst erlaubt, verletzlich zu sein.
+
+Die Wissenschaft nennt das, was du tust, "emotionale Ansteckung". Dein entspanntes Nervensystem signalisiert anderen: "Hier ist es sicher." Dein Gehirn produziert Oxytocin, wenn du Menschen siehst – und sie spüren das. Du bist ein wandelndes Sicherheitssignal in einer Welt voller Alarme.
+
+Deine größte Gabe ist gleichzeitig deine größte Verantwortung: Menschen öffnen sich dir schneller als anderen. Behandle diese Geschenke mit der Ehrfurcht, die sie verdienen.`,
+          allies: ["Präsenz-Anker", "Stiller Verzauberer"],
+          tension: ["Esprit-Funke (zu viel Worte)", "Magnetische (zu viel Show)"],
+          shareText: "Meine Charme-Signatur: Der Herzöffner ✨ In meiner Gegenwart tauen Eisberge auf."
+        },
+        {
+          id: "magnetische",
+          title: "Die Magnetische",
+          tagline: "Du erhellst Räume, ohne das Licht zu suchen.",
+          icon: "magnet-star",
+          condition: { warmth: [3, 5], resonance: [1, 3], authenticity: [2, 4], presence: [1, 3] },
+          stats: {
+            "Raum-Energie": "↑↑↑",
+            "Wortgewandtheit": "Brillant",
+            "Funken-Frequenz": "Hoch",
+            "Einprägsamkeit": "98%"
+          },
+          core: `Du bist der seltene Fall, in dem Charisma und Charme sich die Waage halten. Menschen bemerken dich, wenn du einen Raum betrittst – aber nicht, weil du Aufmerksamkeit suchst, sondern weil deine Energie ansteckend ist. Du bringst Bewegung in stehende Gewässer.
+
+Dein Charme ist aktiv: Du startest Gespräche, du bringst Menschen zusammen, du findest den Witz in der Spannung. Langeweile ist in deiner Nähe unmöglich. Du hast die Gabe, aus jedem Moment eine Geschichte zu machen.`,
+          deep: `Was dich von reinen "Entertainern" unterscheidet: Du beleuchtest andere, während du strahlst. Der klassische Fehler wäre, das für Performance zu halten – aber bei dir ist es authentischer Überschwang. Du liebst Menschen und du liebst das Leben, und das ist so offensichtlich, dass es ansteckt.
+
+Deine Herausforderung liegt in der Balance. Dein natürlicher Modus ist "Energie bringen" – aber manche Momente brauchen Stille. Lerne, die Bühne auch mal leer zu lassen. Dein Charme wirkt am stärksten, wenn du ihn in Mikrodosen gibst statt in Wellen.
+
+Die tiefste Form deines Charmes zeigt sich, wenn du still wirst – wenn jemand merkt, dass hinter dem Funkeln auch Tiefe liegt.`,
+          allies: ["Esprit-Funke", "Herzöffner"],
+          tension: ["Stiller Verzauberer (zu schnell)", "Präsenz-Anker (zu viel Bewegung)"],
+          shareText: "Meine Charme-Signatur: Die Magnetische ⚡ Ich erhelle Räume, ohne das Licht zu suchen."
+        },
+        {
+          id: "stiller-verzauberer",
+          title: "Der Stille Verzauberer",
+          tagline: "Dein Schweigen spricht lauter als die Worte anderer.",
+          icon: "moon-glow",
+          condition: { warmth: [3, 5], resonance: [4, 5], authenticity: [4, 5], presence: [3, 5] },
+          stats: {
+            "Blickkontakt-Tiefe": "Legendär",
+            "Worte/Wirkung": "3:97",
+            "Subtilität": "Meister",
+            "Spiegelneuronen": "Hyperaktiv"
+          },
+          core: `Du brauchst keine Worte, um zu verzaubern. Ein Blick von dir sagt mehr als die Monologe anderer. Dein Charme entfaltet sich nicht durch das, was du tust, sondern durch das, was du nicht tust – du drängst nicht, du überwältigst nicht, du bist einfach vollständig präsent.
+
+Menschen beschreiben Begegnungen mit dir oft als "eigenartig intensiv", ohne genau sagen zu können warum. Was sie spüren, ist der Chamäleon-Effekt in Perfektion: Du synchronisierst dich so natürlich mit anderen, dass sie sich verstanden fühlen, bevor du ein Wort gesagt hast.`,
+          deep: `Die Neurowissenschaft erklärt dich so: Deine Spiegelneuronen sind hyperaktiv. Du fühlst, was andere fühlen – nicht als Konzept, sondern als körperliche Realität. Deshalb passt sich deine Atmung an, deine Haltung, dein Tempo. Du bist ein lebender Resonanzkörper.
+
+Dein Charme ist der seltenste, weil er nicht lernbar ist. Man kann Wortgewandtheit trainieren, Humor üben – aber diese Art von Präsenz kommt aus einer tiefen Verbindung zu sich selbst.
+
+Deine Herausforderung: In einer lauten Welt wirst du manchmal übersehen. Dein Charme braucht Zeit, um zu wirken. Schnelle, oberflächliche Begegnungen sind nicht dein Terrain. Du blühst in der Tiefe.`,
+          allies: ["Herzöffner", "Präsenz-Anker"],
+          tension: ["Magnetische (zu laut)", "Esprit-Funke (zu viele Worte)"],
+          shareText: "Meine Charme-Signatur: Der Stille Verzauberer 🌙 Mein Schweigen spricht lauter als Worte."
+        },
+        {
+          id: "diplomat",
+          title: "Der Diplomat",
+          tagline: "Du bist der Klebstoff, der Gruppen zusammenhält.",
+          icon: "bridge",
+          condition: { warmth: [3, 4], resonance: [2, 4], authenticity: [2, 4], presence: [3, 5] },
+          stats: {
+            "Konflikt-Auflösung": "87%",
+            "Brücken gebaut": "∞",
+            "Gesicht-Wahren": "Kunst",
+            "Gruppenharmonie": "A+"
+          },
+          core: `Dein Charme ist ein Werkzeug der Verbindung. Du siehst, wo Brücken fehlen, und baust sie – elegant, diskret, ohne dass jemand merkt, dass du der Architekt warst. In deiner Gegenwart finden Menschen zueinander, die sonst aneinander vorbeilaufen würden.
+
+Du hast die seltene Gabe, Kritik so zu verpacken, dass sie nicht verletzt. Dein Charme dient dem größeren Ganzen: der Harmonie der Gruppe, dem Funktionieren des Teams, dem Frieden in der Familie.`,
+          deep: `Was du tust, ist evolutionär überlebenswichtig. In Stammesgesellschaften waren Menschen wie du die "Medizimnänner des Sozialen" – sie hielten Gruppen zusammen, als Konflikte sie zu zerreißen drohten.
+
+Dein Charme ist strategischer als bei anderen – aber nicht kalkuliert im negativen Sinn. Du denkst über Auswirkungen nach, bevor du handelst. Du fragst dich: "Wie kann ich diese Situation für alle verbessern?"
+
+Deine Herausforderung: Vergiss in all dem Brückenbauen nicht, auch mal auf deiner eigenen Seite des Flusses zu stehen. Deine Bedürfnisse zählen auch. Diplomatie nach außen darf nicht Selbstverleugnung nach innen bedeuten.`,
+          allies: ["Herzöffner", "Magnetische"],
+          tension: ["Esprit-Funke (zu direkt)", "Stiller Verzauberer (zu passiv)"],
+          shareText: "Meine Charme-Signatur: Der Diplomat 🌉 Ich bin der unsichtbare Klebstoff, der Gruppen zusammenhält."
+        },
+        {
+          id: "esprit-funke",
+          title: "Der Esprit-Funke",
+          tagline: "Dein Witz öffnet Türen, die anderen verschlossen bleiben.",
+          icon: "lightning-smile",
+          condition: { warmth: [2, 4], resonance: [1, 3], authenticity: [2, 4], presence: [1, 3] },
+          stats: {
+            "Schlagfertigkeit": "Ninja",
+            "Lacher/Minute": "3.7",
+            "Intellekt-Charme": "93%",
+            "Eisbrecher-Erfolg": "98%"
+          },
+          core: `Dein Charme ist eine Waffe – aber eine, die nie verletzt. Du findest den perfekten Moment für den perfekten Satz. Wo andere schweigen, platzierst du das Wort, das alles entspannt, verbindet, erleuchtet. Dein Humor ist kein Selbstzweck – er ist ein Geschenk an den Raum.
+
+Intellekt und Wärme sind bei dir untrennbar. Du lachst über dich selbst, bevor du über andere lachst. Deine Schlagfertigkeit ist nie eine Keule, sondern ein Florett.`,
+          deep: `Was andere nicht sehen: Hinter dem Witz liegt oft tiefe Beobachtung. Du nimmst Dinge wahr, die anderen entgehen – und verpackst sie in Humor, damit die Wahrheit verdaulich wird. Du bist ein Philosoph im Gewand eines Entertainers.
+
+Dein Charme ist in unserer Welt besonders wertvoll, weil du Leichtigkeit in die Schwere bringst. Menschen erinnern sich an dich, weil du sie zum Lachen gebracht hast – aber sie erinnern sich noch mehr daran, wie klug du dabei warst.
+
+Deine Herausforderung: Manchmal ist Stille die bessere Antwort. Dein Impuls, jeden Moment zu erhellen, kann in tiefen Momenten fehl am Platz sein. Lerne, den Witz manchmal zurückzuhalten – dein Schweigen wird dann umso kraftvoller wirken.`,
+          allies: ["Magnetische", "Diplomat"],
+          tension: ["Stiller Verzauberer (zu langsam)", "Präsenz-Anker (zu ernst)"],
+          shareText: "Meine Charme-Signatur: Der Esprit-Funke ⚡ Mein Witz öffnet Türen, die anderen verschlossen bleiben."
+        },
+        {
+          id: "praesenz-anker",
+          title: "Der Präsenz-Anker",
+          tagline: "In deiner Nähe findet der Sturm sein Auge.",
+          icon: "anchor-calm",
+          condition: { warmth: [4, 5], resonance: [3, 5], authenticity: [4, 5], presence: [5, 5] },
+          stats: {
+            "Polyvagale Wirkung": "Maximal",
+            "Cortisol-Senkung": "↓↓↓",
+            "Sicherheitssignal": "100%",
+            "Ruhe-Ausstrahlung": "Legendär"
+          },
+          core: `Du bist der seltene Mensch, bei dem andere automatisch langsamer atmen. Dein Charme wirkt nicht durch Worte oder Taten, sondern durch pure Präsenz. Du bist der sichere Hafen in jedem Sturm, der Fels, an dem die Wellen sich brechen.
+
+Was andere als Gelassenheit sehen, ist in Wahrheit tiefes Vertrauen – in dich selbst und in das Leben. Du hast verstanden, dass die meisten Dramen keine sind. Diese Weisheit strahlt aus dir heraus.`,
+          deep: `Die Polyvagal-Theorie erklärt dich perfekt: Dein Nervensystem ist so reguliert, dass es andere reguliert. Du sendest konstante Sicherheitssignale – durch deine Stimmmodulation, deine entspannte Haltung, deinen ruhigen Blick. Menschen in deiner Nähe gehen aus dem Kampf-oder-Flucht-Modus.
+
+Das ist kein Trick, das ist Biologie: Dein ventraler Vagusnerv ist besonders aktiv, was sich auf andere überträgt. Du bist ein wandelndes Beruhigungsmittel – aber eines, das wach macht statt müde.
+
+Deine Herausforderung: Deine Ruhe kann manchmal als Distanz missverstanden werden. Zeige aktiver, dass du emotional beteiligt bist, auch wenn du innerlich ruhig bleibst. Ein gelegentliches "Das berührt mich" macht deine Präsenz noch kraftvoller.`,
+          allies: ["Stiller Verzauberer", "Herzöffner"],
+          tension: ["Magnetische (zu viel Energie)", "Esprit-Funke (zu unruhig)"],
+          shareText: "Meine Charme-Signatur: Der Präsenz-Anker ⚓ In meiner Nähe findet jeder Sturm sein Auge."
+        }
+      ],
+      
+      share_config: {
+        hashtags: ["QuizzMe", "CharmeTyp", "Persönlichkeit"],
+        cta: "Tagge jemanden, dessen Charme du schätzt! 💫"
+      }
+    };
+    
+    // ═══════════════════════════════════════════════════════════════════
+    // QUIZ STATE & LOGIC
+    // ═══════════════════════════════════════════════════════════════════
+    
+    let currentQuestion = 0;
+    let scores = { warmth: 0, resonance: 0, authenticity: 0, presence: 0 };
+    let answers = [];
+    
+    function startQuiz() {
+      document.getElementById('startScreen').classList.add('hidden');
+      document.getElementById('quizScreen').classList.add('active');
+      showQuestion(0);
+    }
+    
+    function showQuestion(index) {
+      const q = quizData.questions[index];
+      document.getElementById('questionContext').textContent = q.context;
+      document.getElementById('questionText').textContent = q.text;
+      document.getElementById('currentQ').textContent = index + 1;
+      
+      const progress = Math.round(((index + 1) / quizData.questions.length) * 100);
+      document.getElementById('progressPercent').textContent = progress + '%';
+      document.getElementById('progressFill').style.width = progress + '%';
+      
+      const container = document.getElementById('optionsContainer');
+      container.innerHTML = '';
+      
+      q.options.forEach((opt, i) => {
+        const div = document.createElement('div');
+        div.className = 'option-card fade-in-up';
+        div.style.animationDelay = (i * 0.08) + 's';
+        div.innerHTML = `<p class="option-text">${opt.text}</p>`;
+        div.onclick = () => selectOption(i, opt.scores);
+        container.appendChild(div);
+      });
+    }
+    
+    function selectOption(index, optionScores) {
+      // Add scores
+      Object.keys(optionScores).forEach(dim => {
+        scores[dim] += optionScores[dim];
+      });
+      
+      // Visual feedback
+      const cards = document.querySelectorAll('.option-card');
+      cards[index].classList.add('selected');
+      
+      // Next question or result
+      setTimeout(() => {
+        currentQuestion++;
+        if (currentQuestion < quizData.questions.length) {
+          showQuestion(currentQuestion);
+        } else {
+          showResult();
+        }
+      }, 300);
+    }
+    
+    function calculateProfile() {
+      // Normalize scores to 1-5 scale
+      const maxPerDim = quizData.questions.length * 5;
+      const normalized = {
+        warmth: Math.round((scores.warmth / maxPerDim) * 4) + 1,
+        resonance: Math.round((scores.resonance / maxPerDim) * 4) + 1,
+        authenticity: Math.round((scores.authenticity / maxPerDim) * 4) + 1,
+        presence: Math.round((scores.presence / maxPerDim) * 4) + 1
+      };
+      
+      // Find best matching profile
+      let bestMatch = null;
+      let bestScore = -1;
+      
+      quizData.profiles.forEach(profile => {
+        let matchScore = 0;
+        Object.keys(profile.condition).forEach(dim => {
+          const [min, max] = profile.condition[dim];
+          const val = normalized[dim];
+          if (val >= min && val <= max) {
+            matchScore += 2;
+          } else if (Math.abs(val - min) <= 1 || Math.abs(val - max) <= 1) {
+            matchScore += 1;
+          }
+        });
+        
+        if (matchScore > bestScore) {
+          bestScore = matchScore;
+          bestMatch = profile;
+        }
+      });
+      
+      return { profile: bestMatch, normalized };
+    }
+    
+    function showResult() {
+      document.getElementById('quizScreen').classList.remove('active');
+      document.getElementById('resultScreen').classList.add('active');
+      
+      const { profile, normalized } = calculateProfile();
+      
+      // Populate result
+      document.getElementById('resultTitle').textContent = profile.title;
+      document.getElementById('resultTagline').textContent = profile.tagline;
+      document.getElementById('archetypeIcon').innerHTML = getArchetypeIcon(profile.icon);
+      
+      // Stats
+      const statsGrid = document.getElementById('statsGrid');
+      statsGrid.innerHTML = '';
+      Object.entries(profile.stats).forEach(([label, value]) => {
+        statsGrid.innerHTML += `
+          <div class="stat-item">
+            <div class="stat-label">${label}</div>
+            <div class="stat-value">${value}</div>
+          </div>
+        `;
+      });
+      
+      // Core description
+      document.getElementById('coreContent').innerHTML = profile.core.split('\n\n').map(p => `<p>${p}</p>`).join('');
+      
+      // Deep insight
+      document.getElementById('deepContent').innerHTML = profile.deep.split('\n\n').map(p => `<p>${p}</p>`).join('');
+      
+      // Compatibility
+      document.getElementById('compatGrid').innerHTML = `
+        <div class="compat-column compat-allies">
+          <h4>✨ Resonanz-Partner</h4>
+          <div class="compat-list">${profile.allies.join(', ')}</div>
+        </div>
+        <div class="compat-column compat-tension">
+          <h4>⚡ Kreative Spannung</h4>
+          <div class="compat-list">${profile.tension.join(', ')}</div>
+        </div>
+      `;
+      
+      // Share quote
+      document.getElementById('shareQuote').textContent = `"${profile.shareText}"`;
+      
+      // Save to localStorage
+      localStorage.setItem('quizzme_charme_result', JSON.stringify({
+        profile: profile.id,
+        title: profile.title,
+        scores: normalized,
+        timestamp: new Date().toISOString()
+      }));
+      
+      // Dispatch contribution event
+      dispatchContribution(profile, normalized);
+    }
+    
+    function getArchetypeIcon(iconType) {
+      const icons = {
+        'heart-rays': `<svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="60" cy="60" r="55" stroke="#D2A95A" stroke-width="0.5" opacity="0.3"/>
+          <path d="M60 90 C40 70, 28 50, 40 38 C48 30, 60 34, 60 45 C60 34, 72 30, 80 38 C92 50, 80 70, 60 90Z" stroke="#D2A95A" stroke-width="1.5" fill="none"/>
+          <line x1="30" y1="60" x2="20" y2="60" stroke="#D2A95A" stroke-width="1" opacity="0.6"/>
+          <line x1="90" y1="60" x2="100" y2="60" stroke="#D2A95A" stroke-width="1" opacity="0.6"/>
+          <line x1="60" y1="20" x2="60" y2="10" stroke="#D2A95A" stroke-width="1" opacity="0.6"/>
+          <line x1="38" y1="32" x2="32" y2="26" stroke="#D2A95A" stroke-width="1" opacity="0.6"/>
+          <line x1="82" y1="32" x2="88" y2="26" stroke="#D2A95A" stroke-width="1" opacity="0.6"/>
+        </svg>`,
+        'magnet-star': `<svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="60" cy="60" r="55" stroke="#D2A95A" stroke-width="0.5" opacity="0.3"/>
+          <path d="M60 25 L65 45 L85 45 L70 58 L75 78 L60 68 L45 78 L50 58 L35 45 L55 45 Z" stroke="#D2A95A" stroke-width="1.5" fill="none"/>
+          <circle cx="60" cy="60" r="8" stroke="#D2A95A" stroke-width="1" opacity="0.5"/>
+          <path d="M42 88 C42 76 78 76 78 88" stroke="#D2A95A" stroke-width="1" stroke-dasharray="2 2" opacity="0.4"/>
+        </svg>`,
+        'moon-glow': `<svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="60" cy="60" r="55" stroke="#D2A95A" stroke-width="0.5" opacity="0.3"/>
+          <path d="M70 30 C50 40 50 80 70 90 C40 85 25 60 40 40 C50 30 65 28 70 30Z" stroke="#D2A95A" stroke-width="1.5" fill="none"/>
+          <circle cx="85" cy="35" r="2" fill="#D2A95A" opacity="0.6"/>
+          <circle cx="95" cy="55" r="1.5" fill="#D2A95A" opacity="0.4"/>
+          <circle cx="90" cy="75" r="1" fill="#D2A95A" opacity="0.5"/>
+        </svg>`,
+        'bridge': `<svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="60" cy="60" r="55" stroke="#D2A95A" stroke-width="0.5" opacity="0.3"/>
+          <path d="M25 75 Q60 35 95 75" stroke="#D2A95A" stroke-width="1.5" fill="none"/>
+          <line x1="25" y1="75" x2="25" y2="90" stroke="#D2A95A" stroke-width="1.5"/>
+          <line x1="95" y1="75" x2="95" y2="90" stroke="#D2A95A" stroke-width="1.5"/>
+          <line x1="40" y1="62" x2="40" y2="90" stroke="#D2A95A" stroke-width="1" opacity="0.5"/>
+          <line x1="60" y1="55" x2="60" y2="90" stroke="#D2A95A" stroke-width="1" opacity="0.5"/>
+          <line x1="80" y1="62" x2="80" y2="90" stroke="#D2A95A" stroke-width="1" opacity="0.5"/>
+        </svg>`,
+        'lightning-smile': `<svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="60" cy="60" r="55" stroke="#D2A95A" stroke-width="0.5" opacity="0.3"/>
+          <path d="M65 25 L55 55 L68 55 L50 95 L60 60 L48 60 L65 25Z" stroke="#D2A95A" stroke-width="1.5" fill="none"/>
+          <path d="M35 75 Q60 95 85 75" stroke="#D2A95A" stroke-width="1" opacity="0.5" fill="none"/>
+        </svg>`,
+        'anchor-calm': `<svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="60" cy="60" r="55" stroke="#D2A95A" stroke-width="0.5" opacity="0.3"/>
+          <circle cx="60" cy="35" r="8" stroke="#D2A95A" stroke-width="1.5" fill="none"/>
+          <line x1="60" y1="43" x2="60" y2="90" stroke="#D2A95A" stroke-width="1.5"/>
+          <path d="M40 70 L60 90 L80 70" stroke="#D2A95A" stroke-width="1.5" fill="none"/>
+          <line x1="45" y1="55" x2="75" y2="55" stroke="#D2A95A" stroke-width="1.5"/>
+        </svg>`
+      };
+      return icons[iconType] || icons['heart-rays'];
+    }
+    
+    function dispatchContribution(profile, normalized) {
+      const event = new CustomEvent('sp.contribution.v1', {
+        detail: {
+          schema: 'sp.contribution.v1',
+          source: 'charme-quiz',
+          timestamp: new Date().toISOString(),
+          markers: [
+            { type: 'marker.psyche.charme_type', value: profile.id },
+            { type: 'marker.psyche.charme_title', value: profile.title }
+          ],
+          traits: [
+            { id: 'warmth', label: 'Wärme-Orientierung', score: normalized.warmth * 20, band: getBand(normalized.warmth) },
+            { id: 'resonance', label: 'Resonanz-Modus', score: normalized.resonance * 20, band: getBand(normalized.resonance) },
+            { id: 'authenticity', label: 'Authentizität', score: normalized.authenticity * 20, band: getBand(normalized.authenticity) },
+            { id: 'presence', label: 'Präsenz-Qualität', score: normalized.presence * 20, band: getBand(normalized.presence) }
+          ],
+          tags: ['charme', 'soziale-intelligenz', profile.id],
+          unlocks: ['charme-deep-analysis', 'compatibility-matrix']
+        }
+      });
+      window.dispatchEvent(event);
+    }
+    
+    function getBand(score) {
+      if (score <= 1) return 'niedrig';
+      if (score <= 2) return 'unterdurchschnittlich';
+      if (score <= 3) return 'durchschnittlich';
+      if (score <= 4) return 'hoch';
+      return 'außergewöhnlich';
+    }
+    
+    function shareResult() {
+      const result = JSON.parse(localStorage.getItem('quizzme_charme_result'));
+      const text = `${result.title} – Das ist meine Charme-Signatur! ✨ Entdecke deine auf QuizzMe.`;
+      
+      if (navigator.share) {
+        navigator.share({
+          title: 'Meine Charme-Signatur',
+          text: text,
+          url: window.location.href
+        });
+      } else {
+        navigator.clipboard.writeText(text + ' ' + window.location.href);
+        alert('In Zwischenablage kopiert! 📋');
+      }
+    }
+    
+    function restartQuiz() {
+      currentQuestion = 0;
+      scores = { warmth: 0, resonance: 0, authenticity: 0, presence: 0 };
+      answers = [];
+      document.getElementById('resultScreen').classList.remove('active');
+      document.getElementById('startScreen').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>

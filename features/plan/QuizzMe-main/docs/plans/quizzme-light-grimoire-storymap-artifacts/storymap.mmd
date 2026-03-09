@@ -1,0 +1,43 @@
+flowchart LR
+  %% QuizzMe Light‑Grimoire Character Sheet — Story Map
+  %% Steps (links→rechts) mit Story‑IDs unter jedem Schritt
+
+  subgraph A1["A1 — Character Sheet nutzen"]
+    A1_S1["Character Sheet öffnen<br/>US-003<br/>US-007<br/>US-026"]
+    A1_S2["Profil laden & ableiten<br/>US-004<br/>US-005<br/>US-006"]
+    A1_S1 --> A1_S2
+    A1_S3["Kernwerte verstehen<br/>US-008<br/>US-009"]
+    A1_S2 --> A1_S3
+    A1_S4["Klima‑Achsen lesen<br/>US-010<br/>US-011"]
+    A1_S3 --> A1_S4
+    A1_S5["Abgeleitete Werte sehen<br/>US-012"]
+    A1_S4 --> A1_S5
+    A1_S6["Archetypen & Story lesen (optional)<br/>US-013"]
+    A1_S5 --> A1_S6
+    A1_S7["After‑Quiz Deltas erkennen<br/>US-015<br/>US-016<br/>US-018<br/>US-025"]
+    A1_S6 --> A1_S7
+    A1_S8["Teilen / Link kopieren<br/>US-014"]
+    A1_S7 --> A1_S8
+  end
+
+  subgraph A2["A2 — System & Qualität sichern"]
+    A2_T1["Theme‑Tokens & Typografie<br/>US-001<br/>US-002<br/>US-024"]
+    A2_T2["Ornament‑Assets<br/>US-019"]
+    A2_T1 --> A2_T2
+    A2_T3["Motion & Reduced‑Motion<br/>US-017"]
+    A2_T2 --> A2_T3
+    A2_T4["Accessibility (WCAG AA)<br/>US-020"]
+    A2_T3 --> A2_T4
+    A2_T5["Tests (Unit/Component/E2E)<br/>US-021<br/>US-022<br/>US-028<br/>US-029"]
+    A2_T4 --> A2_T5
+    A2_T6["Performance<br/>US-023"]
+    A2_T5 --> A2_T6
+    A2_T7["Handoff & Dokumentation<br/>US-027"]
+    A2_T6 --> A2_T7
+  end
+
+  %% Release‑Slices (Cut‑Lines):
+  %% SL‑1: US-001, US-002, US-003, US-004, US-005, US-006, US-007, US-008, US-009, US-010, US-012, US-014, US-015, US-016, US-020, US-022, US-026
+  %% SL‑2: US-017, US-018, US-019, US-023, US-028, US-029
+  %% SL‑3: US-013, US-024, US-025
+  %% SL‑4: US-027

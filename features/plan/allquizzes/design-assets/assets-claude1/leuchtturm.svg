@@ -1,0 +1,15 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feFlood flood-color="#d8c868" flood-opacity="0.8"/>
+      <feComposite in2="blur" operator="in"/>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <path d="M35 88 L40 45 L60 45 L65 88 Z" fill="none" stroke="#d8c868" stroke-width="1.5" stroke-linejoin="round" filter="url(#glow)"/>
+  <rect x="42" y="32" width="16" height="13" fill="none" stroke="#d8c868" stroke-width="1.5" filter="url(#glow)"/>
+  <path d="M45 32 L50 22 L55 32" fill="none" stroke="#d8c868" stroke-width="1.5" stroke-linejoin="round" filter="url(#glow)"/>
+  <line x1="30" y1="38" x2="18" y2="35" stroke="#d8c868" stroke-width="1" stroke-linecap="round" filter="url(#glow)"/>
+  <line x1="70" y1="38" x2="82" y2="35" stroke="#d8c868" stroke-width="1" stroke-linecap="round" filter="url(#glow)"/>
+</svg>

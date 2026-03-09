@@ -44,7 +44,7 @@ Node 20.19+ required (pinned in `.nvmrc`). No test suite — `npm run lint` (tsc
 | Path | Purpose |
 |------|---------|
 | `src/App.tsx` | Root component — holds all app state, orchestrates the Splash → Auth → Form → Dashboard flow |
-| `src/contexts/AuthContext.tsx` | Supabase auth provider (signIn/signUp/signOut). Signup hits server-side `/api/auth/signup` (auto-confirm), falls back to client-side Supabase signup if server unreachable |
+| `src/contexts/AuthContext.tsx` | Supabase auth provider (signIn/signUp/signOut). Signup is client-side via Supabase SDK. Detects existing users via empty `identities` array and auto-redirects to sign-in |
 | `src/services/api.ts` | BAFE API client. Maps BAFE response formats (German keys like `stamm/zweig/tier`) to Dashboard-expected English keys. Zodiac signs mapped from 0-based index to name strings |
 | `src/services/gemini.ts` | Gemini Flash integration for horoscope text generation (model: `gemini-3-flash-preview`, 15s timeout) |
 | `src/lib/supabase.ts` | Browser-side Supabase client singleton (init from `VITE_SUPABASE_*` env vars) |

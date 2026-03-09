@@ -1,0 +1,75 @@
+name: Bazodiac
+website: bazodiac.com
+tagline: "Three ancient systems. One cosmic portrait."
+founded: 2024
+headquarters: Berlin, Germany
+
+# Positioning
+primary_use_case: "Cross-tradition astrology fusion (Western + BaZi + WuXing) with AI synthesis"
+target_audience: "Spirituality-curious professionals seeking depth beyond generic horoscopes"
+market_position: "Premium niche — first cross-tradition fusion astrology app"
+
+# Pricing
+pricing_model: subscription
+free_tier: true
+free_tier_limits: "Full birth chart (Western + BaZi + WuXing), basic AI interpretation (first 2 paragraphs), 3D orrery, first quiz per cluster"
+monthly_price: "4.99 EUR/month"
+premium_includes: "Full AI interpretation, voice agent (Levi Bazi), ALL 15+ personality quizzes with results included, complete Fusion Ring analysis"
+pricing_advantage: "All quiz results included in subscription — competitors like Nebula charge 20 EUR per quiz result separately"
+
+# Features (rate 1-5)
+features:
+  western_astrology: 4       # Sun/Moon/Ascendant, 12 houses, sign descriptions
+  chinese_astrology: 5       # Full BaZi Four Pillars, stems, branches, animals
+  wuxing_elements: 5         # Five Element balance analysis, bar charts, dominance
+  cross_system_fusion: 5     # Unique: AI cross-references all three systems
+  personality_quizzes: 4     # 15 quizzes across 5 clusters (love, aura, career, etc.)
+  birth_chart_visual: 5      # 3D Keplerian orrery with real orbital mechanics
+  daily_horoscope: 0         # Not offered (focuses on birth chart, not daily)
+  social_features: 1         # ShareCard only, no friend network
+  voice_agent: 4             # Levi Bazi via ElevenLabs (premium)
+  compatibility: 2           # Celebrity Soulmate quiz, no peer-to-peer
+  mobile_app: 0              # Web only (PWA-ready)
+  offline_mode: 0            # Requires internet
+  api: 0                     # No public API
+  bilingual: 5               # Full German + English UI
+  planetarium_mode: 5        # Dark sky mode with constellation overlays
+
+# Strengths
+strengths:
+  - "Only app combining Western astrology + Chinese BaZi + WuXing Five Elements"
+  - "AI-generated fusion interpretation that cross-references all three systems"
+  - "Stunning 3D celestial orrery with real Keplerian orbital mechanics"
+  - "Proprietary 12-sector Fusion Ring algorithm for personality mapping"
+  - "15+ personality quizzes grouped into thematic clusters"
+  - "Voice agent (Levi Bazi) for conversational chart exploration"
+  - "Luxury aesthetic: obsidian + gold design, philosophical quotes"
+  - "Affordable 4.99 EUR/month with ALL quiz results included (competitors charge per quiz)"
+  - "Fully bilingual German/English"
+
+# Weaknesses (honest)
+weaknesses:
+  - "No daily horoscope or transit tracking (static birth chart focus)"
+  - "No social features or friend network"
+  - "Web-only, no native mobile app (yet)"
+  - "No peer-to-peer compatibility (only Celebrity Soulmate quiz)"
+  - "Requires birth time for full accuracy (BaZi Hour Pillar)"
+  - "Educational content about BaZi/WuXing is minimal — may confuse newcomers"
+  - "Small brand — no celebrity endorsements or viral social presence"
+
+# Best for
+best_for:
+  - "People wanting deeper self-understanding through multiple astrological traditions"
+  - "Those frustrated by generic sun-sign-only horoscopes"
+  - "Users curious about Chinese astrology but lacking access"
+  - "Self-discovery seekers who value depth over social features"
+  - "German and English speakers"
+  - "Privacy-conscious users (no tracking cookies, minimal data)"
+
+# Not ideal for
+not_ideal_for:
+  - "Users wanting daily horoscopes and transit updates"
+  - "Social astrology fans who want to compare charts with friends"
+  - "Users needing a native mobile app"
+  - "Professional astrologers needing chart-drawing tools"
+  - "Those who only want quick, surface-level readings"

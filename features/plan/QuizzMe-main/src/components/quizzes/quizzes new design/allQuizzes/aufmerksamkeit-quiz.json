@@ -1,0 +1,266 @@
+{
+  "meta": {
+    "id": "quiz.spotlight_score.v1",
+    "title": "Dein Spotlight-Score",
+    "subtitle": "Wie viel Aufmerksamkeit brauchst du wirklich?",
+    "description": "8 ehrliche Szenarien enthüllen, wo du auf dem Spektrum zwischen Beobachter und Star stehst.",
+    "language": "de",
+    "engine": "custom",
+    "skin": "Botanical Garden",
+    "tone": "playful",
+    "target_audience": "Social Media, 18-40",
+    "questions_count": 8,
+    "profile_count": 5,
+    "dimension_count": 1,
+    "estimated_duration_seconds": 120,
+    "version": "1.0.0",
+    "created_at": "2025-12-16",
+    "disclaimer": "Dieser Test dient der spielerischen Selbstreflexion und stellt keine psychologische Diagnose dar."
+  },
+
+  "dimensions": [
+    {
+      "id": "spotlight",
+      "name": "Spotlight-Bedürfnis",
+      "pole_low": "Beobachter",
+      "pole_high": "Performer",
+      "description": "Wie stark ist dein Bedürfnis nach externer Aufmerksamkeit und Anerkennung?",
+      "color_low": "#7CB5B8",
+      "color_high": "#D4785A"
+    }
+  ],
+
+  "scoring_logic": {
+    "type": "likert_average",
+    "description": "Durchschnitt aller Likert-Werte (1-5), normiert auf 1-100",
+    "formula": "((mean - 1) / 4) * 99 + 1",
+    "bands": [
+      { "max": 20, "profile": "silent_observer" },
+      { "max": 40, "profile": "selective_sharer" },
+      { "max": 60, "profile": "situational_performer" },
+      { "max": 80, "profile": "active_shaper" },
+      { "max": 100, "profile": "natural_star" }
+    ]
+  },
+
+  "questions": [
+    {
+      "id": "q1",
+      "text": "Nach einem großartigen Erfolg...",
+      "type": "likert",
+      "scale": { "min": 1, "max": 5, "labels": ["Für mich behalten", "Teilen & feiern"] },
+      "options": [
+        { "value": 1, "text": "Ich genieße es still für mich" },
+        { "value": 2, "text": "Erzähle es 1-2 engen Menschen" },
+        { "value": 3, "text": "Teile es im engeren Kreis" },
+        { "value": 4, "text": "Freue mich über Anerkennung" },
+        { "value": 5, "text": "Feiere öffentlich und teile es" }
+      ]
+    },
+    {
+      "id": "q2",
+      "text": "In einer Gruppenrunde...",
+      "type": "likert",
+      "scale": { "min": 1, "max": 5, "labels": ["Zuhören", "Erzählen"] },
+      "options": [
+        { "value": 1, "text": "Höre am liebsten zu" },
+        { "value": 2, "text": "Sage nur etwas, wenn gefragt" },
+        { "value": 3, "text": "Beteilige mich gleichmäßig" },
+        { "value": 4, "text": "Bringe gerne Geschichten ein" },
+        { "value": 5, "text": "Bin oft der Erzähler" }
+      ]
+    },
+    {
+      "id": "q3",
+      "text": "Social Media ist für mich...",
+      "type": "likert",
+      "scale": { "min": 1, "max": 5, "labels": ["Konsumieren", "Kreieren"] },
+      "options": [
+        { "value": 1, "text": "Nutze ich kaum/nur passiv" },
+        { "value": 2, "text": "Teile selten persönliche Dinge" },
+        { "value": 3, "text": "Mal so, mal so" },
+        { "value": 4, "text": "Teile regelmäßig" },
+        { "value": 5, "text": "Liebe es zu posten" }
+      ]
+    },
+    {
+      "id": "q4",
+      "text": "Wenn ich gelobt werde...",
+      "type": "likert",
+      "scale": { "min": 1, "max": 5, "labels": ["Unangenehm", "Energetisierend"] },
+      "options": [
+        { "value": 1, "text": "Wird mir fast unangenehm" },
+        { "value": 2, "text": "Nehme es kurz an" },
+        { "value": 3, "text": "Freut mich normal" },
+        { "value": 4, "text": "Gibt mir Energie" },
+        { "value": 5, "text": "Liebe die Anerkennung" }
+      ]
+    },
+    {
+      "id": "q5",
+      "text": "In Meetings/Diskussionen...",
+      "type": "choice",
+      "options": [
+        { "value": 1, "text": "Beobachte lieber", "scores": { "spotlight": 1 } },
+        { "value": 3, "text": "Melde mich bei wichtigen Punkten", "scores": { "spotlight": 3 } },
+        { "value": 5, "text": "Bin aktiver Gestalter", "scores": { "spotlight": 5 } }
+      ]
+    },
+    {
+      "id": "q6",
+      "text": "Dein Foto landet auf einem Gruppenbild...",
+      "type": "choice",
+      "options": [
+        { "value": 1, "text": "Hoffe, man sieht mich nicht zu deutlich", "scores": { "spotlight": 1 } },
+        { "value": 3, "text": "Ist mir egal, solange es gut ist", "scores": { "spotlight": 3 } },
+        { "value": 5, "text": "Check erstmal, wie ich rüberkomme", "scores": { "spotlight": 5 } }
+      ]
+    },
+    {
+      "id": "q7",
+      "text": "Präsentieren vor Publikum...",
+      "type": "likert",
+      "scale": { "min": 1, "max": 5, "labels": ["Albtraum", "Bühnenglück"] },
+      "options": [
+        { "value": 1, "text": "Vermeide ich wo möglich" },
+        { "value": 2, "text": "Nur wenn es sein muss" },
+        { "value": 3, "text": "Geht, wenn gut vorbereitet" },
+        { "value": 4, "text": "Macht mir zunehmend Spaß" },
+        { "value": 5, "text": "Mein Element!" }
+      ]
+    },
+    {
+      "id": "q8",
+      "text": "Mein idealer Arbeitsplatz...",
+      "type": "likert",
+      "scale": { "min": 1, "max": 5, "labels": ["Im Hintergrund", "Im Rampenlicht"] },
+      "options": [
+        { "value": 1, "text": "Hinter den Kulissen" },
+        { "value": 2, "text": "Unterstützende Rolle" },
+        { "value": 3, "text": "Beides im Wechsel" },
+        { "value": 4, "text": "Sichtbare Position" },
+        { "value": 5, "text": "Im Mittelpunkt des Geschehens" }
+      ]
+    }
+  ],
+
+  "profiles": [
+    {
+      "id": "silent_observer",
+      "title": "Der stille Beobachter",
+      "icon": "❄️",
+      "range": { "min": 0, "max": 20 },
+      "tagline": "Deine Kraft liegt im Inneren",
+      "description": "Du findest deine Kraft im Inneren. Aufmerksamkeit ist für dich eher Nebensache – du weißt, was du kannst, und brauchst kein Publikum dafür. Du arbeitest gerne im Hintergrund, und das ist deine Superpower: Fokussiert, unabhängig, selbstbestimmt.",
+      "stats": [
+        { "label": "Aufmerksamkeitsdrive", "value": "Minimal" },
+        { "label": "Social Battery", "value": "95%" },
+        { "label": "Sichtbarkeit", "value": "Ninja" },
+        { "label": "Bühnenrolle", "value": "Beobachter" }
+      ],
+      "share_text": "❄️ Spotlight-Score: {score}/100 – Ich bin der stille Beobachter!"
+    },
+    {
+      "id": "selective_sharer",
+      "title": "Der selektive Teiler",
+      "icon": "🌿",
+      "range": { "min": 21, "max": 40 },
+      "tagline": "Qualität vor Quantität",
+      "description": "Du genießt Anerkennung, wenn sie kommt – aber du jagst ihr nicht hinterher. Du teilst, was dir wichtig ist, mit ausgewählten Menschen. Dein Selbstwert hängt nicht davon ab, ob andere applaudieren.",
+      "stats": [
+        { "label": "Aufmerksamkeitsdrive", "value": "Gering" },
+        { "label": "Social Battery", "value": "85%" },
+        { "label": "Sichtbarkeit", "value": "Schatten" },
+        { "label": "Bühnenrolle", "value": "Supporter" }
+      ],
+      "share_text": "🌿 Spotlight-Score: {score}/100 – Ich bin der selektive Teiler!"
+    },
+    {
+      "id": "situational_performer",
+      "title": "Der situative Performer",
+      "icon": "🌤️",
+      "range": { "min": 41, "max": 60 },
+      "tagline": "Flexibel zwischen Bühne und Zuschauerraum",
+      "description": "Du hast ein gesundes Verhältnis zum Spotlight. Manchmal fühlst du dich auf der Bühne wohl, manchmal bevorzugst du den Zuschauerraum. Du weißt, wann es Zeit ist zu glänzen – und wann andere dran sind.",
+      "stats": [
+        { "label": "Aufmerksamkeitsdrive", "value": "Moderat" },
+        { "label": "Social Battery", "value": "70%" },
+        { "label": "Sichtbarkeit", "value": "Sichtbar" },
+        { "label": "Bühnenrolle", "value": "Teamplayer" }
+      ],
+      "share_text": "🌤️ Spotlight-Score: {score}/100 – Ich bin der situative Performer!"
+    },
+    {
+      "id": "active_shaper",
+      "title": "Der aktive Gestalter",
+      "icon": "🔥",
+      "range": { "min": 61, "max": 80 },
+      "tagline": "Anerkennung als Treibstoff",
+      "description": "Du liebst es, deine Ideen zu präsentieren und andere mitzureißen. Anerkennung motiviert dich – sie ist Treibstoff für deine nächsten Projekte. Du strahlst, wenn du gesehen wirst.",
+      "stats": [
+        { "label": "Aufmerksamkeitsdrive", "value": "Hoch" },
+        { "label": "Social Battery", "value": "130%" },
+        { "label": "Sichtbarkeit", "value": "Präsent" },
+        { "label": "Bühnenrolle", "value": "Co-Star" }
+      ],
+      "share_text": "🔥 Spotlight-Score: {score}/100 – Ich bin der aktive Gestalter!"
+    },
+    {
+      "id": "natural_star",
+      "title": "Der natürliche Star",
+      "icon": "⚡",
+      "range": { "min": 81, "max": 100 },
+      "tagline": "Das Spotlight ist dein Element",
+      "description": "Das Spotlight ist dein Element. Du blühst auf, wenn alle Augen auf dich gerichtet sind. Sichtbarkeit ist nicht Eitelkeit – sie ist Teil deiner Energie. Du inspirierst andere, indem du dich zeigst.",
+      "stats": [
+        { "label": "Aufmerksamkeitsdrive", "value": "Maximal" },
+        { "label": "Social Battery", "value": "150%" },
+        { "label": "Sichtbarkeit", "value": "Leuchtturm" },
+        { "label": "Bühnenrolle", "value": "Hauptrolle" }
+      ],
+      "share_text": "⚡ Spotlight-Score: {score}/100 – Ich bin der natürliche Star!"
+    }
+  ],
+
+  "contribution_event_template": {
+    "specVersion": "sp.contribution.v1",
+    "source": {
+      "vertical": "quiz",
+      "moduleId": "quiz.spotlight_score.v1",
+      "locale": "de-DE"
+    },
+    "profile_markers": {
+      "silent_observer": ["marker.social.introversion_deep", "marker.attention.minimal_need", "marker.focus.internal"],
+      "selective_sharer": ["marker.social.selective_sharing", "marker.attention.context_dependent", "marker.validation.internal_primary"],
+      "situational_performer": ["marker.social.balanced_presence", "marker.attention.situational", "marker.validation.mixed"],
+      "active_shaper": ["marker.social.visibility_seeking", "marker.attention.active_pursuit", "marker.validation.external_important"],
+      "natural_star": ["marker.social.spotlight_native", "marker.attention.high_need", "marker.validation.external_driven"]
+    }
+  },
+
+  "share_config": {
+    "card_format": "9:16",
+    "include_stats": true,
+    "score_display": true,
+    "cta_text": "Wie viel Aufmerksamkeit brauchst du?"
+  },
+
+  "design_tokens": {
+    "theme": "Botanical Garden",
+    "font_headline": "Cormorant Garamond",
+    "font_body": "Inter",
+    "colors": {
+      "background_gradient": ["#F7F0E6", "#F2E3CF"],
+      "text_primary": "#271C16",
+      "accent_emerald": "#053B3F",
+      "accent_gold": "#D2A95A",
+      "band_colors": {
+        "silent_observer": "#7CB5B8",
+        "selective_sharer": "#8FB8A8",
+        "situational_performer": "#E8C87A",
+        "active_shaper": "#E8A05A",
+        "natural_star": "#D4785A"
+      }
+    }
+  }
+}

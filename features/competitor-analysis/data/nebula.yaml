@@ -1,0 +1,79 @@
+name: Nebula
+website: nebula.org
+tagline: "Your cosmic guide"
+founded: 2019
+headquarters: N/A
+
+# Positioning
+primary_use_case: "All-in-one astrology + psychic platform"
+target_audience: "Broad casual-to-serious astrology users wanting a one-stop shop"
+market_position: "Mass market — breadth over depth"
+
+# Pricing
+pricing_model: subscription
+free_tier: false
+free_trial: "3-day free trial"
+weekly_price: "$9.99/week"
+annual_price: "$49.99/year"
+lifetime_price: "$119.99"
+add_on_reports: "$49.99 each"
+
+# Features
+features:
+  western_astrology: 4
+  chinese_astrology: 1
+  wuxing_elements: 0
+  cross_system_fusion: 0
+  personality_quizzes: 2
+  birth_chart_visual: 3
+  daily_horoscope: 4
+  social_features: 2
+  voice_agent: 0
+  compatibility: 3
+  mobile_app: 5
+  offline_mode: 1
+  bilingual: 2
+
+# Strengths
+strengths:
+  - "All-in-one platform (astrology + psychic + learning)"
+  - "1000+ live psychic advisors"
+  - "Comprehensive learning center"
+  - "Polished, modern UI"
+  - "160K+ App Store ratings"
+
+# Weaknesses
+weaknesses:
+  - "Aggressive monetization (auto-renew, expensive add-ons)"
+  - "No free tier — only 3-day trial"
+  - "$9.99/WEEK is extremely expensive"
+  - "Mixed trust reviews on Trustpilot"
+  - "'Wallet drain' complaints are common"
+  - "Generic free interpretations"
+  - "No BaZi or Eastern astrology depth"
+
+# Best for
+best_for:
+  - "Users wanting live psychic readings alongside astrology"
+  - "Those who want a learning center"
+  - "Users comfortable with subscription pricing"
+
+# Not ideal for
+not_ideal_for:
+  - "Budget-conscious users"
+  - "Privacy-concerned users"
+  - "Those wanting depth in Chinese astrology"
+  - "Users wary of aggressive monetization"
+
+# Common complaints
+common_complaints:
+  - "Way too expensive ($9.99/week)"
+  - "Hard to cancel subscription"
+  - "Auto-renew traps"
+  - "Reports feel generic"
+  - "Add-on reports at $49.99 each feel predatory"
+
+# Search volume indicators
+search_terms:
+  - "nebula astrology alternative": medium
+  - "nebula app review": high

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { BrowserRouter, Link, useLocation } from "react-router-dom";
 import { BirthForm } from "./components/BirthForm";
-import { Dashboard } from "./components/Dashboard";
 import { Splash } from "./components/Splash";
 import { AuthGate } from "./components/AuthGate";
 import { useAuth } from "./contexts/AuthContext";
@@ -15,8 +15,20 @@ import {
   fetchAstroProfile,
 } from "./services/supabase";
 import { useAmbientePlayer } from "./hooks/useAmbientePlayer";
+import { trackEvent } from "./lib/analytics";
 import { usePlanetarium } from "./contexts/PlanetariumContext";
-import { Volume2, VolumeX, LogOut, LayoutGrid, Telescope } from "lucide-react";
+import { FusionRingProvider } from "./contexts/FusionRingContext";
+import { AppLayoutProvider } from "./contexts/AppLayoutContext";
+import { AppRoutes } from "./router";
+import { Volume2, VolumeX, LogOut, LayoutGrid, Telescope, CircleDot } from "lucide-react";
+
+// ─── Profile loading states ──────────────────────────────────────────
+type ProfileState =
+  | "idle"           // no user logged in
+  | "loading"        // fetching from Supabase
+  | "found"          // profile loaded → show Dashboard
+  | "not-found"      // no profile → show Onboarding (BirthForm)
+  | "error";         // fetch failed → show Onboarding as fallback
 
 export default function App() {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -26,57 +38,119 @@ export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [siteVisible, setSiteVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [profileLoading, setProfileLoading] = useState(false);
+
+  // Profile state machine
+  const [profileState, setProfileState] = useState<ProfileState>("idle");
   const [apiData, setApiData] = useState<any>(null);
   const [apiIssues, setApiIssues] = useState<ApiIssue[]>([]);
   const [interpretation, setInterpretation] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [hasPersistedProfile, setHasPersistedProfile] = useState(false);
   const [birthDateStr, setBirthDateStr] = useState<string | null>(null);
+  const [isFirstReading, setIsFirstReading] = useState(false);
 
   const profileFetchedForRef = useRef<string | null>(null);
   const ambiente = useAmbientePlayer();
 
-  // ── T-001: Load existing astro profile on login ──────────────────────
+  // ── Handle ?upgrade=success redirect from Stripe ────────────────────
   useEffect(() => {
-    if (!user || apiData) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("upgrade") === "success") {
+      // Clean the URL so it doesn't persist on refresh
+      trackEvent('payment_completed');
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // PROFILE LOADING — runs once when user logs in
+  // ═══════════════════════════════════════════════════════════════════════
+  useEffect(() => {
+    if (!user) {
+      // Logged out → reset everything
+      setProfileState("idle");
+      setApiData(null);
+      setInterpretation(null);
+      setBirthDateStr(null);
+      setApiIssues([]);
+      setError(null);
+      setIsFirstReading(false);
+      profileFetchedForRef.current = null;
+      return;
+    }
+
+    // Already fetched for this user? Don't re-fetch.
     if (profileFetchedForRef.current === user.id) return;
     profileFetchedForRef.current = user.id;
 
-    setProfileLoading(true);
+    setProfileState("loading");
+
     fetchAstroProfile(user.id)
-      .then((profile) => {
+      .then(async (profile) => {
         if (profile?.astro_json) {
           const json = profile.astro_json as any;
-          setApiData({
-            bazi:    json.bafe?.bazi    ?? json.bazi,
-            western: json.bafe?.western ?? json.western,
-            fusion:  json.bafe?.fusion  ?? json.fusion,
-            wuxing:  json.bafe?.wuxing  ?? json.wuxing,
-            tst:     json.bafe?.tst     ?? json.tst,
-            issues: [],
-          });
-          setInterpretation(json.bafe?.interpretation ?? json.interpretation ?? null);
-          setHasPersistedProfile(true);
+
+          // Reconstruct apiData from stored JSON
+          // Support both old format { bafe: {…}, interpretation } and new flat format
+          const bazi    = json.bazi    ?? json.bafe?.bazi;
+          const western = json.western ?? json.bafe?.western;
+          const fusion  = json.fusion  ?? json.bafe?.fusion;
+          const wuxing  = json.wuxing  ?? json.bafe?.wuxing;
+          const tst     = json.tst     ?? json.bafe?.tst;
+
+          setApiData({ bazi, western, fusion, wuxing, tst, issues: [] });
+
+          // Retrieve stored interpretation
+          let storedInterpretation =
+            json.interpretation ?? json.bafe?.interpretation ?? null;
+
+          // If interpretation is missing (e.g. Gemini was down when profile was created),
+          // generate it now so the Dashboard can show.
+          if (!storedInterpretation) {
+            try {
+              storedInterpretation = await generateInterpretation(
+                { bazi, western, fusion, wuxing, tst },
+                lang,
+              );
+            } catch {
+              storedInterpretation =
+                lang === "de"
+                  ? "Dein kosmisches Profil wird geladen…"
+                  : "Loading your cosmic profile…";
+            }
+          }
+
+          setInterpretation(storedInterpretation);
+
+          // Birth date
           if (profile.birth_date) {
             const time = profile.birth_time || "12:00";
             setBirthDateStr(`${profile.birth_date}T${time}:00`);
           }
+
+          setProfileState("found");
+        } else {
+          // No profile yet — user needs to go through onboarding
+          setProfileState("not-found");
         }
       })
-      .catch((err) => console.warn("Profile load failed:", err))
-      .finally(() => setProfileLoading(false));
-  }, [user, apiData]);
+      .catch((err) => {
+        console.error("Profile load failed:", err);
+        setProfileState("error"); // fallback: show onboarding
+      });
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleEnter = () => {
-    setShowSplash(false);
-    setTimeout(() => setSiteVisible(true), 100);
-    ambiente.start();
-  };
-
+  // ═══════════════════════════════════════════════════════════════════════
+  // ONBOARDING SUBMIT — only runs once per user lifetime
+  // ═══════════════════════════════════════════════════════════════════════
   const handleSubmit = async (data: BirthData) => {
+    if (!user) return;
+
+    // Double-check: if user already has a profile, don't create another
+    if (profileState === "found") return;
+
     setIsLoading(true);
     setError(null);
+    trackEvent('reading_started');
     try {
       const results = await calculateAll(data);
       setApiData(results);
@@ -85,30 +159,34 @@ export default function App() {
 
       const aiInterpretation = await generateInterpretation(results, lang);
       setInterpretation(aiInterpretation);
+      trackEvent('reading_completed');
 
-      if (user && !hasPersistedProfile) {
-        try {
-          await Promise.all([
-            upsertAstroProfile(user.id, data, results, aiInterpretation),
-            insertBirthData(user.id, data),
-            insertNatalChart(user.id, results),
-          ]);
-          setHasPersistedProfile(true);
-        } catch (persistErr) {
-          console.warn("Supabase persist failed:", persistErr);
-        }
+      // Persist to Supabase (all three functions check for duplicates internally)
+      try {
+        await Promise.all([
+          upsertAstroProfile(user.id, data, results, aiInterpretation),
+          insertBirthData(user.id, data),
+          insertNatalChart(user.id, results),
+        ]);
+      } catch (persistErr) {
+        console.warn("Supabase persist failed:", persistErr);
+        // Non-fatal: user can still see their Dashboard
       }
-    } catch (err: any) {
+
+      setIsFirstReading(true);
+      setProfileState("found");
+    } catch (err: unknown) {
       console.error("API Error:", err);
-      setError(
-        err.message ||
-          "An error occurred while calculating your chart. Please check your inputs and try again.",
-      );
+      const msg = err instanceof Error ? err.message : "";
+      setError(msg || t("form.errorCalc"));
     } finally {
       setIsLoading(false);
     }
   };
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // REGENERATE INTERPRETATION (re-run AI on existing data)
+  // ═══════════════════════════════════════════════════════════════════════
   const handleRegenerate = async () => {
     if (!apiData) return;
     setIsLoading(true);
@@ -116,22 +194,34 @@ export default function App() {
     try {
       const aiInterpretation = await generateInterpretation(apiData, lang);
       setInterpretation(aiInterpretation);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("AI Generation Error:", err);
-      setError(err.message || "An error occurred while regenerating your interpretation.");
+      const msg = err instanceof Error ? err.message : "";
+      setError(msg || t("form.errorRegen"));
     } finally {
       setIsLoading(false);
     }
   };
 
-  // ── T-002: Block reset when user has a persisted astro profile ─────
+  // Reset is BLOCKED for users with a persisted profile.
+  // A person has only one birthday — no re-onboarding.
   const handleReset = () => {
-    if (hasPersistedProfile) return;
+    if (profileState === "found") return; // immutable
     setApiData(null);
     setInterpretation(null);
     setError(null);
     setApiIssues([]);
   };
+
+  const handleEnter = () => {
+    setShowSplash(false);
+    setTimeout(() => setSiteVisible(true), 100);
+    ambiente.start();
+  };
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // RENDER
+  // ═══════════════════════════════════════════════════════════════════════
 
   // ── Splash ────────────────────────────────────────────────────────────
   if (showSplash) {
@@ -150,8 +240,8 @@ export default function App() {
     );
   }
 
-  // ── Loading states ────────────────────────────────────────────────────
-  if (authLoading || profileLoading) {
+  // ── Auth loading ──────────────────────────────────────────────────────
+  if (authLoading) {
     return (
       <div className="min-h-screen morning-bg flex items-center justify-center">
         <div className="w-1 h-1 bg-[#8B6914] rounded-full animate-ping" />
@@ -159,12 +249,104 @@ export default function App() {
     );
   }
 
-  // ── Auth gate ─────────────────────────────────────────────────────────
+  // ── Auth gate — show login/register ───────────────────────────────────
   if (!user) {
     return <AuthGate />;
   }
 
-  // ── Main app — morning theme ──────────────────────────────────────────
+  // ── Profile loading — wait for Supabase fetch ─────────────────────────
+  if (profileState === "loading" || profileState === "idle") {
+    return (
+      <div className="min-h-screen morning-bg flex flex-col items-center justify-center gap-6">
+        <div className="w-1 h-1 bg-[#8B6914] rounded-full animate-ping" />
+        <p className="text-[10px] uppercase tracking-[0.4em] text-[#8B6914]/50 font-mono">
+          {lang === "de" ? "Lade dein kosmisches Profil…" : "Loading your cosmic profile…"}
+        </p>
+      </div>
+    );
+  }
+
+  // ── Determine what to show ────────────────────────────────────────────
+  const hasCompleteProfile = profileState === "found" && apiData && interpretation;
+  const showOnboarding = !hasCompleteProfile;
+
+  // ── Main app ──────────────────────────────────────────────────────────
+
+  // Onboarding (no routing needed)
+  if (showOnboarding) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: siteVisible ? 1 : 0 }}
+        transition={{ duration: 2, ease: "easeOut", delay: 0.3 }}
+        className={`morning-bg min-h-screen font-sans selection:bg-[#8B6914]/20 flex flex-col ${planetariumMode ? "planetarium text-slate-100" : "text-[#1E2A3A]"}`}
+      >
+        <main className="flex-grow pt-24 md:pt-32 pb-24 md:pb-20 relative z-10 container mx-auto px-4 flex flex-col items-center justify-center">
+          {error && (
+            <div className="w-full max-w-md mb-8 bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded-xl text-sm text-center">
+              {error}
+            </div>
+          )}
+          <BirthForm onSubmit={handleSubmit} isLoading={isLoading} />
+        </main>
+      </motion.div>
+    );
+  }
+
+  // Authenticated app with routing
+  return (
+    <BrowserRouter>
+      <FusionRingProvider apiResults={apiData} userId={user.id}>
+        <AppLayoutProvider value={{
+          interpretation: interpretation!,
+          apiData,
+          userId: user.id,
+          birthDate: birthDateStr,
+          onReset: handleReset,
+          onRegenerate: handleRegenerate,
+          isLoading,
+          apiIssues,
+          onStopAudio: ambiente.pause,
+          onResumeAudio: ambiente.resume,
+          isFirstReading,
+        }}>
+          <AppShell
+            user={user}
+            lang={lang}
+            setLang={setLang}
+            t={t}
+            siteVisible={siteVisible}
+            planetariumMode={planetariumMode}
+            togglePlanetarium={togglePlanetarium}
+            ambiente={ambiente}
+            signOut={signOut}
+            error={error}
+          />
+        </AppLayoutProvider>
+      </FusionRingProvider>
+    </BrowserRouter>
+  );
+}
+
+// ─── App Shell (inside BrowserRouter) ──────────────────────────────────
+// Extracted so useLocation() works (must be inside <BrowserRouter>).
+
+interface AppShellProps {
+  user: { email?: string };
+  lang: "de" | "en";
+  setLang: (l: "de" | "en") => void;
+  t: (key: string) => string;
+  siteVisible: boolean;
+  planetariumMode: boolean;
+  togglePlanetarium: () => void;
+  ambiente: { playing: boolean; toggle: () => void; pause: () => void; resume: () => void };
+  signOut: () => void;
+  error: string | null;
+}
+
+function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, togglePlanetarium, ambiente, signOut, error }: AppShellProps) {
+  const location = useLocation();
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -174,22 +356,22 @@ export default function App() {
     >
       {/* ── Top Nav (Desktop) ────────────────────────────────────────── */}
       <header className="hidden md:flex fixed top-0 w-full h-20 items-center justify-between px-12 z-50 morning-header">
-        {/* Logo */}
-        <div
+        <Link
+          to="/"
           className="font-serif text-xl tracking-widest text-[#8B6914] cursor-pointer select-none"
-          onClick={handleReset}
         >
           Bazodiac
-        </div>
+        </Link>
 
-        {/* Nav links */}
         <nav className="flex space-x-12 text-[10px] uppercase tracking-[0.3em]">
-          <a href="#" className="text-[#1E2A3A]/60 hover:text-[#8B6914] transition-colors active">
+          <Link to="/" className={`transition-colors ${location.pathname === "/" ? "text-[#8B6914]" : "text-[#1E2A3A]/60 hover:text-[#8B6914]"}`}>
             {t("nav.atlas")}
-          </a>
+          </Link>
+          <Link to="/fu-ring" className={`transition-colors ${location.pathname === "/fu-ring" ? "text-[#8B6914]" : "text-[#1E2A3A]/60 hover:text-[#8B6914]"}`}>
+            Fu-Ring
+          </Link>
         </nav>
 
-        {/* Controls */}
         <div className="flex items-center gap-5">
           {/* Language toggle */}
           <div className="lang-toggle" role="group" aria-label="Language selection">
@@ -211,7 +393,7 @@ export default function App() {
 
           <div className="w-[1px] h-4 bg-[#8B6914]/20" />
 
-          {/* Planetarium toggle — FR-P01 */}
+          {/* Planetarium toggle */}
           <button
             onClick={togglePlanetarium}
             aria-pressed={planetariumMode}
@@ -233,11 +415,12 @@ export default function App() {
             onClick={ambiente.toggle}
             className="text-[#1E2A3A]/40 hover:text-[#8B6914] transition-colors"
             title={ambiente.playing ? t("nav.pauseAudioTitle") : t("nav.playAudioTitle")}
+            aria-label={ambiente.playing ? t("nav.pauseAudioTitle") : t("nav.playAudioTitle")}
           >
             {ambiente.playing ? (
-              <Volume2 className="w-4 h-4 text-[#8B6914]" />
+              <Volume2 className="w-4 h-4 text-[#8B6914]" aria-hidden="true" />
             ) : (
-              <VolumeX className="w-4 h-4" />
+              <VolumeX className="w-4 h-4" aria-hidden="true" />
             )}
           </button>
 
@@ -249,72 +432,57 @@ export default function App() {
           </span>
           <button
             onClick={signOut}
-            className="w-8 h-8 rounded-full border border-[#8B6914]/25 flex items-center justify-center hover:bg-[#8B6914]/10 hover:border-[#8B6914]/45 transition-all"
+            className="w-8 h-8 rounded-full border border-[#8B6914]/25 flex items-center justify-center hover:bg-[#8B6914]/10 hover:border-[#8B6914]/45 transition-colors"
             title={t("nav.signOut")}
+            aria-label={t("nav.signOut")}
           >
-            <LogOut className="w-3 h-3 text-[#8B6914]/70" />
+            <LogOut className="w-3 h-3 text-[#8B6914]/70" aria-hidden="true" />
           </button>
         </div>
       </header>
 
-      {/* ── Main content ─────────────────────────────────────────────── */}
+      {/* ── Main content (routed) ──────────────────────────────────────── */}
       <main className="flex-grow pt-24 md:pt-32 pb-24 md:pb-20 relative z-10 container mx-auto px-4 flex flex-col items-center justify-center">
         {error && (
           <div className="w-full max-w-md mb-8 bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded-xl text-sm text-center">
             {error}
           </div>
         )}
-
-        {!apiData || !interpretation ? (
-          <BirthForm onSubmit={handleSubmit} isLoading={isLoading} />
-        ) : (
-          <Dashboard
-            interpretation={interpretation}
-            apiData={apiData}
-            userId={user.id}
-            birthDate={birthDateStr}
-            onReset={handleReset}
-            onRegenerate={handleRegenerate}
-            isLoading={isLoading}
-            apiIssues={apiIssues}
-            onStopAudio={ambiente.pause}
-            onResumeAudio={ambiente.resume}
-          />
-        )}
+        <AppRoutes />
       </main>
 
       {/* ── Bottom Nav (Mobile) ───────────────────────────────────────── */}
       <nav className="md:hidden fixed bottom-0 w-full bg-white/70 backdrop-blur-xl border-t border-[#8B6914]/15 flex items-center justify-around z-50 h-16">
-        {/* Language toggle — mobile */}
-        <div className="lang-toggle" role="group">
-          <button className={lang === "de" ? "active" : ""} onClick={() => setLang("de")}>DE</button>
-          <button className={lang === "en" ? "active" : ""} onClick={() => setLang("en")}>EN</button>
+        <div className="lang-toggle" role="group" aria-label="Sprache">
+          <button className={lang === "de" ? "active" : ""} onClick={() => setLang("de")} aria-pressed={lang === "de"}>DE</button>
+          <button className={lang === "en" ? "active" : ""} onClick={() => setLang("en")} aria-pressed={lang === "en"}>EN</button>
         </div>
 
-        <a
-          href="#"
-          className="flex flex-col items-center gap-1 text-[#8B6914]"
-          onClick={handleReset}
-        >
-          <LayoutGrid className="w-5 h-5" />
+        <Link to="/" className={`flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-gold/50 rounded ${location.pathname === "/" ? "text-[#8B6914]" : "text-[#1E2A3A]/40"}`}>
+          <LayoutGrid className="w-5 h-5" aria-hidden="true" />
           <span className="text-[8px] uppercase tracking-tighter">{t("nav.atlas")}</span>
-        </a>
+        </Link>
 
-        {/* Planetarium mobile */}
+        <Link to="/fu-ring" className={`flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-gold/50 rounded ${location.pathname === "/fu-ring" ? "text-[#8B6914]" : "text-[#1E2A3A]/40"}`}>
+          <CircleDot className="w-5 h-5" aria-hidden="true" />
+          <span className="text-[8px] uppercase tracking-tighter">Fu-Ring</span>
+        </Link>
+
         <button
           onClick={togglePlanetarium}
           aria-pressed={planetariumMode}
           aria-label="Planetarium"
           className={planetariumMode ? "text-[#D4AF37]" : "text-[#1E2A3A]/40"}
         >
-          <Telescope className="w-5 h-5" />
+          <Telescope className="w-5 h-5" aria-hidden="true" />
         </button>
 
         <button
           onClick={ambiente.toggle}
+          aria-label={ambiente.playing ? t("nav.pauseAudioTitle") : t("nav.playAudioTitle")}
           className="text-[#1E2A3A]/40 hover:text-[#8B6914] transition-colors"
         >
-          {ambiente.playing ? <Volume2 className="w-5 h-5 text-[#8B6914]" /> : <VolumeX className="w-5 h-5" />}
+          {ambiente.playing ? <Volume2 className="w-5 h-5 text-[#8B6914]" aria-hidden="true" /> : <VolumeX className="w-5 h-5" aria-hidden="true" />}
         </button>
       </nav>
     </motion.div>

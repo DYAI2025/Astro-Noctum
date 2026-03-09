@@ -1,0 +1,130 @@
+{
+  "specVersion": "sp.contribution.v1",
+  "eventId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "occurredAt": "2025-12-15T14:30:00.000Z",
+  "source": {
+    "vertical": "quiz",
+    "moduleId": "quiz.love_languages.v1",
+    "domain": "quiz.quizzme.io",
+    "locale": "de-DE",
+    "build": "1.0.0"
+  },
+  "payload": {
+    "markers": [
+      {
+        "id": "marker.love.physical_touch",
+        "weight": 0.95,
+        "evidence": {
+          "itemsAnswered": 12,
+          "confidence": 0.85
+        }
+      },
+      {
+        "id": "marker.love.sensory_connection",
+        "weight": 0.8,
+        "evidence": {
+          "itemsAnswered": 12,
+          "confidence": 0.85
+        }
+      },
+      {
+        "id": "marker.emotion.body_awareness",
+        "weight": 0.75,
+        "evidence": {
+          "itemsAnswered": 12,
+          "confidence": 0.85
+        }
+      },
+      {
+        "id": "marker.love.physical_expression",
+        "weight": 0.72,
+        "evidence": {
+          "confidence": 0.8
+        }
+      },
+      {
+        "id": "marker.love.togetherness",
+        "weight": 0.56,
+        "evidence": {
+          "confidence": 0.8
+        }
+      },
+      {
+        "id": "marker.love.passionate",
+        "weight": 0.68,
+        "evidence": {
+          "confidence": 0.8
+        }
+      }
+    ],
+    "traits": [
+      {
+        "id": "trait.love.expression_mode",
+        "score": 86,
+        "band": "high",
+        "confidence": 0.85,
+        "method": "forced_choice"
+      },
+      {
+        "id": "trait.love.connection_depth",
+        "score": 78,
+        "band": "midhigh",
+        "confidence": 0.85,
+        "method": "forced_choice"
+      },
+      {
+        "id": "trait.love.intensity_level",
+        "score": 84,
+        "band": "high",
+        "confidence": 0.85,
+        "method": "forced_choice"
+      }
+    ],
+    "tags": [
+      {
+        "id": "tag.archetype.flame",
+        "label": "Die Flamme",
+        "kind": "archetype",
+        "weight": 0.95
+      },
+      {
+        "id": "tag.shadow.touch_dependency",
+        "label": "Berührungsabhängigkeit",
+        "kind": "shadow",
+        "weight": 0.4
+      }
+    ],
+    "unlocks": [
+      {
+        "id": "unlock.crests.love_flame",
+        "unlocked": true,
+        "unlockedAt": "2025-12-15T14:30:00.000Z",
+        "level": 2,
+        "sourceRef": "quiz.love_languages.v1"
+      }
+    ],
+    "summary": {
+      "title": "Die Flamme",
+      "bullets": [
+        "Primäre Liebessprache: Körperliche Nähe",
+        "Expression-Modus: Körperlich (86%)",
+        "Verbindungs-Tiefe: Intensiv (78%)",
+        "Du liebst mit dem ganzen Körper – Haut spricht lauter als Worte."
+      ],
+      "resultId": "the_flame"
+    },
+    "debug": {
+      "rawScores": {
+        "d1": 31,
+        "d2": 28,
+        "d3": 30
+      },
+      "normalizedScores": {
+        "d1": 86,
+        "d2": 78,
+        "d3": 84
+      },
+      "profileId": "the_flame"
+    }
+  }
+}

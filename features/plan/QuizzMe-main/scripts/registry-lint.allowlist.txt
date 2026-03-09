@@ -1,0 +1,88 @@
+# Registry Lint Allowlist
+# Add IDs here that should be skipped during linting
+# (e.g., dynamically generated IDs that can't be statically validated)
+#
+# Format: one ID per line
+# Lines starting with # are comments
+# Lines ending with . are treated as prefixes (e.g., "marker.psyche." matches "marker.psyche.foo")
+
+# ═══════════════════════════════════════════════════════════════════════════
+# TODO: REMOVE BY PHASE 7 MIGRATION
+# ═══════════════════════════════════════════════════════════════════════════
+# These legacy IDs are temporary bridges until quizzes are migrated to use
+# the new registry IDs. During Phase 7, each quiz will be updated to:
+# 1. Use registry-defined marker IDs (marker.eq.*, marker.social.*, etc.)
+# 2. Use registry-defined trait IDs (trait.social.introversion, etc.)
+# 3. Use registry-defined tag IDs (tag.archetype.*, tag.style.*, etc.)
+#
+# After migration, this entire section should be DELETED.
+# Prefer allowlisting specific file paths or modules over broad ID prefixes.
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════
+# LEGACY QUIZ IDS - To be refactored in Phase 7
+# These are pre-existing IDs from quizzes that haven't been migrated yet
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Love Languages Quiz
+marker.psyche.
+trait.lovelang.
+tag.lovelang.result
+
+# Personality Quiz
+trait.personality.
+tag.personality.result
+
+# RPG Identity Quiz
+marker.rpg.
+tag.rpg.result
+
+# Social Role Quiz
+trait.social_role.
+tag.social_role.quiz_completed
+
+# Destiny Quiz
+trait.destiny.
+tag.destiny.result
+
+# Celebrity Soulmate Quiz
+marker.love.connection
+marker.cognition.system
+trait.social.extroversion
+trait.openness.creativity
+trait.connection.bonding
+trait.lifestyle.ambition
+tag.celebrity.match
+
+# ═══════════════════════════════════════════════════════════════════════════
+# LEGACY LME DIMENSION MAPPINGS
+# These are in src/lib/lme/ingestion.ts and need migration
+# ═══════════════════════════════════════════════════════════════════════════
+marker.social.empathy
+marker.lifestyle.order
+marker.skills.logic
+marker.lifestyle.chaos
+marker.cognition.reflection
+marker.skills.philosophical
+marker.shadow.jealousy
+marker.shadow.anger
+
+# ═══════════════════════════════════════════════════════════════════════════
+# LEGACY CHARACTER SHEET SECTIONS
+# ═══════════════════════════════════════════════════════════════════════════
+trait.skills.logic
+trait.skills.social
+trait.skills.resilience
+
+# ═══════════════════════════════════════════════════════════════════════════
+# TEST-ONLY IDS
+# These are used only in unit tests, not in production code
+# ═══════════════════════════════════════════════════════════════════════════
+trait.test.
+marker.test.
+tag.test.
+
+# Intentionally invalid IDs for validation testing
+marker.invalid.
+marker.fake.
+trait.invalid.

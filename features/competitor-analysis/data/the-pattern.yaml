@@ -1,0 +1,76 @@
+name: The Pattern
+website: thepattern.com
+tagline: "The deepest, most accurate personality app"
+founded: 2017
+headquarters: Los Angeles, USA
+
+# Positioning
+primary_use_case: "Deep personality profiling through astrology-based patterns"
+target_audience: "Users seeking deep self-understanding, personality-obsessed, relationship-focused"
+market_position: "Premium depth — 'eerily accurate' personality readings"
+
+# Pricing
+pricing_model: freemium-hybrid
+free_tier: true
+free_tier_limits: "First profile, basic Pattern reading"
+additional_profiles: "$9.99 each"
+subscription: "Go Deeper+ (unlimited content)"
+
+# Features
+features:
+  western_astrology: 4
+  chinese_astrology: 0
+  wuxing_elements: 0
+  cross_system_fusion: 0
+  personality_quizzes: 0
+  birth_chart_visual: 3
+  daily_horoscope: 2
+  social_features: 3
+  voice_agent: 0
+  compatibility: 4
+  mobile_app: 5
+  offline_mode: 2
+  bilingual: 1
+
+# Strengths
+strengths:
+  - "Uniquely deep personality reports ('eerily accurate' reputation)"
+  - "Strong word-of-mouth and viral growth"
+  - "Timing/cycle feature tracks personal seasons"
+  - "Bonds feature for relationship compatibility"
+  - "Celebrity endorsement buzz (Channing Tatum era)"
+  - "Personalized audio content (Vault)"
+
+# Weaknesses
+weaknesses:
+  - "Only Western astrology — no Eastern systems"
+  - "Confusing pricing model"
+  - "Android ratings significantly lower (3.77 vs ~4.5 iOS)"
+  - "Methodology is opaque — doesn't explain the 'how'"
+  - "Less community/social features than Co-Star"
+
+# Best for
+best_for:
+  - "Users wanting deep personality analysis"
+  - "Relationship-focused exploration"
+  - "People who want 'eerily accurate' readings"
+
+# Not ideal for
+not_ideal_for:
+  - "Users wanting multi-system analysis"
+  - "Android users (lower quality experience)"
+  - "Those wanting transparency about methodology"
+  - "Budget-conscious users"
+
+# Common complaints
+common_complaints:
+  - "Pricing is confusing"
+  - "Android version is buggy"
+  - "Can't understand why readings are so specific"
+  - "Limited free content"
+
+# Search volume indicators
+search_terms:
+  - "the pattern app alternative": medium
+  - "pattern astrology app": high
+  - "apps like the pattern": medium

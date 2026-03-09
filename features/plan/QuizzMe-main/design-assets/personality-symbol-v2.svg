@@ -1,0 +1,53 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Strong multi-layer glow for personality emerald green -->
+    <filter id="personality-glow-strong" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="8" result="blur1"/>
+      <feFlood flood-color="#10b981" flood-opacity="0.95"/>
+      <feComposite in2="blur1" operator="in" result="glow1"/>
+
+      <feGaussianBlur in="blur1" stdDeviation="20" result="blur2"/>
+      <feFlood flood-color="#10b981" flood-opacity="0.8"/>
+      <feComposite in2="blur2" operator="in" result="glow2"/>
+
+      <feGaussianBlur in="blur2" stdDeviation="40" result="blur3"/>
+      <feFlood flood-color="#10b981" flood-opacity="0.5"/>
+      <feComposite in2="blur3" operator="in" result="glow3"/>
+
+      <feMerge>
+        <feMergeNode in="glow3"/>
+        <feMergeNode in="glow2"/>
+        <feMergeNode in="glow1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Atom symbol scaled to 128x128 - three orbital ellipses rotated -->
+  <ellipse cx="64" cy="64" rx="51" ry="19"
+           fill="none"
+           stroke="#10b981"
+           stroke-width="2"
+           filter="url(#personality-glow-strong)"/>
+
+  <ellipse cx="64" cy="64" rx="51" ry="19"
+           fill="none"
+           stroke="#10b981"
+           stroke-width="2"
+           transform="rotate(60 64 64)"
+           filter="url(#personality-glow-strong)"/>
+
+  <ellipse cx="64" cy="64" rx="51" ry="19"
+           fill="none"
+           stroke="#10b981"
+           stroke-width="2"
+           transform="rotate(120 64 64)"
+           filter="url(#personality-glow-strong)"/>
+
+  <!-- Central nucleus -->
+  <circle cx="64" cy="64" r="8"
+          fill="none"
+          stroke="#10b981"
+          stroke-width="2"
+          filter="url(#personality-glow-strong)"/>
+</svg>

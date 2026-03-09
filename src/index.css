@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Sora:wght@100;300;400;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Sora:wght@100;300;400;600&family=Inter:wght@200;400;600&family=Montserrat:wght@200;600;700&display=swap");
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
@@ -19,6 +19,13 @@
   --color-ink:        #1E2A3A;
   --color-ink-60:     rgba(30,42,58,0.60);
   --color-gold-deep:  #8B6914;
+
+  /* Fu-Ring page (always dark) */
+  --color-ring-bg:       #020509;
+  --color-ring-surface:  #0A1628;
+  --color-ring-border:   rgba(70,130,220,0.18);
+  --color-ring-text:     rgba(215,230,255,0.85);
+  --color-ring-muted:    rgba(215,230,255,0.40);
 }
 
 /* ── CSS Custom Properties ─────────────────────────────────────────────── */
@@ -123,6 +130,14 @@ body {
   border-color: rgba(180,150,46,0.38);
   background: rgba(255,255,255,0.82);
   box-shadow: 0 8px 32px -8px rgba(0,30,80,0.10), 0 0 16px rgba(212,175,55,0.06);
+}
+
+/* Fu-Ring card — flat, dark, no glass */
+.ring-card {
+  background: #0A1628;
+  border: 1px solid rgba(70,130,220,0.18);
+  border-radius: 8px;
+  color: rgba(215,230,255,0.85);
 }
 
 /* Morning stele (BaZi pillars — light variant) */
@@ -242,7 +257,7 @@ body {
 }
 /* <767px = stacked (Tailwind md: starts at 768px) */
 @media (max-width: 767px) {
-  .morning-grid-2 { grid-template-columns: 1fr; }
+  .morning-grid-2 { grid-template-columns: 1fr; gap: 1rem; }
 }
 
 /* ── Typography ────────────────────────────────────────────────────────── */
@@ -523,9 +538,365 @@ h1, h2, h3 { letter-spacing: 0.1em; }
   border-top-color: rgba(70, 130, 220, 0.18) !important;
 }
 
+/* Legal footer — planetarium dark overrides */
+.planetarium footer {
+  border-top-color: rgba(70, 130, 220, 0.12) !important;
+}
+.planetarium footer .text-\[\#1E2A3A\]\/30,
+.planetarium footer .text-\[\#1E2A3A\]\/20,
+.planetarium footer .text-\[\#1E2A3A\]\/10 {
+  color: rgba(215, 230, 255, 0.20) !important;
+}
+.planetarium footer button {
+  color: rgba(215, 230, 255, 0.20) !important;
+}
+.planetarium footer button:hover {
+  color: rgba(212, 175, 55, 0.55) !important;
+}
+.planetarium footer .bg-white\/40 {
+  background: rgba(8, 16, 42, 0.70) !important;
+  border-color: rgba(70, 130, 220, 0.18) !important;
+}
+.planetarium footer .text-\[\#1E2A3A\]\/40 {
+  color: rgba(215, 230, 255, 0.35) !important;
+}
+.planetarium footer .text-\[\#8B6914\]\/50 {
+  color: rgba(212, 175, 55, 0.50) !important;
+}
+
 /* Planetarium toggle button active state glow */
 .planetarium-toggle-active {
   color: #D4AF37 !important;
   text-shadow: 0 0 8px rgba(212, 175, 55, 0.45);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LANDING HERO PAGE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.font-landing-display {
+  font-family: 'Montserrat', 'Sora', sans-serif;
+}
+
+.landing-hero-root {
+  background: radial-gradient(circle at top, #050b1a 0%, #020617 100%);
+  color: #f8f9fa;
+  font-family: 'Inter', 'Sora', sans-serif;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  cursor: none;
+  min-height: 100vh;
+}
+
+@media (pointer: coarse) {
+  .landing-hero-root { cursor: auto; }
+  .landing-cursor { display: none !important; }
+}
+
+/* ── Noise Overlay ───────────────────────────────────────────────── */
+.landing-noise {
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* ── Custom Cursor ───────────────────────────────────────────────── */
+.landing-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 40px;
+  height: 40px;
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: difference;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.landing-cursor-dot {
+  width: 4px;
+  height: 4px;
+  background: white;
+  border-radius: 50%;
+}
+
+.landing-cursor-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 0.5px solid rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: scale(0.4);
+  opacity: 0;
+}
+
+.landing-cursor.active .landing-cursor-ring {
+  transform: scale(1.4);
+  opacity: 1;
+}
+
+/* ── Navigation Link ─────────────────────────────────────────────── */
+.landing-nav-link {
+  position: relative;
+  padding-bottom: 4px;
+  transition: color 0.3s ease;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: none;
+}
+
+.landing-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: #6366f1;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.landing-nav-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* ── Language Toggle ─────────────────────────────────────────────── */
+.landing-lang-switch {
+  position: relative;
+  width: 72px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 4px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.landing-lang-slider {
+  position: absolute;
+  left: 4px;
+  width: 32px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  z-index: 0;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.landing-lang-option {
+  position: relative;
+  z-index: 1;
+  font-size: 10px;
+  font-weight: 700;
+  opacity: 0.4;
+  transition: opacity 0.3s ease;
+  user-select: none;
+}
+
+.landing-lang-option.active {
+  opacity: 1;
+}
+
+/* ── Synthesis Core ──────────────────────────────────────────────── */
+.landing-core-wrap {
+  perspective: 1500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.landing-core {
+  animation: landing-core-rotate 120s linear infinite;
+  will-change: transform;
+}
+
+@keyframes landing-core-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ── Primary Button ──────────────────────────────────────────────── */
+.landing-btn-primary {
+  transition: all 0.3s ease;
+}
+
+.landing-btn-primary:hover {
+  box-shadow: 0 0 40px 0 rgba(99, 102, 241, 0.4);
+}
+
+/* ── Agent Cards ─────────────────────────────────────────────────── */
+.landing-agent-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.01);
+  backdrop-filter: blur(40px);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.landing-agent-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4), 0 0 30px rgba(99, 102, 241, 0.08);
+}
+
+/* ── Simulation Container ────────────────────────────────────────── */
+.landing-sim-container {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ENTER SCREEN — ephemeris scroll reveal after intro video
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.enter-screen {
+  overflow: hidden;
+  background: #020617;
+}
+
+/* Parchment-toned ambient glow behind scroll */
+.enter-bg {
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(212,175,55,0.04) 0%, transparent 55%),
+    radial-gradient(circle at 50% 50%, #08102a 0%, #020617 100%);
+}
+
+/* Film-grain noise */
+.enter-noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  z-index: 5;
+}
+
+/* Ephemeris scroll container */
+.enter-scroll-wrap {
+  position: relative;
+  width: clamp(260px, 50vw, 480px);
+  aspect-ratio: 0.7;
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow:
+    0 0 80px 20px rgba(212,175,55,0.06),
+    0 40px 100px rgba(0,0,0,0.5);
+}
+
+/* Scroll unroll animation: clip from center outward */
+.enter-scroll-unroll {
+  clip-path: inset(50% 0);
+  transition: clip-path 3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.enter-scroll-unroll.unrolled {
+  clip-path: inset(0% 0);
+}
+
+/* Ephemeris image styling */
+.enter-ephemeris {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: sepia(0.15) brightness(0.85) contrast(1.1);
+  transition: filter 4s ease;
+}
+
+.enter-scroll-unroll.unrolled .enter-ephemeris {
+  filter: sepia(0.08) brightness(0.9) contrast(1.05);
+}
+
+/* Overlay gradient on ephemeris for text readability */
+.enter-scroll-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(2,6,23,0.7) 0%, transparent 30%, transparent 70%, rgba(2,6,23,0.8) 100%),
+    radial-gradient(ellipse at 50% 50%, transparent 30%, rgba(2,6,23,0.3) 100%);
+  pointer-events: none;
+}
+
+/* Title with gold gradient */
+.enter-title {
+  background: linear-gradient(
+    180deg,
+    rgba(240,208,96,0.95) 0%,
+    rgba(212,175,55,0.8) 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none;
+}
+
+/* Enter button glow on hover */
+.enter-btn-glow {
+  background:
+    radial-gradient(ellipse at center, rgba(212,175,55,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Enter button border shimmer */
+.enter-btn {
+  position: relative;
+}
+
+.enter-btn::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(
+    135deg,
+    rgba(212,175,55,0.2) 0%,
+    rgba(240,208,96,0.1) 50%,
+    rgba(212,175,55,0.2) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.7s ease;
+  z-index: -1;
+}
+
+.enter-btn:hover::before {
+  opacity: 1;
+}
+
+/* Scroll rod decorations (top and bottom) */
+.enter-scroll-rod {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, rgba(212,175,55,0.3) 0%, rgba(212,175,55,0.6) 50%, rgba(212,175,55,0.3) 100%);
+  z-index: 10;
+  box-shadow: 0 0 12px rgba(212,175,55,0.2);
+}
+
+.enter-scroll-rod--top { top: 0; border-radius: 3px 3px 0 0; }
+.enter-scroll-rod--bottom { bottom: 0; border-radius: 0 0 3px 3px; }
+
+/* ── Reduced Motion ──────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .landing-hero-root *, .landing-hero-root ::before, .landing-hero-root ::after,
+  .enter-screen *, .enter-screen ::before, .enter-screen ::after {
+    animation-delay: -1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0s !important;
+  }
 }
 

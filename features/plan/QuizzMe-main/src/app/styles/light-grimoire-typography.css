@@ -1,0 +1,440 @@
+/**
+ * Light-Grimoire Typography System
+ * Character Sheet Implementation - Phase 0 (T0.2)
+ *
+ * Typography Philosophy:
+ * - Serif (Playfair Display) for headlines: elegant, premium, mystical
+ * - Sans-serif (Inter) for body: readable, modern, accessible
+ * - Fluid type scale with proper hierarchy
+ * - Tabular numbers for stats
+ *
+ * Usage: Character sheet pages requiring clear stat presentation
+ */
+
+:root {
+  /* ============================================
+     FONT FAMILIES
+     Serif for headlines, Sans for body/UI
+     ============================================ */
+
+  /* Primary Fonts (from Modern Alchemy tokens) */
+  --lg-font-serif: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+  --lg-font-sans: 'Inter', 'Source Sans 3', system-ui, -apple-system, sans-serif;
+  --lg-font-mono: 'Geist Mono', 'Courier New', monospace;
+
+  /* ============================================
+     TYPE SCALE (Desktop-first, Responsive)
+     Based on 1rem = 16px
+     ============================================ */
+
+  /* Display Sizes (for major headings) */
+  --lg-text-display: 3.75rem;      /* 60px - Page title */
+  --lg-text-display-mobile: 2.5rem; /* 40px - Mobile page title */
+
+  /* Heading Sizes */
+  --lg-text-h1: 2.25rem;           /* 36px - Section title */
+  --lg-text-h1-mobile: 1.875rem;   /* 30px - Mobile section title */
+
+  --lg-text-h2: 1.875rem;          /* 30px - Card title */
+  --lg-text-h2-mobile: 1.5rem;     /* 24px - Mobile card title */
+
+  --lg-text-h3: 1.5rem;            /* 24px - Subsection */
+  --lg-text-h3-mobile: 1.25rem;    /* 20px - Mobile subsection */
+
+  --lg-text-h4: 1.25rem;           /* 20px - Component header */
+  --lg-text-h4-mobile: 1.125rem;   /* 18px - Mobile component header */
+
+  --lg-text-h5: 1.125rem;          /* 18px - Small header */
+  --lg-text-h5-mobile: 1rem;       /* 16px - Mobile small header */
+
+  /* Body Sizes */
+  --lg-text-body-lg: 1.125rem;     /* 18px - Large body text */
+  --lg-text-body: 1rem;            /* 16px - Default body */
+  --lg-text-body-sm: 0.875rem;     /* 14px - Small body */
+  --lg-text-body-xs: 0.75rem;      /* 12px - Caption/meta */
+
+  /* Stat Display Sizes (tabular numbers) */
+  --lg-text-stat-display: 2.5rem;  /* 40px - Large stat value */
+  --lg-text-stat-lg: 1.5rem;       /* 24px - Medium stat */
+  --lg-text-stat-md: 1.125rem;     /* 18px - Small stat */
+  --lg-text-stat-sm: 1rem;         /* 16px - Inline stat */
+
+  /* Label Sizes */
+  --lg-text-label: 0.875rem;       /* 14px - Form labels, stat labels */
+  --lg-text-label-sm: 0.75rem;     /* 12px - Small labels */
+  --lg-text-label-xs: 0.6875rem;   /* 11px - Micro labels */
+
+  /* ============================================
+     LINE HEIGHTS
+     Optimized for readability
+     ============================================ */
+
+  --lg-leading-none: 1;            /* Tight - for display text */
+  --lg-leading-tight: 1.2;         /* Headlines */
+  --lg-leading-snug: 1.375;        /* Subheadings */
+  --lg-leading-normal: 1.5;        /* Default body */
+  --lg-leading-relaxed: 1.625;     /* Comfortable reading */
+  --lg-leading-loose: 1.75;        /* Very spacious */
+
+  /* ============================================
+     FONT WEIGHTS
+     ============================================ */
+
+  --lg-weight-light: 300;
+  --lg-weight-normal: 400;
+  --lg-weight-medium: 500;
+  --lg-weight-semibold: 600;
+  --lg-weight-bold: 700;
+
+  /* ============================================
+     LETTER SPACING
+     Subtle adjustments for premium feel
+     ============================================ */
+
+  --lg-tracking-tighter: -0.05em;  /* Display text */
+  --lg-tracking-tight: -0.025em;   /* Headlines */
+  --lg-tracking-normal: 0;         /* Body text */
+  --lg-tracking-wide: 0.025em;     /* Labels */
+  --lg-tracking-wider: 0.05em;     /* Section labels (UPPERCASE) */
+  --lg-tracking-widest: 0.1em;     /* Micro labels */
+
+  /* ============================================
+     FONT FEATURES
+     OpenType features for polish
+     ============================================ */
+
+  /* Tabular numbers for stats (equal width digits) */
+  --lg-font-feature-tabular: 'tnum' 1;
+
+  /* Old-style figures for body text (more elegant) */
+  --lg-font-feature-oldstyle: 'onum' 1;
+
+  /* Ligatures for serif headlines */
+  --lg-font-feature-ligatures: 'liga' 1, 'clig' 1;
+
+  /* Small caps for section labels */
+  --lg-font-feature-smallcaps: 'smcp' 1;
+}
+
+/* ============================================
+   TYPOGRAPHY UTILITY CLASSES
+   Pre-configured text styles for components
+   ============================================ */
+
+/* Display Styles (Serif) */
+.lg-text-display {
+  font-family: var(--lg-font-serif);
+  font-size: var(--lg-text-display);
+  font-weight: var(--lg-weight-semibold);
+  line-height: var(--lg-leading-tight);
+  letter-spacing: var(--lg-tracking-tighter);
+  color: var(--lg-text-primary);
+}
+
+/* Heading Styles (Serif) */
+.lg-text-h1 {
+  font-family: var(--lg-font-serif);
+  font-size: var(--lg-text-h1);
+  font-weight: var(--lg-weight-semibold);
+  line-height: var(--lg-leading-tight);
+  letter-spacing: var(--lg-tracking-tight);
+  color: var(--lg-text-primary);
+}
+
+.lg-text-h2 {
+  font-family: var(--lg-font-serif);
+  font-size: var(--lg-text-h2);
+  font-weight: var(--lg-weight-semibold);
+  line-height: var(--lg-leading-tight);
+  letter-spacing: var(--lg-tracking-tight);
+  color: var(--lg-text-primary);
+}
+
+.lg-text-h3 {
+  font-family: var(--lg-font-serif);
+  font-size: var(--lg-text-h3);
+  font-weight: var(--lg-weight-medium);
+  line-height: var(--lg-leading-snug);
+  letter-spacing: var(--lg-tracking-tight);
+  color: var(--lg-text-primary);
+}
+
+.lg-text-h4 {
+  font-family: var(--lg-font-serif);
+  font-size: var(--lg-text-h4);
+  font-weight: var(--lg-weight-medium);
+  line-height: var(--lg-leading-snug);
+  letter-spacing: var(--lg-tracking-normal);
+  color: var(--lg-text-primary);
+}
+
+.lg-text-h5 {
+  font-family: var(--lg-font-serif);
+  font-size: var(--lg-text-h5);
+  font-weight: var(--lg-weight-medium);
+  line-height: var(--lg-leading-snug);
+  color: var(--lg-text-primary);
+}
+
+/* Body Styles (Sans-serif) */
+.lg-text-body-lg {
+  font-family: var(--lg-font-sans);
+  font-size: var(--lg-text-body-lg);
+  font-weight: var(--lg-weight-normal);
+  line-height: var(--lg-leading-relaxed);
+  color: var(--lg-text-primary);
+}
+
+.lg-text-body {
+  font-family: var(--lg-font-sans);
+  font-size: var(--lg-text-body);
+  font-weight: var(--lg-weight-normal);
+  line-height: var(--lg-leading-relaxed);
+  color: var(--lg-text-primary);
+}
+
+.lg-text-body-sm {
+  font-family: var(--lg-font-sans);
+  font-size: var(--lg-text-body-sm);
+  font-weight: var(--lg-weight-normal);
+  line-height: var(--lg-leading-normal);
+  color: var(--lg-text-secondary);
+}
+
+.lg-text-body-xs {
+  font-family: var(--lg-font-sans);
+  font-size: var(--lg-text-body-xs);
+  font-weight: var(--lg-weight-normal);
+  line-height: var(--lg-leading-normal);
+  color: var(--lg-text-muted);
+}
+
+/* Stat Display Styles (Sans-serif, Tabular) */
+.lg-text-stat-display {
+  font-family: var(--lg-font-sans);
+  font-size: var(--lg-text-stat-display);
+  font-weight: var(--lg-weight-semibold);
+  line-height: var(--lg-leading-none);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: var(--lg-font-feature-tabular);
+  color: var(--lg-text-primary);
+}
+
+.lg-text-stat-lg {
+  font-family: var(--lg-font-sans);
+  font-size: var(--lg-text-stat-lg);
+  font-weight: var(--lg-weight-semibold);
+  line-height: var(--lg-leading-tight);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: var(--lg-font-feature-tabular);
+  color: var(--lg-text-primary);
+}
+
+.lg-text-stat-md {
+  font-family: var(--lg-font-sans);
+  font-size: var(--lg-text-stat-md);
+  font-weight: var(--lg-weight-medium);
+  line-height: var(--lg-leading-tight);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: var(--lg-font-feature-tabular);
+  color: var(--lg-text-primary);
+}
+
+.lg-text-stat-sm {
+  font-family: var(--lg-font-sans);
+  font-size: var(--lg-text-stat-sm);
+  font-weight: var(--lg-weight-medium);
+  line-height: var(--lg-leading-tight);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: var(--lg-font-feature-tabular);
+  color: var(--lg-text-primary);
+}
+
+/* Label Styles (Sans-serif, Uppercase) */
+.lg-text-label {
+  font-family: var(--lg-font-sans);
+  font-size: var(--lg-text-label);
+  font-weight: var(--lg-weight-medium);
+  line-height: var(--lg-leading-normal);
+  letter-spacing: var(--lg-tracking-wide);
+  text-transform: uppercase;
+  color: var(--lg-text-secondary);
+}
+
+.lg-text-label-sm {
+  font-family: var(--lg-font-sans);
+  font-size: var(--lg-text-label-sm);
+  font-weight: var(--lg-weight-medium);
+  line-height: var(--lg-leading-normal);
+  letter-spacing: var(--lg-tracking-wider);
+  text-transform: uppercase;
+  color: var(--lg-text-muted);
+}
+
+.lg-text-label-xs {
+  font-family: var(--lg-font-sans);
+  font-size: var(--lg-text-label-xs);
+  font-weight: var(--lg-weight-semibold);
+  line-height: var(--lg-leading-normal);
+  letter-spacing: var(--lg-tracking-widest);
+  text-transform: uppercase;
+  color: var(--lg-text-muted);
+}
+
+/* ============================================
+   RESPONSIVE TYPOGRAPHY
+   Mobile-first fluid sizing
+   ============================================ */
+
+@media (max-width: 768px) {
+  .lg-text-display {
+    font-size: var(--lg-text-display-mobile);
+  }
+
+  .lg-text-h1 {
+    font-size: var(--lg-text-h1-mobile);
+  }
+
+  .lg-text-h2 {
+    font-size: var(--lg-text-h2-mobile);
+  }
+
+  .lg-text-h3 {
+    font-size: var(--lg-text-h3-mobile);
+  }
+
+  .lg-text-h4 {
+    font-size: var(--lg-text-h4-mobile);
+  }
+
+  .lg-text-h5 {
+    font-size: var(--lg-text-h5-mobile);
+  }
+
+  .lg-text-stat-display {
+    font-size: 2rem; /* 32px on mobile */
+  }
+
+  .lg-text-stat-lg {
+    font-size: 1.25rem; /* 20px on mobile */
+  }
+}
+
+/* ============================================
+   TYPOGRAPHY MODIFIERS
+   Context-specific text variations
+   ============================================ */
+
+/* Gold accent text (for special emphasis) */
+.lg-text-gold {
+  color: var(--lg-text-gold);
+}
+
+/* Emerald accent text (for positive/progress indicators) */
+.lg-text-emerald {
+  color: var(--lg-text-emerald);
+}
+
+/* Muted text */
+.lg-text-muted {
+  color: var(--lg-text-muted);
+}
+
+/* Tabular numbers (for inline stats) */
+.lg-tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: var(--lg-font-feature-tabular);
+}
+
+/* Old-style figures (for elegant body text) */
+.lg-oldstyle {
+  font-variant-numeric: oldstyle-nums;
+  font-feature-settings: var(--lg-font-feature-oldstyle);
+}
+
+/* Small caps (for section labels) */
+.lg-smallcaps {
+  font-variant: small-caps;
+  font-feature-settings: var(--lg-font-feature-smallcaps);
+  letter-spacing: var(--lg-tracking-wider);
+}
+
+/* ============================================
+   CHARACTER SHEET SPECIFIC PATTERNS
+   Common text patterns for stats display
+   ============================================ */
+
+/* Stat row pattern: Label + Value */
+.lg-stat-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--lg-space-md);
+}
+
+.lg-stat-row .lg-stat-label {
+  font-family: var(--lg-font-sans);
+  font-size: var(--lg-text-body);
+  font-weight: var(--lg-weight-medium);
+  color: var(--lg-text-primary);
+}
+
+.lg-stat-row .lg-stat-value {
+  font-family: var(--lg-font-sans);
+  font-size: var(--lg-text-stat-md);
+  font-weight: var(--lg-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--lg-text-primary);
+}
+
+/* Axis label pattern: Left label | Rail | Right label */
+.lg-axis-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--lg-font-sans);
+  font-size: var(--lg-text-body-sm);
+  font-weight: var(--lg-weight-medium);
+  color: var(--lg-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: var(--lg-tracking-wide);
+}
+
+/* Card title pattern */
+.lg-card-title {
+  font-family: var(--lg-font-serif);
+  font-size: var(--lg-text-h3);
+  font-weight: var(--lg-weight-semibold);
+  line-height: var(--lg-leading-tight);
+  color: var(--lg-text-primary);
+  margin-bottom: var(--lg-space-lg);
+}
+
+/* Section header pattern (with optional divider) */
+.lg-section-header {
+  font-family: var(--lg-font-serif);
+  font-size: var(--lg-text-h2);
+  font-weight: var(--lg-weight-semibold);
+  line-height: var(--lg-leading-tight);
+  color: var(--lg-text-primary);
+  margin-bottom: var(--lg-space-xl);
+  padding-bottom: var(--lg-space-md);
+  border-bottom: 2px solid var(--lg-border-subtle);
+}
+
+/* Delta chip text (for after-quiz updates) */
+.lg-delta-chip {
+  font-family: var(--lg-font-sans);
+  font-size: var(--lg-text-body-xs);
+  font-weight: var(--lg-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--lg-text-emerald);
+}
+
+/* Tooltip text */
+.lg-tooltip-text {
+  font-family: var(--lg-font-sans);
+  font-size: var(--lg-text-body-sm);
+  font-weight: var(--lg-weight-normal);
+  line-height: var(--lg-leading-normal);
+  color: var(--lg-tooltip-text);
+}

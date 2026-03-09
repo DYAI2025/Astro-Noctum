@@ -1,0 +1,17 @@
+{
+  "login.title": "Betritt die Matrix",
+  "login.description": "Authentifizierung erforderlich",
+  "login.email": "E-Mail",
+  "login.magic": "Magic Link senden",
+  "login.oauth": "Anmelden mit",
+  "login.sentTitle": "Prüfe deine E-Mails",
+  "login.sentBody": "Wir haben einen Magic Link an {email} geschickt. Klicke auf den Link, um ins Dashboard zu gelangen.",
+  "login.useDifferent": "Andere E-Mail nutzen",
+  "login.passwordless": "Passwortlos & sicher.",
+  "login.placeholder": "reisende@example.com",
+  "login.tagline": "QuizzMe • Astro Intelligence",
+  "login.oauth.google": "Google",
+  "login.oauth.github": "GitHub",
+  "theme.light": "Hell",
+  "theme.dark": "Dunkel"
+}

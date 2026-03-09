@@ -1,0 +1,48 @@
+{
+  "name": "cosmic-architecture-engine",
+  "version": "3.1.0-failclosed",
+  "description": "FAIL-CLOSED deterministic astrological calculation engine with Swiss Ephemeris precision",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "test": "npm run test:ci-gate",
+    "test:ci-gate": "node tests/ci-gate.js",
+    "test:integration": "node tests/test-precision-integration.js",
+    "test:v3": "node cosmic-architecture-engine-v3.js",
+    "ci": "npm run test:ci-gate",
+    "setup:python": "cd astro-precision-horoscope && python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt",
+    "verify:setup": "node -p \"require('./src/index'); 'OK'\"",
+    "verify:strict": "COSMIC_STRICT_MODE=1 COSMIC_PRECISION_FALLBACK=0 node tests/ci-gate.js",
+    "prod:validate": "NODE_ENV=production npm run test:ci-gate",
+    "calibrate": "node scripts/calibrate-fixtures.js"
+  },
+  "keywords": [
+    "astrology",
+    "bazi",
+    "four-pillars",
+    "swiss-ephemeris",
+    "horoscope",
+    "western-astrology",
+    "eastern-astrology",
+    "fusion",
+    "li-wei",
+    "cosmic-engine",
+    "fail-closed",
+    "precision"
+  ],
+  "author": "Li Wei Framework Team",
+  "license": "ISC",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/cosmic-architecture-engine"
+  },
+  "devDependencies": {},
+  "dependencies": {},
+  "config": {
+    "strict_mode": true,
+    "allow_fallback_in_dev": false
+  }
+}

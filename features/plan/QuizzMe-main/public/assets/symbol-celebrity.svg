@@ -1,0 +1,33 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Strong multi-layer glow for celebrity magenta -->
+    <filter id="celebrity-glow-strong" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="8" result="blur1"/>
+      <feFlood flood-color="#ec4899" flood-opacity="0.95"/>
+      <feComposite in2="blur1" operator="in" result="glow1"/>
+
+      <feGaussianBlur in="blur1" stdDeviation="20" result="blur2"/>
+      <feFlood flood-color="#ec4899" flood-opacity="0.8"/>
+      <feComposite in2="blur2" operator="in" result="glow2"/>
+
+      <feGaussianBlur in="blur2" stdDeviation="40" result="blur3"/>
+      <feFlood flood-color="#ec4899" flood-opacity="0.5"/>
+      <feComposite in2="blur3" operator="in" result="glow3"/>
+
+      <feMerge>
+        <feMergeNode in="glow3"/>
+        <feMergeNode in="glow2"/>
+        <feMergeNode in="glow1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Five-pointed star scaled to 128x128 -->
+  <path d="M64 15 L72 51 L109 51 L79 72 L90 109 L64 87 L38 109 L49 72 L19 51 L56 51 Z"
+        fill="none"
+        stroke="#ec4899"
+        stroke-width="2"
+        stroke-linejoin="round"
+        filter="url(#celebrity-glow-strong)"/>
+</svg>

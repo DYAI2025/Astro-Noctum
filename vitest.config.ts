@@ -7,14 +7,14 @@ export default defineConfig({
   test: {
     environment: "happy-dom",
     globals: true,
-    setupFiles: ["./src/test-setup.ts"],
+    setupFiles: ["./src/test-setup.tsx"],
     include: ["src/**/__tests__/**/*.{test,spec}.{ts,tsx}"],
     coverage: {
       reporter: ["text", "html"],
-      include: ["src/lib/astro-data/**", "src/contexts/**"],
+      include: ["src/lib/astro-data/**", "src/contexts/**", "src/lib/fusion-ring/**", "src/lib/lme/**"],
     },
   },
   resolve: {
-    alias: { "@": resolve(__dirname, "src") },
+    alias: { "@": resolve(__dirname, ".") },
   },
 });

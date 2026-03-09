@@ -1,0 +1,57 @@
+{
+  "description": "Ben - Calibration Vector (24.06.1980, 15:20 MESZ, Hannover)",
+  "note": "VALUES MUST BE CALIBRATED against actual Swiss Ephemeris output before production use!",
+  "input": {
+    "year": 1980,
+    "month": 6,
+    "day": 24,
+    "hour": 15,
+    "minute": 20,
+    "second": 0,
+    "latitude": 52.3759,
+    "longitude": 9.732,
+    "timezone": "Europe/Berlin"
+  },
+  "expected": {
+    "ascendant": {
+      "tolerance": 0.01,
+      "sign": "Waage",
+      "longitude": 202.6689
+    },
+    "mc": {
+      "tolerance": 0.01,
+      "sign": "Löwe",
+      "longitude": 120.3822
+    },
+    "sun": {
+      "tolerance": 0.05,
+      "sign": "Krebs",
+      "longitude": 93.1613
+    },
+    "moon": {
+      "tolerance": 0.1,
+      "sign": "Skorpion",
+      "longitude": 227.699
+    },
+    "bazi": {
+      "year": {
+        "stem": "Geng",
+        "branch": "Shen",
+        "animal": "Monkey"
+      },
+      "day": {
+        "stem": "Wu",
+        "branch": "Chen"
+      },
+      "dayMaster": {
+        "element": "Earth",
+        "polarity": "Yang"
+      }
+    }
+  },
+  "calibration_required": false,
+  "source": "Calibrated against Swiss Ephemeris output",
+  "critical": true,
+  "calibrated_at": "2025-12-31T04:45:29.817Z",
+  "calibrated_with": "2.10.03"
+}

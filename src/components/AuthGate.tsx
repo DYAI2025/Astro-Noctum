@@ -14,7 +14,6 @@ export function AuthGate() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [signupDone, setSignupDone] = useState(false);
 
   // Prefill email from localStorage (returning visitors)
   useEffect(() => {
@@ -44,43 +43,13 @@ export function AuthGate() {
     if (err) { setError(err); return; }
 
     try { localStorage.setItem(EMAIL_STORAGE_KEY, email); } catch { /* silent */ }
-    if (mode === "signup") setSignupDone(true);
+    // With email confirmation disabled, signUp auto-signs-in via AuthContext.
+    // No "check your inbox" screen needed.
   };
 
   // ── Shared input style ─────────────────────────────────────────────────
   const inputCls =
     "w-full bg-white/[0.03] border border-gold/10 rounded-lg px-4 py-3 text-sm text-white/90 placeholder-white/20 focus:outline-none focus:border-gold/30 transition-colors";
-
-  // ── Email confirmed screen ─────────────────────────────────────────────
-  if (signupDone) {
-    return (
-      <div className="fixed inset-0 z-[90] bg-obsidian flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center max-w-md px-8"
-        >
-          <p className="font-sans text-[10px] uppercase tracking-[0.5em] text-gold/60 mb-6">
-            Bazodiac
-          </p>
-          <h2 className="font-serif text-2xl mb-4">
-            {lang === "de" ? "Prüfe dein Postfach" : "Check your inbox"}
-          </h2>
-          <p className="text-white/50 text-sm mb-8 leading-relaxed">
-            {lang === "de"
-              ? "Wir haben dir eine Bestätigungs-E-Mail gesendet. Klicke auf den Link, um dein Konto zu aktivieren."
-              : "We sent you a confirmation email. Click the link to activate your account."}
-          </p>
-          <button
-            onClick={() => { setSignupDone(false); setMode("login"); }}
-            className="px-8 py-3 border border-gold/20 text-gold text-[10px] uppercase tracking-[0.4em] hover:bg-gold/5 hover:border-gold/40 transition-all"
-          >
-            {lang === "de" ? "Zum Login" : "Go to Login"}
-          </button>
-        </motion.div>
-      </div>
-    );
-  }
 
   // ── Main auth form ─────────────────────────────────────────────────────
   return (

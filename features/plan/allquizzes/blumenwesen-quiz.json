@@ -1,0 +1,583 @@
+{
+  "meta": {
+    "id": "blumenwesen-quiz",
+    "title": "Dein inneres Blumenwesen",
+    "subtitle": "Jede Seele trägt einen Samen in sich",
+    "version": "1.0.0",
+    "language": "de",
+    "engine": "custom",
+    "skin": "Botanical Inner Child",
+    "tone": "poetic",
+    "target_audience": "Frauen 20-45, Selbstreflexion, Inneres-Kind-Arbeit",
+    "estimated_duration": "3 Minuten",
+    "question_count": 10,
+    "profile_count": 6,
+    "dimension_count": 4,
+    "created_at": "2024-12-22",
+    "tags": ["inner-child", "botanical", "self-reflection", "psychology", "viral"],
+    "disclaimer": "Dieser Test dient der spielerischen Selbstreflexion und stellt keine psychologische Diagnose dar."
+  },
+
+  "dimensions": [
+    {
+      "id": "licht",
+      "name": "Lichtbedürfnis",
+      "description": "Wie stark brauchst du externe Bestätigung und Sichtbarkeit?",
+      "pole_low": "Schatten",
+      "pole_low_description": "Gedeiht im Verborgenen, braucht keine Aufmerksamkeit",
+      "pole_high": "Sonne",
+      "pole_high_description": "Braucht Sichtbarkeit und Anerkennung zum Aufblühen",
+      "inner_child_aspect": "Bedürfnis, gesehen und gespiegelt zu werden"
+    },
+    {
+      "id": "wurzeln",
+      "name": "Wurzeltiefe",
+      "description": "Wie wichtig ist dir Stabilität und Verwurzelung?",
+      "pole_low": "Flexibel",
+      "pole_low_description": "Beweglich, anpassungsfähig, ortsungebunden",
+      "pole_high": "Verwurzelt",
+      "pole_high_description": "Tiefe Bindung an Orte, Menschen, Routinen",
+      "inner_child_aspect": "Bedürfnis nach Sicherheit und Beständigkeit"
+    },
+    {
+      "id": "rhythmus",
+      "name": "Blührhythmus",
+      "description": "Wie zeigt sich deine Energie und Lebendigkeit?",
+      "pole_low": "Geduldig",
+      "pole_low_description": "Langsames, stetiges Wachstum, abwartend",
+      "pole_high": "Spontan",
+      "pole_high_description": "Plötzliche Energie-Ausbrüche, impulsiv, lebendig",
+      "inner_child_aspect": "Bedürfnis nach Freiheit vs. Struktur"
+    },
+    {
+      "id": "wasser",
+      "name": "Wasserbedarf",
+      "description": "Wie intensiv sind deine emotionalen Bedürfnisse?",
+      "pole_low": "Genügsam",
+      "pole_low_description": "Emotional autark, regeneriert sich selbst",
+      "pole_high": "Intensiv",
+      "pole_high_description": "Braucht regelmäßige tiefe emotionale Verbindung",
+      "inner_child_aspect": "Bedürfnis nach emotionaler Nahrung und Verbindung"
+    }
+  ],
+
+  "questions": [
+    {
+      "id": "q1",
+      "index": 1,
+      "context": "Der innere Garten",
+      "text": "Stell dir vor, deine Seele ist ein Garten. Wo steht deine innere Pflanze am liebsten?",
+      "dimension_focus": ["licht", "wurzeln"],
+      "options": [
+        {
+          "id": "q1_a",
+          "text": "Mitten im Sonnenlicht, wo jeder sie sehen kann",
+          "scores": { "licht": 5, "wurzeln": 3, "rhythmus": 4, "wasser": 3 }
+        },
+        {
+          "id": "q1_b",
+          "text": "Am Rand, halb im Schatten, mit Blick aufs Ganze",
+          "scores": { "licht": 2, "wurzeln": 4, "rhythmus": 2, "wasser": 3 }
+        },
+        {
+          "id": "q1_c",
+          "text": "Unter einem großen Baum, geschützt und geborgen",
+          "scores": { "licht": 1, "wurzeln": 5, "rhythmus": 2, "wasser": 4 }
+        },
+        {
+          "id": "q1_d",
+          "text": "Überall und nirgends – ich wandere mit dem Wind",
+          "scores": { "licht": 3, "wurzeln": 1, "rhythmus": 5, "wasser": 2 }
+        }
+      ]
+    },
+    {
+      "id": "q2",
+      "index": 2,
+      "context": "Kindheitserinnerung",
+      "text": "Wenn du an einen glücklichen Moment deiner Kindheit denkst – was brauchtest du dafür am meisten?",
+      "dimension_focus": ["licht", "wasser"],
+      "options": [
+        {
+          "id": "q2_a",
+          "text": "Die volle Aufmerksamkeit eines Menschen, der mich sah",
+          "scores": { "licht": 5, "wurzeln": 3, "rhythmus": 3, "wasser": 5 }
+        },
+        {
+          "id": "q2_b",
+          "text": "Einen sicheren Ort, der immer gleich blieb",
+          "scores": { "licht": 2, "wurzeln": 5, "rhythmus": 1, "wasser": 3 }
+        },
+        {
+          "id": "q2_c",
+          "text": "Die Freiheit, einfach zu sein, ohne Erwartungen",
+          "scores": { "licht": 2, "wurzeln": 2, "rhythmus": 5, "wasser": 2 }
+        },
+        {
+          "id": "q2_d",
+          "text": "Zeit für mich allein, um zu träumen und zu fühlen",
+          "scores": { "licht": 1, "wurzeln": 3, "rhythmus": 2, "wasser": 4 }
+        }
+      ]
+    },
+    {
+      "id": "q3",
+      "index": 3,
+      "context": "Emotionale Nahrung",
+      "text": "Was passiert mit dir, wenn du zu lange keine emotionale Verbindung hattest?",
+      "dimension_focus": ["wasser", "rhythmus"],
+      "options": [
+        {
+          "id": "q3_a",
+          "text": "Ich welke – ich brauche regelmäßig tiefe Gespräche",
+          "scores": { "licht": 4, "wurzeln": 3, "rhythmus": 2, "wasser": 5 }
+        },
+        {
+          "id": "q3_b",
+          "text": "Ich ziehe mich zurück und regeneriere mich selbst",
+          "scores": { "licht": 1, "wurzeln": 4, "rhythmus": 2, "wasser": 2 }
+        },
+        {
+          "id": "q3_c",
+          "text": "Ich suche mir neue Verbindungen, spontan und ungeplant",
+          "scores": { "licht": 4, "wurzeln": 1, "rhythmus": 5, "wasser": 3 }
+        },
+        {
+          "id": "q3_d",
+          "text": "Ich warte geduldig – die richtigen Menschen kommen zu mir",
+          "scores": { "licht": 2, "wurzeln": 5, "rhythmus": 1, "wasser": 3 }
+        }
+      ]
+    },
+    {
+      "id": "q4",
+      "index": 4,
+      "context": "Der erste Frost",
+      "text": "Wie reagierst du, wenn das Leben plötzlich kalt und hart wird?",
+      "dimension_focus": ["wurzeln", "wasser"],
+      "options": [
+        {
+          "id": "q4_a",
+          "text": "Ich ziehe meine Blätter ein und warte auf bessere Zeiten",
+          "scores": { "licht": 2, "wurzeln": 5, "rhythmus": 1, "wasser": 3 }
+        },
+        {
+          "id": "q4_b",
+          "text": "Ich blühe gerade dann auf – Krisen bringen meine Stärke hervor",
+          "scores": { "licht": 4, "wurzeln": 3, "rhythmus": 4, "wasser": 4 }
+        },
+        {
+          "id": "q4_c",
+          "text": "Ich transformiere mich – jeder Winter macht mich weiser",
+          "scores": { "licht": 2, "wurzeln": 4, "rhythmus": 2, "wasser": 5 }
+        },
+        {
+          "id": "q4_d",
+          "text": "Ich biege mich mit dem Sturm, breche aber nicht",
+          "scores": { "licht": 3, "wurzeln": 2, "rhythmus": 4, "wasser": 3 }
+        }
+      ]
+    },
+    {
+      "id": "q5",
+      "index": 5,
+      "context": "Das innere Kind spricht",
+      "text": "Was hätte dein inneres Kind am liebsten öfter gehört?",
+      "dimension_focus": ["licht", "wurzeln"],
+      "options": [
+        {
+          "id": "q5_a",
+          "text": "„Du strahlst! Wie wunderbar, dass du da bist."",
+          "scores": { "licht": 5, "wurzeln": 3, "rhythmus": 4, "wasser": 4 }
+        },
+        {
+          "id": "q5_b",
+          "text": "„Du bist sicher. Ich bin immer für dich da."",
+          "scores": { "licht": 2, "wurzeln": 5, "rhythmus": 2, "wasser": 4 }
+        },
+        {
+          "id": "q5_c",
+          "text": "„Du darfst wild sein. Sei frei, erkunde die Welt."",
+          "scores": { "licht": 3, "wurzeln": 1, "rhythmus": 5, "wasser": 2 }
+        },
+        {
+          "id": "q5_d",
+          "text": "„Du bist genug. Auch leise. Auch langsam."",
+          "scores": { "licht": 1, "wurzeln": 4, "rhythmus": 1, "wasser": 3 }
+        }
+      ]
+    },
+    {
+      "id": "q6",
+      "index": 6,
+      "context": "Wachstumsmuster",
+      "text": "Wie entfaltest du dich am besten?",
+      "dimension_focus": ["rhythmus", "licht"],
+      "options": [
+        {
+          "id": "q6_a",
+          "text": "Schnell und sichtbar – wenn ich blühe, soll es jeder sehen",
+          "scores": { "licht": 5, "wurzeln": 2, "rhythmus": 5, "wasser": 3 }
+        },
+        {
+          "id": "q6_b",
+          "text": "Langsam und stetig – echtes Wachstum braucht Zeit",
+          "scores": { "licht": 2, "wurzeln": 5, "rhythmus": 1, "wasser": 3 }
+        },
+        {
+          "id": "q6_c",
+          "text": "In Zyklen – manchmal intensiv, manchmal ruhend",
+          "scores": { "licht": 3, "wurzeln": 3, "rhythmus": 3, "wasser": 5 }
+        },
+        {
+          "id": "q6_d",
+          "text": "Überraschend – ich blühe, wenn niemand damit rechnet",
+          "scores": { "licht": 3, "wurzeln": 2, "rhythmus": 5, "wasser": 2 }
+        }
+      ]
+    },
+    {
+      "id": "q7",
+      "index": 7,
+      "context": "Tiefste Sehnsucht",
+      "text": "Wonach sehnt sich dein Herz am meisten?",
+      "dimension_focus": ["wasser", "wurzeln"],
+      "options": [
+        {
+          "id": "q7_a",
+          "text": "Gesehen und gefeiert zu werden für das, was ich bin",
+          "scores": { "licht": 5, "wurzeln": 2, "rhythmus": 4, "wasser": 4 }
+        },
+        {
+          "id": "q7_b",
+          "text": "Einem Ort, der sich wie Zuhause anfühlt – für immer",
+          "scores": { "licht": 2, "wurzeln": 5, "rhythmus": 1, "wasser": 3 }
+        },
+        {
+          "id": "q7_c",
+          "text": "Tiefe Verschmelzung mit einem anderen Herzen",
+          "scores": { "licht": 2, "wurzeln": 4, "rhythmus": 2, "wasser": 5 }
+        },
+        {
+          "id": "q7_d",
+          "text": "Ungebundene Freiheit und immer neue Abenteuer",
+          "scores": { "licht": 4, "wurzeln": 1, "rhythmus": 5, "wasser": 2 }
+        }
+      ]
+    },
+    {
+      "id": "q8",
+      "index": 8,
+      "context": "Heilungskraft",
+      "text": "Was heilt dich, wenn du innerlich verletzt bist?",
+      "dimension_focus": ["wasser", "rhythmus"],
+      "options": [
+        {
+          "id": "q8_a",
+          "text": "Warmherzige Gesellschaft und liebevolle Zuwendung",
+          "scores": { "licht": 4, "wurzeln": 3, "rhythmus": 3, "wasser": 5 }
+        },
+        {
+          "id": "q8_b",
+          "text": "Stille und Rückzug in meine eigene Welt",
+          "scores": { "licht": 1, "wurzeln": 4, "rhythmus": 1, "wasser": 3 }
+        },
+        {
+          "id": "q8_c",
+          "text": "Bewegung und Veränderung – irgendwo Neues sein",
+          "scores": { "licht": 3, "wurzeln": 1, "rhythmus": 5, "wasser": 2 }
+        },
+        {
+          "id": "q8_d",
+          "text": "Rituale und vertraute Routinen, die mich erden",
+          "scores": { "licht": 2, "wurzeln": 5, "rhythmus": 2, "wasser": 3 }
+        }
+      ]
+    },
+    {
+      "id": "q9",
+      "index": 9,
+      "context": "Beziehungsmuster",
+      "text": "In Beziehungen – was gibst du am meisten?",
+      "dimension_focus": ["licht", "wasser"],
+      "options": [
+        {
+          "id": "q9_a",
+          "text": "Wärme und Freude – ich bringe Licht in dunkle Momente",
+          "scores": { "licht": 5, "wurzeln": 3, "rhythmus": 4, "wasser": 3 }
+        },
+        {
+          "id": "q9_b",
+          "text": "Stabilität und Treue – auf mich kann man sich verlassen",
+          "scores": { "licht": 2, "wurzeln": 5, "rhythmus": 2, "wasser": 3 }
+        },
+        {
+          "id": "q9_c",
+          "text": "Tiefe und Intensität – ich liebe ganz oder gar nicht",
+          "scores": { "licht": 3, "wurzeln": 4, "rhythmus": 3, "wasser": 5 }
+        },
+        {
+          "id": "q9_d",
+          "text": "Inspiration und Freiheit – ich lasse Menschen wachsen",
+          "scores": { "licht": 3, "wurzeln": 1, "rhythmus": 5, "wasser": 2 }
+        }
+      ]
+    },
+    {
+      "id": "q10",
+      "index": 10,
+      "context": "Deine Essenz",
+      "text": "Wenn dein Leben ein Garten wäre – was wäre dein wichtigstes Geschenk an die Welt?",
+      "dimension_focus": ["licht", "wurzeln", "wasser"],
+      "options": [
+        {
+          "id": "q10_a",
+          "text": "Mein Strahlen – ich erinnere andere daran, dass Freude möglich ist",
+          "scores": { "licht": 5, "wurzeln": 2, "rhythmus": 4, "wasser": 3 }
+        },
+        {
+          "id": "q10_b",
+          "text": "Meine Tiefe – ich zeige, dass aus Dunkelheit Schönheit wachsen kann",
+          "scores": { "licht": 1, "wurzeln": 5, "rhythmus": 2, "wasser": 5 }
+        },
+        {
+          "id": "q10_c",
+          "text": "Meine Heilkraft – ich bringe Ruhe in aufgewühlte Seelen",
+          "scores": { "licht": 3, "wurzeln": 4, "rhythmus": 1, "wasser": 3 }
+        },
+        {
+          "id": "q10_d",
+          "text": "Meine Wildheit – ich erinnere andere an ihre eigene Freiheit",
+          "scores": { "licht": 4, "wurzeln": 1, "rhythmus": 5, "wasser": 2 }
+        }
+      ]
+    }
+  ],
+
+  "scoring": {
+    "method": "weighted_pattern_matching",
+    "max_score_per_dimension": 50,
+    "normalization": "0-100",
+    "profile_patterns": {
+      "sunflower": { "licht": 0.35, "wurzeln": 0.15, "rhythmus": 0.25, "wasser": 0.15 },
+      "lotus": { "licht": -0.30, "wurzeln": 0.30, "rhythmus": -0.20, "wasser": 0.35 },
+      "wildflower": { "licht": 0.10, "wurzeln": -0.35, "rhythmus": 0.35, "wasser": -0.15 },
+      "orchid": { "licht": -0.25, "wurzeln": 0.20, "rhythmus": -0.20, "wasser": 0.35 },
+      "lavender": { "licht": 0.05, "wurzeln": 0.35, "rhythmus": -0.35, "wasser": 0.10 },
+      "poppy": { "licht": 0.25, "wurzeln": -0.25, "rhythmus": 0.35, "wasser": 0.20 }
+    }
+  },
+
+  "profiles": [
+    {
+      "id": "sunflower",
+      "title": "Die Sonnenblume",
+      "emoji": "🌻",
+      "tagline": "Du strahlst – und machst die Welt heller.",
+      "color_primary": "#FFD93D",
+      "color_secondary": "#E6B800",
+      "archetype": "Das strahlende Kind",
+      "core_need": "Gesehen und gespiegelt werden",
+      "description": "Dein innerer Samen wurde in Licht gepflanzt – und sehnt sich noch immer danach. Als Kind brauchtest du Aufmerksamkeit nicht aus Eitelkeit, sondern weil du in den Augen anderer gespiegelt sehen wolltest, dass du existierst und wertvoll bist.\n\nHeute strahlst du natürlich – nicht um zu blenden, sondern weil Freude deine Muttersprache ist. Du hast die seltene Gabe, andere mit deiner Präsenz aufzuwärmen.\n\nDein inneres Kind braucht noch immer Bestätigung – und das ist keine Schwäche. Es ist der Motor deiner Großzügigkeit.",
+      "inner_child_message": "Du hast immer schon gestrahlt. Nicht um gesehen zu werden – sondern weil dein Licht einfach nicht anders kann. Die Welt braucht dich genau so.",
+      "strengths": ["Natürliche Wärme", "Ansteckende Freude", "Großzügigkeit", "Präsenz"],
+      "growth_edge": "Auch im Schatten wertvoll sein",
+      "stats": {
+        "Sonnenstunden": "127%",
+        "Blühfreude": "∞",
+        "Wärmeabgabe": "☀️☀️☀️"
+      },
+      "compatibility": {
+        "allies": ["wildflower", "lavender"],
+        "allies_reason": "Wildblumen inspirieren dich, Lavendel erdet dich",
+        "tension": ["lotus"],
+        "tension_reason": "Lotus' Tiefe kann dein Licht als oberflächlich empfinden"
+      },
+      "share_text": "Ich bin eine Sonnenblume 🌻 Mein inneres Blumenwesen strahlt, um andere zu wärmen.",
+      "conversation_starters": [
+        "Wann hast du dich zuletzt wirklich gesehen gefühlt?",
+        "Was bringt dein inneres Licht zum Strahlen?",
+        "Wer ist deine Sonnenblumen-Seelenverwandte?"
+      ]
+    },
+    {
+      "id": "lotus",
+      "title": "Die Lotusblume",
+      "emoji": "🪷",
+      "tagline": "Aus der Tiefe wächst die reinste Schönheit.",
+      "color_primary": "#E8B4CB",
+      "color_secondary": "#C77B9B",
+      "archetype": "Das weise Kind",
+      "core_need": "Transformation und Tiefe",
+      "description": "Dein Samen wurde im Schlamm gepflanzt – und genau dort hast du gelernt, dass Dunkelheit nicht das Ende ist, sondern der Anfang von allem.\n\nAls Kind hast du vermutlich früh verstanden, dass das Leben kompliziert ist. Vielleicht musstest du zu schnell erwachsen werden, oder du hast Dinge gefühlt, die andere nicht sahen.\n\nHeute bist du die, zu der andere kommen, wenn sie sich verloren fühlen. Deine Tiefe ist ein Brunnen, aus dem andere trinken können.",
+      "inner_child_message": "Du hast so früh so viel getragen. Aber schau, was daraus gewachsen ist – reine, unzerstörbare Schönheit. Deine Wunden sind zu Weisheit geworden.",
+      "strengths": ["Transformationskraft", "Emotionale Tiefe", "Weisheit", "Resilienz"],
+      "growth_edge": "Leichtigkeit zulassen",
+      "stats": {
+        "Transformationen": "∞",
+        "Tiefe": "unermesslich",
+        "Reinheit": "100%"
+      },
+      "compatibility": {
+        "allies": ["orchid", "lavender"],
+        "allies_reason": "Orchideen teilen deine Sensibilität, Lavendel schenkt dir Ruhe",
+        "tension": ["sunflower"],
+        "tension_reason": "Sonnenblumens Leichtigkeit kann sich oberflächlich anfühlen"
+      },
+      "share_text": "Ich bin eine Lotusblume 🪷 Aus meiner Tiefe wächst Schönheit, die niemand zerstören kann.",
+      "conversation_starters": [
+        "Welche Dunkelheit hat dich am meisten geformt?",
+        "Wann hast du zuletzt etwas transformiert?",
+        "Wer ist dein Lotus-Seelenverwandter?"
+      ]
+    },
+    {
+      "id": "wildflower",
+      "title": "Die Wildblume",
+      "emoji": "🌸",
+      "tagline": "Du wächst, wo du gepflanzt wurdest – und überall sonst.",
+      "color_primary": "#9B7ED9",
+      "color_secondary": "#7B5BB9",
+      "archetype": "Das freie Kind",
+      "core_need": "Freiheit und Authentizität",
+      "description": "Dein Samen wurde vom Wind getragen – und landete genau dort, wo du sein solltest. Auch wenn es manchmal nicht so aussah.\n\nAls Kind warst du vermutlich die, die nicht in Schubladen passte. Zu wild für die einen, zu sanft für die anderen. Du hast früh gelernt, dass Anpassung dich kleiner macht.\n\nHeute bist du überall zuhause und nirgends festgewurzelt. Deine Wildheit inspiriert andere, auch ihre eigenen Regeln zu schreiben.",
+      "inner_child_message": "Du warst nie ‚zu viel' oder ‚zu wenig'. Du warst immer genau richtig – wild, frei, ungezähmt. Die Welt hat nur nicht gewusst, wie man Wildblumen gießt.",
+      "strengths": ["Anpassungsfähigkeit", "Authentizität", "Freigeist", "Inspiration"],
+      "growth_edge": "Manchmal Wurzeln schlagen",
+      "stats": {
+        "Anpassung": "legendär",
+        "Regelbrüche": "unzählige",
+        "Freiheit": "∞"
+      },
+      "compatibility": {
+        "allies": ["sunflower", "poppy"],
+        "allies_reason": "Sonnenblumen feiern deine Lebendigkeit, Mohnblumen teilen deine Intensität",
+        "tension": ["orchid"],
+        "tension_reason": "Orchideen brauchen mehr Stabilität als du bieten kannst"
+      },
+      "share_text": "Ich bin eine Wildblume 🌸 Ich wachse überall – und folge nur meinen eigenen Regeln.",
+      "conversation_starters": [
+        "Welche Regel hast du zuletzt gebrochen?",
+        "Wo fühlst du dich am freiesten?",
+        "Wer ist deine Wildblumen-Seelenverwandte?"
+      ]
+    },
+    {
+      "id": "orchid",
+      "title": "Die Orchidee",
+      "emoji": "🪻",
+      "tagline": "Selten, sensibel und von atemberaubender Tiefe.",
+      "color_primary": "#DA70D6",
+      "color_secondary": "#BA50B6",
+      "archetype": "Das sensible Kind",
+      "core_need": "Feinfühlige Umgebung und Verständnis",
+      "description": "Dein Samen brauchte besondere Bedingungen – und das ist keine Schwäche, sondern ein Hinweis auf deine Einzigartigkeit.\n\nAls Kind hast du vielleicht gemerkt, dass du anders fühlst als andere. Intensiver. Feiner. Du hast Stimmungen wahrgenommen, die niemand sonst bemerkte.\n\nHeute verstehst du: Deine Sensibilität ist ein Instrument. Du brauchst mehr Pflege als andere Blumen – aber du gibst auch mehr zurück.",
+      "inner_child_message": "Du warst nie ‚zu empfindlich'. Die Welt war nur zu grob für jemanden so Feines. Deine Sensibilität ist dein Geschenk.",
+      "strengths": ["Hochsensibilität", "Ästhetisches Gespür", "Intuition", "Tiefe Empathie"],
+      "growth_edge": "Die eigene Zartheit nicht als Schwäche sehen",
+      "stats": {
+        "Feinfühligkeit": "überirdisch",
+        "Seltenheit": "einzigartig",
+        "Pflegebedarf": "hoch"
+      },
+      "compatibility": {
+        "allies": ["lotus", "lavender"],
+        "allies_reason": "Lotus versteht deine Tiefe, Lavendel schenkt dir Ruhe",
+        "tension": ["wildflower"],
+        "tension_reason": "Wildblumens Spontanität kann dich überfordern"
+      },
+      "share_text": "Ich bin eine Orchidee 🪻 Selten, sensibel und von atemberaubender Tiefe.",
+      "conversation_starters": [
+        "Was nimmst du wahr, das andere übersehen?",
+        "Welche Umgebung lässt dich aufblühen?",
+        "Wer ist dein Orchideen-Seelenverwandter?"
+      ]
+    },
+    {
+      "id": "lavender",
+      "title": "Der Lavendel",
+      "emoji": "💜",
+      "tagline": "Deine Ruhe heilt – auch wenn du nichts tust.",
+      "color_primary": "#9683EC",
+      "color_secondary": "#7663CC",
+      "archetype": "Das heilende Kind",
+      "core_need": "Beständigkeit und stille Wertschätzung",
+      "description": "Dein Samen wurde in kargen Boden gepflanzt – und gerade deshalb hast du gelernt, mit wenig zu gedeihen und viel zu geben.\n\nAls Kind warst du vielleicht die Ruhige im Hintergrund. Die, zu der man kam, wenn man Trost brauchte – auch wenn niemand fragte, wie es dir ging.\n\nHeute bist du der Anker für aufgewühlte Seelen. Deine bloße Präsenz beruhigt. Du brauchst nicht viel zu sagen – dein Sein reicht.",
+      "inner_child_message": "Du hast so viel gegeben, ohne zu fordern. Aber auch du darfst empfangen. Auch du darfst duften, ohne nützlich zu sein. Du bist genug.",
+      "strengths": ["Natürliche Heilkraft", "Beständigkeit", "Stille Stärke", "Erdung"],
+      "growth_edge": "Auch für sich selbst sorgen",
+      "stats": {
+        "Heilkraft": "still aber mächtig",
+        "Beständigkeit": "unerschütterlich",
+        "Bescheidenheit": "zu viel"
+      },
+      "compatibility": {
+        "allies": ["lotus", "sunflower", "orchid"],
+        "allies_reason": "Du harmonierst mit fast allen – deine Ruhe gleicht andere aus",
+        "tension": ["poppy"],
+        "tension_reason": "Mohnblumens Intensität kann dich erschöpfen"
+      },
+      "share_text": "Ich bin Lavendel 💜 Meine Ruhe heilt – auch wenn ich nichts tue.",
+      "conversation_starters": [
+        "Wann hast du zuletzt etwas nur für dich getan?",
+        "Wer sieht deine stille Stärke?",
+        "Wer ist dein Lavendel-Seelenverwandter?"
+      ]
+    },
+    {
+      "id": "poppy",
+      "title": "Die Mohnblume",
+      "emoji": "🌺",
+      "tagline": "Du brennst hell – und hinterlässt Spuren.",
+      "color_primary": "#FF6B6B",
+      "color_secondary": "#E64545",
+      "archetype": "Das intensive Kind",
+      "core_need": "Volle emotionale Expression",
+      "description": "Dein Samen wurde in feurige Erde gepflanzt – und du hast nie gelernt, weniger zu fühlen.\n\nAls Kind warst du vielleicht intensiv. Laut in deiner Freude, unüberhörbar in deinem Schmerz. Vielleicht hat man dir gesagt, du sollst dich mäßigen.\n\nHeute weißt du: Deine Intensität ist ein Geschenk. Du lebst, während andere nur existieren. Manche finden das anstrengend. Andere nennen es lebendig.",
+      "inner_child_message": "Du warst nie ‚too much'. Du warst genau die richtige Menge Leben für eine Welt, die oft zu grau ist. Brenne weiter.",
+      "strengths": ["Leidenschaft", "Lebendigkeit", "Authentischer Ausdruck", "Mut"],
+      "growth_edge": "Auch Ruhe zulassen",
+      "stats": {
+        "Intensität": "🔥🔥🔥🔥🔥",
+        "Lebensfreude": "explosiv",
+        "Drama": "ja, absichtlich"
+      },
+      "compatibility": {
+        "allies": ["wildflower", "sunflower"],
+        "allies_reason": "Wildblumen teilen deinen Freigeist, Sonnenblumen deine Lebensfreude",
+        "tension": ["lavender"],
+        "tension_reason": "Lavendels Ruhe kann sich für dich wie Stagnation anfühlen"
+      },
+      "share_text": "Ich bin eine Mohnblume 🌺 Ich brenne hell und hinterlasse Spuren.",
+      "conversation_starters": [
+        "Wofür brennst du gerade?",
+        "Wann hast du zuletzt richtig gelebt?",
+        "Wer ist deine Mohnblumen-Seelenverwandte?"
+      ]
+    }
+  ],
+
+  "share_config": {
+    "card_format": "9:16",
+    "card_style": "trading_card",
+    "include_stats": true,
+    "include_compatibility": true,
+    "hashtags": ["#InneresBlumenwesen", "#QuizzMe", "#InneresKind", "#Selbsterkenntnis"],
+    "cta_primary": "Teile dein Ergebnis",
+    "cta_secondary": "Tagge deine botanische Seelenverwandte",
+    "viral_triggers": [
+      "compatibility_matrix",
+      "inner_child_message",
+      "conversation_starters"
+    ]
+  },
+
+  "contribution_event": {
+    "schema": "sp.contribution.v1",
+    "source": "blumenwesen-quiz",
+    "marker_prefix": "marker.flower",
+    "trait_ids": ["licht", "wurzeln", "rhythmus", "wasser"],
+    "tags": ["inner-child", "botanical", "self-reflection"],
+    "unlocks_pattern": "flower-{profile_id}"
+  }
+}

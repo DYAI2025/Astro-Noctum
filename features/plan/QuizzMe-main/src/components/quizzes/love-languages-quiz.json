@@ -1,0 +1,662 @@
+{
+  "meta": {
+    "id": "quiz.love.languages.v1",
+    "version": "1.0.0",
+    "title": "Welche Sprache spricht dein Herz?",
+    "subtitle": "Entdecke, wie du Liebe empfängst und gibst",
+    "engine": "custom",
+    "skin": "botanical-garden",
+    "language": "de-DE",
+    "tone": ["mysterious", "cozy"],
+    "question_count": 12,
+    "estimated_duration_seconds": 180,
+    "disclaimer": "Dieser Test dient der spielerischen Selbstreflexion und stellt keine psychologische Diagnose dar.",
+    "source_framework": "Gary Chapman - The 5 Love Languages",
+    "created_at": "2025-01-01",
+    "tags": ["love", "relationships", "communication", "self-discovery"]
+  },
+
+  "dimensions": [
+    {
+      "id": "words",
+      "name": "Worte der Bestätigung",
+      "label_ui": "Worte",
+      "pole_low": "still",
+      "pole_high": "verbal",
+      "description": "Verbale Bestätigung, Lob, Ermutigung und explizite Liebesbekundungen"
+    },
+    {
+      "id": "time",
+      "name": "Qualitätszeit",
+      "label_ui": "Präsenz",
+      "pole_low": "unabhängig",
+      "pole_high": "präsent",
+      "description": "Ungeteilte Aufmerksamkeit, gemeinsame Momente, aktives Zuhören"
+    },
+    {
+      "id": "gifts",
+      "name": "Geschenke",
+      "label_ui": "Symbole",
+      "pole_low": "abstrakt",
+      "pole_high": "symbolisch",
+      "description": "Materialisierte Beweise des Gedankens, bedeutungsvolle Gesten und Erinnerungsstücke"
+    },
+    {
+      "id": "service",
+      "name": "Hilfsbereitschaft",
+      "label_ui": "Taten",
+      "pole_low": "passiv",
+      "pole_high": "handelnd",
+      "description": "Praktische Unterstützung, Entlastung im Alltag, antizipatorische Hilfe"
+    },
+    {
+      "id": "touch",
+      "name": "Zärtlichkeit",
+      "label_ui": "Nähe",
+      "pole_low": "distanziert",
+      "pole_high": "körperlich",
+      "description": "Körperliche Präsenz, Berührungen, Umarmungen und physische Nähe"
+    }
+  ],
+
+  "questions": [
+    {
+      "id": "q1",
+      "index": 1,
+      "indicator": "verletzung",
+      "context": "Ihr hattet Streit. Jetzt liegt Stille zwischen euch wie frischer Schnee.",
+      "text": "Was vermisst du in diesem Moment am meisten?",
+      "options": [
+        {
+          "id": "q1a",
+          "text": "Dass er oder sie ausspricht, was ich bedeute – dass die Worte die Stille durchbrechen",
+          "scores": { "words": 3, "time": 1 }
+        },
+        {
+          "id": "q1b",
+          "text": "Einfach zusammen da zu sein – ohne dass jemand etwas sagen muss",
+          "scores": { "time": 3, "touch": 1 }
+        },
+        {
+          "id": "q1c",
+          "text": "Eine kleine Geste, die zeigt: Ich denke an dich, auch wenn wir gerade nicht reden",
+          "scores": { "gifts": 3, "service": 1 }
+        },
+        {
+          "id": "q1d",
+          "text": "Dass er oder sie etwas tut, um es wieder gut zu machen – Taten statt Worte",
+          "scores": { "service": 3, "words": 1 }
+        },
+        {
+          "id": "q1e",
+          "text": "Eine Umarmung, die alles sagt, was Worte nicht können",
+          "scores": { "touch": 3, "time": 1 }
+        }
+      ]
+    },
+    {
+      "id": "q2",
+      "index": 2,
+      "indicator": "forderung",
+      "context": "Dein Mensch fragt dich ehrlich: „Was brauchst du gerade von mir?“",
+      "text": "Deine ehrlichste Antwort:",
+      "options": [
+        {
+          "id": "q2a",
+          "text": "Sag mir, was du an mir siehst. Sag mir, dass das hier zählt.",
+          "scores": { "words": 3, "touch": 1 }
+        },
+        {
+          "id": "q2b",
+          "text": "Sei einfach hier. Ganz hier. Nur wir beide.",
+          "scores": { "time": 3, "words": 1 }
+        },
+        {
+          "id": "q2c",
+          "text": "Überrasch mich mit etwas, das zeigt, dass du an mich gedacht hast.",
+          "scores": { "gifts": 3, "time": 1 }
+        },
+        {
+          "id": "q2d",
+          "text": "Nimm mir etwas ab. Zeig mir, dass wir ein Team sind.",
+          "scores": { "service": 3, "gifts": 1 }
+        },
+        {
+          "id": "q2e",
+          "text": "Halt mich fest. Lass mich deine Nähe spüren.",
+          "scores": { "touch": 3, "service": 1 }
+        }
+      ]
+    },
+    {
+      "id": "q3",
+      "index": 3,
+      "indicator": "projektion",
+      "context": "Du willst jemandem zeigen, dass du ihn liebst. Wirklich zeigen.",
+      "text": "Was tust du instinktiv?",
+      "options": [
+        {
+          "id": "q3a",
+          "text": "Ich sage es. Laut, klar, unmissverständlich. Ich finde die Worte.",
+          "scores": { "words": 3, "gifts": 1 }
+        },
+        {
+          "id": "q3b",
+          "text": "Ich schenke meine ungeteilte Zeit – das Wertvollste, was ich habe.",
+          "scores": { "time": 3, "touch": 1 }
+        },
+        {
+          "id": "q3c",
+          "text": "Ich bringe etwas mit – vielleicht klein, aber bedeutsam.",
+          "scores": { "gifts": 3, "words": 1 }
+        },
+        {
+          "id": "q3d",
+          "text": "Ich tue etwas für sie – bevor sie überhaupt fragen müssen.",
+          "scores": { "service": 3, "time": 1 }
+        },
+        {
+          "id": "q3e",
+          "text": "Ich berühre sie – eine Hand, eine Umarmung, ein stilles Da-Sein.",
+          "scores": { "touch": 3, "words": 1 }
+        }
+      ]
+    },
+    {
+      "id": "q4",
+      "index": 4,
+      "indicator": "ideal",
+      "context": "Stell dir den perfekten Moment mit deinem Menschen vor. Alles ist genau richtig.",
+      "text": "Was siehst du?",
+      "options": [
+        {
+          "id": "q4a",
+          "text": "Wir reden bis tief in die Nacht – über alles, was wirklich zählt.",
+          "scores": { "words": 3, "time": 1 }
+        },
+        {
+          "id": "q4b",
+          "text": "Wir sind zusammen an einem Ort, der nur uns gehört – ungestört, zeitlos.",
+          "scores": { "time": 3, "touch": 1 }
+        },
+        {
+          "id": "q4c",
+          "text": "Er oder sie hat etwas vorbereitet – eine Überraschung, die nur für mich ist.",
+          "scores": { "gifts": 3, "service": 1 }
+        },
+        {
+          "id": "q4d",
+          "text": "Alles funktioniert – wir arbeiten Hand in Hand, ein eingespieltes Team.",
+          "scores": { "service": 3, "time": 1 }
+        },
+        {
+          "id": "q4e",
+          "text": "Wir liegen eng beieinander – Haut an Haut, Atem an Atem.",
+          "scores": { "touch": 3, "gifts": 1 }
+        }
+      ]
+    },
+    {
+      "id": "q5",
+      "index": 5,
+      "indicator": "verletzung",
+      "context": "Dein Mensch hat etwas vergessen. Etwas, das dir wichtig war.",
+      "text": "Was trifft dich am tiefsten?",
+      "options": [
+        {
+          "id": "q5a",
+          "text": "Dass er oder sie nicht mal erwähnt hat, dass es wichtig ist. Kein Wort.",
+          "scores": { "words": 3, "gifts": 1 }
+        },
+        {
+          "id": "q5b",
+          "text": "Dass wir keine Zeit hatten, es gemeinsam zu erleben.",
+          "scores": { "time": 3, "service": 1 }
+        },
+        {
+          "id": "q5c",
+          "text": "Dass der Tag kam und ging – ohne Geste, ohne Symbol.",
+          "scores": { "gifts": 3, "words": 1 }
+        },
+        {
+          "id": "q5d",
+          "text": "Dass ich alles alleine machen musste. Wieder.",
+          "scores": { "service": 3, "touch": 1 }
+        },
+        {
+          "id": "q5e",
+          "text": "Dass ich mich den ganzen Tag nicht berührt gefühlt habe.",
+          "scores": { "touch": 3, "time": 1 }
+        }
+      ]
+    },
+    {
+      "id": "q6",
+      "index": 6,
+      "indicator": "forderung",
+      "context": "Ein harter Tag liegt hinter dir. Dein Mensch will helfen.",
+      "text": "Worum bittest du?",
+      "options": [
+        {
+          "id": "q6a",
+          "text": "Erzähl mir, was du heute an mir bemerkt hast. Ich brauche deine Worte.",
+          "scores": { "words": 3, "touch": 1 }
+        },
+        {
+          "id": "q6b",
+          "text": "Setz dich zu mir. Hör einfach nur zu. Sei da.",
+          "scores": { "time": 3, "words": 1 }
+        },
+        {
+          "id": "q6c",
+          "text": "Bring mir etwas Kleines – ein Zeichen, dass du an mich gedacht hast.",
+          "scores": { "gifts": 3, "service": 1 }
+        },
+        {
+          "id": "q6d",
+          "text": "Übernimm etwas für mich. Lass mich kurz atmen.",
+          "scores": { "service": 3, "gifts": 1 }
+        },
+        {
+          "id": "q6e",
+          "text": "Halt mich einfach. Keine Worte nötig.",
+          "scores": { "touch": 3, "time": 1 }
+        }
+      ]
+    },
+    {
+      "id": "q7",
+      "index": 7,
+      "indicator": "projektion",
+      "context": "Jemand, der dir wichtig ist, hat einen schweren Moment.",
+      "text": "Wie tröstest du?",
+      "options": [
+        {
+          "id": "q7a",
+          "text": "Ich finde die richtigen Worte. Ich sage, was sie hören müssen.",
+          "scores": { "words": 3, "service": 1 }
+        },
+        {
+          "id": "q7b",
+          "text": "Ich bin einfach da. Ich höre zu, so lange es dauert.",
+          "scores": { "time": 3, "touch": 1 }
+        },
+        {
+          "id": "q7c",
+          "text": "Ich bringe etwas vorbei – ihre Lieblingsschokolade, eine Blume.",
+          "scores": { "gifts": 3, "time": 1 }
+        },
+        {
+          "id": "q7d",
+          "text": "Ich erledige etwas für sie – praktisch helfen, wo ich kann.",
+          "scores": { "service": 3, "words": 1 }
+        },
+        {
+          "id": "q7e",
+          "text": "Ich nehme sie in den Arm. Manchmal braucht es keine Worte.",
+          "scores": { "touch": 3, "gifts": 1 }
+        }
+      ]
+    },
+    {
+      "id": "q8",
+      "index": 8,
+      "indicator": "ideal",
+      "context": "Du hast drei ungestörte Stunden mit deinem Menschen. Nur ihr beide.",
+      "text": "Was wählst du?",
+      "options": [
+        {
+          "id": "q8a",
+          "text": "Ein langes, tiefes Gespräch über alles, was uns bewegt.",
+          "scores": { "words": 3, "time": 1 }
+        },
+        {
+          "id": "q8b",
+          "text": "Etwas gemeinsam erleben – kochen, spazieren, entdecken.",
+          "scores": { "time": 3, "service": 1 }
+        },
+        {
+          "id": "q8c",
+          "text": "Zusammen etwas aussuchen, das uns an diesen Moment erinnert.",
+          "scores": { "gifts": 3, "words": 1 }
+        },
+        {
+          "id": "q8d",
+          "text": "Gemeinsam ein Projekt angehen – als Team.",
+          "scores": { "service": 3, "time": 1 }
+        },
+        {
+          "id": "q8e",
+          "text": "Eng beieinander sein. Auf der Couch, im Bett, nah.",
+          "scores": { "touch": 3, "gifts": 1 }
+        }
+      ]
+    },
+    {
+      "id": "q9",
+      "index": 9,
+      "indicator": "verletzung",
+      "context": "Etwas stimmt nicht zwischen euch. Du spürst es, auch wenn niemand es ausspricht.",
+      "text": "Was fehlt dir?",
+      "options": [
+        {
+          "id": "q9a",
+          "text": "Die Worte. Er oder sie sagt nicht mehr, was ich bedeute.",
+          "scores": { "words": 3, "time": 1 }
+        },
+        {
+          "id": "q9b",
+          "text": "Die Momente. Wir sind da, aber nicht wirklich zusammen.",
+          "scores": { "time": 3, "words": 1 }
+        },
+        {
+          "id": "q9c",
+          "text": "Die Gesten. Früher gab es kleine Aufmerksamkeiten. Jetzt nicht mehr.",
+          "scores": { "gifts": 3, "touch": 1 }
+        },
+        {
+          "id": "q9d",
+          "text": "Die Taten. Früher hat er oder sie mitgedacht. Jetzt mach ich alles allein.",
+          "scores": { "service": 3, "gifts": 1 }
+        },
+        {
+          "id": "q9e",
+          "text": "Die Nähe. Wir berühren uns nicht mehr wie früher.",
+          "scores": { "touch": 3, "service": 1 }
+        }
+      ]
+    },
+    {
+      "id": "q10",
+      "index": 10,
+      "indicator": "forderung",
+      "context": "Dein Geburtstag naht. Du darfst dir etwas wünschen – aber nur eines.",
+      "text": "Was wünschst du dir wirklich?",
+      "options": [
+        {
+          "id": "q10a",
+          "text": "Einen handgeschriebenen Brief. Worte, die bleiben.",
+          "scores": { "words": 3, "gifts": 1 }
+        },
+        {
+          "id": "q10b",
+          "text": "Einen ganzen Tag nur mit ihm oder ihr. Ohne Ablenkung.",
+          "scores": { "time": 3, "touch": 1 }
+        },
+        {
+          "id": "q10c",
+          "text": "Ein Geschenk, das zeigt: Er oder sie kennt mich wirklich.",
+          "scores": { "gifts": 3, "service": 1 }
+        },
+        {
+          "id": "q10d",
+          "text": "Dass alles organisiert ist – und ich mich um nichts kümmern muss.",
+          "scores": { "service": 3, "time": 1 }
+        },
+        {
+          "id": "q10e",
+          "text": "Einen Abend voller Nähe. Kuscheln, Wärme, Berührung.",
+          "scores": { "touch": 3, "words": 1 }
+        }
+      ]
+    },
+    {
+      "id": "q11",
+      "index": 11,
+      "indicator": "projektion",
+      "context": "Jemand fragt dich: „Woran merke ich, dass du mich liebst?“",
+      "text": "Deine Antwort:",
+      "options": [
+        {
+          "id": "q11a",
+          "text": "Ich sage es dir. Immer wieder. In hundert verschiedenen Formen.",
+          "scores": { "words": 3, "touch": 1 }
+        },
+        {
+          "id": "q11b",
+          "text": "Ich bin da, wenn es zählt. Ich schenke dir meine Zeit.",
+          "scores": { "time": 3, "gifts": 1 }
+        },
+        {
+          "id": "q11c",
+          "text": "Ich denke an dich, auch wenn du nicht da bist – und zeige es dir.",
+          "scores": { "gifts": 3, "words": 1 }
+        },
+        {
+          "id": "q11d",
+          "text": "Ich tue Dinge für dich. Ohne dass du fragen musst.",
+          "scores": { "service": 3, "time": 1 }
+        },
+        {
+          "id": "q11e",
+          "text": "Du spürst es. In jeder Berührung, jeder Umarmung.",
+          "scores": { "touch": 3, "service": 1 }
+        }
+      ]
+    },
+    {
+      "id": "q12",
+      "index": 12,
+      "indicator": "ideal",
+      "context": "Du erinnerst dich an den Moment, als du wusstest: Das ist Liebe.",
+      "text": "Was hat es verraten?",
+      "options": [
+        {
+          "id": "q12a",
+          "text": "Etwas, das er oder sie gesagt hat. Worte, die alles veränderten.",
+          "scores": { "words": 3, "service": 1 }
+        },
+        {
+          "id": "q12b",
+          "text": "Ein Moment der absoluten Präsenz. Die Welt verschwand, nur wir blieben.",
+          "scores": { "time": 3, "words": 1 }
+        },
+        {
+          "id": "q12c",
+          "text": "Eine Geste. Etwas Kleines, aber so voller Bedeutung.",
+          "scores": { "gifts": 3, "touch": 1 }
+        },
+        {
+          "id": "q12d",
+          "text": "Etwas, das er oder sie getan hat – ohne dass ich darum bat.",
+          "scores": { "service": 3, "gifts": 1 }
+        },
+        {
+          "id": "q12e",
+          "text": "Eine Berührung. Elektrisch. Als hätte meine Haut auf ihn oder sie gewartet.",
+          "scores": { "touch": 3, "time": 1 }
+        }
+      ]
+    }
+  ],
+
+  "profiles": [
+    {
+      "id": "words",
+      "title": "Der Wortschmied",
+      "tagline": "Für dich sind Worte keine Floskeln – sie sind die Währung der Wahrheit.",
+      "description": "Du hörst zwischen den Zeilen. Während andere ein beiläufiges „Ich mag dich“ überhören, hörst du ein Universum darin – oder sein Fehlen. Worte sind für dich keine Dekoration des Alltags, sie sind sein Fundament. Ein aufrichtiges Kompliment kann deinen ganzen Tag verwandeln. Ein vergessenes „Ich liebe dich“ kann ihn verdunkeln.\n\nDu erinnerst dich an Sätze, die andere längst vergessen haben. Die SMS von vor drei Jahren. Der Liebesbrief, den du nie weggeworfen hast. Das erste Mal, als jemand sagte, was du ihm bedeutest. Worte sind für dich Zeitkapseln – sie bewahren Momente auf, die sonst verblassen würden.\n\nDeine Gabe: Du kannst aussprechen, was andere nur fühlen. Du findest Worte für das Unsagbare. Menschen fühlen sich in deiner Gegenwart gesehen, weil du ihnen sagst, was du an ihnen siehst.\n\nDeine Vulnerabilität: Harsche Worte treffen dich tiefer als andere es verstehen. Sarkasmus, der als Scherz gemeint ist, kann echte Wunden hinterlassen. Du brauchst Menschen, die verstehen, dass Worte für dich nicht nur Schall sind – sondern Beweis.\n\nIn der Liebe brauchst du jemanden, der nicht nur fühlt, sondern ausspricht. Der „Ich liebe dich“ nicht für besondere Anlässe aufspart. Der versteht, dass Schweigen für dich keine goldene Tugend ist, sondern ein leerer Raum, der gefüllt werden will.",
+      "stats": [
+        { "label": "Aufbewahrte Liebesbriefe", "value": "127" },
+        { "label": "Kompliment-Detector", "value": "94%" },
+        { "label": "Sarkasmus-Resistenz", "value": "kritisch niedrig" },
+        { "label": "Gedächtnis für schöne Worte", "value": "elefantös" },
+        { "label": "Tagesrettungs-Sätze benötigt", "value": "mindestens 1" }
+      ],
+      "compatibility": {
+        "allies": ["time", "touch"],
+        "ally_text": "Der Präsenzwächter versteht dein Bedürfnis nach Tiefe; der Nähesucher ergänzt deine Worte mit Berührung.",
+        "nemesis": ["service"],
+        "nemesis_text": "Der stille Beweger zeigt Liebe durch Taten – aber du brauchst die Worte dazu. Ohne Übersetzung redet ihr aneinander vorbei."
+      },
+      "share_text": "Ich bin ein Wortschmied ✨ Für mich sind Worte keine Floskeln, sondern die Währung der Wahrheit. Welche Sprache spricht dein Herz?",
+      "color": "#B8860B",
+      "icon": "feather"
+    },
+    {
+      "id": "time",
+      "title": "Der Präsenzwächter",
+      "tagline": "Deine Liebe misst man nicht in Geschenken, sondern in ungeteilten Minuten.",
+      "description": "Für dich ist Zeit das ultimative Liebesopfer. Nicht die Zeit, die einfach vergeht, während ihr im selben Raum seid – sondern die Zeit, in der jemand alles andere ausschaltet. Das Handy. Die Gedanken an morgen. Die To-Do-Liste. Du spürst sofort, wenn jemand nur physisch anwesend ist, aber gedanklich woanders.\n\nDu sammelst keine Dinge, du sammelst Momente. Der Roadtrip ohne Ziel. Das Gespräch um drei Uhr morgens. Der Spaziergang im Regen, weil es eben gerade regnet. Für dich liegt Romantik nicht im Aufwand, sondern in der Aufmerksamkeit.\n\nDeine Gabe: Du bist wirklich da, wenn du da bist. Menschen fühlen sich in deiner Gegenwart gehört, weil du zuhörst – nicht um zu antworten, sondern um zu verstehen. Du gibst anderen das Gefühl, der wichtigste Mensch im Raum zu sein.\n\nDeine Vulnerabilität: Geteilte Aufmerksamkeit verletzt dich. Ein Blick aufs Handy mitten im Gespräch. Abgesagte Pläne zugunsten von „wichtigeren“ Dingen. Du interpretierst Ablenkung als Aussage: Ich bin dir nicht wichtig genug.\n\nIn der Liebe brauchst du jemanden, der versteht, dass Zeit das einzige ist, das man nicht zurückkaufen kann. Der Verabredungen nicht als Punkte auf einer Liste sieht, sondern als Versprechen. Der begreift, dass „Ich hab keine Zeit“ manchmal bedeutet: Ich hab keine Priorität für dich.",
+      "stats": [
+        { "label": "Handy-auf-lautlos-Rate", "value": "98%" },
+        { "label": "Quality-Time-Hunger", "value": "chronisch" },
+        { "label": "Toleranz für Phubbing", "value": "0%" },
+        { "label": "Gesammelte Momente", "value": "unzählbar" },
+        { "label": "Fokus-Level wenn verliebt", "value": "laser" }
+      ],
+      "compatibility": {
+        "allies": ["words", "touch"],
+        "ally_text": "Der Wortschmied füllt eure gemeinsame Zeit mit Bedeutung; der Nähesucher versteht, dass Nähe Zeit braucht.",
+        "nemesis": ["gifts"],
+        "nemesis_text": "Der Symbolträger denkt, ein Geschenk ersetzt Präsenz. Für dich ist ein Stein vom Urlaub wertlos, wenn ihr dort nie zusammen wart."
+      },
+      "share_text": "Ich bin ein Präsenzwächter 🌙 Zeit ist meine Liebessprache – nicht die, die vergeht, sondern die, die man schenkt. Welche Sprache spricht dein Herz?",
+      "color": "#4A6741",
+      "icon": "hourglass"
+    },
+    {
+      "id": "gifts",
+      "title": "Der Symbolträger",
+      "tagline": "Du siehst in einem Stein vom Strand mehr Bedeutung als in tausend Worten.",
+      "description": "Für dich sind Geschenke keine Transaktion, sondern Telegramme aus dem Herzen. Es geht nicht um den Preis – ein Stein, den jemand auf einem Spaziergang aufgehoben hat, weil er an dich dachte, ist mehr wert als Gold. Das Geschenk ist Beweis: Ich war nicht bei dir, aber du warst bei mir.\n\nDu bewahrst Dinge auf, die andere wegwerfen würden. Die Kinokarte vom ersten Date. Die Postkarte aus Barcelona. Die Serviette, auf der er seine Nummer geschrieben hat. Für andere ist es Clutter. Für dich sind es Portale in die Vergangenheit.\n\nDeine Gabe: Du denkst an andere, wenn sie nicht da sind – und zeigst es ihnen. Du erinnerst dich an Vorlieben, an beiläufig erwähnte Wünsche, an das, was jemand vor Monaten mal gesagt hat. Deine Geschenke sagen: Ich kenne dich. Ich sehe dich.\n\nDeine Vulnerabilität: Vergessene Anlässe treffen dich ins Mark. Es geht nicht um das Geschenk selbst – sondern um das, was sein Fehlen bedeutet: Du hast nicht an mich gedacht. Lieblose Last-Minute-Geschenke sind schlimmer als gar keine.\n\nIn der Liebe brauchst du jemanden, der versteht, dass Gesten materialisierte Gedanken sind. Der Geburtstage nicht vergisst. Der begreift, dass „Ich brauch nichts“ eine höfliche Lüge ist – und dass „Es ist nicht der Gedanke, der zählt“ für dich der ultimative Liebesbeweis ist: Der Gedanke, der zur Tat wurde.",
+      "stats": [
+        { "label": "Erinnerungsstücke aufbewahrt", "value": "47" },
+        { "label": "Vergessene Geburtstage vergeben", "value": "niemals" },
+        { "label": "Symbolisches Denken", "value": "Maximum" },
+        { "label": "Zeit zwischen Gedanke und Geste", "value": "minimal" },
+        { "label": "Wert eines Steins vom Strand", "value": "unbezahlbar" }
+      ],
+      "compatibility": {
+        "allies": ["service", "words"],
+        "ally_text": "Der stille Beweger versteht symbolische Taten; der Wortschmied kann die Bedeutung deiner Gesten benennen.",
+        "nemesis": ["time"],
+        "nemesis_text": "Der Präsenzwächter sieht in Geschenken nur Ablenkung von dem, was wirklich zählt: zusammen sein. Deine Symbole verhallen."
+      },
+      "share_text": "Ich bin ein Symbolträger 🎁 Geschenke sind für mich keine Dinge – sie sind Beweise, dass jemand an mich gedacht hat. Welche Sprache spricht dein Herz?",
+      "color": "#8B4513",
+      "icon": "gift"
+    },
+    {
+      "id": "service",
+      "title": "Der stille Beweger",
+      "tagline": "Du liebst nicht mit Worten, du liebst mit Händen, die anpacken.",
+      "description": "Für dich ist Liebe ein Verb. Keine Deklaration, sondern Demonstration. Während andere „Ich liebe dich“ sagen, wäschst du ab, reparierst das Regal, fährst zum Flughafen um 4 Uhr morgens. Deine Liebe ist leise, aber sie trägt.\n\nDu erkennst Liebe daran, was jemand tut – nicht daran, was jemand sagt. Versprechen sind billig. Taten kosten. Wenn jemand früher aufsteht, um dir Frühstück zu machen, ohne dass du fragst – das ist Liebe in deiner Sprache.\n\nDeine Gabe: Du bist der Mensch, auf den man zählen kann. Du siehst, was getan werden muss, und du tust es. Du entlastest andere, ohne Aufhebens zu machen. Du bist das Fundament, auf dem andere stehen können.\n\nDeine Vulnerabilität: Gebrochene Versprechen zerstören dich. „Ich mach das morgen“ – und dann passiert nichts. Für dich ist ein gebrochenes Versprechen keine Kleinigkeit, sondern ein Vertrauensbruch. Du trägst schwer an der Last, wenn niemand sie mit dir teilt.\n\nIn der Liebe brauchst du jemanden, der Liebe nicht nur fühlt, sondern umsetzt. Der sieht, wenn du müde bist, und etwas übernimmt. Der versteht, dass „Kann ich dir helfen?“ manchmal das romantischste ist, was man sagen kann. Der begreift: Wer meine Last teilt, teilt mein Herz.",
+      "stats": [
+        { "label": "Probleme gelöst, bevor sie existieren", "value": "89%" },
+        { "label": "Definition von Liebe", "value": "Verb" },
+        { "label": "Gebrochene Versprechen vergeben", "value": "schwer" },
+        { "label": "Unsichtbare Alltagsarbeit", "value": "legendär" },
+        { "label": "Frage-Frequenz nach Hilfe", "value": "nie" }
+      ],
+      "compatibility": {
+        "allies": ["gifts", "time"],
+        "ally_text": "Der Symbolträger versteht, dass Taten symbolisch sind; der Präsenzwächter weiß gemeinsame Projekte zu schätzen.",
+        "nemesis": ["words"],
+        "nemesis_text": "Der Wortschmied braucht Worte – aber du zeigst Liebe durch Tun. Ohne Übersetzung fühlt er sich ungeliebt, während du dich ungesehen fühlst."
+      },
+      "share_text": "Ich bin ein stiller Beweger 🛠️ Meine Liebe sagt man nicht, man tut sie. Taten > Worte. Welche Sprache spricht dein Herz?",
+      "color": "#556B2F",
+      "icon": "wrench"
+    },
+    {
+      "id": "touch",
+      "title": "Der Nähesucher",
+      "tagline": "Für dich ist eine Umarmung ein ganzes Gespräch – und manchmal das einzige, das du brauchst.",
+      "description": "Deine Haut hat ein Gedächtnis. Sie erinnert sich an die Umarmung, die zu früh endete. An die Hand, die nicht gehalten wurde. An die Nacht, in der jemand näher hätte rücken können – und es nicht tat. Berührung ist für dich nicht Beiwerk der Liebe, sie ist ihr Beweis.\n\nDu kommunizierst durch Nähe. Eine Hand auf der Schulter. Ein Streichen über den Rücken im Vorbeigehen. Das beiläufige Berühren im Gespräch. Für dich sind das keine Kleinigkeiten – es sind konstante Signale: Ich bin hier. Du bist nicht allein.\n\nDeine Gabe: Du gibst Menschen das Gefühl, angekommen zu sein. In deiner Nähe entspannen sich Schultern, lösen sich Knoten. Du verstehst, dass manchmal keine Worte helfen – aber eine Umarmung alles sagt.\n\nDeine Vulnerabilität: Körperliche Distanz fühlt sich für dich wie emotionaler Rückzug an. Wenn jemand sich entzieht, fragst du dich: Was habe ich falsch gemacht? Du brauchst physische Bestätigung – nicht als Ersatz für Worte, sondern als ihre Verkörperung.\n\nIn der Liebe brauchst du jemanden, der versteht, dass Berührung für dich keine Option ist, sondern ein Grundbedürfnis. Der Händchenhalten nicht peinlich findet. Der weiß, dass nach einem Streit manchmal eine Umarmung mehr heilt als jede Entschuldigung. Der begreift: Meine Haut ist mein Herz.",
+      "stats": [
+        { "label": "Oxytocin-Level", "value": "200%" },
+        { "label": "Optimale Umarmungsdauer", "value": "20+ Sekunden" },
+        { "label": "Händchenhalten in der Öffentlichkeit", "value": "nicht verhandelbar" },
+        { "label": "Abstand = Aussage", "value": "immer" },
+        { "label": "Körperkontakt pro Tag benötigt", "value": "viel" }
+      ],
+      "compatibility": {
+        "allies": ["time", "words"],
+        "ally_text": "Der Präsenzwächter versteht, dass Nähe Zeit braucht; der Wortschmied kann benennen, was deine Berührungen sagen.",
+        "nemesis": ["service"],
+        "nemesis_text": "Der stille Beweger zeigt Liebe durch Tun – aber du brauchst die körperliche Nähe dazu. Seine Taten fühlen sich ohne Berührung kühl an."
+      },
+      "share_text": "Ich bin ein Nähesucher 🤲 Für mich ist eine Umarmung ein ganzes Gespräch. Welche Sprache spricht dein Herz?",
+      "color": "#CD853F",
+      "icon": "heart-handshake"
+    }
+  ],
+
+  "share_config": {
+    "card_format": "9:16",
+    "card_style": "trading-card",
+    "ctas": [
+      {
+        "type": "primary",
+        "text": "Teile dein Ergebnis",
+        "action": "share_native"
+      },
+      {
+        "type": "secondary",
+        "text": "Tagge deinen Kompatibilitäts-Typ",
+        "action": "share_with_tag"
+      },
+      {
+        "type": "tertiary",
+        "text": "Finde heraus, wer dein Ally ist",
+        "action": "share_challenge"
+      }
+    ],
+    "hashtags": ["LoveLanguages", "Liebessprache", "QuizzMe", "Beziehung", "Selbsterkenntnis"],
+    "viral_hooks": [
+      "Dein Ergebnis erklärt ALLES",
+      "Kein Wunder, dass ihr aneinander vorbeiredet",
+      "Das sollte dein Partner wissen"
+    ]
+  },
+
+  "scoring": {
+    "method": "weighted_sum",
+    "primary_weight": 3,
+    "secondary_weight": 1,
+    "profile_assignment": "highest_score",
+    "tie_breaker": "first_dimension_in_list",
+    "output_format": {
+      "markers": {
+        "prefix": "marker.love.",
+        "normalize": true,
+        "max_value": 1.0
+      },
+      "traits": {
+        "prefix": "trait.love.",
+        "scale": 100,
+        "bands": {
+          "low": [0, 25],
+          "midlow": [26, 40],
+          "mid": [41, 60],
+          "midhigh": [61, 75],
+          "high": [76, 100]
+        }
+      },
+      "tags": {
+        "archetype_from_profile": true,
+        "shadow_traits": {
+          "words": { "id": "tag.shadow.criticism_sensitive", "label": "Kritik-Empfindlich" },
+          "time": { "id": "tag.shadow.attention_hungry", "label": "Aufmerksamkeits-Sehnsucht" },
+          "gifts": { "id": "tag.shadow.forgotten_wounds", "label": "Vergessene-Anlässe-Trauma" },
+          "service": { "id": "tag.shadow.overload_carrier", "label": "Lastträger" },
+          "touch": { "id": "tag.shadow.touch_starved", "label": "Berührungs-Sehnsucht" }
+        }
+      },
+      "unlocks": {
+        "crest_prefix": "unlock.crests.love_",
+        "level_thresholds": [0.5, 0.7, 0.85]
+      }
+    }
+  },
+
+  "contribution_event_template": {
+    "type": "sp.contribution.v1",
+    "source": "quiz.love.languages.v1",
+    "markers": [],
+    "traits": [],
+    "tags": [],
+    "unlocks": []
+  }
+}

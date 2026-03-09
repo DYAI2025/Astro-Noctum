@@ -1,0 +1,588 @@
+{
+  "meta": {
+    "id": "charme-signatur-quiz",
+    "title": "Die Kunst des Charmes",
+    "subtitle": "Entdecke deine einzigartige Signatur der Anziehung",
+    "version": "1.0.0",
+    "created": "2024-12-22",
+    "language": "de",
+    "engine": "custom-4dim",
+    "questions_count": 12,
+    "profile_count": 6,
+    "estimated_duration": "3min",
+    "target_audience": "Selbsterkenntnis, Persönlichkeitsentwicklung, 20-45",
+    "skin": "Modern Alchemy / Botanical Garden",
+    "tone": "introspective, warm, psychological",
+    "scientific_basis": [
+      "Stereotype Content Model (Fiske et al.)",
+      "Polyvagal-Theorie (Porges)",
+      "Spiegelneuronen-Forschung",
+      "Duchenne-Lächeln-Studien"
+    ],
+    "disclaimer": "Dieser Test dient der spielerischen Selbstreflexion und stellt keine psychologische Diagnose dar."
+  },
+
+  "dimensions": [
+    {
+      "id": "warmth",
+      "name": "Wärme-Orientierung",
+      "description": "Misst den Grad, zu dem der Fokus auf andere (allozentrisch) vs. auf sich selbst (egozentrisch) gerichtet ist.",
+      "pole_low": "Selbst-zentriert",
+      "pole_high": "Andere-zentriert",
+      "scientific_construct": "SCM Warmth Dimension",
+      "weight": 1.0
+    },
+    {
+      "id": "resonance",
+      "name": "Resonanz-Modus",
+      "description": "Misst die primäre Kommunikationsmodalität: verbale Brillanz vs. nonverbale Präsenz.",
+      "pole_low": "Verbal-intellektuell",
+      "pole_high": "Nonverbal-emotional",
+      "scientific_construct": "Chamäleon-Effekt / Mirroring",
+      "weight": 1.0
+    },
+    {
+      "id": "authenticity",
+      "name": "Authentizität",
+      "description": "Misst die Bereitschaft zur Vulnerabilität vs. performative Selbstdarstellung.",
+      "pole_low": "Performativ",
+      "pole_high": "Vulnerabel",
+      "scientific_construct": "Pratfall-Effekt / Authentic Leadership",
+      "weight": 1.0
+    },
+    {
+      "id": "presence",
+      "name": "Präsenz-Qualität",
+      "description": "Misst den Effekt auf das Nervensystem anderer: aktivierend/energetisierend vs. beruhigend/regulierend.",
+      "pole_low": "Aktivierend",
+      "pole_high": "Beruhigend",
+      "scientific_construct": "Polyvagal Social Engagement System",
+      "weight": 1.0
+    }
+  ],
+
+  "questions": [
+    {
+      "id": "q1",
+      "context": "Der erste Eindruck",
+      "text": "Du betrittst einen Raum voller Fremder. Wie orientierst du dich?",
+      "dimension_focus": ["warmth", "presence"],
+      "options": [
+        {
+          "id": "q1a",
+          "text": "Ich scanne nach bekannten Gesichtern – und wenn ich keins finde, warte ich, bis jemand mich anspricht.",
+          "scores": { "warmth": 2, "resonance": 4, "authenticity": 4, "presence": 4 }
+        },
+        {
+          "id": "q1b",
+          "text": "Ich suche die Person, die am unsichersten wirkt, und gehe direkt auf sie zu.",
+          "scores": { "warmth": 5, "resonance": 4, "authenticity": 5, "presence": 5 }
+        },
+        {
+          "id": "q1c",
+          "text": "Ich positioniere mich strategisch gut sichtbar und beginne ein angeregtes Gespräch mit dem Nächstbesten.",
+          "scores": { "warmth": 3, "resonance": 2, "authenticity": 2, "presence": 1 }
+        },
+        {
+          "id": "q1d",
+          "text": "Ich beobachte die Dynamik des Raums – wer gehört zusammen, wo ist Energie, wo Spannung?",
+          "scores": { "warmth": 3, "resonance": 5, "authenticity": 4, "presence": 3 }
+        }
+      ]
+    },
+    {
+      "id": "q2",
+      "context": "Das Geheimnis des Lächelns",
+      "text": "Jemand erzählt dir einen Witz, der nicht besonders lustig ist. Was passiert in deinem Gesicht?",
+      "dimension_focus": ["authenticity", "warmth"],
+      "options": [
+        {
+          "id": "q2a",
+          "text": "Ich lache höflich mit – niemand sollte sich unwohl fühlen.",
+          "scores": { "warmth": 4, "resonance": 3, "authenticity": 2, "presence": 4 }
+        },
+        {
+          "id": "q2b",
+          "text": "Meine Mundwinkel heben sich, aber meine Augen verraten mich – ich kann nicht lügen.",
+          "scores": { "warmth": 3, "resonance": 4, "authenticity": 5, "presence": 3 }
+        },
+        {
+          "id": "q2c",
+          "text": "Ich schmunzle warm und sage: 'Das war charmant versucht.'",
+          "scores": { "warmth": 5, "resonance": 3, "authenticity": 4, "presence": 4 }
+        },
+        {
+          "id": "q2d",
+          "text": "Ich strahle Wärme aus und lenke geschickt auf etwas um, bei dem wir beide wirklich lachen können.",
+          "scores": { "warmth": 5, "resonance": 2, "authenticity": 3, "presence": 2 }
+        }
+      ]
+    },
+    {
+      "id": "q3",
+      "context": "Die Kunst des Zuhörens",
+      "text": "Jemand erzählt dir von einem Problem, das dich persönlich nicht betrifft. Wie hörst du zu?",
+      "dimension_focus": ["warmth", "resonance"],
+      "options": [
+        {
+          "id": "q3a",
+          "text": "Ich stelle gezielte Fragen, um die Situation zu analysieren und Lösungen anzubieten.",
+          "scores": { "warmth": 3, "resonance": 1, "authenticity": 3, "presence": 2 }
+        },
+        {
+          "id": "q3b",
+          "text": "Ich lehne mich vor, halte Blickkontakt und lasse die Stille wirken, wenn sie nötig ist.",
+          "scores": { "warmth": 5, "resonance": 5, "authenticity": 5, "presence": 5 }
+        },
+        {
+          "id": "q3c",
+          "text": "Ich teile ähnliche eigene Erfahrungen, damit die Person sich weniger allein fühlt.",
+          "scores": { "warmth": 4, "resonance": 2, "authenticity": 4, "presence": 2 }
+        },
+        {
+          "id": "q3d",
+          "text": "Ich nicke, fasse zusammen und zeige durch meine Körpersprache, dass ich präsent bin.",
+          "scores": { "warmth": 4, "resonance": 4, "authenticity": 3, "presence": 4 }
+        }
+      ]
+    },
+    {
+      "id": "q4",
+      "context": "Spannung im Raum",
+      "text": "Ein Streit entwickelt sich zwischen zwei Menschen in deiner Gegenwart. Was tust du?",
+      "dimension_focus": ["presence", "warmth"],
+      "options": [
+        {
+          "id": "q4a",
+          "text": "Ich bringe Humor ein – ein gut getimter Kommentar kann Wunder wirken.",
+          "scores": { "warmth": 4, "resonance": 2, "authenticity": 3, "presence": 1 }
+        },
+        {
+          "id": "q4b",
+          "text": "Ich wende mich an die ruhigere Person und gebe ihr Raum, ihre Perspektive zu teilen.",
+          "scores": { "warmth": 5, "resonance": 4, "authenticity": 4, "presence": 5 }
+        },
+        {
+          "id": "q4c",
+          "text": "Ich bleibe gelassen und strahle eine Ruhe aus, die ansteckend wirkt.",
+          "scores": { "warmth": 4, "resonance": 5, "authenticity": 4, "presence": 5 }
+        },
+        {
+          "id": "q4d",
+          "text": "Ich strukturiere das Gespräch und schlage einen diplomatischen Kompromiss vor.",
+          "scores": { "warmth": 3, "resonance": 1, "authenticity": 3, "presence": 3 }
+        }
+      ]
+    },
+    {
+      "id": "q5",
+      "context": "Der verletzliche Moment",
+      "text": "Du hast einen Fehler gemacht, der anderen aufgefallen ist. Wie gehst du damit um?",
+      "dimension_focus": ["authenticity", "warmth"],
+      "options": [
+        {
+          "id": "q5a",
+          "text": "Ich gebe es offen zu und lache über mich selbst – Perfektion langweilt sowieso.",
+          "scores": { "warmth": 4, "resonance": 3, "authenticity": 5, "presence": 2 }
+        },
+        {
+          "id": "q5b",
+          "text": "Ich entschuldige mich aufrichtig und frage, wie ich es wieder gutmachen kann.",
+          "scores": { "warmth": 5, "resonance": 3, "authenticity": 5, "presence": 4 }
+        },
+        {
+          "id": "q5c",
+          "text": "Ich erkläre den Kontext meines Fehlers, damit andere ihn einordnen können.",
+          "scores": { "warmth": 2, "resonance": 1, "authenticity": 3, "presence": 2 }
+        },
+        {
+          "id": "q5d",
+          "text": "Ich zeige kurz Betroffenheit, aber wechsle schnell zu einer Lösung.",
+          "scores": { "warmth": 3, "resonance": 2, "authenticity": 2, "presence": 2 }
+        }
+      ]
+    },
+    {
+      "id": "q6",
+      "context": "Das Kompliment",
+      "text": "Du willst jemandem ehrlich sagen, was du an ihm schätzt. Wie machst du das?",
+      "dimension_focus": ["resonance", "authenticity"],
+      "options": [
+        {
+          "id": "q6a",
+          "text": "Ich sage es direkt und spezifisch: 'Was du gerade gemacht hast, war brillant, weil...'",
+          "scores": { "warmth": 4, "resonance": 1, "authenticity": 4, "presence": 2 }
+        },
+        {
+          "id": "q6b",
+          "text": "Ich lege meine Hand auf ihre Schulter und sage es mit warmem Blick in wenigen Worten.",
+          "scores": { "warmth": 5, "resonance": 5, "authenticity": 4, "presence": 4 }
+        },
+        {
+          "id": "q6c",
+          "text": "Ich erwähne es später nebenbei, fast beiläufig – große Gesten machen mich verlegen.",
+          "scores": { "warmth": 3, "resonance": 4, "authenticity": 5, "presence": 4 }
+        },
+        {
+          "id": "q6d",
+          "text": "Ich finde einen spielerischen Weg, es in einen Insider-Witz zwischen uns zu verwandeln.",
+          "scores": { "warmth": 4, "resonance": 2, "authenticity": 3, "presence": 1 }
+        }
+      ]
+    },
+    {
+      "id": "q7",
+      "context": "Der Fremde neben dir",
+      "text": "Du sitzt neben jemandem, den du nicht kennst, aber die Situation erlaubt Gespräch. Was passiert?",
+      "dimension_focus": ["resonance", "warmth"],
+      "options": [
+        {
+          "id": "q7a",
+          "text": "Ich warte auf einen natürlichen Moment – vielleicht ein geteiltes Schmunzeln über etwas.",
+          "scores": { "warmth": 4, "resonance": 5, "authenticity": 5, "presence": 4 }
+        },
+        {
+          "id": "q7b",
+          "text": "Ich starte mit einer offenen Frage, die echte Neugier zeigt.",
+          "scores": { "warmth": 5, "resonance": 2, "authenticity": 4, "presence": 2 }
+        },
+        {
+          "id": "q7c",
+          "text": "Ich bleibe still, aber sende offene Körpersprache – wer reden will, wird es tun.",
+          "scores": { "warmth": 3, "resonance": 5, "authenticity": 4, "presence": 5 }
+        },
+        {
+          "id": "q7d",
+          "text": "Ich kommentiere etwas Konkretes um uns herum, um das Eis zu brechen.",
+          "scores": { "warmth": 4, "resonance": 2, "authenticity": 3, "presence": 2 }
+        }
+      ]
+    },
+    {
+      "id": "q8",
+      "context": "Der schwere Tag",
+      "text": "Ein Freund hat einen schlechten Tag. Du merkst es an seiner Energie. Was ist deine erste Reaktion?",
+      "dimension_focus": ["warmth", "presence"],
+      "options": [
+        {
+          "id": "q8a",
+          "text": "Ich frage direkt: 'Was ist los?' – Ehrlichkeit über allem.",
+          "scores": { "warmth": 4, "resonance": 2, "authenticity": 4, "presence": 2 }
+        },
+        {
+          "id": "q8b",
+          "text": "Ich sitze einfach neben ihm und bin da – Worte kommen, wenn sie kommen.",
+          "scores": { "warmth": 5, "resonance": 5, "authenticity": 5, "presence": 5 }
+        },
+        {
+          "id": "q8c",
+          "text": "Ich bringe ihm seinen Lieblingskaffee und sage: 'Du musst nichts erzählen.'",
+          "scores": { "warmth": 5, "resonance": 4, "authenticity": 4, "presence": 5 }
+        },
+        {
+          "id": "q8d",
+          "text": "Ich versuche, ihn abzulenken – manchmal braucht man einfach Pause vom Grübeln.",
+          "scores": { "warmth": 4, "resonance": 2, "authenticity": 3, "presence": 1 }
+        }
+      ]
+    },
+    {
+      "id": "q9",
+      "context": "Im Rampenlicht",
+      "text": "Du stehst im Mittelpunkt – alle Augen auf dir. Was ist dein Instinkt?",
+      "dimension_focus": ["warmth", "presence"],
+      "options": [
+        {
+          "id": "q9a",
+          "text": "Ich genieße es kurz, aber lenke dann schnell den Fokus auf andere.",
+          "scores": { "warmth": 5, "resonance": 3, "authenticity": 4, "presence": 3 }
+        },
+        {
+          "id": "q9b",
+          "text": "Ich nutze den Moment, um etwas Bedeutungsvolles zu sagen.",
+          "scores": { "warmth": 3, "resonance": 1, "authenticity": 4, "presence": 2 }
+        },
+        {
+          "id": "q9c",
+          "text": "Ich mache etwas Überraschendes, das Spannung bricht und alle einbezieht.",
+          "scores": { "warmth": 4, "resonance": 2, "authenticity": 3, "presence": 1 }
+        },
+        {
+          "id": "q9d",
+          "text": "Ich halte den Moment still, lächle und lasse meine Ruhe sprechen.",
+          "scores": { "warmth": 3, "resonance": 5, "authenticity": 4, "presence": 5 }
+        }
+      ]
+    },
+    {
+      "id": "q10",
+      "context": "Die unsichtbare Verbindung",
+      "text": "Du merkst, dass jemand in der Gruppe sich unwohl fühlt. Was tust du?",
+      "dimension_focus": ["warmth", "authenticity"],
+      "options": [
+        {
+          "id": "q10a",
+          "text": "Ich gehe diskret zu ihm und frage leise, ob alles okay ist.",
+          "scores": { "warmth": 5, "resonance": 4, "authenticity": 5, "presence": 5 }
+        },
+        {
+          "id": "q10b",
+          "text": "Ich beziehe ihn geschickt ins Gespräch ein, ohne es auffällig zu machen.",
+          "scores": { "warmth": 5, "resonance": 3, "authenticity": 3, "presence": 3 }
+        },
+        {
+          "id": "q10c",
+          "text": "Ich bleibe in seiner Nähe und gebe ihm durch meine Präsenz Sicherheit.",
+          "scores": { "warmth": 4, "resonance": 5, "authenticity": 4, "presence": 5 }
+        },
+        {
+          "id": "q10d",
+          "text": "Ich spreche ihn später unter vier Augen an – öffentlich könnte es ihm unangenehm sein.",
+          "scores": { "warmth": 4, "resonance": 3, "authenticity": 4, "presence": 4 }
+        }
+      ]
+    },
+    {
+      "id": "q11",
+      "context": "Worte und Stille",
+      "text": "Eine Unterhaltung nimmt eine tiefe Wendung. Wie reagierst du auf emotionale Offenheit?",
+      "dimension_focus": ["authenticity", "resonance"],
+      "options": [
+        {
+          "id": "q11a",
+          "text": "Ich teile eine eigene verletzliche Geschichte, um Gleichheit zu schaffen.",
+          "scores": { "warmth": 4, "resonance": 3, "authenticity": 5, "presence": 2 }
+        },
+        {
+          "id": "q11b",
+          "text": "Ich halte den Raum in Stille – manchmal ist Präsenz mehr als Worte.",
+          "scores": { "warmth": 4, "resonance": 5, "authenticity": 4, "presence": 5 }
+        },
+        {
+          "id": "q11c",
+          "text": "Ich drücke in Worten aus, was ich fühle: 'Das berührt mich sehr.'",
+          "scores": { "warmth": 5, "resonance": 2, "authenticity": 5, "presence": 3 }
+        },
+        {
+          "id": "q11d",
+          "text": "Ich frage behutsam weiter, um der Tiefe Raum zu geben.",
+          "scores": { "warmth": 5, "resonance": 3, "authenticity": 4, "presence": 4 }
+        }
+      ]
+    },
+    {
+      "id": "q12",
+      "context": "Der Abschied",
+      "text": "Du verlässt einen Raum. Was sollen die Menschen über dich denken?",
+      "dimension_focus": ["warmth", "presence"],
+      "options": [
+        {
+          "id": "q12a",
+          "text": "'Mit ihr war es nie langweilig – sie hat Energie gebracht.'",
+          "scores": { "warmth": 3, "resonance": 2, "authenticity": 3, "presence": 1 }
+        },
+        {
+          "id": "q12b",
+          "text": "'In ihrer Nähe habe ich mich wohler gefühlt.'",
+          "scores": { "warmth": 5, "resonance": 5, "authenticity": 4, "presence": 5 }
+        },
+        {
+          "id": "q12c",
+          "text": "'Sie hat mich wirklich gesehen und verstanden.'",
+          "scores": { "warmth": 5, "resonance": 4, "authenticity": 5, "presence": 4 }
+        },
+        {
+          "id": "q12d",
+          "text": "'Sie ist klug und charmant – ich würde gern mehr Zeit mit ihr verbringen.'",
+          "scores": { "warmth": 4, "resonance": 2, "authenticity": 3, "presence": 2 }
+        }
+      ]
+    }
+  ],
+
+  "profiles": [
+    {
+      "id": "herzoffner",
+      "title": "Der Herzöffner",
+      "tagline": "In deiner Gegenwart tauen selbst Eisberge auf.",
+      "icon": "heart-rays",
+      "color_primary": "#D2A95A",
+      "color_secondary": "#6CA192",
+      "condition": {
+        "warmth": [4, 5],
+        "resonance": [4, 5],
+        "authenticity": [4, 5],
+        "presence": [4, 5]
+      },
+      "stats": {
+        "Wärme-Radius": "∞",
+        "Duchenne-Lächeln": "94%",
+        "Stille-Komfort": "Meister",
+        "Präsenz-Tiefe": "9/10"
+      },
+      "description_short": "Du bist das menschliche Äquivalent eines offenen Kaminfeuers. Menschen entspannen sich in deiner Gegenwart, oft ohne zu wissen warum.",
+      "description_core": "Du bist das menschliche Äquivalent eines offenen Kaminfeuers. Menschen entspannen sich in deiner Gegenwart, oft ohne zu wissen warum. Dein Geheimnis? Du machst nichts – du bist einfach. Deine Augen lachen mit, wenn dein Mund lächelt. Du hörst nicht nur zu, du hörst hinein.\n\nWas andere als \"Charisma\" missverstehen, ist bei dir etwas Einfacheres und Seltenes: authentische Menschenfreundlichkeit ohne Agenda. Du interessierst dich für Menschen nicht, weil du etwas von ihnen willst, sondern weil jeder Mensch ein Universum ist, das dich neugierig macht.",
+      "description_deep": "Dein Charme ist keine Technik – er ist die natürliche Konsequenz einer inneren Haltung. Du hast früh verstanden, dass Menschen nicht „gewonnen" werden müssen, sondern dass Verbindung passiert, wenn man sich selbst erlaubt, verletzlich zu sein.\n\nDie Wissenschaft nennt das, was du tust, \"emotionale Ansteckung\". Dein entspanntes Nervensystem signalisiert anderen: \"Hier ist es sicher.\" Dein Gehirn produziert Oxytocin, wenn du Menschen siehst – und sie spüren das. Du bist ein wandelndes Sicherheitssignal in einer Welt voller Alarme.\n\nDeine größte Gabe ist gleichzeitig deine größte Verantwortung: Menschen öffnen sich dir schneller als anderen. Behandle diese Geschenke mit der Ehrfurcht, die sie verdienen.",
+      "allies": ["Präsenz-Anker", "Stiller Verzauberer"],
+      "tension": ["Esprit-Funke (zu viel Worte)", "Magnetische (zu viel Show)"],
+      "growth_edge": "Lerne, deine eigenen Grenzen zu spüren, bevor du dich in der Wärme anderer verlierst.",
+      "share_text": "Meine Charme-Signatur: Der Herzöffner ✨ In meiner Gegenwart tauen Eisberge auf."
+    },
+    {
+      "id": "magnetische",
+      "title": "Die Magnetische",
+      "tagline": "Du erhellst Räume, ohne das Licht zu suchen.",
+      "icon": "magnet-star",
+      "color_primary": "#E8C87A",
+      "color_secondary": "#053B3F",
+      "condition": {
+        "warmth": [3, 5],
+        "resonance": [1, 3],
+        "authenticity": [2, 4],
+        "presence": [1, 3]
+      },
+      "stats": {
+        "Raum-Energie": "↑↑↑",
+        "Wortgewandtheit": "Brillant",
+        "Funken-Frequenz": "Hoch",
+        "Einprägsamkeit": "98%"
+      },
+      "description_short": "Du bist der seltene Fall, in dem Charisma und Charme sich die Waage halten. Menschen bemerken dich, wenn du einen Raum betrittst.",
+      "description_core": "Du bist der seltene Fall, in dem Charisma und Charme sich die Waage halten. Menschen bemerken dich, wenn du einen Raum betrittst – aber nicht, weil du Aufmerksamkeit suchst, sondern weil deine Energie ansteckend ist. Du bringst Bewegung in stehende Gewässer.\n\nDein Charme ist aktiv: Du startest Gespräche, du bringst Menschen zusammen, du findest den Witz in der Spannung. Langeweile ist in deiner Nähe unmöglich. Du hast die Gabe, aus jedem Moment eine Geschichte zu machen.",
+      "description_deep": "Was dich von reinen \"Entertainern\" unterscheidet: Du beleuchtest andere, während du strahlst. Der klassische Fehler wäre, das für Performance zu halten – aber bei dir ist es authentischer Überschwang. Du liebst Menschen und du liebst das Leben, und das ist so offensichtlich, dass es ansteckt.\n\nDeine Herausforderung liegt in der Balance. Dein natürlicher Modus ist \"Energie bringen\" – aber manche Momente brauchen Stille. Lerne, die Bühne auch mal leer zu lassen. Dein Charme wirkt am stärksten, wenn du ihn in Mikrodosen gibst statt in Wellen.\n\nDie tiefste Form deines Charmes zeigt sich, wenn du still wirst – wenn jemand merkt, dass hinter dem Funkeln auch Tiefe liegt.",
+      "allies": ["Esprit-Funke", "Herzöffner"],
+      "tension": ["Stiller Verzauberer (zu schnell)", "Präsenz-Anker (zu viel Bewegung)"],
+      "growth_edge": "Übe dich im bewussten Zurücknehmen – dein Schweigen wird dann umso kraftvoller wirken.",
+      "share_text": "Meine Charme-Signatur: Die Magnetische ⚡ Ich erhelle Räume, ohne das Licht zu suchen."
+    },
+    {
+      "id": "stiller-verzauberer",
+      "title": "Der Stille Verzauberer",
+      "tagline": "Dein Schweigen spricht lauter als die Worte anderer.",
+      "icon": "moon-glow",
+      "color_primary": "#8FB8A8",
+      "color_secondary": "#041726",
+      "condition": {
+        "warmth": [3, 5],
+        "resonance": [4, 5],
+        "authenticity": [4, 5],
+        "presence": [3, 5]
+      },
+      "stats": {
+        "Blickkontakt-Tiefe": "Legendär",
+        "Worte/Wirkung": "3:97",
+        "Subtilität": "Meister",
+        "Spiegelneuronen": "Hyperaktiv"
+      },
+      "description_short": "Du brauchst keine Worte, um zu verzaubern. Ein Blick von dir sagt mehr als die Monologe anderer.",
+      "description_core": "Du brauchst keine Worte, um zu verzaubern. Ein Blick von dir sagt mehr als die Monologe anderer. Dein Charme entfaltet sich nicht durch das, was du tust, sondern durch das, was du nicht tust – du drängst nicht, du überwältigst nicht, du bist einfach vollständig präsent.\n\nMenschen beschreiben Begegnungen mit dir oft als \"eigenartig intensiv\", ohne genau sagen zu können warum. Was sie spüren, ist der Chamäleon-Effekt in Perfektion: Du synchronisierst dich so natürlich mit anderen, dass sie sich verstanden fühlen, bevor du ein Wort gesagt hast.",
+      "description_deep": "Die Neurowissenschaft erklärt dich so: Deine Spiegelneuronen sind hyperaktiv. Du fühlst, was andere fühlen – nicht als Konzept, sondern als körperliche Realität. Deshalb passt sich deine Atmung an, deine Haltung, dein Tempo. Du bist ein lebender Resonanzkörper.\n\nDein Charme ist der seltenste, weil er nicht lernbar ist. Man kann Wortgewandtheit trainieren, Humor üben – aber diese Art von Präsenz kommt aus einer tiefen Verbindung zu sich selbst.\n\nDeine Herausforderung: In einer lauten Welt wirst du manchmal übersehen. Dein Charme braucht Zeit, um zu wirken. Schnelle, oberflächliche Begegnungen sind nicht dein Terrain. Du blühst in der Tiefe.",
+      "allies": ["Herzöffner", "Präsenz-Anker"],
+      "tension": ["Magnetische (zu laut)", "Esprit-Funke (zu viele Worte)"],
+      "growth_edge": "Finde Räume, die deine Art von Verbindung wertschätzen – nicht jeder muss dich verstehen.",
+      "share_text": "Meine Charme-Signatur: Der Stille Verzauberer 🌙 Mein Schweigen spricht lauter als Worte."
+    },
+    {
+      "id": "diplomat",
+      "title": "Der Diplomat",
+      "tagline": "Du bist der Klebstoff, der Gruppen zusammenhält.",
+      "icon": "bridge",
+      "color_primary": "#5B8A9A",
+      "color_secondary": "#A77D38",
+      "condition": {
+        "warmth": [3, 4],
+        "resonance": [2, 4],
+        "authenticity": [2, 4],
+        "presence": [3, 5]
+      },
+      "stats": {
+        "Konflikt-Auflösung": "87%",
+        "Brücken gebaut": "∞",
+        "Gesicht-Wahren": "Kunst",
+        "Gruppenharmonie": "A+"
+      },
+      "description_short": "Dein Charme ist ein Werkzeug der Verbindung. Du siehst, wo Brücken fehlen, und baust sie.",
+      "description_core": "Dein Charme ist ein Werkzeug der Verbindung. Du siehst, wo Brücken fehlen, und baust sie – elegant, diskret, ohne dass jemand merkt, dass du der Architekt warst. In deiner Gegenwart finden Menschen zueinander, die sonst aneinander vorbeilaufen würden.\n\nDu hast die seltene Gabe, Kritik so zu verpacken, dass sie nicht verletzt. Dein Charme dient dem größeren Ganzen: der Harmonie der Gruppe, dem Funktionieren des Teams, dem Frieden in der Familie.",
+      "description_deep": "Was du tust, ist evolutionär überlebenswichtig. In Stammesgesellschaften waren Menschen wie du die \"Medizinmänner des Sozialen\" – sie hielten Gruppen zusammen, als Konflikte sie zu zerreißen drohten.\n\nDein Charme ist strategischer als bei anderen – aber nicht kalkuliert im negativen Sinn. Du denkst über Auswirkungen nach, bevor du handelst. Du fragst dich: \"Wie kann ich diese Situation für alle verbessern?\"\n\nDeine Herausforderung: Vergiss in all dem Brückenbauen nicht, auch mal auf deiner eigenen Seite des Flusses zu stehen. Deine Bedürfnisse zählen auch. Diplomatie nach außen darf nicht Selbstverleugnung nach innen bedeuten.",
+      "allies": ["Herzöffner", "Magnetische"],
+      "tension": ["Esprit-Funke (zu direkt)", "Stiller Verzauberer (zu passiv)"],
+      "growth_edge": "Erlaube dir, auch mal Partei zu ergreifen – nicht alles muss ausgeglichen werden.",
+      "share_text": "Meine Charme-Signatur: Der Diplomat 🌉 Ich bin der unsichtbare Klebstoff, der Gruppen zusammenhält."
+    },
+    {
+      "id": "esprit-funke",
+      "title": "Der Esprit-Funke",
+      "tagline": "Dein Witz öffnet Türen, die anderen verschlossen bleiben.",
+      "icon": "lightning-smile",
+      "color_primary": "#E8C87A",
+      "color_secondary": "#C45D4A",
+      "condition": {
+        "warmth": [2, 4],
+        "resonance": [1, 3],
+        "authenticity": [2, 4],
+        "presence": [1, 3]
+      },
+      "stats": {
+        "Schlagfertigkeit": "Ninja",
+        "Lacher/Minute": "3.7",
+        "Intellekt-Charme": "93%",
+        "Eisbrecher-Erfolg": "98%"
+      },
+      "description_short": "Dein Charme ist eine Waffe – aber eine, die nie verletzt. Du findest den perfekten Moment für den perfekten Satz.",
+      "description_core": "Dein Charme ist eine Waffe – aber eine, die nie verletzt. Du findest den perfekten Moment für den perfekten Satz. Wo andere schweigen, platzierst du das Wort, das alles entspannt, verbindet, erleuchtet. Dein Humor ist kein Selbstzweck – er ist ein Geschenk an den Raum.\n\nIntellekt und Wärme sind bei dir untrennbar. Du lachst über dich selbst, bevor du über andere lachst. Deine Schlagfertigkeit ist nie eine Keule, sondern ein Florett.",
+      "description_deep": "Was andere nicht sehen: Hinter dem Witz liegt oft tiefe Beobachtung. Du nimmst Dinge wahr, die anderen entgehen – und verpackst sie in Humor, damit die Wahrheit verdaulich wird. Du bist ein Philosoph im Gewand eines Entertainers.\n\nDein Charme ist in unserer Welt besonders wertvoll, weil du Leichtigkeit in die Schwere bringst. Menschen erinnern sich an dich, weil du sie zum Lachen gebracht hast – aber sie erinnern sich noch mehr daran, wie klug du dabei warst.\n\nDeine Herausforderung: Manchmal ist Stille die bessere Antwort. Dein Impuls, jeden Moment zu erhellen, kann in tiefen Momenten fehl am Platz sein. Lerne, den Witz manchmal zurückzuhalten – dein Schweigen wird dann umso kraftvoller wirken.",
+      "allies": ["Magnetische", "Diplomat"],
+      "tension": ["Stiller Verzauberer (zu langsam)", "Präsenz-Anker (zu ernst)"],
+      "growth_edge": "Übe dich darin, die Stille nicht mit Worten zu füllen – auch sie kann charmant sein.",
+      "share_text": "Meine Charme-Signatur: Der Esprit-Funke ⚡ Mein Witz öffnet Türen, die anderen verschlossen bleiben."
+    },
+    {
+      "id": "praesenz-anker",
+      "title": "Der Präsenz-Anker",
+      "tagline": "In deiner Nähe findet der Sturm sein Auge.",
+      "icon": "anchor-calm",
+      "color_primary": "#1C5B5C",
+      "color_secondary": "#D2A95A",
+      "condition": {
+        "warmth": [4, 5],
+        "resonance": [3, 5],
+        "authenticity": [4, 5],
+        "presence": [5, 5]
+      },
+      "stats": {
+        "Polyvagale Wirkung": "Maximal",
+        "Cortisol-Senkung": "↓↓↓",
+        "Sicherheitssignal": "100%",
+        "Ruhe-Ausstrahlung": "Legendär"
+      },
+      "description_short": "Du bist der seltene Mensch, bei dem andere automatisch langsamer atmen.",
+      "description_core": "Du bist der seltene Mensch, bei dem andere automatisch langsamer atmen. Dein Charme wirkt nicht durch Worte oder Taten, sondern durch pure Präsenz. Du bist der sichere Hafen in jedem Sturm, der Fels, an dem die Wellen sich brechen.\n\nWas andere als Gelassenheit sehen, ist in Wahrheit tiefes Vertrauen – in dich selbst und in das Leben. Du hast verstanden, dass die meisten Dramen keine sind. Diese Weisheit strahlt aus dir heraus.",
+      "description_deep": "Die Polyvagal-Theorie erklärt dich perfekt: Dein Nervensystem ist so reguliert, dass es andere reguliert. Du sendest konstante Sicherheitssignale – durch deine Stimmmodulation, deine entspannte Haltung, deinen ruhigen Blick. Menschen in deiner Nähe gehen aus dem Kampf-oder-Flucht-Modus.\n\nDas ist kein Trick, das ist Biologie: Dein ventraler Vagusnerv ist besonders aktiv, was sich auf andere überträgt. Du bist ein wandelndes Beruhigungsmittel – aber eines, das wach macht statt müde.\n\nDeine Herausforderung: Deine Ruhe kann manchmal als Distanz missverstanden werden. Zeige aktiver, dass du emotional beteiligt bist, auch wenn du innerlich ruhig bleibst. Ein gelegentliches \"Das berührt mich\" macht deine Präsenz noch kraftvoller.",
+      "allies": ["Stiller Verzauberer", "Herzöffner"],
+      "tension": ["Magnetische (zu viel Energie)", "Esprit-Funke (zu unruhig)"],
+      "growth_edge": "Lass gelegentlich Emotion durchscheinen – deine Stärke wirkt noch menschlicher mit Verletzlichkeit.",
+      "share_text": "Meine Charme-Signatur: Der Präsenz-Anker ⚓ In meiner Nähe findet jeder Sturm sein Auge."
+    }
+  ],
+
+  "share_config": {
+    "base_text": "Ich habe meine Charme-Signatur entdeckt!",
+    "hashtags": ["QuizzMe", "CharmeTyp", "Persönlichkeit", "Selbsterkenntnis"],
+    "cta_primary": "Teile deine Signatur",
+    "cta_secondary": "Tagge jemanden, dessen Charme du schätzt! 💫",
+    "image_format": "9:16",
+    "compatibility_prompt": "Frag deine Freunde: Welcher Charme-Typ bist du?"
+  },
+
+  "contribution_schema": {
+    "schema": "sp.contribution.v1",
+    "source": "charme-quiz",
+    "marker_prefix": "marker.psyche.",
+    "trait_scale": {
+      "min": 1,
+      "max": 100,
+      "bands": ["niedrig", "unterdurchschnittlich", "durchschnittlich", "hoch", "außergewöhnlich"]
+    },
+    "unlocks": ["charme-deep-analysis", "compatibility-matrix", "character-sheet-integration"]
+  }
+}

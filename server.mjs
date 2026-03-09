@@ -1,11 +1,100 @@
 import express from "express";
 import path from "node:path";
+import fs from "node:fs";
+import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
+import Stripe from "stripe";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import { GoogleGenAI } from "@google/genai";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
+
+// ── Boot-time env var validation ─────────────────────────────────────
+const REQUIRED_ENV_VARS = ['GEMINI_API_KEY', 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
+const missing = REQUIRED_ENV_VARS.filter(v => !process.env[v]);
+if (missing.length > 0) {
+  console.error(`[server] Missing required environment variables: ${missing.join(', ')}`);
+  console.error('[server] Copy .env.example to .env and fill in the required values.');
+  process.exit(1);
+}
+
+const OPTIONAL_ENV_VARS = ['ELEVENLABS_TOOL_SECRET'];
+for (const v of OPTIONAL_ENV_VARS) {
+  if (!process.env[v]) {
+    console.warn(`[server] Optional env var not set: ${v} (some features may be degraded)`);
+  }
+}
+
+// ── Gemini client (server-side only — key never reaches browser) ──────
+const geminiClient = process.env.GEMINI_API_KEY
+  ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+  : null;
+
+function buildGeminiPrompt(data, lang) {
+  return `
+You are Bazodiac's fusion astrologer — the ONLY system that synthesizes Western astrology, Chinese BaZi, and Wu-Xing Five Elements into one unified reading.
+
+BIRTH DATA (JSON):
+${JSON.stringify(data, null, 2)}
+
+TASK: Write a deeply personal ${lang === 'de' ? 'German' : 'English'} horoscope interpretation (400–500 words, 5 paragraphs, Markdown, no bullet points). Address the reader as "${lang === 'de' ? 'du' : 'you'}".
+
+STRUCTURE — each paragraph MUST cross-reference at least two systems:
+
+1. **Your Cosmic Identity**: Start with the Western Sun sign and immediately bridge to the BaZi Day Master. What does THIS specific combination reveal that neither system alone can show?
+
+2. **Emotional Depths**: Connect Moon sign with the BaZi pillars' emotional patterns. How does Wu-Xing's dominant element color these emotional currents?
+
+3. **The Fusion Revelation**: This is the core. Use the fusion data to reveal the UNIQUE intersection — the pattern that emerges ONLY when Western + BaZi + Wu-Xing are layered together. This is what no other app can show. Make this paragraph feel like a discovery.
+
+4. **Wu-Xing Balance**: Which elements are strong, which are weak? How does this elemental map interact with the Western Ascendant? Give one concrete life recommendation based on elemental balance.
+
+5. **Your Path Forward**: Synthesize all three systems into a forward-looking invitation. End with a sentence that makes the reader feel truly seen.
+
+TONE: Warm, precise, mystical but grounded. Never generic. Every sentence must feel like it was written for THIS specific birth chart.
+`.trim();
+}
+
+// ── Security Headers ─────────────────────────────────────────────────
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://maps.googleapis.com", "https://elevenlabs.io"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "blob:", "https:"],
+      connectSrc: ["'self'", "https://*.supabase.co", "https://generativelanguage.googleapis.com", "https://bafe-production.up.railway.app", "https://bafe.vercel.app", "https://maps.googleapis.com", "https://elevenlabs.io", "wss://elevenlabs.io"],
+      frameSrc: ["'self'", "https://elevenlabs.io", "https://checkout.stripe.com"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+    },
+  },
+  crossOriginEmbedderPolicy: false, // needed for external resources
+}));
+
+// ── Rate Limiting ────────────────────────────────────────────────────
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 min
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many requests, please try again later." },
+});
+app.use("/api/", apiLimiter);
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10, // strict limit on auth-adjacent endpoints
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many attempts, please try again later." },
+});
+app.use("/api/checkout", authLimiter);
 
 const distPath = path.join(__dirname, "dist");
 
@@ -26,38 +115,101 @@ const BAFE_INTERNAL_URL = stripTrailingSlash(process.env.BAFE_INTERNAL_URL) || n
 // Primary URL for logging
 const BAFE_BASE_URL = BAFE_INTERNAL_URL || BAFE_PUBLIC_URL;
 
-// ── Proxy with fallback chain ────────────────────────────────────────
+// ── BAFE Response Cache (24h TTL) ────────────────────────────────────
+const bafeCache = new Map(); // key → { body, contentType, status, timestamp }
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+function cacheKey(method, url, reqBody) {
+  const raw = `${method}:${url}:${JSON.stringify(reqBody || {})}`;
+  let h = 0;
+  for (let i = 0; i < raw.length; i++) {
+    h = ((h << 5) - h + raw.charCodeAt(i)) | 0;
+  }
+  return String(h);
+}
+
+// Evict expired entries every hour
+setInterval(() => {
+  const now = Date.now();
+  // Collect expired keys first, then delete — avoids mutating the Map mid-iteration.
+  const expired = [...bafeCache.entries()]
+    .filter(([, entry]) => now - entry.timestamp > CACHE_TTL)
+    .map(([key]) => key);
+  expired.forEach(key => bafeCache.delete(key));
+  if (expired.length > 0) console.log(`[cache] evicted ${expired.length} expired entries, ${bafeCache.size} remaining`);
+}, 60 * 60 * 1000);
+
+// ── Retry + Timeout constants ────────────────────────────────────────
+const RETRY_ATTEMPTS = 3;
+const RETRY_BASE_MS = 200;
+const FETCH_TIMEOUT_MS = 10_000;
+
+// ── Proxy with fallback chain + cache + retry + timeout ──────────────
 async function proxyToBafeWithFallback(targetUrls, req, res) {
+  const reqBody = req.method === "GET" ? undefined : req.body;
+  // Use first URL as canonical key (same request body → same result regardless of URL)
+  const key = cacheKey(req.method, targetUrls[0], reqBody);
+
+  // Check cache
+  const cached = bafeCache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    console.log(`[cache] HIT for ${req.method} ${targetUrls[0]}`);
+    return res.status(cached.status).set("Content-Type", cached.contentType).send(cached.body);
+  }
+  console.log(`[cache] MISS for ${req.method} ${targetUrls[0]}`);
+
   let lastResponse = null;
 
   for (const targetUrl of targetUrls) {
-    console.log(`[proxy] trying ${req.method} ${targetUrl}`);
-    try {
-      const upstream = await fetch(targetUrl, {
-        method: req.method,
-        headers: { "Content-Type": "application/json" },
-        body: req.method === "GET" ? undefined : JSON.stringify(req.body),
-      });
+    for (let attempt = 1; attempt <= RETRY_ATTEMPTS; attempt++) {
+      console.log(`[proxy] trying ${req.method} ${targetUrl} (attempt ${attempt}/${RETRY_ATTEMPTS})`);
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
-      const contentType = upstream.headers.get("content-type") || "application/json";
-      const body = await upstream.text();
+        const upstream = await fetch(targetUrl, {
+          method: req.method,
+          headers: { "Content-Type": "application/json" },
+          body: reqBody != null ? JSON.stringify(reqBody) : undefined,
+          signal: controller.signal,
+        });
 
-      if (upstream.ok) {
-        // Successful response: return immediately and do not try further fallbacks
-        return res.status(upstream.status).set("Content-Type", contentType).send(body);
+        clearTimeout(timeout);
+
+        const contentType = upstream.headers.get("content-type") || "application/json";
+        const body = await upstream.text();
+
+        if (upstream.ok) {
+          // Cache successful response
+          bafeCache.set(key, { body, contentType, status: upstream.status, timestamp: Date.now() });
+          console.log(`[cache] STORED for ${req.method} ${targetUrls[0]} (cache size: ${bafeCache.size})`);
+          return res.status(upstream.status).set("Content-Type", contentType).send(body);
+        }
+
+        // Don't retry 4xx (client errors) — break to next URL
+        if (upstream.status >= 400 && upstream.status < 500) {
+          if (upstream.status === 404) {
+            console.warn(`[proxy] 404 at ${targetUrl}: ${body.slice(0, 200)}`);
+          } else {
+            console.error(`[proxy] → ${upstream.status}  body: ${body.slice(0, 300)}`);
+          }
+          lastResponse = { status: upstream.status, body, contentType };
+          break; // skip retries for 4xx, try next URL
+        }
+
+        // 5xx — retry with backoff
+        console.warn(`[proxy] ${upstream.status} at ${targetUrl}, retrying...`);
+        lastResponse = { status: upstream.status, body, contentType };
+        if (attempt < RETRY_ATTEMPTS) {
+          await new Promise((r) => setTimeout(r, RETRY_BASE_MS * Math.pow(2, attempt - 1)));
+        }
+      } catch (err) {
+        const isTimeout = err.name === "AbortError";
+        console.error(`[proxy] ${isTimeout ? "timeout" : "network error"} on ${targetUrl}:`, err.message);
+        if (attempt < RETRY_ATTEMPTS) {
+          await new Promise((r) => setTimeout(r, RETRY_BASE_MS * Math.pow(2, attempt - 1)));
+        }
       }
-
-      if (upstream.status === 404) {
-        console.warn(`[proxy] 404 at ${targetUrl}: ${body.slice(0, 200)}`);
-      } else {
-        console.error(`[proxy] → ${upstream.status}  body: ${body.slice(0, 300)}`);
-      }
-
-      // Record the last non-ok response and try the next fallback URL
-      lastResponse = { status: upstream.status, body, contentType };
-      continue;
-    } catch (err) {
-      console.error(`[proxy] network error on ${targetUrl}:`, err.message);
     }
   }
 
@@ -117,7 +269,11 @@ app.post("/api/webhook/chart", express.json(), (req, res) => {
 });
 
 // ── Diagnostic: probe BAFE to discover available routes ─────────────
+// Only available in development — never expose internal URLs in production.
 app.get("/api/debug-bafe", async (_req, res) => {
+  if (process.env.NODE_ENV === "production") {
+    return res.status(404).json({ error: "Not found" });
+  }
   const baseUrl = BAFE_PUBLIC_URL;
   const probes = [
     { label: "root /", method: "GET", url: `${baseUrl}/` },
@@ -157,6 +313,10 @@ app.get("/api/debug-bafe", async (_req, res) => {
     bafe_public_url: BAFE_PUBLIC_URL,
     bafe_internal_url: BAFE_INTERNAL_URL,
     bafe_active: BAFE_BASE_URL,
+    cache: {
+      size: bafeCache.size,
+      ttl_hours: CACHE_TTL / (60 * 60 * 1000),
+    },
     probes: results,
   });
 });
@@ -168,14 +328,24 @@ const ELEVENLABS_TOOL_SECRET = process.env.ELEVENLABS_TOOL_SECRET;
 
 const supabaseServer =
   SUPABASE_URL && SUPABASE_SERVICE_KEY
-    ? createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+    ? createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+        auth: { autoRefreshToken: false, persistSession: false },
+      })
     : null;
+
+// ── Stripe ───────────────────────────────────────────────────────────
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY)
+  : null;
 
 // ── GET /api/profile/:userId — ElevenLabs Custom Tool endpoint ──────
 app.get("/api/profile/:userId", async (req, res) => {
   // Verify bearer token
   const authHeader = req.headers.authorization || "";
   const token = authHeader.replace("Bearer ", "").trim();
+
+  // Log auth outcome only, never token values
+  console.log(`[profile] auth check — match: ${!!ELEVENLABS_TOOL_SECRET && token === ELEVENLABS_TOOL_SECRET}`);
 
   if (!ELEVENLABS_TOOL_SECRET || token !== ELEVENLABS_TOOL_SECRET) {
     return res.status(401).json({ error: "Unauthorized" });
@@ -307,8 +477,190 @@ app.post("/api/agent/conversation", express.json(), async (req, res) => {
   res.json({ status: "saved" });
 });
 
+// ── Helper: verify Supabase JWT from Authorization header ───────────
+async function verifySupabaseUser(req) {
+  const authHeader = req.headers.authorization || "";
+  const jwt = authHeader.replace("Bearer ", "").trim();
+  if (!jwt || !supabaseServer) return null;
+  const { data: { user }, error } = await supabaseServer.auth.getUser(jwt);
+  if (error || !user) return null;
+  return user;
+}
+
+// ── Stripe: Create Checkout Session ──────────────────────────────────
+// Reuses existing Stripe customer if one exists in profiles.stripe_customer_id,
+// otherwise creates a new customer and saves the ID immediately.
+app.post("/api/checkout", express.json(), async (req, res) => {
+  if (!stripe) return res.status(503).json({ error: "Payment not configured" });
+  if (!supabaseServer) return res.status(500).json({ error: "Database not configured" });
+
+  // Verify the caller is the authenticated user
+  const authedUser = await verifySupabaseUser(req);
+  if (!authedUser) return res.status(401).json({ error: "Unauthorized" });
+
+  const userId = authedUser.id;
+  const userEmail = authedUser.email || req.body.userEmail;
+
+  try {
+    // Look up existing Stripe customer ID from DB
+    const { data: profile } = await supabaseServer
+      .from("profiles")
+      .select("stripe_customer_id")
+      .eq("id", userId)
+      .single();
+
+    let customerId = profile?.stripe_customer_id;
+
+    if (!customerId) {
+      // First checkout — create Stripe customer and persist ID
+      const customer = await stripe.customers.create({
+        email: userEmail,
+        metadata: { userId },
+      });
+      customerId = customer.id;
+
+      await supabaseServer
+        .from("profiles")
+        .update({ stripe_customer_id: customerId })
+        .eq("id", userId);
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
+      mode: "payment",
+      success_url: `${process.env.APP_URL || "https://bazodiac.com"}?upgrade=success`,
+      cancel_url: `${process.env.APP_URL || "https://bazodiac.com"}?upgrade=cancelled`,
+      metadata: { userId },
+    });
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error("[Stripe] Checkout error:", err.message);
+    res.status(500).json({ error: "Checkout failed" });
+  }
+});
+
+// ── Stripe: Webhook (raw body required for signature verification) ───
+app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async (req, res) => {
+  if (!stripe) return res.status(503).end();
+
+  const sig = req.headers["stripe-signature"];
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+  } catch (err) {
+    console.error("[Stripe] Webhook sig error:", err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object;
+    const userId = session.metadata?.userId;
+
+    if (userId && supabaseServer) {
+      const { error } = await supabaseServer
+        .from("profiles")
+        .update({
+          tier: "premium",
+          stripe_customer_id: session.customer,
+          stripe_payment_id: session.payment_intent,
+        })
+        .eq("id", userId);
+
+      if (error) console.error("[Stripe] Profile update failed:", error);
+      else console.log(`[Stripe] User ${userId} upgraded to premium`);
+    }
+  }
+
+  res.json({ received: true });
+});
+
+// ── Share URL ────────────────────────────────────────────────────────
+app.post("/api/share", express.json(), async (req, res) => {
+  const authedUser = await verifySupabaseUser(req);
+  if (!authedUser) return res.status(401).json({ error: "Unauthorized" });
+
+  const userId = authedUser.id;
+
+  if (!supabaseServer) {
+    return res.status(500).json({ error: "Supabase not configured on server" });
+  }
+
+  const hash = crypto.createHash("sha256").update(userId).digest("hex").slice(0, 12);
+
+  const { data: profile } = await supabaseServer
+    .from("astro_profiles")
+    .select("sun_sign, moon_sign, asc_sign")
+    .eq("user_id", userId)
+    .single();
+
+  if (!profile) return res.status(404).json({ error: "No profile found" });
+
+  res.json({
+    shareUrl: `${process.env.APP_URL || "https://bazodiac.com"}/share/${hash}`,
+    hash,
+    profile: {
+      sun_sign: profile.sun_sign,
+      moon_sign: profile.moon_sign,
+      asc_sign: profile.asc_sign,
+    },
+  });
+});
+
+// Public share page — serve the SPA so client-side handles /share/:hash
+app.get("/share/:hash", async (_req, res) => {
+  const html = await fs.promises.readFile(path.join(distPath, "index.html"), "utf-8");
+  res.send(html);
+});
+
+// ── AI Interpretation proxy (Gemini key stays server-side) ───────────
+app.post("/api/interpret", express.json({ limit: "50kb" }), async (req, res) => {
+  const { data, lang = "en" } = req.body || {};
+  if (!data || typeof data !== "object") {
+    return res.status(400).json({ error: "data is required" });
+  }
+  const safeLang = lang === "de" ? "de" : "en";
+  if (!geminiClient) {
+    return res.status(503).json({ error: "Interpretation service unavailable" });
+  }
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
+    const response = await Promise.race([
+      geminiClient.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: buildGeminiPrompt(data, safeLang),
+        config: { temperature: 0.75 },
+      }),
+      new Promise((_, reject) => {
+        controller.signal.addEventListener('abort', () => reject(new Error('Gemini timeout')));
+      }),
+    ]);
+    clearTimeout(timeout);
+    const text = response.text?.trim();
+    if (!text) return res.status(502).json({ error: "Empty response from AI" });
+    res.json({ text });
+  } catch (err) {
+    console.warn("[interpret] Gemini failed:", err?.message ?? String(err));
+    res.status(502).json({ error: "AI interpretation failed" });
+  }
+});
+
 // ── Static files ────────────────────────────────────────────────────
 app.use(express.static(distPath, { index: "index.html" }));
+
+app.get("/fu-ring", (_req, res) => {
+  const html = fs.readFileSync(path.join(distPath, "index.html"), "utf8");
+  const ogHtml = html.replace(
+    "<head>",
+    `<head>
+    <meta property="og:title" content="Mein Fu-Ring — Bazodiac" />
+    <meta property="og:description" content="Dein persönliches Energieprofil als Fusionsring" />
+    <meta property="og:type" content="website" />`
+  );
+  res.send(ogHtml);
+});
 
 app.get("*", (_req, res) => {
   res.sendFile(path.join(distPath, "index.html"));

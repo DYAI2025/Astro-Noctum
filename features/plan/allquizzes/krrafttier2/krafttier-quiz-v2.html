@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcher uralte Wächter schlummert in deiner Seele? | QuizzMe</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ═══════════════════════════════════════════════════════════════════
+           QUIZZME DESIGN SYSTEM - KRAFTTIER QUIZ v2
+           ContributionEvent Output + Dual Theme Architecture
+           ═══════════════════════════════════════════════════════════════════ */
+        
+        :root {
+            /* === GOLD SPECTRUM === */
+            --gold-primary: #D2A95A;
+            --gold-dark: #A77D38;
+            --gold-light: #E8C87A;
+            --gold-muted: #C4A86C;
+            
+            /* === EMERALD/TEAL SPECTRUM === */
+            --emerald-deep: #053B3F;
+            --emerald-forest: #0A4A4F;
+            --teal-muted: #1C5B5C;
+            --sage: #6CA192;
+            --sage-light: #8FB8A8;
+            
+            /* === MIDNIGHT SPECTRUM === */
+            --midnight-deep: #041726;
+            --midnight-medium: #0A2540;
+            --midnight-soft: #132F4C;
+            
+            /* === CREAM/PARCHMENT SPECTRUM === */
+            --cream-pure: #F7F0E6;
+            --cream-warm: #F2E3CF;
+            --cream-deep: #EDE4D3;
+            --cream-muted: #E5D9C3;
+            
+            /* === TEXT === */
+            --text-on-dark: #F7F3EA;
+            --text-on-dark-muted: #A8B5A0;
+            --text-on-light: #271C16;
+            --text-on-light-muted: #5A4D3F;
+            
+            /* === TYPOGRAPHY === */
+            --font-serif: 'Cormorant Garamond', Georgia, serif;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            
+            --text-display-lg: clamp(2rem, 4vw, 2.75rem);
+            --text-display-md: clamp(1.5rem, 3vw, 2rem);
+            --text-h1: clamp(1.75rem, 2.5vw, 2.25rem);
+            --text-h2: clamp(1.375rem, 2vw, 1.75rem);
+            --text-h3: clamp(1.125rem, 1.5vw, 1.375rem);
+            --text-body: 1rem;
+            --text-body-sm: 0.875rem;
+            --text-label: 0.75rem;
+            
+            /* === SPACING === */
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-5: 1.25rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --space-10: 2.5rem;
+            --space-12: 3rem;
+            
+            /* === BORDERS & RADIUS === */
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --radius-2xl: 24px;
+            
+            /* === ANIMATION === */
+            --duration-fast: 150ms;
+            --duration-normal: 250ms;
+            --duration-slow: 400ms;
+            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .screen {
+            display: none;
+            min-height: 100vh;
+        }
+        
+        .screen.active {
+            display: flex;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           THEME: MODERN ALCHEMY (Dark) - Intro & Result
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .theme-alchemy {
+            background: linear-gradient(165deg, var(--emerald-deep) 0%, var(--midnight-deep) 50%, #031119 100%);
+            color: var(--text-on-dark);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           THEME: BOTANICAL GARDEN (Light) - Quiz Flow
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .theme-botanical {
+            background: var(--emerald-deep);
+            color: var(--text-on-light);
+        }
+
+        .botanical-inner {
+            background: linear-gradient(180deg, var(--cream-pure) 0%, var(--cream-warm) 100%);
+            margin: var(--space-3);
+            border-radius: var(--radius-2xl);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           INTRO SCREEN
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .intro-screen {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: var(--gold-primary);
+            border-radius: 50%;
+            opacity: 0.4;
+            animation: float 10s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
+            50% { transform: translateY(-40px) scale(1.3); opacity: 0.6; }
+        }
+
+        .intro-content {
+            text-align: center;
+            max-width: 420px;
+            z-index: 1;
+        }
+
+        .brand-badge {
+            font-family: var(--font-sans);
+            font-size: var(--text-label);
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            margin-bottom: var(--space-8);
+            opacity: 0.9;
+        }
+
+        .intro-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto var(--space-6);
+        }
+
+        .intro-icon svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 25px rgba(210, 169, 90, 0.35));
+        }
+
+        .intro-title {
+            font-family: var(--font-serif);
+            font-size: var(--text-display-lg);
+            font-weight: 500;
+            line-height: 1.15;
+            margin-bottom: var(--space-5);
+        }
+
+        .intro-title .accent {
+            color: var(--gold-primary);
+            font-style: italic;
+        }
+
+        .intro-subtitle {
+            font-size: var(--text-body);
+            color: var(--text-on-dark-muted);
+            line-height: 1.6;
+            margin-bottom: var(--space-8);
+        }
+
+        .intro-meta {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-6);
+            margin-bottom: var(--space-10);
+            font-size: var(--text-body-sm);
+            color: var(--text-on-dark-muted);
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .meta-item svg {
+            width: 16px;
+            height: 16px;
+            stroke: var(--gold-primary);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-dark) 100%);
+            color: var(--midnight-deep);
+            font-family: var(--font-sans);
+            font-size: var(--text-body);
+            font-weight: 600;
+            padding: var(--space-4) var(--space-10);
+            border: none;
+            border-radius: var(--radius-xl);
+            cursor: pointer;
+            transition: transform var(--duration-normal) var(--ease-out),
+                        box-shadow var(--duration-normal) var(--ease-out);
+            box-shadow: 0 4px 20px rgba(210, 169, 90, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(210, 169, 90, 0.4);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           QUIZ SCREEN (Botanical Theme)
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .quiz-screen {
+            flex-direction: column;
+        }
+
+        .quiz-header {
+            padding: var(--space-5) var(--space-6) var(--space-4);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .quiz-brand {
+            font-family: var(--font-serif);
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--emerald-deep);
+        }
+
+        .progress-indicator {
+            font-family: var(--font-sans);
+            font-size: var(--text-body-sm);
+            color: var(--text-on-light-muted);
+        }
+
+        .progress-bar {
+            height: 3px;
+            background: var(--cream-muted);
+            margin: 0 var(--space-6);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--sage) 0%, var(--gold-primary) 100%);
+            border-radius: 2px;
+            transition: width var(--duration-slow) var(--ease-out);
+        }
+
+        .quiz-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: var(--space-8) var(--space-6);
+            max-width: 560px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .question-scenario {
+            font-family: var(--font-serif);
+            font-size: var(--text-body);
+            font-style: italic;
+            color: var(--sage);
+            margin-bottom: var(--space-4);
+            padding-left: var(--space-4);
+            border-left: 2px solid var(--sage-light);
+        }
+
+        .question-text {
+            font-family: var(--font-serif);
+            font-size: var(--text-h2);
+            font-weight: 500;
+            color: var(--text-on-light);
+            line-height: 1.35;
+            margin-bottom: var(--space-8);
+        }
+
+        .answers-grid {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+        }
+
+        .answer-card {
+            background: #FFFFFF;
+            border: 1.5px solid var(--cream-muted);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4) var(--space-5);
+            cursor: pointer;
+            transition: all var(--duration-normal) var(--ease-out);
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+        }
+
+        .answer-card:hover {
+            border-color: var(--sage);
+            background: var(--cream-pure);
+            transform: translateX(4px);
+        }
+
+        .answer-card.selected {
+            border-color: var(--gold-primary);
+            background: linear-gradient(135deg, rgba(210, 169, 90, 0.08) 0%, rgba(108, 161, 146, 0.08) 100%);
+        }
+
+        .answer-marker {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--cream-muted);
+            border-radius: 50%;
+            flex-shrink: 0;
+            transition: all var(--duration-fast) var(--ease-out);
+            position: relative;
+        }
+
+        .answer-card:hover .answer-marker {
+            border-color: var(--sage);
+        }
+
+        .answer-card.selected .answer-marker {
+            border-color: var(--gold-primary);
+            background: var(--gold-primary);
+        }
+
+        .answer-card.selected .answer-marker::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .answer-text {
+            font-family: var(--font-sans);
+            font-size: var(--text-body);
+            color: var(--text-on-light);
+            line-height: 1.5;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           LOADING SCREEN
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .loading-screen {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-6);
+            text-align: center;
+        }
+
+        .loading-orb {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            margin-bottom: var(--space-8);
+        }
+
+        .loading-orb::before,
+        .loading-orb::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border: 2px solid transparent;
+            border-top-color: var(--gold-primary);
+            border-radius: 50%;
+            animation: spin 1.2s linear infinite;
+        }
+
+        .loading-orb::after {
+            inset: 8px;
+            border-top-color: var(--sage);
+            animation-duration: 1.8s;
+            animation-direction: reverse;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-family: var(--font-serif);
+            font-size: var(--text-h3);
+            color: var(--text-on-dark);
+            margin-bottom: var(--space-3);
+        }
+
+        .loading-subtext {
+            font-size: var(--text-body-sm);
+            color: var(--text-on-dark-muted);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           RESULT SCREEN - Trading Card Style
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .result-screen {
+            flex-direction: column;
+            align-items: center;
+            padding: var(--space-6);
+            overflow-y: auto;
+        }
+
+        .result-card {
+            width: 100%;
+            max-width: 380px;
+            background: linear-gradient(165deg, var(--midnight-medium) 0%, var(--emerald-deep) 100%);
+            border: 1px solid rgba(210, 169, 90, 0.3);
+            border-radius: var(--radius-2xl);
+            padding: var(--space-6);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+        }
+
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold-primary), transparent);
+        }
+
+        .card-header {
+            text-align: center;
+            margin-bottom: var(--space-5);
+        }
+
+        .result-badge {
+            font-family: var(--font-sans);
+            font-size: var(--text-label);
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            margin-bottom: var(--space-3);
+        }
+
+        .animal-icon {
+            width: 90px;
+            height: 90px;
+            margin: 0 auto var(--space-4);
+        }
+
+        .animal-icon svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 20px rgba(210, 169, 90, 0.4));
+        }
+
+        .animal-name {
+            font-family: var(--font-serif);
+            font-size: var(--text-h1);
+            font-weight: 600;
+            color: var(--text-on-dark);
+            margin-bottom: var(--space-1);
+        }
+
+        .animal-title {
+            font-family: var(--font-serif);
+            font-size: var(--text-body);
+            font-style: italic;
+            color: var(--gold-muted);
+        }
+
+        .card-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(210, 169, 90, 0.3), transparent);
+            margin: var(--space-5) 0;
+        }
+
+        .card-description {
+            font-family: var(--font-sans);
+            font-size: var(--text-body-sm);
+            color: var(--text-on-dark-muted);
+            line-height: 1.7;
+            text-align: center;
+            margin-bottom: var(--space-5);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-3);
+            margin-bottom: var(--space-5);
+        }
+
+        .stat-item {
+            background: rgba(4, 23, 38, 0.5);
+            border-radius: var(--radius-md);
+            padding: var(--space-3);
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: var(--text-label);
+            color: var(--text-on-dark-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-1);
+        }
+
+        .stat-value {
+            font-family: var(--font-serif);
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gold-primary);
+        }
+
+        .compatibility-section {
+            background: rgba(4, 23, 38, 0.4);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            margin-bottom: var(--space-5);
+        }
+
+        .compat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: var(--text-body-sm);
+        }
+
+        .compat-row:first-child {
+            margin-bottom: var(--space-2);
+            padding-bottom: var(--space-2);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .compat-label {
+            color: var(--text-on-dark-muted);
+        }
+
+        .compat-value {
+            font-weight: 500;
+            color: var(--sage-light);
+        }
+
+        .compat-value.nemesis {
+            color: #C45D4A;
+        }
+
+        .result-actions {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+            width: 100%;
+            max-width: 380px;
+            margin-top: var(--space-6);
+        }
+
+        .btn-share {
+            background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-dark) 100%);
+            color: var(--midnight-deep);
+            font-family: var(--font-sans);
+            font-size: var(--text-body);
+            font-weight: 600;
+            padding: var(--space-4);
+            border: none;
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all var(--duration-normal) var(--ease-out);
+        }
+
+        .btn-share:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(210, 169, 90, 0.35);
+        }
+
+        .btn-restart {
+            background: transparent;
+            border: 1px solid rgba(210, 169, 90, 0.3);
+            color: var(--text-on-dark-muted);
+            font-family: var(--font-sans);
+            font-size: var(--text-body-sm);
+            padding: var(--space-3);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all var(--duration-normal) var(--ease-out);
+        }
+
+        .btn-restart:hover {
+            border-color: var(--gold-primary);
+            color: var(--text-on-dark);
+        }
+
+        .disclaimer {
+            font-size: 0.6875rem;
+            color: var(--text-on-dark-muted);
+            text-align: center;
+            margin-top: var(--space-6);
+            max-width: 380px;
+            opacity: 0.7;
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 480px) {
+            .botanical-inner {
+                margin: var(--space-2);
+                border-radius: var(--radius-xl);
+            }
+            
+            .quiz-content {
+                padding: var(--space-6) var(--space-4);
+            }
+            
+            .result-card {
+                padding: var(--space-5);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ═══════════════════════════════════════════════════════════════════
+         INTRO SCREEN (Modern Alchemy Theme)
+         ═══════════════════════════════════════════════════════════════════ -->
+    <div id="intro" class="screen active intro-screen theme-alchemy">
+        <div class="particles" id="particles"></div>
+        
+        <div class="intro-content">
+            <div class="brand-badge">QuizzMe</div>
+            
+            <div class="intro-icon">
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="2" result="blur"/>
+                            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                        </filter>
+                    </defs>
+                    <g filter="url(#glow)" stroke="#D2A95A" stroke-width="1.5" fill="none">
+                        <circle cx="50" cy="50" r="35" opacity="0.3"/>
+                        <circle cx="50" cy="50" r="25" opacity="0.5"/>
+                        <path d="M50 20 L50 30 M50 70 L50 80 M20 50 L30 50 M70 50 L80 50" stroke-linecap="round"/>
+                        <path d="M35 35 Q50 25 65 35 Q75 50 65 65 Q50 75 35 65 Q25 50 35 35" stroke-linecap="round"/>
+                        <circle cx="50" cy="50" r="8"/>
+                        <circle cx="50" cy="50" r="3" fill="#D2A95A"/>
+                    </g>
+                </svg>
+            </div>
+            
+            <h1 class="intro-title">
+                Welcher uralte <span class="accent">Wächter</span> schlummert in deiner Seele?
+            </h1>
+            
+            <p class="intro-subtitle">
+                Entdecke das archetypische Krafttier, das seit jeher über dich wacht – und lerne die verborgene Sprache deiner Instinkte verstehen.
+            </p>
+            
+            <div class="intro-meta">
+                <div class="meta-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 6v6l4 2"/>
+                    </svg>
+                    <span>3 Minuten</span>
+                </div>
+                <div class="meta-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 11l3 3L22 4"/>
+                        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+                    </svg>
+                    <span>12 Fragen</span>
+                </div>
+            </div>
+            
+            <button class="btn-primary" onclick="startQuiz()">Reise beginnen</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         QUIZ SCREEN (Botanical Theme)
+         ═══════════════════════════════════════════════════════════════════ -->
+    <div id="quiz" class="screen quiz-screen theme-botanical">
+        <div class="botanical-inner">
+            <div class="quiz-header">
+                <div class="quiz-brand">QuizzMe</div>
+                <div class="progress-indicator"><span id="currentQ">1</span> / 12</div>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 8.33%"></div>
+            </div>
+            
+            <div class="quiz-content">
+                <div class="question-scenario" id="scenario"></div>
+                <h2 class="question-text" id="questionText"></h2>
+                <div class="answers-grid" id="answersGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         LOADING SCREEN
+         ═══════════════════════════════════════════════════════════════════ -->
+    <div id="loading" class="screen loading-screen theme-alchemy">
+        <div class="loading-orb"></div>
+        <div class="loading-text">Die Geister erwachen...</div>
+        <div class="loading-subtext">Dein Krafttier offenbart sich</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         RESULT SCREEN (Modern Alchemy Theme)
+         ═══════════════════════════════════════════════════════════════════ -->
+    <div id="result" class="screen result-screen theme-alchemy">
+        <div class="result-card">
+            <div class="card-header">
+                <div class="result-badge">Dein Krafttier</div>
+                <div class="animal-icon" id="animalSvg"></div>
+                <h2 class="animal-name" id="animalName"></h2>
+                <div class="animal-title" id="animalTitle"></div>
+            </div>
+            
+            <div class="card-divider"></div>
+            
+            <p class="card-description" id="cardDescription"></p>
+            
+            <div class="stats-grid" id="statsGrid"></div>
+            
+            <div class="compatibility-section">
+                <div class="compat-row">
+                    <span class="compat-label">Verbündete</span>
+                    <span class="compat-value" id="allies"></span>
+                </div>
+                <div class="compat-row">
+                    <span class="compat-label">Herausforderung</span>
+                    <span class="compat-value nemesis" id="nemesis"></span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="result-actions">
+            <button class="btn-share" onclick="shareResult()">Ergebnis teilen</button>
+            <button class="btn-restart" onclick="restartQuiz()">Quiz wiederholen</button>
+        </div>
+        
+        <p class="disclaimer">
+            Dieser Test dient der spielerischen Selbstreflexion und stellt <strong>keine</strong> psychologische Diagnose dar.
+        </p>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════════
+        // QUIZ CONFIGURATION (Input Parameter Equivalent)
+        // ═══════════════════════════════════════════════════════════════════
+        
+        const QUIZ_CONFIG = {
+            specVersion: "sp.contribution.v1",
+            source: {
+                vertical: "quiz",
+                moduleId: "quiz.krafttier.v2",
+                domain: "quizzme.app",
+                locale: "de-DE"
+            },
+            meta: {
+                title: "Welcher uralte Wächter schlummert in deiner Seele?",
+                engine: "custom",
+                skin: "spirit-animals",
+                tone: "mysterious"
+            }
+        };
+
+        // ═══════════════════════════════════════════════════════════════════
+        // DIMENSIONS (Psychological Axes)
+        // ═══════════════════════════════════════════════════════════════════
+        
+        const DIMENSIONS = [
+            { id: "d1", name: "Mut vs. Vorsicht", pole_low: "Vorsicht", pole_high: "Mut" },
+            { id: "d2", name: "Sozial vs. Unabhängig", pole_low: "Unabhängig", pole_high: "Sozial" },
+            { id: "d3", name: "Instinkt vs. Reflexion", pole_low: "Reflexion", pole_high: "Instinkt" },
+            { id: "d4", name: "Erdung vs. Freiheit", pole_low: "Erdung", pole_high: "Freiheit" }
+        ];
+
+        // ═══════════════════════════════════════════════════════════════════
+        // QUESTIONS WITH SCORING
+        // ═══════════════════════════════════════════════════════════════════
+        
+        const questions = [
+            {
+                id: "q1",
+                scenario: "Der Nebel lichtet sich...",
+                text: "Du stehst vor einem unbekannten Pfad im Wald. Wie reagierst du?",
+                options: [
+                    { text: "Ich gehe voran – Neuland ruft nach mir", scores: { mut: 5, instinkt: 3, freiheit: 4 } },
+                    { text: "Ich beobachte erst, lese die Zeichen", scores: { weisheit: 5, klarheit: 4, vorsicht: 3 } },
+                    { text: "Ich suche Begleitung für die Reise", scores: { sozial: 5, erdung: 3, anpassung: 2 } },
+                    { text: "Ich finde meinen eigenen Weg abseits des Pfades", scores: { neugier: 4, freiheit: 5, instinkt: 3 } }
+                ]
+            },
+            {
+                id: "q2",
+                scenario: "In einer stillen Nacht...",
+                text: "Welche Energie zieht dich am meisten an?",
+                options: [
+                    { text: "Die Kraft der Gemeinschaft – zusammen sind wir stark", scores: { sozial: 5, erdung: 4, mut: 2 } },
+                    { text: "Die Stille der Betrachtung – Weisheit kommt von innen", scores: { weisheit: 5, schatten: 3, vorsicht: 4 } },
+                    { text: "Das Feuer der Leidenschaft – leben ohne Grenzen", scores: { mut: 5, instinkt: 4, freiheit: 3 } },
+                    { text: "Das Spielerische des Moments – Freude ist die Antwort", scores: { freude: 5, flow: 4, anpassung: 3 } }
+                ]
+            },
+            {
+                id: "q3",
+                scenario: "Ein Konflikt entsteht...",
+                text: "Wie gehst du mit Herausforderungen um?",
+                options: [
+                    { text: "Ich stelle mich direkt – Konfrontation bringt Klarheit", scores: { mut: 5, instinkt: 4, klarheit: 3 } },
+                    { text: "Ich suche den diplomatischen Weg", scores: { sozial: 4, anpassung: 5, weisheit: 3 } },
+                    { text: "Ich beobachte aus der Distanz und warte ab", scores: { weisheit: 4, schatten: 4, vorsicht: 5 } },
+                    { text: "Ich finde kreative Umwege", scores: { neugier: 5, anpassung: 4, flow: 3 } }
+                ]
+            },
+            {
+                id: "q4",
+                scenario: "Der Vollmond scheint...",
+                text: "Wann fühlst du dich am lebendigsten?",
+                options: [
+                    { text: "Umgeben von Menschen, die ich liebe", scores: { sozial: 5, freude: 4, erdung: 3 } },
+                    { text: "Allein in der Natur, eins mit allem", scores: { freiheit: 5, instinkt: 4, erdung: 3 } },
+                    { text: "Wenn ich ein Rätsel gelöst habe", scores: { weisheit: 5, neugier: 4, klarheit: 3 } },
+                    { text: "In Momenten purer Bewegung und Aktion", scores: { mut: 4, flow: 5, instinkt: 4 } }
+                ]
+            },
+            {
+                id: "q5",
+                scenario: "Das Wasser ruft...",
+                text: "Was bedeutet Stärke für dich?",
+                options: [
+                    { text: "Furchtlos voranzugehen, egal was kommt", scores: { mut: 5, instinkt: 3, freiheit: 3 } },
+                    { text: "Die Ruhe zu bewahren im Sturm", scores: { erdung: 5, weisheit: 4, klarheit: 3 } },
+                    { text: "Andere zu schützen und zu führen", scores: { sozial: 5, mut: 3, erdung: 3 } },
+                    { text: "Sich anzupassen ohne sich selbst zu verlieren", scores: { anpassung: 5, flow: 4, neugier: 3 } }
+                ]
+            },
+            {
+                id: "q6",
+                scenario: "Ein Geheimnis wartet...",
+                text: "Was treibt dich am meisten an?",
+                options: [
+                    { text: "Der Drang, das Unbekannte zu erforschen", scores: { neugier: 5, freiheit: 4, mut: 3 } },
+                    { text: "Das Bedürfnis nach tiefem Verständnis", scores: { weisheit: 5, schatten: 4, klarheit: 3 } },
+                    { text: "Die Sehnsucht nach Verbindung", scores: { sozial: 5, freude: 3, erdung: 3 } },
+                    { text: "Der Wunsch, etwas Bleibendes zu schaffen", scores: { erdung: 5, mut: 3, klarheit: 4 } }
+                ]
+            },
+            {
+                id: "q7",
+                scenario: "Die Schatten werden länger...",
+                text: "Wie verarbeitest du schwierige Zeiten?",
+                options: [
+                    { text: "Ich ziehe mich zurück und reflektiere", scores: { weisheit: 4, schatten: 5, vorsicht: 4 } },
+                    { text: "Ich suche Trost bei meinen Liebsten", scores: { sozial: 5, erdung: 4, freude: 2 } },
+                    { text: "Ich handle – Bewegung heilt", scores: { mut: 4, instinkt: 5, flow: 3 } },
+                    { text: "Ich finde Humor und Leichtigkeit", scores: { freude: 5, anpassung: 4, flow: 3 } }
+                ]
+            },
+            {
+                id: "q8",
+                scenario: "Der Wind trägt Geschichten...",
+                text: "Welche Eigenschaft bewunderst du am meisten?",
+                options: [
+                    { text: "Unerschütterliche Loyalität", scores: { sozial: 5, erdung: 4, mut: 2 } },
+                    { text: "Scharfsinnige Weisheit", scores: { weisheit: 5, klarheit: 4, schatten: 3 } },
+                    { text: "Grenzenlose Freiheit", scores: { freiheit: 5, mut: 4, instinkt: 3 } },
+                    { text: "Ansteckende Lebensfreude", scores: { freude: 5, flow: 4, sozial: 3 } }
+                ]
+            },
+            {
+                id: "q9",
+                scenario: "Am Scheideweg...",
+                text: "Wie triffst du wichtige Entscheidungen?",
+                options: [
+                    { text: "Aus dem Bauch heraus – mein Instinkt täuscht selten", scores: { instinkt: 5, mut: 4, flow: 3 } },
+                    { text: "Nach gründlicher Analyse aller Optionen", scores: { weisheit: 5, vorsicht: 4, klarheit: 4 } },
+                    { text: "Im Gespräch mit Menschen, denen ich vertraue", scores: { sozial: 5, erdung: 3, anpassung: 3 } },
+                    { text: "Ich probiere einfach aus und lerne daraus", scores: { neugier: 5, anpassung: 4, freude: 3 } }
+                ]
+            },
+            {
+                id: "q10",
+                scenario: "Das Echo deiner Seele...",
+                text: "Was ist deine größte Gabe?",
+                options: [
+                    { text: "Mut – ich gehe, wohin andere nicht wagen", scores: { mut: 5, freiheit: 4, instinkt: 3 } },
+                    { text: "Empathie – ich fühle, was andere verbergen", scores: { sozial: 5, weisheit: 3, schatten: 3 } },
+                    { text: "Klarheit – ich sehe durch den Nebel", scores: { klarheit: 5, weisheit: 4, vorsicht: 3 } },
+                    { text: "Anpassung – ich fließe wie Wasser", scores: { anpassung: 5, flow: 4, freude: 3 } }
+                ]
+            },
+            {
+                id: "q11",
+                scenario: "Das Feuer brennt...",
+                text: "Was gibt dir Kraft, wenn alles dunkel scheint?",
+                options: [
+                    { text: "Der Glaube an mich selbst", scores: { mut: 5, erdung: 4, instinkt: 3 } },
+                    { text: "Die Verbindung zu meinem Rudel", scores: { sozial: 5, freude: 3, erdung: 4 } },
+                    { text: "Das Wissen, dass alles seinen Sinn hat", scores: { weisheit: 5, schatten: 4, klarheit: 3 } },
+                    { text: "Die Hoffnung auf neue Abenteuer", scores: { freiheit: 4, neugier: 5, flow: 4 } }
+                ]
+            },
+            {
+                id: "q12",
+                scenario: "Die Vision wird klar...",
+                text: "Welches Element ruft am lautesten nach dir?",
+                options: [
+                    { text: "Erde – stark, beständig, verwurzelt", scores: { erdung: 5, mut: 4, sozial: 3 } },
+                    { text: "Luft – frei, erhaben, klar", scores: { freiheit: 5, klarheit: 4, weisheit: 3 } },
+                    { text: "Wasser – fließend, spielerisch, tief", scores: { flow: 5, freude: 4, anpassung: 4 } },
+                    { text: "Schatten – mysteriös, weise, verborgen", scores: { schatten: 5, weisheit: 4, neugier: 3 } }
+                ]
+            }
+        ];
+
+        // ═══════════════════════════════════════════════════════════════════
+        // PROFILES (Result Types)
+        // ═══════════════════════════════════════════════════════════════════
+        
+        const profiles = {
+            wolf: {
+                id: "wolf",
+                name: "Der Wolf",
+                title: "Hüter des Rudels",
+                svg: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs><filter id="glow-wolf" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+                    <g filter="url(#glow-wolf)" stroke="#D2A95A" stroke-width="1.5" fill="none">
+                        <path d="M50 85 L30 75 L20 55 L25 35 L35 25 L35 15 L45 25 L50 20 L55 25 L65 15 L65 25 L75 35 L80 55 L70 75 Z" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="40" cy="45" r="4"/><circle cx="60" cy="45" r="4"/>
+                        <path d="M45 55 L50 60 L55 55" stroke-linecap="round"/>
+                        <path d="M35 65 Q50 75 65 65" stroke-linecap="round" opacity="0.5"/>
+                    </g>
+                </svg>`,
+                description: "Der Wolf erwacht in dir – loyal, instinktiv und zutiefst verbunden mit deinem Rudel. Du führst nicht durch Dominanz, sondern durch das tiefe Verständnis, dass wahre Stärke in der Gemeinschaft liegt.",
+                stats: [
+                    { label: "Loyalität", value: "98%" },
+                    { label: "Instinkt", value: "94%" },
+                    { label: "Führung", value: "91%" },
+                    { label: "Intuition", value: "87%" }
+                ],
+                allies: "Adler • Bär",
+                nemesis: "Fuchs",
+                shareText: "Mein Krafttier ist der Wolf – loyal, instinktiv und Hüter des Rudels. 🐺",
+                markers: ["marker.social.pack_loyalty", "marker.instinct.primal_sense", "marker.leadership.servant_leader"],
+                traits: [
+                    { id: "trait.social.community", score: 85, band: "high" },
+                    { id: "trait.instinct.gut_feeling", score: 78, band: "midhigh" }
+                ],
+                tags: [
+                    { id: "tag.archetype.guardian", label: "Wächter", kind: "archetype" },
+                    { id: "tag.style.protective", label: "Beschützend", kind: "style" }
+                ],
+                unlockId: "unlock.crests.wolf_guardian"
+            },
+            owl: {
+                id: "owl",
+                name: "Die Eule",
+                title: "Seherin der Nacht",
+                svg: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs><filter id="glow-owl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+                    <g filter="url(#glow-owl)" stroke="#D2A95A" stroke-width="1.5" fill="none">
+                        <ellipse cx="50" cy="55" rx="25" ry="30"/>
+                        <path d="M25 40 L20 20 L35 35" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M75 40 L80 20 L65 35" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="40" cy="50" r="10"/><circle cx="60" cy="50" r="10"/>
+                        <circle cx="40" cy="50" r="5"/><circle cx="60" cy="50" r="5"/>
+                        <path d="M47 65 L50 70 L53 65" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M35 75 Q50 85 65 75" opacity="0.5"/>
+                    </g>
+                </svg>`,
+                description: "Die Eule wacht in dir – weise, geduldig und mit der Gabe, durch den Schleier der Illusion zu blicken. Du siehst, was anderen verborgen bleibt, und findest Weisheit in der Stille der Nacht.",
+                stats: [
+                    { label: "Weisheit", value: "97%" },
+                    { label: "Intuition", value: "95%" },
+                    { label: "Geduld", value: "92%" },
+                    { label: "Klarheit", value: "89%" }
+                ],
+                allies: "Fuchs • Wolf",
+                nemesis: "Delfin",
+                shareText: "Mein Krafttier ist die Eule – weise, geduldig und Seherin der Nacht. 🦉",
+                markers: ["marker.cognition.deep_wisdom", "marker.shadow.night_vision", "marker.clarity.truth_seeker"],
+                traits: [
+                    { id: "trait.cognition.analytical", score: 88, band: "high" },
+                    { id: "trait.shadow.depth_perception", score: 82, band: "high" }
+                ],
+                tags: [
+                    { id: "tag.archetype.sage", label: "Weiser", kind: "archetype" },
+                    { id: "tag.style.contemplative", label: "Kontemplativ", kind: "style" }
+                ],
+                unlockId: "unlock.crests.owl_sage"
+            },
+            eagle: {
+                id: "eagle",
+                name: "Der Adler",
+                title: "Herrscher der Lüfte",
+                svg: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs><filter id="glow-eagle" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+                    <g filter="url(#glow-eagle)" stroke="#D2A95A" stroke-width="1.5" fill="none">
+                        <path d="M50 25 Q55 35 50 45 Q45 35 50 25" stroke-linecap="round"/>
+                        <circle cx="50" cy="38" r="8"/>
+                        <path d="M47 40 L50 47 L53 40" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M50 45 Q45 55 30 50 Q15 48 5 55" stroke-linecap="round"/>
+                        <path d="M50 45 Q55 55 70 50 Q85 48 95 55" stroke-linecap="round"/>
+                        <path d="M50 50 L50 70 M45 75 L50 70 L55 75" stroke-linecap="round"/>
+                        <circle cx="47" cy="36" r="2"/><circle cx="53" cy="36" r="2"/>
+                    </g>
+                </svg>`,
+                description: "Der Adler erwacht in dir – frei, weitblickend und mit dem Mut, über alle Grenzen hinauszufliegen. Du siehst das große Ganze und scheust nicht davor, deinen eigenen Weg in den Himmel zu bahnen.",
+                stats: [
+                    { label: "Freiheit", value: "99%" },
+                    { label: "Weitblick", value: "96%" },
+                    { label: "Mut", value: "93%" },
+                    { label: "Klarheit", value: "90%" }
+                ],
+                allies: "Wolf • Bär",
+                nemesis: "Eule",
+                shareText: "Mein Krafttier ist der Adler – frei, weitblickend und Herrscher der Lüfte. 🦅",
+                markers: ["marker.freedom.boundless", "marker.vision.strategic", "marker.courage.fearless"],
+                traits: [
+                    { id: "trait.freedom.independence", score: 91, band: "high" },
+                    { id: "trait.courage.boldness", score: 84, band: "high" }
+                ],
+                tags: [
+                    { id: "tag.archetype.sovereign", label: "Souverän", kind: "archetype" },
+                    { id: "tag.style.visionary", label: "Visionär", kind: "style" }
+                ],
+                unlockId: "unlock.crests.eagle_sovereign"
+            },
+            bear: {
+                id: "bear",
+                name: "Der Bär",
+                title: "Wächter der Erde",
+                svg: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs><filter id="glow-bear" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+                    <g filter="url(#glow-bear)" stroke="#D2A95A" stroke-width="1.5" fill="none">
+                        <circle cx="30" cy="28" r="10"/><circle cx="70" cy="28" r="10"/>
+                        <ellipse cx="50" cy="55" rx="30" ry="28"/>
+                        <circle cx="38" cy="48" r="5"/><circle cx="62" cy="48" r="5"/>
+                        <ellipse cx="50" cy="62" rx="8" ry="5"/>
+                        <circle cx="50" cy="60" r="3" fill="#D2A95A"/>
+                        <path d="M42 72 Q50 78 58 72" stroke-linecap="round" opacity="0.6"/>
+                    </g>
+                </svg>`,
+                description: "Der Bär erwacht in dir – stark, geerdet und mit der Kraft der stillen Beharrlichkeit. Du weißt, wann es Zeit ist zu handeln und wann es Zeit ist zu ruhen – und du fürchtest keine Herausforderung.",
+                stats: [
+                    { label: "Stärke", value: "98%" },
+                    { label: "Erdung", value: "95%" },
+                    { label: "Geduld", value: "92%" },
+                    { label: "Schutz", value: "94%" }
+                ],
+                allies: "Adler • Wolf",
+                nemesis: "Fuchs",
+                shareText: "Mein Krafttier ist der Bär – stark, geerdet und Wächter der Erde. 🐻",
+                markers: ["marker.grounding.earth_anchor", "marker.strength.inner_power", "marker.protection.fierce_guardian"],
+                traits: [
+                    { id: "trait.grounding.stability", score: 89, band: "high" },
+                    { id: "trait.courage.inner_strength", score: 86, band: "high" }
+                ],
+                tags: [
+                    { id: "tag.archetype.protector", label: "Beschützer", kind: "archetype" },
+                    { id: "tag.style.grounded", label: "Geerdet", kind: "style" }
+                ],
+                unlockId: "unlock.crests.bear_protector"
+            },
+            fox: {
+                id: "fox",
+                name: "Der Fuchs",
+                title: "Meister der Anpassung",
+                svg: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs><filter id="glow-fox" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+                    <g filter="url(#glow-fox)" stroke="#D2A95A" stroke-width="1.5" fill="none">
+                        <path d="M50 75 L25 60 L20 40 L30 25 L25 10 L40 30 L50 25 L60 30 L75 10 L70 25 L80 40 L75 60 Z" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="40" cy="45" r="4"/><circle cx="60" cy="45" r="4"/>
+                        <circle cx="50" cy="55" r="3"/>
+                        <path d="M47 58 L50 62 L53 58" stroke-linecap="round"/>
+                        <path d="M30 50 Q25 55 30 60" opacity="0.5"/>
+                        <path d="M70 50 Q75 55 70 60" opacity="0.5"/>
+                    </g>
+                </svg>`,
+                description: "Der Fuchs erwacht in dir – clever, neugierig und mit der Gabe, in jeder Situation den richtigen Weg zu finden. Du tanzt zwischen den Welten und findest Lösungen, wo andere nur Probleme sehen.",
+                stats: [
+                    { label: "Cleverness", value: "97%" },
+                    { label: "Anpassung", value: "95%" },
+                    { label: "Neugier", value: "93%" },
+                    { label: "Charme", value: "91%" }
+                ],
+                allies: "Eule • Delfin",
+                nemesis: "Wolf",
+                shareText: "Mein Krafttier ist der Fuchs – clever, anpassungsfähig und Meister der Lösungen. 🦊",
+                markers: ["marker.cognition.quick_wit", "marker.adaptation.shapeshifter", "marker.curiosity.explorer"],
+                traits: [
+                    { id: "trait.adaptation.flexibility", score: 90, band: "high" },
+                    { id: "trait.curiosity.wonder", score: 87, band: "high" }
+                ],
+                tags: [
+                    { id: "tag.archetype.trickster", label: "Trickster", kind: "archetype" },
+                    { id: "tag.style.adaptive", label: "Anpassungsfähig", kind: "style" }
+                ],
+                unlockId: "unlock.crests.fox_trickster"
+            },
+            dolphin: {
+                id: "dolphin",
+                name: "Der Delfin",
+                title: "Botschafter der Freude",
+                svg: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs><filter id="glow-dolphin" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+                    <g filter="url(#glow-dolphin)" stroke="#D2A95A" stroke-width="1.5" fill="none">
+                        <path d="M15 55 Q25 35 50 38 Q75 40 90 55" stroke-linecap="round"/>
+                        <path d="M15 55 Q25 70 45 68 Q60 65 75 58 Q85 55 90 55" stroke-linecap="round"/>
+                        <path d="M50 38 Q55 22 60 35" stroke-linecap="round"/>
+                        <path d="M15 55 Q5 52 8 48 Q12 45 20 50" stroke-linecap="round"/>
+                        <circle cx="28" cy="50" r="3"/>
+                        <path d="M40 58 Q35 72 45 68" stroke-linecap="round"/>
+                        <path d="M85 55 Q92 48 95 52" stroke-linecap="round"/>
+                        <path d="M85 55 Q92 62 95 58" stroke-linecap="round"/>
+                        <path d="M12 54 Q16 56 20 54" opacity="0.6"/>
+                    </g>
+                </svg>`,
+                description: "Der Delfin lebt in dir – spielerisch, kommunikativ und mit einer ansteckenden Lebensfreude. Du gleitest durch die Wellen des Lebens mit Anmut und findest selbst in tiefen Gewässern Grund zur Freude.",
+                stats: [
+                    { label: "Freude", value: "99%" },
+                    { label: "Flow", value: "97%" },
+                    { label: "Spiel", value: "95%" },
+                    { label: "Verbindung", value: "93%" }
+                ],
+                allies: "Fuchs • Adler",
+                nemesis: "Eule",
+                shareText: "Mein Krafttier ist der Delfin – spielerisch, fließend und voller Lebensfreude. 🐬",
+                markers: ["marker.joy.radiant", "marker.flow.graceful", "marker.connection.playful"],
+                traits: [
+                    { id: "trait.joy.life_celebration", score: 92, band: "high" },
+                    { id: "trait.flow.effortless", score: 88, band: "high" }
+                ],
+                tags: [
+                    { id: "tag.archetype.innocent", label: "Unschuldig", kind: "archetype" },
+                    { id: "tag.style.playful", label: "Spielerisch", kind: "style" }
+                ],
+                unlockId: "unlock.crests.dolphin_joy"
+            }
+        };
+
+        // ═══════════════════════════════════════════════════════════════════
+        // QUIZ STATE & LOGIC
+        // ═══════════════════════════════════════════════════════════════════
+        
+        let currentQuestion = 0;
+        let answers = [];
+        let scores = {};
+        let contributionEvent = null;
+
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        function generateParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 25; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                particle.style.animationDuration = (8 + Math.random() * 6) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function startQuiz() {
+            currentQuestion = 0;
+            answers = [];
+            scores = {
+                mut: 0, instinkt: 0, sozial: 0, weisheit: 0, schatten: 0,
+                klarheit: 0, freiheit: 0, neugier: 0, anpassung: 0,
+                erdung: 0, flow: 0, freude: 0, vorsicht: 0
+            };
+            showScreen('quiz');
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById('currentQ').textContent = currentQuestion + 1;
+            document.getElementById('progressFill').style.width = ((currentQuestion + 1) / questions.length * 100) + '%';
+            document.getElementById('scenario').textContent = q.scenario;
+            document.getElementById('questionText').textContent = q.text;
+            
+            const grid = document.getElementById('answersGrid');
+            grid.innerHTML = '';
+            
+            q.options.forEach((option, index) => {
+                const card = document.createElement('div');
+                card.className = 'answer-card';
+                card.innerHTML = `
+                    <div class="answer-marker"></div>
+                    <div class="answer-text">${option.text}</div>
+                `;
+                card.addEventListener('click', () => selectAnswer(index));
+                grid.appendChild(card);
+            });
+        }
+
+        function selectAnswer(index) {
+            const question = questions[currentQuestion];
+            const option = question.options[index];
+            
+            // Store answer
+            answers.push({
+                questionId: question.id,
+                optionIndex: index,
+                scores: option.scores
+            });
+            
+            // Add scores
+            Object.entries(option.scores).forEach(([key, value]) => {
+                scores[key] = (scores[key] || 0) + value;
+            });
+            
+            // Visual feedback
+            const cards = document.querySelectorAll('.answer-card');
+            cards[index].classList.add('selected');
+            
+            setTimeout(() => {
+                currentQuestion++;
+                if (currentQuestion < questions.length) {
+                    renderQuestion();
+                } else {
+                    showLoading();
+                }
+            }, 350);
+        }
+
+        function showLoading() {
+            showScreen('loading');
+            setTimeout(() => {
+                calculateResult();
+            }, 2200);
+        }
+
+        function calculateResult() {
+            // Map scores to animals
+            const animalScores = {
+                wolf: scores.sozial * 2 + scores.instinkt * 1.5 + scores.mut + scores.erdung * 0.8,
+                owl: scores.weisheit * 2 + scores.schatten * 1.5 + scores.klarheit + scores.vorsicht * 0.8,
+                eagle: scores.freiheit * 2 + scores.klarheit * 1.5 + scores.mut + scores.weisheit * 0.5,
+                bear: scores.erdung * 2 + scores.mut * 1.5 + scores.weisheit + scores.sozial * 0.5,
+                fox: scores.neugier * 2 + scores.anpassung * 1.5 + scores.weisheit + scores.flow * 0.8,
+                dolphin: scores.freude * 2 + scores.flow * 1.5 + scores.anpassung + scores.sozial * 0.5
+            };
+
+            // Find highest scoring animal
+            const resultKey = Object.entries(animalScores).reduce((a, b) => a[1] > b[1] ? a : b)[0];
+            const profile = profiles[resultKey];
+            
+            // Build ContributionEvent
+            contributionEvent = buildContributionEvent(profile, animalScores);
+            
+            // Display result
+            displayResult(profile);
+            
+            // Log output (for integration)
+            console.log('═══════════════════════════════════════════════════════════');
+            console.log('CONTRIBUTION EVENT OUTPUT (sp.contribution.v1)');
+            console.log('═══════════════════════════════════════════════════════════');
+            console.log(JSON.stringify(contributionEvent, null, 2));
+        }
+
+        function buildContributionEvent(profile, animalScores) {
+            const maxScore = Math.max(...Object.values(animalScores));
+            const confidence = Math.min(0.95, 0.6 + (maxScore / 100) * 0.35);
+            
+            return {
+                specVersion: "sp.contribution.v1",
+                eventId: generateUUID(),
+                occurredAt: new Date().toISOString(),
+                source: QUIZ_CONFIG.source,
+                payload: {
+                    markers: profile.markers.map((id, i) => ({
+                        id: id,
+                        weight: Math.round((0.7 + Math.random() * 0.25) * 100) / 100,
+                        evidence: {
+                            itemsAnswered: questions.length,
+                            confidence: Math.round(confidence * 100) / 100
+                        }
+                    })),
+                    traits: profile.traits.map(t => ({
+                        ...t,
+                        confidence: Math.round(confidence * 100) / 100,
+                        method: "scenario"
+                    })),
+                    tags: profile.tags.map(t => ({
+                        ...t,
+                        weight: Math.round((0.75 + Math.random() * 0.2) * 100) / 100
+                    })),
+                    unlocks: [{
+                        id: profile.unlockId,
+                        unlocked: true,
+                        unlockedAt: new Date().toISOString(),
+                        level: 1,
+                        sourceRef: QUIZ_CONFIG.source.moduleId
+                    }],
+                    summary: {
+                        title: profile.name,
+                        bullets: [
+                            profile.title,
+                            `Verbündete: ${profile.allies}`,
+                            `Herausforderung: ${profile.nemesis}`
+                        ],
+                        resultId: profile.id
+                    },
+                    debug: {
+                        rawScores: scores,
+                        animalScores: animalScores
+                    }
+                }
+            };
+        }
+
+        function displayResult(profile) {
+            document.getElementById('animalName').textContent = profile.name;
+            document.getElementById('animalTitle').textContent = profile.title;
+            document.getElementById('animalSvg').innerHTML = profile.svg;
+            document.getElementById('cardDescription').textContent = profile.description;
+            document.getElementById('allies').textContent = profile.allies;
+            document.getElementById('nemesis').textContent = profile.nemesis;
+            
+            const statsGrid = document.getElementById('statsGrid');
+            statsGrid.innerHTML = profile.stats.map(stat => `
+                <div class="stat-item">
+                    <div class="stat-label">${stat.label}</div>
+                    <div class="stat-value">${stat.value}</div>
+                </div>
+            `).join('');
+            
+            window.currentProfile = profile;
+            showScreen('result');
+        }
+
+        function shareResult() {
+            const profile = window.currentProfile;
+            const text = profile.shareText + '\n\nFinde dein Krafttier:';
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Mein Krafttier | QuizzMe',
+                    text: text,
+                    url: window.location.href
+                });
+            } else {
+                navigator.clipboard.writeText(text + ' ' + window.location.href).then(() => {
+                    alert('Link kopiert! Teile ihn mit deinen Freunden.');
+                });
+            }
+        }
+
+        function restartQuiz() {
+            startQuiz();
+        }
+
+        // Get ContributionEvent for external integration
+        function getContributionEvent() {
+            return contributionEvent;
+        }
+
+        // Initialize
+        generateParticles();
+    </script>
+</body>
+</html>

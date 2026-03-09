@@ -1,0 +1,789 @@
+{
+  "apiVersion": "quizzme.modules.v1",
+  "meta": {
+    "platform": "QuizzMe",
+    "description": "Konsolidierte Konfiguration aller Persönlichkeitstest-Module",
+    "specVersion": "sp.contribution.v1",
+    "created_at": "2025-01-04",
+    "total_modules": 20,
+    "default_locale": "de-DE"
+  },
+
+  "global_config": {
+    "design_system": {
+      "themes": {
+        "modern_alchemy": {
+          "id": "theme.modern_alchemy",
+          "description": "Dunkles, mystisches Design für spirituelle Inhalte",
+          "colors": {
+            "background": "#0A0A0F",
+            "surface": "#12121A",
+            "primary": "#D2A95A",
+            "secondary": "#053B3F",
+            "accent": "#8B7355",
+            "text_primary": "#F5F0E8",
+            "text_secondary": "#B8B0A0"
+          },
+          "fonts": {
+            "headline": "Cormorant Garamond",
+            "body": "Inter"
+          }
+        },
+        "botanical_garden": {
+          "id": "theme.botanical_garden",
+          "description": "Helles, natürliches Design für Quiz-Flows",
+          "colors": {
+            "background": "#F8F6F0",
+            "surface": "#FFFFFF",
+            "primary": "#053B3F",
+            "secondary": "#4A6741",
+            "accent": "#D2A95A",
+            "text_primary": "#1A1A1A",
+            "text_secondary": "#5A5A5A"
+          },
+          "fonts": {
+            "headline": "Cormorant Garamond",
+            "body": "Inter"
+          }
+        }
+      },
+      "card_format": "9:16",
+      "card_style": "trading_card"
+    },
+    "scoring": {
+      "normalization": {
+        "min": 1,
+        "max": 100,
+        "bands": [
+          { "range": [1, 20], "label": "low", "emoji": "❄️" },
+          { "range": [21, 40], "label": "midlow", "emoji": "🌿" },
+          { "range": [41, 60], "label": "mid", "emoji": "🌤️" },
+          { "range": [61, 80], "label": "midhigh", "emoji": "🔥" },
+          { "range": [81, 100], "label": "high", "emoji": "⚡" }
+        ]
+      },
+      "confidence_formula": "clamp(1 - (stddev / maxStddev), 0, 1)"
+    },
+    "viral_mechanics": {
+      "share_platforms": ["instagram", "tiktok", "twitter", "whatsapp"],
+      "hashtags_global": ["QuizzMe", "Persönlichkeitstest", "WerBistDu"],
+      "cta_templates": {
+        "share": "Teile dein Ergebnis!",
+        "tag_ally": "Tagge deinen {ally_type}!",
+        "tag_nemesis": "Wer ist dein {nemesis_type}?",
+        "compare": "Vergleiche mit Freunden!"
+      }
+    },
+    "disclaimer": "Dieser Test dient der spielerischen Selbstreflexion und stellt keine psychologische Diagnose dar."
+  },
+
+  "modules": {
+    "quiz.love_languages.v1": {
+      "id": "quiz.love_languages.v1",
+      "title": "Die 5 Sprachen der Liebe",
+      "subtitle": "Wie gibst und empfängst du Liebe?",
+      "category": "relationships",
+      "theme": "botanical_garden",
+      "engine": "big5_adapted",
+      "status": "active",
+      "estimated_duration_seconds": 180,
+      "questions_count": 12,
+      "profile_count": 5,
+      "dimensions": [
+        { "id": "words_of_affirmation", "name": "Worte der Bestätigung", "pole_low": "Stille Liebe", "pole_high": "Verbale Zuneigung" },
+        { "id": "quality_time", "name": "Qualitätszeit", "pole_low": "Unabhängigkeit", "pole_high": "Präsenz" },
+        { "id": "gifts", "name": "Geschenke", "pole_low": "Immateriell", "pole_high": "Symbolische Gesten" },
+        { "id": "acts_of_service", "name": "Hilfsbereitschaft", "pole_low": "Autonomie", "pole_high": "Fürsorge durch Taten" },
+        { "id": "physical_touch", "name": "Körperliche Nähe", "pole_low": "Distanz", "pole_high": "Berührung" }
+      ],
+      "profiles": ["poet", "presence_giver", "gift_alchemist", "silent_helper", "touch_empath"],
+      "marker_mappings": [
+        { "dimension": "words_of_affirmation", "marker_id": "marker.love.verbal_affirmation" },
+        { "dimension": "quality_time", "marker_id": "marker.love.quality_time" },
+        { "dimension": "gifts", "marker_id": "marker.love.symbolic_giving" },
+        { "dimension": "acts_of_service", "marker_id": "marker.love.acts_of_service" },
+        { "dimension": "physical_touch", "marker_id": "marker.love.physical_touch" }
+      ],
+      "files": {
+        "jsx": "love-languages-quizzme.jsx",
+        "html": "love-languages-botanical.html"
+      }
+    },
+
+    "quiz.aura_colors.v1": {
+      "id": "quiz.aura_colors.v1",
+      "title": "Deine Aura-Farben",
+      "subtitle": "Welche Energie strahlst du aus?",
+      "category": "spiritual",
+      "theme": "modern_alchemy",
+      "engine": "custom",
+      "status": "active",
+      "estimated_duration_seconds": 150,
+      "questions_count": 10,
+      "profile_count": 7,
+      "dimensions": [
+        { "id": "energy_type", "name": "Energietyp", "pole_low": "Empfangend", "pole_high": "Ausstrahlend" },
+        { "id": "emotional_frequency", "name": "Emotionale Frequenz", "pole_low": "Ruhig", "pole_high": "Intensiv" },
+        { "id": "spiritual_connection", "name": "Spirituelle Verbindung", "pole_low": "Geerdet", "pole_high": "Transzendent" }
+      ],
+      "profiles": ["golden_radiance", "indigo_depth", "emerald_healer", "violet_mystic", "coral_passion", "azure_clarity", "silver_intuition"],
+      "marker_mappings": [
+        { "dimension": "energy_type", "marker_id": "marker.aura.energy_polarity" },
+        { "dimension": "emotional_frequency", "marker_id": "marker.aura.emotional_intensity" },
+        { "dimension": "spiritual_connection", "marker_id": "marker.aura.spiritual_grounding" }
+      ],
+      "files": {
+        "html": "aura-farben-quiz.html"
+      }
+    },
+
+    "quiz.spirit_animal.v1": {
+      "id": "quiz.spirit_animal.v1",
+      "title": "Dein Krafttier",
+      "subtitle": "Welcher Tiergeist begleitet dich?",
+      "category": "spiritual",
+      "theme": "modern_alchemy",
+      "engine": "archetype",
+      "status": "active",
+      "estimated_duration_seconds": 180,
+      "questions_count": 12,
+      "profile_count": 8,
+      "dimensions": [
+        { "id": "instinct", "name": "Instinkt", "pole_low": "Reflexion", "pole_high": "Handlung" },
+        { "id": "social_nature", "name": "Soziale Natur", "pole_low": "Einzelgänger", "pole_high": "Rudeltier" },
+        { "id": "element_affinity", "name": "Elementar-Affinität", "pole_low": "Erde/Wasser", "pole_high": "Luft/Feuer" },
+        { "id": "shadow_integration", "name": "Schatten-Integration", "pole_low": "Licht", "pole_high": "Dunkelheit" }
+      ],
+      "profiles": ["wolf", "owl", "fox", "eagle", "bear", "serpent", "deer", "raven"],
+      "marker_mappings": [
+        { "dimension": "instinct", "marker_id": "marker.archetype.instinct_mode" },
+        { "dimension": "social_nature", "marker_id": "marker.social.pack_vs_lone" },
+        { "dimension": "element_affinity", "marker_id": "marker.element.primary" },
+        { "dimension": "shadow_integration", "marker_id": "marker.shadow.integration_level" }
+      ],
+      "files": {
+        "html": "krafttier-quiz-v2.html"
+      }
+    },
+
+    "quiz.chinese_zodiac.v1": {
+      "id": "quiz.chinese_zodiac.v1",
+      "title": "Dein Chinesisches Sternzeichen",
+      "subtitle": "Die Weisheit der 12 Tierkreiszeichen",
+      "category": "astrology",
+      "theme": "modern_alchemy",
+      "engine": "zodiac_chinese",
+      "status": "active",
+      "estimated_duration_seconds": 120,
+      "questions_count": 8,
+      "profile_count": 12,
+      "dimensions": [
+        { "id": "yin_yang", "name": "Yin-Yang", "pole_low": "Yin (empfangend)", "pole_high": "Yang (aktiv)" },
+        { "id": "wu_xing", "name": "Wu Xing Element", "pole_low": "Wasser/Metall", "pole_high": "Feuer/Holz" },
+        { "id": "social_harmony", "name": "Soziale Harmonie", "pole_low": "Unabhängig", "pole_high": "Gemeinschaftlich" }
+      ],
+      "profiles": ["rat", "ox", "tiger", "rabbit", "dragon", "snake", "horse", "goat", "monkey", "rooster", "dog", "pig"],
+      "marker_mappings": [
+        { "dimension": "yin_yang", "marker_id": "marker.astro.yin_yang_balance" },
+        { "dimension": "wu_xing", "marker_id": "marker.astro.element_chinese" },
+        { "dimension": "social_harmony", "marker_id": "marker.social.harmony_drive" }
+      ],
+      "files": {
+        "html": "chinesisches-horoskop-v3.html"
+      }
+    },
+
+    "quiz.career_dna.v1": {
+      "id": "quiz.career_dna.v1",
+      "title": "Deine Karriere-DNA",
+      "subtitle": "Welcher Berufsarchetyp steckt in dir?",
+      "category": "professional",
+      "theme": "botanical_garden",
+      "engine": "holland_adapted",
+      "status": "active",
+      "estimated_duration_seconds": 240,
+      "questions_count": 15,
+      "profile_count": 6,
+      "dimensions": [
+        { "id": "realistic", "name": "Praktisch", "pole_low": "Theoretisch", "pole_high": "Handwerklich" },
+        { "id": "investigative", "name": "Forschend", "pole_low": "Intuitiv", "pole_high": "Analytisch" },
+        { "id": "artistic", "name": "Künstlerisch", "pole_low": "Konventionell", "pole_high": "Kreativ" },
+        { "id": "social", "name": "Sozial", "pole_low": "Sach-orientiert", "pole_high": "Menschen-orientiert" },
+        { "id": "enterprising", "name": "Unternehmerisch", "pole_low": "Ausführend", "pole_high": "Führend" },
+        { "id": "conventional", "name": "Ordnend", "pole_low": "Flexibel", "pole_high": "Strukturiert" }
+      ],
+      "profiles": ["the_builder", "the_scientist", "the_creator", "the_healer", "the_leader", "the_organizer"],
+      "marker_mappings": [
+        { "dimension": "realistic", "marker_id": "marker.career.practical_orientation" },
+        { "dimension": "investigative", "marker_id": "marker.career.analytical_drive" },
+        { "dimension": "artistic", "marker_id": "marker.career.creative_expression" },
+        { "dimension": "social", "marker_id": "marker.career.people_orientation" },
+        { "dimension": "enterprising", "marker_id": "marker.career.leadership_drive" },
+        { "dimension": "conventional", "marker_id": "marker.career.structure_preference" }
+      ],
+      "files": {
+        "html": "karriere-dna-quizzme.html"
+      }
+    },
+
+    "quiz.social_role.v1": {
+      "id": "quiz.social_role.v1",
+      "title": "Deine Soziale Rolle",
+      "subtitle": "Welchen Platz nimmst du in Gruppen ein?",
+      "category": "social",
+      "theme": "botanical_garden",
+      "engine": "archetype",
+      "status": "active",
+      "estimated_duration_seconds": 150,
+      "questions_count": 10,
+      "profile_count": 6,
+      "dimensions": [
+        { "id": "visibility", "name": "Sichtbarkeit", "pole_low": "Hintergrund", "pole_high": "Spotlight" },
+        { "id": "influence_style", "name": "Einfluss-Stil", "pole_low": "Unterstützend", "pole_high": "Lenkend" },
+        { "id": "energy_direction", "name": "Energie-Richtung", "pole_low": "Nach innen", "pole_high": "Nach außen" }
+      ],
+      "profiles": ["leader", "connector", "sage", "catalyst", "guardian", "jester"],
+      "marker_mappings": [
+        { "dimension": "visibility", "marker_id": "marker.social.visibility_preference" },
+        { "dimension": "influence_style", "marker_id": "marker.social.influence_mode" },
+        { "dimension": "energy_direction", "marker_id": "marker.social.energy_direction" }
+      ],
+      "files": {
+        "html": "social-role-quiz-v2.html"
+      }
+    },
+
+    "quiz.celebrity_soulmate.v1": {
+      "id": "quiz.celebrity_soulmate.v1",
+      "title": "Dein Celebrity Soulmate",
+      "subtitle": "Welcher Star passt zu deiner Energie?",
+      "category": "entertainment",
+      "theme": "botanical_garden",
+      "engine": "matching",
+      "status": "active",
+      "estimated_duration_seconds": 120,
+      "questions_count": 8,
+      "profile_count": 12,
+      "dimensions": [
+        { "id": "energy_level", "name": "Energie-Level", "pole_low": "Chill", "pole_high": "High Energy" },
+        { "id": "authenticity", "name": "Authentizität", "pole_low": "Mysteriös", "pole_high": "Offen" },
+        { "id": "creative_style", "name": "Kreativer Stil", "pole_low": "Klassisch", "pole_high": "Experimentell" }
+      ],
+      "profiles": ["taylor_swift", "harry_styles", "zendaya", "timothee_chalamet", "billie_eilish", "bad_bunny", "florence_pugh", "pedro_pascal", "dua_lipa", "keanu_reeves", "sydney_sweeney", "jacob_elordi"],
+      "marker_mappings": [
+        { "dimension": "energy_level", "marker_id": "marker.lifestyle.energy_baseline" },
+        { "dimension": "authenticity", "marker_id": "marker.social.openness_style" },
+        { "dimension": "creative_style", "marker_id": "marker.creative.innovation_preference" }
+      ],
+      "files": {
+        "html": "celebrity-soulmate-quiz-v2.html"
+      }
+    },
+
+    "quiz.rpg_identity.v1": {
+      "id": "quiz.rpg_identity.v1",
+      "title": "Deine RPG-Klasse",
+      "subtitle": "Welcher Held steckt in dir?",
+      "category": "gaming",
+      "theme": "modern_alchemy",
+      "engine": "archetype",
+      "status": "active",
+      "estimated_duration_seconds": 180,
+      "questions_count": 12,
+      "profile_count": 8,
+      "dimensions": [
+        { "id": "combat_style", "name": "Kampfstil", "pole_low": "Magie", "pole_high": "Stärke" },
+        { "id": "party_role", "name": "Gruppen-Rolle", "pole_low": "Support", "pole_high": "Damage" },
+        { "id": "moral_compass", "name": "Moralischer Kompass", "pole_low": "Chaotisch", "pole_high": "Gesetzestreu" },
+        { "id": "exploration", "name": "Erkundungsdrang", "pole_low": "Quest-fokussiert", "pole_high": "Wanderlust" }
+      ],
+      "profiles": ["warrior", "mage", "rogue", "healer", "ranger", "paladin", "bard", "necromancer"],
+      "marker_mappings": [
+        { "dimension": "combat_style", "marker_id": "marker.gaming.combat_preference" },
+        { "dimension": "party_role", "marker_id": "marker.gaming.team_role" },
+        { "dimension": "moral_compass", "marker_id": "marker.ethics.order_vs_chaos" },
+        { "dimension": "exploration", "marker_id": "marker.gaming.exploration_drive" }
+      ],
+      "files": {
+        "jsx": "rpg-identity-quiz.jsx"
+      }
+    },
+
+    "quiz.destiny_archetype.v1": {
+      "id": "quiz.destiny_archetype.v1",
+      "title": "Dein Schicksals-Archetyp",
+      "subtitle": "Welche mythische Kraft leitet dich?",
+      "category": "spiritual",
+      "theme": "modern_alchemy",
+      "engine": "jungian",
+      "status": "active",
+      "estimated_duration_seconds": 200,
+      "questions_count": 14,
+      "profile_count": 12,
+      "dimensions": [
+        { "id": "ego_shadow", "name": "Ego-Schatten-Achse", "pole_low": "Schatten-Integration", "pole_high": "Ego-Dominanz" },
+        { "id": "anima_animus", "name": "Anima/Animus", "pole_low": "Empfangend", "pole_high": "Durchsetzend" },
+        { "id": "self_individuation", "name": "Selbst-Individuation", "pole_low": "Kollektiv", "pole_high": "Individuiert" },
+        { "id": "hero_journey_stage", "name": "Heldenreise-Phase", "pole_low": "Aufbruch", "pole_high": "Rückkehr" }
+      ],
+      "profiles": ["hero", "mentor", "threshold_guardian", "herald", "shapeshifter", "shadow", "ally", "trickster", "mother", "father", "child", "wise_old"],
+      "marker_mappings": [
+        { "dimension": "ego_shadow", "marker_id": "marker.jungian.shadow_integration" },
+        { "dimension": "anima_animus", "marker_id": "marker.jungian.anima_animus" },
+        { "dimension": "self_individuation", "marker_id": "marker.jungian.individuation" },
+        { "dimension": "hero_journey_stage", "marker_id": "marker.narrative.journey_stage" }
+      ],
+      "files": {
+        "jsx": "destiny-quiz-v2.jsx"
+      }
+    },
+
+    "quiz.superhero.v1": {
+      "id": "quiz.superhero.v1",
+      "title": "Dein Superhelden-Alter-Ego",
+      "subtitle": "Welche Superkraft schlummert in dir?",
+      "category": "entertainment",
+      "theme": "modern_alchemy",
+      "engine": "archetype",
+      "status": "active",
+      "estimated_duration_seconds": 150,
+      "questions_count": 10,
+      "profile_count": 8,
+      "dimensions": [
+        { "id": "power_source", "name": "Kraftquelle", "pole_low": "Innere Stärke", "pole_high": "Äußere Macht" },
+        { "id": "heroic_motivation", "name": "Heroische Motivation", "pole_low": "Schutz", "pole_high": "Gerechtigkeit" },
+        { "id": "method", "name": "Methode", "pole_low": "Subtil", "pole_high": "Direkt" }
+      ],
+      "profiles": ["the_guardian", "the_speedster", "the_telepath", "the_elemental", "the_inventor", "the_shapeshifter", "the_mystic", "the_titan"],
+      "marker_mappings": [
+        { "dimension": "power_source", "marker_id": "marker.archetype.power_source" },
+        { "dimension": "heroic_motivation", "marker_id": "marker.ethics.heroic_drive" },
+        { "dimension": "method", "marker_id": "marker.style.directness" }
+      ],
+      "files": {
+        "html": "superhero-quiz.html"
+      }
+    },
+
+    "quiz.party_need.v1": {
+      "id": "quiz.party_need.v1",
+      "title": "Dein Party-Bedürfnis",
+      "subtitle": "Wie viel Feier steckt wirklich in dir?",
+      "category": "lifestyle",
+      "theme": "botanical_garden",
+      "engine": "custom",
+      "status": "active",
+      "estimated_duration_seconds": 90,
+      "questions_count": 6,
+      "profile_count": 4,
+      "dimensions": [
+        { "id": "event_drive", "name": "Event-Drive", "pole_low": "Häuslichkeit", "pole_high": "Eventlust" },
+        { "id": "stimulus_seeking", "name": "Reizsuche", "pole_low": "Ruhebedürfnis", "pole_high": "Stimulation" }
+      ],
+      "profiles": ["cozy_guardian", "salon_connaisseur", "planner", "night_surfer"],
+      "marker_mappings": [
+        { "dimension": "event_drive", "marker_id": "marker.social.event_drive" },
+        { "dimension": "stimulus_seeking", "marker_id": "marker.lifestyle.stimulus_seeking" }
+      ],
+      "files": {
+        "json": "party-beduerfnis-quiz.json"
+      }
+    },
+
+    "quiz.overwhelm.v1": {
+      "id": "quiz.overwhelm.v1",
+      "title": "Dein Überforderungs-Profil",
+      "subtitle": "Wie schnell bist du überfordert?",
+      "category": "wellbeing",
+      "theme": "botanical_garden",
+      "engine": "custom",
+      "status": "active",
+      "estimated_duration_seconds": 150,
+      "questions_count": 8,
+      "profile_count": 4,
+      "dimensions": [
+        { "id": "stimulus_threshold", "name": "Reizschwelle", "pole_low": "Sensitiv", "pole_high": "Robust" },
+        { "id": "recovery_speed", "name": "Erholungsgeschwindigkeit", "pole_low": "Langsam", "pole_high": "Schnell" },
+        { "id": "chaos_tolerance", "name": "Chaos-Toleranz", "pole_low": "Ordnungsbedürfnis", "pole_high": "Flexibel" }
+      ],
+      "profiles": ["sensitive_processor", "steady_navigator", "resilient_adapter", "chaos_surfer"],
+      "marker_mappings": [
+        { "dimension": "stimulus_threshold", "marker_id": "marker.sensory.stimulus_threshold" },
+        { "dimension": "recovery_speed", "marker_id": "marker.energy.recovery_rate" },
+        { "dimension": "chaos_tolerance", "marker_id": "marker.cognitive.chaos_tolerance" }
+      ],
+      "files": {
+        "html": "ueberforderungs-quiz.html"
+      }
+    },
+
+    "quiz.attention_need.v1": {
+      "id": "quiz.attention_need.v1",
+      "title": "Dein Aufmerksamkeits-Bedürfnis",
+      "subtitle": "Wie viel Spotlight brauchst du?",
+      "category": "social",
+      "theme": "botanical_garden",
+      "engine": "custom",
+      "status": "active",
+      "estimated_duration_seconds": 120,
+      "questions_count": 8,
+      "profile_count": 4,
+      "dimensions": [
+        { "id": "visibility_need", "name": "Sichtbarkeitsbedürfnis", "pole_low": "Im Hintergrund", "pole_high": "Im Rampenlicht" },
+        { "id": "validation_source", "name": "Validierungsquelle", "pole_low": "Intrinsisch", "pole_high": "Extrinsisch" }
+      ],
+      "profiles": ["quiet_achiever", "selective_sharer", "social_performer", "spotlight_seeker"],
+      "marker_mappings": [
+        { "dimension": "visibility_need", "marker_id": "marker.social.visibility_need" },
+        { "dimension": "validation_source", "marker_id": "marker.motivation.validation_source" }
+      ],
+      "files": {
+        "html": "aufmerksamkeit-quiz.html"
+      }
+    },
+
+    "quiz.flower_being.v1": {
+      "id": "quiz.flower_being.v1",
+      "title": "Dein Blumenwesen",
+      "subtitle": "Welche Blume spiegelt deine Seele?",
+      "category": "spiritual",
+      "theme": "botanical_garden",
+      "engine": "archetype",
+      "status": "active",
+      "estimated_duration_seconds": 150,
+      "questions_count": 10,
+      "profile_count": 8,
+      "dimensions": [
+        { "id": "growth_style", "name": "Wachstumsstil", "pole_low": "Stetig", "pole_high": "Explosiv" },
+        { "id": "environmental_needs", "name": "Umgebungsbedürfnisse", "pole_low": "Genügsam", "pole_high": "Anspruchsvoll" },
+        { "id": "bloom_timing", "name": "Blütezeit", "pole_low": "Früh", "pole_high": "Spät" }
+      ],
+      "profiles": ["rose", "sunflower", "lotus", "orchid", "wildflower", "lily", "cherry_blossom", "cactus_flower"],
+      "marker_mappings": [
+        { "dimension": "growth_style", "marker_id": "marker.development.growth_pattern" },
+        { "dimension": "environmental_needs", "marker_id": "marker.environment.needs_complexity" },
+        { "dimension": "bloom_timing", "marker_id": "marker.development.maturation_timing" }
+      ],
+      "files": {
+        "html": "blumenwesen-quiz.html"
+      }
+    },
+
+    "quiz.charm_profile.v1": {
+      "id": "quiz.charm_profile.v1",
+      "title": "Dein Charme-Profil",
+      "subtitle": "Wie verzauberst du andere?",
+      "category": "social",
+      "theme": "botanical_garden",
+      "engine": "custom",
+      "status": "active",
+      "estimated_duration_seconds": 150,
+      "questions_count": 10,
+      "profile_count": 6,
+      "dimensions": [
+        { "id": "warmth", "name": "Wärme", "pole_low": "Reserviert", "pole_high": "Herzlich" },
+        { "id": "wit", "name": "Schlagfertigkeit", "pole_low": "Bedächtig", "pole_high": "Spritzig" },
+        { "id": "presence", "name": "Präsenz", "pole_low": "Subtil", "pole_high": "Magnetisch" },
+        { "id": "authenticity", "name": "Authentizität", "pole_low": "Angepasst", "pole_high": "Echt" }
+      ],
+      "profiles": ["warm_beacon", "witty_spark", "quiet_magnet", "authentic_soul", "elegant_enigma", "playful_spirit"],
+      "marker_mappings": [
+        { "dimension": "warmth", "marker_id": "marker.charm.warmth_level" },
+        { "dimension": "wit", "marker_id": "marker.charm.wit_speed" },
+        { "dimension": "presence", "marker_id": "marker.charm.presence_intensity" },
+        { "dimension": "authenticity", "marker_id": "marker.charm.authenticity_display" }
+      ],
+      "files": {
+        "html": "charme-quiz.html"
+      }
+    },
+
+    "quiz.personality_core.v1": {
+      "id": "quiz.personality_core.v1",
+      "title": "Dein Persönlichkeits-Kern",
+      "subtitle": "Die 5 Säulen deines Wesens",
+      "category": "psychology",
+      "theme": "botanical_garden",
+      "engine": "big5",
+      "status": "active",
+      "estimated_duration_seconds": 300,
+      "questions_count": 20,
+      "profile_count": 16,
+      "dimensions": [
+        { "id": "openness", "name": "Offenheit", "pole_low": "Praktisch", "pole_high": "Kreativ" },
+        { "id": "conscientiousness", "name": "Gewissenhaftigkeit", "pole_low": "Flexibel", "pole_high": "Strukturiert" },
+        { "id": "extraversion", "name": "Extraversion", "pole_low": "Introvertiert", "pole_high": "Extravertiert" },
+        { "id": "agreeableness", "name": "Verträglichkeit", "pole_low": "Herausfordernd", "pole_high": "Kooperativ" },
+        { "id": "neuroticism", "name": "Emotionale Stabilität", "pole_low": "Reaktiv", "pole_high": "Gelassen" }
+      ],
+      "profiles": ["architect", "visionary", "commander", "diplomat", "logician", "mediator", "protagonist", "campaigner", "logistician", "defender", "executive", "consul", "virtuoso", "adventurer", "entrepreneur", "entertainer"],
+      "marker_mappings": [
+        { "dimension": "openness", "marker_id": "marker.big5.openness" },
+        { "dimension": "conscientiousness", "marker_id": "marker.big5.conscientiousness" },
+        { "dimension": "extraversion", "marker_id": "marker.big5.extraversion" },
+        { "dimension": "agreeableness", "marker_id": "marker.big5.agreeableness" },
+        { "dimension": "neuroticism", "marker_id": "marker.big5.neuroticism" }
+      ],
+      "files": {
+        "html": "personality-quiz-pipeline.html"
+      }
+    }
+  },
+
+  "cluster_quizzes": {
+    "cluster.self_discovery.v1": {
+      "id": "cluster.self_discovery.v1",
+      "title": "Selbstentdeckungs-Reise",
+      "description": "Kombiniere 3+ Tests für tiefere Einblicke",
+      "required_modules": ["quiz.personality_core.v1", "quiz.love_languages.v1", "quiz.social_role.v1"],
+      "optional_modules": ["quiz.destiny_archetype.v1", "quiz.career_dna.v1"],
+      "unlocks": {
+        "threshold": 3,
+        "rewards": [
+          { "id": "unlock.sheet.core_identity", "label": "Kern-Identitäts-Sheet" },
+          { "id": "unlock.badge.self_explorer", "label": "Selbstentdecker-Abzeichen" }
+        ]
+      }
+    },
+    "cluster.spiritual_path.v1": {
+      "id": "cluster.spiritual_path.v1",
+      "title": "Spiritueller Pfad",
+      "description": "Entdecke deine mystische Seite",
+      "required_modules": ["quiz.aura_colors.v1", "quiz.spirit_animal.v1"],
+      "optional_modules": ["quiz.chinese_zodiac.v1", "quiz.destiny_archetype.v1", "quiz.flower_being.v1"],
+      "unlocks": {
+        "threshold": 3,
+        "rewards": [
+          { "id": "unlock.sheet.spiritual_map", "label": "Spirituelle Landkarte" },
+          { "id": "unlock.badge.mystic_seeker", "label": "Mystischer Sucher" }
+        ]
+      }
+    },
+    "cluster.social_dynamics.v1": {
+      "id": "cluster.social_dynamics.v1",
+      "title": "Soziale Dynamik",
+      "description": "Verstehe deine Rolle in Beziehungen",
+      "required_modules": ["quiz.social_role.v1", "quiz.charm_profile.v1"],
+      "optional_modules": ["quiz.party_need.v1", "quiz.attention_need.v1", "quiz.love_languages.v1"],
+      "unlocks": {
+        "threshold": 3,
+        "rewards": [
+          { "id": "unlock.sheet.social_blueprint", "label": "Sozialer Bauplan" },
+          { "id": "unlock.badge.social_mapper", "label": "Sozial-Kartograph" }
+        ]
+      }
+    }
+  },
+
+  "api_endpoints": {
+    "base_url": "/api/v1/quizzme",
+    "endpoints": {
+      "list_modules": {
+        "method": "GET",
+        "path": "/modules",
+        "description": "Liste aller verfügbaren Quiz-Module"
+      },
+      "get_module": {
+        "method": "GET",
+        "path": "/modules/{moduleId}",
+        "description": "Details eines spezifischen Moduls"
+      },
+      "get_questions": {
+        "method": "GET",
+        "path": "/modules/{moduleId}/questions",
+        "description": "Fragen eines Moduls abrufen"
+      },
+      "submit_answers": {
+        "method": "POST",
+        "path": "/modules/{moduleId}/submit",
+        "description": "Antworten einreichen und Ergebnis berechnen",
+        "request_body": {
+          "answers": [
+            { "questionId": "string", "optionId": "string" }
+          ]
+        },
+        "response": {
+          "contributionEvent": "ContributionEvent",
+          "profile": "Profile",
+          "shareCard": "ShareCard"
+        }
+      },
+      "get_profile": {
+        "method": "GET",
+        "path": "/modules/{moduleId}/profiles/{profileId}",
+        "description": "Profil-Details abrufen"
+      },
+      "aggregate_character_sheet": {
+        "method": "POST",
+        "path": "/character-sheet/aggregate",
+        "description": "Character Sheet aus allen ContributionEvents aggregieren",
+        "request_body": {
+          "eventIds": ["string"]
+        }
+      },
+      "cluster_progress": {
+        "method": "GET",
+        "path": "/clusters/{clusterId}/progress",
+        "description": "Fortschritt in einem Quiz-Cluster"
+      }
+    }
+  },
+
+  "marker_registry": {
+    "social": [
+      "marker.social.introversion_high",
+      "marker.social.extroversion_high",
+      "marker.social.visibility_preference",
+      "marker.social.influence_mode",
+      "marker.social.energy_direction",
+      "marker.social.event_drive",
+      "marker.social.pack_vs_lone",
+      "marker.social.harmony_drive",
+      "marker.social.visibility_need",
+      "marker.social.openness_style"
+    ],
+    "love": [
+      "marker.love.verbal_affirmation",
+      "marker.love.quality_time",
+      "marker.love.symbolic_giving",
+      "marker.love.acts_of_service",
+      "marker.love.physical_touch"
+    ],
+    "lifestyle": [
+      "marker.lifestyle.stimulus_seeking",
+      "marker.lifestyle.calm_seeker",
+      "marker.lifestyle.energy_baseline"
+    ],
+    "career": [
+      "marker.career.practical_orientation",
+      "marker.career.analytical_drive",
+      "marker.career.creative_expression",
+      "marker.career.people_orientation",
+      "marker.career.leadership_drive",
+      "marker.career.structure_preference"
+    ],
+    "archetype": [
+      "marker.archetype.instinct_mode",
+      "marker.archetype.power_source"
+    ],
+    "aura": [
+      "marker.aura.energy_polarity",
+      "marker.aura.emotional_intensity",
+      "marker.aura.spiritual_grounding"
+    ],
+    "astro": [
+      "marker.astro.yin_yang_balance",
+      "marker.astro.element_chinese"
+    ],
+    "jungian": [
+      "marker.jungian.shadow_integration",
+      "marker.jungian.anima_animus",
+      "marker.jungian.individuation"
+    ],
+    "big5": [
+      "marker.big5.openness",
+      "marker.big5.conscientiousness",
+      "marker.big5.extraversion",
+      "marker.big5.agreeableness",
+      "marker.big5.neuroticism"
+    ],
+    "charm": [
+      "marker.charm.warmth_level",
+      "marker.charm.wit_speed",
+      "marker.charm.presence_intensity",
+      "marker.charm.authenticity_display"
+    ],
+    "sensory": [
+      "marker.sensory.stimulus_threshold"
+    ],
+    "energy": [
+      "marker.energy.recovery_rate"
+    ],
+    "cognitive": [
+      "marker.cognitive.chaos_tolerance"
+    ],
+    "motivation": [
+      "marker.motivation.validation_source"
+    ],
+    "ethics": [
+      "marker.ethics.order_vs_chaos",
+      "marker.ethics.heroic_drive"
+    ],
+    "gaming": [
+      "marker.gaming.combat_preference",
+      "marker.gaming.team_role",
+      "marker.gaming.exploration_drive"
+    ],
+    "creative": [
+      "marker.creative.innovation_preference"
+    ],
+    "development": [
+      "marker.development.growth_pattern",
+      "marker.development.maturation_timing"
+    ],
+    "environment": [
+      "marker.environment.needs_complexity"
+    ],
+    "element": [
+      "marker.element.primary"
+    ],
+    "shadow": [
+      "marker.shadow.integration_level"
+    ],
+    "narrative": [
+      "marker.narrative.journey_stage"
+    ],
+    "style": [
+      "marker.style.directness"
+    ]
+  },
+
+  "trait_registry": {
+    "social": [
+      "trait.social.introversion",
+      "trait.social.visibility_need",
+      "trait.social.group_role"
+    ],
+    "love": [
+      "trait.love.words_of_affirmation",
+      "trait.love.quality_time",
+      "trait.love.gifts",
+      "trait.love.acts_of_service",
+      "trait.love.physical_touch"
+    ],
+    "lifestyle": [
+      "trait.lifestyle.party_drive",
+      "trait.lifestyle.stimulus_seeking"
+    ],
+    "wellbeing": [
+      "trait.wellbeing.overwhelm_threshold",
+      "trait.wellbeing.recovery_speed"
+    ],
+    "career": [
+      "trait.career.holland_r",
+      "trait.career.holland_i",
+      "trait.career.holland_a",
+      "trait.career.holland_s",
+      "trait.career.holland_e",
+      "trait.career.holland_c"
+    ],
+    "big5": [
+      "trait.big5.openness",
+      "trait.big5.conscientiousness",
+      "trait.big5.extraversion",
+      "trait.big5.agreeableness",
+      "trait.big5.neuroticism"
+    ],
+    "charm": [
+      "trait.charm.warmth",
+      "trait.charm.wit",
+      "trait.charm.presence",
+      "trait.charm.authenticity"
+    ],
+    "spiritual": [
+      "trait.spiritual.energy_type",
+      "trait.spiritual.element_affinity",
+      "trait.spiritual.shadow_integration"
+    ]
+  }
+}

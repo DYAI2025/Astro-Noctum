@@ -1,0 +1,5 @@
+DOs (Anstrebenswert)	DON'Ts (Vermeiden)
+Authentizität: Echte Menschen, natürliche Posen, diverse Körpertypen (wenn Menschen gezeigt werden).	Kitsch: Glitzer-Effekte, Einhörner, stereotype "Hexen"-Symbolik (außer sehr abstrakt).
+Qualität: Hochauflösende Bilder, professionelle Schriften, schnelle Ladezeiten (das ist "seriös").	Zu süß: "Baby"-Pastellfarben (Babyrosa, Babyblau), verschnörkelte Schreibschriften, die schwer lesbar sind.
+Subtilität: Das Mystische sollte ein "Gefühl" sein, kein Holzhammer-Thema.	Chaos: Zu viele verschiedene Farben oder Schriftarten. Unruhige Hintergründe.
+Mobile First: Diese Zielgruppe ist fast ausschließlich am Smartphone unterwegs. Das Design muss auf kleinen Screens perfekt wirken.	Corporate Coldness: Stockfotos von lachenden Business-Frauen in Anzügen vor Whiteboards.

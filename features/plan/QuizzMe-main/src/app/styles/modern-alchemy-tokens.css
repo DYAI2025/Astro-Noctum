@@ -1,0 +1,389 @@
+/**
+ * Modern Alchemy Design Tokens
+ * QuizzMe Brand Identity
+ *
+ * Designsprache: "The Grounded Mystic"
+ * - Elegant, mystisch aber seriös
+ * - Zielgruppe: Frauen 20-40, Selbstreflexion & Persönlichkeitsentwicklung
+ */
+
+:root {
+  /* ============================================
+     PRIMARY BACKGROUND COLORS
+     Emerald/Midnight Gradient Foundation (LIGHTER)
+     ============================================ */
+  --alchemy-bg-emerald: #0D5A5F;
+  /* Lighter emerald */
+  --alchemy-bg-midnight: #0F3045;
+  /* Lighter midnight */
+  --alchemy-bg-deep: #0A2030;
+  /* Lighter deep */
+  --alchemy-bg-surface: #134555;
+  /* Surface for cards on dark */
+
+  /* Background Gradient presets */
+  --alchemy-gradient-main: linear-gradient(135deg,
+      var(--alchemy-bg-emerald) 0%,
+      var(--alchemy-bg-midnight) 50%,
+      var(--alchemy-bg-deep) 100%);
+
+  --alchemy-gradient-radial: radial-gradient(ellipse at 50% 30%,
+      var(--alchemy-bg-emerald) 0%,
+      var(--alchemy-bg-midnight) 60%,
+      var(--alchemy-bg-deep) 100%);
+
+  /* ============================================
+     GOLD ACCENT COLORS
+     Primary Interactive & Highlight Elements
+     ============================================ */
+  --alchemy-gold-primary: #D2A95A;
+  --alchemy-gold-dark: #A77D38;
+  --alchemy-gold-light: #E8C77B;
+  --alchemy-gold-muted: rgba(210, 169, 90, 0.6);
+
+  /* Gold for RGB calculations */
+  --alchemy-gold-r: 210;
+  --alchemy-gold-g: 169;
+  --alchemy-gold-b: 90;
+
+  /* ============================================
+     SECONDARY ACCENT COLORS
+     Sage & Teal for subtle elements
+     ============================================ */
+  --alchemy-sage: #6CA192;
+  --alchemy-sage-muted: rgba(108, 161, 146, 0.5);
+  --alchemy-teal: #1C5B5C;
+  --alchemy-teal-dark: #154647;
+
+  /* ============================================
+     SURFACE COLORS
+     Cards, Panels, Containers
+     ============================================ */
+  --alchemy-cream: #F7F0E6;
+  --alchemy-cream-light: #FBF7F1;
+  --alchemy-parchment: #F2E3CF;
+  --alchemy-parchment-dark: #E8D5BD;
+
+  /* Card surface with subtle warmth */
+  --alchemy-card-bg: var(--alchemy-cream);
+  --alchemy-card-border: var(--alchemy-gold-primary);
+
+  /* ============================================
+     TEXT COLORS
+     High contrast, readable
+     ============================================ */
+  --alchemy-text-dark: #271C16;
+  --alchemy-text-dark-muted: #4A3F38;
+  --alchemy-text-light: #F7F3EA;
+  --alchemy-text-light-muted: rgba(247, 243, 234, 0.7);
+
+  /* Text on specific backgrounds */
+  --alchemy-text-on-dark: var(--alchemy-text-light);
+  --alchemy-text-on-cream: var(--alchemy-text-dark);
+  --alchemy-text-on-gold: var(--alchemy-text-dark);
+
+  /* ============================================
+     TYPOGRAPHY
+     Serif for headings, Sans-serif for body
+     ============================================ */
+  --font-serif: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'Inter', 'Source Sans 3', system-ui, sans-serif;
+
+  /* Type Scale (Desktop) */
+  --text-xs: 0.75rem;
+  /* 12px */
+  --text-sm: 0.875rem;
+  /* 14px */
+  --text-base: 1rem;
+  /* 16px */
+  --text-lg: 1.125rem;
+  /* 18px */
+  --text-xl: 1.25rem;
+  /* 20px */
+  --text-2xl: 1.5rem;
+  /* 24px */
+  --text-3xl: 1.875rem;
+  /* 30px */
+  --text-4xl: 2.25rem;
+  /* 36px */
+  --text-5xl: 3rem;
+  /* 48px */
+  --text-6xl: 3.75rem;
+  /* 60px */
+
+  /* Line Heights */
+  --leading-tight: 1.2;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+
+  /* ============================================
+     SPACING
+     Consistent rhythm
+     ============================================ */
+  --space-1: 0.25rem;
+  /* 4px */
+  --space-2: 0.5rem;
+  /* 8px */
+  --space-3: 0.75rem;
+  /* 12px */
+  --space-4: 1rem;
+  /* 16px */
+  --space-5: 1.25rem;
+  /* 20px */
+  --space-6: 1.5rem;
+  /* 24px */
+  --space-8: 2rem;
+  /* 32px */
+  --space-10: 2.5rem;
+  /* 40px */
+  --space-12: 3rem;
+  /* 48px */
+  --space-16: 4rem;
+  /* 64px */
+  --space-20: 5rem;
+  /* 80px */
+
+  /* ============================================
+     BORDERS & RADII
+     ============================================ */
+  --border-thin: 1px;
+  --border-medium: 2px;
+  --border-thick: 3px;
+
+  --radius-sm: 0.375rem;
+  /* 6px */
+  --radius-md: 0.5rem;
+  /* 8px */
+  --radius-lg: 0.75rem;
+  /* 12px */
+  --radius-xl: 1rem;
+  /* 16px */
+  --radius-2xl: 1.5rem;
+  /* 24px */
+  --radius-full: 9999px;
+
+  /* ============================================
+     SHADOWS
+     Subtle, warm shadows
+     ============================================ */
+  --shadow-sm: 0 1px 2px rgba(39, 28, 22, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(39, 28, 22, 0.1),
+    0 2px 4px -1px rgba(39, 28, 22, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(39, 28, 22, 0.1),
+    0 4px 6px -2px rgba(39, 28, 22, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(39, 28, 22, 0.1),
+    0 10px 10px -5px rgba(39, 28, 22, 0.04);
+
+  /* Gold glow effects */
+  --glow-gold-subtle: 0 0 10px rgba(210, 169, 90, 0.3);
+  --glow-gold-medium: 0 0 20px rgba(210, 169, 90, 0.4),
+    0 0 40px rgba(210, 169, 90, 0.2);
+  --glow-gold-strong: 0 0 30px rgba(210, 169, 90, 0.5),
+    0 0 60px rgba(210, 169, 90, 0.3),
+    0 0 90px rgba(210, 169, 90, 0.1);
+
+  /* ============================================
+     TRANSITIONS & ANIMATIONS
+     ============================================ */
+  --transition-fast: 150ms ease;
+  --transition-base: 300ms ease;
+  --transition-slow: 500ms ease;
+  --transition-slower: 700ms ease;
+
+  /* Easing curves */
+  --ease-out-quad: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-out-cubic: cubic-bezier(0.215, 0.61, 0.355, 1);
+  --ease-in-out-quad: cubic-bezier(0.455, 0.03, 0.515, 0.955);
+
+  /* ============================================
+     Z-INDEX SCALE
+     ============================================ */
+  --z-base: 0;
+  --z-dropdown: 10;
+  --z-sticky: 20;
+  --z-fixed: 30;
+  --z-modal-backdrop: 40;
+  --z-modal: 50;
+  --z-tooltip: 60;
+
+  /* ============================================
+     LIGHT-GRIMOIRE THEME TOKENS
+     Mapping semantics to palette
+     ============================================ */
+  --bg-parchment: var(--alchemy-parchment);
+  --bg-parchment-light: var(--alchemy-cream);
+  --text-ink: var(--alchemy-text-dark);
+  --text-ink-muted: var(--alchemy-text-dark-muted);
+  --border-gold-subtle: rgba(210, 169, 90, 0.3);
+  --accent-emerald: var(--alchemy-bg-emerald);
+}
+
+/* ============================================
+   COMPONENT UTILITY CLASSES
+   ============================================ */
+
+/* Alchemy Card - Cream background with gold border */
+.alchemy-card {
+  background: var(--alchemy-card-bg);
+  border: var(--border-thin) solid var(--alchemy-gold-primary);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  color: var(--alchemy-text-on-cream);
+}
+
+.alchemy-card:hover {
+  box-shadow: var(--shadow-lg), var(--glow-gold-subtle);
+}
+
+/* Typography utilities */
+.alchemy-heading {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  color: inherit;
+}
+
+.alchemy-body {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  line-height: var(--leading-relaxed);
+  color: inherit;
+}
+
+/* Gold text */
+.alchemy-gold-text {
+  color: var(--alchemy-gold-primary);
+}
+
+/* Buttons */
+.alchemy-btn {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-6);
+  transition: all var(--transition-base);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.alchemy-btn-primary {
+  background: linear-gradient(135deg,
+      var(--alchemy-gold-light) 0%,
+      var(--alchemy-gold-primary) 50%,
+      var(--alchemy-gold-dark) 100%);
+  color: var(--alchemy-text-dark);
+  border: none;
+  box-shadow: var(--shadow-md);
+}
+
+.alchemy-btn-primary:hover {
+  box-shadow: var(--shadow-lg), var(--glow-gold-medium);
+  transform: translateY(-1px);
+}
+
+.alchemy-btn-primary:active {
+  transform: translateY(0);
+}
+
+.alchemy-btn-secondary {
+  background: transparent;
+  color: var(--alchemy-gold-primary);
+  border: var(--border-medium) solid var(--alchemy-gold-primary);
+}
+
+.alchemy-btn-secondary:hover {
+  background: rgba(210, 169, 90, 0.1);
+  box-shadow: var(--glow-gold-subtle);
+}
+
+.alchemy-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Progress Bar */
+.alchemy-progress-track {
+  width: 100%;
+  height: 4px;
+  background: rgba(210, 169, 90, 0.2);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.alchemy-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg,
+      var(--alchemy-gold-dark) 0%,
+      var(--alchemy-gold-primary) 50%,
+      var(--alchemy-gold-light) 100%);
+  border-radius: var(--radius-full);
+  box-shadow: var(--glow-gold-subtle);
+  transition: width var(--transition-slow) var(--ease-out-cubic);
+}
+
+/* Stat Bar */
+.alchemy-stat-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.alchemy-stat-bar-track {
+  flex: 1;
+  height: 8px;
+  background: var(--alchemy-parchment);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.alchemy-stat-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg,
+      var(--alchemy-gold-dark) 0%,
+      var(--alchemy-gold-primary) 100%);
+  border-radius: var(--radius-full);
+  transition: width var(--transition-slower) var(--ease-out-cubic);
+}
+
+/* ============================================
+   BACKGROUND UTILITIES
+   ============================================ */
+
+.alchemy-bg-dark {
+  background: var(--alchemy-gradient-main);
+  color: var(--alchemy-text-on-dark);
+}
+
+.alchemy-bg-radial {
+  background: var(--alchemy-gradient-radial);
+  color: var(--alchemy-text-on-dark);
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+/* Focus states */
+.alchemy-focus:focus,
+.alchemy-focus:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(210, 169, 90, 0.5);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

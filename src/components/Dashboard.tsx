@@ -1,21 +1,97 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  Sun, Moon, ArrowUp, ArrowLeft, RefreshCw, Zap, Phone, PhoneOff,
+  ArrowUp, ArrowLeft, RefreshCw, Zap, Phone, PhoneOff, Lock,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { BirthChartOrrery } from "./BirthChartOrrery";
+import { ShareCard } from "./ShareCard";
+import { PremiumGate } from "./PremiumGate";
+import { usePremium } from "../hooks/usePremium";
+import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
-import { WUXING_ELEMENTS, getWuxingByKey } from "../lib/astro-data/wuxing";
+import { WUXING_ELEMENTS, getWuxingByKey, getWuxingName } from "../lib/astro-data/wuxing";
 import { getBranchByAnimal } from "../lib/astro-data/earthlyBranches";
+import { getCoinAsset } from "../lib/astro-data/coinAssets";
 import { getZodiacSign, getSignName } from "../lib/astro-data/zodiacSigns";
 import { getConstellationForSign } from "../lib/astro-data/constellationFromSign";
 import { usePlanetarium } from "../contexts/PlanetariumContext";
 import { Tooltip } from "./Tooltip";
+import QuizOverlay from "./QuizOverlay";
+import { ClusterEnergySystem } from "./ClusterEnergySystem";
+import { RingTeaserCard } from "./RingTeaserCard";
+import { DailyEnergyTeaser } from "./DailyEnergyTeaser";
+import { LegalFooter } from "./LegalFooter";
+import type { ContributionEvent } from "@/src/lib/lme/types";
+import type { FusionRingSignal } from "@/src/lib/fusion-ring";
+import { BaZiFourPillars } from "./BaZiFourPillars";
+import { WuXingPentagon } from "./WuXingPentagon";
+import { WuXingCycleWheel } from "./WuXingCycleWheel";
+import { BaZiInterpretation } from "./BaZiInterpretation";
+import { BaZiMiniRing } from "./BaZiMiniRing";
+import { getStemByCharacter } from "../lib/astro-data/heavenlyStems";
+import type { BafeData } from "../services/supabase";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Static data
 // ─────────────────────────────────────────────────────────────────────────────
+
+const EMPTY_MODULE_SET = new Set<string>();
+
+// ── Session-random bilingual quotes ──────────────────────────────────────
+const BAZODIAC_QUOTES: { en: string; de: string }[] = [
+  {
+    en: "The stars compel nothing — they invite. The Atlas shows the path you are already on.",
+    de: "Die Sterne erzwingen nichts, sie laden ein. Der Atlas zeigt den Weg, den du bereits gehst.",
+  },
+  {
+    en: "As long as we don't examine the dynamics, they act like fate. But once we look, they become our flow.",
+    de: "Solange wir die Dynamiken nicht betrachten, wirken sie wie Schicksal. Schauen wir aber hin, dann werden sie zu unserem Fluss.",
+  },
+  {
+    en: "Your chart is not a verdict — it is a conversation between who you are and who you are becoming.",
+    de: "Dein Chart ist kein Urteil — es ist ein Gespräch zwischen dem, wer du bist, und dem, wer du wirst.",
+  },
+  {
+    en: "The cosmos doesn't define you. It reflects the possibilities you carry within.",
+    de: "Der Kosmos definiert dich nicht. Er spiegelt die Möglichkeiten, die du in dir trägst.",
+  },
+  {
+    en: "Between the constellations lies not distance, but resonance — just as between your elements.",
+    de: "Zwischen den Sternbildern liegt keine Distanz, sondern Resonanz — genau wie zwischen deinen Elementen.",
+  },
+  {
+    en: "What the sky held at your birth was not a plan, but a palette. You choose the colours.",
+    de: "Was der Himmel bei deiner Geburt bereithielt, war kein Plan, sondern eine Palette. Du wählst die Farben.",
+  },
+  {
+    en: "Your elements don't fight each other — they negotiate. Balance is not stillness, it is dance.",
+    de: "Deine Elemente bekämpfen sich nicht — sie verhandeln. Balance ist nicht Stillstand, sondern Tanz.",
+  },
+  {
+    en: "The pillar that feels weakest often carries the most untapped strength.",
+    de: "Die Säule, die sich am schwächsten anfühlt, trägt oft die meiste ungenutzte Kraft.",
+  },
+  {
+    en: "Awareness is the bridge between pattern and freedom. Your chart builds that bridge.",
+    de: "Bewusstsein ist die Brücke zwischen Muster und Freiheit. Dein Chart baut diese Brücke.",
+  },
+  {
+    en: "No two birth skies are alike — and that is precisely your power.",
+    de: "Kein Geburtshimmel gleicht dem anderen — und genau das ist deine Kraft.",
+  },
+  {
+    en: "The universe doesn't whisper instructions. It hums possibilities — listen closely.",
+    de: "Das Universum flüstert keine Anweisungen. Es summt Möglichkeiten — hör genau hin.",
+  },
+  {
+    en: "Your cosmic signature is not written in stone. It is written in light — always shifting, always yours.",
+    de: "Deine kosmische Signatur ist nicht in Stein geschrieben. Sie ist in Licht geschrieben — immer in Bewegung, immer deine.",
+  },
+];
+
+// Pick one quote per session (stable across re-renders)
+const SESSION_QUOTE_INDEX = Math.floor(Math.random() * BAZODIAC_QUOTES.length);
 
 const WESTERN_EMOJIS: Record<string, string> = {
   Aries: "♈", Taurus: "♉", Gemini: "♊", Cancer: "♋",
@@ -69,7 +145,9 @@ function parseHouseNum(key: string): number | null {
   return n >= 1 && n <= 12 ? n : null;
 }
 
-function resolveSign(val: any): string {
+type HouseValue = string | { sign?: string; zodiac_sign?: number; sign_index?: number; index?: number };
+
+function resolveSign(val: HouseValue): string {
   if (typeof val === "string") return val;
   if (typeof val === "object" && val !== null) {
     if (val.sign && typeof val.sign === "string") return val.sign;
@@ -98,14 +176,14 @@ function DualSectionHeader({
   leftLabel, leftTitle, rightLabel, rightTitle,
 }: { leftLabel: string; leftTitle: string; rightLabel: string; rightTitle: string }) {
   return (
-    <div className="grid grid-cols-2 gap-6 mb-8 max-md:grid-cols-1">
-      <div className="border-b border-[#8B6914]/15 pb-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+      <div className="border-b border-[#8B6914]/15 pb-3 sm:pb-4">
         <p className="text-[#8B6914]/55 text-[8px] uppercase tracking-[0.45em] mb-1">{leftLabel}</p>
-        <h2 className="font-serif text-2xl text-[#1E2A3A]">{leftTitle}</h2>
+        <h2 className="font-serif text-xl sm:text-2xl text-[#1E2A3A]">{leftTitle}</h2>
       </div>
-      <div className="border-b border-[#8B6914]/15 pb-4">
+      <div className="border-b border-[#8B6914]/15 pb-3 sm:pb-4">
         <p className="text-[#8B6914]/55 text-[8px] uppercase tracking-[0.45em] mb-1">{rightLabel}</p>
-        <h2 className="font-serif text-2xl text-[#1E2A3A]">{rightTitle}</h2>
+        <h2 className="font-serif text-xl sm:text-2xl text-[#1E2A3A]">{rightTitle}</h2>
       </div>
     </div>
   );
@@ -113,9 +191,9 @@ function DualSectionHeader({
 
 function SectionDivider({ label, title }: { label: string; title: string }) {
   return (
-    <div className="border-b border-[#8B6914]/15 pb-4 mb-8">
+    <div className="border-b border-[#8B6914]/15 pb-3 sm:pb-4 mb-6 sm:mb-8">
       <p className="text-[#8B6914]/55 text-[8px] uppercase tracking-[0.45em] mb-1">{label}</p>
-      <h2 className="font-serif text-2xl text-[#1E2A3A]">{title}</h2>
+      <h2 className="font-serif text-xl sm:text-2xl text-[#1E2A3A]">{title}</h2>
     </div>
   );
 }
@@ -132,9 +210,10 @@ function Badge({ text }: { text: string }) {
 // Props
 // ─────────────────────────────────────────────────────────────────────────────
 
+
 interface DashboardProps {
   interpretation: string;
-  apiData: any;
+  apiData: BafeData;
   userId: string;
   birthDate: string | null;
   onReset: () => void;
@@ -143,6 +222,10 @@ interface DashboardProps {
   apiIssues: { endpoint: string; message: string }[];
   onStopAudio: () => void;
   onResumeAudio: () => void;
+  isFirstReading?: boolean;
+  fusionSignal?: FusionRingSignal | null;
+  onQuizComplete?: (event: ContributionEvent) => void;
+  completedModules?: Set<string>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -160,29 +243,49 @@ export function Dashboard({
   apiIssues,
   onStopAudio,
   onResumeAudio,
+  isFirstReading = false,
+  fusionSignal,
+  onQuizComplete,
+  completedModules,
 }: DashboardProps) {
   const { lang, t } = useLanguage();
+  const { isPremium } = usePremium();
+  const { user } = useAuth();
   const { planetariumMode, setPlanetariumMode } = usePlanetarium();
   const [leviActive, setLeviActive] = useState(false);
+  const [leviUpgrading, setLeviUpgrading] = useState(false);
+
+  const handleLeviUpgrade = async () => {
+    setLeviUpgrading(true);
+    try {
+      const res = await (await import("@/src/lib/authedFetch")).authedFetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const { url } = await res.json();
+      if (url) window.location.href = url;
+      else setLeviUpgrading(false);
+    } catch {
+      setLeviUpgrading(false);
+    }
+  };
   const leviSectionRef = useRef<HTMLDivElement>(null);
+  const [activeQuiz, setActiveQuiz] = useState<string | null>(null);
 
   // ── First-visit Birth Sky welcome ────────────────────────────────
-  const FIRST_VISIT_KEY = "bazodiac-first-visit-done";
+  // Only show for genuinely new profiles (just completed onboarding),
+  // not for returning users loading their profile from Supabase.
   const [showBirthSkyWelcome, setShowBirthSkyWelcome] = useState(false);
 
   useEffect(() => {
-    const done = localStorage.getItem(FIRST_VISIT_KEY);
-    if (!done) {
-      // First visit: activate Planetarium, show welcome
+    if (isFirstReading) {
       setPlanetariumMode(true);
       setShowBirthSkyWelcome(true);
-      localStorage.setItem(FIRST_VISIT_KEY, "true");
-      // Auto-dismiss after 12 seconds
       const timer = setTimeout(() => setShowBirthSkyWelcome(false), 12000);
       return () => clearTimeout(timer);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isFirstReading]);
 
   // Load ElevenLabs widget
   useEffect(() => {
@@ -206,10 +309,14 @@ export function Dashboard({
   const sunSign       = apiData.western?.zodiac_sign      || "";
   const moonSign      = apiData.western?.moon_sign        || "";
   const ascendantSign = apiData.western?.ascendant_sign   || "";
-  const zodiacAnimal  = apiData.bazi?.zodiac_sign         || apiData.chinese?.zodiac || "";
+  const zodiacAnimal  = apiData.bazi?.zodiac_sign         || "";
   const dayMaster     = apiData.bazi?.day_master          || "—";
   const monthStem     = apiData.bazi?.pillars?.month?.stem || "—";
+
+  const dayMasterStem = useMemo(() => getStemByCharacter(dayMaster), [dayMaster]);
+  const monthStemData = useMemo(() => getStemByCharacter(monthStem), [monthStem]);
   const dominantEl    = apiData.wuxing?.dominant_element  || "";
+  const yearElement   = apiData.bazi?.pillars?.year?.element || "";
 
   // Localised sign names (FR-02: no English on DE page)
   const sunSignName  = getSignName(sunSign, lang);
@@ -228,10 +335,11 @@ export function Dashboard({
   const yearBranch     = useMemo(() => getBranchByAnimal(zodiacAnimal), [zodiacAnimal]);
   const yearAnimalName = yearBranch ? yearBranch.animal[lang] : zodiacAnimal;
   const dominantWuxing = useMemo(() => getWuxingByKey(dominantEl), [dominantEl]);
+  const yearCoinSrc    = useMemo(() => getCoinAsset(zodiacAnimal), [zodiacAnimal]);
 
   // WuXing element counts + percentage fix (FR-06 Bug)
   const wuxingCounts: Record<string, number> = useMemo(
-    () => apiData.wuxing?.elements || apiData.wuxing?.element_counts || {},
+    () => apiData.wuxing?.elements || (apiData.wuxing?.element_counts as Record<string, number> | undefined) || {},
     [apiData.wuxing],
   );
   const hasWuxingData = useMemo(
@@ -250,8 +358,8 @@ export function Dashboard({
   );
 
   // Houses
-  const houses: Record<string, any> = useMemo(
-    () => apiData.western?.houses || {},
+  const houses: Record<string, HouseValue> = useMemo(
+    () => (apiData.western?.houses as Record<string, HouseValue>) || {},
     [apiData.western],
   );
   const houseEntries = useMemo(
@@ -274,8 +382,37 @@ export function Dashboard({
     [sunSign],
   );
 
+  // BaZi section computed data
+  const wuxingBalance = useMemo(() => {
+    const raw = apiData.wuxing?.elements || apiData.wuxing?.element_counts || {};
+    const total: number = Object.values(raw).reduce<number>((sum, v) => sum + Number(v), 0);
+    if (total === 0) return {};
+    return Object.fromEntries(
+      Object.entries(raw).map(([k, v]) => [k, Number(v) / total])
+    );
+  }, [apiData.wuxing]);
+
+  const yearAnimal = apiData.bazi?.zodiac_sign || "";
+  const yearEl = apiData.bazi?.pillars?.year?.element || "";
+
+  // B(s) signals for mini-ring (from fusion computation)
+  const baziSectorSignals = useMemo(() => {
+    return fusionSignal?.components?.B ?? new Array(12).fill(0);
+  }, [fusionSignal]);
+
   const elevenLabsAgentId =
     import.meta.env.VITE_ELEVENLABS_AGENT_ID || "agent_1801kje0zqc8e4b89swbt7wekawv";
+
+  // ── Interpretation split (free: first 2 paragraphs, premium: full) ──
+  const interpretationParagraphs = useMemo(
+    () => interpretation?.split("\n\n") || [],
+    [interpretation],
+  );
+  const freeInterpretation = useMemo(
+    () => interpretationParagraphs.slice(0, 2).join("\n\n"),
+    [interpretationParagraphs],
+  );
+  const hasPremiumInterpretation = interpretationParagraphs.length > 2;
 
   // ── Render ────────────────────────────────────────────────────────────
 
@@ -308,7 +445,7 @@ export function Dashboard({
 
       {/* ═══ PAGE HEADER ═══════════════════════════════════════════════ */}
       <motion.header
-        className="mb-12"
+        className="mb-12 text-center"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
@@ -316,22 +453,21 @@ export function Dashboard({
         <p className="text-[#8B6914]/55 text-[9px] uppercase tracking-[0.5em] mb-3">
           {t("dashboard.welcome")}
         </p>
-        <div className="flex items-start justify-between gap-4">
-          {/* FR-01: Title updated via translation key */}
-          <h1 className="font-serif text-4xl md:text-5xl leading-tight text-[#1E2A3A] max-w-xl">
+        <div className="flex items-center justify-center gap-4">
+          <h1 className="font-serif text-3xl sm:text-[2.75rem] md:text-[3.5rem] leading-tight text-[#1E2A3A]">
             {t("dashboard.title")}
           </h1>
           <button
             onClick={onRegenerate}
             disabled={isLoading}
-            className="mt-1 shrink-0 p-3 text-[#8B6914]/45 hover:text-[#8B6914] hover:bg-[#8B6914]/10 rounded-full transition-all disabled:opacity-40 disabled:cursor-not-allowed border border-[#8B6914]/20"
+            className="shrink-0 p-2.5 text-[#8B6914]/45 hover:text-[#8B6914] hover:bg-[#8B6914]/10 rounded-full transition-all disabled:opacity-40 disabled:cursor-not-allowed border border-[#8B6914]/20"
             title="Regenerate"
           >
-            <RefreshCw className={`w-5 h-5 ${isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
           </button>
         </div>
-        <p className="mt-4 italic text-[#1E2A3A]/38 font-serif text-base md:max-w-xl leading-relaxed">
-          {t("dashboard.quote")}
+        <p className="mt-4 italic text-[#1E2A3A]/42 font-serif text-base leading-relaxed max-w-xl mx-auto">
+          &ldquo;{BAZODIAC_QUOTES[SESSION_QUOTE_INDEX][lang]}&rdquo;
         </p>
       </motion.header>
 
@@ -391,20 +527,20 @@ export function Dashboard({
           <div className="flex flex-col gap-5">
 
             {/* Sun Sign — FR-03.1 / FR-P05: data-special for gold border in Planetarium */}
-            <div className="morning-card p-7 flex flex-col justify-between" data-special="true">
+            <div className="morning-card p-5 sm:p-7 flex flex-col justify-between" data-special="true">
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
                   >
-                    <Sun className="text-[#C8930A] w-5 h-5" />
+                    <img src="/icons/sun-sign.png" alt="" className="w-7 h-7 opacity-80" />
                   </motion.div>
                   <Badge text={t("dashboard.western.sunLabel")} />
                 </div>
 
                 {/* Sign name as primary title */}
-                <h3 className="font-serif text-2xl text-[#1E2A3A] leading-tight mb-0.5">
+                <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
                   {sunSignName || "—"}
                 </h3>
                 <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50 mb-4">
@@ -430,19 +566,19 @@ export function Dashboard({
             </div>
 
             {/* Moon Sign — FR-03.2 */}
-            <div className="morning-card p-7 flex flex-col justify-between">
+            <div className="morning-card p-5 sm:p-7 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <motion.div
                     animate={{ rotate: [-12, 12, -12] }}
                     transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
                   >
-                    <Moon className="text-[#1A6BB5] w-5 h-5" />
+                    <img src="/icons/moon-sign.png" alt="" className="w-7 h-7 opacity-80" />
                   </motion.div>
                   <Badge text={t("dashboard.western.moonLabel")} />
                 </div>
 
-                <h3 className="font-serif text-2xl text-[#1E2A3A] leading-tight mb-0.5">
+                <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
                   {moonSignName || "—"}
                 </h3>
                 <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50 mb-4">
@@ -467,7 +603,7 @@ export function Dashboard({
             </div>
 
             {/* Ascendant — FR-03.3 */}
-            <div className="morning-card p-7 flex flex-col justify-between">
+            <div className="morning-card p-5 sm:p-7 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <motion.div
@@ -479,7 +615,7 @@ export function Dashboard({
                   <Badge text={t("dashboard.western.ascLabel")} />
                 </div>
 
-                <h3 className="font-serif text-2xl text-[#1E2A3A] leading-tight mb-0.5">
+                <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
                   {ascSignName || "—"}
                 </h3>
                 <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50 mb-4">
@@ -508,32 +644,44 @@ export function Dashboard({
           <div className="flex flex-col gap-5">
 
             {/* Year Animal — FR-P05: data-special for gold border in Planetarium */}
-            <div className="morning-card p-7 flex flex-col justify-between" data-special="true">
+            <div className="morning-card p-5 sm:p-7 flex flex-col justify-between" data-special="true">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-2xl leading-none">{yearBranch?.emoji || "✨"}</span>
+                  <span className="text-2xl leading-none select-none">{yearBranch?.emoji || "✨"}</span>
                   <Badge text={t("dashboard.bazi.zodiacLabel")} />
                 </div>
-                <h3 className="font-serif text-2xl text-[#1E2A3A] mb-0.5">
+                <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
                   {yearAnimalName || "—"}
                 </h3>
                 <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50 mb-4">
-                  {t("dashboard.bazi.yearAnimalTitle")}
+                  {yearElement && yearBranch
+                    ? `${getWuxingName(yearElement, lang)}-${yearAnimalName} (${yearBranch.chinese})`
+                    : t("dashboard.bazi.yearAnimalTitle")}
                 </p>
+                {yearCoinSrc && (
+                  <div className="flex justify-center my-4">
+                    <img
+                      src={yearCoinSrc}
+                      alt={yearAnimalName}
+                      className="w-[120px] h-[120px] object-contain rounded-full"
+                      loading="lazy"
+                    />
+                  </div>
+                )}
                 {yearBranch && (
                   <p className="text-xs text-[#1E2A3A]/55 leading-relaxed">
-                    {yearBranch.description[lang].split(".")[0]}.
+                    {yearBranch.description[lang]}
                   </p>
                 )}
               </div>
-              <div className="flex justify-between items-end border-t border-[#8B6914]/10 pt-4 mt-5">
+              <div className="flex justify-between items-center border-t border-[#8B6914]/10 pt-4 mt-5">
                 <div className="flex items-center gap-2">
                   {yearBranch && (
                     <span className="font-serif text-xl text-[#8B6914]">{yearBranch.chinese}</span>
                   )}
                   {yearBranch && (
                     <span className="text-[10px] text-[#1E2A3A]/35">
-                      {yearBranch.branch} · {yearBranch.element}
+                      {yearBranch.element} · {yearBranch.pinyin}
                     </span>
                   )}
                 </div>
@@ -543,183 +691,246 @@ export function Dashboard({
 
             {/* Dominant WuXing Element */}
             <div
-              className="morning-card p-7 flex flex-col gap-4"
+              className="morning-card p-5 sm:p-7 flex flex-col justify-between"
               style={dominantWuxing ? {
                 borderLeftColor: dominantWuxing.color + "55",
                 borderLeftWidth: "3px",
                 borderLeftStyle: "solid",
               } : undefined}
             >
-              <div className="flex items-center justify-between">
-                <h3 className="font-serif text-lg text-[#1E2A3A]">
-                  {t("dashboard.bazi.dominantElementTitle")}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-2xl leading-none select-none">{dominantWuxing?.emoji || "✨"}</span>
+                  <Badge text={t("dashboard.bazi.essenceLabel")} />
+                </div>
+                <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
+                  {dominantWuxing ? dominantWuxing.name[lang] : (dominantEl || "—")}
                 </h3>
-                <Badge text={t("dashboard.bazi.essenceLabel")} />
+                <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50 mb-4">
+                  {t("dashboard.bazi.dominantElementTitle")}
+                </p>
+                {dominantWuxing && (
+                  <p className="text-xs text-[#1E2A3A]/55 leading-relaxed">
+                    {dominantWuxing.description[lang]}
+                  </p>
+                )}
               </div>
-
-              {dominantWuxing ? (
-                <>
-                  <div className="flex items-center gap-4">
-                    <span className="text-5xl font-serif leading-none select-none" style={{ color: dominantWuxing.color }}>
+              <div className="flex justify-between items-center border-t border-[#8B6914]/10 pt-4 mt-5">
+                <div className="flex items-center gap-2">
+                  {dominantWuxing && (
+                    <span className="font-serif text-xl leading-none select-none" style={{ color: dominantWuxing.color }}>
                       {dominantWuxing.chinese}
                     </span>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xl font-serif text-[#1E2A3A]">{dominantWuxing.name[lang]}</div>
-                      <div className="text-[11px] text-[#1E2A3A]/35 tracking-wide mt-0.5">{dominantWuxing.pinyin}</div>
-                    </div>
-                    <span className="text-2xl leading-none select-none shrink-0">{dominantWuxing.emoji}</span>
+                  )}
+                  {dominantWuxing && (
+                    <span className="text-[10px] text-[#1E2A3A]/35">
+                      {dominantWuxing.pinyin} · {dominantWuxing.direction[lang]} · {dominantWuxing.season[lang]}
+                    </span>
+                  )}
+                </div>
+                <Badge text="WUXING" />
+              </div>
+            </div>
+
+            {/* Day Master — enriched with Heavenly Stem data */}
+            <div className="morning-card p-5 sm:p-7 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <Zap className="text-[#8B6914] w-5 h-5 shrink-0" />
+                  <Badge text={t("dashboard.bazi.vitalityLabel")} />
+                </div>
+                <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
+                  {dayMaster}{dayMasterStem ? ` ${dayMasterStem.pinyin}` : ""}
+                </h3>
+                <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50 mb-4">
+                  {dayMasterStem
+                    ? `${t("dashboard.bazi.dayMasterTitle")} — ${dayMasterStem.name[lang]}`
+                    : t("dashboard.bazi.dayMasterTitle")}
+                </p>
+                <p className="text-xs text-[#1E2A3A]/55 leading-relaxed">
+                  {dayMasterStem
+                    ? dayMasterStem.dayMaster[lang]
+                    : t("dashboard.bazi.dayMasterDesc")}
+                </p>
+              </div>
+              <div className="flex justify-between items-center border-t border-[#8B6914]/10 pt-4 mt-5">
+                <div className="flex items-center gap-2">
+                  <span className="font-serif text-xl text-[#8B6914]">{dayMaster}</span>
+                  {dayMasterStem && (
+                    <span className="text-[10px] text-[#1E2A3A]/35">
+                      {dayMasterStem.element} · {dayMasterStem.yinYang === "yang" ? "Yang" : "Yin"} · {dayMasterStem.pinyin}
+                    </span>
+                  )}
+                </div>
+                <Badge text={lang === "de" ? "TAGESMEISTER" : "DAY MASTER"} />
+              </div>
+            </div>
+
+            {/* Month Stem — enriched with Heavenly Stem data */}
+            <div className="morning-card p-5 sm:p-7 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-lg leading-none select-none text-[#8B6914]">月</span>
+                  <Badge text={t("dashboard.bazi.monthStemBadge")} />
+                </div>
+                <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
+                  {monthStem}{monthStemData ? ` ${monthStemData.pinyin}` : ""}
+                </h3>
+                <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50 mb-4">
+                  {monthStemData
+                    ? `${t("dashboard.bazi.monthStemTitle")} — ${monthStemData.name[lang]}`
+                    : t("dashboard.bazi.monthStemTitle")}
+                </p>
+                <p className="text-xs text-[#1E2A3A]/55 leading-relaxed">
+                  {monthStemData
+                    ? monthStemData.monthStem[lang]
+                    : t("dashboard.bazi.monthStemDesc")}
+                </p>
+              </div>
+              <div className="flex justify-between items-center border-t border-[#8B6914]/10 pt-4 mt-5">
+                <div className="flex items-center gap-2">
+                  <span className="font-serif text-xl text-[#8B6914]">{monthStem}</span>
+                  {monthStemData && (
+                    <span className="text-[10px] text-[#1E2A3A]/35">
+                      {monthStemData.element} · {monthStemData.yinYang === "yang" ? "Yang" : "Yin"} · {monthStemData.pinyin}
+                    </span>
+                  )}
+                </div>
+                <Badge text={lang === "de" ? "MONATSSTAMM" : "MONTH STEM"} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ═══ BAZI & WUXING DEEP SECTION ═══════════════════════════════ */}
+      <PremiumGate teaser={t("dashboard.premium.teaserPillars")}>
+        <motion.div className="mb-12" {...fadeIn(0.3)}>
+          {/* Block A: Header */}
+          <SectionDivider
+            label={lang === "de" ? "Chinesische Astrologie" : "Chinese Astrology"}
+            title={lang === "de" ? "BaZi & WuXing — Vier Säulen des Schicksals" : "BaZi & WuXing — Four Pillars of Destiny"}
+          />
+
+          {/* Block B: Four Pillars */}
+          {apiData.bazi?.pillars && (
+            <div className="mb-10">
+              <p className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/50 mb-4">
+                {lang === "de" ? "Die Vier Säulen" : "The Four Pillars"}
+              </p>
+              <BaZiFourPillars
+                pillars={apiData.bazi.pillars}
+                lang={lang}
+                planetariumMode={planetariumMode}
+              />
+            </div>
+          )}
+
+          {/* Block C: Element Balance — Pentagon + Cycle side by side */}
+          <div className="mb-10">
+            <p className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/50 mb-2">
+              WuXing 五行
+            </p>
+            <p className="text-xs text-[#1E2A3A]/45 mb-6 leading-relaxed max-w-2xl">
+              {t("dashboard.wuxing.sectionDesc")}
+            </p>
+
+            <div className="morning-card p-6 md:p-8">
+              {Object.keys(wuxingBalance).length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                  <div className="max-w-[280px] mx-auto md:max-w-none">
+                    <WuXingPentagon
+                      balance={wuxingBalance}
+                      lang={lang}
+                      planetariumMode={planetariumMode}
+                    />
                   </div>
-                  <p className="text-xs text-[#1E2A3A]/55 leading-relaxed">
-                    {dominantWuxing.description[lang].split(".")[0]}.
-                  </p>
-                  <div className="grid grid-cols-2 gap-x-4 text-[10px] text-[#1E2A3A]/35 pt-3 border-t border-[#8B6914]/10">
-                    <span>↗ {dominantWuxing.direction[lang]}</span>
-                    <span>◆ {dominantWuxing.season[lang]}</span>
+                  <div className="max-w-[240px] mx-auto md:max-w-none">
+                    <WuXingCycleWheel
+                      balance={wuxingBalance}
+                      lang={lang}
+                      planetariumMode={planetariumMode}
+                    />
                   </div>
-                </>
+                </div>
               ) : (
-                <div className="font-serif text-2xl text-[#1E2A3A]">{dominantEl || "—"}</div>
+                /* Fallback: existing bar chart when no WuXing data */
+                <div className="space-y-4">
+                  {WUXING_ELEMENTS.map((el) => {
+                    const count = Number(wuxingCounts[el.key] ?? wuxingCounts[el.name.de] ?? 0);
+                    const pctLabel = totalCount > 0 ? Math.round((count / totalCount) * 100) : 0;
+                    const pctBar = hasWuxingData ? (count / maxCount) * 100 : 0;
+                    const isDom = el.key === dominantEl || el.name.de === dominantEl;
+                    return (
+                      <Tooltip key={el.key} content={el.description[lang]} wide dark={planetariumMode}>
+                        <div className="flex items-center gap-2 sm:gap-4 cursor-help group">
+                          <div className="w-24 sm:w-28 md:w-36 shrink-0 flex items-center gap-2 sm:gap-2.5">
+                            <span className="text-2xl font-serif leading-none select-none" style={{ color: el.color }}>
+                              {el.chinese}
+                            </span>
+                            <div className="min-w-0">
+                              <div className="text-xs font-medium text-[#1E2A3A] truncate">{el.name[lang]}</div>
+                              <div className="text-[10px] text-[#1E2A3A]/35">{el.pinyin}</div>
+                            </div>
+                          </div>
+                          <div className="flex-1 wuxing-bar-track">
+                            {hasWuxingData ? (
+                              <motion.div
+                                className="wuxing-bar-fill"
+                                initial={{ width: 0 }}
+                                animate={{ width: `${Math.max(pctBar, pctBar > 0 ? 2 : 0)}%` }}
+                                transition={{ duration: 1.0, ease: "easeOut", delay: 0.2 }}
+                                style={{ backgroundColor: el.color }}
+                              />
+                            ) : (
+                              <div className="h-full rounded-full" style={{ backgroundColor: el.color + "20", width: "100%" }} />
+                            )}
+                          </div>
+                          <div className="w-12 shrink-0 text-right flex items-center justify-end gap-1">
+                            {hasWuxingData && pctLabel > 0 && (
+                              <span className="text-[10px] text-[#1E2A3A]/45 font-mono">{pctLabel}%</span>
+                            )}
+                            {isDom && <span className="text-sm" style={{ color: el.color }}>★</span>}
+                          </div>
+                        </div>
+                      </Tooltip>
+                    );
+                  })}
+                </div>
               )}
             </div>
-
-            {/* Day Master */}
-            <div className="morning-card p-6 flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Zap className="text-[#8B6914] w-4 h-4 shrink-0" />
-                  <h3 className="text-[10px] uppercase tracking-[0.3em] text-[#8B6914]/65">
-                    {t("dashboard.bazi.dayMasterTitle")}
-                  </h3>
-                </div>
-                <Badge text={t("dashboard.bazi.vitalityLabel")} />
-              </div>
-              <div className="font-serif text-2xl text-[#1E2A3A]">{dayMaster}</div>
-              <p className="text-xs text-[#1E2A3A]/45 leading-relaxed">{t("dashboard.bazi.dayMasterDesc")}</p>
-            </div>
-
-            {/* Month Stem */}
-            <div className="morning-card p-6 flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-[10px] uppercase tracking-[0.3em] text-[#8B6914]/65">
-                  {t("dashboard.bazi.monthStemTitle")}
-                </h3>
-                <Badge text={t("dashboard.bazi.monthStemBadge")} />
-              </div>
-              <div className="font-serif text-2xl text-[#1E2A3A]">{monthStem}</div>
-              <p className="text-xs text-[#1E2A3A]/45 leading-relaxed">{t("dashboard.bazi.monthStemDesc")}</p>
-            </div>
           </div>
-        </div>
-      </motion.div>
 
-      {/* ═══ BAZI FOUR PILLARS (FR-05: Tooltips) ═════════════════════ */}
-      {apiData.bazi?.pillars && (
-        <motion.div className="mb-10" {...fadeIn(0.3)}>
-          <SectionDivider label="BaZi 八字" title={t("dashboard.pillars.sectionTitle")} />
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {Object.entries(apiData.bazi.pillars).map(([key, val]: [string, any]) => {
-              const pk = PILLAR_KEYS[key];
-              return (
-                // Wrapper is overflow-visible so tooltip escapes morning-stele's overflow:hidden
-                <div key={key} className="relative overflow-visible">
-                  <Tooltip content={pk ? t(pk.desc) : ""} wide dark={planetariumMode}>
-                    <div className="morning-stele group cursor-help w-full">
-                      <div className="text-[8px] uppercase tracking-[0.3em] text-[#8B6914]/55 mb-5 group-hover:text-[#8B6914] transition-colors">
-                        {pk ? t(pk.label) : key}
-                      </div>
-                      <div className="font-serif text-2xl mb-1 text-[#1E2A3A]">{val.stem || "—"}</div>
-                      <div className="text-[10px] text-[#1E2A3A]/35 uppercase tracking-widest">{val.branch || ""}</div>
-                      {val.animal && (
-                        <div className="text-[9px] text-[#8B6914]/45 mt-1.5 tracking-wide">{val.animal}</div>
-                      )}
-                      {/* Subtle tooltip hint */}
-                      <div className="mt-3 text-[8px] text-[#8B6914]/30 tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-                        ↑ Info
-                      </div>
-                    </div>
-                  </Tooltip>
-                </div>
-              );
-            })}
+          {/* Block D: Interpretation + Ring Connector */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Interpretation — 2/3 width */}
+            <div className="morning-card p-6 md:p-8 md:col-span-2">
+              <BaZiInterpretation
+                animal={yearAnimal}
+                element={yearEl}
+                balance={wuxingBalance}
+                lang={lang}
+              />
+            </div>
+
+            {/* Mini-Ring Connector — 1/3 width */}
+            <div className="morning-card p-6 flex flex-col items-center justify-center">
+              <p className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/50 mb-4">
+                {lang === "de" ? "BaZi im Ring" : "BaZi in Ring"}
+              </p>
+              <BaZiMiniRing
+                baziSignals={baziSectorSignals}
+                lang={lang}
+                size={180}
+              />
+            </div>
           </div>
         </motion.div>
-      )}
+      </PremiumGate>
 
-      {/* ═══ WUXING BALANCE (FR-06: % fix + hover tooltips) ══════════ */}
-      <motion.div className="mb-10" {...fadeIn(0.35)}>
-        <SectionDivider label="WuXing 五行" title={t("dashboard.wuxing.sectionTitle")} />
-        <p className="text-xs text-[#1E2A3A]/45 mb-6 leading-relaxed max-w-2xl">
-          {t("dashboard.wuxing.sectionDesc")}
-        </p>
-
-        <div className="morning-card p-6 md:p-8">
-          <div className="space-y-4">
-            {WUXING_ELEMENTS.map((el) => {
-              const count  = Number(wuxingCounts[el.key] ?? wuxingCounts[el.name.de] ?? 0);
-              // FR-06 Bug fix: true percentage of total (sums to 100%)
-              const pctLabel = totalCount > 0 ? Math.round((count / totalCount) * 100) : 0;
-              // Bar visual: scaled to max so dominant bar is always prominent
-              const pctBar   = hasWuxingData ? (count / maxCount) * 100 : 0;
-              const isDom    = el.key === dominantEl || el.name.de === dominantEl;
-
-              return (
-                <Tooltip key={el.key} content={el.description[lang]} wide dark={planetariumMode}>
-                  <div className="flex items-center gap-4 cursor-help group">
-                    {/* Identity */}
-                    <div className="w-28 md:w-36 shrink-0 flex items-center gap-2.5">
-                      <span className="text-2xl font-serif leading-none select-none" style={{ color: el.color }}>
-                        {el.chinese}
-                      </span>
-                      <div className="min-w-0">
-                        <div className="text-xs font-medium text-[#1E2A3A] truncate group-hover:text-[#1E2A3A]/80 transition-colors">
-                          {el.name[lang]}
-                        </div>
-                        <div className="text-[10px] text-[#1E2A3A]/35">{el.pinyin}</div>
-                      </div>
-                    </div>
-
-                    {/* Bar */}
-                    <div className="flex-1 wuxing-bar-track">
-                      {hasWuxingData ? (
-                        <motion.div
-                          className="wuxing-bar-fill"
-                          initial={{ width: 0 }}
-                          animate={{ width: `${Math.max(pctBar, pctBar > 0 ? 2 : 0)}%` }}
-                          transition={{ duration: 1.0, ease: "easeOut", delay: 0.2 }}
-                          style={{ backgroundColor: el.color }}
-                        />
-                      ) : (
-                        <div className="h-full rounded-full" style={{ backgroundColor: el.color + "20", width: "100%" }} />
-                      )}
-                    </div>
-
-                    {/* Label: correct % of total (FR-06 fix) + dominant star */}
-                    <div className="w-12 shrink-0 text-right flex items-center justify-end gap-1">
-                      {hasWuxingData && pctLabel > 0 && (
-                        <span className="text-[10px] text-[#1E2A3A]/45 font-mono">{pctLabel}%</span>
-                      )}
-                      {isDom && (
-                        <span className="text-sm" style={{ color: el.color }}>★</span>
-                      )}
-                    </div>
-                  </div>
-                </Tooltip>
-              );
-            })}
-          </div>
-
-          {!hasWuxingData && (
-            <p className="mt-5 text-[10px] text-[#1E2A3A]/35 italic text-center">
-              {lang === "de"
-                ? "Elementgewichtung wird bei Verfügbarkeit der API-Daten angezeigt. Hover für Details."
-                : "Element weighting shown when API data is available. Hover for details."}
-            </p>
-          )}
-        </div>
-      </motion.div>
-
-      {/* ═══ WESTERN HOUSES (FR-07: personalised) ════════════════════ */}
+      {/* ═══ WESTERN HOUSES (FR-07: personalised) — PREMIUM ════════ */}
       {houseEntries.length > 0 && (
+        <PremiumGate teaser={t("dashboard.premium.teaserHouses")}>
         <motion.div className="mb-10" {...fadeIn(0.4)}>
           <SectionDivider
             label={t("dashboard.western.sectionLabel")}
@@ -740,28 +951,28 @@ export function Dashboard({
               const signDisplay = sign ? getSignName(sign, lang) : "—";
 
               return (
-                <div key={houseKey} className="morning-card p-5">
+                <div key={houseKey} className="morning-card p-4 sm:p-5 overflow-hidden">
                   {/* House number + name */}
-                  <div className="flex items-baseline gap-2 mb-3">
-                    <span className="font-serif text-base text-[#8B6914] font-medium leading-none">
+                  <div className="flex items-baseline gap-1.5 sm:gap-2 mb-2 sm:mb-3 min-w-0">
+                    <span className="font-serif text-base text-[#8B6914] font-medium leading-none shrink-0">
                       {roman}
                     </span>
                     {meaning && (
-                      <span className="text-[10px] text-[#1E2A3A]/45 tracking-wide truncate">
+                      <span className="text-[9px] sm:text-[10px] text-[#1E2A3A]/45 tracking-wide truncate">
                         {meaning.name[lang]}
                       </span>
                     )}
                   </div>
 
                   {/* Sign — localised */}
-                  <div className="font-serif text-lg text-[#1E2A3A] flex items-center gap-2 mb-2">
-                    <span className="text-[#8B6914]/80">{emoji}</span>
-                    {signDisplay}
+                  <div className="font-serif text-base sm:text-lg text-[#1E2A3A] flex items-center gap-1.5 sm:gap-2 mb-2 min-w-0">
+                    <span className="text-[#8B6914]/80 shrink-0">{emoji}</span>
+                    <span className="truncate">{signDisplay}</span>
                   </div>
 
                   {/* FR-07: Personalised influence sentence */}
                   {meaning && sign && (
-                    <p className="text-[10px] text-[#1E2A3A]/40 leading-relaxed">
+                    <p className="text-[9px] sm:text-[10px] text-[#1E2A3A]/40 leading-relaxed line-clamp-2">
                       {lang === "de"
                         ? `${signDisplay} prägt das Lebensfeld ${meaning.name.de}.`
                         : `${signDisplay} shapes your house of ${meaning.name.en}.`}
@@ -772,15 +983,16 @@ export function Dashboard({
             })}
           </div>
         </motion.div>
+        </PremiumGate>
       )}
 
       {/* ═══ INTERPRETATION + LEVI ═══════════════════════════════════ */}
       <motion.div
-        className="grid md:grid-cols-3 gap-8 mb-16"
+        className="grid md:grid-cols-3 gap-5 sm:gap-8 mb-12 sm:mb-16"
         {...fadeIn(0.45)}
       >
         {/* AI Interpretation — 2/3 width (FR-08: richer prompt in gemini.ts) */}
-        <div className="morning-card p-8 md:col-span-2">
+        <div className="morning-card p-5 sm:p-8 md:col-span-2">
           <div className="flex items-center gap-4 mb-5">
             <span className="h-[1px] w-10 bg-[#8B6914]/20" />
             <span className="text-[9px] uppercase tracking-[0.4em] text-[#8B6914]/55">
@@ -790,6 +1002,8 @@ export function Dashboard({
           <h3 className="font-serif text-2xl text-[#1E2A3A] mb-5">
             {t("dashboard.interpretation.sectionTitle")}
           </h3>
+
+          {/* Free: first 2 paragraphs always visible */}
           <div className="
             text-[13px] text-[#1E2A3A]/60 leading-relaxed
             prose prose-sm max-w-none
@@ -798,12 +1012,29 @@ export function Dashboard({
             prose-a:text-[#8B6914] prose-a:no-underline hover:prose-a:underline
             prose-hr:border-[#8B6914]/15
           ">
-            <ReactMarkdown>{interpretation}</ReactMarkdown>
+            <ReactMarkdown>{isPremium ? interpretation : freeInterpretation}</ReactMarkdown>
           </div>
+
+          {/* Premium: remaining paragraphs gated */}
+          {!isPremium && hasPremiumInterpretation && (
+            <PremiumGate teaser={t("dashboard.premium.teaserInterpretation")}>
+              <div className="
+                text-[13px] text-[#1E2A3A]/60 leading-relaxed
+                prose prose-sm max-w-none
+                prose-headings:text-[#1E2A3A] prose-headings:font-serif
+                prose-p:text-[#1E2A3A]/60 prose-strong:text-[#1E2A3A]/80
+                prose-a:text-[#8B6914] prose-a:no-underline hover:prose-a:underline
+                prose-hr:border-[#8B6914]/15
+                mt-4
+              ">
+                <ReactMarkdown>{interpretationParagraphs.slice(2).join("\n\n")}</ReactMarkdown>
+              </div>
+            </PremiumGate>
+          )}
         </div>
 
-        {/* Levi — 1/3 width */}
-        <div ref={leviSectionRef} className="morning-card p-7 flex flex-col gap-6">
+        {/* Levi — 1/3 width — visible teaser, interaction gated */}
+        <div ref={leviSectionRef} className="morning-card p-5 sm:p-7 flex flex-col gap-5 sm:gap-6">
           <div className="flex items-start gap-4">
             <div className="relative mt-1.5 shrink-0">
               <div className={`w-2 h-2 rounded-full breathing ${
@@ -822,43 +1053,109 @@ export function Dashboard({
             </div>
           </div>
 
-          <button
-            onClick={leviActive ? handleHangUp : handleCallLevi}
-            className={`w-full flex items-center justify-center gap-2 px-5 py-3 rounded-full text-[10px] uppercase tracking-[0.2em] font-semibold transition-all ${
-              leviActive
-                ? "bg-red-50 border border-red-300 text-red-600 hover:bg-red-100"
-                : "bg-[#8B6914]/10 border border-[#8B6914]/30 text-[#8B6914] hover:bg-[#8B6914]/[0.18]"
-            }`}
-          >
-            {leviActive
-              ? <><PhoneOff className="w-4 h-4" /> {t("dashboard.levi.hangUpBtn")}</>
-              : <><Phone className="w-4 h-4" /> {t("dashboard.levi.callBtn")}</>}
-          </button>
-
-          <AnimatePresence>
-            {leviActive && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
-                className="relative z-20 w-full flex justify-center overflow-hidden"
+          {isPremium ? (
+            <>
+              <button
+                onClick={leviActive ? handleHangUp : handleCallLevi}
+                className={`w-full flex items-center justify-center gap-2 px-5 py-3 rounded-full text-[10px] uppercase tracking-[0.2em] font-semibold transition-all ${
+                  leviActive
+                    ? "bg-red-50 border border-red-300 text-red-600 hover:bg-red-100"
+                    : "bg-[#8B6914]/10 border border-[#8B6914]/30 text-[#8B6914] hover:bg-[#8B6914]/[0.18]"
+                }`}
               >
-                {/* @ts-ignore */}
-                <elevenlabs-convai
-                  agent-id={elevenLabsAgentId}
-                  dynamic-variables={JSON.stringify({
-                    user_id: userId,
-                    chart_context: `${sunSign} / ${zodiacAnimal} / ${dominantEl}`,
-                  })}
-                >
-                {/* @ts-ignore */}
-                </elevenlabs-convai>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                {leviActive
+                  ? <><PhoneOff className="w-4 h-4" /> {t("dashboard.levi.hangUpBtn")}</>
+                  : <><Phone className="w-4 h-4" /> {t("dashboard.levi.callBtn")}</>}
+              </button>
+
+              <AnimatePresence>
+                {leviActive && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    className="relative z-20 w-full flex justify-center overflow-hidden"
+                  >
+                    {/* @ts-ignore */}
+                    <elevenlabs-convai
+                      agent-id={elevenLabsAgentId}
+                      dynamic-variables={JSON.stringify({
+                        user_id: userId,
+                        chart_context: `${sunSign} / ${zodiacAnimal} / ${dominantEl}`,
+                      })}
+                    >
+                    {/* @ts-ignore */}
+                    </elevenlabs-convai>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </>
+          ) : (
+            <button
+              onClick={handleLeviUpgrade}
+              disabled={leviUpgrading}
+              className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-full text-[10px] uppercase tracking-[0.2em] font-semibold bg-gold/10 border border-gold/30 text-gold hover:bg-gold/20 transition-all disabled:opacity-60 disabled:cursor-wait"
+            >
+              {leviUpgrading ? "..." : <><Lock className="w-4 h-4" /> {t("dashboard.premium.cta")}</>}
+            </button>
+          )}
         </div>
       </motion.div>
+
+      {/* ═══ CLUSTER ENERGY SYSTEM ═════════════════════════════════ */}
+      {onQuizComplete && (
+        <motion.div className="mb-16" {...fadeIn(0.5)}>
+          <SectionDivider
+            label={lang === "de" ? "Persönlichkeit" : "Personality"}
+            title={lang === "de" ? "Dein Energie-System" : "Your Energy System"}
+          />
+          <ClusterEnergySystem
+            signal={fusionSignal ?? null}
+            completedModules={completedModules ?? EMPTY_MODULE_SET}
+            onStartQuiz={(quizId) => setActiveQuiz(quizId)}
+            isPremium={isPremium}
+            lang={lang}
+          />
+        </motion.div>
+      )}
+
+      {/* ═══ RING TEASER — replaces inline timeline ════════════════════ */}
+      {fusionSignal && (
+        <motion.div className="mb-16" {...fadeIn(0.4)}>
+          <RingTeaserCard signal={fusionSignal} lang={lang} />
+        </motion.div>
+      )}
+
+      {/* ═══ DAILY ENERGY TEASER ════════════════════════════════════════ */}
+      {fusionSignal && (
+        <motion.div className="mb-16" {...fadeIn(0.45)}>
+          <DailyEnergyTeaser signal={fusionSignal} lang={lang} isPremium={isPremium} />
+        </motion.div>
+      )}
+
+      {/* Quiz Overlay */}
+      {onQuizComplete && (
+        <QuizOverlay
+          quizId={activeQuiz}
+          onComplete={(event) => {
+            onQuizComplete(event);
+            setActiveQuiz(null);
+          }}
+          onClose={() => setActiveQuiz(null)}
+        />
+      )}
+
+      {/* ═══ SHARE CARD ═══════════════════════════════════════════════ */}
+      <motion.div className="mb-16" {...fadeIn(0.5)}>
+        <ShareCard
+          sunSign={apiData?.western?.zodiac_sign || ''}
+          moonSign={apiData?.western?.moon_sign || ''}
+        />
+      </motion.div>
+
+      {/* ═══ LEGAL FOOTER ═══════════════════════════════════════════════ */}
+      <LegalFooter lang={lang} />
     </motion.div>
   );
 }

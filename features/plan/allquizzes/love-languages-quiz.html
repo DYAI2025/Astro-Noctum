@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welche Sprache spricht dein Herz? | QuizzMe</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ═══════════════════════════════════════════════════════════════════
+           QUIZZME DESIGN SYSTEM - LOVE LANGUAGES QUIZ
+           Botanical Garden Theme + Romantic Warmth
+           ═══════════════════════════════════════════════════════════════════ */
+        
+        :root {
+            /* === ROMANTIC GOLD SPECTRUM === */
+            --gold-primary: #D4A574;
+            --gold-dark: #B8956A;
+            --gold-light: #E8C9A0;
+            --gold-rose: #D4A089;
+            
+            /* === EMERALD/FOREST SPECTRUM === */
+            --emerald-deep: #1A3A34;
+            --emerald-forest: #2D4A44;
+            --emerald-soft: #3D5A54;
+            --sage: #6B8E7D;
+            --sage-light: #8AAA9A;
+            
+            /* === WARM EARTH SPECTRUM === */
+            --earth-warm: #8B6F5C;
+            --earth-rose: #A67C6D;
+            --earth-soft: #C49B8A;
+            
+            /* === CREAM/PARCHMENT SPECTRUM === */
+            --cream-pure: #FBF8F3;
+            --cream-warm: #F5EDE3;
+            --cream-deep: #EDE4D8;
+            --cream-rose: #F5E6E0;
+            
+            /* === TEXT === */
+            --text-on-dark: #F7F3EA;
+            --text-on-dark-muted: #B8C4B0;
+            --text-on-light: #2C241F;
+            --text-on-light-muted: #6B5D52;
+            
+            /* === TYPOGRAPHY === */
+            --font-serif: 'Cormorant Garamond', Georgia, serif;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            
+            --text-display: clamp(2rem, 5vw, 3rem);
+            --text-h1: clamp(1.75rem, 3vw, 2.25rem);
+            --text-h2: clamp(1.375rem, 2.5vw, 1.75rem);
+            --text-h3: clamp(1.125rem, 2vw, 1.375rem);
+            --text-body: 1rem;
+            --text-body-sm: 0.875rem;
+            --text-label: 0.75rem;
+            
+            /* === SPACING === */
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-5: 1.25rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --space-10: 2.5rem;
+            --space-12: 3rem;
+            
+            /* === BORDERS & RADIUS === */
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --radius-2xl: 24px;
+            --radius-full: 9999px;
+            
+            /* === ANIMATION === */
+            --duration-fast: 150ms;
+            --duration-normal: 300ms;
+            --duration-slow: 500ms;
+            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background: var(--emerald-deep);
+        }
+
+        .screen {
+            display: none;
+            min-height: 100vh;
+            min-height: 100dvh;
+        }
+        
+        .screen.active {
+            display: flex;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           THEME: ROMANTIC ALCHEMY (Dark) - Intro & Result
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .theme-romantic {
+            background: linear-gradient(165deg, var(--emerald-deep) 0%, #0F2622 50%, #0A1A18 100%);
+            color: var(--text-on-dark);
+            position: relative;
+        }
+
+        .theme-romantic::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(ellipse 80% 50% at 20% 20%, rgba(212, 165, 116, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse 60% 40% at 80% 80%, rgba(167, 124, 109, 0.06) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           THEME: BOTANICAL GARDEN (Light) - Quiz Flow
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .theme-botanical {
+            background: var(--emerald-deep);
+            color: var(--text-on-light);
+        }
+
+        .botanical-inner {
+            background: linear-gradient(180deg, var(--cream-pure) 0%, var(--cream-warm) 100%);
+            margin: var(--space-3);
+            border-radius: var(--radius-2xl);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .botanical-inner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            background: linear-gradient(180deg, rgba(212, 165, 116, 0.06) 0%, transparent 100%);
+            pointer-events: none;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           INTRO SCREEN
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .intro-screen {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-6);
+            text-align: center;
+        }
+
+        .intro-content {
+            position: relative;
+            z-index: 1;
+            max-width: 480px;
+        }
+
+        .intro-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto var(--space-8);
+            position: relative;
+        }
+
+        .intro-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .intro-icon::after {
+            content: '';
+            position: absolute;
+            inset: -20px;
+            background: radial-gradient(circle, rgba(212, 165, 116, 0.15) 0%, transparent 70%);
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        .intro-label {
+            font-family: var(--font-sans);
+            font-size: var(--text-label);
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            margin-bottom: var(--space-4);
+        }
+
+        .intro-title {
+            font-family: var(--font-serif);
+            font-size: var(--text-display);
+            font-weight: 500;
+            line-height: 1.2;
+            margin-bottom: var(--space-6);
+            background: linear-gradient(135deg, var(--text-on-dark) 0%, var(--gold-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .intro-subtitle {
+            font-family: var(--font-serif);
+            font-size: var(--text-h3);
+            font-style: italic;
+            color: var(--text-on-dark-muted);
+            margin-bottom: var(--space-8);
+            line-height: 1.6;
+        }
+
+        .intro-meta {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-6);
+            margin-bottom: var(--space-10);
+            font-size: var(--text-body-sm);
+            color: var(--text-on-dark-muted);
+        }
+
+        .intro-meta span {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-3);
+            padding: var(--space-4) var(--space-8);
+            background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-dark) 100%);
+            color: var(--emerald-deep);
+            font-family: var(--font-sans);
+            font-size: var(--text-body);
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            transition: all var(--duration-normal) var(--ease-out);
+            box-shadow: 0 4px 20px rgba(212, 165, 116, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(212, 165, 116, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           QUIZ SCREEN
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .quiz-screen {
+            flex-direction: column;
+        }
+
+        .quiz-header {
+            padding: var(--space-5) var(--space-6);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+        }
+
+        .quiz-progress-bar {
+            height: 4px;
+            background: var(--cream-deep);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+        }
+
+        .quiz-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--sage) 0%, var(--gold-primary) 100%);
+            border-radius: var(--radius-full);
+            transition: width var(--duration-slow) var(--ease-out);
+        }
+
+        .quiz-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: var(--text-label);
+            color: var(--text-on-light-muted);
+        }
+
+        .quiz-step {
+            font-weight: 600;
+            color: var(--emerald-forest);
+        }
+
+        .quiz-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: var(--space-4) var(--space-6) var(--space-8);
+            overflow-y: auto;
+        }
+
+        .question-container {
+            display: none;
+            flex-direction: column;
+            gap: var(--space-6);
+            animation: fadeIn var(--duration-normal) var(--ease-out);
+        }
+
+        .question-container.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .question-context {
+            font-family: var(--font-serif);
+            font-size: var(--text-body);
+            font-style: italic;
+            color: var(--text-on-light-muted);
+            line-height: 1.6;
+            padding: var(--space-4);
+            background: linear-gradient(135deg, rgba(212, 165, 116, 0.08) 0%, rgba(107, 142, 125, 0.06) 100%);
+            border-radius: var(--radius-lg);
+            border-left: 3px solid var(--gold-primary);
+        }
+
+        .question-text {
+            font-family: var(--font-serif);
+            font-size: var(--text-h2);
+            font-weight: 500;
+            color: var(--text-on-light);
+            line-height: 1.4;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+            margin-top: var(--space-2);
+        }
+
+        .option-btn {
+            display: block;
+            width: 100%;
+            padding: var(--space-4) var(--space-5);
+            background: white;
+            border: 2px solid var(--cream-deep);
+            border-radius: var(--radius-lg);
+            font-family: var(--font-sans);
+            font-size: var(--text-body);
+            color: var(--text-on-light);
+            text-align: left;
+            cursor: pointer;
+            transition: all var(--duration-normal) var(--ease-out);
+            line-height: 1.5;
+        }
+
+        .option-btn:hover {
+            border-color: var(--sage);
+            background: linear-gradient(135deg, rgba(107, 142, 125, 0.05) 0%, rgba(212, 165, 116, 0.03) 100%);
+            transform: translateX(4px);
+        }
+
+        .option-btn:active {
+            transform: translateX(2px) scale(0.995);
+        }
+
+        .option-btn.selected {
+            border-color: var(--gold-primary);
+            background: linear-gradient(135deg, rgba(212, 165, 116, 0.12) 0%, rgba(212, 165, 116, 0.06) 100%);
+            box-shadow: 0 2px 12px rgba(212, 165, 116, 0.15);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           LOADING SCREEN
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .loading-screen {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-8);
+            text-align: center;
+        }
+
+        .loading-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .loading-animation {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto var(--space-8);
+            position: relative;
+        }
+
+        .loading-heart {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-heart svg {
+            width: 50px;
+            height: 50px;
+            fill: var(--gold-primary);
+            animation: heartbeat 1.2s ease-in-out infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.1); }
+            40% { transform: scale(1); }
+            60% { transform: scale(1.1); }
+        }
+
+        .loading-ring {
+            position: absolute;
+            inset: 0;
+            border: 3px solid transparent;
+            border-top-color: var(--gold-primary);
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite;
+        }
+
+        .loading-ring:nth-child(2) {
+            inset: 10px;
+            border-top-color: var(--sage);
+            animation-duration: 2s;
+            animation-direction: reverse;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-title {
+            font-family: var(--font-serif);
+            font-size: var(--text-h2);
+            color: var(--text-on-dark);
+            margin-bottom: var(--space-3);
+        }
+
+        .loading-subtitle {
+            font-family: var(--font-serif);
+            font-size: var(--text-body);
+            font-style: italic;
+            color: var(--text-on-dark-muted);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           RESULT SCREEN
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .result-screen {
+            flex-direction: column;
+            align-items: center;
+            padding: var(--space-6);
+            overflow-y: auto;
+        }
+
+        .result-content {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 440px;
+        }
+
+        .result-label {
+            text-align: center;
+            font-family: var(--font-sans);
+            font-size: var(--text-label);
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            margin-bottom: var(--space-4);
+        }
+
+        /* Trading Card */
+        .result-card {
+            background: linear-gradient(165deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(212, 165, 116, 0.2);
+            border-radius: var(--radius-2xl);
+            padding: var(--space-6);
+            margin-bottom: var(--space-6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gold-primary) 0%, var(--sage) 50%, var(--gold-primary) 100%);
+        }
+
+        .result-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto var(--space-5);
+            background: linear-gradient(135deg, rgba(212, 165, 116, 0.15) 0%, rgba(107, 142, 125, 0.1) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-icon svg {
+            width: 40px;
+            height: 40px;
+            stroke: var(--gold-primary);
+            fill: none;
+            stroke-width: 1.5;
+        }
+
+        .result-title {
+            font-family: var(--font-serif);
+            font-size: var(--text-h1);
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: var(--space-2);
+            background: linear-gradient(135deg, var(--text-on-dark) 0%, var(--gold-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .result-tagline {
+            font-family: var(--font-serif);
+            font-size: var(--text-body);
+            font-style: italic;
+            text-align: center;
+            color: var(--gold-light);
+            margin-bottom: var(--space-6);
+            line-height: 1.5;
+        }
+
+        /* Stats Grid */
+        .result-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-3);
+            margin-bottom: var(--space-6);
+        }
+
+        .stat-item {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: var(--radius-md);
+            padding: var(--space-3);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: var(--font-serif);
+            font-size: var(--text-h3);
+            font-weight: 600;
+            color: var(--gold-primary);
+            margin-bottom: var(--space-1);
+        }
+
+        .stat-label {
+            font-size: var(--text-label);
+            color: var(--text-on-dark-muted);
+        }
+
+        /* Dimension Bars */
+        .dimension-bars {
+            margin-bottom: var(--space-6);
+        }
+
+        .dimension-item {
+            margin-bottom: var(--space-3);
+        }
+
+        .dimension-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--space-1);
+            font-size: var(--text-label);
+        }
+
+        .dimension-name {
+            color: var(--text-on-dark-muted);
+        }
+
+        .dimension-value {
+            color: var(--gold-primary);
+            font-weight: 600;
+        }
+
+        .dimension-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+        }
+
+        .dimension-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--sage) 0%, var(--gold-primary) 100%);
+            border-radius: var(--radius-full);
+            transition: width 1s var(--ease-out);
+        }
+
+        /* Compatibility Section */
+        .compatibility-section {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            margin-bottom: var(--space-5);
+        }
+
+        .compatibility-title {
+            font-family: var(--font-serif);
+            font-size: var(--text-body);
+            font-weight: 600;
+            color: var(--text-on-dark);
+            margin-bottom: var(--space-3);
+        }
+
+        .compatibility-item {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-3);
+            margin-bottom: var(--space-3);
+        }
+
+        .compatibility-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .compatibility-badge {
+            flex-shrink: 0;
+            padding: var(--space-1) var(--space-2);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-label);
+            font-weight: 600;
+        }
+
+        .compatibility-badge.ally {
+            background: rgba(107, 142, 125, 0.3);
+            color: var(--sage-light);
+        }
+
+        .compatibility-badge.nemesis {
+            background: rgba(166, 124, 109, 0.3);
+            color: var(--earth-soft);
+        }
+
+        .compatibility-text {
+            font-size: var(--text-body-sm);
+            color: var(--text-on-dark-muted);
+            line-height: 1.5;
+        }
+
+        /* Description Section */
+        .result-description {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-lg);
+            padding: var(--space-5);
+            margin-bottom: var(--space-6);
+        }
+
+        .result-description-text {
+            font-family: var(--font-serif);
+            font-size: var(--text-body);
+            color: var(--text-on-dark);
+            line-height: 1.8;
+        }
+
+        .result-description-text p {
+            margin-bottom: var(--space-4);
+        }
+
+        .result-description-text p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Share Buttons */
+        .share-section {
+            text-align: center;
+        }
+
+        .share-title {
+            font-family: var(--font-serif);
+            font-size: var(--text-body);
+            color: var(--text-on-dark-muted);
+            margin-bottom: var(--space-4);
+        }
+
+        .share-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+        }
+
+        .btn-share {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2);
+            padding: var(--space-4);
+            background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-dark) 100%);
+            color: var(--emerald-deep);
+            font-family: var(--font-sans);
+            font-size: var(--text-body);
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all var(--duration-normal) var(--ease-out);
+        }
+
+        .btn-share:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(212, 165, 116, 0.3);
+        }
+
+        .btn-share-secondary {
+            background: transparent;
+            border: 1px solid rgba(212, 165, 116, 0.3);
+            color: var(--gold-light);
+        }
+
+        .btn-share-secondary:hover {
+            background: rgba(212, 165, 116, 0.1);
+            border-color: var(--gold-primary);
+        }
+
+        .disclaimer {
+            margin-top: var(--space-8);
+            padding: var(--space-4);
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: var(--radius-md);
+            font-size: var(--text-label);
+            color: var(--text-on-dark-muted);
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           RESPONSIVE
+           ═══════════════════════════════════════════════════════════════════ */
+
+        @media (max-width: 480px) {
+            .result-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .intro-meta {
+                flex-direction: column;
+                gap: var(--space-2);
+            }
+        }
+
+        @media (min-width: 768px) {
+            .botanical-inner {
+                margin: var(--space-6);
+                max-width: 600px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            
+            .result-content {
+                max-width: 520px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ═══════════════════════════════════════════════════════════════════
+         INTRO SCREEN
+         ═══════════════════════════════════════════════════════════════════ -->
+    <div id="intro" class="screen theme-romantic intro-screen active">
+        <div class="intro-content">
+            <div class="intro-icon">
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M50 90C50 90 15 60 15 35C15 20 27 10 40 10C47 10 50 15 50 15C50 15 53 10 60 10C73 10 85 20 85 35C85 60 50 90 50 90Z" 
+                          stroke="#D4A574" stroke-width="2" fill="none"/>
+                    <path d="M50 75C50 75 25 55 25 38C25 28 33 22 42 22C47 22 50 25 50 25C50 25 53 22 58 22C67 22 75 28 75 38C75 55 50 75 50 75Z" 
+                          fill="rgba(212, 165, 116, 0.3)"/>
+                    <circle cx="50" cy="45" r="3" fill="#D4A574"/>
+                </svg>
+            </div>
+            
+            <div class="intro-label">Persönlichkeitstest</div>
+            
+            <h1 class="intro-title">Welche Sprache spricht dein Herz?</h1>
+            
+            <p class="intro-subtitle">
+                Entdecke, wie du Liebe empfängst und gibst – und warum manche Menschen 
+                dich besser verstehen als andere.
+            </p>
+            
+            <div class="intro-meta">
+                <span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 6v6l4 2"/>
+                    </svg>
+                    3 Minuten
+                </span>
+                <span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 11l3 3L22 4"/>
+                        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+                    </svg>
+                    12 Fragen
+                </span>
+            </div>
+            
+            <button class="btn-primary" onclick="startQuiz()">
+                Entdecke deine Sprache
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         QUIZ SCREEN
+         ═══════════════════════════════════════════════════════════════════ -->
+    <div id="quiz" class="screen theme-botanical quiz-screen">
+        <div class="botanical-inner">
+            <div class="quiz-header">
+                <div class="quiz-progress-bar">
+                    <div class="quiz-progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+                <div class="quiz-meta">
+                    <span class="quiz-step" id="questionCounter">Frage 1 von 12</span>
+                    <span class="quiz-category" id="questionCategory">Selbstreflexion</span>
+                </div>
+            </div>
+            
+            <div class="quiz-body" id="quizBody">
+                <!-- Questions will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         LOADING SCREEN
+         ═══════════════════════════════════════════════════════════════════ -->
+    <div id="loading" class="screen theme-romantic loading-screen">
+        <div class="loading-content">
+            <div class="loading-animation">
+                <div class="loading-ring"></div>
+                <div class="loading-ring"></div>
+                <div class="loading-heart">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </div>
+            </div>
+            <h2 class="loading-title">Dein Herz wird gelesen...</h2>
+            <p class="loading-subtitle">Die Sprache deiner Liebe nimmt Gestalt an</p>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         RESULT SCREEN
+         ═══════════════════════════════════════════════════════════════════ -->
+    <div id="result" class="screen theme-romantic result-screen">
+        <div class="result-content">
+            <div class="result-label">Deine Liebessprache</div>
+            
+            <div class="result-card">
+                <div class="result-icon" id="resultIcon">
+                    <!-- Icon injected by JS -->
+                </div>
+                
+                <h1 class="result-title" id="resultTitle">Der Wortschmied</h1>
+                <p class="result-tagline" id="resultTagline">Für dich sind Worte keine Floskeln – sie sind die Währung der Wahrheit.</p>
+                
+                <div class="result-stats" id="resultStats">
+                    <!-- Stats injected by JS -->
+                </div>
+                
+                <div class="dimension-bars" id="dimensionBars">
+                    <!-- Dimension bars injected by JS -->
+                </div>
+                
+                <div class="compatibility-section" id="compatibilitySection">
+                    <!-- Compatibility injected by JS -->
+                </div>
+            </div>
+            
+            <div class="result-description" id="resultDescription">
+                <!-- Full description injected by JS -->
+            </div>
+            
+            <div class="share-section">
+                <p class="share-title">Teile deine Sprache der Liebe</p>
+                <div class="share-buttons">
+                    <button class="btn-share" onclick="shareResult()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="18" cy="5" r="3"/>
+                            <circle cx="6" cy="12" r="3"/>
+                            <circle cx="18" cy="19" r="3"/>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                        </svg>
+                        Ergebnis teilen
+                    </button>
+                    <button class="btn-share btn-share-secondary" onclick="copyShareText(this)">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                        </svg>
+                        Text kopieren
+                    </button>
+                </div>
+            </div>
+            
+            <div class="disclaimer">
+                Dieser Test dient der spielerischen Selbstreflexion und stellt <strong>keine</strong> psychologische Diagnose dar.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════════
+        // QUIZ DATA
+        // ═══════════════════════════════════════════════════════════════════
+        
+        const quizData = {
+            questions: [
+                {
+                    id: "q1",
+                    indicator: "verletzung",
+                    context: "Ihr hattet Streit. Jetzt liegt Stille zwischen euch wie frischer Schnee.",
+                    text: "Was vermisst du in diesem Moment am meisten?",
+                    options: [
+                        { id: "a", text: "Dass er oder sie ausspricht, was ich bedeute – dass die Worte die Stille durchbrechen", scores: { words: 3, time: 1 } },
+                        { id: "b", text: "Einfach zusammen da zu sein – ohne dass jemand etwas sagen muss", scores: { time: 3, touch: 1 } },
+                        { id: "c", text: "Eine kleine Geste, die zeigt: Ich denke an dich, auch wenn wir gerade nicht reden", scores: { gifts: 3, service: 1 } },
+                        { id: "d", text: "Dass er oder sie etwas tut, um es wieder gut zu machen – Taten statt Worte", scores: { service: 3, words: 1 } },
+                        { id: "e", text: "Eine Umarmung, die alles sagt, was Worte nicht können", scores: { touch: 3, time: 1 } }
+                    ]
+                },
+                {
+                    id: "q2",
+                    indicator: "forderung",
+                    context: "Dein Mensch fragt dich ehrlich: „Was brauchst du gerade von mir?"",
+                    text: "Deine ehrlichste Antwort:",
+                    options: [
+                        { id: "a", text: "Sag mir, was du an mir siehst. Sag mir, dass das hier zählt.", scores: { words: 3, touch: 1 } },
+                        { id: "b", text: "Sei einfach hier. Ganz hier. Nur wir beide.", scores: { time: 3, words: 1 } },
+                        { id: "c", text: "Überrasch mich mit etwas, das zeigt, dass du an mich gedacht hast.", scores: { gifts: 3, time: 1 } },
+                        { id: "d", text: "Nimm mir etwas ab. Zeig mir, dass wir ein Team sind.", scores: { service: 3, gifts: 1 } },
+                        { id: "e", text: "Halt mich fest. Lass mich deine Nähe spüren.", scores: { touch: 3, service: 1 } }
+                    ]
+                },
+                {
+                    id: "q3",
+                    indicator: "projektion",
+                    context: "Du willst jemandem zeigen, dass du ihn liebst. Wirklich zeigen.",
+                    text: "Was tust du instinktiv?",
+                    options: [
+                        { id: "a", text: "Ich sage es. Laut, klar, unmissverständlich. Ich finde die Worte.", scores: { words: 3, gifts: 1 } },
+                        { id: "b", text: "Ich schenke meine ungeteilte Zeit – das Wertvollste, was ich habe.", scores: { time: 3, touch: 1 } },
+                        { id: "c", text: "Ich bringe etwas mit – vielleicht klein, aber bedeutsam.", scores: { gifts: 3, words: 1 } },
+                        { id: "d", text: "Ich tue etwas für sie – bevor sie überhaupt fragen müssen.", scores: { service: 3, time: 1 } },
+                        { id: "e", text: "Ich berühre sie – eine Hand, eine Umarmung, ein stilles Da-Sein.", scores: { touch: 3, words: 1 } }
+                    ]
+                },
+                {
+                    id: "q4",
+                    indicator: "ideal",
+                    context: "Stell dir den perfekten Moment mit deinem Menschen vor. Alles ist genau richtig.",
+                    text: "Was siehst du?",
+                    options: [
+                        { id: "a", text: "Wir reden bis tief in die Nacht – über alles, was wirklich zählt.", scores: { words: 3, time: 1 } },
+                        { id: "b", text: "Wir sind zusammen an einem Ort, der nur uns gehört – ungestört, zeitlos.", scores: { time: 3, touch: 1 } },
+                        { id: "c", text: "Er oder sie hat etwas vorbereitet – eine Überraschung, die nur für mich ist.", scores: { gifts: 3, service: 1 } },
+                        { id: "d", text: "Alles funktioniert – wir arbeiten Hand in Hand, ein eingespieltes Team.", scores: { service: 3, time: 1 } },
+                        { id: "e", text: "Wir liegen eng beieinander – Haut an Haut, Atem an Atem.", scores: { touch: 3, gifts: 1 } }
+                    ]
+                },
+                {
+                    id: "q5",
+                    indicator: "verletzung",
+                    context: "Dein Mensch hat etwas vergessen. Etwas, das dir wichtig war.",
+                    text: "Was trifft dich am tiefsten?",
+                    options: [
+                        { id: "a", text: "Dass er oder sie nicht mal erwähnt hat, dass es wichtig ist. Kein Wort.", scores: { words: 3, gifts: 1 } },
+                        { id: "b", text: "Dass wir keine Zeit hatten, es gemeinsam zu erleben.", scores: { time: 3, service: 1 } },
+                        { id: "c", text: "Dass der Tag kam und ging – ohne Geste, ohne Symbol.", scores: { gifts: 3, words: 1 } },
+                        { id: "d", text: "Dass ich alles alleine machen musste. Wieder.", scores: { service: 3, touch: 1 } },
+                        { id: "e", text: "Dass ich mich den ganzen Tag nicht berührt gefühlt habe.", scores: { touch: 3, time: 1 } }
+                    ]
+                },
+                {
+                    id: "q6",
+                    indicator: "forderung",
+                    context: "Ein harter Tag liegt hinter dir. Dein Mensch will helfen.",
+                    text: "Worum bittest du?",
+                    options: [
+                        { id: "a", text: "Erzähl mir, was du heute an mir bemerkt hast. Ich brauche deine Worte.", scores: { words: 3, touch: 1 } },
+                        { id: "b", text: "Setz dich zu mir. Hör einfach nur zu. Sei da.", scores: { time: 3, words: 1 } },
+                        { id: "c", text: "Bring mir etwas Kleines – ein Zeichen, dass du an mich gedacht hast.", scores: { gifts: 3, service: 1 } },
+                        { id: "d", text: "Übernimm etwas für mich. Lass mich kurz atmen.", scores: { service: 3, gifts: 1 } },
+                        { id: "e", text: "Halt mich einfach. Keine Worte nötig.", scores: { touch: 3, time: 1 } }
+                    ]
+                },
+                {
+                    id: "q7",
+                    indicator: "projektion",
+                    context: "Jemand, der dir wichtig ist, hat einen schweren Moment.",
+                    text: "Wie tröstest du?",
+                    options: [
+                        { id: "a", text: "Ich finde die richtigen Worte. Ich sage, was sie hören müssen.", scores: { words: 3, service: 1 } },
+                        { id: "b", text: "Ich bin einfach da. Ich höre zu, so lange es dauert.", scores: { time: 3, touch: 1 } },
+                        { id: "c", text: "Ich bringe etwas vorbei – ihre Lieblingsschokolade, eine Blume.", scores: { gifts: 3, time: 1 } },
+                        { id: "d", text: "Ich erledige etwas für sie – praktisch helfen, wo ich kann.", scores: { service: 3, words: 1 } },
+                        { id: "e", text: "Ich nehme sie in den Arm. Manchmal braucht es keine Worte.", scores: { touch: 3, gifts: 1 } }
+                    ]
+                },
+                {
+                    id: "q8",
+                    indicator: "ideal",
+                    context: "Du hast drei ungestörte Stunden mit deinem Menschen. Nur ihr beide.",
+                    text: "Was wählst du?",
+                    options: [
+                        { id: "a", text: "Ein langes, tiefes Gespräch über alles, was uns bewegt.", scores: { words: 3, time: 1 } },
+                        { id: "b", text: "Etwas gemeinsam erleben – kochen, spazieren, entdecken.", scores: { time: 3, service: 1 } },
+                        { id: "c", text: "Zusammen etwas aussuchen, das uns an diesen Moment erinnert.", scores: { gifts: 3, words: 1 } },
+                        { id: "d", text: "Gemeinsam ein Projekt angehen – als Team.", scores: { service: 3, time: 1 } },
+                        { id: "e", text: "Eng beieinander sein. Auf der Couch, im Bett, nah.", scores: { touch: 3, gifts: 1 } }
+                    ]
+                },
+                {
+                    id: "q9",
+                    indicator: "verletzung",
+                    context: "Etwas stimmt nicht zwischen euch. Du spürst es, auch wenn niemand es ausspricht.",
+                    text: "Was fehlt dir?",
+                    options: [
+                        { id: "a", text: "Die Worte. Er oder sie sagt nicht mehr, was ich bedeute.", scores: { words: 3, time: 1 } },
+                        { id: "b", text: "Die Momente. Wir sind da, aber nicht wirklich zusammen.", scores: { time: 3, words: 1 } },
+                        { id: "c", text: "Die Gesten. Früher gab es kleine Aufmerksamkeiten. Jetzt nicht mehr.", scores: { gifts: 3, touch: 1 } },
+                        { id: "d", text: "Die Taten. Früher hat er oder sie mitgedacht. Jetzt mach ich alles allein.", scores: { service: 3, gifts: 1 } },
+                        { id: "e", text: "Die Nähe. Wir berühren uns nicht mehr wie früher.", scores: { touch: 3, service: 1 } }
+                    ]
+                },
+                {
+                    id: "q10",
+                    indicator: "forderung",
+                    context: "Dein Geburtstag naht. Du darfst dir etwas wünschen – aber nur eines.",
+                    text: "Was wünschst du dir wirklich?",
+                    options: [
+                        { id: "a", text: "Einen handgeschriebenen Brief. Worte, die bleiben.", scores: { words: 3, gifts: 1 } },
+                        { id: "b", text: "Einen ganzen Tag nur mit ihm oder ihr. Ohne Ablenkung.", scores: { time: 3, touch: 1 } },
+                        { id: "c", text: "Ein Geschenk, das zeigt: Er oder sie kennt mich wirklich.", scores: { gifts: 3, service: 1 } },
+                        { id: "d", text: "Dass alles organisiert ist – und ich mich um nichts kümmern muss.", scores: { service: 3, time: 1 } },
+                        { id: "e", text: "Einen Abend voller Nähe. Kuscheln, Wärme, Berührung.", scores: { touch: 3, words: 1 } }
+                    ]
+                },
+                {
+                    id: "q11",
+                    indicator: "projektion",
+                    context: "Jemand fragt dich: „Woran merke ich, dass du mich liebst?"",
+                    text: "Deine Antwort:",
+                    options: [
+                        { id: "a", text: "Ich sage es dir. Immer wieder. In hundert verschiedenen Formen.", scores: { words: 3, touch: 1 } },
+                        { id: "b", text: "Ich bin da, wenn es zählt. Ich schenke dir meine Zeit.", scores: { time: 3, gifts: 1 } },
+                        { id: "c", text: "Ich denke an dich, auch wenn du nicht da bist – und zeige es dir.", scores: { gifts: 3, words: 1 } },
+                        { id: "d", text: "Ich tue Dinge für dich. Ohne dass du fragen musst.", scores: { service: 3, time: 1 } },
+                        { id: "e", text: "Du spürst es. In jeder Berührung, jeder Umarmung.", scores: { touch: 3, service: 1 } }
+                    ]
+                },
+                {
+                    id: "q12",
+                    indicator: "ideal",
+                    context: "Du erinnerst dich an den Moment, als du wusstest: Das ist Liebe.",
+                    text: "Was hat es verraten?",
+                    options: [
+                        { id: "a", text: "Etwas, das er oder sie gesagt hat. Worte, die alles veränderten.", scores: { words: 3, service: 1 } },
+                        { id: "b", text: "Ein Moment der absoluten Präsenz. Die Welt verschwand, nur wir blieben.", scores: { time: 3, words: 1 } },
+                        { id: "c", text: "Eine Geste. Etwas Kleines, aber so voller Bedeutung.", scores: { gifts: 3, touch: 1 } },
+                        { id: "d", text: "Etwas, das er oder sie getan hat – ohne dass ich darum bat.", scores: { service: 3, gifts: 1 } },
+                        { id: "e", text: "Eine Berührung. Elektrisch. Als hätte meine Haut auf ihn oder sie gewartet.", scores: { touch: 3, time: 1 } }
+                    ]
+                }
+            ],
+            
+            profiles: {
+                words: {
+                    id: "words",
+                    title: "Der Wortschmied",
+                    tagline: "Für dich sind Worte keine Floskeln – sie sind die Währung der Wahrheit.",
+                    description: `<p>Du hörst zwischen den Zeilen. Während andere ein beiläufiges „Ich mag dich" überhören, hörst du ein Universum darin – oder sein Fehlen. Worte sind für dich keine Dekoration des Alltags, sie sind sein Fundament. Ein aufrichtiges Kompliment kann deinen ganzen Tag verwandeln. Ein vergessenes „Ich liebe dich" kann ihn verdunkeln.</p>
+                    <p>Du erinnerst dich an Sätze, die andere längst vergessen haben. Die SMS von vor drei Jahren. Der Liebesbrief, den du nie weggeworfen hast. Das erste Mal, als jemand sagte, was du ihm bedeutest. Worte sind für dich Zeitkapseln – sie bewahren Momente auf, die sonst verblassen würden.</p>
+                    <p>Deine Gabe: Du kannst aussprechen, was andere nur fühlen. Du findest Worte für das Unsagbare. Menschen fühlen sich in deiner Gegenwart gesehen, weil du ihnen sagst, was du an ihnen siehst.</p>
+                    <p>In der Liebe brauchst du jemanden, der nicht nur fühlt, sondern ausspricht. Der „Ich liebe dich" nicht für besondere Anlässe aufspart. Der versteht, dass Schweigen für dich keine goldene Tugend ist, sondern ein leerer Raum, der gefüllt werden will.</p>`,
+                    stats: [
+                        { label: "Aufbewahrte Liebesbriefe", value: "127" },
+                        { label: "Kompliment-Detector", value: "94%" },
+                        { label: "Sarkasmus-Resistenz", value: "kritisch" },
+                        { label: "Gedächtnis für Worte", value: "elefantös" }
+                    ],
+                    allies: ["time", "touch"],
+                    allyText: "Der Präsenzwächter versteht dein Bedürfnis nach Tiefe; der Nähesucher ergänzt deine Worte mit Berührung.",
+                    nemesis: "service",
+                    nemesisText: "Der stille Beweger zeigt Liebe durch Taten – aber du brauchst die Worte dazu.",
+                    shareText: "Ich bin ein Wortschmied ✨ Für mich sind Worte keine Floskeln, sondern die Währung der Wahrheit.",
+                    color: "#D4A574",
+                    icon: "feather"
+                },
+                time: {
+                    id: "time",
+                    title: "Der Präsenzwächter",
+                    tagline: "Deine Liebe misst man nicht in Geschenken, sondern in ungeteilten Minuten.",
+                    description: `<p>Für dich ist Zeit das ultimative Liebesopfer. Nicht die Zeit, die einfach vergeht, während ihr im selben Raum seid – sondern die Zeit, in der jemand alles andere ausschaltet. Das Handy. Die Gedanken an morgen. Die To-Do-Liste. Du spürst sofort, wenn jemand nur physisch anwesend ist, aber gedanklich woanders.</p>
+                    <p>Du sammelst keine Dinge, du sammelst Momente. Der Roadtrip ohne Ziel. Das Gespräch um drei Uhr morgens. Der Spaziergang im Regen, weil es eben gerade regnet. Für dich liegt Romantik nicht im Aufwand, sondern in der Aufmerksamkeit.</p>
+                    <p>Deine Gabe: Du bist wirklich da, wenn du da bist. Menschen fühlen sich in deiner Gegenwart gehört, weil du zuhörst – nicht um zu antworten, sondern um zu verstehen.</p>
+                    <p>In der Liebe brauchst du jemanden, der versteht, dass Zeit das einzige ist, das man nicht zurückkaufen kann. Der Verabredungen nicht als Punkte auf einer Liste sieht, sondern als Versprechen.</p>`,
+                    stats: [
+                        { label: "Handy-auf-lautlos-Rate", value: "98%" },
+                        { label: "Quality-Time-Hunger", value: "chronisch" },
+                        { label: "Toleranz für Phubbing", value: "0%" },
+                        { label: "Gesammelte Momente", value: "∞" }
+                    ],
+                    allies: ["words", "touch"],
+                    allyText: "Der Wortschmied füllt eure gemeinsame Zeit mit Bedeutung; der Nähesucher versteht, dass Nähe Zeit braucht.",
+                    nemesis: "gifts",
+                    nemesisText: "Der Symbolträger denkt, ein Geschenk ersetzt Präsenz. Für dich ist ein Stein vom Urlaub wertlos, wenn ihr dort nie zusammen wart.",
+                    shareText: "Ich bin ein Präsenzwächter 🌙 Zeit ist meine Liebessprache – nicht die, die vergeht, sondern die, die man schenkt.",
+                    color: "#6B8E7D",
+                    icon: "clock"
+                },
+                gifts: {
+                    id: "gifts",
+                    title: "Der Symbolträger",
+                    tagline: "Du siehst in einem Stein vom Strand mehr Bedeutung als in tausend Worten.",
+                    description: `<p>Für dich sind Geschenke keine Transaktion, sondern Telegramme aus dem Herzen. Es geht nicht um den Preis – ein Stein, den jemand auf einem Spaziergang aufgehoben hat, weil er an dich dachte, ist mehr wert als Gold. Das Geschenk ist Beweis: Ich war nicht bei dir, aber du warst bei mir.</p>
+                    <p>Du bewahrst Dinge auf, die andere wegwerfen würden. Die Kinokarte vom ersten Date. Die Postkarte aus Barcelona. Für andere ist es Clutter. Für dich sind es Portale in die Vergangenheit.</p>
+                    <p>Deine Gabe: Du denkst an andere, wenn sie nicht da sind – und zeigst es ihnen. Du erinnerst dich an Vorlieben, an beiläufig erwähnte Wünsche. Deine Geschenke sagen: Ich kenne dich. Ich sehe dich.</p>
+                    <p>In der Liebe brauchst du jemanden, der versteht, dass Gesten materialisierte Gedanken sind. Der begreift, dass „Es ist nicht der Gedanke, der zählt" für dich der ultimative Liebesbeweis ist: Der Gedanke, der zur Tat wurde.</p>`,
+                    stats: [
+                        { label: "Erinnerungsstücke", value: "47" },
+                        { label: "Vergessene Geburtstage", value: "unverzeihlich" },
+                        { label: "Symbolisches Denken", value: "Maximum" },
+                        { label: "Wert eines Steins", value: "unbezahlbar" }
+                    ],
+                    allies: ["service", "words"],
+                    allyText: "Der stille Beweger versteht symbolische Taten; der Wortschmied kann die Bedeutung deiner Gesten benennen.",
+                    nemesis: "time",
+                    nemesisText: "Der Präsenzwächter sieht in Geschenken nur Ablenkung von dem, was wirklich zählt: zusammen sein.",
+                    shareText: "Ich bin ein Symbolträger 🎁 Geschenke sind für mich keine Dinge – sie sind Beweise, dass jemand an mich gedacht hat.",
+                    color: "#A67C6D",
+                    icon: "gift"
+                },
+                service: {
+                    id: "service",
+                    title: "Der stille Beweger",
+                    tagline: "Du liebst nicht mit Worten, du liebst mit Händen, die anpacken.",
+                    description: `<p>Für dich ist Liebe ein Verb. Keine Deklaration, sondern Demonstration. Während andere „Ich liebe dich" sagen, wäschst du ab, reparierst das Regal, fährst zum Flughafen um 4 Uhr morgens. Deine Liebe ist leise, aber sie trägt.</p>
+                    <p>Du erkennst Liebe daran, was jemand tut – nicht daran, was jemand sagt. Versprechen sind billig. Taten kosten. Wenn jemand früher aufsteht, um dir Frühstück zu machen, ohne dass du fragst – das ist Liebe in deiner Sprache.</p>
+                    <p>Deine Gabe: Du bist der Mensch, auf den man zählen kann. Du siehst, was getan werden muss, und du tust es. Du bist das Fundament, auf dem andere stehen können.</p>
+                    <p>In der Liebe brauchst du jemanden, der Liebe nicht nur fühlt, sondern umsetzt. Der sieht, wenn du müde bist, und etwas übernimmt. Der versteht, dass „Kann ich dir helfen?" manchmal das romantischste ist, was man sagen kann.</p>`,
+                    stats: [
+                        { label: "Probleme gelöst", value: "89%" },
+                        { label: "Definition von Liebe", value: "= Verb" },
+                        { label: "Gebrochene Versprechen", value: "unvergessen" },
+                        { label: "Unsichtbare Arbeit", value: "legendär" }
+                    ],
+                    allies: ["gifts", "time"],
+                    allyText: "Der Symbolträger versteht, dass Taten symbolisch sind; der Präsenzwächter weiß gemeinsame Projekte zu schätzen.",
+                    nemesis: "words",
+                    nemesisText: "Der Wortschmied braucht Worte – aber du zeigst Liebe durch Tun. Ohne Übersetzung fühlt er sich ungeliebt.",
+                    shareText: "Ich bin ein stiller Beweger 🛠️ Meine Liebe sagt man nicht, man tut sie. Taten > Worte.",
+                    color: "#8B6F5C",
+                    icon: "tool"
+                },
+                touch: {
+                    id: "touch",
+                    title: "Der Nähesucher",
+                    tagline: "Für dich ist eine Umarmung ein ganzes Gespräch – und manchmal das einzige, das du brauchst.",
+                    description: `<p>Deine Haut hat ein Gedächtnis. Sie erinnert sich an die Umarmung, die zu früh endete. An die Hand, die nicht gehalten wurde. An die Nacht, in der jemand näher hätte rücken können – und es nicht tat. Berührung ist für dich nicht Beiwerk der Liebe, sie ist ihr Beweis.</p>
+                    <p>Du kommunizierst durch Nähe. Eine Hand auf der Schulter. Ein Streichen über den Rücken im Vorbeigehen. Das beiläufige Berühren im Gespräch. Für dich sind das keine Kleinigkeiten – es sind konstante Signale: Ich bin hier. Du bist nicht allein.</p>
+                    <p>Deine Gabe: Du gibst Menschen das Gefühl, angekommen zu sein. In deiner Nähe entspannen sich Schultern, lösen sich Knoten. Du verstehst, dass manchmal keine Worte helfen – aber eine Umarmung alles sagt.</p>
+                    <p>In der Liebe brauchst du jemanden, der versteht, dass Berührung für dich keine Option ist, sondern ein Grundbedürfnis. Der weiß, dass nach einem Streit manchmal eine Umarmung mehr heilt als jede Entschuldigung.</p>`,
+                    stats: [
+                        { label: "Oxytocin-Level", value: "200%" },
+                        { label: "Optimale Umarmung", value: "20+ Sek" },
+                        { label: "Händchenhalten", value: "immer" },
+                        { label: "Abstand = Aussage", value: "ja" }
+                    ],
+                    allies: ["time", "words"],
+                    allyText: "Der Präsenzwächter versteht, dass Nähe Zeit braucht; der Wortschmied kann benennen, was deine Berührungen sagen.",
+                    nemesis: "service",
+                    nemesisText: "Der stille Beweger zeigt Liebe durch Tun – aber du brauchst die körperliche Nähe dazu.",
+                    shareText: "Ich bin ein Nähesucher 🤲 Für mich ist eine Umarmung ein ganzes Gespräch.",
+                    color: "#C49B8A",
+                    icon: "heart"
+                }
+            },
+            
+            dimensions: {
+                words: { name: "Worte", fullName: "Worte der Bestätigung" },
+                time: { name: "Präsenz", fullName: "Qualitätszeit" },
+                gifts: { name: "Symbole", fullName: "Geschenke" },
+                service: { name: "Taten", fullName: "Hilfsbereitschaft" },
+                touch: { name: "Nähe", fullName: "Zärtlichkeit" }
+            }
+        };
+
+        // ═══════════════════════════════════════════════════════════════════
+        // STATE
+        // ═══════════════════════════════════════════════════════════════════
+        
+        let currentQuestion = 0;
+        let scores = { words: 0, time: 0, gifts: 0, service: 0, touch: 0 };
+        let answers = [];
+
+        // ═══════════════════════════════════════════════════════════════════
+        // ICONS
+        // ═══════════════════════════════════════════════════════════════════
+        
+        const icons = {
+            feather: `<svg viewBox="0 0 24 24"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/></svg>`,
+            clock: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+            gift: `<svg viewBox="0 0 24 24"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>`,
+            tool: `<svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`,
+            heart: `<svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`
+        };
+
+        // ═══════════════════════════════════════════════════════════════════
+        // NAVIGATION
+        // ═══════════════════════════════════════════════════════════════════
+        
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function startQuiz() {
+            currentQuestion = 0;
+            scores = { words: 0, time: 0, gifts: 0, service: 0, touch: 0 };
+            answers = [];
+            renderQuestions();
+            showScreen('quiz');
+            updateProgress();
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // QUIZ RENDERING
+        // ═══════════════════════════════════════════════════════════════════
+        
+        function renderQuestions() {
+            const quizBody = document.getElementById('quizBody');
+            quizBody.innerHTML = '';
+            
+            quizData.questions.forEach((q, index) => {
+                const container = document.createElement('div');
+                container.className = 'question-container' + (index === 0 ? ' active' : '');
+                container.id = `question-${index}`;
+                
+                container.innerHTML = `
+                    <div class="question-context">${q.context}</div>
+                    <h2 class="question-text">${q.text}</h2>
+                    <div class="options-list">
+                        ${q.options.map((opt, optIndex) => `
+                            <button class="option-btn" data-question="${index}" data-option="${optIndex}">
+                                ${opt.text}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+                
+                // Add event listeners
+                container.querySelectorAll('.option-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const qIdx = parseInt(this.dataset.question);
+                        const oIdx = parseInt(this.dataset.option);
+                        const option = quizData.questions[qIdx].options[oIdx];
+                        selectOption(qIdx, option.id, option.scores, this);
+                    });
+                });
+                
+                quizBody.appendChild(container);
+            });
+        }
+
+        function selectOption(questionIndex, optionId, optionScores, buttonEl) {
+            // Store answer
+            answers[questionIndex] = { optionId, scores: optionScores };
+            
+            // Add scores
+            Object.keys(optionScores).forEach(dim => {
+                scores[dim] += optionScores[dim];
+            });
+            
+            // Visual feedback
+            const container = document.getElementById(`question-${questionIndex}`);
+            const buttons = container.querySelectorAll('.option-btn');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            buttonEl.classList.add('selected');
+            
+            // Next question or finish
+            setTimeout(() => {
+                if (questionIndex < quizData.questions.length - 1) {
+                    currentQuestion++;
+                    updateProgress();
+                    showQuestion(currentQuestion);
+                } else {
+                    finishQuiz();
+                }
+            }, 300);
+        }
+
+        function showQuestion(index) {
+            document.querySelectorAll('.question-container').forEach(q => q.classList.remove('active'));
+            document.getElementById(`question-${index}`).classList.add('active');
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion) / quizData.questions.length) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+            document.getElementById('questionCounter').textContent = `Frage ${currentQuestion + 1} von ${quizData.questions.length}`;
+            
+            const indicators = ['Verletzung', 'Forderung', 'Projektion', 'Ideal-Zustand'];
+            const q = quizData.questions[currentQuestion];
+            const indicatorMap = { verletzung: 'Verletzung', forderung: 'Forderung', projektion: 'Projektion', ideal: 'Ideal-Zustand' };
+            document.getElementById('questionCategory').textContent = indicatorMap[q.indicator] || 'Selbstreflexion';
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // RESULTS
+        // ═══════════════════════════════════════════════════════════════════
+        
+        function finishQuiz() {
+            showScreen('loading');
+            
+            setTimeout(() => {
+                const result = calculateResult();
+                renderResult(result);
+                showScreen('result');
+                emitContributionEvent(result);
+            }, 2500);
+        }
+
+        function calculateResult() {
+            // Find highest score
+            let maxScore = 0;
+            let primaryDimension = 'words';
+            
+            Object.keys(scores).forEach(dim => {
+                if (scores[dim] > maxScore) {
+                    maxScore = scores[dim];
+                    primaryDimension = dim;
+                }
+            });
+            
+            // Calculate percentages
+            const totalScore = Object.values(scores).reduce((a, b) => a + b, 0);
+            const percentages = {};
+            Object.keys(scores).forEach(dim => {
+                percentages[dim] = Math.round((scores[dim] / totalScore) * 100);
+            });
+            
+            return {
+                profile: quizData.profiles[primaryDimension],
+                scores,
+                percentages,
+                totalScore
+            };
+        }
+
+        function renderResult(result) {
+            const profile = result.profile;
+            
+            // Icon
+            document.getElementById('resultIcon').innerHTML = icons[profile.icon];
+            document.getElementById('resultIcon').querySelector('svg').style.stroke = profile.color;
+            
+            // Title & Tagline
+            document.getElementById('resultTitle').textContent = profile.title;
+            document.getElementById('resultTagline').textContent = profile.tagline;
+            
+            // Stats
+            const statsHTML = profile.stats.map(stat => `
+                <div class="stat-item">
+                    <div class="stat-value">${stat.value}</div>
+                    <div class="stat-label">${stat.label}</div>
+                </div>
+            `).join('');
+            document.getElementById('resultStats').innerHTML = statsHTML;
+            
+            // Dimension Bars
+            const sortedDims = Object.entries(result.percentages)
+                .sort((a, b) => b[1] - a[1]);
+            
+            const barsHTML = sortedDims.map(([dim, pct]) => `
+                <div class="dimension-item">
+                    <div class="dimension-header">
+                        <span class="dimension-name">${quizData.dimensions[dim].name}</span>
+                        <span class="dimension-value">${pct}%</span>
+                    </div>
+                    <div class="dimension-bar">
+                        <div class="dimension-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('dimensionBars').innerHTML = barsHTML;
+            
+            // Animate bars
+            setTimeout(() => {
+                const fills = document.querySelectorAll('.dimension-fill');
+                sortedDims.forEach(([dim, pct], i) => {
+                    fills[i].style.width = `${pct}%`;
+                });
+            }, 100);
+            
+            // Compatibility
+            const allyNames = profile.allies.map(a => quizData.profiles[a].title).join(' & ');
+            const nemesisName = quizData.profiles[profile.nemesis].title;
+            
+            document.getElementById('compatibilitySection').innerHTML = `
+                <div class="compatibility-title">Deine Kompatibilität</div>
+                <div class="compatibility-item">
+                    <span class="compatibility-badge ally">Allies</span>
+                    <span class="compatibility-text"><strong>${allyNames}</strong> – ${profile.allyText}</span>
+                </div>
+                <div class="compatibility-item">
+                    <span class="compatibility-badge nemesis">Vorsicht</span>
+                    <span class="compatibility-text"><strong>${nemesisName}</strong> – ${profile.nemesisText}</span>
+                </div>
+            `;
+            
+            // Description
+            document.getElementById('resultDescription').innerHTML = `
+                <div class="result-description-text">${profile.description}</div>
+            `;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // CONTRIBUTION EVENT (sp.contribution.v1)
+        // ═══════════════════════════════════════════════════════════════════
+        
+        function emitContributionEvent(result) {
+            const totalScore = result.totalScore;
+            
+            // Markers (normalized 0-1)
+            const markers = Object.entries(result.scores).map(([dim, score]) => ({
+                id: `marker.love.${dim}`,
+                weight: Math.round((score / totalScore) * 100) / 100
+            }));
+            
+            // Traits (0-100)
+            const traits = Object.entries(result.percentages).map(([dim, pct]) => {
+                let band = 'mid';
+                if (pct <= 25) band = 'low';
+                else if (pct <= 40) band = 'midlow';
+                else if (pct <= 60) band = 'mid';
+                else if (pct <= 75) band = 'midhigh';
+                else band = 'high';
+                
+                return {
+                    id: `trait.love.${dim}`,
+                    score: pct,
+                    band
+                };
+            });
+            
+            // Tags
+            const tags = [
+                {
+                    id: `tag.love.${result.profile.id}`,
+                    label: result.profile.title,
+                    kind: 'archetype',
+                    weight: markers.find(m => m.id === `marker.love.${result.profile.id}`).weight
+                }
+            ];
+            
+            // Unlocks
+            const primaryWeight = markers.find(m => m.id === `marker.love.${result.profile.id}`).weight;
+            let level = 1;
+            if (primaryWeight >= 0.85) level = 3;
+            else if (primaryWeight >= 0.7) level = 2;
+            
+            const unlocks = [{
+                id: `unlock.crests.love_${result.profile.id}`,
+                unlocked: true,
+                level,
+                sourceRef: 'quiz.love.languages.v1'
+            }];
+            
+            const contributionEvent = {
+                type: 'sp.contribution.v1',
+                source: 'quiz.love.languages.v1',
+                timestamp: new Date().toISOString(),
+                markers,
+                traits,
+                tags,
+                unlocks,
+                raw: {
+                    answers: answers.map((a, i) => ({
+                        questionId: quizData.questions[i].id,
+                        optionId: a.optionId
+                    })),
+                    scores: result.scores,
+                    percentages: result.percentages,
+                    profile: result.profile.id
+                }
+            };
+            
+            // Emit custom event
+            window.dispatchEvent(new CustomEvent('quizComplete', { detail: contributionEvent }));
+            
+            // Store locally
+            try {
+                localStorage.setItem('quiz.love.languages.result', JSON.stringify(contributionEvent));
+            } catch (e) {
+                console.log('LocalStorage not available');
+            }
+            
+            console.log('ContributionEvent:', contributionEvent);
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // SHARING
+        // ═══════════════════════════════════════════════════════════════════
+        
+        function shareResult() {
+            const stored = localStorage.getItem('quiz.love.languages.result');
+            if (!stored) return;
+            
+            const data = JSON.parse(stored);
+            const profile = quizData.profiles[data.raw.profile];
+            const shareText = `${profile.shareText}\n\nWelche Sprache spricht dein Herz? 💕\n#LoveLanguages #QuizzMe`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Meine Liebessprache',
+                    text: shareText,
+                    url: window.location.href
+                });
+            } else {
+                copyShareText();
+            }
+        }
+
+        function copyShareText(btn) {
+            const stored = localStorage.getItem('quiz.love.languages.result');
+            if (!stored) return;
+            
+            const data = JSON.parse(stored);
+            const profile = quizData.profiles[data.raw.profile];
+            const shareText = `${profile.shareText}\n\nWelche Sprache spricht dein Herz? 💕`;
+            
+            navigator.clipboard.writeText(shareText).then(() => {
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✓ Kopiert!';
+                setTimeout(() => btn.innerHTML = originalText, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

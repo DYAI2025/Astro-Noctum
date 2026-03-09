@@ -1,0 +1,13 @@
+# sign,start_deg,end_deg (tropical zodiac, ecliptic longitude)
+Widder,0,30
+Stier,30,60
+Zwillinge,60,90
+Krebs,90,120
+Löwe,120,150
+Jungfrau,150,180
+Waage,180,210
+Skorpion,210,240
+Schütze,240,270
+Steinbock,270,300
+Wassermann,300,330
+Fische,330,360
