@@ -1,0 +1,704 @@
+{
+  "_schema_version": "quissme.plant_asset_library.v1",
+  "_generated": "2026-02-10",
+  "meta": {
+    "product_ui_title": "QuissMe",
+    "style_rules": {
+      "base_3d_low_poly": "faceted polygons only, flat shading per face, no textures, no gradients within faces",
+      "palette": "premium warm sunrise/dusk palette (muted, not neon)",
+      "background": "transparent",
+      "camera": "slight isometric 3/4 view, centered",
+      "shadows": "no heavy shadows"
+    },
+    "growth_stages": {
+      "s1": "sprout (very small)",
+      "s2": "plant (medium)",
+      "s3": "bloom (largest, signature top element)"
+    },
+    "axis_keys": [
+      "closeness",
+      "alignment",
+      "tension"
+    ]
+  },
+  "hybrid_rule": {
+    "rule": "Hybrid = base structure from plant A + signature top element from plant B; must be one coherent plant silhouette.",
+    "prompt_template": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Create a single hybrid low-poly plant by combining {PLANT_A} base structure with {{PLANT_B}} signature top element. It must still look like one coherent plant, not two objects."
+  },
+  "families": [
+    {
+      "family_id": "rosebud",
+      "axis_key": "closeness",
+      "de": "Rosenknospe",
+      "en": "Rosebud",
+      "descriptor": "a faceted rosebud with layered polygon petals",
+      "notes": "Keep the bud elegant and compact; warm blush tones, no neon."
+    },
+    {
+      "family_id": "peony",
+      "axis_key": "closeness",
+      "de": "Pfingstrose",
+      "en": "Peony",
+      "descriptor": "a fuller faceted bloom with layered petals (still angular)",
+      "notes": "More volume than rosebud; still crisp facets."
+    },
+    {
+      "family_id": "heartvine",
+      "axis_key": "closeness",
+      "de": "Herz-Ranke",
+      "en": "Heart Vine",
+      "descriptor": "two faceted vines forming a subtle heart-shaped loop",
+      "notes": "Heart shape should be subtle and premium, not cartoonish."
+    },
+    {
+      "family_id": "huggrass",
+      "axis_key": "closeness",
+      "de": "Kuschelgras",
+      "en": "Hug Grass",
+      "descriptor": "a tuft of soft-looking faceted grass blades leaning inward",
+      "notes": "Blades lean toward center to imply closeness; keep it minimal."
+    },
+    {
+      "family_id": "lavender_row",
+      "axis_key": "alignment",
+      "de": "Lavendel-Reihe",
+      "en": "Lavender Row",
+      "descriptor": "a neat row of faceted lavender spikes, structured rhythm",
+      "notes": "Looks organized; row reads as 'pattern' and 'routine'."
+    },
+    {
+      "family_id": "bonsai",
+      "axis_key": "alignment",
+      "de": "Bonsai",
+      "en": "Bonsai",
+      "descriptor": "a small faceted bonsai tree with a geometric canopy",
+      "notes": "Geometric canopy with tiered planes; calm, balanced silhouette."
+    },
+    {
+      "family_id": "reed",
+      "axis_key": "alignment",
+      "de": "Uferhalm",
+      "en": "Reed",
+      "descriptor": "two or three tall faceted reeds with a calm vertical rhythm",
+      "notes": "Vertical rhythm; slight bend allowed but keep angular facets."
+    },
+    {
+      "family_id": "stepping_stones",
+      "axis_key": "alignment",
+      "de": "Trittsteine",
+      "en": "Stepping Stones",
+      "descriptor": "three faceted stepping stones arranged as a gentle path marker",
+      "notes": "Object-family (still counts as placement); conveys direction/flow."
+    },
+    {
+      "family_id": "pine_sprig",
+      "axis_key": "tension",
+      "de": "Kiefernzweig",
+      "en": "Pine Sprig",
+      "descriptor": "a faceted pine sprig with triangular needle clusters",
+      "notes": "Resilient, not aggressive; keep shapes tidy and premium."
+    },
+    {
+      "family_id": "thistle",
+      "axis_key": "tension",
+      "de": "Distel",
+      "en": "Thistle",
+      "descriptor": "a faceted thistle with a strong crown and spiky leaf facets (not aggressive)",
+      "notes": "Spikes feel protective/resilient, not threatening."
+    },
+    {
+      "family_id": "moss_rock",
+      "axis_key": "tension",
+      "de": "Moosfels",
+      "en": "Moss Rock",
+      "descriptor": "a faceted rock with soft faceted moss patches on top",
+      "notes": "Rock as grounded resilience; moss adds warmth."
+    },
+    {
+      "family_id": "crystal_leaf",
+      "axis_key": "tension",
+      "de": "Kristallblatt",
+      "en": "Crystal Leaf",
+      "descriptor": "a faceted leaf plant with mineral-like leaf planes, warm translucent impression without gradients",
+      "notes": "Mineral vibe but muted; avoid neon/laser look; still flat shaded."
+    }
+  ],
+  "assets": [
+    {
+      "asset_id": "plant_rosebud_s1",
+      "family_id": "rosebud",
+      "axis_key": "closeness",
+      "stage": 1,
+      "stage_label": "sprout",
+      "name_de": "Rosenknospe",
+      "name_en": "Rosebud",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 1 (sprout): very small, simple silhouette, 1–2 stems, 2–4 leaf facets, minimal detail. Plant family: rosebud — a faceted rosebud with layered polygon petals. Keep the bud elegant and compact; warm blush tones, no neon.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 1 (sprout): very small, simple silhouette, 1–2 stems, 2–4 leaf facets, minimal detail.",
+        "family_descriptor": "a faceted rosebud with layered polygon petals",
+        "notes": "Keep the bud elegant and compact; warm blush tones, no neon."
+      }
+    },
+    {
+      "asset_id": "plant_rosebud_s2",
+      "family_id": "rosebud",
+      "axis_key": "closeness",
+      "stage": 2,
+      "stage_label": "plant",
+      "name_de": "Rosenknospe",
+      "name_en": "Rosebud",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 2 (plant): medium size, clearer silhouette, one secondary branch, more leaf facets, slightly richer shape language. Plant family: rosebud — a faceted rosebud with layered polygon petals. Keep the bud elegant and compact; warm blush tones, no neon.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 2 (plant): medium size, clearer silhouette, one secondary branch, more leaf facets, slightly richer shape language.",
+        "family_descriptor": "a faceted rosebud with layered polygon petals",
+        "notes": "Keep the bud elegant and compact; warm blush tones, no neon."
+      }
+    },
+    {
+      "asset_id": "plant_rosebud_s3",
+      "family_id": "rosebud",
+      "axis_key": "closeness",
+      "stage": 3,
+      "stage_label": "bloom",
+      "name_de": "Rosenknospe",
+      "name_en": "Rosebud",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 3 (bloom): largest size, signature bloom/top element, feels rewarding but still minimalist. No extra particles. Plant family: rosebud — a faceted rosebud with layered polygon petals. Keep the bud elegant and compact; warm blush tones, no neon.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 3 (bloom): largest size, signature bloom/top element, feels rewarding but still minimalist. No extra particles.",
+        "family_descriptor": "a faceted rosebud with layered polygon petals",
+        "notes": "Keep the bud elegant and compact; warm blush tones, no neon."
+      }
+    },
+    {
+      "asset_id": "plant_peony_s1",
+      "family_id": "peony",
+      "axis_key": "closeness",
+      "stage": 1,
+      "stage_label": "sprout",
+      "name_de": "Pfingstrose",
+      "name_en": "Peony",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 1 (sprout): very small, simple silhouette, 1–2 stems, 2–4 leaf facets, minimal detail. Plant family: peony — a fuller faceted bloom with layered petals (still angular). More volume than rosebud; still crisp facets.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 1 (sprout): very small, simple silhouette, 1–2 stems, 2–4 leaf facets, minimal detail.",
+        "family_descriptor": "a fuller faceted bloom with layered petals (still angular)",
+        "notes": "More volume than rosebud; still crisp facets."
+      }
+    },
+    {
+      "asset_id": "plant_peony_s2",
+      "family_id": "peony",
+      "axis_key": "closeness",
+      "stage": 2,
+      "stage_label": "plant",
+      "name_de": "Pfingstrose",
+      "name_en": "Peony",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 2 (plant): medium size, clearer silhouette, one secondary branch, more leaf facets, slightly richer shape language. Plant family: peony — a fuller faceted bloom with layered petals (still angular). More volume than rosebud; still crisp facets.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 2 (plant): medium size, clearer silhouette, one secondary branch, more leaf facets, slightly richer shape language.",
+        "family_descriptor": "a fuller faceted bloom with layered petals (still angular)",
+        "notes": "More volume than rosebud; still crisp facets."
+      }
+    },
+    {
+      "asset_id": "plant_peony_s3",
+      "family_id": "peony",
+      "axis_key": "closeness",
+      "stage": 3,
+      "stage_label": "bloom",
+      "name_de": "Pfingstrose",
+      "name_en": "Peony",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 3 (bloom): largest size, signature bloom/top element, feels rewarding but still minimalist. No extra particles. Plant family: peony — a fuller faceted bloom with layered petals (still angular). More volume than rosebud; still crisp facets.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 3 (bloom): largest size, signature bloom/top element, feels rewarding but still minimalist. No extra particles.",
+        "family_descriptor": "a fuller faceted bloom with layered petals (still angular)",
+        "notes": "More volume than rosebud; still crisp facets."
+      }
+    },
+    {
+      "asset_id": "plant_heartvine_s1",
+      "family_id": "heartvine",
+      "axis_key": "closeness",
+      "stage": 1,
+      "stage_label": "sprout",
+      "name_de": "Herz-Ranke",
+      "name_en": "Heart Vine",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 1 (sprout): very small, simple silhouette, 1–2 stems, 2–4 leaf facets, minimal detail. Plant family: heartvine — two faceted vines forming a subtle heart-shaped loop. Heart shape should be subtle and premium, not cartoonish.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 1 (sprout): very small, simple silhouette, 1–2 stems, 2–4 leaf facets, minimal detail.",
+        "family_descriptor": "two faceted vines forming a subtle heart-shaped loop",
+        "notes": "Heart shape should be subtle and premium, not cartoonish."
+      }
+    },
+    {
+      "asset_id": "plant_heartvine_s2",
+      "family_id": "heartvine",
+      "axis_key": "closeness",
+      "stage": 2,
+      "stage_label": "plant",
+      "name_de": "Herz-Ranke",
+      "name_en": "Heart Vine",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 2 (plant): medium size, clearer silhouette, one secondary branch, more leaf facets, slightly richer shape language. Plant family: heartvine — two faceted vines forming a subtle heart-shaped loop. Heart shape should be subtle and premium, not cartoonish.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 2 (plant): medium size, clearer silhouette, one secondary branch, more leaf facets, slightly richer shape language.",
+        "family_descriptor": "two faceted vines forming a subtle heart-shaped loop",
+        "notes": "Heart shape should be subtle and premium, not cartoonish."
+      }
+    },
+    {
+      "asset_id": "plant_heartvine_s3",
+      "family_id": "heartvine",
+      "axis_key": "closeness",
+      "stage": 3,
+      "stage_label": "bloom",
+      "name_de": "Herz-Ranke",
+      "name_en": "Heart Vine",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 3 (bloom): largest size, signature bloom/top element, feels rewarding but still minimalist. No extra particles. Plant family: heartvine — two faceted vines forming a subtle heart-shaped loop. Heart shape should be subtle and premium, not cartoonish.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 3 (bloom): largest size, signature bloom/top element, feels rewarding but still minimalist. No extra particles.",
+        "family_descriptor": "two faceted vines forming a subtle heart-shaped loop",
+        "notes": "Heart shape should be subtle and premium, not cartoonish."
+      }
+    },
+    {
+      "asset_id": "plant_huggrass_s1",
+      "family_id": "huggrass",
+      "axis_key": "closeness",
+      "stage": 1,
+      "stage_label": "sprout",
+      "name_de": "Kuschelgras",
+      "name_en": "Hug Grass",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 1 (sprout): very small, simple silhouette, 1–2 stems, 2–4 leaf facets, minimal detail. Plant family: huggrass — a tuft of soft-looking faceted grass blades leaning inward. Blades lean toward center to imply closeness; keep it minimal.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 1 (sprout): very small, simple silhouette, 1–2 stems, 2–4 leaf facets, minimal detail.",
+        "family_descriptor": "a tuft of soft-looking faceted grass blades leaning inward",
+        "notes": "Blades lean toward center to imply closeness; keep it minimal."
+      }
+    },
+    {
+      "asset_id": "plant_huggrass_s2",
+      "family_id": "huggrass",
+      "axis_key": "closeness",
+      "stage": 2,
+      "stage_label": "plant",
+      "name_de": "Kuschelgras",
+      "name_en": "Hug Grass",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 2 (plant): medium size, clearer silhouette, one secondary branch, more leaf facets, slightly richer shape language. Plant family: huggrass — a tuft of soft-looking faceted grass blades leaning inward. Blades lean toward center to imply closeness; keep it minimal.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 2 (plant): medium size, clearer silhouette, one secondary branch, more leaf facets, slightly richer shape language.",
+        "family_descriptor": "a tuft of soft-looking faceted grass blades leaning inward",
+        "notes": "Blades lean toward center to imply closeness; keep it minimal."
+      }
+    },
+    {
+      "asset_id": "plant_huggrass_s3",
+      "family_id": "huggrass",
+      "axis_key": "closeness",
+      "stage": 3,
+      "stage_label": "bloom",
+      "name_de": "Kuschelgras",
+      "name_en": "Hug Grass",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 3 (bloom): largest size, signature bloom/top element, feels rewarding but still minimalist. No extra particles. Plant family: huggrass — a tuft of soft-looking faceted grass blades leaning inward. Blades lean toward center to imply closeness; keep it minimal.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 3 (bloom): largest size, signature bloom/top element, feels rewarding but still minimalist. No extra particles.",
+        "family_descriptor": "a tuft of soft-looking faceted grass blades leaning inward",
+        "notes": "Blades lean toward center to imply closeness; keep it minimal."
+      }
+    },
+    {
+      "asset_id": "plant_lavender_row_s1",
+      "family_id": "lavender_row",
+      "axis_key": "alignment",
+      "stage": 1,
+      "stage_label": "sprout",
+      "name_de": "Lavendel-Reihe",
+      "name_en": "Lavender Row",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 1 (sprout): very small, simple silhouette, 1–2 stems, 2–4 leaf facets, minimal detail. Plant family: lavender_row — a neat row of faceted lavender spikes, structured rhythm. Looks organized; row reads as 'pattern' and 'routine'.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 1 (sprout): very small, simple silhouette, 1–2 stems, 2–4 leaf facets, minimal detail.",
+        "family_descriptor": "a neat row of faceted lavender spikes, structured rhythm",
+        "notes": "Looks organized; row reads as 'pattern' and 'routine'."
+      }
+    },
+    {
+      "asset_id": "plant_lavender_row_s2",
+      "family_id": "lavender_row",
+      "axis_key": "alignment",
+      "stage": 2,
+      "stage_label": "plant",
+      "name_de": "Lavendel-Reihe",
+      "name_en": "Lavender Row",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 2 (plant): medium size, clearer silhouette, one secondary branch, more leaf facets, slightly richer shape language. Plant family: lavender_row — a neat row of faceted lavender spikes, structured rhythm. Looks organized; row reads as 'pattern' and 'routine'.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 2 (plant): medium size, clearer silhouette, one secondary branch, more leaf facets, slightly richer shape language.",
+        "family_descriptor": "a neat row of faceted lavender spikes, structured rhythm",
+        "notes": "Looks organized; row reads as 'pattern' and 'routine'."
+      }
+    },
+    {
+      "asset_id": "plant_lavender_row_s3",
+      "family_id": "lavender_row",
+      "axis_key": "alignment",
+      "stage": 3,
+      "stage_label": "bloom",
+      "name_de": "Lavendel-Reihe",
+      "name_en": "Lavender Row",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 3 (bloom): largest size, signature bloom/top element, feels rewarding but still minimalist. No extra particles. Plant family: lavender_row — a neat row of faceted lavender spikes, structured rhythm. Looks organized; row reads as 'pattern' and 'routine'.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 3 (bloom): largest size, signature bloom/top element, feels rewarding but still minimalist. No extra particles.",
+        "family_descriptor": "a neat row of faceted lavender spikes, structured rhythm",
+        "notes": "Looks organized; row reads as 'pattern' and 'routine'."
+      }
+    },
+    {
+      "asset_id": "plant_bonsai_s1",
+      "family_id": "bonsai",
+      "axis_key": "alignment",
+      "stage": 1,
+      "stage_label": "sprout",
+      "name_de": "Bonsai",
+      "name_en": "Bonsai",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 1 (sprout): very small, simple silhouette, 1–2 stems, 2–4 leaf facets, minimal detail. Plant family: bonsai — a small faceted bonsai tree with a geometric canopy. Geometric canopy with tiered planes; calm, balanced silhouette.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 1 (sprout): very small, simple silhouette, 1–2 stems, 2–4 leaf facets, minimal detail.",
+        "family_descriptor": "a small faceted bonsai tree with a geometric canopy",
+        "notes": "Geometric canopy with tiered planes; calm, balanced silhouette."
+      }
+    },
+    {
+      "asset_id": "plant_bonsai_s2",
+      "family_id": "bonsai",
+      "axis_key": "alignment",
+      "stage": 2,
+      "stage_label": "plant",
+      "name_de": "Bonsai",
+      "name_en": "Bonsai",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 2 (plant): medium size, clearer silhouette, one secondary branch, more leaf facets, slightly richer shape language. Plant family: bonsai — a small faceted bonsai tree with a geometric canopy. Geometric canopy with tiered planes; calm, balanced silhouette.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 2 (plant): medium size, clearer silhouette, one secondary branch, more leaf facets, slightly richer shape language.",
+        "family_descriptor": "a small faceted bonsai tree with a geometric canopy",
+        "notes": "Geometric canopy with tiered planes; calm, balanced silhouette."
+      }
+    },
+    {
+      "asset_id": "plant_bonsai_s3",
+      "family_id": "bonsai",
+      "axis_key": "alignment",
+      "stage": 3,
+      "stage_label": "bloom",
+      "name_de": "Bonsai",
+      "name_en": "Bonsai",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 3 (bloom): largest size, signature bloom/top element, feels rewarding but still minimalist. No extra particles. Plant family: bonsai — a small faceted bonsai tree with a geometric canopy. Geometric canopy with tiered planes; calm, balanced silhouette.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 3 (bloom): largest size, signature bloom/top element, feels rewarding but still minimalist. No extra particles.",
+        "family_descriptor": "a small faceted bonsai tree with a geometric canopy",
+        "notes": "Geometric canopy with tiered planes; calm, balanced silhouette."
+      }
+    },
+    {
+      "asset_id": "plant_reed_s1",
+      "family_id": "reed",
+      "axis_key": "alignment",
+      "stage": 1,
+      "stage_label": "sprout",
+      "name_de": "Uferhalm",
+      "name_en": "Reed",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 1 (sprout): very small, simple silhouette, 1–2 stems, 2–4 leaf facets, minimal detail. Plant family: reed — two or three tall faceted reeds with a calm vertical rhythm. Vertical rhythm; slight bend allowed but keep angular facets.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 1 (sprout): very small, simple silhouette, 1–2 stems, 2–4 leaf facets, minimal detail.",
+        "family_descriptor": "two or three tall faceted reeds with a calm vertical rhythm",
+        "notes": "Vertical rhythm; slight bend allowed but keep angular facets."
+      }
+    },
+    {
+      "asset_id": "plant_reed_s2",
+      "family_id": "reed",
+      "axis_key": "alignment",
+      "stage": 2,
+      "stage_label": "plant",
+      "name_de": "Uferhalm",
+      "name_en": "Reed",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 2 (plant): medium size, clearer silhouette, one secondary branch, more leaf facets, slightly richer shape language. Plant family: reed — two or three tall faceted reeds with a calm vertical rhythm. Vertical rhythm; slight bend allowed but keep angular facets.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 2 (plant): medium size, clearer silhouette, one secondary branch, more leaf facets, slightly richer shape language.",
+        "family_descriptor": "two or three tall faceted reeds with a calm vertical rhythm",
+        "notes": "Vertical rhythm; slight bend allowed but keep angular facets."
+      }
+    },
+    {
+      "asset_id": "plant_reed_s3",
+      "family_id": "reed",
+      "axis_key": "alignment",
+      "stage": 3,
+      "stage_label": "bloom",
+      "name_de": "Uferhalm",
+      "name_en": "Reed",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 3 (bloom): largest size, signature bloom/top element, feels rewarding but still minimalist. No extra particles. Plant family: reed — two or three tall faceted reeds with a calm vertical rhythm. Vertical rhythm; slight bend allowed but keep angular facets.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 3 (bloom): largest size, signature bloom/top element, feels rewarding but still minimalist. No extra particles.",
+        "family_descriptor": "two or three tall faceted reeds with a calm vertical rhythm",
+        "notes": "Vertical rhythm; slight bend allowed but keep angular facets."
+      }
+    },
+    {
+      "asset_id": "plant_stepping_stones_s1",
+      "family_id": "stepping_stones",
+      "axis_key": "alignment",
+      "stage": 1,
+      "stage_label": "sprout",
+      "name_de": "Trittsteine",
+      "name_en": "Stepping Stones",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 1 (sprout): very small, simple silhouette, 1–2 stems, 2–4 leaf facets, minimal detail. Plant family: stepping_stones — three faceted stepping stones arranged as a gentle path marker. Object-family (still counts as placement); conveys direction/flow.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 1 (sprout): very small, simple silhouette, 1–2 stems, 2–4 leaf facets, minimal detail.",
+        "family_descriptor": "three faceted stepping stones arranged as a gentle path marker",
+        "notes": "Object-family (still counts as placement); conveys direction/flow."
+      }
+    },
+    {
+      "asset_id": "plant_stepping_stones_s2",
+      "family_id": "stepping_stones",
+      "axis_key": "alignment",
+      "stage": 2,
+      "stage_label": "plant",
+      "name_de": "Trittsteine",
+      "name_en": "Stepping Stones",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 2 (plant): medium size, clearer silhouette, one secondary branch, more leaf facets, slightly richer shape language. Plant family: stepping_stones — three faceted stepping stones arranged as a gentle path marker. Object-family (still counts as placement); conveys direction/flow.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 2 (plant): medium size, clearer silhouette, one secondary branch, more leaf facets, slightly richer shape language.",
+        "family_descriptor": "three faceted stepping stones arranged as a gentle path marker",
+        "notes": "Object-family (still counts as placement); conveys direction/flow."
+      }
+    },
+    {
+      "asset_id": "plant_stepping_stones_s3",
+      "family_id": "stepping_stones",
+      "axis_key": "alignment",
+      "stage": 3,
+      "stage_label": "bloom",
+      "name_de": "Trittsteine",
+      "name_en": "Stepping Stones",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 3 (bloom): largest size, signature bloom/top element, feels rewarding but still minimalist. No extra particles. Plant family: stepping_stones — three faceted stepping stones arranged as a gentle path marker. Object-family (still counts as placement); conveys direction/flow.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 3 (bloom): largest size, signature bloom/top element, feels rewarding but still minimalist. No extra particles.",
+        "family_descriptor": "three faceted stepping stones arranged as a gentle path marker",
+        "notes": "Object-family (still counts as placement); conveys direction/flow."
+      }
+    },
+    {
+      "asset_id": "plant_pine_sprig_s1",
+      "family_id": "pine_sprig",
+      "axis_key": "tension",
+      "stage": 1,
+      "stage_label": "sprout",
+      "name_de": "Kiefernzweig",
+      "name_en": "Pine Sprig",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 1 (sprout): very small, simple silhouette, 1–2 stems, 2–4 leaf facets, minimal detail. Plant family: pine_sprig — a faceted pine sprig with triangular needle clusters. Resilient, not aggressive; keep shapes tidy and premium.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 1 (sprout): very small, simple silhouette, 1–2 stems, 2–4 leaf facets, minimal detail.",
+        "family_descriptor": "a faceted pine sprig with triangular needle clusters",
+        "notes": "Resilient, not aggressive; keep shapes tidy and premium."
+      }
+    },
+    {
+      "asset_id": "plant_pine_sprig_s2",
+      "family_id": "pine_sprig",
+      "axis_key": "tension",
+      "stage": 2,
+      "stage_label": "plant",
+      "name_de": "Kiefernzweig",
+      "name_en": "Pine Sprig",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 2 (plant): medium size, clearer silhouette, one secondary branch, more leaf facets, slightly richer shape language. Plant family: pine_sprig — a faceted pine sprig with triangular needle clusters. Resilient, not aggressive; keep shapes tidy and premium.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 2 (plant): medium size, clearer silhouette, one secondary branch, more leaf facets, slightly richer shape language.",
+        "family_descriptor": "a faceted pine sprig with triangular needle clusters",
+        "notes": "Resilient, not aggressive; keep shapes tidy and premium."
+      }
+    },
+    {
+      "asset_id": "plant_pine_sprig_s3",
+      "family_id": "pine_sprig",
+      "axis_key": "tension",
+      "stage": 3,
+      "stage_label": "bloom",
+      "name_de": "Kiefernzweig",
+      "name_en": "Pine Sprig",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 3 (bloom): largest size, signature bloom/top element, feels rewarding but still minimalist. No extra particles. Plant family: pine_sprig — a faceted pine sprig with triangular needle clusters. Resilient, not aggressive; keep shapes tidy and premium.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 3 (bloom): largest size, signature bloom/top element, feels rewarding but still minimalist. No extra particles.",
+        "family_descriptor": "a faceted pine sprig with triangular needle clusters",
+        "notes": "Resilient, not aggressive; keep shapes tidy and premium."
+      }
+    },
+    {
+      "asset_id": "plant_thistle_s1",
+      "family_id": "thistle",
+      "axis_key": "tension",
+      "stage": 1,
+      "stage_label": "sprout",
+      "name_de": "Distel",
+      "name_en": "Thistle",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 1 (sprout): very small, simple silhouette, 1–2 stems, 2–4 leaf facets, minimal detail. Plant family: thistle — a faceted thistle with a strong crown and spiky leaf facets (not aggressive). Spikes feel protective/resilient, not threatening.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 1 (sprout): very small, simple silhouette, 1–2 stems, 2–4 leaf facets, minimal detail.",
+        "family_descriptor": "a faceted thistle with a strong crown and spiky leaf facets (not aggressive)",
+        "notes": "Spikes feel protective/resilient, not threatening."
+      }
+    },
+    {
+      "asset_id": "plant_thistle_s2",
+      "family_id": "thistle",
+      "axis_key": "tension",
+      "stage": 2,
+      "stage_label": "plant",
+      "name_de": "Distel",
+      "name_en": "Thistle",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 2 (plant): medium size, clearer silhouette, one secondary branch, more leaf facets, slightly richer shape language. Plant family: thistle — a faceted thistle with a strong crown and spiky leaf facets (not aggressive). Spikes feel protective/resilient, not threatening.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 2 (plant): medium size, clearer silhouette, one secondary branch, more leaf facets, slightly richer shape language.",
+        "family_descriptor": "a faceted thistle with a strong crown and spiky leaf facets (not aggressive)",
+        "notes": "Spikes feel protective/resilient, not threatening."
+      }
+    },
+    {
+      "asset_id": "plant_thistle_s3",
+      "family_id": "thistle",
+      "axis_key": "tension",
+      "stage": 3,
+      "stage_label": "bloom",
+      "name_de": "Distel",
+      "name_en": "Thistle",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 3 (bloom): largest size, signature bloom/top element, feels rewarding but still minimalist. No extra particles. Plant family: thistle — a faceted thistle with a strong crown and spiky leaf facets (not aggressive). Spikes feel protective/resilient, not threatening.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 3 (bloom): largest size, signature bloom/top element, feels rewarding but still minimalist. No extra particles.",
+        "family_descriptor": "a faceted thistle with a strong crown and spiky leaf facets (not aggressive)",
+        "notes": "Spikes feel protective/resilient, not threatening."
+      }
+    },
+    {
+      "asset_id": "plant_moss_rock_s1",
+      "family_id": "moss_rock",
+      "axis_key": "tension",
+      "stage": 1,
+      "stage_label": "sprout",
+      "name_de": "Moosfels",
+      "name_en": "Moss Rock",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 1 (sprout): very small, simple silhouette, 1–2 stems, 2–4 leaf facets, minimal detail. Plant family: moss_rock — a faceted rock with soft faceted moss patches on top. Rock as grounded resilience; moss adds warmth.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 1 (sprout): very small, simple silhouette, 1–2 stems, 2–4 leaf facets, minimal detail.",
+        "family_descriptor": "a faceted rock with soft faceted moss patches on top",
+        "notes": "Rock as grounded resilience; moss adds warmth."
+      }
+    },
+    {
+      "asset_id": "plant_moss_rock_s2",
+      "family_id": "moss_rock",
+      "axis_key": "tension",
+      "stage": 2,
+      "stage_label": "plant",
+      "name_de": "Moosfels",
+      "name_en": "Moss Rock",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 2 (plant): medium size, clearer silhouette, one secondary branch, more leaf facets, slightly richer shape language. Plant family: moss_rock — a faceted rock with soft faceted moss patches on top. Rock as grounded resilience; moss adds warmth.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 2 (plant): medium size, clearer silhouette, one secondary branch, more leaf facets, slightly richer shape language.",
+        "family_descriptor": "a faceted rock with soft faceted moss patches on top",
+        "notes": "Rock as grounded resilience; moss adds warmth."
+      }
+    },
+    {
+      "asset_id": "plant_moss_rock_s3",
+      "family_id": "moss_rock",
+      "axis_key": "tension",
+      "stage": 3,
+      "stage_label": "bloom",
+      "name_de": "Moosfels",
+      "name_en": "Moss Rock",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 3 (bloom): largest size, signature bloom/top element, feels rewarding but still minimalist. No extra particles. Plant family: moss_rock — a faceted rock with soft faceted moss patches on top. Rock as grounded resilience; moss adds warmth.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 3 (bloom): largest size, signature bloom/top element, feels rewarding but still minimalist. No extra particles.",
+        "family_descriptor": "a faceted rock with soft faceted moss patches on top",
+        "notes": "Rock as grounded resilience; moss adds warmth."
+      }
+    },
+    {
+      "asset_id": "plant_crystal_leaf_s1",
+      "family_id": "crystal_leaf",
+      "axis_key": "tension",
+      "stage": 1,
+      "stage_label": "sprout",
+      "name_de": "Kristallblatt",
+      "name_en": "Crystal Leaf",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 1 (sprout): very small, simple silhouette, 1–2 stems, 2–4 leaf facets, minimal detail. Plant family: crystal_leaf — a faceted leaf plant with mineral-like leaf planes, warm translucent impression without gradients. Mineral vibe but muted; avoid neon/laser look; still flat shaded.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 1 (sprout): very small, simple silhouette, 1–2 stems, 2–4 leaf facets, minimal detail.",
+        "family_descriptor": "a faceted leaf plant with mineral-like leaf planes, warm translucent impression without gradients",
+        "notes": "Mineral vibe but muted; avoid neon/laser look; still flat shaded."
+      }
+    },
+    {
+      "asset_id": "plant_crystal_leaf_s2",
+      "family_id": "crystal_leaf",
+      "axis_key": "tension",
+      "stage": 2,
+      "stage_label": "plant",
+      "name_de": "Kristallblatt",
+      "name_en": "Crystal Leaf",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 2 (plant): medium size, clearer silhouette, one secondary branch, more leaf facets, slightly richer shape language. Plant family: crystal_leaf — a faceted leaf plant with mineral-like leaf planes, warm translucent impression without gradients. Mineral vibe but muted; avoid neon/laser look; still flat shaded.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 2 (plant): medium size, clearer silhouette, one secondary branch, more leaf facets, slightly richer shape language.",
+        "family_descriptor": "a faceted leaf plant with mineral-like leaf planes, warm translucent impression without gradients",
+        "notes": "Mineral vibe but muted; avoid neon/laser look; still flat shaded."
+      }
+    },
+    {
+      "asset_id": "plant_crystal_leaf_s3",
+      "family_id": "crystal_leaf",
+      "axis_key": "tension",
+      "stage": 3,
+      "stage_label": "bloom",
+      "name_de": "Kristallblatt",
+      "name_en": "Crystal Leaf",
+      "prompt_compiled": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered. Growth stage 3 (bloom): largest size, signature bloom/top element, feels rewarding but still minimalist. No extra particles. Plant family: crystal_leaf — a faceted leaf plant with mineral-like leaf planes, warm translucent impression without gradients. Mineral vibe but muted; avoid neon/laser look; still flat shaded.",
+      "prompt_parts": {
+        "base": "Minimalist low-poly 3D plant asset for “QuissMe”. The subject is constructed solely from visible sharp-edged geometric polygons (facets). Flat shading applied: each polygon face is a single uniform color with no gradients, no textures, no patterns. Clean digital render, premium warm sunrise/dusk palette (muted, not neon). Friendly abstract proportions. Transparent background. No heavy shadows. Slight isometric 3/4 view, centered.",
+        "stage": "Growth stage 3 (bloom): largest size, signature bloom/top element, feels rewarding but still minimalist. No extra particles.",
+        "family_descriptor": "a faceted leaf plant with mineral-like leaf planes, warm translucent impression without gradients",
+        "notes": "Mineral vibe but muted; avoid neon/laser look; still flat shaded."
+      }
+    }
+  ]
+}
