@@ -508,22 +508,26 @@ export function Dashboard({
             <div className="morning-card p-5 sm:p-7 flex flex-col justify-between" data-special="true">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
-                  >
-                    <img src="/icons/sun-sign.png" alt="" className="w-7 h-7 opacity-80" />
-                  </motion.div>
+                  <img src="/icons/sun-sign.png" alt="" className="w-6 h-6 opacity-70" />
                   <Badge text={t("dashboard.western.sunLabel")} />
                 </div>
 
-                {/* Sign name as primary title */}
-                <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
-                  {sunSignName || "—"}
-                </h3>
-                <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50 mb-4">
-                  {t("dashboard.western.sunTitle")}
-                </p>
+                {/* Sign name + decorative illustration */}
+                <div className="flex items-start justify-between gap-4 mb-4">
+                  <div className="min-w-0">
+                    <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
+                      {sunSignName || "—"}
+                    </h3>
+                    <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50">
+                      {t("dashboard.western.sunTitle")}
+                    </p>
+                  </div>
+                  <img
+                    src="/icons/sun-sign.png"
+                    alt=""
+                    className="w-20 h-20 sm:w-24 sm:h-24 opacity-50 shrink-0 -mt-2"
+                  />
+                </div>
 
                 {/* Sign-specific description */}
                 <p className="text-xs text-[#1E2A3A]/55 leading-relaxed">
@@ -547,21 +551,26 @@ export function Dashboard({
             <div className="morning-card p-5 sm:p-7 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <motion.div
-                    animate={{ rotate: [-12, 12, -12] }}
-                    transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    <img src="/icons/moon-sign.png" alt="" className="w-7 h-7 opacity-80" />
-                  </motion.div>
+                  <img src="/icons/moon-sign.png" alt="" className="w-6 h-6 opacity-70" />
                   <Badge text={t("dashboard.western.moonLabel")} />
                 </div>
 
-                <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
-                  {moonSignName || "—"}
-                </h3>
-                <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50 mb-4">
-                  {t("dashboard.western.moonTitle")}
-                </p>
+                {/* Sign name + decorative illustration */}
+                <div className="flex items-start justify-between gap-4 mb-4">
+                  <div className="min-w-0">
+                    <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
+                      {moonSignName || "—"}
+                    </h3>
+                    <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50">
+                      {t("dashboard.western.moonTitle")}
+                    </p>
+                  </div>
+                  <img
+                    src="/icons/moon-sign.png"
+                    alt=""
+                    className="w-20 h-20 sm:w-24 sm:h-24 opacity-50 shrink-0 -mt-2"
+                  />
+                </div>
 
                 <p className="text-xs text-[#1E2A3A]/55 leading-relaxed">
                   {moonSignData
@@ -584,12 +593,7 @@ export function Dashboard({
             <div className="morning-card p-5 sm:p-7 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <motion.div
-                    animate={{ scale: [1, 1.15, 1], rotate: [0, 12, -12, 0] }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    <ArrowUp className="text-[#3D8B37] w-5 h-5" />
-                  </motion.div>
+                  <ArrowUp className="text-[#3D8B37] w-5 h-5" />
                   <Badge text={t("dashboard.western.ascLabel")} />
                 </div>
 
@@ -659,7 +663,7 @@ export function Dashboard({
                   )}
                   {yearBranch && (
                     <span className="text-[10px] text-[#1E2A3A]/35">
-                      {yearBranch.element} · {yearBranch.pinyin}
+                      {getWuxingName(yearBranch.element, lang)} · {yearBranch.pinyin}
                     </span>
                   )}
                 </div>
