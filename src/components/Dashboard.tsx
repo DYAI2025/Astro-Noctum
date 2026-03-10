@@ -22,7 +22,7 @@ import { LegalFooter } from "./LegalFooter";
 import { BaZiFourPillars } from "./BaZiFourPillars";
 import { BaZiInterpretation } from "./BaZiInterpretation";
 import { getStemByCharacter } from "../lib/astro-data/heavenlyStems";
-import type { BafeData } from "../services/supabase";
+import type { ApiData } from "../types/bafe";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Static data
@@ -203,7 +203,7 @@ function Badge({ text }: { text: string }) {
 
 interface DashboardProps {
   interpretation: string;
-  apiData: BafeData;
+  apiData: ApiData;
   userId: string;
   birthDate: string | null;
   onReset: () => void;
@@ -508,7 +508,7 @@ export function Dashboard({
             <div className="morning-card p-5 sm:p-7 flex flex-col justify-between" data-special="true">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <img src="/icons/sun-sign.png" alt="" className="w-6 h-6 opacity-70" />
+                  <img src="/icons/sun-sign.webp" alt="" className="w-6 h-6 opacity-70" />
                   <Badge text={t("dashboard.western.sunLabel")} />
                 </div>
 
@@ -523,7 +523,7 @@ export function Dashboard({
                     </p>
                   </div>
                   <img
-                    src="/icons/sun-sign.png"
+                    src="/icons/sun-sign.webp"
                     alt=""
                     className="w-20 h-20 sm:w-24 sm:h-24 opacity-50 shrink-0 -mt-2"
                   />
@@ -551,7 +551,7 @@ export function Dashboard({
             <div className="morning-card p-5 sm:p-7 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <img src="/icons/moon-sign.png" alt="" className="w-6 h-6 opacity-70" />
+                  <img src="/icons/moon-sign.webp" alt="" className="w-6 h-6 opacity-70" />
                   <Badge text={t("dashboard.western.moonLabel")} />
                 </div>
 
@@ -566,7 +566,7 @@ export function Dashboard({
                     </p>
                   </div>
                   <img
-                    src="/icons/moon-sign.png"
+                    src="/icons/moon-sign.webp"
                     alt=""
                     className="w-20 h-20 sm:w-24 sm:h-24 opacity-50 shrink-0 -mt-2"
                   />

@@ -1,9 +1,10 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import type { ApiIssue } from '../services/api';
+import type { ApiData } from '../types/bafe';
 
 export interface AppLayoutValue {
   interpretation: string;
-  apiData: any;
+  apiData: ApiData;
   userId: string;
   birthDate: string | null;
   onReset: () => void;

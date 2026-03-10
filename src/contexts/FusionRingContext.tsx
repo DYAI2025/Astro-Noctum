@@ -2,7 +2,7 @@ import { createContext, useContext, type ReactNode } from 'react';
 import { useFusionRing } from '../hooks/useFusionRing';
 import type { FusionRingSignal } from '../lib/fusion-ring/signal';
 import type { ContributionEvent } from '../lib/lme/types';
-import type { ApiResults } from '../services/api';
+import type { ApiData } from '../types/bafe';
 
 interface FusionRingContextValue {
   signal: FusionRingSignal | null;
@@ -13,7 +13,7 @@ interface FusionRingContextValue {
 const FusionRingCtx = createContext<FusionRingContextValue | null>(null);
 
 interface ProviderProps {
-  apiResults: ApiResults | null;
+  apiResults: ApiData | null;
   userId?: string;
   children: ReactNode;
 }

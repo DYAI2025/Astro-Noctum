@@ -8,18 +8,18 @@
 //   7=Goat, 8=Dragon, 9=Snake, 10=Pig, 11=Horse, 12=Monkey
 
 const COIN_MAP: Record<string, string> = {
-  rat:     "/coins/1.png",
-  rooster: "/coins/2.png",
-  ox:      "/coins/3.png",
-  dog:     "/coins/4.png",
-  tiger:   "/coins/5.png",
-  rabbit:  "/coins/6.png",
-  goat:    "/coins/7.png",
-  dragon:  "/coins/8.png",
-  snake:   "/coins/9.png",
-  pig:     "/coins/10.png",
-  horse:   "/coins/11.png",
-  monkey:  "/coins/12.png",
+  rat:     "/coins/1.webp",
+  rooster: "/coins/2.webp",
+  ox:      "/coins/3.webp",
+  dog:     "/coins/4.webp",
+  tiger:   "/coins/5.webp",
+  rabbit:  "/coins/6.webp",
+  goat:    "/coins/7.webp",
+  dragon:  "/coins/8.webp",
+  snake:   "/coins/9.webp",
+  pig:     "/coins/10.webp",
+  horse:   "/coins/11.webp",
+  monkey:  "/coins/12.webp",
 };
 
 /**

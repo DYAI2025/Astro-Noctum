@@ -14,6 +14,7 @@ import {
   insertNatalChart,
   fetchAstroProfile,
 } from "./services/supabase";
+import type { ApiData } from "./types/bafe";
 import { useAmbientePlayer } from "./hooks/useAmbientePlayer";
 import { trackEvent } from "./lib/analytics";
 import { usePlanetarium } from "./contexts/PlanetariumContext";
@@ -41,7 +42,7 @@ export default function App() {
 
   // Profile state machine
   const [profileState, setProfileState] = useState<ProfileState>("idle");
-  const [apiData, setApiData] = useState<any>(null);
+  const [apiData, setApiData] = useState<ApiData | null>(null);
   const [apiIssues, setApiIssues] = useState<ApiIssue[]>([]);
   const [interpretation, setInterpretation] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -97,7 +98,7 @@ export default function App() {
           const wuxing  = json.wuxing  ?? json.bafe?.wuxing;
           const tst     = json.tst     ?? json.bafe?.tst;
 
-          setApiData({ bazi, western, fusion, wuxing, tst, issues: [] });
+          setApiData({ bazi, western, fusion, wuxing, tst });
 
           // Retrieve stored interpretation
           let storedInterpretation =

@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Link } from 'react-router-dom';
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const FuRingPage = lazy(() => import('./pages/FuRingPage'));
@@ -13,6 +13,18 @@ function PageLoader() {
   );
 }
 
+function NotFound() {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4">
+      <h1 className="font-serif text-2xl text-[#1E2A3A]">404</h1>
+      <p className="text-sm text-[#1E2A3A]/50">Diese Seite existiert nicht.</p>
+      <Link to="/" className="text-sm text-[#8B6914] hover:underline">
+        Zum Dashboard &rarr;
+      </Link>
+    </div>
+  );
+}
+
 export function AppRoutes() {
   return (
     <Suspense fallback={<PageLoader />}>
@@ -20,6 +32,7 @@ export function AppRoutes() {
         <Route path="/" element={<DashboardPage />} />
         <Route path="/fu-ring" element={<FuRingPage />} />
         <Route path="/wu-xing" element={<WuXingPage />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
   );

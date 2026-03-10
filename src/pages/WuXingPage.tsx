@@ -74,8 +74,25 @@ export default function WuXingPage() {
           </p>
         </motion.header>
 
+        {/* Empty state when BAFE data unavailable */}
+        {!hasWuxingData && (
+          <div className="morning-card p-10 text-center mb-12">
+            <p className="text-sm text-[#1E2A3A]/50">
+              {lang === 'de'
+                ? 'Wu-Xing-Daten sind derzeit nicht verfügbar. Bitte versuche es später erneut.'
+                : 'Wu Xing data is currently unavailable. Please try again later.'}
+            </p>
+            <Link
+              to="/"
+              className="inline-block mt-4 text-sm text-[#8B6914] hover:underline"
+            >
+              {lang === 'de' ? '\u2190 Zum Dashboard' : '\u2190 Back to Dashboard'}
+            </Link>
+          </div>
+        )}
+
         {/* Primary SVG Visualizations */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        {hasWuxingData && (<><div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
           {/* Pentagon View */}
           <motion.div 
             className="morning-card p-8 flex flex-col items-center"
@@ -167,7 +184,7 @@ export default function WuXingPage() {
               );
             })}
           </div>
-        </motion.section>
+        </motion.section></>)}
 
         {/* Footer info */}
         <motion.div 
