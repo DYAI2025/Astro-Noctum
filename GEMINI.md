@@ -6,7 +6,10 @@ Astro-Noctum (Bazodiac) is a high-end fusion astrology platform combining Wester
 ### Core Architecture
 - **Frontend:** React 19 SPA with TypeScript, Vite 6, and Tailwind CSS v4.
 - **Backend:** Express (`server.mjs`) serving as a secure proxy for API keys and upstream services.
-- **Routing:** React Router handles navigation (e.g., `/`, `/fu-ring`).
+- **Routing:** React Router handles navigation:
+  - `/` (Root): **Dashboard** — Clean overview of signs, houses, and AI interpretation.
+  - `/fu-ring`: **Fu-Ring Hub** — Central location for Fusion Ring, Quizzes, and Daily Energy.
+  - `/wu-xing`: **WuXing Detail** — High-fidelity SVG visualization of element balance and cycles.
 - **Data Persistence:** Supabase (Auth + Postgres) for user profiles and natal charts.
 - **AI Integration:** 
   - **Gemini 2.0 Flash:** Server-side horoscope text generation (`/api/interpret`).
@@ -29,14 +32,12 @@ Astro-Noctum (Bazodiac) is a high-end fusion astrology platform combining Wester
 
 ## Development Conventions
 
-### API Mapping (BAFE)
-Upstream BAFE responses use German keys (e.g., `stamm`, `zweig`). The frontend transforms these into English keys (e.g., `stem`, `branch`) in `src/services/api.ts` before consumption.
-- **Reference:** See `src/types/bafe.ts` for `BafePillarRaw` vs. `MappedPillar`.
-
-### Styling & Assets
-- **Tailwind v4:** Uses custom theme tokens in `src/index.css` (e.g., `--color-obsidian`, `--color-gold`).
-- **Public Directory:** Configured to `media/` in `vite.config.ts`. Static assets should be placed there.
-- **3D Visualization:** Uses Three.js with Keplerian orbital mechanics in `src/components/BirthChartOrrery.tsx`.
+### UI & Performance
+- **Dashboard Optimization:** The main Dashboard is kept lightweight by offloading interactive and render-heavy modules (Quizzes, SVG Charts) to dedicated sub-routes.
+- **Lazy Loading:** All main pages are lazy-loaded via React Router to minimize initial load time.
+- **API Mapping (BAFE):** Upstream BAFE responses use German keys (e.g., `stamm`, `zweig`). The frontend transforms these into English keys (e.g., `stem`, `branch`) in `src/services/api.ts` before consumption.
+- **3D Visualization:** Uses Three.js for the planetary orrery on the Dashboard.
+- **SVG Visualization:** Detailed WuXing charts on `/wu-xing` use custom SVG components (`WuXingPentagon`, `WuXingCycleWheel`).
 
 ### Path Aliases
 - `@/*` maps to the **project root** (e.g., `@/src/services/api`).
