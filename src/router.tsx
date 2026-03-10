@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const FuRingPage = lazy(() => import('./pages/FuRingPage'));
+const WuXingPage = lazy(() => import('./pages/WuXingPage'));
 
 function PageLoader() {
   return (
@@ -18,6 +19,7 @@ export function AppRoutes() {
       <Routes>
         <Route path="/" element={<DashboardPage />} />
         <Route path="/fu-ring" element={<FuRingPage />} />
+        <Route path="/wu-xing" element={<WuXingPage />} />
       </Routes>
     </Suspense>
   );

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import {
   ArrowUp, ArrowLeft, RefreshCw, Zap, Phone, PhoneOff, Lock,
@@ -17,11 +18,7 @@ import { getZodiacSign, getSignName } from "../lib/astro-data/zodiacSigns";
 import { getConstellationForSign } from "../lib/astro-data/constellationFromSign";
 import { usePlanetarium } from "../contexts/PlanetariumContext";
 import { Tooltip } from "./Tooltip";
-import QuizOverlay from "./QuizOverlay";
-import { ClusterEnergySystem } from "./ClusterEnergySystem";
 import { LegalFooter } from "./LegalFooter";
-import type { ContributionEvent } from "@/src/lib/lme/types";
-import type { FusionRingSignal } from "@/src/lib/fusion-ring";
 import { BaZiFourPillars } from "./BaZiFourPillars";
 import { BaZiInterpretation } from "./BaZiInterpretation";
 import { getStemByCharacter } from "../lib/astro-data/heavenlyStems";
@@ -30,8 +27,6 @@ import type { BafeData } from "../services/supabase";
 // ─────────────────────────────────────────────────────────────────────────────
 // Static data
 // ─────────────────────────────────────────────────────────────────────────────
-
-const EMPTY_MODULE_SET = new Set<string>();
 
 // ── Session-random bilingual quotes ──────────────────────────────────────
 const BAZODIAC_QUOTES: { en: string; de: string }[] = [
@@ -218,9 +213,6 @@ interface DashboardProps {
   onStopAudio: () => void;
   onResumeAudio: () => void;
   isFirstReading?: boolean;
-  fusionSignal?: FusionRingSignal | null;
-  onQuizComplete?: (event: ContributionEvent) => void;
-  completedModules?: Set<string>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -239,9 +231,6 @@ export function Dashboard({
   onStopAudio,
   onResumeAudio,
   isFirstReading = false,
-  fusionSignal,
-  onQuizComplete,
-  completedModules,
 }: DashboardProps) {
   const { lang, t } = useLanguage();
   const { isPremium } = usePremium();
@@ -265,7 +254,6 @@ export function Dashboard({
     }
   };
   const leviSectionRef = useRef<HTMLDivElement>(null);
-  const [activeQuiz, setActiveQuiz] = useState<string | null>(null);
 
   // ── First-visit Birth Sky welcome ────────────────────────────────
   // Only show for genuinely new profiles (just completed onboarding),
@@ -818,9 +806,18 @@ export function Dashboard({
 
           {/* Block C: Element Balance — Pentagon + Cycle side by side */}
           <div className="mb-10">
-            <p className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/50 mb-2">
-              WuXing 五行
-            </p>
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/50">
+                WuXing 五行
+              </p>
+              <Link
+                to="/wu-xing"
+                className="text-[9px] uppercase tracking-[0.2em] text-[#8B6914]/60 hover:text-[#8B6914] transition-colors flex items-center gap-1.5"
+              >
+                <span>{lang === 'de' ? 'Detailansicht' : 'Detailed View'}</span>
+                <ArrowUp className="w-3 h-3 rotate-45" />
+              </Link>
+            </div>
             <p className="text-xs text-[#1E2A3A]/45 mb-6 leading-relaxed max-w-2xl">
               {t("dashboard.wuxing.sectionDesc")}
             </p>
@@ -1054,35 +1051,6 @@ export function Dashboard({
           )}
         </div>
       </motion.div>
-
-      {/* ═══ CLUSTER ENERGY SYSTEM ═════════════════════════════════ */}
-      {onQuizComplete && (
-        <motion.div className="mb-16" {...fadeIn(0.5)}>
-          <SectionDivider
-            label={lang === "de" ? "Persönlichkeit" : "Personality"}
-            title={lang === "de" ? "Dein Energie-System" : "Your Energy System"}
-          />
-          <ClusterEnergySystem
-            signal={fusionSignal ?? null}
-            completedModules={completedModules ?? EMPTY_MODULE_SET}
-            onStartQuiz={(quizId) => setActiveQuiz(quizId)}
-            isPremium={isPremium}
-            lang={lang}
-          />
-        </motion.div>
-      )}
-
-      {/* Quiz Overlay */}
-      {onQuizComplete && (
-        <QuizOverlay
-          quizId={activeQuiz}
-          onComplete={(event) => {
-            onQuizComplete(event);
-            setActiveQuiz(null);
-          }}
-          onClose={() => setActiveQuiz(null)}
-        />
-      )}
 
       {/* ═══ SHARE CARD ═══════════════════════════════════════════════ */}
       <motion.div className="mb-16" {...fadeIn(0.5)}>
