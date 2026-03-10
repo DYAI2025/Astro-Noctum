@@ -495,6 +495,51 @@ export function celebritySoulmateToEvent(
 }
 
 // ═══════════════════════════════════════════════════════════════
+// KINKY SERIES (JSON-driven, 4 quizzes)
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Converts a completed Kinky series quiz into a ContributionEvent.
+ *
+ * @param quizIndex   1-4 (which quiz in the series)
+ * @param primaryType The winning type (e.g. "verborgen", "impulsiv", etc.)
+ * @param clusterScores Accumulated cluster scores { expression: n, instinct: n, ... }
+ * @param clusterDomainMap From the quiz JSON marker_emission.cluster_domain_map
+ * @param clusterKeywordMap From the quiz JSON marker_emission.cluster_keyword_map
+ * @param isSeriesComplete true if this is quiz 4 (finale)
+ */
+export function kinkySeriesQuizToEvent(
+  quizIndex: number,
+  primaryType: string,
+  clusterScores: Record<string, number>,
+  clusterDomainMap: Record<string, string>,
+  clusterKeywordMap: Record<string, string>,
+  isSeriesComplete: boolean,
+): ContributionEvent {
+  const moduleId = `quiz.kinky_0${quizIndex}.v1`;
+  const maxScore = Math.max(...Object.values(clusterScores).map(Math.abs), 0.01);
+
+  const markers: Marker[] = Object.entries(clusterScores)
+    .filter(([, score]) => score > 0)
+    .map(([cluster, score]) => ({
+      id: `marker.${clusterDomainMap[cluster] ?? cluster}.${clusterKeywordMap[cluster] ?? cluster}`,
+      weight: Math.min(score / maxScore, 1),
+      evidence: { confidence: 0.75, itemsAnswered: 9 },
+    }));
+
+  const tags: Tag[] = [
+    { id: `tag.archetype.${primaryType}`, label: primaryType, kind: 'archetype', weight: 0.85 },
+    { id: 'tag.series.kinky', label: 'Kinky Series', kind: 'misc', weight: 0.5 },
+  ];
+
+  if (isSeriesComplete) {
+    tags.push({ id: 'tag.series.kinky_complete', label: 'Kinky Series Complete', kind: 'misc', weight: 1.0 });
+  }
+
+  return buildEvent(moduleId, markers, tags);
+}
+
+// ═══════════════════════════════════════════════════════════════
 // GENERIC BUILDER
 // ═══════════════════════════════════════════════════════════════
 

@@ -1,4 +1,4 @@
-import FusionRing from './FusionRing';
+import { Link } from 'react-router-dom';
 import { ClusterCard } from './ClusterCard';
 import { CLUSTER_REGISTRY } from '@/src/lib/fusion-ring/clusters';
 import type { FusionRingSignal } from '@/src/lib/fusion-ring';
@@ -18,19 +18,30 @@ export function ClusterEnergySystem({
   isPremium,
   lang,
 }: ClusterEnergySystemProps) {
+  const resolution = signal ? Math.round(signal.resolution * 100) : 0;
+
   return (
     <div className="flex flex-col items-center gap-8">
-      {/* Ring */}
+      {/* Resolution summary + link to full ring */}
       {signal && (
-        <div className="flex flex-col items-center gap-3">
-          <FusionRing signal={signal} size={340} showLabels animated />
-          {signal.resolution < 100 && (
-            <p className="text-xs text-center text-gold/45">
-              {lang === 'de'
-                ? `Auflösung: ${signal.resolution}% — Schließe Cluster ab`
-                : `Resolution: ${signal.resolution}% — Complete clusters`}
-            </p>
-          )}
+        <div className="flex flex-col items-center gap-3 w-full max-w-sm">
+          <div className="w-full h-1.5 rounded-sm bg-[#1E2A3A]/10 overflow-hidden">
+            <div
+              className="h-full rounded-sm transition-[width] duration-700"
+              style={{ width: `${resolution}%`, background: '#D4AF37', opacity: 0.6 }}
+            />
+          </div>
+          <div className="flex items-center justify-between w-full text-xs">
+            <span className="text-[#1E2A3A]/45">
+              {lang === 'de' ? `Auflösung: ${resolution}%` : `Resolution: ${resolution}%`}
+            </span>
+            <Link
+              to="/fu-ring"
+              className="text-[#8B6914]/60 hover:text-[#8B6914] transition-colors"
+            >
+              {lang === 'de' ? 'Fu-Ring öffnen →' : 'Open Fu-Ring →'}
+            </Link>
+          </div>
         </div>
       )}
 

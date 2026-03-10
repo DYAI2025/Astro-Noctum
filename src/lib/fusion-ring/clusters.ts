@@ -54,6 +54,18 @@ export const CLUSTER_REGISTRY: ClusterDef[] = [
       'quiz.celebrity_soulmate.v1',
     ],
   },
+  {
+    id: 'cluster.kinky.v1',
+    name: 'Kinky',
+    icon: '\u{1F525}',
+    color: '#8B1A1A',
+    quizModuleIds: [
+      'quiz.kinky_01.v1',
+      'quiz.kinky_02.v1',
+      'quiz.kinky_03.v1',
+      'quiz.kinky_04.v1',
+    ],
+  },
 ];
 
 export function findClusterForModule(moduleId: string): ClusterDef | null {

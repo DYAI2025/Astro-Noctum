@@ -1,0 +1,1186 @@
+{
+  "schema_version": "3.0.0",
+  "engine": "quizzme-quiz-engine",
+  "output_mode": "full_v2",
+  "series": {
+    "id": "kinky_series",
+    "title": {
+      "de-DE": "Kinky — Bin ich anders auch normal?",
+      "en-US": "Kinky — Is my different side normal too?"
+    },
+    "quiz_index": 2,
+    "quiz_count": 4,
+    "theme": {
+      "de-DE": "Wie weit traust du dir, dein inneres Anderssein zu zeigen — ohne Scham und Urteil?",
+      "en-US": "How far do you dare to show your inner otherness — without shame or judgment?"
+    }
+  },
+  "meta": {
+    "id": "kinky_02_antrieb",
+    "hidden_cluster": "instinct",
+    "facet_label": {
+      "de-DE": "Innerer Antrieb",
+      "en-US": "Inner Drive"
+    },
+    "axis_key": "tension",
+    "narrator_id": "ember",
+    "tone": "premium_poetic",
+    "type_model": {
+      "types": [
+        "kontrolliert",
+        "impulsiv",
+        "verwandelt"
+      ],
+      "compute": "max_type_score"
+    }
+  },
+  "disclaimer": {
+    "de-DE": "Dieser Test dient der spielerischen Selbstreflexion und stellt KEINE psychologische Diagnose dar.",
+    "en-US": "This quiz is for playful self-reflection and is NOT a psychological diagnosis."
+  },
+  "questions": [
+    {
+      "id": "q01",
+      "prompt": {
+        "de-DE": "Du hörst Musik, die etwas in dir aufweckt — etwas, das du normalerweise unten hältst. Was passiert als nächstes?",
+        "en-US": "You hear music that wakes something in you — something you normally keep pressed down. What happens next?"
+      },
+      "question_type": "reaktions_szenario",
+      "narrator_id": "ember",
+      "tone": "premium_poetic",
+      "image_gen_prompt": "Person alone in a dark room lit by a single lamp, headphones on, body slightly swaying, eyes closed, electricity in the air, cinematic mood --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich genieße es innerlich — aber nach außen bleibt alles ruhig.",
+            "en-US": "I enjoy it internally — but outwardly everything stays calm."
+          },
+          "cluster_scores": {
+            "instinct": -0.3,
+            "love": -0.1,
+            "freedom": -0.2
+          },
+          "type_scores": {
+            "kontrolliert": 0.75,
+            "impulsiv": 0.15,
+            "verwandelt": 0.1
+          },
+          "duo_trait_deltas": {
+            "tension": -0.05,
+            "closeness": -0.05
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich bewege mich ein bisschen — nur wenn niemand schaut.",
+            "en-US": "I move a little — only when no one's watching."
+          },
+          "cluster_scores": {
+            "instinct": 0.05,
+            "freedom": 0.0,
+            "love": 0.15
+          },
+          "type_scores": {
+            "kontrolliert": 0.2,
+            "impulsiv": 0.65,
+            "verwandelt": 0.15
+          },
+          "duo_trait_deltas": {
+            "tension": 0.05,
+            "closeness": 0.0
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Das Ding übernimmt. Ich tanze, ich singe, egal wer zusieht.",
+            "en-US": "The thing takes over. I dance, I sing, regardless of who sees."
+          },
+          "cluster_scores": {
+            "instinct": 0.38,
+            "freedom": 0.4,
+            "love": 0.35
+          },
+          "type_scores": {
+            "kontrolliert": 0.05,
+            "impulsiv": 0.2,
+            "verwandelt": 0.75
+          },
+          "duo_trait_deltas": {
+            "tension": 0.15,
+            "closeness": 0.1
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich speichere das Lied und höre es später, wenn ich allein bin — dann lasse ich es raus.",
+            "en-US": "I save the song and listen again later when alone — then I let it out."
+          },
+          "cluster_scores": {
+            "instinct": 0.1,
+            "freedom": 0.1,
+            "love": 0.2
+          },
+          "type_scores": {
+            "kontrolliert": 0.15,
+            "impulsiv": 0.3,
+            "verwandelt": 0.55
+          },
+          "duo_trait_deltas": {
+            "tension": 0.1,
+            "closeness": 0.05
+          }
+        }
+      ]
+    },
+    {
+      "id": "q02",
+      "prompt": {
+        "de-DE": "Stell dir vor, du bist in einem Laden und siehst etwas — ein Objekt, ein Kleidungsstück, ein Symbol — das sofort dein 'Anderssein' widerspiegelt. Kaufst du es?",
+        "en-US": "Imagine you're in a store and see something — an object, a piece of clothing, a symbol — that instantly mirrors your otherness. Do you buy it?"
+      },
+      "question_type": "ästhetik_wahl",
+      "narrator_id": "ember",
+      "tone": "playful",
+      "image_gen_prompt": "Person standing in a boutique store reaching toward an unusual object on a shelf, soft diffused light, interior with character, mix of curiosity and hesitation --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich schaue es lange an — und lasse es dann stehen.",
+            "en-US": "I look at it for a long time — then leave it there."
+          },
+          "cluster_scores": {
+            "instinct": -0.35,
+            "freedom": -0.25,
+            "love": -0.1
+          },
+          "type_scores": {
+            "kontrolliert": 0.75,
+            "impulsiv": 0.2,
+            "verwandelt": 0.05
+          },
+          "duo_trait_deltas": {
+            "tension": -0.05,
+            "closeness": -0.05
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich kaufe es — aber nur für zu Hause. Niemand muss es sehen.",
+            "en-US": "I buy it — but only for home. No one needs to see it."
+          },
+          "cluster_scores": {
+            "instinct": 0.1,
+            "freedom": 0.05,
+            "love": 0.2
+          },
+          "type_scores": {
+            "kontrolliert": 0.15,
+            "impulsiv": 0.65,
+            "verwandelt": 0.2
+          },
+          "duo_trait_deltas": {
+            "tension": 0.1,
+            "closeness": 0.0
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ich kaufe es und trage es raus. Sofort.",
+            "en-US": "I buy it and wear it out of the store. Right away."
+          },
+          "cluster_scores": {
+            "instinct": 0.4,
+            "freedom": 0.38,
+            "love": 0.35
+          },
+          "type_scores": {
+            "kontrolliert": 0.05,
+            "impulsiv": 0.2,
+            "verwandelt": 0.75
+          },
+          "duo_trait_deltas": {
+            "tension": 0.15,
+            "closeness": 0.1
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich mache ein Foto davon und schicke es einer Person, der ich vertraue — vielleicht kaufen wir es zusammen.",
+            "en-US": "I take a photo and send it to one person I trust — maybe we buy it together."
+          },
+          "cluster_scores": {
+            "instinct": 0.05,
+            "freedom": 0.1,
+            "love": 0.15
+          },
+          "type_scores": {
+            "kontrolliert": 0.1,
+            "impulsiv": 0.3,
+            "verwandelt": 0.6
+          },
+          "duo_trait_deltas": {
+            "tension": 0.05,
+            "closeness": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "q03",
+      "prompt": {
+        "de-DE": "Du bist mitten in einem intensiven Gefühl — Wut, Begehren, Trauer, etwas Unbenennbares. Wie handelst du?",
+        "en-US": "You're in the middle of an intense feeling — anger, desire, grief, something nameless. What do you do?"
+      },
+      "question_type": "reaktions_szenario",
+      "narrator_id": "ember",
+      "tone": "premium_poetic",
+      "image_gen_prompt": "A person sitting on the floor in an empty room, head tilted back, dramatic chiaroscuro light, raw emotional presence, cinematic still --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich warte es ab. Gefühle gehen vorbei, wenn man sie nicht füttert.",
+            "en-US": "I wait it out. Feelings pass if you don't feed them."
+          },
+          "cluster_scores": {
+            "instinct": -0.3,
+            "freedom": -0.15,
+            "love": -0.2
+          },
+          "type_scores": {
+            "kontrolliert": 0.78,
+            "impulsiv": 0.17,
+            "verwandelt": 0.05
+          },
+          "duo_trait_deltas": {
+            "tension": -0.1,
+            "closeness": -0.05
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich schreibe es auf — privat, nur für mich. Das ist der Ventil.",
+            "en-US": "I write it down — privately, just for me. That's the release valve."
+          },
+          "cluster_scores": {
+            "instinct": 0.1,
+            "freedom": 0.05,
+            "love": 0.2
+          },
+          "type_scores": {
+            "kontrolliert": 0.15,
+            "impulsiv": 0.65,
+            "verwandelt": 0.2
+          },
+          "duo_trait_deltas": {
+            "tension": 0.05,
+            "closeness": 0.0
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ich tue etwas damit — bewege mich, spreche es aus, schaffe etwas. Es will durch.",
+            "en-US": "I do something with it — move, speak it out, create something. It wants through."
+          },
+          "cluster_scores": {
+            "instinct": 0.38,
+            "freedom": 0.35,
+            "love": 0.35
+          },
+          "type_scores": {
+            "kontrolliert": 0.05,
+            "impulsiv": 0.15,
+            "verwandelt": 0.8
+          },
+          "duo_trait_deltas": {
+            "tension": 0.15,
+            "closeness": 0.1
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich rufe jemanden an — aber nicht um zu erklären, nur um nicht allein zu sein.",
+            "en-US": "I call someone — not to explain, just to not be alone in it."
+          },
+          "cluster_scores": {
+            "instinct": 0.05,
+            "freedom": 0.1,
+            "love": 0.25
+          },
+          "type_scores": {
+            "kontrolliert": 0.1,
+            "impulsiv": 0.25,
+            "verwandelt": 0.65
+          },
+          "duo_trait_deltas": {
+            "tension": 0.1,
+            "closeness": 0.2
+          }
+        }
+      ]
+    },
+    {
+      "id": "q04",
+      "prompt": {
+        "de-DE": "Jemand, dem du vertraust, sagt dir: 'Du weißt schon, dass du manchmal ziemlich anders bist?' Mit einem Lächeln — aber trotzdem. Was macht das mit dir?",
+        "en-US": "Someone you trust says: 'You know you're kind of different sometimes?' With a smile — but still. What does that do to you?"
+      },
+      "question_type": "reaktions_szenario",
+      "narrator_id": "ember",
+      "tone": "playful",
+      "image_gen_prompt": "Two people sitting across each other in a cozy setting, one smiling gently, the other caught in a private thought, warm interior light, emotional intimacy --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ein kleiner Stich. Ich lache, sage 'jaja' — und überprüfe innerlich alles.",
+            "en-US": "A little sting. I laugh, say 'yeah yeah' — and internally review everything."
+          },
+          "cluster_scores": {
+            "instinct": -0.25,
+            "freedom": -0.2,
+            "love": -0.1
+          },
+          "type_scores": {
+            "kontrolliert": 0.72,
+            "impulsiv": 0.23,
+            "verwandelt": 0.05
+          },
+          "duo_trait_deltas": {
+            "tension": 0.05,
+            "closeness": -0.1
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich nehme es als Kompliment — aber frage mich kurz, was sie meinen.",
+            "en-US": "I take it as a compliment — but briefly wonder what they mean."
+          },
+          "cluster_scores": {
+            "instinct": 0.1,
+            "freedom": 0.1,
+            "love": 0.15
+          },
+          "type_scores": {
+            "kontrolliert": 0.1,
+            "impulsiv": 0.65,
+            "verwandelt": 0.25
+          },
+          "duo_trait_deltas": {
+            "tension": 0.05,
+            "closeness": 0.1
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "'Ich weiß.' Pause. 'Und?' Ich meine es ernst.",
+            "en-US": "'I know.' Pause. 'And?' I mean it."
+          },
+          "cluster_scores": {
+            "instinct": 0.38,
+            "freedom": 0.4,
+            "love": 0.3
+          },
+          "type_scores": {
+            "kontrolliert": 0.05,
+            "impulsiv": 0.15,
+            "verwandelt": 0.8
+          },
+          "duo_trait_deltas": {
+            "tension": 0.15,
+            "closeness": 0.05
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich frage zurück: 'Was meinst du genau?' Ich will verstehen, was sie sehen.",
+            "en-US": "I ask back: 'What do you mean exactly?' I want to understand what they see."
+          },
+          "cluster_scores": {
+            "instinct": 0.05,
+            "freedom": 0.1,
+            "love": 0.2
+          },
+          "type_scores": {
+            "kontrolliert": 0.15,
+            "impulsiv": 0.2,
+            "verwandelt": 0.65
+          },
+          "duo_trait_deltas": {
+            "tension": 0.1,
+            "closeness": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "q05",
+      "prompt": {
+        "de-DE": "Du betrittst einen verlassenen Vergnügungspark bei Nacht. Alle Lichter sind aus, aber eine Attraktion läuft noch. Welche ist es — und was tust du?",
+        "en-US": "You enter an abandoned amusement park at night. All lights are off, but one attraction is still running. Which one — and what do you do?"
+      },
+      "question_type": "ort_wahl",
+      "narrator_id": "ember",
+      "tone": "premium_poetic",
+      "image_gen_prompt": "Abandoned amusement park at night, one spinning carousel lit in the dark, overgrown paths, eerie and magical simultaneously, cinematic wide shot --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ein stilles Riesenrad dreht sich langsam. Ich schaue es von außen an. Das reicht.",
+            "en-US": "A silent ferris wheel turns slowly. I watch it from outside. That's enough."
+          },
+          "cluster_scores": {
+            "instinct": -0.25,
+            "freedom": -0.1,
+            "love": -0.05
+          },
+          "type_scores": {
+            "kontrolliert": 0.7,
+            "impulsiv": 0.25,
+            "verwandelt": 0.05
+          },
+          "duo_trait_deltas": {
+            "tension": 0.0,
+            "closeness": -0.05
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ein Spiegel-Labyrinth, halb zerbrochen. Ich gehe rein — langsam, vorsichtig.",
+            "en-US": "A mirror maze, half broken. I go in — slowly, carefully."
+          },
+          "cluster_scores": {
+            "instinct": 0.1,
+            "freedom": 0.15,
+            "love": 0.2
+          },
+          "type_scores": {
+            "kontrolliert": 0.1,
+            "impulsiv": 0.65,
+            "verwandelt": 0.25
+          },
+          "duo_trait_deltas": {
+            "tension": 0.1,
+            "closeness": 0.0
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Eine alte Achterbahn — Motor läuft. Ich steige ein. Risiko gehört dazu.",
+            "en-US": "An old rollercoaster — engine running. I get in. Risk is part of it."
+          },
+          "cluster_scores": {
+            "instinct": 0.38,
+            "freedom": 0.4,
+            "love": 0.35
+          },
+          "type_scores": {
+            "kontrolliert": 0.05,
+            "impulsiv": 0.15,
+            "verwandelt": 0.8
+          },
+          "duo_trait_deltas": {
+            "tension": 0.2,
+            "closeness": 0.05
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Eine Bühne mit einem einzelnen Scheinwerfer. Ich setze mich drauf und denke nach.",
+            "en-US": "A stage with a single spotlight. I sit on it and think."
+          },
+          "cluster_scores": {
+            "instinct": 0.15,
+            "freedom": 0.2,
+            "love": 0.25
+          },
+          "type_scores": {
+            "kontrolliert": 0.1,
+            "impulsiv": 0.3,
+            "verwandelt": 0.6
+          },
+          "duo_trait_deltas": {
+            "tension": 0.1,
+            "closeness": 0.1
+          }
+        }
+      ]
+    },
+    {
+      "id": "q06",
+      "prompt": {
+        "de-DE": "Dein Körper will etwas tun, das du dir früher verboten hast. Nicht weil es falsch ist — sondern weil es zu viel von dir zeigt. Jetzt?",
+        "en-US": "Your body wants to do something you once forbade yourself. Not because it's wrong — but because it shows too much of you. Now?"
+      },
+      "question_type": "dichotomie",
+      "narrator_id": "ember",
+      "tone": "premium_poetic",
+      "image_gen_prompt": "A figure pausing at a doorway with light on the other side, one hand on the frame, dramatic silhouette, cinematic moment of decision --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich halte es zurück. Die Zeit ist noch nicht reif — oder der Ort ist falsch.",
+            "en-US": "I hold it back. The time isn't right yet — or the place is wrong."
+          },
+          "cluster_scores": {
+            "instinct": -0.35,
+            "freedom": -0.25,
+            "love": -0.1
+          },
+          "type_scores": {
+            "kontrolliert": 0.78,
+            "impulsiv": 0.17,
+            "verwandelt": 0.05
+          },
+          "duo_trait_deltas": {
+            "tension": -0.05,
+            "closeness": -0.1
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich tue es — aber heimlich, nur für mich.",
+            "en-US": "I do it — but secretly, only for myself."
+          },
+          "cluster_scores": {
+            "instinct": 0.1,
+            "freedom": 0.1,
+            "love": 0.2
+          },
+          "type_scores": {
+            "kontrolliert": 0.15,
+            "impulsiv": 0.65,
+            "verwandelt": 0.2
+          },
+          "duo_trait_deltas": {
+            "tension": 0.1,
+            "closeness": 0.0
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ich tue es. Hier. Jetzt. Das Verbieten war das eigentliche Problem.",
+            "en-US": "I do it. Here. Now. The forbidding was the actual problem."
+          },
+          "cluster_scores": {
+            "instinct": 0.4,
+            "freedom": 0.4,
+            "love": 0.38
+          },
+          "type_scores": {
+            "kontrolliert": 0.05,
+            "impulsiv": 0.2,
+            "verwandelt": 0.75
+          },
+          "duo_trait_deltas": {
+            "tension": 0.2,
+            "closeness": 0.1
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich spreche erst darüber — mit jemandem, der mich kennt. Dann entscheide ich.",
+            "en-US": "I talk about it first — with someone who knows me. Then I decide."
+          },
+          "cluster_scores": {
+            "instinct": 0.05,
+            "freedom": 0.1,
+            "love": 0.2
+          },
+          "type_scores": {
+            "kontrolliert": 0.1,
+            "impulsiv": 0.3,
+            "verwandelt": 0.6
+          },
+          "duo_trait_deltas": {
+            "tension": 0.1,
+            "closeness": 0.2
+          }
+        }
+      ]
+    },
+    {
+      "id": "q07",
+      "prompt": {
+        "de-DE": "Was wäre die ehrlichste Waffe in deiner Hand — wenn du ohne Konsequenzen kämpfen könntest?",
+        "en-US": "What would be the most honest weapon in your hand — if you could fight without consequences?"
+      },
+      "question_type": "waffen_wahl",
+      "narrator_id": "ember",
+      "tone": "playful",
+      "image_gen_prompt": "Four symbolic objects arranged on a dark surface — a mirror, a torch, a journal, and an open hand — dramatic theatrical lighting, no human faces --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ein Spiegel. Ich halte anderen hin, was sie wirklich sind.",
+            "en-US": "A mirror. I hold up to others what they really are."
+          },
+          "cluster_scores": {
+            "instinct": -0.1,
+            "freedom": 0.05,
+            "love": 0.1
+          },
+          "type_scores": {
+            "kontrolliert": 0.65,
+            "impulsiv": 0.25,
+            "verwandelt": 0.1
+          },
+          "duo_trait_deltas": {
+            "tension": 0.05,
+            "closeness": -0.05
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Worte. Präzise, langsam, unausweichlich.",
+            "en-US": "Words. Precise, slow, unavoidable."
+          },
+          "cluster_scores": {
+            "instinct": 0.1,
+            "freedom": 0.1,
+            "love": 0.2
+          },
+          "type_scores": {
+            "kontrolliert": 0.2,
+            "impulsiv": 0.65,
+            "verwandelt": 0.15
+          },
+          "duo_trait_deltas": {
+            "tension": 0.1,
+            "closeness": 0.05
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Feuer. Nicht um zu zerstören — sondern um zu erhellen.",
+            "en-US": "Fire. Not to destroy — but to illuminate."
+          },
+          "cluster_scores": {
+            "instinct": 0.38,
+            "freedom": 0.35,
+            "love": 0.4
+          },
+          "type_scores": {
+            "kontrolliert": 0.05,
+            "impulsiv": 0.15,
+            "verwandelt": 0.8
+          },
+          "duo_trait_deltas": {
+            "tension": 0.2,
+            "closeness": 0.1
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Eine offene Hand. Hinhalten, anbieten — das ist meine stärkste Geste.",
+            "en-US": "An open hand. Reaching out, offering — that's my strongest gesture."
+          },
+          "cluster_scores": {
+            "instinct": 0.05,
+            "freedom": 0.15,
+            "love": 0.25
+          },
+          "type_scores": {
+            "kontrolliert": 0.1,
+            "impulsiv": 0.25,
+            "verwandelt": 0.65
+          },
+          "duo_trait_deltas": {
+            "tension": 0.05,
+            "closeness": 0.2
+          }
+        }
+      ]
+    },
+    {
+      "id": "q08",
+      "prompt": {
+        "de-DE": "Wenn du an dein inneres Anderssein denkst — das Ding, das dich manchmal fremd bei dir selbst fühlen lässt — welches Bild kommt zuerst?",
+        "en-US": "When you think about your inner otherness — the thing that sometimes makes you feel like a stranger to yourself — what image comes first?"
+      },
+      "question_type": "ästhetik_wahl",
+      "narrator_id": "ember",
+      "tone": "premium_poetic",
+      "image_gen_prompt": "Four symbolic nature scenes side by side: a dark underwater world, a seed cracking open in soil, a figure at a crossroads in fog, a bonfire alone in a field at night --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ein Ding tief unten im Wasser — still, dunkel, ungeklärt.",
+            "en-US": "A thing deep underwater — still, dark, unresolved."
+          },
+          "cluster_scores": {
+            "instinct": -0.2,
+            "freedom": -0.1,
+            "love": 0.1
+          },
+          "type_scores": {
+            "kontrolliert": 0.7,
+            "impulsiv": 0.2,
+            "verwandelt": 0.1
+          },
+          "duo_trait_deltas": {
+            "tension": 0.0,
+            "closeness": -0.05
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ein Samen, der im Dunkeln keimt — noch nicht sichtbar, aber schon aktiv.",
+            "en-US": "A seed germinating in the dark — not yet visible, but already active."
+          },
+          "cluster_scores": {
+            "instinct": 0.1,
+            "freedom": 0.15,
+            "love": 0.2
+          },
+          "type_scores": {
+            "kontrolliert": 0.15,
+            "impulsiv": 0.65,
+            "verwandelt": 0.2
+          },
+          "duo_trait_deltas": {
+            "tension": 0.05,
+            "closeness": 0.05
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ein Feuer, das niemand angezündet hat — es war einfach immer schon da.",
+            "en-US": "A fire no one lit — it was simply always there."
+          },
+          "cluster_scores": {
+            "instinct": 0.38,
+            "freedom": 0.35,
+            "love": 0.4
+          },
+          "type_scores": {
+            "kontrolliert": 0.05,
+            "impulsiv": 0.15,
+            "verwandelt": 0.8
+          },
+          "duo_trait_deltas": {
+            "tension": 0.15,
+            "closeness": 0.1
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Eine Gabelung im Nebel — ich kenne beide Wege, aber gehe gerade erst los.",
+            "en-US": "A fork in the fog — I know both paths, but I'm only now beginning to walk."
+          },
+          "cluster_scores": {
+            "instinct": 0.1,
+            "freedom": 0.2,
+            "love": 0.2
+          },
+          "type_scores": {
+            "kontrolliert": 0.1,
+            "impulsiv": 0.3,
+            "verwandelt": 0.6
+          },
+          "duo_trait_deltas": {
+            "tension": 0.1,
+            "closeness": 0.05
+          }
+        }
+      ]
+    },
+    {
+      "id": "q09",
+      "prompt": {
+        "de-DE": "Du bekommst ein Angebot: Eine Nacht lang kannst du eine Version von dir selbst sein, die keine Grenzen kennt — sozial, kreativ, sinnlich. Nur du weißt davon. Nimmst du es an?",
+        "en-US": "You receive an offer: For one night you can be a version of yourself with no limits — socially, creatively, sensually. Only you will know. Do you accept?"
+      },
+      "question_type": "dichotomie",
+      "narrator_id": "ember",
+      "tone": "premium_poetic",
+      "image_gen_prompt": "A glowing door appearing in a dark alley, mysterious invitation light, person standing before it in contemplation, urban night, cinematic atmosphere --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Nein. Ich bin lieber ganz ich, als eine Version, die dann wieder verschwindet.",
+            "en-US": "No. I'd rather be fully myself than a version that disappears again."
+          },
+          "cluster_scores": {
+            "instinct": -0.3,
+            "freedom": -0.2,
+            "love": -0.05
+          },
+          "type_scores": {
+            "kontrolliert": 0.75,
+            "impulsiv": 0.2,
+            "verwandelt": 0.05
+          },
+          "duo_trait_deltas": {
+            "tension": -0.05,
+            "closeness": 0.0
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ja — aber ich würde es vorsichtig angehen. Ausprobieren, nicht explodieren.",
+            "en-US": "Yes — but I'd approach it carefully. Try, not explode."
+          },
+          "cluster_scores": {
+            "instinct": 0.1,
+            "freedom": 0.15,
+            "love": 0.2
+          },
+          "type_scores": {
+            "kontrolliert": 0.1,
+            "impulsiv": 0.65,
+            "verwandelt": 0.25
+          },
+          "duo_trait_deltas": {
+            "tension": 0.1,
+            "closeness": 0.05
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ja — und zwar sofort. Das ist vielleicht die Nacht, auf die ich gewartet habe.",
+            "en-US": "Yes — immediately. This might be the night I've been waiting for."
+          },
+          "cluster_scores": {
+            "instinct": 0.4,
+            "freedom": 0.4,
+            "love": 0.38
+          },
+          "type_scores": {
+            "kontrolliert": 0.05,
+            "impulsiv": 0.2,
+            "verwandelt": 0.75
+          },
+          "duo_trait_deltas": {
+            "tension": 0.2,
+            "closeness": 0.1
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ja — aber ich würde danach lange darüber nachdenken, was ich dabei über mich gelernt habe.",
+            "en-US": "Yes — but I'd spend a long time afterward thinking about what I learned about myself."
+          },
+          "cluster_scores": {
+            "instinct": 0.15,
+            "freedom": 0.2,
+            "love": 0.25
+          },
+          "type_scores": {
+            "kontrolliert": 0.1,
+            "impulsiv": 0.3,
+            "verwandelt": 0.6
+          },
+          "duo_trait_deltas": {
+            "tension": 0.1,
+            "closeness": 0.1
+          }
+        }
+      ]
+    }
+  ],
+  "profiles": [
+    {
+      "id": "kontrolliert",
+      "title": {
+        "de-DE": "Das ruhige Vulkanglas",
+        "en-US": "The Quiet Volcanic Glass"
+      },
+      "tagline": {
+        "de-DE": "Drinnen brodelt es schon lange — du hast nur gelernt, die Hitze zu formen.",
+        "en-US": "It's been brewing inside for a long time — you've just learned to shape the heat."
+      },
+      "description": {
+        "de-DE": "Du hast eine Disziplin entwickelt, die die meisten Menschen als Ruhe lesen — und die in Wirklichkeit das Ergebnis jahrelanger innerer Arbeit ist. Du weißt, was in dir brennt. Du hast es verstanden. Du hast es kartiert. Und du hast entschieden, wann und wie viel du davon zeigst. Das ist keine Unterdrückung — das ist Alchemie. Was andere als Zurückhaltung interpretieren, ist oft die intensivste Form der Kontrolle, die es gibt: die Kontrolle über sich selbst. Du weißt, dass das, was du in dir trägst, nicht verkleinert werden muss, um sicher zu sein. Es muss nur weise eingesetzt werden. Und das tust du.",
+        "en-US": "You've developed a discipline most people read as calm — which is actually the result of years of inner work. You know what burns in you. You've understood it. You've mapped it. And you've decided when and how much you show. This is not suppression — this is alchemy. What others read as restraint is often the most intense form of control there is: control over oneself. You know that what you carry inside doesn't need to be diminished to be safe. It just needs to be used wisely. And you do."
+      },
+      "stats": [
+        {
+          "label": {
+            "de-DE": "Innere Explosionen pro Jahr",
+            "en-US": "Internal explosions per year"
+          },
+          "value": "12 (keiner sieht sie / nobody sees them)"
+        },
+        {
+          "label": {
+            "de-DE": "Grad Celsius innen / außen",
+            "en-US": "Degrees Celsius inside / outside"
+          },
+          "value": "800 / 20"
+        },
+        {
+          "label": {
+            "de-DE": "Kontrolle als Superkraft",
+            "en-US": "Control as superpower"
+          },
+          "value": "100%"
+        }
+      ],
+      "compatibility": {
+        "allies": [
+          "impulsiv",
+          "verwandelt"
+        ],
+        "nemesis": [
+          "verwandelt"
+        ]
+      },
+      "share_text": {
+        "de-DE": "Ich bin ruhiges Vulkanglas. Was du siehst, ist die Form — nicht die Hitze. #KinkyNormal",
+        "en-US": "I am quiet volcanic glass. What you see is the shape — not the heat. #KinkyNormal"
+      },
+      "image_gen_prompt": "A piece of volcanic obsidian glass gleaming in warm light, perfectly still, deep black with hidden internal reflections, macro photography aesthetic, 9:16 --ar 9:16 --v 6.0"
+    },
+    {
+      "id": "impulsiv",
+      "title": {
+        "de-DE": "Das lebendige Experiment",
+        "en-US": "The Living Experiment"
+      },
+      "tagline": {
+        "de-DE": "Du probierst dich aus — und entdeckst dabei, wer du wirklich bist.",
+        "en-US": "You try yourself out — and in doing so, discover who you really are."
+      },
+      "description": {
+        "de-DE": "Du hast kein festes Drehbuch für dein Anderssein. Du bist noch dabei, es zu entdecken — und das ist das Aufregendste daran. Du spürst den Zug, du folgst ihm manchmal, du machst Schritte zurück, du adjustierst. Das ist keine Schwäche — das ist wissenschaftliche Methode angewandt auf das eigene Leben. Du bist dein eigenes Labor. Was andere als Unentschlossenheit sehen, ist dein ehrliches Ausprobieren: Erst wenn du es erlebt hast, weißt du, ob es wirklich deins ist. Kein Urteil, kein Ergebnis — nur Daten. Und du sammelst sie mit Neugier.",
+        "en-US": "You have no fixed script for your otherness. You're still discovering it — and that's the most exciting part. You feel the pull, you follow it sometimes, you step back, you adjust. This is not weakness — this is scientific method applied to your own life. You are your own laboratory. What others see as indecision is your honest experimentation: only after you've experienced it do you know if it's really yours. No judgment, no result — just data. And you collect it with curiosity."
+      },
+      "stats": [
+        {
+          "label": {
+            "de-DE": "Laufende Selbstexperimente",
+            "en-US": "Active self-experiments"
+          },
+          "value": "3–7"
+        },
+        {
+          "label": {
+            "de-DE": "Hypothesen über dich selbst",
+            "en-US": "Hypotheses about yourself"
+          },
+          "value": "mehr als du denkst / more than you think"
+        },
+        {
+          "label": {
+            "de-DE": "Abgebrochene Experimente (mit Erkenntnis)",
+            "en-US": "Abandoned experiments (with insight)"
+          },
+          "value": "alle / all of them"
+        }
+      ],
+      "compatibility": {
+        "allies": [
+          "kontrolliert",
+          "verwandelt"
+        ],
+        "nemesis": [
+          "kontrolliert"
+        ]
+      },
+      "share_text": {
+        "de-DE": "Ich bin das lebendige Experiment. Noch nicht fertig — und das ist der Plan. #KinkyNormal",
+        "en-US": "I am the living experiment. Not done yet — and that's the plan. #KinkyNormal"
+      },
+      "image_gen_prompt": "A laboratory with beautiful chaotic experiments in progress, test tubes with colorful liquids, a figure working with focus and wonder, cinematic warm light, 9:16 --ar 9:16 --v 6.0"
+    },
+    {
+      "id": "verwandelt",
+      "title": {
+        "de-DE": "Die vollständige Umkehrung",
+        "en-US": "The Complete Reversal"
+      },
+      "tagline": {
+        "de-DE": "Du hast aufgehört, dein Anderssein zu erklären — und angefangen, es zu bewohnen.",
+        "en-US": "You've stopped explaining your otherness — and started inhabiting it."
+      },
+      "description": {
+        "de-DE": "Es gab einen Moment — vielleicht gibt es ihn noch — wo du entschieden hast, dass das Verstecken mehr Energie kostet als das Zeigen. Und seitdem läufst du anders. Nicht lauter, nicht schriller — aber authentischer. Du trägst dein Anderssein wie eine zweite Haut, die in Wirklichkeit die erste ist. Was andere als Mut bezeichnen, empfindest du inzwischen als Erschöpftheit: zu müde für das Spiel. Und in dieser Erschöpfung hast du etwas Seltsames gefunden: Freiheit. Echte Freiheit. Nicht die Freiheit, alles zu zeigen — sondern die Freiheit, nicht mehr nachzudenken, ob du es darfst.",
+        "en-US": "There was a moment — maybe it's still coming — when you decided that hiding costs more energy than showing. And since then you walk differently. Not louder, not shriller — but more authentically. You wear your otherness like a second skin that is really your first. What others call courage, you now experience as exhaustion: too tired for the game. And in that exhaustion you found something strange: freedom. Real freedom. Not the freedom to show everything — but the freedom to stop thinking about whether you're allowed to."
+      },
+      "stats": [
+        {
+          "label": {
+            "de-DE": "Energie gespart durch aufgehörtes Verstecken",
+            "en-US": "Energy saved by stopping the hiding"
+          },
+          "value": "enorm / enormous"
+        },
+        {
+          "label": {
+            "de-DE": "Erklärungen, die du schuldig bist",
+            "en-US": "Explanations you owe anyone"
+          },
+          "value": "0"
+        },
+        {
+          "label": {
+            "de-DE": "Versionen von dir, die jetzt ruhen dürfen",
+            "en-US": "Versions of you that can now rest"
+          },
+          "value": "3–5"
+        }
+      ],
+      "compatibility": {
+        "allies": [
+          "impulsiv",
+          "kontrolliert"
+        ],
+        "nemesis": [
+          "kontrolliert"
+        ]
+      },
+      "share_text": {
+        "de-DE": "Ich bin die vollständige Umkehrung. Aufgehört zu erklären. Angefangen zu sein. #KinkyNormal",
+        "en-US": "I am the complete reversal. Stopped explaining. Started being. #KinkyNormal"
+      },
+      "image_gen_prompt": "A butterfly emerging from a chrysalis in dramatic close-up, extreme macro, soft morning light, sense of transformation and irreversibility, portrait 9:16 --ar 9:16 --v 6.0"
+    }
+  ],
+  "share_config": {
+    "card_format": "9:16",
+    "include_compatibility": true,
+    "cta_text": {
+      "de-DE": "Finde dein Profil — Quiz 2 von 4",
+      "en-US": "Find your profile — Quiz 2 of 4"
+    },
+    "hashtags": [
+      "KinkyNormal",
+      "BinIchAndersAuchNormal",
+      "InneresAndersein"
+    ]
+  },
+  "marker_emission": {
+    "cluster_domain_map": {
+      "instinct": "instinct",
+      "freedom": "freedom",
+      "love": "love"
+    },
+    "cluster_keyword_map": {
+      "instinct": "primal_sense",
+      "freedom": "independence",
+      "love": "passionate"
+    },
+    "example_output_extreme_verwandelt": [
+      {
+        "id": "marker.instinct.primal_sense",
+        "weight": 1.0
+      },
+      {
+        "id": "marker.love.passionate",
+        "weight": 0.88
+      },
+      {
+        "id": "marker.freedom.independence",
+        "weight": 0.87
+      }
+    ],
+    "example_output_extreme_kontrolliert": [
+      {
+        "id": "marker.instinct.primal_sense",
+        "weight": 0.2
+      },
+      {
+        "id": "marker.love.passionate",
+        "weight": 0.15
+      },
+      {
+        "id": "marker.freedom.independence",
+        "weight": 0.08
+      }
+    ]
+  },
+  "fusion_ring": {
+    "dominant_sectors_verwandelt": [
+      "S0",
+      "S7",
+      "S8"
+    ],
+    "dominant_sectors_impulsiv": [
+      "S7",
+      "S4",
+      "S8"
+    ],
+    "dominant_sectors_kontrolliert": [
+      "S9",
+      "S5",
+      "S7"
+    ],
+    "note": "Resolved via AFFINITY_MAP: primal_sense→S0/S7, passionate→S7/S4, independence→S8/S0"
+  },
+  "contribution_event": {
+    "event_type": "quiz_completed",
+    "quiz_id": "kinky_02_antrieb",
+    "series_id": "kinky_series",
+    "payload_template": {
+      "primary_cluster": "{{primaryCluster}}",
+      "primary_type": "{{primaryType}}",
+      "markers": "{{markerWeights}}",
+      "traits": [
+        {
+          "key": "instinct_expression",
+          "source": "cluster_scores.instinct"
+        },
+        {
+          "key": "passion_level",
+          "source": "cluster_scores.love"
+        },
+        {
+          "key": "freedom_orientation",
+          "source": "cluster_scores.freedom"
+        }
+      ],
+      "tags": [
+        {
+          "id": "tag.archetype.verwandelt",
+          "label": "Die Vollständige Umkehrung",
+          "kind": "archetype"
+        },
+        {
+          "id": "tag.archetype.impulsiv",
+          "label": "Das Lebendige Experiment",
+          "kind": "archetype"
+        },
+        {
+          "id": "tag.archetype.kontrolliert",
+          "label": "Das Ruhige Vulkanglas",
+          "kind": "archetype"
+        }
+      ]
+    }
+  }
+}

@@ -339,7 +339,7 @@ interface AppShellProps {
   siteVisible: boolean;
   planetariumMode: boolean;
   togglePlanetarium: () => void;
-  ambiente: { playing: boolean; toggle: () => void; pause: () => void; resume: () => void };
+  ambiente: { playing: boolean; volume: number; setVolume: (v: number) => void; toggle: () => void; pause: () => void; resume: () => void };
   signOut: () => void;
   error: string | null;
 }
@@ -410,19 +410,31 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
 
           <div className="w-[1px] h-4 bg-[#8B6914]/20" />
 
-          {/* Audio toggle */}
-          <button
-            onClick={ambiente.toggle}
-            className="text-[#1E2A3A]/40 hover:text-[#8B6914] transition-colors"
-            title={ambiente.playing ? t("nav.pauseAudioTitle") : t("nav.playAudioTitle")}
-            aria-label={ambiente.playing ? t("nav.pauseAudioTitle") : t("nav.playAudioTitle")}
-          >
-            {ambiente.playing ? (
-              <Volume2 className="w-4 h-4 text-[#8B6914]" aria-hidden="true" />
-            ) : (
-              <VolumeX className="w-4 h-4" aria-hidden="true" />
-            )}
-          </button>
+          {/* Audio toggle & Volume Slider */}
+          <div className="flex items-center gap-2 group/audio">
+            <button
+              onClick={ambiente.toggle}
+              className="text-[#1E2A3A]/40 hover:text-[#8B6914] transition-colors"
+              title={ambiente.playing ? t("nav.pauseAudioTitle") : t("nav.playAudioTitle")}
+              aria-label={ambiente.playing ? t("nav.pauseAudioTitle") : t("nav.playAudioTitle")}
+            >
+              {ambiente.playing && ambiente.volume > 0 ? (
+                <Volume2 className="w-4 h-4 text-[#8B6914]" aria-hidden="true" />
+              ) : (
+                <VolumeX className="w-4 h-4" aria-hidden="true" />
+              )}
+            </button>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={ambiente.volume}
+              onChange={(e) => ambiente.setVolume(parseFloat(e.target.value))}
+              className="w-16 h-1 bg-[#8B6914]/20 rounded-full appearance-none cursor-pointer accent-[#8B6914] opacity-0 group-hover/audio:opacity-100 transition-opacity"
+              title="Lautstärke"
+            />
+          </div>
 
           <div className="w-[1px] h-4 bg-[#8B6914]/20" />
 
@@ -477,13 +489,28 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
           <Telescope className="w-5 h-5" aria-hidden="true" />
         </button>
 
-        <button
-          onClick={ambiente.toggle}
-          aria-label={ambiente.playing ? t("nav.pauseAudioTitle") : t("nav.playAudioTitle")}
-          className="text-[#1E2A3A]/40 hover:text-[#8B6914] transition-colors"
-        >
-          {ambiente.playing ? <Volume2 className="w-5 h-5 text-[#8B6914]" aria-hidden="true" /> : <VolumeX className="w-5 h-5" aria-hidden="true" />}
-        </button>
+        <div className="flex flex-col items-center gap-1">
+          <button
+            onClick={ambiente.toggle}
+            aria-label={ambiente.playing ? t("nav.pauseAudioTitle") : t("nav.playAudioTitle")}
+            className="text-[#1E2A3A]/40 hover:text-[#8B6914] transition-colors"
+          >
+            {ambiente.playing && ambiente.volume > 0 ? (
+              <Volume2 className="w-5 h-5 text-[#8B6914]" aria-hidden="true" />
+            ) : (
+              <VolumeX className="w-5 h-5" aria-hidden="true" />
+            )}
+          </button>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={ambiente.volume}
+            onChange={(e) => ambiente.setVolume(parseFloat(e.target.value))}
+            className="w-10 h-1 bg-[#8B6914]/20 rounded-full appearance-none cursor-pointer accent-[#8B6914]"
+          />
+        </div>
       </nav>
     </motion.div>
   );

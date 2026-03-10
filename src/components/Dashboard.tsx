@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import {
   ArrowUp, ArrowLeft, RefreshCw, Zap, Phone, PhoneOff, Lock,
@@ -17,26 +18,15 @@ import { getZodiacSign, getSignName } from "../lib/astro-data/zodiacSigns";
 import { getConstellationForSign } from "../lib/astro-data/constellationFromSign";
 import { usePlanetarium } from "../contexts/PlanetariumContext";
 import { Tooltip } from "./Tooltip";
-import QuizOverlay from "./QuizOverlay";
-import { ClusterEnergySystem } from "./ClusterEnergySystem";
-import { RingTeaserCard } from "./RingTeaserCard";
-import { DailyEnergyTeaser } from "./DailyEnergyTeaser";
 import { LegalFooter } from "./LegalFooter";
-import type { ContributionEvent } from "@/src/lib/lme/types";
-import type { FusionRingSignal } from "@/src/lib/fusion-ring";
 import { BaZiFourPillars } from "./BaZiFourPillars";
-import { WuXingPentagon } from "./WuXingPentagon";
-import { WuXingCycleWheel } from "./WuXingCycleWheel";
 import { BaZiInterpretation } from "./BaZiInterpretation";
-import { BaZiMiniRing } from "./BaZiMiniRing";
 import { getStemByCharacter } from "../lib/astro-data/heavenlyStems";
 import type { BafeData } from "../services/supabase";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Static data
 // ─────────────────────────────────────────────────────────────────────────────
-
-const EMPTY_MODULE_SET = new Set<string>();
 
 // ── Session-random bilingual quotes ──────────────────────────────────────
 const BAZODIAC_QUOTES: { en: string; de: string }[] = [
@@ -223,9 +213,6 @@ interface DashboardProps {
   onStopAudio: () => void;
   onResumeAudio: () => void;
   isFirstReading?: boolean;
-  fusionSignal?: FusionRingSignal | null;
-  onQuizComplete?: (event: ContributionEvent) => void;
-  completedModules?: Set<string>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -244,9 +231,6 @@ export function Dashboard({
   onStopAudio,
   onResumeAudio,
   isFirstReading = false,
-  fusionSignal,
-  onQuizComplete,
-  completedModules,
 }: DashboardProps) {
   const { lang, t } = useLanguage();
   const { isPremium } = usePremium();
@@ -270,7 +254,6 @@ export function Dashboard({
     }
   };
   const leviSectionRef = useRef<HTMLDivElement>(null);
-  const [activeQuiz, setActiveQuiz] = useState<string | null>(null);
 
   // ── First-visit Birth Sky welcome ────────────────────────────────
   // Only show for genuinely new profiles (just completed onboarding),
@@ -394,11 +377,6 @@ export function Dashboard({
 
   const yearAnimal = apiData.bazi?.zodiac_sign || "";
   const yearEl = apiData.bazi?.pillars?.year?.element || "";
-
-  // B(s) signals for mini-ring (from fusion computation)
-  const baziSectorSignals = useMemo(() => {
-    return fusionSignal?.components?.B ?? new Array(12).fill(0);
-  }, [fusionSignal]);
 
   const elevenLabsAgentId =
     import.meta.env.VITE_ELEVENLABS_AGENT_ID || "agent_1801kje0zqc8e4b89swbt7wekawv";
@@ -828,102 +806,73 @@ export function Dashboard({
 
           {/* Block C: Element Balance — Pentagon + Cycle side by side */}
           <div className="mb-10">
-            <p className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/50 mb-2">
-              WuXing 五行
-            </p>
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/50">
+                WuXing 五行
+              </p>
+              <Link
+                to="/wu-xing"
+                className="text-[9px] uppercase tracking-[0.2em] text-[#8B6914]/60 hover:text-[#8B6914] transition-colors flex items-center gap-1.5"
+              >
+                <span>{lang === 'de' ? 'Detailansicht' : 'Detailed View'}</span>
+                <ArrowUp className="w-3 h-3 rotate-45" />
+              </Link>
+            </div>
             <p className="text-xs text-[#1E2A3A]/45 mb-6 leading-relaxed max-w-2xl">
               {t("dashboard.wuxing.sectionDesc")}
             </p>
 
             <div className="morning-card p-6 md:p-8">
-              {Object.keys(wuxingBalance).length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-                  <div className="max-w-[280px] mx-auto md:max-w-none">
-                    <WuXingPentagon
-                      balance={wuxingBalance}
-                      lang={lang}
-                      planetariumMode={planetariumMode}
-                    />
-                  </div>
-                  <div className="max-w-[240px] mx-auto md:max-w-none">
-                    <WuXingCycleWheel
-                      balance={wuxingBalance}
-                      lang={lang}
-                      planetariumMode={planetariumMode}
-                    />
-                  </div>
-                </div>
-              ) : (
-                /* Fallback: existing bar chart when no WuXing data */
-                <div className="space-y-4">
-                  {WUXING_ELEMENTS.map((el) => {
-                    const count = Number(wuxingCounts[el.key] ?? wuxingCounts[el.name.de] ?? 0);
-                    const pctLabel = totalCount > 0 ? Math.round((count / totalCount) * 100) : 0;
-                    const pctBar = hasWuxingData ? (count / maxCount) * 100 : 0;
-                    const isDom = el.key === dominantEl || el.name.de === dominantEl;
-                    return (
-                      <Tooltip key={el.key} content={el.description[lang]} wide dark={planetariumMode}>
-                        <div className="flex items-center gap-2 sm:gap-4 cursor-help group">
-                          <div className="w-24 sm:w-28 md:w-36 shrink-0 flex items-center gap-2 sm:gap-2.5">
-                            <span className="text-2xl font-serif leading-none select-none" style={{ color: el.color }}>
-                              {el.chinese}
-                            </span>
-                            <div className="min-w-0">
-                              <div className="text-xs font-medium text-[#1E2A3A] truncate">{el.name[lang]}</div>
-                              <div className="text-[10px] text-[#1E2A3A]/35">{el.pinyin}</div>
-                            </div>
-                          </div>
-                          <div className="flex-1 wuxing-bar-track">
-                            {hasWuxingData ? (
-                              <motion.div
-                                className="wuxing-bar-fill"
-                                initial={{ width: 0 }}
-                                animate={{ width: `${Math.max(pctBar, pctBar > 0 ? 2 : 0)}%` }}
-                                transition={{ duration: 1.0, ease: "easeOut", delay: 0.2 }}
-                                style={{ backgroundColor: el.color }}
-                              />
-                            ) : (
-                              <div className="h-full rounded-full" style={{ backgroundColor: el.color + "20", width: "100%" }} />
-                            )}
-                          </div>
-                          <div className="w-12 shrink-0 text-right flex items-center justify-end gap-1">
-                            {hasWuxingData && pctLabel > 0 && (
-                              <span className="text-[10px] text-[#1E2A3A]/45 font-mono">{pctLabel}%</span>
-                            )}
-                            {isDom && <span className="text-sm" style={{ color: el.color }}>★</span>}
+              <div className="space-y-4">
+                {WUXING_ELEMENTS.map((el) => {
+                  const count = Number(wuxingCounts[el.key] ?? wuxingCounts[el.name.de] ?? 0);
+                  const pctLabel = totalCount > 0 ? Math.round((count / totalCount) * 100) : 0;
+                  const pctBar = hasWuxingData ? (count / maxCount) * 100 : 0;
+                  const isDom = el.key === dominantEl || el.name.de === dominantEl;
+                  return (
+                    <Tooltip key={el.key} content={el.description[lang]} wide dark={planetariumMode}>
+                      <div className="flex items-center gap-2 sm:gap-4 cursor-help group">
+                        <div className="w-24 sm:w-28 md:w-36 shrink-0 flex items-center gap-2 sm:gap-2.5">
+                          <span className="text-2xl font-serif leading-none select-none" style={{ color: el.color }}>
+                            {el.chinese}
+                          </span>
+                          <div className="min-w-0">
+                            <div className="text-xs font-medium text-[#1E2A3A] truncate">{el.name[lang]}</div>
+                            <div className="text-[10px] text-[#1E2A3A]/35">{el.pinyin}</div>
                           </div>
                         </div>
-                      </Tooltip>
-                    );
-                  })}
-                </div>
-              )}
+                        <div className="flex-1 wuxing-bar-track">
+                          {hasWuxingData ? (
+                            <div
+                              className="wuxing-bar-fill"
+                              style={{ backgroundColor: el.color, width: `${Math.max(pctBar, pctBar > 0 ? 2 : 0)}%` }}
+                            />
+                          ) : (
+                            <div className="h-full rounded-full" style={{ backgroundColor: el.color + "20", width: "100%" }} />
+                          )}
+                        </div>
+                        <div className="w-12 shrink-0 text-right flex items-center justify-end gap-1">
+                          {hasWuxingData && pctLabel > 0 && (
+                            <span className="text-[10px] text-[#1E2A3A]/45 font-mono" style={{ fontVariantNumeric: 'tabular-nums' }}>{pctLabel}%</span>
+                          )}
+                          {isDom && <span className="text-sm" style={{ color: el.color }}>★</span>}
+                        </div>
+                      </div>
+                    </Tooltip>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
-          {/* Block D: Interpretation + Ring Connector */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Interpretation — 2/3 width */}
-            <div className="morning-card p-6 md:p-8 md:col-span-2">
-              <BaZiInterpretation
-                animal={yearAnimal}
-                element={yearEl}
-                balance={wuxingBalance}
-                lang={lang}
-              />
-            </div>
-
-            {/* Mini-Ring Connector — 1/3 width */}
-            <div className="morning-card p-6 flex flex-col items-center justify-center">
-              <p className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/50 mb-4">
-                {lang === "de" ? "BaZi im Ring" : "BaZi in Ring"}
-              </p>
-              <BaZiMiniRing
-                baziSignals={baziSectorSignals}
-                lang={lang}
-                size={180}
-              />
-            </div>
+          {/* Block D: Interpretation */}
+          <div className="morning-card p-6 md:p-8">
+            <BaZiInterpretation
+              animal={yearAnimal}
+              element={yearEl}
+              balance={wuxingBalance}
+              lang={lang}
+            />
           </div>
         </motion.div>
       </PremiumGate>
@@ -1102,49 +1051,6 @@ export function Dashboard({
           )}
         </div>
       </motion.div>
-
-      {/* ═══ CLUSTER ENERGY SYSTEM ═════════════════════════════════ */}
-      {onQuizComplete && (
-        <motion.div className="mb-16" {...fadeIn(0.5)}>
-          <SectionDivider
-            label={lang === "de" ? "Persönlichkeit" : "Personality"}
-            title={lang === "de" ? "Dein Energie-System" : "Your Energy System"}
-          />
-          <ClusterEnergySystem
-            signal={fusionSignal ?? null}
-            completedModules={completedModules ?? EMPTY_MODULE_SET}
-            onStartQuiz={(quizId) => setActiveQuiz(quizId)}
-            isPremium={isPremium}
-            lang={lang}
-          />
-        </motion.div>
-      )}
-
-      {/* ═══ RING TEASER — replaces inline timeline ════════════════════ */}
-      {fusionSignal && (
-        <motion.div className="mb-16" {...fadeIn(0.4)}>
-          <RingTeaserCard signal={fusionSignal} lang={lang} />
-        </motion.div>
-      )}
-
-      {/* ═══ DAILY ENERGY TEASER ════════════════════════════════════════ */}
-      {fusionSignal && (
-        <motion.div className="mb-16" {...fadeIn(0.45)}>
-          <DailyEnergyTeaser signal={fusionSignal} lang={lang} isPremium={isPremium} />
-        </motion.div>
-      )}
-
-      {/* Quiz Overlay */}
-      {onQuizComplete && (
-        <QuizOverlay
-          quizId={activeQuiz}
-          onComplete={(event) => {
-            onQuizComplete(event);
-            setActiveQuiz(null);
-          }}
-          onClose={() => setActiveQuiz(null)}
-        />
-      )}
 
       {/* ═══ SHARE CARD ═══════════════════════════════════════════════ */}
       <motion.div className="mb-16" {...fadeIn(0.5)}>

@@ -1,0 +1,1240 @@
+{
+  "schema_version": "3.0.0",
+  "engine": "quizzme-quiz-engine",
+  "output_mode": "full_v2",
+  "series": {
+    "id": "kinky_series",
+    "title": {
+      "de-DE": "Kinky — Bin ich anders auch normal?",
+      "en-US": "Kinky — Is my different side normal too?"
+    },
+    "quiz_index": 4,
+    "quiz_count": 4,
+    "theme": {
+      "de-DE": "Wie weit traust du dir, dein inneres Anderssein zu zeigen — ohne Scham und Urteil?",
+      "en-US": "How far do you dare to show your inner otherness — without shame or judgment?"
+    }
+  },
+  "meta": {
+    "id": "kinky_04_identitaet",
+    "hidden_cluster": "creative",
+    "facet_label": {
+      "de-DE": "Identität ohne Maske",
+      "en-US": "Identity Unmasked"
+    },
+    "axis_key": "closeness",
+    "narrator_id": "ember",
+    "tone": "premium_poetic",
+    "type_model": {
+      "types": [
+        "maskentraeger",
+        "gestaltwandler",
+        "ursprung"
+      ],
+      "compute": "max_type_score"
+    }
+  },
+  "disclaimer": {
+    "de-DE": "Dieser Test dient der spielerischen Selbstreflexion und stellt KEINE psychologische Diagnose dar.",
+    "en-US": "This quiz is for playful self-reflection and is NOT a psychological diagnosis."
+  },
+  "questions": [
+    {
+      "id": "q01",
+      "prompt": {
+        "de-DE": "Du wachst morgens auf und weißt: Heute musst du dich nicht verstellen. Kein Job, keine Verpflichtungen, keine Erwartungen. Dein erstes Gefühl ist...",
+        "en-US": "You wake up in the morning knowing: Today you don't have to pretend. No job, no obligations, no expectations. Your first feeling is..."
+      },
+      "question_type": "reaktions_szenario",
+      "narrator_id": "ember",
+      "tone": "premium_poetic",
+      "image_gen_prompt": "Morning light through sheer curtains onto an unmade bed, a person stretching with eyes still closed, golden hour glow, sense of absolute freedom and ease --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Erleichterung. Endlich. Dann sofort: Schuldgefühl, weil ich so selten ich bin.",
+            "en-US": "Relief. Finally. Then immediately: guilt, because I'm so rarely myself."
+          },
+          "cluster_scores": {
+            "creative": -0.1,
+            "instinct": 0.2,
+            "love": -0.15
+          },
+          "type_scores": {
+            "maskentraeger": 0.65,
+            "gestaltwandler": 0.3,
+            "ursprung": 0.05
+          },
+          "duo_trait_deltas": {
+            "closeness": -0.05,
+            "tension": 0.1
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Neugier. Was mache ich, wenn niemand schaut?",
+            "en-US": "Curiosity. What do I do when no one's watching?"
+          },
+          "cluster_scores": {
+            "creative": 0.15,
+            "instinct": 0.25,
+            "love": 0.2
+          },
+          "type_scores": {
+            "maskentraeger": 0.1,
+            "gestaltwandler": 0.7,
+            "ursprung": 0.2
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.1,
+            "tension": 0.05
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Stille. Ich bin schon ich — der Tag beginnt genau richtig.",
+            "en-US": "Stillness. I'm already myself — the day begins exactly right."
+          },
+          "cluster_scores": {
+            "creative": 0.38,
+            "instinct": 0.3,
+            "love": 0.35
+          },
+          "type_scores": {
+            "maskentraeger": 0.05,
+            "gestaltwandler": 0.2,
+            "ursprung": 0.75
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.15,
+            "tension": 0.1
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Unsicherheit. Ohne Struktur weiß ich manchmal nicht, wer ich bin.",
+            "en-US": "Uncertainty. Without structure I sometimes don't know who I am."
+          },
+          "cluster_scores": {
+            "creative": -0.2,
+            "instinct": 0.1,
+            "love": -0.05
+          },
+          "type_scores": {
+            "maskentraeger": 0.35,
+            "gestaltwandler": 0.55,
+            "ursprung": 0.1
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.0,
+            "tension": 0.1
+          }
+        }
+      ]
+    },
+    {
+      "id": "q02",
+      "prompt": {
+        "de-DE": "Ein Mensch, den du liebst, fragt dich: 'Wer bist du wirklich — hinter allem?' Du antwortest...",
+        "en-US": "A person you love asks you: 'Who are you really — behind everything?' You answer..."
+      },
+      "question_type": "reaktions_szenario",
+      "narrator_id": "ember",
+      "tone": "premium_poetic",
+      "image_gen_prompt": "Two faces in close proximity, one speaking quietly, the other listening with full attention, warm amber backlight, intimate and sincere, no props, pure presence --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich weiche aus. Diese Frage macht mir Angst — nicht weil ich keine Antwort habe, sondern weil ich zu viele habe.",
+            "en-US": "I deflect. This question frightens me — not because I have no answer, but because I have too many."
+          },
+          "cluster_scores": {
+            "creative": -0.25,
+            "instinct": 0.1,
+            "love": -0.1
+          },
+          "type_scores": {
+            "maskentraeger": 0.72,
+            "gestaltwandler": 0.23,
+            "ursprung": 0.05
+          },
+          "duo_trait_deltas": {
+            "closeness": -0.15,
+            "tension": 0.1
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich erzähle eine Schicht — die sicherste. Nicht alles auf einmal.",
+            "en-US": "I tell one layer — the safest. Not everything at once."
+          },
+          "cluster_scores": {
+            "creative": 0.05,
+            "instinct": 0.2,
+            "love": 0.15
+          },
+          "type_scores": {
+            "maskentraeger": 0.1,
+            "gestaltwandler": 0.7,
+            "ursprung": 0.2
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.1,
+            "tension": 0.05
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ich erzähle alles, was in den Moment passt. Echte Intimität ist keine Kontrollfrage.",
+            "en-US": "I tell everything that fits the moment. Real intimacy isn't a control question."
+          },
+          "cluster_scores": {
+            "creative": 0.38,
+            "instinct": 0.3,
+            "love": 0.4
+          },
+          "type_scores": {
+            "maskentraeger": 0.05,
+            "gestaltwandler": 0.15,
+            "ursprung": 0.8
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.2,
+            "tension": 0.15
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich stelle die Gegenfrage: 'Was siehst du gerade?' Ich bin neugierig auf ihr Bild von mir.",
+            "en-US": "I ask back: 'What do you see right now?' I'm curious about their image of me."
+          },
+          "cluster_scores": {
+            "creative": 0.15,
+            "instinct": 0.25,
+            "love": 0.2
+          },
+          "type_scores": {
+            "maskentraeger": 0.1,
+            "gestaltwandler": 0.65,
+            "ursprung": 0.25
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.15,
+            "tension": 0.05
+          }
+        }
+      ]
+    },
+    {
+      "id": "q03",
+      "prompt": {
+        "de-DE": "Du siehst ein Foto von dir aus einer Zeit, in der du noch nicht du warst. Was siehst du?",
+        "en-US": "You see a photo of yourself from a time when you weren't yet yourself. What do you see?"
+      },
+      "question_type": "ästhetik_wahl",
+      "narrator_id": "ember",
+      "tone": "premium_poetic",
+      "image_gen_prompt": "An old photo slightly out of focus in someone's hands, the person looking at it with soft contemplation, golden nostalgic light, sense of gentle distance from the past --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Jemanden, der gut darin war zu tun, was erwartet wurde. Traurig und respektabel zugleich.",
+            "en-US": "Someone who was good at doing what was expected. Sad and admirable at once."
+          },
+          "cluster_scores": {
+            "creative": -0.2,
+            "instinct": 0.05,
+            "love": -0.05
+          },
+          "type_scores": {
+            "maskentraeger": 0.68,
+            "gestaltwandler": 0.27,
+            "ursprung": 0.05
+          },
+          "duo_trait_deltas": {
+            "closeness": -0.05,
+            "tension": 0.05
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Jemanden auf dem Weg — noch nicht angekommen, aber schon unterwegs.",
+            "en-US": "Someone en route — not yet arrived, but already on the way."
+          },
+          "cluster_scores": {
+            "creative": 0.1,
+            "instinct": 0.15,
+            "love": 0.2
+          },
+          "type_scores": {
+            "maskentraeger": 0.1,
+            "gestaltwandler": 0.72,
+            "ursprung": 0.18
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.05,
+            "tension": 0.05
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Mich — anders verpackt, aber schon da. Das Wesentliche war immer drin.",
+            "en-US": "Me — differently packaged, but already there. The essential was always in."
+          },
+          "cluster_scores": {
+            "creative": 0.35,
+            "instinct": 0.3,
+            "love": 0.35
+          },
+          "type_scores": {
+            "maskentraeger": 0.05,
+            "gestaltwandler": 0.2,
+            "ursprung": 0.75
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.1,
+            "tension": 0.1
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Eine Figur, die ich gerne umarmen würde. Sie hat es nicht leicht gehabt mit mir.",
+            "en-US": "A figure I'd like to hug. They didn't have it easy with me."
+          },
+          "cluster_scores": {
+            "creative": 0.05,
+            "instinct": 0.2,
+            "love": 0.25
+          },
+          "type_scores": {
+            "maskentraeger": 0.2,
+            "gestaltwandler": 0.5,
+            "ursprung": 0.3
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.15,
+            "tension": 0.05
+          }
+        }
+      ]
+    },
+    {
+      "id": "q04",
+      "prompt": {
+        "de-DE": "Du wirst gebeten, in drei Worten zu beschreiben, wer du wirklich bist — nicht was du tust, nicht welche Rolle du spielst. Drei Worte. Kommen sie?",
+        "en-US": "You're asked to describe in three words who you really are — not what you do, not what role you play. Three words. Do they come?"
+      },
+      "question_type": "dichotomie",
+      "narrator_id": "ember",
+      "tone": "warm_minimal",
+      "image_gen_prompt": "Person sitting quietly with a pen and a blank piece of paper, thinking, warm desk lamp, minimal and intimate setting, close crop --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Nein — ich falle in Rollen. Ohne Rolle fühlt sich Sprache seltsam an.",
+            "en-US": "No — I fall into roles. Without a role, language feels strange."
+          },
+          "cluster_scores": {
+            "creative": -0.3,
+            "instinct": -0.1,
+            "love": -0.1
+          },
+          "type_scores": {
+            "maskentraeger": 0.77,
+            "gestaltwandler": 0.18,
+            "ursprung": 0.05
+          },
+          "duo_trait_deltas": {
+            "closeness": -0.1,
+            "tension": 0.05
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Langsam — es braucht einen Moment. Dann kommen sie.",
+            "en-US": "Slowly — it takes a moment. Then they come."
+          },
+          "cluster_scores": {
+            "creative": 0.1,
+            "instinct": 0.2,
+            "love": 0.15
+          },
+          "type_scores": {
+            "maskentraeger": 0.1,
+            "gestaltwandler": 0.72,
+            "ursprung": 0.18
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.05,
+            "tension": 0.05
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Sofort. Sie sind immer bereit.",
+            "en-US": "Immediately. They're always ready."
+          },
+          "cluster_scores": {
+            "creative": 0.38,
+            "instinct": 0.3,
+            "love": 0.35
+          },
+          "type_scores": {
+            "maskentraeger": 0.05,
+            "gestaltwandler": 0.2,
+            "ursprung": 0.75
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.15,
+            "tension": 0.1
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich hätte gerne zehn Worte. Drei fühlen sich unvollständig an.",
+            "en-US": "I'd want ten words. Three feels incomplete."
+          },
+          "cluster_scores": {
+            "creative": 0.1,
+            "instinct": 0.15,
+            "love": 0.2
+          },
+          "type_scores": {
+            "maskentraeger": 0.15,
+            "gestaltwandler": 0.6,
+            "ursprung": 0.25
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.1,
+            "tension": 0.05
+          }
+        }
+      ]
+    },
+    {
+      "id": "q05",
+      "prompt": {
+        "de-DE": "Wenn dein Anderssein eine Farbe hätte — welche?",
+        "en-US": "If your otherness had a color — which one?"
+      },
+      "question_type": "ästhetik_wahl",
+      "narrator_id": "ember",
+      "tone": "playful",
+      "image_gen_prompt": "Four abstract color field paintings side by side — deep indigo, vivid crimson, shifting iridescent, and muted gold — in a minimal gallery setting, symbolic color choices --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Tiefes Indigo — reichhaltig, aber kaum sichtbar im Dunkeln.",
+            "en-US": "Deep indigo — rich, but barely visible in the dark."
+          },
+          "cluster_scores": {
+            "creative": -0.15,
+            "instinct": -0.05,
+            "love": 0.05
+          },
+          "type_scores": {
+            "maskentraeger": 0.65,
+            "gestaltwandler": 0.3,
+            "ursprung": 0.05
+          },
+          "duo_trait_deltas": {
+            "closeness": -0.05,
+            "tension": 0.05
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Schillerndes Perlmutt — ändert sich, je nachdem aus welchem Winkel man schaut.",
+            "en-US": "Iridescent pearl — changes depending on the angle you look from."
+          },
+          "cluster_scores": {
+            "creative": 0.15,
+            "instinct": 0.1,
+            "love": 0.2
+          },
+          "type_scores": {
+            "maskentraeger": 0.1,
+            "gestaltwandler": 0.75,
+            "ursprung": 0.15
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.1,
+            "tension": 0.05
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Leuchtendes Karmesin — eine Farbe, die den Raum ändert, sobald sie erscheint.",
+            "en-US": "Vivid crimson — a color that changes the room the moment it appears."
+          },
+          "cluster_scores": {
+            "creative": 0.38,
+            "instinct": 0.3,
+            "love": 0.4
+          },
+          "type_scores": {
+            "maskentraeger": 0.05,
+            "gestaltwandler": 0.15,
+            "ursprung": 0.8
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.1,
+            "tension": 0.15
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Warmes Gold — nicht laut, aber nicht zu übersehen.",
+            "en-US": "Warm gold — not loud, but impossible to miss."
+          },
+          "cluster_scores": {
+            "creative": 0.1,
+            "instinct": 0.15,
+            "love": 0.25
+          },
+          "type_scores": {
+            "maskentraeger": 0.1,
+            "gestaltwandler": 0.55,
+            "ursprung": 0.35
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.1,
+            "tension": 0.1
+          }
+        }
+      ]
+    },
+    {
+      "id": "q06",
+      "prompt": {
+        "de-DE": "Du bist auf einer Bühne. Ein einziges Licht. Kein Publikum außer einer Person, die dir wichtig ist. Was tust du?",
+        "en-US": "You're on a stage. A single spotlight. No audience except one person who matters to you. What do you do?"
+      },
+      "question_type": "reaktions_szenario",
+      "narrator_id": "ember",
+      "tone": "premium_poetic",
+      "image_gen_prompt": "Empty theater stage, single spotlight, one person sitting in the dark audience, the stage figure in silhouette, intimately theatrical atmosphere, cinematic --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich stehe da — und sage nichts. Das Stehen ist schon genug Mut.",
+            "en-US": "I stand there — and say nothing. The standing is already enough courage."
+          },
+          "cluster_scores": {
+            "creative": -0.15,
+            "instinct": 0.05,
+            "love": 0.1
+          },
+          "type_scores": {
+            "maskentraeger": 0.62,
+            "gestaltwandler": 0.33,
+            "ursprung": 0.05
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.0,
+            "tension": 0.1
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich fange an — langsam, tastend, aber ich fange an.",
+            "en-US": "I begin — slowly, tentatively, but I begin."
+          },
+          "cluster_scores": {
+            "creative": 0.1,
+            "instinct": 0.2,
+            "love": 0.2
+          },
+          "type_scores": {
+            "maskentraeger": 0.1,
+            "gestaltwandler": 0.7,
+            "ursprung": 0.2
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.1,
+            "tension": 0.05
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ich gebe alles. Diese Person verdient die vollständige Version von mir.",
+            "en-US": "I give everything. This person deserves the complete version of me."
+          },
+          "cluster_scores": {
+            "creative": 0.4,
+            "instinct": 0.35,
+            "love": 0.4
+          },
+          "type_scores": {
+            "maskentraeger": 0.05,
+            "gestaltwandler": 0.15,
+            "ursprung": 0.8
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.2,
+            "tension": 0.15
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich bitte die Person, zu mir auf die Bühne zu kommen. Alleine geht es nur halb.",
+            "en-US": "I invite the person up to the stage with me. Alone it's only half."
+          },
+          "cluster_scores": {
+            "creative": 0.1,
+            "instinct": 0.2,
+            "love": 0.3
+          },
+          "type_scores": {
+            "maskentraeger": 0.1,
+            "gestaltwandler": 0.55,
+            "ursprung": 0.35
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.2,
+            "tension": 0.05
+          }
+        }
+      ]
+    },
+    {
+      "id": "q07",
+      "prompt": {
+        "de-DE": "Dein 'Anderssein' hat einen Preis. Du weißt, dass du manchmal missverstanden wirst. Was tust du mit diesem Wissen?",
+        "en-US": "Your 'otherness' has a cost. You know you'll sometimes be misunderstood. What do you do with that knowledge?"
+      },
+      "question_type": "dichotomie",
+      "narrator_id": "ember",
+      "tone": "warm_minimal",
+      "image_gen_prompt": "A person walking a narrow elevated path above a misty landscape, clear direction, aware of the edges, calm determination, cinematic aerial perspective --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich zahle den Preis, indem ich mich anpasse. Verständnis ist mir wichtiger als Authentizität.",
+            "en-US": "I pay the price by adapting. Being understood matters more to me than authenticity."
+          },
+          "cluster_scores": {
+            "creative": -0.35,
+            "instinct": -0.1,
+            "love": -0.15
+          },
+          "type_scores": {
+            "maskentraeger": 0.78,
+            "gestaltwandler": 0.17,
+            "ursprung": 0.05
+          },
+          "duo_trait_deltas": {
+            "closeness": -0.1,
+            "tension": -0.05
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich zahle ihn manchmal — und manchmal nicht. Es kommt auf den Moment an.",
+            "en-US": "I pay it sometimes — and sometimes not. It depends on the moment."
+          },
+          "cluster_scores": {
+            "creative": 0.1,
+            "instinct": 0.15,
+            "love": 0.2
+          },
+          "type_scores": {
+            "maskentraeger": 0.1,
+            "gestaltwandler": 0.7,
+            "ursprung": 0.2
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.05,
+            "tension": 0.1
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Der Preis für das Verstecken ist höher. Ich bleibe ich.",
+            "en-US": "The price of hiding is higher. I stay myself."
+          },
+          "cluster_scores": {
+            "creative": 0.4,
+            "instinct": 0.35,
+            "love": 0.38
+          },
+          "type_scores": {
+            "maskentraeger": 0.05,
+            "gestaltwandler": 0.15,
+            "ursprung": 0.8
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.1,
+            "tension": 0.15
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich investiere in die richtigen Menschen — dann sinkt der Preis.",
+            "en-US": "I invest in the right people — then the cost goes down."
+          },
+          "cluster_scores": {
+            "creative": 0.1,
+            "instinct": 0.2,
+            "love": 0.25
+          },
+          "type_scores": {
+            "maskentraeger": 0.1,
+            "gestaltwandler": 0.6,
+            "ursprung": 0.3
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.15,
+            "tension": 0.05
+          }
+        }
+      ]
+    },
+    {
+      "id": "q08",
+      "prompt": {
+        "de-DE": "Wenn dein wahrstes Ich eine Gestalt hätte — in einem Märchen, einem Mythos, einer Geschichte — welche?",
+        "en-US": "If your truest self had a form — in a fairy tale, a myth, a story — which one?"
+      },
+      "question_type": "waffen_wahl",
+      "narrator_id": "ember",
+      "tone": "premium_poetic",
+      "image_gen_prompt": "Four mythological silhouettes against a starry sky: a shapeshifter mid-transformation, a hidden figure behind a translucent veil, a radiant elemental being, a figure in constant motion -- cinematic fantasy aesthetic --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Eine versteckte Gottheit — mächtig, aber selten gesehen. Wer sie findet, ist gesegnet.",
+            "en-US": "A hidden deity — powerful, but rarely seen. Whoever finds them is blessed."
+          },
+          "cluster_scores": {
+            "creative": -0.1,
+            "instinct": 0.05,
+            "love": 0.1
+          },
+          "type_scores": {
+            "maskentraeger": 0.67,
+            "gestaltwandler": 0.28,
+            "ursprung": 0.05
+          },
+          "duo_trait_deltas": {
+            "closeness": -0.05,
+            "tension": 0.05
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ein Gestaltwandler — nie ganz festzulegen, immer in Bewegung, immer lebendig.",
+            "en-US": "A shapeshifter — never fully fixed, always in motion, always alive."
+          },
+          "cluster_scores": {
+            "creative": 0.2,
+            "instinct": 0.2,
+            "love": 0.2
+          },
+          "type_scores": {
+            "maskentraeger": 0.1,
+            "gestaltwandler": 0.75,
+            "ursprung": 0.15
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.05,
+            "tension": 0.1
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ein leuchtendes Element — Feuer, Wasser, Licht. Unverhandelbar in seiner Natur.",
+            "en-US": "A luminous element — fire, water, light. Non-negotiable in its nature."
+          },
+          "cluster_scores": {
+            "creative": 0.38,
+            "instinct": 0.3,
+            "love": 0.4
+          },
+          "type_scores": {
+            "maskentraeger": 0.05,
+            "gestaltwandler": 0.15,
+            "ursprung": 0.8
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.1,
+            "tension": 0.15
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Eine Figur, die noch entscheidet, wer sie sein will — und genau das ist ihre Stärke.",
+            "en-US": "A figure still deciding who they want to be — and that is precisely their strength."
+          },
+          "cluster_scores": {
+            "creative": 0.1,
+            "instinct": 0.2,
+            "love": 0.2
+          },
+          "type_scores": {
+            "maskentraeger": 0.1,
+            "gestaltwandler": 0.55,
+            "ursprung": 0.35
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.1,
+            "tension": 0.1
+          }
+        }
+      ]
+    },
+    {
+      "id": "q09",
+      "prompt": {
+        "de-DE": "Diese Quizserie ist zu Ende. Was bleibt?",
+        "en-US": "This quiz series is ending. What remains?"
+      },
+      "question_type": "reaktions_szenario",
+      "narrator_id": "ember",
+      "tone": "premium_poetic",
+      "image_gen_prompt": "A person sitting in stillness after a long journey, a small ember still glowing before them, dark around them but warm within the light, sense of quiet completion --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Die Erkenntnis, dass mein Anderssein einen Namen hat — und das hilft.",
+            "en-US": "The realization that my otherness has a name — and that helps."
+          },
+          "cluster_scores": {
+            "creative": -0.05,
+            "instinct": 0.15,
+            "love": 0.15
+          },
+          "type_scores": {
+            "maskentraeger": 0.55,
+            "gestaltwandler": 0.35,
+            "ursprung": 0.1
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.05,
+            "tension": 0.05
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Fragen, die wichtiger sind als die Antworten.",
+            "en-US": "Questions that matter more than the answers."
+          },
+          "cluster_scores": {
+            "creative": 0.15,
+            "instinct": 0.2,
+            "love": 0.2
+          },
+          "type_scores": {
+            "maskentraeger": 0.1,
+            "gestaltwandler": 0.68,
+            "ursprung": 0.22
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.1,
+            "tension": 0.05
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Das Gefühl, mit mir selbst verabredet zu sein — und diesmal komme ich.",
+            "en-US": "The feeling of having a date with myself — and this time I'm showing up."
+          },
+          "cluster_scores": {
+            "creative": 0.38,
+            "instinct": 0.35,
+            "love": 0.4
+          },
+          "type_scores": {
+            "maskentraeger": 0.05,
+            "gestaltwandler": 0.15,
+            "ursprung": 0.8
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.2,
+            "tension": 0.1
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Neugier. Über mich. Das ist neu.",
+            "en-US": "Curiosity. About myself. That's new."
+          },
+          "cluster_scores": {
+            "creative": 0.1,
+            "instinct": 0.2,
+            "love": 0.25
+          },
+          "type_scores": {
+            "maskentraeger": 0.1,
+            "gestaltwandler": 0.55,
+            "ursprung": 0.35
+          },
+          "duo_trait_deltas": {
+            "closeness": 0.15,
+            "tension": 0.05
+          }
+        }
+      ]
+    }
+  ],
+  "profiles": [
+    {
+      "id": "maskentraeger",
+      "title": {
+        "de-DE": "Der Virtuose der Masken",
+        "en-US": "The Mask Virtuoso"
+      },
+      "tagline": {
+        "de-DE": "Du bist Meister darin, dich anzupassen — und weißt genau, was dahinter wartet.",
+        "en-US": "You master adaptation — and know exactly what waits behind it."
+      },
+      "description": {
+        "de-DE": "Du hast eine Fähigkeit entwickelt, die die meisten Menschen ihr Leben lang üben: Du kannst fast jeden Raum lesen und dich in ihm einrichten. Du weißt, welche Version von dir heute gefragt ist — und du lieferst sie. Das ist nicht Falschheit. Das ist soziale Intelligenz auf höchstem Niveau. Hinter dieser Fähigkeit liegt aber etwas, das du vielleicht noch erkunden möchtest: die Frage, welche Version von dir eigentlich keine Rolle spielt — die einfach ist. Diese Frage muss nicht beängstigend sein. Sie kann der Beginn einer neuen Beziehung zu dir selbst sein — eine, bei der du der Einzige bist, der die Rolle schreibt.",
+        "en-US": "You've developed a skill most people spend their whole lives practicing: you can read almost any room and settle into it. You know which version of you is called for today — and you deliver. This isn't falsehood. This is social intelligence at the highest level. But behind this skill lies something you might want to explore: the question of which version of you doesn't play any role — the one that just is. This question doesn't need to be frightening. It can be the beginning of a new relationship with yourself — one where you're the only one writing the role."
+      },
+      "stats": [
+        {
+          "label": {
+            "de-DE": "Aktive Masken im Repertoire",
+            "en-US": "Active masks in repertoire"
+          },
+          "value": "5–12"
+        },
+        {
+          "label": {
+            "de-DE": "Masken, die du wirklich magst",
+            "en-US": "Masks you actually like"
+          },
+          "value": "2–3"
+        },
+        {
+          "label": {
+            "de-DE": "Momente ohne Maske pro Tag",
+            "en-US": "Moments without a mask per day"
+          },
+          "value": "selten / rare — aber real / but real"
+        }
+      ],
+      "compatibility": {
+        "allies": [
+          "gestaltwandler",
+          "ursprung"
+        ],
+        "nemesis": [
+          "ursprung"
+        ]
+      },
+      "share_text": {
+        "de-DE": "Ich bin der Virtuose der Masken. Ich kenne sie alle — auch die, die niemand sieht. #KinkyNormal",
+        "en-US": "I am the Mask Virtuoso. I know them all — including the one no one sees. #KinkyNormal"
+      },
+      "image_gen_prompt": "A collection of beautiful ornate masks arranged on a dark velvet surface, each unique, one slightly cracked revealing warm light from inside, cinematic portrait 9:16 --ar 9:16 --v 6.0"
+    },
+    {
+      "id": "gestaltwandler",
+      "title": {
+        "de-DE": "Das Lebendige Spektrum",
+        "en-US": "The Living Spectrum"
+      },
+      "tagline": {
+        "de-DE": "Du bist nicht eine Sache — du bist alle Farben auf einmal.",
+        "en-US": "You are not one thing — you are all colors at once."
+      },
+      "description": {
+        "de-DE": "Du hast dich nie in eine einzige Identität pressen lassen — weil du instinktiv weißt, dass das eine Vereinfachung wäre. Du bist verschieden je nach Raum, nach Mensch, nach Stimmung — und das ist keine Unentschlossenheit, das ist reichhaltiges Menschsein. Dein Anderssein ist kein fester Punkt, sondern ein Spektrum. Du weißt, wie du auf verschiedenen Frequenzen schwingen kannst, ohne dich dabei zu verlieren. Das macht dich anpassungsfähig — aber nie austauschbar. Denn das Spektrum, das du bist, ist einzigartig. Niemand anders strahlt in deiner Kombination.",
+        "en-US": "You've never let yourself be pressed into a single identity — because you instinctively know that would be a simplification. You're different depending on the space, the person, the mood — and that's not indecision, that's rich humanness. Your otherness is not a fixed point, but a spectrum. You know how to resonate on different frequencies without losing yourself. That makes you adaptable — but never interchangeable. Because the spectrum you are is unique. No one else radiates in your combination."
+      },
+      "stats": [
+        {
+          "label": {
+            "de-DE": "Identitäten, die du gleichzeitig bist",
+            "en-US": "Identities you are simultaneously"
+          },
+          "value": "mehrere / several"
+        },
+        {
+          "label": {
+            "de-DE": "Menschen, die eine andere Version von dir kennen",
+            "en-US": "People who know a different version of you"
+          },
+          "value": "alle / all of them"
+        },
+        {
+          "label": {
+            "de-DE": "Feste Antworten auf 'Wer bist du?'",
+            "en-US": "Fixed answers to 'Who are you?'"
+          },
+          "value": "0 (absichtlich / intentionally)"
+        }
+      ],
+      "compatibility": {
+        "allies": [
+          "maskentraeger",
+          "ursprung"
+        ],
+        "nemesis": [
+          "maskentraeger"
+        ]
+      },
+      "share_text": {
+        "de-DE": "Ich bin das lebendige Spektrum. Nicht eine Farbe — alle. #KinkyNormal",
+        "en-US": "I am the living spectrum. Not one color — all of them. #KinkyNormal"
+      },
+      "image_gen_prompt": "Light refracted through a prism creating a full rainbow spectrum on a white wall, abstract and luminous, clean minimal aesthetic, portrait 9:16 --ar 9:16 --v 6.0"
+    },
+    {
+      "id": "ursprung",
+      "title": {
+        "de-DE": "Der Reine Ursprung",
+        "en-US": "The Pure Origin"
+      },
+      "tagline": {
+        "de-DE": "Du bist so tief angekommen bei dir, dass Authentizität keine Anstrengung mehr ist.",
+        "en-US": "You've arrived so deeply into yourself that authenticity takes no more effort."
+      },
+      "description": {
+        "de-DE": "Irgendwo auf dem Weg hast du aufgehört, dich zu fragen, ob dein Anderssein normal ist — und angefangen, es als das zu leben, was es ist: du. Nicht du als Produkt von Erwartungen, nicht du als beste soziale Version, sondern du als Ursprung. Das ist eine seltene Form von Mut, die nicht laut kommt — die einfach ist. Menschen in deiner Nähe spüren das sofort: etwas an dir gibt ihnen Erlaubnis, auch mehr sie selbst zu sein. Du weißt vielleicht nicht, wie viele Leben du damit berührst. Aber du tust es, jeden Tag.",
+        "en-US": "Somewhere along the way you stopped asking whether your otherness is normal — and started living it as what it is: you. Not you as a product of expectations, not you as the best social version, but you as origin. That's a rare form of courage that doesn't come loudly — it simply is. People near you feel this immediately: something about you gives them permission to be more themselves. You might not know how many lives you touch that way. But you do, every day."
+      },
+      "stats": [
+        {
+          "label": {
+            "de-DE": "Energie für Selbstverstellung",
+            "en-US": "Energy for self-concealment"
+          },
+          "value": "minimal"
+        },
+        {
+          "label": {
+            "de-DE": "Menschen, die dich als 'echt' beschreiben",
+            "en-US": "People who describe you as 'real'"
+          },
+          "value": "fast alle, die dich kennen / almost all who know you"
+        },
+        {
+          "label": {
+            "de-DE": "Zeitpunkt, an dem du du wurdest",
+            "en-US": "Point when you became yourself"
+          },
+          "value": "früher als du denkst / earlier than you think"
+        }
+      ],
+      "compatibility": {
+        "allies": [
+          "gestaltwandler",
+          "maskentraeger"
+        ],
+        "nemesis": [
+          "maskentraeger"
+        ]
+      },
+      "share_text": {
+        "de-DE": "Ich bin der reine Ursprung. Aufgehört zu fragen, ob ich normal bin. #KinkyNormal",
+        "en-US": "I am the pure origin. Stopped asking if I'm normal. #KinkyNormal"
+      },
+      "image_gen_prompt": "A single seed cracked open with a tiny green shoot emerging, held in two hands, warm earthy light, macro photography, sense of pure beginning and truth, portrait 9:16 --ar 9:16 --v 6.0"
+    }
+  ],
+  "share_config": {
+    "card_format": "9:16",
+    "include_compatibility": true,
+    "cta_text": {
+      "de-DE": "Serienabschluss — Quiz 4 von 4",
+      "en-US": "Series finale — Quiz 4 of 4"
+    },
+    "hashtags": [
+      "KinkyNormal",
+      "BinIchAndersAuchNormal",
+      "IdentitaetOhneMaske",
+      "Ursprung"
+    ]
+  },
+  "series_finale_zone_logic": {
+    "description": "Cross-quiz type fusion for series summary result",
+    "input": [
+      "quiz_01.primaryType",
+      "quiz_02.primaryType",
+      "quiz_03.primaryType",
+      "quiz_04.primaryType"
+    ],
+    "zone_resolution": {
+      "all_open": {
+        "types_tendency": [
+          "sichtbar",
+          "verwandelt",
+          "grenzgaenger",
+          "ursprung"
+        ],
+        "series_zone": "Flamme"
+      },
+      "mixed": {
+        "types_tendency": "mixed",
+        "series_zone": "Übergang"
+      },
+      "all_contained": {
+        "types_tendency": [
+          "verborgen",
+          "kontrolliert",
+          "hueter",
+          "maskentraeger"
+        ],
+        "series_zone": "Fundament"
+      }
+    },
+    "series_zone_labels": {
+      "Flamme": {
+        "de-DE": "Die offene Flamme — du lebst dein Anderssein vollständig.",
+        "en-US": "The open flame — you live your otherness fully."
+      },
+      "Übergang": {
+        "de-DE": "Der lebendige Übergang — du bist auf dem Weg, mit dir anzukommen.",
+        "en-US": "The living transition — you are on your way to arriving at yourself."
+      },
+      "Fundament": {
+        "de-DE": "Das stille Fundament — du trägst dein Anderssein tief in dir, sicher und präzise.",
+        "en-US": "The silent foundation — you carry your otherness deep within, secure and precise."
+      }
+    }
+  },
+  "marker_emission": {
+    "cluster_domain_map": {
+      "creative": "creative",
+      "instinct": "instinct",
+      "love": "love"
+    },
+    "cluster_keyword_map": {
+      "creative": "expression",
+      "instinct": "primal_sense",
+      "love": "passionate"
+    },
+    "example_output_extreme_ursprung": [
+      {
+        "id": "marker.creative.expression",
+        "weight": 1.0
+      },
+      {
+        "id": "marker.love.passionate",
+        "weight": 0.95
+      },
+      {
+        "id": "marker.instinct.primal_sense",
+        "weight": 0.78
+      }
+    ],
+    "example_output_extreme_maskentraeger": [
+      {
+        "id": "marker.creative.expression",
+        "weight": 0.1
+      },
+      {
+        "id": "marker.love.passionate",
+        "weight": 0.08
+      },
+      {
+        "id": "marker.instinct.primal_sense",
+        "weight": 0.12
+      }
+    ]
+  },
+  "fusion_ring": {
+    "dominant_sectors_ursprung": [
+      "S4",
+      "S7",
+      "S0"
+    ],
+    "dominant_sectors_gestaltwandler": [
+      "S4",
+      "S2",
+      "S7"
+    ],
+    "dominant_sectors_maskentraeger": [
+      "S6",
+      "S5",
+      "S9"
+    ],
+    "note": "Resolved via AFFINITY_MAP: expression→S4/S2, passionate→S7/S4, primal_sense→S0/S7"
+  },
+  "contribution_event": {
+    "event_type": "quiz_completed",
+    "quiz_id": "kinky_04_identitaet",
+    "series_id": "kinky_series",
+    "payload_template": {
+      "primary_cluster": "{{primaryCluster}}",
+      "primary_type": "{{primaryType}}",
+      "markers": "{{markerWeights}}",
+      "series_complete": true,
+      "traits": [
+        {
+          "key": "creative_expression",
+          "source": "cluster_scores.creative"
+        },
+        {
+          "key": "passion_level",
+          "source": "cluster_scores.love"
+        },
+        {
+          "key": "instinct_expression",
+          "source": "cluster_scores.instinct"
+        }
+      ],
+      "tags": [
+        {
+          "id": "tag.archetype.ursprung",
+          "label": "Der Reine Ursprung",
+          "kind": "archetype"
+        },
+        {
+          "id": "tag.archetype.gestaltwandler",
+          "label": "Das Lebendige Spektrum",
+          "kind": "archetype"
+        },
+        {
+          "id": "tag.archetype.maskentraeger",
+          "label": "Der Virtuose der Masken",
+          "kind": "archetype"
+        },
+        {
+          "id": "tag.series.kinky_complete",
+          "label": "Kinky Series Complete",
+          "kind": "misc"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,662 @@
+{
+  "schema_version": "3.0.0",
+  "engine": "quizzme-quiz-engine",
+  "output_mode": "full_v2",
+  "series": {
+    "id": "kinky_series",
+    "title": {
+      "de-DE": "Kinky — Bin ich anders auch normal?",
+      "en-US": "Kinky — Is my different side normal too?"
+    },
+    "quiz_index": 1,
+    "quiz_count": 4,
+    "theme": {
+      "de-DE": "Wie weit traust du dir, dein inneres Anderssein zu zeigen — ohne Scham und Urteil?",
+      "en-US": "How far do you dare to show your inner otherness — without shame or judgment?"
+    }
+  },
+  "meta": {
+    "id": "kinky_01_sichtbarkeit",
+    "hidden_cluster": "expression",
+    "facet_label": {
+      "de-DE": "Sichtbarkeit",
+      "en-US": "Visibility"
+    },
+    "axis_key": "tension",
+    "narrator_id": "ember",
+    "tone": "playful",
+    "type_model": {
+      "types": ["verborgen", "selektiv", "sichtbar"],
+      "compute": "max_type_score"
+    }
+  },
+  "disclaimer": {
+    "de-DE": "Dieser Test dient der spielerischen Selbstreflexion und stellt KEINE psychologische Diagnose dar.",
+    "en-US": "This quiz is for playful self-reflection and is NOT a psychological diagnosis."
+  },
+  "questions": [
+    {
+      "id": "q01",
+      "prompt": {
+        "de-DE": "Du bist auf einer Party, auf der du niemanden kennst. Irgendwann merkt die Person neben dir, dass du gerade ein Buch über dein ungewöhnlichstes Hobby in der Tasche hast. Sie fragt dich, was das ist.",
+        "en-US": "You're at a party where you know no one. Someone next to you notices you're carrying a book about your most unusual hobby. They ask you what it is."
+      },
+      "question_type": "reaktions_szenario",
+      "narrator_id": "ember",
+      "tone": "playful",
+      "image_gen_prompt": "A dimly lit evening party, two strangers talking, one holding a mysterious book with an intriguing cover, warm candlelight, intimate atmosphere, cinematic --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich lache kurz und sage 'Ach, das — nichts Besonderes.' Thema gewechselt.",
+            "en-US": "I laugh softly and say 'Oh, that — nothing special.' Topic changed."
+          },
+          "cluster_scores": { "expression": -0.35, "instinct": 0.05, "freedom": -0.2 },
+          "type_scores": { "verborgen": 0.75, "selektiv": 0.2, "sichtbar": 0.05 },
+          "duo_trait_deltas": { "closeness": -0.1, "tension": 0.05 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich sage den Namen des Hobbys, ohne Erklärung. Wer nachfragt, bekommt mehr.",
+            "en-US": "I say the hobby's name, no explanation. If they ask, they get more."
+          },
+          "cluster_scores": { "expression": 0.1, "instinct": 0.2, "freedom": 0.15 },
+          "type_scores": { "verborgen": 0.1, "selektiv": 0.75, "sichtbar": 0.15 },
+          "duo_trait_deltas": { "closeness": 0.05, "tension": 0.1 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ich erzähle begeistert — wenn sie komisch guckt, ist das ihr Problem.",
+            "en-US": "I talk about it enthusiastically — if they look weird, that's on them."
+          },
+          "cluster_scores": { "expression": 0.4, "instinct": 0.3, "freedom": 0.35 },
+          "type_scores": { "verborgen": 0.05, "selektiv": 0.2, "sichtbar": 0.75 },
+          "duo_trait_deltas": { "closeness": 0.15, "tension": 0.15 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich drehe die Frage um: 'Und du? Was ist dein seltsamstes Ding?' Erst checken, dann öffnen.",
+            "en-US": "I flip the question: 'What about you? What's your weirdest thing?' Check first, then open up."
+          },
+          "cluster_scores": { "expression": 0.05, "instinct": 0.35, "freedom": 0.1 },
+          "type_scores": { "verborgen": 0.15, "selektiv": 0.65, "sichtbar": 0.2 },
+          "duo_trait_deltas": { "closeness": 0.1, "tension": 0.05 }
+        }
+      ]
+    },
+    {
+      "id": "q02",
+      "prompt": {
+        "de-DE": "Dein Profilbild. Du hast ein Foto, das dich zeigt, wie du wirklich bist — ungewöhnlich, voll du. Setzt du es?",
+        "en-US": "Your profile picture. You have a photo that shows you exactly as you are — unusual, fully yourself. Do you set it?"
+      },
+      "question_type": "dichotomie",
+      "narrator_id": "ember",
+      "tone": "playful",
+      "image_gen_prompt": "Close-up of a smartphone screen showing two profile photo options, one conventional and one bold and expressive, soft neon light, modern aesthetic --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Nein. Mein Profilbild ist eine strategisch neutrale Version von mir.",
+            "en-US": "No. My profile photo is a strategically neutral version of me."
+          },
+          "cluster_scores": { "expression": -0.3, "instinct": -0.1, "freedom": -0.25 },
+          "type_scores": { "verborgen": 0.7, "selektiv": 0.25, "sichtbar": 0.05 },
+          "duo_trait_deltas": { "closeness": -0.1, "tension": 0.0 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Kommt drauf an, für welches Netzwerk. LinkedIn nein, Instagram vielleicht.",
+            "en-US": "Depends on which network. LinkedIn no, Instagram maybe."
+          },
+          "cluster_scores": { "expression": 0.05, "instinct": 0.15, "freedom": 0.0 },
+          "type_scores": { "verborgen": 0.15, "selektiv": 0.7, "sichtbar": 0.15 },
+          "duo_trait_deltas": { "closeness": 0.05, "tension": 0.05 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ja. Wer mich nicht mag, braucht mich nicht zu folgen.",
+            "en-US": "Yes. Whoever doesn't like me doesn't have to follow me."
+          },
+          "cluster_scores": { "expression": 0.38, "instinct": 0.25, "freedom": 0.4 },
+          "type_scores": { "verborgen": 0.05, "selektiv": 0.15, "sichtbar": 0.8 },
+          "duo_trait_deltas": { "closeness": 0.1, "tension": 0.15 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich hätte gerne ein Profilbild, das mich zeigt — aber irgendwas zieht mich jedes Mal zurück.",
+            "en-US": "I'd love a profile photo that shows me — but something pulls me back every time."
+          },
+          "cluster_scores": { "expression": -0.1, "instinct": 0.2, "freedom": -0.05 },
+          "type_scores": { "verborgen": 0.3, "selektiv": 0.55, "sichtbar": 0.15 },
+          "duo_trait_deltas": { "closeness": 0.0, "tension": 0.1 }
+        }
+      ]
+    },
+    {
+      "id": "q03",
+      "prompt": {
+        "de-DE": "Du bist an einem Tisch mit Arbeitskollegen. Das Gespräch dreht sich um Wochenendpläne. Dein Wochenende war — sagen wir — interessant. Was sagst du?",
+        "en-US": "You're at a table with coworkers. The conversation turns to weekend plans. Your weekend was — let's say — interesting. What do you say?"
+      },
+      "question_type": "reaktions_szenario",
+      "narrator_id": "ember",
+      "tone": "playful",
+      "image_gen_prompt": "Office lunch table with colleagues chatting, one person with a slight knowing smile, casual workplace setting, natural light, candid atmosphere --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "'War entspannt, zu Hause geblieben.' Ich erfinde lieber etwas Harmloses.",
+            "en-US": "'Relaxed, stayed home.' I'd rather invent something harmless."
+          },
+          "cluster_scores": { "expression": -0.35, "instinct": -0.15, "freedom": -0.2 },
+          "type_scores": { "verborgen": 0.75, "selektiv": 0.2, "sichtbar": 0.05 },
+          "duo_trait_deltas": { "closeness": -0.15, "tension": -0.05 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "'War intensiv.' Mehr sage ich nicht. Wer fragt, denkt sich seinen Teil.",
+            "en-US": "'It was intense.' I leave it at that. Let them imagine."
+          },
+          "cluster_scores": { "expression": 0.1, "instinct": 0.3, "freedom": 0.2 },
+          "type_scores": { "verborgen": 0.1, "selektiv": 0.7, "sichtbar": 0.2 },
+          "duo_trait_deltas": { "closeness": 0.05, "tension": 0.1 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ich erzähle es — verpackt als verrückte Story. Reaktionen lese ich gerne.",
+            "en-US": "I tell it — wrapped as a wild story. I enjoy reading their reactions."
+          },
+          "cluster_scores": { "expression": 0.35, "instinct": 0.25, "freedom": 0.3 },
+          "type_scores": { "verborgen": 0.05, "selektiv": 0.2, "sichtbar": 0.75 },
+          "duo_trait_deltas": { "closeness": 0.1, "tension": 0.15 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich frage erst: 'Was war denn bei euch?' Kontext zuerst, dann entscheide ich.",
+            "en-US": "I ask first: 'What about you guys?' Context first, then I decide."
+          },
+          "cluster_scores": { "expression": 0.0, "instinct": 0.2, "freedom": 0.05 },
+          "type_scores": { "verborgen": 0.2, "selektiv": 0.65, "sichtbar": 0.15 },
+          "duo_trait_deltas": { "closeness": 0.1, "tension": 0.05 }
+        }
+      ]
+    },
+    {
+      "id": "q04",
+      "prompt": {
+        "de-DE": "Du findest einen alten Brief an dich selbst aus der Zeit, als du noch versuchtest, 'normal' zu sein. Was machst du damit?",
+        "en-US": "You find an old letter to yourself from the time you were still trying to be 'normal.' What do you do with it?"
+      },
+      "question_type": "objekt_wahl",
+      "narrator_id": "ember",
+      "tone": "premium_poetic",
+      "image_gen_prompt": "Old handwritten letter on a worn wooden desk, golden afternoon light, dust particles, nostalgic and intimate mood, soft focus background --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich lese ihn allein, dann lege ich ihn weg. Das bleibt bei mir.",
+            "en-US": "I read it alone, then put it away. That stays with me."
+          },
+          "cluster_scores": { "expression": -0.25, "instinct": 0.1, "freedom": -0.1 },
+          "type_scores": { "verborgen": 0.7, "selektiv": 0.25, "sichtbar": 0.05 },
+          "duo_trait_deltas": { "closeness": -0.05, "tension": 0.0 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich zeige ihn jemandem, dem ich wirklich vertraue. Nur einer Person.",
+            "en-US": "I show it to someone I really trust. Just one person."
+          },
+          "cluster_scores": { "expression": 0.1, "instinct": 0.15, "freedom": 0.1 },
+          "type_scores": { "verborgen": 0.1, "selektiv": 0.75, "sichtbar": 0.15 },
+          "duo_trait_deltas": { "closeness": 0.15, "tension": 0.0 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ich poste ein Foto davon. Ohne viel Text. Wer es versteht, versteht es.",
+            "en-US": "I post a photo of it. Without much text. Whoever gets it, gets it."
+          },
+          "cluster_scores": { "expression": 0.4, "instinct": 0.2, "freedom": 0.35 },
+          "type_scores": { "verborgen": 0.05, "selektiv": 0.2, "sichtbar": 0.75 },
+          "duo_trait_deltas": { "closeness": 0.1, "tension": 0.15 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich verbrenne ihn. Nicht aus Scham — sondern weil ich nicht mehr der bin.",
+            "en-US": "I burn it. Not out of shame — but because I'm not that person anymore."
+          },
+          "cluster_scores": { "expression": 0.15, "instinct": 0.35, "freedom": 0.2 },
+          "type_scores": { "verborgen": 0.2, "selektiv": 0.3, "sichtbar": 0.5 },
+          "duo_trait_deltas": { "closeness": 0.0, "tension": 0.1 }
+        }
+      ]
+    },
+    {
+      "id": "q05",
+      "prompt": {
+        "de-DE": "Jemand macht einen Witz über Menschen wie dich — ohne zu wissen, dass du einer davon bist. Der Raum lacht. Du...",
+        "en-US": "Someone makes a joke about people like you — not knowing you are one. The room laughs. You..."
+      },
+      "question_type": "reaktions_szenario",
+      "narrator_id": "ember",
+      "tone": "playful",
+      "image_gen_prompt": "A group laughing in a social setting, one person with a composed, slightly knowing expression, warm interior light, subtle social tension captured candidly --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich lache mit. Es ist einfacher so. Innerlich zähle ich bis drei.",
+            "en-US": "I laugh along. It's easier that way. Internally I count to three."
+          },
+          "cluster_scores": { "expression": -0.38, "instinct": -0.1, "freedom": -0.3 },
+          "type_scores": { "verborgen": 0.78, "selektiv": 0.17, "sichtbar": 0.05 },
+          "duo_trait_deltas": { "closeness": -0.15, "tension": -0.05 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich sage nichts, aber ich höre auf zu lachen. Das ist meine Antwort.",
+            "en-US": "I say nothing, but I stop laughing. That's my answer."
+          },
+          "cluster_scores": { "expression": 0.05, "instinct": 0.25, "freedom": 0.05 },
+          "type_scores": { "verborgen": 0.15, "selektiv": 0.7, "sichtbar": 0.15 },
+          "duo_trait_deltas": { "closeness": 0.0, "tension": 0.1 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "'Ich bin übrigens einer von denen.' Ruhig, klar, ein Lächeln dabei.",
+            "en-US": "'I'm actually one of those people.' Calm, clear, with a smile."
+          },
+          "cluster_scores": { "expression": 0.4, "instinct": 0.3, "freedom": 0.38 },
+          "type_scores": { "verborgen": 0.05, "selektiv": 0.15, "sichtbar": 0.8 },
+          "duo_trait_deltas": { "closeness": 0.1, "tension": 0.2 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich lenke das Gespräch in eine andere Richtung. Kein Kampf, aber auch kein Mitmachen.",
+            "en-US": "I steer the conversation somewhere else. No fight, but no participation either."
+          },
+          "cluster_scores": { "expression": 0.0, "instinct": 0.2, "freedom": 0.1 },
+          "type_scores": { "verborgen": 0.2, "selektiv": 0.65, "sichtbar": 0.15 },
+          "duo_trait_deltas": { "closeness": 0.05, "tension": 0.05 }
+        }
+      ]
+    },
+    {
+      "id": "q06",
+      "prompt": {
+        "de-DE": "Du bekommst die Möglichkeit, eine Woche lang komplett anonym zu leben — kein Name, kein Ruf, keine Geschichte. Wie nutzt du sie?",
+        "en-US": "You get the chance to live completely anonymously for one week — no name, no reputation, no history. How do you use it?"
+      },
+      "question_type": "reaktions_szenario",
+      "narrator_id": "ember",
+      "tone": "premium_poetic",
+      "image_gen_prompt": "A figure wearing a simple mask in a vibrant city, surrounded by strangers, electric nighttime street lights, sense of liberated anonymity, cinematic wide shot --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich würde trotzdem so leben wie immer. Anonymität macht mir wenig aus.",
+            "en-US": "I'd live just like always. Anonymity doesn't change much for me."
+          },
+          "cluster_scores": { "expression": -0.2, "instinct": -0.1, "freedom": -0.15 },
+          "type_scores": { "verborgen": 0.65, "selektiv": 0.3, "sichtbar": 0.05 },
+          "duo_trait_deltas": { "closeness": -0.05, "tension": -0.05 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich würde ein, zwei Dinge ausprobieren, die ich sonst nie zeigen würde.",
+            "en-US": "I'd try one or two things I'd never usually show."
+          },
+          "cluster_scores": { "expression": 0.15, "instinct": 0.3, "freedom": 0.2 },
+          "type_scores": { "verborgen": 0.1, "selektiv": 0.7, "sichtbar": 0.2 },
+          "duo_trait_deltas": { "closeness": 0.05, "tension": 0.1 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ich würde genau das sein, was ich sonst verberge. Komplett. Ohne Filter.",
+            "en-US": "I'd be exactly what I usually hide. Completely. Without filter."
+          },
+          "cluster_scores": { "expression": 0.4, "instinct": 0.35, "freedom": 0.4 },
+          "type_scores": { "verborgen": 0.05, "selektiv": 0.2, "sichtbar": 0.75 },
+          "duo_trait_deltas": { "closeness": 0.1, "tension": 0.2 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich würde beobachten, wie andere reagieren, wenn ich Kleinigkeiten von mir zeige.",
+            "en-US": "I'd watch how others react when I reveal small pieces of myself."
+          },
+          "cluster_scores": { "expression": 0.1, "instinct": 0.25, "freedom": 0.1 },
+          "type_scores": { "verborgen": 0.15, "selektiv": 0.65, "sichtbar": 0.2 },
+          "duo_trait_deltas": { "closeness": 0.1, "tension": 0.1 }
+        }
+      ]
+    },
+    {
+      "id": "q07",
+      "prompt": {
+        "de-DE": "Du findest ein Forum, in dem Menschen über genau das reden, wofür du dich manchmal schämst. Du könntest dort anonym posten. Was hält dich zurück — oder treibt dich hin?",
+        "en-US": "You find a forum where people talk about exactly the thing you sometimes feel ashamed of. You could post anonymously. What holds you back — or draws you in?"
+      },
+      "question_type": "ort_wahl",
+      "narrator_id": "ember",
+      "tone": "playful",
+      "image_gen_prompt": "Person at a desk late at night, screen glow on their face, a browser window open showing an anonymous community forum, intimate and secretive atmosphere --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich scrolle, lese — aber poste nie. Das Lesen reicht mir.",
+            "en-US": "I scroll, read — but never post. Reading is enough for me."
+          },
+          "cluster_scores": { "expression": -0.3, "instinct": 0.1, "freedom": -0.1 },
+          "type_scores": { "verborgen": 0.72, "selektiv": 0.23, "sichtbar": 0.05 },
+          "duo_trait_deltas": { "closeness": -0.05, "tension": 0.0 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich erstelle einen Account, lese eine Weile — und irgendwann antworte ich vielleicht.",
+            "en-US": "I create an account, read for a while — and maybe reply someday."
+          },
+          "cluster_scores": { "expression": 0.1, "instinct": 0.2, "freedom": 0.15 },
+          "type_scores": { "verborgen": 0.1, "selektiv": 0.75, "sichtbar": 0.15 },
+          "duo_trait_deltas": { "closeness": 0.05, "tension": 0.05 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ich poste sofort. Anonym oder nicht — endlich Menschen, die verstehen.",
+            "en-US": "I post right away. Anonymous or not — finally people who understand."
+          },
+          "cluster_scores": { "expression": 0.38, "instinct": 0.3, "freedom": 0.35 },
+          "type_scores": { "verborgen": 0.05, "selektiv": 0.2, "sichtbar": 0.75 },
+          "duo_trait_deltas": { "closeness": 0.15, "tension": 0.1 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich würde das Forum mit einer Freundin oder einem Freund teilen, dem ich vertraue.",
+            "en-US": "I'd share the forum with a friend I trust."
+          },
+          "cluster_scores": { "expression": 0.05, "instinct": 0.15, "freedom": 0.1 },
+          "type_scores": { "verborgen": 0.15, "selektiv": 0.7, "sichtbar": 0.15 },
+          "duo_trait_deltas": { "closeness": 0.15, "tension": 0.0 }
+        }
+      ]
+    },
+    {
+      "id": "q08",
+      "prompt": {
+        "de-DE": "Stell dir vor, du könntest einen Raum betreten, der deine geheimste Seite — dein Anderssein — perfekt versteht. Kein Urteil. Niemand, den du kennst. Wie lange bleibst du?",
+        "en-US": "Imagine you could enter a room that perfectly understands your most secret side — your otherness. No judgment. No one you know. How long do you stay?"
+      },
+      "question_type": "ort_wahl",
+      "narrator_id": "ember",
+      "tone": "premium_poetic",
+      "image_gen_prompt": "A softly glowing hidden room behind a velvet curtain, warm amber light, no faces visible, sense of belonging and mystery, intimate sanctuary aesthetic --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich schaue rein — und gehe schnell wieder. Zu viel Nähe auf einmal.",
+            "en-US": "I peek in — and leave quickly. Too much closeness at once."
+          },
+          "cluster_scores": { "expression": -0.3, "instinct": -0.05, "freedom": -0.2 },
+          "type_scores": { "verborgen": 0.72, "selektiv": 0.23, "sichtbar": 0.05 },
+          "duo_trait_deltas": { "closeness": -0.1, "tension": 0.0 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich bleibe eine Weile, sage wenig — aber es tut gut, einfach da zu sein.",
+            "en-US": "I stay for a while, say little — but it feels good to just be there."
+          },
+          "cluster_scores": { "expression": 0.0, "instinct": 0.2, "freedom": 0.1 },
+          "type_scores": { "verborgen": 0.15, "selektiv": 0.7, "sichtbar": 0.15 },
+          "duo_trait_deltas": { "closeness": 0.1, "tension": 0.0 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ich bleibe so lange ich kann. Ich rede, teile, atme durch.",
+            "en-US": "I stay as long as possible. I talk, share, breathe."
+          },
+          "cluster_scores": { "expression": 0.4, "instinct": 0.3, "freedom": 0.38 },
+          "type_scores": { "verborgen": 0.05, "selektiv": 0.2, "sichtbar": 0.75 },
+          "duo_trait_deltas": { "closeness": 0.2, "tension": 0.1 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich bringe jemanden mit, dem ich vertraue. Alleine fühlt sich das zu groß an.",
+            "en-US": "I bring someone I trust. Alone feels too big."
+          },
+          "cluster_scores": { "expression": 0.1, "instinct": 0.15, "freedom": 0.1 },
+          "type_scores": { "verborgen": 0.1, "selektiv": 0.75, "sichtbar": 0.15 },
+          "duo_trait_deltas": { "closeness": 0.2, "tension": 0.05 }
+        }
+      ]
+    },
+    {
+      "id": "q09",
+      "prompt": {
+        "de-DE": "Du hast ein Kunstprojekt fertig, das 100% du ist — provokant, seltsam, unvertretbar-schön. Zeigst du es der Welt?",
+        "en-US": "You've finished an art project that is 100% you — provocative, strange, undeniably beautiful. Do you show it to the world?"
+      },
+      "question_type": "ästhetik_wahl",
+      "narrator_id": "ember",
+      "tone": "playful",
+      "image_gen_prompt": "An artist standing before a large provocative painting in a gallery, warm spotlights, a single figure looking at it with quiet intensity, the art bold and unusual --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Nein. Es ist für mich. Das braucht keine Bühne.",
+            "en-US": "No. It's for me. It needs no stage."
+          },
+          "cluster_scores": { "expression": -0.35, "instinct": 0.05, "freedom": -0.1 },
+          "type_scores": { "verborgen": 0.75, "selektiv": 0.2, "sichtbar": 0.05 },
+          "duo_trait_deltas": { "closeness": -0.1, "tension": 0.0 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich zeige es einem kleinen Kreis. Qualität der Blicke schlägt Quantität.",
+            "en-US": "I show it to a small circle. Quality of gaze over quantity."
+          },
+          "cluster_scores": { "expression": 0.1, "instinct": 0.2, "freedom": 0.1 },
+          "type_scores": { "verborgen": 0.1, "selektiv": 0.75, "sichtbar": 0.15 },
+          "duo_trait_deltas": { "closeness": 0.1, "tension": 0.05 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ja — ganz öffentlich. Reaktionen inklusive, Urteile inklusive.",
+            "en-US": "Yes — fully public. Reactions included, judgments included."
+          },
+          "cluster_scores": { "expression": 0.4, "instinct": 0.3, "freedom": 0.4 },
+          "type_scores": { "verborgen": 0.05, "selektiv": 0.15, "sichtbar": 0.8 },
+          "duo_trait_deltas": { "closeness": 0.1, "tension": 0.2 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich zeige es anonym — ohne meinen Namen. Das Werk soll sprechen, nicht ich.",
+            "en-US": "I show it anonymously — without my name. The work should speak, not me."
+          },
+          "cluster_scores": { "expression": 0.2, "instinct": 0.3, "freedom": 0.25 },
+          "type_scores": { "verborgen": 0.15, "selektiv": 0.3, "sichtbar": 0.55 },
+          "duo_trait_deltas": { "closeness": 0.05, "tension": 0.1 }
+        }
+      ]
+    }
+  ],
+  "profiles": [
+    {
+      "id": "verborgen",
+      "title": {
+        "de-DE": "Die stille Tiefe",
+        "en-US": "The Silent Deep"
+      },
+      "tagline": {
+        "de-DE": "Du trägst Welten in dir — und weißt genau, wem du sie zeigst.",
+        "en-US": "You carry worlds within — and you know exactly who gets to see them."
+      },
+      "description": {
+        "de-DE": "Es gibt Menschen, die laut sind, um gehört zu werden. Und dann gibt es dich. Du weißt, dass die intensivsten Dinge keine Bühne brauchen — sie brauchen den richtigen Moment, die richtige Person, das richtige Licht. Was andere als Zurückhalten deuten, ist für dich eine Form des Schutzes: nicht Feigheit, sondern Präzision. Du schützt das, was dir heilig ist, weil du verstehst, dass nicht jeder Blick ein guter Blick ist. Dein Innenleben ist ein Raum mit vielen Türen — du öffnest sie nicht für jeden, sondern für die, die klopfen, als wüssten sie bereits, was dahinter wartet. Das macht dich zu jemandem, den man nicht einfach durchschaut. Und das ist kein Makel. Das ist Architektur.",
+        "en-US": "Some people are loud to be heard. And then there's you. You know that the most intense things need no stage — they need the right moment, the right person, the right light. What others read as withholding is, for you, a form of protection: not cowardice, but precision. You guard what is sacred because you understand not every gaze is a good one. Your inner world is a room with many doors — you don't open them for everyone, only for those who knock as if they already know what waits inside. That makes you someone who cannot simply be seen through. And that is not a flaw. That is architecture."
+      },
+      "stats": [
+        { "label": { "de-DE": "Türen, die andere nie sehen", "en-US": "Doors others never see" }, "value": "17" },
+        { "label": { "de-DE": "Gespräche, die du im Kopf geführt hast", "en-US": "Conversations held entirely in your head" }, "value": "∞" },
+        { "label": { "de-DE": "Menschen, die dich wirklich kennen", "en-US": "People who really know you" }, "value": "2–3 (genug / enough)" }
+      ],
+      "compatibility": {
+        "allies": ["selektiv", "sichtbar"],
+        "nemesis": ["sichtbar"]
+      },
+      "share_text": {
+        "de-DE": "Ich bin die stille Tiefe. Nicht jeder Blick verdient einen Einlass. #KinkyNormal #StilleTiefe",
+        "en-US": "I am the silent deep. Not every gaze deserves entry. #KinkyNormal #SilentDeep"
+      },
+      "image_gen_prompt": "A lone figure standing at the edge of a deep, still lake at dusk, fog on the surface, reflective, cinematic mood, 9:16 portrait --ar 9:16 --v 6.0"
+    },
+    {
+      "id": "selektiv",
+      "title": {
+        "de-DE": "Der Schlüsselmacher",
+        "en-US": "The Keymaker"
+      },
+      "tagline": {
+        "de-DE": "Du zeigst dich — aber nur den Menschen, die verstehen, was sie sehen.",
+        "en-US": "You show yourself — but only to those who understand what they're seeing."
+      },
+      "description": {
+        "de-DE": "Du bist kein Buch, das jeder aufschlagen kann. Aber für die richtigen Menschen liest du dich wie ein Roman, den man nicht weglegen kann. Du hast gelernt, den Kontext zu lesen, bevor du dich zeigst — nicht aus Angst, sondern aus Erfahrung. Du weißt, dass echte Verbindung ein Minimum an gegenseitigem Verständnis braucht. Deswegen testest du auf Teufel komm raus — subtil, unauffällig, aber konsequent. Wer den Test besteht, bekommt eine Version von dir, die die meisten nie zu Gesicht bekommen. Das ist kein Privileg, das du vergibst. Das ist eine Einladung, die du verschickst — und du weißt genau, wer sie verdient.",
+        "en-US": "You are not a book anyone can open. But for the right people, you read like a novel they can't put down. You've learned to read the context before showing yourself — not out of fear, but out of experience. You know that real connection needs a minimum of mutual understanding. So you test — subtly, inconspicuously, but consistently. Those who pass get a version of you most people never encounter. This isn't a privilege you grant. It's an invitation you send — and you know exactly who deserves it."
+      },
+      "stats": [
+        { "label": { "de-DE": "Sicherheitsstufen deiner Persönlichkeit", "en-US": "Security levels of your personality" }, "value": "5" },
+        { "label": { "de-DE": "Menschen auf Level 5", "en-US": "People on level 5" }, "value": "Handvoll / handful" },
+        { "label": { "de-DE": "Kontext-Checks pro Gespräch", "en-US": "Context checks per conversation" }, "value": "3 (unbewusst / unconscious)" }
+      ],
+      "compatibility": {
+        "allies": ["verborgen", "sichtbar"],
+        "nemesis": ["verborgen"]
+      },
+      "share_text": {
+        "de-DE": "Ich bin der Schlüsselmacher. Ich zeige mich — aber du brauchst den richtigen Schlüssel. #KinkyNormal",
+        "en-US": "I am the Keymaker. I show myself — but you need the right key. #KinkyNormal"
+      },
+      "image_gen_prompt": "A mysterious figure handing a glowing key to someone in shadow, warm backlight, old stone corridor, intimate and cinematic, portrait 9:16 --ar 9:16 --v 6.0"
+    },
+    {
+      "id": "sichtbar",
+      "title": {
+        "de-DE": "Die offene Flamme",
+        "en-US": "The Open Flame"
+      },
+      "tagline": {
+        "de-DE": "Du brennst sichtbar — und wärmst damit alle, die nah genug kommen.",
+        "en-US": "You burn visibly — and warm everyone brave enough to come close."
+      },
+      "description": {
+        "de-DE": "Du hast irgendwann beschlossen, dass dich die Meinung anderer über dein Anderssein weniger kostet als das tägliche Versteckspiel. Das war kein leichter Moment — aber er hat dich zu dem gemacht, was du jetzt bist: jemand, der Raum einnimmt, ohne zu bitten. Deine Offenheit ist keine Naivität. Du weißt, dass es Gegenwind gibt. Du hast ihn schon gespürt. Aber du hast gelernt, dass das, was du zeigst, andere befreit — nicht nur dich. Menschen in deiner Nähe erlauben sich plötzlich Dinge, die sie vorher nicht wagten. Das ist dein stärkster Superkraft: nicht trotz deiner Sichtbarkeit, sondern durch sie.",
+        "en-US": "At some point you decided that other people's opinions about your otherness cost you less than the daily game of hiding. That wasn't an easy moment — but it made you what you are now: someone who takes up space without asking permission. Your openness is not naivety. You know there's headwind. You've felt it. But you've learned that what you show frees others — not just yourself. People around you suddenly allow themselves things they wouldn't dare before. That is your greatest superpower: not despite your visibility, but through it."
+      },
+      "stats": [
+        { "label": { "de-DE": "Filter im Gespräch", "en-US": "Filters in conversation" }, "value": "1 (manchmal / sometimes)" },
+        { "label": { "de-DE": "Menschen, die du unbewusst befreit hast", "en-US": "People you've unknowingly freed" }, "value": "mehr als du denkst / more than you think" },
+        { "label": { "de-DE": "Urteile, die du nicht mehr zählst", "en-US": "Judgments you've stopped counting" }, "value": "aufgehört / stopped counting" }
+      ],
+      "compatibility": {
+        "allies": ["selektiv", "verborgen"],
+        "nemesis": ["verborgen"]
+      },
+      "share_text": {
+        "de-DE": "Ich bin die offene Flamme. Ich verstecke mich nicht mehr. #KinkyNormal #OffeneFlamme",
+        "en-US": "I am the open flame. I no longer hide. #KinkyNormal #OpenFlame"
+      },
+      "image_gen_prompt": "A figure standing in an open field at night, holding a single torch, warm fire glow against a dark sky, powerful and serene, portrait 9:16 --ar 9:16 --v 6.0"
+    }
+  ],
+  "share_config": {
+    "card_format": "9:16",
+    "include_compatibility": true,
+    "cta_text": {
+      "de-DE": "Finde dein Profil — Quiz 1 von 4",
+      "en-US": "Find your profile — Quiz 1 of 4"
+    },
+    "hashtags": ["KinkyNormal", "BinIchAndersAuchNormal", "SelbstreflexionOhneScham"]
+  },
+  "marker_emission": {
+    "cluster_domain_map": {
+      "expression": "creative",
+      "instinct": "instinct",
+      "freedom": "freedom"
+    },
+    "cluster_keyword_map": {
+      "expression": "expression",
+      "instinct": "primal_sense",
+      "freedom": "independence"
+    },
+    "example_output_extreme_sichtbar": [
+      { "id": "marker.creative.expression", "weight": 1.0 },
+      { "id": "marker.freedom.independence", "weight": 0.82 },
+      { "id": "marker.instinct.primal_sense", "weight": 0.61 }
+    ],
+    "example_output_extreme_verborgen": [
+      { "id": "marker.instinct.primal_sense", "weight": 1.0 },
+      { "id": "marker.creative.expression", "weight": 0.12 },
+      { "id": "marker.freedom.independence", "weight": 0.09 }
+    ]
+  },
+  "fusion_ring": {
+    "dominant_sectors_sichtbar": ["S4", "S7", "S8"],
+    "dominant_sectors_selektiv": ["S2", "S7", "S6"],
+    "dominant_sectors_verborgen": ["S7", "S0", "S11"],
+    "note": "Resolved via AFFINITY_MAP: expression→S4/S2, primal_sense→S0/S7, independence→S8/S0"
+  },
+  "contribution_event": {
+    "event_type": "quiz_completed",
+    "quiz_id": "kinky_01_sichtbarkeit",
+    "series_id": "kinky_series",
+    "payload_template": {
+      "primary_cluster": "{{primaryCluster}}",
+      "primary_type": "{{primaryType}}",
+      "markers": "{{markerWeights}}",
+      "traits": [
+        { "key": "expression_tendency", "source": "cluster_scores.expression" },
+        { "key": "instinct_strength", "source": "cluster_scores.instinct" },
+        { "key": "freedom_orientation", "source": "cluster_scores.freedom" }
+      ],
+      "tags": [
+        { "id": "tag.archetype.sichtbar", "label": "Die Offene Flamme", "kind": "archetype" },
+        { "id": "tag.archetype.selektiv", "label": "Der Schlüsselmacher", "kind": "archetype" },
+        { "id": "tag.archetype.verborgen", "label": "Die Stille Tiefe", "kind": "archetype" }
+      ]
+    }
+  }
+}

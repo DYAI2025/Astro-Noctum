@@ -29,6 +29,10 @@ const MODULE_TO_QUIZ_ID: Record<string, string> = {
   'quiz.rpg_identity.v1': 'rpg_identity',
   'quiz.party_need.v1': 'party_need',
   'quiz.celebrity_soulmate.v1': 'celebrity_soulmate',
+  'quiz.kinky_01.v1': 'kinky_01',
+  'quiz.kinky_02.v1': 'kinky_02',
+  'quiz.kinky_03.v1': 'kinky_03',
+  'quiz.kinky_04.v1': 'kinky_04',
 };
 
 // Human-readable quiz names
@@ -48,6 +52,10 @@ const QUIZ_NAMES: Record<string, { de: string; en: string }> = {
   'quiz.rpg_identity.v1': { de: 'RPG-Identität', en: 'RPG Identity' },
   'quiz.party_need.v1': { de: 'Party-Bedürfnis', en: 'Party Need' },
   'quiz.celebrity_soulmate.v1': { de: 'Celebrity Soulmate', en: 'Celebrity Soulmate' },
+  'quiz.kinky_01.v1': { de: 'Sichtbarkeit', en: 'Visibility' },
+  'quiz.kinky_02.v1': { de: 'Innerer Antrieb', en: 'Inner Drive' },
+  'quiz.kinky_03.v1': { de: 'Grenzbereitschaft', en: 'Boundary Readiness' },
+  'quiz.kinky_04.v1': { de: 'Identität', en: 'Identity' },
 };
 
 export function ClusterCard({ cluster, completedModules, onStartQuiz, isPremium, lang }: ClusterCardProps) {

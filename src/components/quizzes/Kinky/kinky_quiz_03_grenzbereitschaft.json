@@ -1,0 +1,1186 @@
+{
+  "schema_version": "3.0.0",
+  "engine": "quizzme-quiz-engine",
+  "output_mode": "full_v2",
+  "series": {
+    "id": "kinky_series",
+    "title": {
+      "de-DE": "Kinky — Bin ich anders auch normal?",
+      "en-US": "Kinky — Is my different side normal too?"
+    },
+    "quiz_index": 3,
+    "quiz_count": 4,
+    "theme": {
+      "de-DE": "Wie weit traust du dir, dein inneres Anderssein zu zeigen — ohne Scham und Urteil?",
+      "en-US": "How far do you dare to show your inner otherness — without shame or judgment?"
+    }
+  },
+  "meta": {
+    "id": "kinky_03_grenzbereitschaft",
+    "hidden_cluster": "freedom",
+    "facet_label": {
+      "de-DE": "Grenzbereitschaft",
+      "en-US": "Boundary Readiness"
+    },
+    "axis_key": "closeness",
+    "narrator_id": "oracle",
+    "tone": "premium_poetic",
+    "type_model": {
+      "types": [
+        "hueter",
+        "erkunder",
+        "grenzgaenger"
+      ],
+      "compute": "max_type_score"
+    }
+  },
+  "disclaimer": {
+    "de-DE": "Dieser Test dient der spielerischen Selbstreflexion und stellt KEINE psychologische Diagnose dar.",
+    "en-US": "This quiz is for playful self-reflection and is NOT a psychological diagnosis."
+  },
+  "questions": [
+    {
+      "id": "q01",
+      "prompt": {
+        "de-DE": "Du stehst vor einer Türe, auf der steht: 'Nur für die, die wissen, was sie wollen.' Du weißt es halb. Gehst du rein?",
+        "en-US": "You stand before a door that reads: 'Only for those who know what they want.' You half know. Do you go in?"
+      },
+      "question_type": "dichotomie",
+      "narrator_id": "oracle",
+      "tone": "premium_poetic",
+      "image_gen_prompt": "A glowing door with mysterious text, person standing before it in contemplative pose, cinematic lighting, fog at the edges, sense of invitation without pressure --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Nein. Wenn ich nicht sicher bin, gehe ich nicht rein. Halb wissen reicht mir nicht.",
+            "en-US": "No. If I'm not sure, I don't go in. Half knowing isn't enough for me."
+          },
+          "cluster_scores": {
+            "freedom": -0.35,
+            "instinct": -0.1,
+            "expression": -0.2
+          },
+          "type_scores": {
+            "hueter": 0.78,
+            "erkunder": 0.17,
+            "grenzgaenger": 0.05
+          },
+          "duo_trait_deltas": {
+            "tension": -0.05,
+            "closeness": -0.1
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich öffne die Tür und schaue kurz rein — aber trete noch nicht ein.",
+            "en-US": "I open the door and peek in — but don't step through yet."
+          },
+          "cluster_scores": {
+            "freedom": 0.1,
+            "instinct": 0.2,
+            "expression": 0.05
+          },
+          "type_scores": {
+            "hueter": 0.15,
+            "erkunder": 0.7,
+            "grenzgaenger": 0.15
+          },
+          "duo_trait_deltas": {
+            "tension": 0.1,
+            "closeness": 0.05
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Rein. Halb wissen ist mehr als genug. Den Rest lerne ich drin.",
+            "en-US": "In. Half knowing is more than enough. I'll learn the rest inside."
+          },
+          "cluster_scores": {
+            "freedom": 0.4,
+            "instinct": 0.35,
+            "expression": 0.35
+          },
+          "type_scores": {
+            "hueter": 0.05,
+            "erkunder": 0.2,
+            "grenzgaenger": 0.75
+          },
+          "duo_trait_deltas": {
+            "tension": 0.2,
+            "closeness": 0.1
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich frage jemanden, der schon drin war — dann entscheide ich.",
+            "en-US": "I ask someone who's already been in — then I decide."
+          },
+          "cluster_scores": {
+            "freedom": 0.05,
+            "instinct": 0.2,
+            "expression": 0.1
+          },
+          "type_scores": {
+            "hueter": 0.2,
+            "erkunder": 0.65,
+            "grenzgaenger": 0.15
+          },
+          "duo_trait_deltas": {
+            "tension": 0.05,
+            "closeness": 0.1
+          }
+        }
+      ]
+    },
+    {
+      "id": "q02",
+      "prompt": {
+        "de-DE": "Du bist mit einer Gruppe unterwegs, die einen anderen Weg einschlägt als du erwartet hast — unbekanntes Terrain, nicht gefährlich, aber neu. Was machst du?",
+        "en-US": "You're with a group that takes a different path than you expected — unknown terrain, not dangerous, but new. What do you do?"
+      },
+      "question_type": "ort_wahl",
+      "narrator_id": "oracle",
+      "tone": "playful",
+      "image_gen_prompt": "A group of people at a trail fork, some heading into unknown misty forest, wide landscape shot, adventure mood, golden hour light --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich bleibe auf dem ursprünglich geplanten Weg. Überraschungen muss man nicht suchen.",
+            "en-US": "I stay on the originally planned path. You don't need to seek surprises."
+          },
+          "cluster_scores": {
+            "freedom": -0.38,
+            "instinct": -0.1,
+            "expression": -0.2
+          },
+          "type_scores": {
+            "hueter": 0.8,
+            "erkunder": 0.15,
+            "grenzgaenger": 0.05
+          },
+          "duo_trait_deltas": {
+            "tension": -0.05,
+            "closeness": -0.1
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich folge der Gruppe — aber behalte meinen eigenen Rhythmus und Abstand.",
+            "en-US": "I follow the group — but keep my own rhythm and distance."
+          },
+          "cluster_scores": {
+            "freedom": 0.1,
+            "instinct": 0.2,
+            "expression": 0.05
+          },
+          "type_scores": {
+            "hueter": 0.1,
+            "erkunder": 0.72,
+            "grenzgaenger": 0.18
+          },
+          "duo_trait_deltas": {
+            "tension": 0.05,
+            "closeness": 0.05
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ich laufe voraus. Das Neue ist genau das, weswegen ich hier bin.",
+            "en-US": "I go ahead. The new is exactly why I'm here."
+          },
+          "cluster_scores": {
+            "freedom": 0.4,
+            "instinct": 0.35,
+            "expression": 0.3
+          },
+          "type_scores": {
+            "hueter": 0.05,
+            "erkunder": 0.2,
+            "grenzgaenger": 0.75
+          },
+          "duo_trait_deltas": {
+            "tension": 0.2,
+            "closeness": 0.05
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich frage kurz, was uns erwartet — dann entscheide ich spontan.",
+            "en-US": "I briefly ask what's ahead — then decide spontaneously."
+          },
+          "cluster_scores": {
+            "freedom": 0.15,
+            "instinct": 0.2,
+            "expression": 0.1
+          },
+          "type_scores": {
+            "hueter": 0.15,
+            "erkunder": 0.65,
+            "grenzgaenger": 0.2
+          },
+          "duo_trait_deltas": {
+            "tension": 0.1,
+            "closeness": 0.1
+          }
+        }
+      ]
+    },
+    {
+      "id": "q03",
+      "prompt": {
+        "de-DE": "Du wirst zu einer Veranstaltung eingeladen, die nicht dein übliches Terrain ist — kulturell, sozial, ästhetisch fremd. Du kennst dort niemanden. Gehst du?",
+        "en-US": "You're invited to an event that's not your usual terrain — culturally, socially, aesthetically foreign. You know no one there. Do you go?"
+      },
+      "question_type": "reaktions_szenario",
+      "narrator_id": "oracle",
+      "tone": "playful",
+      "image_gen_prompt": "An unusual underground event entrance with colorful, eccentric crowd, person standing outside looking in with curiosity, neon light spill, candid urban scene --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Nein. Wenn ich niemanden kenne, ist das kein Raum für mich.",
+            "en-US": "No. If I don't know anyone, that's not a space for me."
+          },
+          "cluster_scores": {
+            "freedom": -0.35,
+            "instinct": -0.05,
+            "expression": -0.25
+          },
+          "type_scores": {
+            "hueter": 0.75,
+            "erkunder": 0.2,
+            "grenzgaenger": 0.05
+          },
+          "duo_trait_deltas": {
+            "tension": -0.05,
+            "closeness": -0.1
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich gehe kurz rein, schaue — und wenn es sich nicht gut anfühlt, gehe ich wieder.",
+            "en-US": "I go in briefly, look around — and if it doesn't feel right, I leave."
+          },
+          "cluster_scores": {
+            "freedom": 0.1,
+            "instinct": 0.2,
+            "expression": 0.1
+          },
+          "type_scores": {
+            "hueter": 0.1,
+            "erkunder": 0.7,
+            "grenzgaenger": 0.2
+          },
+          "duo_trait_deltas": {
+            "tension": 0.1,
+            "closeness": 0.05
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ja — genau das ist der Punkt. Fremdes fühlt sich lebendiger an.",
+            "en-US": "Yes — that's exactly the point. The foreign feels more alive."
+          },
+          "cluster_scores": {
+            "freedom": 0.4,
+            "instinct": 0.3,
+            "expression": 0.35
+          },
+          "type_scores": {
+            "hueter": 0.05,
+            "erkunder": 0.2,
+            "grenzgaenger": 0.75
+          },
+          "duo_trait_deltas": {
+            "tension": 0.2,
+            "closeness": 0.05
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich überzeuge eine Vertraute Person, mitzukommen. Dann ja.",
+            "en-US": "I convince someone I trust to come along. Then yes."
+          },
+          "cluster_scores": {
+            "freedom": 0.05,
+            "instinct": 0.15,
+            "expression": 0.1
+          },
+          "type_scores": {
+            "hueter": 0.15,
+            "erkunder": 0.65,
+            "grenzgaenger": 0.2
+          },
+          "duo_trait_deltas": {
+            "tension": 0.05,
+            "closeness": 0.1
+          }
+        }
+      ]
+    },
+    {
+      "id": "q04",
+      "prompt": {
+        "de-DE": "Jemand schlägt dir vor, etwas zu tun, das du noch nie getan hast — körperlich, sensorisch, expressiv. Nichts davon ist gefährlich. Es ist nur: unbekannt.",
+        "en-US": "Someone suggests you do something you've never done — physically, sensorially, expressively. None of it is dangerous. It's just: unknown."
+      },
+      "question_type": "reaktions_szenario",
+      "narrator_id": "oracle",
+      "tone": "premium_poetic",
+      "image_gen_prompt": "Two people on a rooftop at sunset, one gesturing toward something unseen, the other with a contemplative expression, warm golden light, sense of gentle invitation --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich lehne freundlich ab. Unbekannt heißt für mich: ich brauche mehr Zeit.",
+            "en-US": "I decline kindly. Unknown means: I need more time."
+          },
+          "cluster_scores": {
+            "freedom": -0.3,
+            "instinct": -0.05,
+            "expression": -0.15
+          },
+          "type_scores": {
+            "hueter": 0.72,
+            "erkunder": 0.23,
+            "grenzgaenger": 0.05
+          },
+          "duo_trait_deltas": {
+            "tension": 0.0,
+            "closeness": -0.05
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich sage: 'Zeig mir erst, wie das geht.' Ich probiere es dann aus.",
+            "en-US": "I say: 'Show me how it works first.' Then I try it."
+          },
+          "cluster_scores": {
+            "freedom": 0.1,
+            "instinct": 0.2,
+            "expression": 0.1
+          },
+          "type_scores": {
+            "hueter": 0.1,
+            "erkunder": 0.72,
+            "grenzgaenger": 0.18
+          },
+          "duo_trait_deltas": {
+            "tension": 0.1,
+            "closeness": 0.05
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ich sage ja, bevor der Satz zu Ende ist. Unbekannt ist mein liebstes Terrain.",
+            "en-US": "I say yes before the sentence ends. Unknown is my favorite terrain."
+          },
+          "cluster_scores": {
+            "freedom": 0.4,
+            "instinct": 0.35,
+            "expression": 0.35
+          },
+          "type_scores": {
+            "hueter": 0.05,
+            "erkunder": 0.2,
+            "grenzgaenger": 0.75
+          },
+          "duo_trait_deltas": {
+            "tension": 0.2,
+            "closeness": 0.1
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich frage: 'Wie hast du dich danach gefühlt?' Erfahrungsbericht zuerst.",
+            "en-US": "I ask: 'How did you feel afterward?' Experience report first."
+          },
+          "cluster_scores": {
+            "freedom": 0.05,
+            "instinct": 0.2,
+            "expression": 0.1
+          },
+          "type_scores": {
+            "hueter": 0.15,
+            "erkunder": 0.65,
+            "grenzgaenger": 0.2
+          },
+          "duo_trait_deltas": {
+            "tension": 0.05,
+            "closeness": 0.1
+          }
+        }
+      ]
+    },
+    {
+      "id": "q05",
+      "prompt": {
+        "de-DE": "Du reist in eine Stadt, die du nicht kennst. Kein Plan, kein Reiseführer. Ein Abend. Was passiert?",
+        "en-US": "You travel to a city you don't know. No plan, no guidebook. One evening. What happens?"
+      },
+      "question_type": "ort_wahl",
+      "narrator_id": "oracle",
+      "tone": "playful",
+      "image_gen_prompt": "A person alone on an unfamiliar city street at dusk, looking at a glowing alley, travelers with no map, sense of freedom and openness, cinematic urban wide shot --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich finde das nächste empfohlene Restaurant und genieße es. Verlässlich ist gut.",
+            "en-US": "I find the nearest recommended restaurant and enjoy it. Reliable is good."
+          },
+          "cluster_scores": {
+            "freedom": -0.35,
+            "instinct": -0.1,
+            "expression": -0.15
+          },
+          "type_scores": {
+            "hueter": 0.75,
+            "erkunder": 0.2,
+            "grenzgaenger": 0.05
+          },
+          "duo_trait_deltas": {
+            "tension": -0.05,
+            "closeness": -0.05
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich laufe ohne Ziel los — aber halte mein Telefon als Backup bereit.",
+            "en-US": "I walk without direction — but keep my phone as backup."
+          },
+          "cluster_scores": {
+            "freedom": 0.15,
+            "instinct": 0.2,
+            "expression": 0.1
+          },
+          "type_scores": {
+            "hueter": 0.1,
+            "erkunder": 0.7,
+            "grenzgaenger": 0.2
+          },
+          "duo_trait_deltas": {
+            "tension": 0.1,
+            "closeness": 0.05
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ich gehe dorthin, wo Licht ist und Stimmen — und spreche die erste Person an, die mir sympathisch ist.",
+            "en-US": "I head where there's light and voices — and talk to the first person who feels right."
+          },
+          "cluster_scores": {
+            "freedom": 0.4,
+            "instinct": 0.3,
+            "expression": 0.38
+          },
+          "type_scores": {
+            "hueter": 0.05,
+            "erkunder": 0.2,
+            "grenzgaenger": 0.75
+          },
+          "duo_trait_deltas": {
+            "tension": 0.2,
+            "closeness": 0.1
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich folge dem, was sich gerade richtig anfühlt — Schritt für Schritt.",
+            "en-US": "I follow whatever feels right in the moment — step by step."
+          },
+          "cluster_scores": {
+            "freedom": 0.2,
+            "instinct": 0.25,
+            "expression": 0.15
+          },
+          "type_scores": {
+            "hueter": 0.1,
+            "erkunder": 0.6,
+            "grenzgaenger": 0.3
+          },
+          "duo_trait_deltas": {
+            "tension": 0.1,
+            "closeness": 0.1
+          }
+        }
+      ]
+    },
+    {
+      "id": "q06",
+      "prompt": {
+        "de-DE": "Jemand sagt dir: 'Du traust dich mehr, als du denkst.' Was denkst du — haben sie recht?",
+        "en-US": "Someone tells you: 'You dare more than you think.' What do you think — are they right?"
+      },
+      "question_type": "dichotomie",
+      "narrator_id": "oracle",
+      "tone": "warm_minimal",
+      "image_gen_prompt": "A mirror reflecting someone looking at their own face with a slight expression of surprise and recognition, warm minimal studio light, intimate mood --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Nein. Ich kenne meine Grenzen sehr gut — und ich respektiere sie.",
+            "en-US": "No. I know my limits very well — and I respect them."
+          },
+          "cluster_scores": {
+            "freedom": -0.3,
+            "instinct": -0.05,
+            "expression": -0.2
+          },
+          "type_scores": {
+            "hueter": 0.75,
+            "erkunder": 0.2,
+            "grenzgaenger": 0.05
+          },
+          "duo_trait_deltas": {
+            "tension": -0.05,
+            "closeness": -0.05
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Vielleicht. Ich überrasche mich selbst manchmal — aber nicht immer.",
+            "en-US": "Maybe. I sometimes surprise myself — but not always."
+          },
+          "cluster_scores": {
+            "freedom": 0.1,
+            "instinct": 0.2,
+            "expression": 0.1
+          },
+          "type_scores": {
+            "hueter": 0.15,
+            "erkunder": 0.67,
+            "grenzgaenger": 0.18
+          },
+          "duo_trait_deltas": {
+            "tension": 0.05,
+            "closeness": 0.05
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ja — und ich trau mich noch mehr, als sie ahnen.",
+            "en-US": "Yes — and I dare even more than they suspect."
+          },
+          "cluster_scores": {
+            "freedom": 0.38,
+            "instinct": 0.3,
+            "expression": 0.35
+          },
+          "type_scores": {
+            "hueter": 0.05,
+            "erkunder": 0.2,
+            "grenzgaenger": 0.75
+          },
+          "duo_trait_deltas": {
+            "tension": 0.2,
+            "closeness": 0.05
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich weiß es nicht. Das finde ich gerade erst heraus.",
+            "en-US": "I don't know. I'm figuring that out right now."
+          },
+          "cluster_scores": {
+            "freedom": 0.05,
+            "instinct": 0.2,
+            "expression": 0.05
+          },
+          "type_scores": {
+            "hueter": 0.15,
+            "erkunder": 0.55,
+            "grenzgaenger": 0.3
+          },
+          "duo_trait_deltas": {
+            "tension": 0.05,
+            "closeness": 0.1
+          }
+        }
+      ]
+    },
+    {
+      "id": "q07",
+      "prompt": {
+        "de-DE": "Du hast die Möglichkeit, an einem Ritual teilzunehmen, das du nicht vollständig verstehst — aber du vertraust dem Raum und den Menschen. Was tust du?",
+        "en-US": "You have the opportunity to participate in a ritual you don't fully understand — but you trust the space and the people. What do you do?"
+      },
+      "question_type": "reaktions_szenario",
+      "narrator_id": "oracle",
+      "tone": "premium_poetic",
+      "image_gen_prompt": "A circle of people gathered around a central glowing object in a dim candlelit space, one empty spot in the circle, sense of invitation and mystery, warm sacred atmosphere --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich beobachte von außen. Mitmachen ohne vollständiges Verstehen ist nichts für mich.",
+            "en-US": "I observe from outside. Participating without fully understanding isn't for me."
+          },
+          "cluster_scores": {
+            "freedom": -0.35,
+            "instinct": -0.1,
+            "expression": -0.2
+          },
+          "type_scores": {
+            "hueter": 0.77,
+            "erkunder": 0.18,
+            "grenzgaenger": 0.05
+          },
+          "duo_trait_deltas": {
+            "tension": -0.05,
+            "closeness": -0.05
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich trete bei — und behalte das Recht, auszusteigen, wenn ich will.",
+            "en-US": "I join — and retain the right to step out if I want."
+          },
+          "cluster_scores": {
+            "freedom": 0.1,
+            "instinct": 0.2,
+            "expression": 0.1
+          },
+          "type_scores": {
+            "hueter": 0.1,
+            "erkunder": 0.7,
+            "grenzgaenger": 0.2
+          },
+          "duo_trait_deltas": {
+            "tension": 0.1,
+            "closeness": 0.05
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ich trete bei — vollständig, ohne Vorbehalt. Vertrauen ist Verstehen.",
+            "en-US": "I join — fully, without reservation. Trust is understanding."
+          },
+          "cluster_scores": {
+            "freedom": 0.4,
+            "instinct": 0.35,
+            "expression": 0.35
+          },
+          "type_scores": {
+            "hueter": 0.05,
+            "erkunder": 0.15,
+            "grenzgaenger": 0.8
+          },
+          "duo_trait_deltas": {
+            "tension": 0.2,
+            "closeness": 0.1
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich frage nach der Bedeutung — und dann entscheide ich.",
+            "en-US": "I ask about the meaning — then decide."
+          },
+          "cluster_scores": {
+            "freedom": 0.05,
+            "instinct": 0.2,
+            "expression": 0.05
+          },
+          "type_scores": {
+            "hueter": 0.2,
+            "erkunder": 0.65,
+            "grenzgaenger": 0.15
+          },
+          "duo_trait_deltas": {
+            "tension": 0.05,
+            "closeness": 0.1
+          }
+        }
+      ]
+    },
+    {
+      "id": "q08",
+      "prompt": {
+        "de-DE": "Du hast eine Grenze, die du dir selbst gesetzt hast. Nicht weil jemand anderes sie gesetzt hat — sondern weil du dachtest, du brauchst sie. Gilt sie noch?",
+        "en-US": "You have a limit you set for yourself. Not because someone else set it — but because you thought you needed it. Is it still valid?"
+      },
+      "question_type": "dichotomie",
+      "narrator_id": "oracle",
+      "tone": "premium_poetic",
+      "image_gen_prompt": "A single fence post in an open field with no fence attached, sky open and wide, symbolic and quiet, cinematic wide landscape --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ja. Ich setze Grenzen nicht leichtfertig — sie gelten.",
+            "en-US": "Yes. I don't set limits lightly — they stand."
+          },
+          "cluster_scores": {
+            "freedom": -0.35,
+            "instinct": -0.05,
+            "expression": -0.15
+          },
+          "type_scores": {
+            "hueter": 0.75,
+            "erkunder": 0.2,
+            "grenzgaenger": 0.05
+          },
+          "duo_trait_deltas": {
+            "tension": -0.05,
+            "closeness": -0.05
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich überprüfe sie regelmäßig — manche bleiben, manche wandern.",
+            "en-US": "I review them regularly — some stay, some shift."
+          },
+          "cluster_scores": {
+            "freedom": 0.1,
+            "instinct": 0.2,
+            "expression": 0.1
+          },
+          "type_scores": {
+            "hueter": 0.15,
+            "erkunder": 0.68,
+            "grenzgaenger": 0.17
+          },
+          "duo_trait_deltas": {
+            "tension": 0.1,
+            "closeness": 0.05
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ich habe sie schon mehrmals verschoben. Das ist keine Schwäche — das ist Wachstum.",
+            "en-US": "I've already moved it several times. That's not weakness — that's growth."
+          },
+          "cluster_scores": {
+            "freedom": 0.38,
+            "instinct": 0.3,
+            "expression": 0.3
+          },
+          "type_scores": {
+            "hueter": 0.05,
+            "erkunder": 0.2,
+            "grenzgaenger": 0.75
+          },
+          "duo_trait_deltas": {
+            "tension": 0.15,
+            "closeness": 0.1
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich weiß nicht mehr, woher sie kam — und das macht mich neugierig.",
+            "en-US": "I'm no longer sure where it came from — and that makes me curious."
+          },
+          "cluster_scores": {
+            "freedom": 0.1,
+            "instinct": 0.25,
+            "expression": 0.05
+          },
+          "type_scores": {
+            "hueter": 0.15,
+            "erkunder": 0.55,
+            "grenzgaenger": 0.3
+          },
+          "duo_trait_deltas": {
+            "tension": 0.05,
+            "closeness": 0.1
+          }
+        }
+      ]
+    },
+    {
+      "id": "q09",
+      "prompt": {
+        "de-DE": "Stell dir vor, du lebst drei Monate komplett ohne soziale Erwartungen. Keine Rolle, kein Ruf, kein Müssen. Wer bist du dann?",
+        "en-US": "Imagine living three months with absolutely no social expectations. No role, no reputation, no obligation. Who are you then?"
+      },
+      "question_type": "ästhetik_wahl",
+      "narrator_id": "oracle",
+      "tone": "premium_poetic",
+      "image_gen_prompt": "A person in a wide open landscape — mountains, field, or sea — small against the vastness, arms slightly open, sense of unlimited becoming, cinematic aerial perspective --ar 16:9 --v 6.0",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich glaube, ich würde recht ähnlich sein. Ich bin schon ich.",
+            "en-US": "I think I'd be quite similar. I'm already myself."
+          },
+          "cluster_scores": {
+            "freedom": -0.2,
+            "instinct": 0.1,
+            "expression": -0.1
+          },
+          "type_scores": {
+            "hueter": 0.68,
+            "erkunder": 0.27,
+            "grenzgaenger": 0.05
+          },
+          "duo_trait_deltas": {
+            "tension": 0.0,
+            "closeness": -0.05
+          }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Etwas ruhiger, etwas freier — aber im Kern ähnlich.",
+            "en-US": "A bit quieter, a bit freer — but at the core, similar."
+          },
+          "cluster_scores": {
+            "freedom": 0.1,
+            "instinct": 0.2,
+            "expression": 0.1
+          },
+          "type_scores": {
+            "hueter": 0.1,
+            "erkunder": 0.7,
+            "grenzgaenger": 0.2
+          },
+          "duo_trait_deltas": {
+            "tension": 0.05,
+            "closeness": 0.05
+          }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Jemand, den die meisten noch nicht gesehen haben — und der sich endlich ausstrecken kann.",
+            "en-US": "Someone most haven't seen yet — who can finally stretch out."
+          },
+          "cluster_scores": {
+            "freedom": 0.4,
+            "instinct": 0.35,
+            "expression": 0.38
+          },
+          "type_scores": {
+            "hueter": 0.05,
+            "erkunder": 0.2,
+            "grenzgaenger": 0.75
+          },
+          "duo_trait_deltas": {
+            "tension": 0.2,
+            "closeness": 0.1
+          }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Das ist die Frage, die mich am meisten beschäftigt.",
+            "en-US": "That's the question that occupies me most."
+          },
+          "cluster_scores": {
+            "freedom": 0.15,
+            "instinct": 0.25,
+            "expression": 0.15
+          },
+          "type_scores": {
+            "hueter": 0.1,
+            "erkunder": 0.55,
+            "grenzgaenger": 0.35
+          },
+          "duo_trait_deltas": {
+            "tension": 0.1,
+            "closeness": 0.1
+          }
+        }
+      ]
+    }
+  ],
+  "profiles": [
+    {
+      "id": "hueter",
+      "title": {
+        "de-DE": "Der Torwächter",
+        "en-US": "The Gatekeeper"
+      },
+      "tagline": {
+        "de-DE": "Du weißt genau, was du hineinlässt — und das ist deine größte Stärke.",
+        "en-US": "You know exactly what you let in — and that is your greatest strength."
+      },
+      "description": {
+        "de-DE": "Grenzen sind für dich keine Wände — sie sind Türen, die du selbst installiert hast. Du öffnest sie nicht für jeden Windstoß, und das ist keine Enge — das ist Architektur. Du hast gelernt, dass nicht jede Erfahrung deins sein muss, um wertvoll zu sein. Manchmal bedeutet Weisheit, zu wissen, was man nicht braucht. Dein Radar für das Richtige ist außergewöhnlich präzise: Du erkennst, was dir nützt, was dich nährt, was dich wachsen lässt — und du weißt, was du lieber aus der Distanz betrachtest. Das ist keine Angst. Das ist diskriminierende Neugier: selektiv, klar, und in ihrer eigenen Art außerordentlich mutig.",
+        "en-US": "Limits for you are not walls — they are doors you installed yourself. You don't open them for every gust of wind, and that's not constriction — that's architecture. You've learned that not every experience has to be yours to be valuable. Sometimes wisdom means knowing what you don't need. Your radar for the right thing is extraordinarily precise: you recognize what serves you, what nourishes you, what grows you — and you know what you prefer to observe from a distance. This is not fear. This is discriminating curiosity: selective, clear, and in its own way extraordinarily courageous."
+      },
+      "stats": [
+        {
+          "label": {
+            "de-DE": "Grenzen, die du selbst gesetzt hast",
+            "en-US": "Limits you set yourself"
+          },
+          "value": "viele / many"
+        },
+        {
+          "label": {
+            "de-DE": "Grenzen, die andere gesetzt haben und du akzeptiert hast",
+            "en-US": "Limits others set that you accepted"
+          },
+          "value": "wenige / few"
+        },
+        {
+          "label": {
+            "de-DE": "Energie gespart durch strategisches Nein",
+            "en-US": "Energy saved through strategic no"
+          },
+          "value": "erheblich / considerable"
+        }
+      ],
+      "compatibility": {
+        "allies": [
+          "erkunder",
+          "grenzgaenger"
+        ],
+        "nemesis": [
+          "grenzgaenger"
+        ]
+      },
+      "share_text": {
+        "de-DE": "Ich bin der Torwächter. Ich öffne Türen — aber ich wähle, welche. #KinkyNormal",
+        "en-US": "I am the Gatekeeper. I open doors — but I choose which ones. #KinkyNormal"
+      },
+      "image_gen_prompt": "An ornate gate in a misty garden, half open, a figure standing beside it with quiet authority, warm dawn light, cinematic portrait 9:16 --ar 9:16 --v 6.0"
+    },
+    {
+      "id": "erkunder",
+      "title": {
+        "de-DE": "Der Neugierige Kartograf",
+        "en-US": "The Curious Cartographer"
+      },
+      "tagline": {
+        "de-DE": "Du kartierst dein Anderssein — Schritt für Schritt, Linie für Linie.",
+        "en-US": "You map your otherness — step by step, line by line."
+      },
+      "description": {
+        "de-DE": "Du befindest dich in einem Prozess. Nicht einem Endpunkt. Du erkundest dein eigenes Territorium mit der Neugier eines Kartografen, der weiß, dass die Karte nicht das Land ist — sondern eine Annäherung, die immer präziser wird. Du prüfst Grenzen, aber du sprengst sie nicht einfach. Du nähst dir neue Erfahrungen an wie Schichten: erst anschauen, dann anfühlen, dann entscheiden. Das macht dich nicht zögerlich — das macht dich präzise. Und am Ende trägst du eine Karte von dir selbst, die du immer weiter verfeinern kannst.",
+        "en-US": "You are in a process. Not an endpoint. You explore your own territory with the curiosity of a cartographer who knows the map is not the land — but an approximation that keeps getting more precise. You test limits, but you don't simply blow them up. You layer new experiences like coats: first observe, then feel, then decide. That doesn't make you hesitant — it makes you precise. And in the end you carry a map of yourself that you can keep refining."
+      },
+      "stats": [
+        {
+          "label": {
+            "de-DE": "Kartierte Gebiete deines Inneren",
+            "en-US": "Mapped regions of your inner self"
+          },
+          "value": "wächst / growing"
+        },
+        {
+          "label": {
+            "de-DE": "Offene Fragen auf deiner Karte",
+            "en-US": "Open questions on your map"
+          },
+          "value": "produktiv viele / productively many"
+        },
+        {
+          "label": {
+            "de-DE": "Kartennachjustierungen pro Jahr",
+            "en-US": "Map adjustments per year"
+          },
+          "value": "mehrmals / several times"
+        }
+      ],
+      "compatibility": {
+        "allies": [
+          "hueter",
+          "grenzgaenger"
+        ],
+        "nemesis": [
+          "hueter"
+        ]
+      },
+      "share_text": {
+        "de-DE": "Ich bin der neugierige Kartograf. Meine Karte wächst noch. #KinkyNormal",
+        "en-US": "I am the curious cartographer. My map is still growing. #KinkyNormal"
+      },
+      "image_gen_prompt": "An open hand-drawn map with some areas filled in and some blank with question marks, on a warm wooden surface, warm side light, intimate and curious aesthetic, 9:16 --ar 9:16 --v 6.0"
+    },
+    {
+      "id": "grenzgaenger",
+      "title": {
+        "de-DE": "Der Lebendige Horizont",
+        "en-US": "The Living Horizon"
+      },
+      "tagline": {
+        "de-DE": "Du gehst nicht bis an Grenzen — du lebst in ihnen.",
+        "en-US": "You don't go up to limits — you live inside them."
+      },
+      "description": {
+        "de-DE": "Für dich ist eine Grenze nicht das Ende von etwas — sie ist der Anfang einer Frage. 'Warum eigentlich?' ist einer deiner häufigsten inneren Sätze. Du hast früh gelernt, dass die Regeln, die andere unhinterfragt übernehmen, für dich nichts anderes als Vorschläge sind. Und du prüfst jeden einzelnen. Das macht dich manchmal unbequem für andere — aber du weißt, dass diese Unbequemlichkeit das Reibungsgeräusch von echtem Wachstum ist. Du gehst nicht respektlos über Grenzen. Du gehst bewusst. Und das ist der Unterschied zwischen Chaos und Befreiung.",
+        "en-US": "For you, a limit is not the end of something — it's the beginning of a question. 'But why?' is one of your most frequent inner sentences. You learned early that the rules others accept without question are, for you, nothing more than suggestions. And you test every single one. That sometimes makes you uncomfortable for others — but you know this discomfort is the friction sound of real growth. You don't cross limits disrespectfully. You cross them consciously. And that is the difference between chaos and liberation."
+      },
+      "stats": [
+        {
+          "label": {
+            "de-DE": "Grenzen, die sich als Türen herausgestellt haben",
+            "en-US": "Limits that turned out to be doors"
+          },
+          "value": "viele / many"
+        },
+        {
+          "label": {
+            "de-DE": "'Aber warum?'-Fragen pro Woche",
+            "en-US": "'But why?' questions per week"
+          },
+          "value": "zu viele zum Zählen / too many to count"
+        },
+        {
+          "label": {
+            "de-DE": "Freiheiten, die du dir selbst gegeben hast",
+            "en-US": "Freedoms you granted yourself"
+          },
+          "value": "wachsend / growing"
+        }
+      ],
+      "compatibility": {
+        "allies": [
+          "erkunder",
+          "hueter"
+        ],
+        "nemesis": [
+          "hueter"
+        ]
+      },
+      "share_text": {
+        "de-DE": "Ich bin der lebendige Horizont. Grenzen sind Fragen, keine Antworten. #KinkyNormal",
+        "en-US": "I am the living horizon. Limits are questions, not answers. #KinkyNormal"
+      },
+      "image_gen_prompt": "A figure standing at the edge of a cliff overlooking a vast glowing horizon at dawn, arms wide, sense of ownership of the infinite, cinematic portrait 9:16 --ar 9:16 --v 6.0"
+    }
+  ],
+  "share_config": {
+    "card_format": "9:16",
+    "include_compatibility": true,
+    "cta_text": {
+      "de-DE": "Finde dein Profil — Quiz 3 von 4",
+      "en-US": "Find your profile — Quiz 3 of 4"
+    },
+    "hashtags": [
+      "KinkyNormal",
+      "BinIchAndersAuchNormal",
+      "Grenzgaenger"
+    ]
+  },
+  "marker_emission": {
+    "cluster_domain_map": {
+      "freedom": "freedom",
+      "instinct": "instinct",
+      "expression": "creative"
+    },
+    "cluster_keyword_map": {
+      "freedom": "independence",
+      "instinct": "primal_sense",
+      "expression": "expression"
+    },
+    "example_output_extreme_grenzgaenger": [
+      {
+        "id": "marker.freedom.independence",
+        "weight": 1.0
+      },
+      {
+        "id": "marker.instinct.primal_sense",
+        "weight": 0.82
+      },
+      {
+        "id": "marker.creative.expression",
+        "weight": 0.78
+      }
+    ],
+    "example_output_extreme_hueter": [
+      {
+        "id": "marker.freedom.independence",
+        "weight": 0.1
+      },
+      {
+        "id": "marker.instinct.primal_sense",
+        "weight": 0.15
+      },
+      {
+        "id": "marker.creative.expression",
+        "weight": 0.08
+      }
+    ]
+  },
+  "fusion_ring": {
+    "dominant_sectors_grenzgaenger": [
+      "S8",
+      "S0",
+      "S4"
+    ],
+    "dominant_sectors_erkunder": [
+      "S8",
+      "S2",
+      "S7"
+    ],
+    "dominant_sectors_hueter": [
+      "S9",
+      "S5",
+      "S6"
+    ],
+    "note": "Resolved via AFFINITY_MAP: independence→S8/S0, primal_sense→S0/S7, expression→S4/S2"
+  },
+  "contribution_event": {
+    "event_type": "quiz_completed",
+    "quiz_id": "kinky_03_grenzbereitschaft",
+    "series_id": "kinky_series",
+    "payload_template": {
+      "primary_cluster": "{{primaryCluster}}",
+      "primary_type": "{{primaryType}}",
+      "markers": "{{markerWeights}}",
+      "traits": [
+        {
+          "key": "freedom_orientation",
+          "source": "cluster_scores.freedom"
+        },
+        {
+          "key": "instinct_expression",
+          "source": "cluster_scores.instinct"
+        },
+        {
+          "key": "expression_tendency",
+          "source": "cluster_scores.expression"
+        }
+      ],
+      "tags": [
+        {
+          "id": "tag.archetype.grenzgaenger",
+          "label": "Der Lebendige Horizont",
+          "kind": "archetype"
+        },
+        {
+          "id": "tag.archetype.erkunder",
+          "label": "Der Neugierige Kartograf",
+          "kind": "archetype"
+        },
+        {
+          "id": "tag.archetype.hueter",
+          "label": "Der Torwächter",
+          "kind": "archetype"
+        }
+      ]
+    }
+  }
+}

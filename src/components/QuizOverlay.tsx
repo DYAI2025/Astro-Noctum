@@ -19,6 +19,10 @@ const DestinyQuiz = lazy(() => import('./quizzes/DestinyQuiz'));
 const RpgIdentityQuiz = lazy(() => import('./quizzes/RpgIdentityQuiz'));
 const PartyQuiz = lazy(() => import('./quizzes/PartyQuiz'));
 const CelebritySoulmateQuiz = lazy(() => import('./quizzes/CelebritySoulmateQuiz'));
+const KinkyQuiz01 = lazy(() => import('./quizzes/Kinky/KinkyQuiz01'));
+const KinkyQuiz02 = lazy(() => import('./quizzes/Kinky/KinkyQuiz02'));
+const KinkyQuiz03 = lazy(() => import('./quizzes/Kinky/KinkyQuiz03'));
+const KinkyQuiz04 = lazy(() => import('./quizzes/Kinky/KinkyQuiz04'));
 
 // --- Types ---
 interface QuizOverlayProps {
@@ -49,6 +53,10 @@ const QUIZ_MAP: Record<string, React.LazyExoticComponent<React.ComponentType<Qui
   rpg_identity: RpgIdentityQuiz,
   party_need: PartyQuiz,
   celebrity_soulmate: CelebritySoulmateQuiz,
+  kinky_01: KinkyQuiz01,
+  kinky_02: KinkyQuiz02,
+  kinky_03: KinkyQuiz03,
+  kinky_04: KinkyQuiz04,
 };
 
 // --- Loading fallback ---
