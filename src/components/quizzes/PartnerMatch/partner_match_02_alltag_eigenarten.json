@@ -1,0 +1,597 @@
+{
+  "schema_version": "3.0.0",
+  "engine": "quizzme-quiz-engine",
+  "output_mode": "full_v2",
+  "series": {
+    "id": "partner_match_series",
+    "title": {
+      "de-DE": "Partner Match — Welcher Partner passt zu mir?",
+      "en-US": "Partner Match — Which partner fits me?"
+    },
+    "quiz_index": 2,
+    "quiz_count": 3,
+    "theme": {
+      "de-DE": "Nicht jeder passende Mensch sieht auf den ersten Blick passend aus. Dieses Format sucht nach Resonanz, nicht nach Schubladen.",
+      "en-US": "Not every fitting person looks fitting at first glance. This format looks for resonance, not boxes."
+    }
+  },
+  "meta": {
+    "id": "partner_match_02_alltag_eigenarten",
+    "hidden_cluster": "stability",
+    "facet_label": {
+      "de-DE": "Alltag & Eigenarten",
+      "en-US": "Everyday Fit & Quirks"
+    },
+    "axis_key": "alignment",
+    "narrator_id": "stone",
+    "tone": "warm_minimal",
+    "type_model": {
+      "types": ["ritual_keeper", "easy_cozy", "reliable_teammate"],
+      "compute": "max_type_score"
+    }
+  },
+  "disclaimer": {
+    "de-DE": "Dieser Test dient der spielerischen Selbstreflexion und stellt KEINE psychologische Diagnose dar.",
+    "en-US": "This quiz is for playful self-reflection and is NOT a psychological diagnosis."
+  },
+  "questions": [
+    {
+      "id": "q01",
+      "prompt": {
+        "de-DE": "Sonntagmorgen — wie sollte er idealerweise aussehen, wenn ihr zusammen seid?",
+        "en-US": "Sunday morning — how should it ideally look when you're together?"
+      },
+      "question_type": "praeferenz",
+      "narrator_id": "stone",
+      "tone": "warm_minimal",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Unser Ritual: Kaffee, Zeitung oder Podcast, langsam wach werden — immer gleich, immer schön.",
+            "en-US": "Our ritual: coffee, newspaper or podcast, slowly waking up — always the same, always lovely."
+          },
+          "cluster_scores": { "passion": -0.08, "stability": 0.34, "future": 0.02 },
+          "type_scores": { "ritual_keeper": 0.82, "easy_cozy": 0.24, "reliable_teammate": 0.30 },
+          "duo_trait_deltas": { "closeness": 0.10, "alignment": 0.16, "tension": -0.04 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Spontan schauen, was sich ergibt — manchmal Markt, manchmal Sofa, manchmal beides.",
+            "en-US": "Spontaneously see what unfolds — sometimes market, sometimes couch, sometimes both."
+          },
+          "cluster_scores": { "passion": 0.02, "stability": 0.18, "future": 0.14 },
+          "type_scores": { "ritual_keeper": 0.16, "easy_cozy": 0.78, "reliable_teammate": 0.26 },
+          "duo_trait_deltas": { "closeness": 0.14, "alignment": 0.08, "tension": -0.02 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Produktiv starten — Aufgaben erledigen, danach verdient entspannen.",
+            "en-US": "Start productively — get things done, then enjoy the rest guilt-free."
+          },
+          "cluster_scores": { "passion": -0.02, "stability": 0.28, "future": 0.06 },
+          "type_scores": { "ritual_keeper": 0.26, "easy_cozy": 0.18, "reliable_teammate": 0.80 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.18, "tension": -0.06 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Chaotisch und schön — jeder macht irgendwas, irgendwann treffen wir uns in der Mitte.",
+            "en-US": "Chaotic and lovely — everyone does their thing, eventually we meet in the middle."
+          },
+          "cluster_scores": { "passion": 0.14, "stability": -0.20, "future": 0.16 },
+          "type_scores": { "ritual_keeper": 0.08, "easy_cozy": 0.62, "reliable_teammate": 0.12 },
+          "duo_trait_deltas": { "closeness": 0.02, "alignment": -0.08, "tension": 0.08 }
+        }
+      ]
+    },
+    {
+      "id": "q02",
+      "prompt": {
+        "de-DE": "Dein Partner hat eine liebenswerte Macke, die dich anfangs irritiert. Wie gehst du damit um?",
+        "en-US": "Your partner has a lovable quirk that initially irritates you. How do you handle it?"
+      },
+      "question_type": "reaktions_szenario",
+      "narrator_id": "stone",
+      "tone": "warm_minimal",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich gewöhne mich daran — kleine Macken werden mit der Zeit zu liebgewonnenen Zeichen.",
+            "en-US": "I get used to it — small quirks become beloved signatures over time."
+          },
+          "cluster_scores": { "passion": -0.08, "stability": 0.34, "future": 0.02 },
+          "type_scores": { "ritual_keeper": 0.82, "easy_cozy": 0.24, "reliable_teammate": 0.30 },
+          "duo_trait_deltas": { "closeness": 0.10, "alignment": 0.16, "tension": -0.04 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich finde es schnell charmant — jede Eigenart macht den Menschen einzigartig.",
+            "en-US": "I find it charming quickly — every quirk makes the person unique."
+          },
+          "cluster_scores": { "passion": 0.02, "stability": 0.18, "future": 0.14 },
+          "type_scores": { "ritual_keeper": 0.16, "easy_cozy": 0.78, "reliable_teammate": 0.26 },
+          "duo_trait_deltas": { "closeness": 0.14, "alignment": 0.08, "tension": -0.02 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ich spreche es ruhig an — nicht als Problem, sondern als Frage, wie wir es lösen.",
+            "en-US": "I bring it up calmly — not as a problem, but as a question of how we navigate it."
+          },
+          "cluster_scores": { "passion": -0.02, "stability": 0.28, "future": 0.06 },
+          "type_scores": { "ritual_keeper": 0.26, "easy_cozy": 0.18, "reliable_teammate": 0.80 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.18, "tension": -0.06 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich lasse es einfach sein — Chaos hat seinen eigenen Reiz, wenn man sich mag.",
+            "en-US": "I just let it be — chaos has its own charm when you care for each other."
+          },
+          "cluster_scores": { "passion": 0.14, "stability": -0.20, "future": 0.16 },
+          "type_scores": { "ritual_keeper": 0.08, "easy_cozy": 0.62, "reliable_teammate": 0.12 },
+          "duo_trait_deltas": { "closeness": 0.02, "alignment": -0.08, "tension": 0.08 }
+        }
+      ]
+    },
+    {
+      "id": "q03",
+      "prompt": {
+        "de-DE": "Wie wichtig ist euch gemeinsame Ordnung? Haushalt, Aufgaben, Verlässlichkeit im Kleinen?",
+        "en-US": "How important is shared order to you? Household, tasks, reliability in small things?"
+      },
+      "question_type": "wert_frage",
+      "narrator_id": "stone",
+      "tone": "warm_minimal",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Sehr wichtig — geteilte Routinen schaffen Vertrauen und ein gemeinsames Zuhause.",
+            "en-US": "Very important — shared routines create trust and a real home together."
+          },
+          "cluster_scores": { "passion": -0.08, "stability": 0.34, "future": 0.02 },
+          "type_scores": { "ritual_keeper": 0.82, "easy_cozy": 0.24, "reliable_teammate": 0.30 },
+          "duo_trait_deltas": { "closeness": 0.10, "alignment": 0.16, "tension": -0.04 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Mittel wichtig — Ordnung ist schön, aber Flexibilität ist mir lieber als Perfektion.",
+            "en-US": "Medium important — order is nice, but flexibility matters more to me than perfection."
+          },
+          "cluster_scores": { "passion": 0.02, "stability": 0.18, "future": 0.14 },
+          "type_scores": { "ritual_keeper": 0.16, "easy_cozy": 0.78, "reliable_teammate": 0.26 },
+          "duo_trait_deltas": { "closeness": 0.14, "alignment": 0.08, "tension": -0.02 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Sehr wichtig — ich bin verlässlich und erwarte das auch vom anderen.",
+            "en-US": "Very important — I am reliable and I expect the same from the other."
+          },
+          "cluster_scores": { "passion": -0.02, "stability": 0.28, "future": 0.06 },
+          "type_scores": { "ritual_keeper": 0.26, "easy_cozy": 0.18, "reliable_teammate": 0.80 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.18, "tension": -0.06 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Nicht so wichtig — wir finden unseren Rhythmus, auch wenn er ungewöhnlich aussieht.",
+            "en-US": "Not that important — we'll find our rhythm, even if it looks unconventional."
+          },
+          "cluster_scores": { "passion": 0.14, "stability": -0.20, "future": 0.16 },
+          "type_scores": { "ritual_keeper": 0.08, "easy_cozy": 0.62, "reliable_teammate": 0.12 },
+          "duo_trait_deltas": { "closeness": 0.02, "alignment": -0.08, "tension": 0.08 }
+        }
+      ]
+    },
+    {
+      "id": "q04",
+      "prompt": {
+        "de-DE": "Dein Partner vergisst etwas, das dir wichtig war — zum zweiten Mal. Wie reagierst du?",
+        "en-US": "Your partner forgets something important to you — for the second time. How do you react?"
+      },
+      "question_type": "reaktions_szenario",
+      "narrator_id": "stone",
+      "tone": "warm_minimal",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich sage es ruhig und klar — und erkläre, warum es mir wichtig ist.",
+            "en-US": "I say it calmly and clearly — and explain why it matters to me."
+          },
+          "cluster_scores": { "passion": -0.08, "stability": 0.34, "future": 0.02 },
+          "type_scores": { "ritual_keeper": 0.82, "easy_cozy": 0.24, "reliable_teammate": 0.30 },
+          "duo_trait_deltas": { "closeness": 0.10, "alignment": 0.16, "tension": -0.04 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich schaue, ob es ein Muster ist — manchmal vergisst man einfach Dinge.",
+            "en-US": "I check if it's a pattern — sometimes people just forget things."
+          },
+          "cluster_scores": { "passion": 0.02, "stability": 0.18, "future": 0.14 },
+          "type_scores": { "ritual_keeper": 0.16, "easy_cozy": 0.78, "reliable_teammate": 0.26 },
+          "duo_trait_deltas": { "closeness": 0.14, "alignment": 0.08, "tension": -0.02 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ich suche eine konkrete Lösung — gemeinsamer Kalender, Erinnerungen, was auch immer hilft.",
+            "en-US": "I look for a concrete solution — shared calendar, reminders, whatever helps."
+          },
+          "cluster_scores": { "passion": -0.02, "stability": 0.28, "future": 0.06 },
+          "type_scores": { "ritual_keeper": 0.26, "easy_cozy": 0.18, "reliable_teammate": 0.80 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.18, "tension": -0.06 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich lache es weg — Perfektion ist nicht das Ziel, wir sind beide Menschen.",
+            "en-US": "I laugh it off — perfection isn't the goal, we're both human."
+          },
+          "cluster_scores": { "passion": 0.14, "stability": -0.20, "future": 0.16 },
+          "type_scores": { "ritual_keeper": 0.08, "easy_cozy": 0.62, "reliable_teammate": 0.12 },
+          "duo_trait_deltas": { "closeness": 0.02, "alignment": -0.08, "tension": 0.08 }
+        }
+      ]
+    },
+    {
+      "id": "q05",
+      "prompt": {
+        "de-DE": "Welche Art von gemeinsamen Abenden macht dich am glücklichsten?",
+        "en-US": "What kind of shared evenings make you happiest?"
+      },
+      "question_type": "praeferenz",
+      "narrator_id": "stone",
+      "tone": "warm_minimal",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Unser Lieblingsessen, die Lieblingsserie, die wir beide kennen — das vertraute Ritual.",
+            "en-US": "Our favorite meal, the series we both know — the familiar ritual."
+          },
+          "cluster_scores": { "passion": -0.08, "stability": 0.34, "future": 0.02 },
+          "type_scores": { "ritual_keeper": 0.82, "easy_cozy": 0.24, "reliable_teammate": 0.30 },
+          "duo_trait_deltas": { "closeness": 0.10, "alignment": 0.16, "tension": -0.04 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Einfach nebeneinander sein — jeder macht sein Ding, aber in der gleichen Energie.",
+            "en-US": "Simply being alongside each other — everyone does their thing in the same energy."
+          },
+          "cluster_scores": { "passion": 0.02, "stability": 0.18, "future": 0.14 },
+          "type_scores": { "ritual_keeper": 0.16, "easy_cozy": 0.78, "reliable_teammate": 0.26 },
+          "duo_trait_deltas": { "closeness": 0.14, "alignment": 0.08, "tension": -0.02 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Etwas Erledigtes zusammen feiern — auch kleine Fortschritte verdienen Anerkennung.",
+            "en-US": "Celebrating something accomplished together — even small progress deserves recognition."
+          },
+          "cluster_scores": { "passion": -0.02, "stability": 0.28, "future": 0.06 },
+          "type_scores": { "ritual_keeper": 0.26, "easy_cozy": 0.18, "reliable_teammate": 0.80 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.18, "tension": -0.06 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Spontan das tun, worauf gerade Lust ist — kein Plan, nur Stimmung.",
+            "en-US": "Spontaneously do whatever feels right — no plan, just mood."
+          },
+          "cluster_scores": { "passion": 0.14, "stability": -0.20, "future": 0.16 },
+          "type_scores": { "ritual_keeper": 0.08, "easy_cozy": 0.62, "reliable_teammate": 0.12 },
+          "duo_trait_deltas": { "closeness": 0.02, "alignment": -0.08, "tension": 0.08 }
+        }
+      ]
+    },
+    {
+      "id": "q06",
+      "prompt": {
+        "de-DE": "Ihr habt unterschiedliche Vorstellungen von Ordnung zu Hause. Wie findet ihr euren Weg?",
+        "en-US": "You have different ideas about tidiness at home. How do you find your way?"
+      },
+      "question_type": "reaktions_szenario",
+      "narrator_id": "stone",
+      "tone": "warm_minimal",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Wir sprechen über gemeinsame Standards und halten uns beide daran.",
+            "en-US": "We discuss shared standards and both stick to them."
+          },
+          "cluster_scores": { "passion": -0.08, "stability": 0.34, "future": 0.02 },
+          "type_scores": { "ritual_keeper": 0.82, "easy_cozy": 0.24, "reliable_teammate": 0.30 },
+          "duo_trait_deltas": { "closeness": 0.10, "alignment": 0.16, "tension": -0.04 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Wir akzeptieren unsere Unterschiede und finden einen guten Mittelweg.",
+            "en-US": "We accept our differences and find a good middle ground."
+          },
+          "cluster_scores": { "passion": 0.02, "stability": 0.18, "future": 0.14 },
+          "type_scores": { "ritual_keeper": 0.16, "easy_cozy": 0.78, "reliable_teammate": 0.26 },
+          "duo_trait_deltas": { "closeness": 0.14, "alignment": 0.08, "tension": -0.02 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Wir teilen klar auf, wer was macht — keine Verhandlungen, nur klare Zuständigkeiten.",
+            "en-US": "We divide clearly who does what — no negotiations, just clear responsibilities."
+          },
+          "cluster_scores": { "passion": -0.02, "stability": 0.28, "future": 0.06 },
+          "type_scores": { "ritual_keeper": 0.26, "easy_cozy": 0.18, "reliable_teammate": 0.80 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.18, "tension": -0.06 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Manchmal ist es ordentlich, manchmal nicht — wir stören uns gegenseitig nicht.",
+            "en-US": "Sometimes it's tidy, sometimes not — we don't bother each other about it."
+          },
+          "cluster_scores": { "passion": 0.14, "stability": -0.20, "future": 0.16 },
+          "type_scores": { "ritual_keeper": 0.08, "easy_cozy": 0.62, "reliable_teammate": 0.12 },
+          "duo_trait_deltas": { "closeness": 0.02, "alignment": -0.08, "tension": 0.08 }
+        }
+      ]
+    },
+    {
+      "id": "q07",
+      "prompt": {
+        "de-DE": "Dein Partner braucht spontan Hilfe mit etwas, für das du eigentlich keine Zeit hast. Was passiert?",
+        "en-US": "Your partner spontaneously needs help with something you don't really have time for. What happens?"
+      },
+      "question_type": "reaktions_szenario",
+      "narrator_id": "stone",
+      "tone": "warm_minimal",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich mache es — für die Menschen, die ich liebe, reorganisiere ich meine Pläne.",
+            "en-US": "I do it — for the people I love, I reorganize my plans."
+          },
+          "cluster_scores": { "passion": -0.08, "stability": 0.34, "future": 0.02 },
+          "type_scores": { "ritual_keeper": 0.82, "easy_cozy": 0.24, "reliable_teammate": 0.30 },
+          "duo_trait_deltas": { "closeness": 0.10, "alignment": 0.16, "tension": -0.04 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich schau, was möglich ist — meistens findet sich ein Weg.",
+            "en-US": "I see what's possible — there's usually a way."
+          },
+          "cluster_scores": { "passion": 0.02, "stability": 0.18, "future": 0.14 },
+          "type_scores": { "ritual_keeper": 0.16, "easy_cozy": 0.78, "reliable_teammate": 0.26 },
+          "duo_trait_deltas": { "closeness": 0.14, "alignment": 0.08, "tension": -0.02 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ich helfe und plane gleichzeitig, was dadurch für mich verschoben werden muss.",
+            "en-US": "I help and simultaneously plan what I need to shift for myself."
+          },
+          "cluster_scores": { "passion": -0.02, "stability": 0.28, "future": 0.06 },
+          "type_scores": { "ritual_keeper": 0.26, "easy_cozy": 0.18, "reliable_teammate": 0.80 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.18, "tension": -0.06 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Wir improvisieren gemeinsam — das Chaos gehört dazu.",
+            "en-US": "We improvise together — the chaos is part of it."
+          },
+          "cluster_scores": { "passion": 0.14, "stability": -0.20, "future": 0.16 },
+          "type_scores": { "ritual_keeper": 0.08, "easy_cozy": 0.62, "reliable_teammate": 0.12 },
+          "duo_trait_deltas": { "closeness": 0.02, "alignment": -0.08, "tension": 0.08 }
+        }
+      ]
+    },
+    {
+      "id": "q08",
+      "prompt": {
+        "de-DE": "Was bedeutet Verlässlichkeit in einer Beziehung für dich konkret?",
+        "en-US": "What does reliability in a relationship concretely mean to you?"
+      },
+      "question_type": "wert_frage",
+      "narrator_id": "stone",
+      "tone": "warm_minimal",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Geteilte Rituale, die wir einhalten — das gibt mir Sicherheit und Heimgefühl.",
+            "en-US": "Shared rituals we keep — that gives me security and a sense of home."
+          },
+          "cluster_scores": { "passion": -0.08, "stability": 0.34, "future": 0.02 },
+          "type_scores": { "ritual_keeper": 0.82, "easy_cozy": 0.24, "reliable_teammate": 0.30 },
+          "duo_trait_deltas": { "closeness": 0.10, "alignment": 0.16, "tension": -0.04 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Dass wir uns wohl miteinander fühlen — nicht jeder Tag muss perfekt geplant sein.",
+            "en-US": "That we feel comfortable with each other — not every day has to be perfectly planned."
+          },
+          "cluster_scores": { "passion": 0.02, "stability": 0.18, "future": 0.14 },
+          "type_scores": { "ritual_keeper": 0.16, "easy_cozy": 0.78, "reliable_teammate": 0.26 },
+          "duo_trait_deltas": { "closeness": 0.14, "alignment": 0.08, "tension": -0.02 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Versprechen werden gehalten — was man sagt, das meint man auch so.",
+            "en-US": "Promises are kept — what you say, you mean."
+          },
+          "cluster_scores": { "passion": -0.02, "stability": 0.28, "future": 0.06 },
+          "type_scores": { "ritual_keeper": 0.26, "easy_cozy": 0.18, "reliable_teammate": 0.80 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.18, "tension": -0.06 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Dass man sich finden kann, auch wenn der Alltag chaotisch ist.",
+            "en-US": "That you can find each other even when everyday life is chaotic."
+          },
+          "cluster_scores": { "passion": 0.14, "stability": -0.20, "future": 0.16 },
+          "type_scores": { "ritual_keeper": 0.08, "easy_cozy": 0.62, "reliable_teammate": 0.12 },
+          "duo_trait_deltas": { "closeness": 0.02, "alignment": -0.08, "tension": 0.08 }
+        }
+      ]
+    },
+    {
+      "id": "q09",
+      "prompt": {
+        "de-DE": "Wie zeigst du kleine Fürsorge im Alltag? Was tust du, ohne dass es verlangt wird?",
+        "en-US": "How do you show small care in daily life? What do you do without being asked?"
+      },
+      "question_type": "praeferenz",
+      "narrator_id": "stone",
+      "tone": "warm_minimal",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich erinnere mich an die Kleinigkeiten — welcher Tee, welche Playlist, welches Ritual.",
+            "en-US": "I remember the small things — which tea, which playlist, which ritual."
+          },
+          "cluster_scores": { "passion": -0.08, "stability": 0.34, "future": 0.02 },
+          "type_scores": { "ritual_keeper": 0.82, "easy_cozy": 0.24, "reliable_teammate": 0.30 },
+          "duo_trait_deltas": { "closeness": 0.10, "alignment": 0.16, "tension": -0.04 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich bin einfach da — präsent, entspannt, ohne Agenda.",
+            "en-US": "I'm simply there — present, relaxed, without an agenda."
+          },
+          "cluster_scores": { "passion": 0.02, "stability": 0.18, "future": 0.14 },
+          "type_scores": { "ritual_keeper": 0.16, "easy_cozy": 0.78, "reliable_teammate": 0.26 },
+          "duo_trait_deltas": { "closeness": 0.14, "alignment": 0.08, "tension": -0.02 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ich erledige Dinge, bevor sie zum Problem werden — praktische Liebe.",
+            "en-US": "I handle things before they become problems — practical love."
+          },
+          "cluster_scores": { "passion": -0.02, "stability": 0.28, "future": 0.06 },
+          "type_scores": { "ritual_keeper": 0.26, "easy_cozy": 0.18, "reliable_teammate": 0.80 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.18, "tension": -0.06 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich überrasche spontan — eine unerwartete Geste, ein Moment, eine Idee.",
+            "en-US": "I surprise spontaneously — an unexpected gesture, a moment, an idea."
+          },
+          "cluster_scores": { "passion": 0.14, "stability": -0.20, "future": 0.16 },
+          "type_scores": { "ritual_keeper": 0.08, "easy_cozy": 0.62, "reliable_teammate": 0.12 },
+          "duo_trait_deltas": { "closeness": 0.02, "alignment": -0.08, "tension": 0.08 }
+        }
+      ]
+    }
+  ],
+  "profiles": [
+    {
+      "id": "ritual_keeper",
+      "title": {
+        "de-DE": "Ritual-Hüter",
+        "en-US": "Ritual Keeper"
+      },
+      "tagline": {
+        "de-DE": "Du schaffst Heimat aus Gewohnheit — und das ist eine der schönsten Formen von Liebe.",
+        "en-US": "You create home from habit — and that is one of the most beautiful forms of love."
+      },
+      "description": {
+        "de-DE": "Du liebst gemeinsame Rituale nicht aus Sturheit, sondern weil du weißt, dass Vertrautheit trägt. Dein Partner weiß: Du bist da, du erinnerst dich, du kümmerst dich im Stillen. Für dich ist Liebe eine Praxis — jeden Tag, in kleinen Momenten, die sich zu etwas Großem summieren.",
+        "en-US": "You love shared rituals not out of stubbornness, but because you know that familiarity sustains. Your partner knows: you're there, you remember, you care quietly. For you, love is a practice — every day, in small moments that add up to something great."
+      },
+      "stats": [
+        { "label": { "de-DE": "Verlässlichkeit", "en-US": "Reliability" }, "value": 0.90 },
+        { "label": { "de-DE": "Geborgenheit", "en-US": "Security" }, "value": 0.88 },
+        { "label": { "de-DE": "Aufmerksamkeit", "en-US": "Attentiveness" }, "value": 0.82 }
+      ],
+      "allies": ["reliable_teammate"],
+      "challenge": "easy_cozy"
+    },
+    {
+      "id": "easy_cozy",
+      "title": {
+        "de-DE": "Leichte Gemütlichkeit",
+        "en-US": "Easy Cozy"
+      },
+      "tagline": {
+        "de-DE": "Du machst aus jedem Moment ein Zuhause — ohne Aufwand, einfach durch dein Sein.",
+        "en-US": "You turn every moment into a home — effortlessly, simply by being yourself."
+      },
+      "description": {
+        "de-DE": "Bei dir fühlt sich Alltag leicht an. Du bringst keine Erwartungen und keine starre Struktur mit — du bist einfach angenehm. Dein Partner entspannt sich, weil du keinen Druck ausübst. Das klingt simpel und ist doch selten: die Fähigkeit, einfach da zu sein, ohne etwas zu fordern.",
+        "en-US": "With you, everyday life feels light. You bring no expectations, no rigid structure — you're simply pleasant. Your partner relaxes because you put no pressure on them. That sounds simple and is yet rare: the ability to just be there without demanding anything."
+      },
+      "stats": [
+        { "label": { "de-DE": "Gelassenheit", "en-US": "Ease" }, "value": 0.88 },
+        { "label": { "de-DE": "Flexibilität", "en-US": "Flexibility" }, "value": 0.84 },
+        { "label": { "de-DE": "Wärme", "en-US": "Warmth" }, "value": 0.80 }
+      ],
+      "allies": ["ritual_keeper"],
+      "challenge": "reliable_teammate"
+    },
+    {
+      "id": "reliable_teammate",
+      "title": {
+        "de-DE": "Verlässlicher Teamplayer",
+        "en-US": "Reliable Teammate"
+      },
+      "tagline": {
+        "de-DE": "Du zeigst Liebe durch Taten — und dein Partner weiß, dass er sich immer auf dich verlassen kann.",
+        "en-US": "You show love through actions — and your partner knows they can always count on you."
+      },
+      "description": {
+        "de-DE": "Für dich ist Liebe etwas, das man tut. Du erledigst Dinge, du denkst voraus, du bist zuverlässig ohne Rücksicht darauf, ob es jemand sieht. Das ist keine Pflicht für dich — es ist deine Sprache. Du willst einen Partner, der das auch gibt, und du weißt: Teamwork macht Beziehungen stabil.",
+        "en-US": "For you, love is something you do. You handle things, you think ahead, you're reliable whether or not anyone notices. This isn't obligation for you — it's your language. You want a partner who gives that too, and you know: teamwork makes relationships stable."
+      },
+      "stats": [
+        { "label": { "de-DE": "Verlässlichkeit", "en-US": "Dependability" }, "value": 0.92 },
+        { "label": { "de-DE": "Pragmatismus", "en-US": "Practicality" }, "value": 0.85 },
+        { "label": { "de-DE": "Stabilität", "en-US": "Stability" }, "value": 0.88 }
+      ],
+      "allies": ["ritual_keeper"],
+      "challenge": "easy_cozy"
+    }
+  ],
+  "marker_emission": {
+    "cluster_domain_map": {
+      "passion": "love",
+      "stability": "emotion",
+      "future": "freedom"
+    },
+    "cluster_keyword_map": {
+      "passion": "passionate",
+      "stability": "anchor",
+      "future": "growth"
+    }
+  },
+  "contribution_event": {
+    "event_type": "quiz.completed",
+    "quiz_id": "partner_match_02",
+    "series_id": "partner_match_series",
+    "payload_template": {
+      "markers": ["marker.emotion.anchor", "marker.emotion.security", "marker.social.acts_of_service"],
+      "traits": ["closeness", "alignment", "tension"],
+      "tags": ["tag.series.partner_match"]
+    }
+  }
+}

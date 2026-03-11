@@ -1,0 +1,597 @@
+{
+  "schema_version": "3.0.0",
+  "engine": "quizzme-quiz-engine",
+  "output_mode": "full_v2",
+  "series": {
+    "id": "partner_match_series",
+    "title": {
+      "de-DE": "Partner Match — Welcher Partner passt zu mir?",
+      "en-US": "Partner Match — Which partner fits me?"
+    },
+    "quiz_index": 1,
+    "quiz_count": 3,
+    "theme": {
+      "de-DE": "Nicht jeder passende Mensch sieht auf den ersten Blick passend aus. Dieses Format sucht nach Resonanz, nicht nach Schubladen.",
+      "en-US": "Not every fitting person looks fitting at first glance. This format looks for resonance, not boxes."
+    }
+  },
+  "meta": {
+    "id": "partner_match_01_chemie_ausdruck",
+    "hidden_cluster": "passion",
+    "facet_label": {
+      "de-DE": "Chemie & Ausdruck",
+      "en-US": "Chemistry & Expression"
+    },
+    "axis_key": "closeness",
+    "narrator_id": "ember",
+    "tone": "playful",
+    "type_model": {
+      "types": ["spark_seeker", "soft_magnet", "playful_current"],
+      "compute": "max_type_score"
+    }
+  },
+  "disclaimer": {
+    "de-DE": "Dieser Test dient der spielerischen Selbstreflexion und stellt KEINE psychologische Diagnose dar.",
+    "en-US": "This quiz is for playful self-reflection and is NOT a psychological diagnosis."
+  },
+  "questions": [
+    {
+      "id": "q01",
+      "prompt": {
+        "de-DE": "Du triffst jemanden auf einer Party und spürst sofort eine merkwürdige Anziehung. Was passiert als nächstes?",
+        "en-US": "You meet someone at a party and immediately feel a strange pull. What happens next?"
+      },
+      "question_type": "reaktions_szenario",
+      "narrator_id": "ember",
+      "tone": "playful",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich gehe direkt hin und sage, was ich denke — klar, direkt, ohne Umwege.",
+            "en-US": "I go straight over and say what I think — clear, direct, no detours."
+          },
+          "cluster_scores": { "passion": 0.35, "stability": 0.0, "future": -0.1 },
+          "type_scores": { "spark_seeker": 0.82, "soft_magnet": 0.18, "playful_current": 0.26 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.02, "tension": 0.1 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich nähere mich langsam, höre erst zu — echte Verbindung braucht Zeit.",
+            "en-US": "I approach slowly, listen first — real connection takes time."
+          },
+          "cluster_scores": { "passion": 0.18, "stability": 0.16, "future": -0.04 },
+          "type_scores": { "spark_seeker": 0.14, "soft_magnet": 0.80, "playful_current": 0.24 },
+          "duo_trait_deltas": { "closeness": 0.18, "alignment": 0.06, "tension": -0.02 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ich fange an zu necken und zu flirten — leicht, verspielt, mit einem Augenzwinkern.",
+            "en-US": "I start teasing and flirting — light, playful, with a wink."
+          },
+          "cluster_scores": { "passion": 0.24, "stability": -0.06, "future": 0.1 },
+          "type_scores": { "spark_seeker": 0.22, "soft_magnet": 0.12, "playful_current": 0.78 },
+          "duo_trait_deltas": { "closeness": 0.06, "alignment": 0.03, "tension": 0.06 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich beobachte aus sicherer Entfernung — ich brauche erst Sicherheit, bevor ich mich öffne.",
+            "en-US": "I observe from a safe distance — I need security before opening up."
+          },
+          "cluster_scores": { "passion": -0.18, "stability": 0.22, "future": 0.08 },
+          "type_scores": { "spark_seeker": 0.08, "soft_magnet": 0.62, "playful_current": 0.18 },
+          "duo_trait_deltas": { "closeness": -0.06, "alignment": 0.08, "tension": -0.04 }
+        }
+      ]
+    },
+    {
+      "id": "q02",
+      "prompt": {
+        "de-DE": "Ein Date läuft gut. Wie zeigst du deine Zuneigung am liebsten?",
+        "en-US": "A date is going well. How do you most like to show affection?"
+      },
+      "question_type": "praeferenz",
+      "narrator_id": "ember",
+      "tone": "playful",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Körperliche Nähe — Berührungen, Blicke, der Raum zwischen uns schrumpft.",
+            "en-US": "Physical closeness — touches, eye contact, the space between us shrinks."
+          },
+          "cluster_scores": { "passion": 0.35, "stability": 0.0, "future": -0.1 },
+          "type_scores": { "spark_seeker": 0.82, "soft_magnet": 0.18, "playful_current": 0.26 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.02, "tension": 0.1 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Tiefe Aufmerksamkeit — ich merke mir Details und frage nach.",
+            "en-US": "Deep attention — I notice details and ask follow-up questions."
+          },
+          "cluster_scores": { "passion": 0.18, "stability": 0.16, "future": -0.04 },
+          "type_scores": { "spark_seeker": 0.14, "soft_magnet": 0.80, "playful_current": 0.24 },
+          "duo_trait_deltas": { "closeness": 0.18, "alignment": 0.06, "tension": -0.02 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Humor und Leichtigkeit — Lachen ist mein Weg, um zu sagen: Ich mag dich.",
+            "en-US": "Humor and lightness — laughter is my way of saying: I like you."
+          },
+          "cluster_scores": { "passion": 0.24, "stability": -0.06, "future": 0.1 },
+          "type_scores": { "spark_seeker": 0.22, "soft_magnet": 0.12, "playful_current": 0.78 },
+          "duo_trait_deltas": { "closeness": 0.06, "alignment": 0.03, "tension": 0.06 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich halte mich zurück — zu viel zu früh fühlt sich für mich falsch an.",
+            "en-US": "I hold back — too much too soon feels wrong to me."
+          },
+          "cluster_scores": { "passion": -0.18, "stability": 0.22, "future": 0.08 },
+          "type_scores": { "spark_seeker": 0.08, "soft_magnet": 0.62, "playful_current": 0.18 },
+          "duo_trait_deltas": { "closeness": -0.06, "alignment": 0.08, "tension": -0.04 }
+        }
+      ]
+    },
+    {
+      "id": "q03",
+      "prompt": {
+        "de-DE": "Welches Flirt-Tempo fühlt sich für dich am stimmigsten an?",
+        "en-US": "Which flirting pace feels most right for you?"
+      },
+      "question_type": "praeferenz",
+      "narrator_id": "ember",
+      "tone": "playful",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Sofort Feuer — wenn der Funke überspringt, dann sofort und ohne Zögern.",
+            "en-US": "Immediate fire — if the spark ignites, I want it now, no hesitation."
+          },
+          "cluster_scores": { "passion": 0.35, "stability": 0.0, "future": -0.1 },
+          "type_scores": { "spark_seeker": 0.82, "soft_magnet": 0.18, "playful_current": 0.26 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.02, "tension": 0.1 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Sanft wachsen — ich liebe das langsame Aufblühen, Schicht für Schicht.",
+            "en-US": "Softly growing — I love the slow bloom, layer by layer."
+          },
+          "cluster_scores": { "passion": 0.18, "stability": 0.16, "future": -0.04 },
+          "type_scores": { "spark_seeker": 0.14, "soft_magnet": 0.80, "playful_current": 0.24 },
+          "duo_trait_deltas": { "closeness": 0.18, "alignment": 0.06, "tension": -0.02 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Spielerisch tanzen — wir kreisen umeinander, mit Witz und Leichtigkeit.",
+            "en-US": "Playfully dancing — we circle each other with wit and lightness."
+          },
+          "cluster_scores": { "passion": 0.24, "stability": -0.06, "future": 0.1 },
+          "type_scores": { "spark_seeker": 0.22, "soft_magnet": 0.12, "playful_current": 0.78 },
+          "duo_trait_deltas": { "closeness": 0.06, "alignment": 0.03, "tension": 0.06 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Behutsam abtasten — ich brauche Zeit, um zu spüren, ob es wirklich passt.",
+            "en-US": "Carefully feeling out — I need time to sense if it really fits."
+          },
+          "cluster_scores": { "passion": -0.18, "stability": 0.22, "future": 0.08 },
+          "type_scores": { "spark_seeker": 0.08, "soft_magnet": 0.62, "playful_current": 0.18 },
+          "duo_trait_deltas": { "closeness": -0.06, "alignment": 0.08, "tension": -0.04 }
+        }
+      ]
+    },
+    {
+      "id": "q04",
+      "prompt": {
+        "de-DE": "Ihr habt euren ersten kleinen Streit. Wie löst du die Spannung am liebsten?",
+        "en-US": "You've had your first small argument. How do you most like to dissolve the tension?"
+      },
+      "question_type": "reaktions_szenario",
+      "narrator_id": "ember",
+      "tone": "playful",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Klares Gespräch, sofort — ich will es direkt ansprechen und dann loslassen.",
+            "en-US": "Clear conversation, right away — I want to address it directly and then let go."
+          },
+          "cluster_scores": { "passion": 0.35, "stability": 0.0, "future": -0.1 },
+          "type_scores": { "spark_seeker": 0.82, "soft_magnet": 0.18, "playful_current": 0.26 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.02, "tension": 0.1 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Eine Umarmung sagt mehr als Worte — ich nähere mich körperlich, um wieder weich zu werden.",
+            "en-US": "A hug says more than words — I get close physically to soften again."
+          },
+          "cluster_scores": { "passion": 0.18, "stability": 0.16, "future": -0.04 },
+          "type_scores": { "spark_seeker": 0.14, "soft_magnet": 0.80, "playful_current": 0.24 },
+          "duo_trait_deltas": { "closeness": 0.18, "alignment": 0.06, "tension": -0.02 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Einen Witz machen — Humor ist mein Ventil, um die Schwere zu nehmen.",
+            "en-US": "Make a joke — humor is my valve for releasing the heaviness."
+          },
+          "cluster_scores": { "passion": 0.24, "stability": -0.06, "future": 0.1 },
+          "type_scores": { "spark_seeker": 0.22, "soft_magnet": 0.12, "playful_current": 0.78 },
+          "duo_trait_deltas": { "closeness": 0.06, "alignment": 0.03, "tension": 0.06 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Etwas Raum lassen — ich verarbeite Dinge lieber erst für mich.",
+            "en-US": "Give each other space — I prefer to process things on my own first."
+          },
+          "cluster_scores": { "passion": -0.18, "stability": 0.22, "future": 0.08 },
+          "type_scores": { "spark_seeker": 0.08, "soft_magnet": 0.62, "playful_current": 0.18 },
+          "duo_trait_deltas": { "closeness": -0.06, "alignment": 0.08, "tension": -0.04 }
+        }
+      ]
+    },
+    {
+      "id": "q05",
+      "prompt": {
+        "de-DE": "Dein Gegenüber schreibt dir mitten im Arbeitstag eine lange Nachricht über seine Gefühle. Wie reagierst du?",
+        "en-US": "Your date texts you a long message about their feelings mid-workday. How do you respond?"
+      },
+      "question_type": "reaktions_szenario",
+      "narrator_id": "ember",
+      "tone": "playful",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich antworte sofort und direkt — ich will keine Distanz entstehen lassen.",
+            "en-US": "I reply immediately and directly — I don't want any distance to form."
+          },
+          "cluster_scores": { "passion": 0.35, "stability": 0.0, "future": -0.1 },
+          "type_scores": { "spark_seeker": 0.82, "soft_magnet": 0.18, "playful_current": 0.26 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.02, "tension": 0.1 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich nehme mir nach der Arbeit Zeit für eine echte, durchdachte Antwort.",
+            "en-US": "I take time after work for a real, thoughtful reply."
+          },
+          "cluster_scores": { "passion": 0.18, "stability": 0.16, "future": -0.04 },
+          "type_scores": { "spark_seeker": 0.14, "soft_magnet": 0.80, "playful_current": 0.24 },
+          "duo_trait_deltas": { "closeness": 0.18, "alignment": 0.06, "tension": -0.02 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ich schicke ein Emoji und einen kurzen Witz — und kündige ein richtiges Gespräch an.",
+            "en-US": "I send an emoji and a small joke — and announce a real talk later."
+          },
+          "cluster_scores": { "passion": 0.24, "stability": -0.06, "future": 0.1 },
+          "type_scores": { "spark_seeker": 0.22, "soft_magnet": 0.12, "playful_current": 0.78 },
+          "duo_trait_deltas": { "closeness": 0.06, "alignment": 0.03, "tension": 0.06 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich lese es, brauche aber Zeit, bevor ich weiß, was ich darauf sagen will.",
+            "en-US": "I read it, but need time before I know what I want to say."
+          },
+          "cluster_scores": { "passion": -0.18, "stability": 0.22, "future": 0.08 },
+          "type_scores": { "spark_seeker": 0.08, "soft_magnet": 0.62, "playful_current": 0.18 },
+          "duo_trait_deltas": { "closeness": -0.06, "alignment": 0.08, "tension": -0.04 }
+        }
+      ]
+    },
+    {
+      "id": "q06",
+      "prompt": {
+        "de-DE": "Wie stellst du dir euer erstes Treffen vor? Was soll die Energie des Abends sein?",
+        "en-US": "How do you imagine your first meeting? What should the energy of the evening be?"
+      },
+      "question_type": "praeferenz",
+      "narrator_id": "ember",
+      "tone": "playful",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Intensiv und unvergesslich — ich will spüren, ob da echte Spannung ist.",
+            "en-US": "Intense and memorable — I want to feel if there's real tension there."
+          },
+          "cluster_scores": { "passion": 0.35, "stability": 0.0, "future": -0.1 },
+          "type_scores": { "spark_seeker": 0.82, "soft_magnet": 0.18, "playful_current": 0.26 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.02, "tension": 0.1 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Warm und entspannt — ein gutes Gespräch, bei dem wir beide auftauen.",
+            "en-US": "Warm and relaxed — a good conversation where we both open up."
+          },
+          "cluster_scores": { "passion": 0.18, "stability": 0.16, "future": -0.04 },
+          "type_scores": { "spark_seeker": 0.14, "soft_magnet": 0.80, "playful_current": 0.24 },
+          "duo_trait_deltas": { "closeness": 0.18, "alignment": 0.06, "tension": -0.02 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Lebendig und lustig — wir lachen viel, es soll sich leicht und frei anfühlen.",
+            "en-US": "Lively and funny — lots of laughter, it should feel light and free."
+          },
+          "cluster_scores": { "passion": 0.24, "stability": -0.06, "future": 0.1 },
+          "type_scores": { "spark_seeker": 0.22, "soft_magnet": 0.12, "playful_current": 0.78 },
+          "duo_trait_deltas": { "closeness": 0.06, "alignment": 0.03, "tension": 0.06 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ruhig und unverbindlich — kein Druck, einfach schauen, ob wir uns wohl miteinander fühlen.",
+            "en-US": "Quiet and low-key — no pressure, just seeing if we feel comfortable together."
+          },
+          "cluster_scores": { "passion": -0.18, "stability": 0.22, "future": 0.08 },
+          "type_scores": { "spark_seeker": 0.08, "soft_magnet": 0.62, "playful_current": 0.18 },
+          "duo_trait_deltas": { "closeness": -0.06, "alignment": 0.08, "tension": -0.04 }
+        }
+      ]
+    },
+    {
+      "id": "q07",
+      "prompt": {
+        "de-DE": "Was ist dir bei gegenseitiger Anziehung wichtiger — der Funke oder das Wohlgefühl?",
+        "en-US": "What matters more to you in mutual attraction — the spark or the comfort?"
+      },
+      "question_type": "wert_frage",
+      "narrator_id": "ember",
+      "tone": "playful",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Der Funke — ohne Knistern bringt mich nichts weiter.",
+            "en-US": "The spark — without the electricity, I won't go further."
+          },
+          "cluster_scores": { "passion": 0.35, "stability": 0.0, "future": -0.1 },
+          "type_scores": { "spark_seeker": 0.82, "soft_magnet": 0.18, "playful_current": 0.26 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.02, "tension": 0.1 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Das Wohlgefühl — Vertrautheit und Wärme sind die Basis für alles andere.",
+            "en-US": "The comfort — familiarity and warmth are the foundation for everything else."
+          },
+          "cluster_scores": { "passion": 0.18, "stability": 0.16, "future": -0.04 },
+          "type_scores": { "spark_seeker": 0.14, "soft_magnet": 0.80, "playful_current": 0.24 },
+          "duo_trait_deltas": { "closeness": 0.18, "alignment": 0.06, "tension": -0.02 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Beides, aber der Funke darf auch ein Lächeln sein — Leichtigkeit zündet auch.",
+            "en-US": "Both, but the spark can be a smile — lightness ignites too."
+          },
+          "cluster_scores": { "passion": 0.24, "stability": -0.06, "future": 0.1 },
+          "type_scores": { "spark_seeker": 0.22, "soft_magnet": 0.12, "playful_current": 0.78 },
+          "duo_trait_deltas": { "closeness": 0.06, "alignment": 0.03, "tension": 0.06 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Keine Ahnung — ich muss erst Sicherheit spüren, bevor ich weiß, was ich fühle.",
+            "en-US": "Not sure — I need to feel safe first before I can even tell what I feel."
+          },
+          "cluster_scores": { "passion": -0.18, "stability": 0.22, "future": 0.08 },
+          "type_scores": { "spark_seeker": 0.08, "soft_magnet": 0.62, "playful_current": 0.18 },
+          "duo_trait_deltas": { "closeness": -0.06, "alignment": 0.08, "tension": -0.04 }
+        }
+      ]
+    },
+    {
+      "id": "q08",
+      "prompt": {
+        "de-DE": "Ihr verbringt einen ganzen Tag zusammen. Welcher Moment bleibt dir am stärksten?",
+        "en-US": "You spend a whole day together. Which moment stays with you most?"
+      },
+      "question_type": "reaktions_szenario",
+      "narrator_id": "ember",
+      "tone": "playful",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Der Moment, in dem wir uns angeschaut haben und beide wussten, dass da etwas ist.",
+            "en-US": "The moment we looked at each other and both knew something was there."
+          },
+          "cluster_scores": { "passion": 0.35, "stability": 0.0, "future": -0.1 },
+          "type_scores": { "spark_seeker": 0.82, "soft_magnet": 0.18, "playful_current": 0.26 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.02, "tension": 0.1 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Das ruhige Gespräch abends, bei dem wir uns wirklich gezeigt haben.",
+            "en-US": "The quiet evening conversation where we really showed ourselves."
+          },
+          "cluster_scores": { "passion": 0.18, "stability": 0.16, "future": -0.04 },
+          "type_scores": { "spark_seeker": 0.14, "soft_magnet": 0.80, "playful_current": 0.24 },
+          "duo_trait_deltas": { "closeness": 0.18, "alignment": 0.06, "tension": -0.02 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Das Lachen über irgendeinen dummen Witz, bei dem wir nicht mehr aufgehört haben.",
+            "en-US": "The laughing over some silly joke that we couldn't stop."
+          },
+          "cluster_scores": { "passion": 0.24, "stability": -0.06, "future": 0.1 },
+          "type_scores": { "spark_seeker": 0.22, "soft_magnet": 0.12, "playful_current": 0.78 },
+          "duo_trait_deltas": { "closeness": 0.06, "alignment": 0.03, "tension": 0.06 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Das Schweigen, das sich nicht unangenehm angefühlt hat — endlich jemand, bei dem ich atmen kann.",
+            "en-US": "The silence that didn't feel uncomfortable — finally someone I can breathe with."
+          },
+          "cluster_scores": { "passion": -0.18, "stability": 0.22, "future": 0.08 },
+          "type_scores": { "spark_seeker": 0.08, "soft_magnet": 0.62, "playful_current": 0.18 },
+          "duo_trait_deltas": { "closeness": -0.06, "alignment": 0.08, "tension": -0.04 }
+        }
+      ]
+    },
+    {
+      "id": "q09",
+      "prompt": {
+        "de-DE": "Ihr seid eine Woche getrennt. Wie gehst du mit der Sehnsucht um?",
+        "en-US": "You're apart for a week. How do you handle the longing?"
+      },
+      "question_type": "reaktions_szenario",
+      "narrator_id": "ember",
+      "tone": "playful",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich halte die Spannung bewusst hoch — die Sehnsucht treibt mich an.",
+            "en-US": "I deliberately keep the tension high — the longing drives me."
+          },
+          "cluster_scores": { "passion": 0.35, "stability": 0.0, "future": -0.1 },
+          "type_scores": { "spark_seeker": 0.82, "soft_magnet": 0.18, "playful_current": 0.26 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.02, "tension": 0.1 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich schreibe lange Nachrichten — Worte überbrücken die Distanz für mich.",
+            "en-US": "I write long messages — words bridge the distance for me."
+          },
+          "cluster_scores": { "passion": 0.18, "stability": 0.16, "future": -0.04 },
+          "type_scores": { "spark_seeker": 0.14, "soft_magnet": 0.80, "playful_current": 0.24 },
+          "duo_trait_deltas": { "closeness": 0.18, "alignment": 0.06, "tension": -0.02 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ich schicke lustige Memes und überrasche sie mit einem unerwarteten Anruf.",
+            "en-US": "I send funny memes and surprise them with an unexpected call."
+          },
+          "cluster_scores": { "passion": 0.24, "stability": -0.06, "future": 0.1 },
+          "type_scores": { "spark_seeker": 0.22, "soft_magnet": 0.12, "playful_current": 0.78 },
+          "duo_trait_deltas": { "closeness": 0.06, "alignment": 0.03, "tension": 0.06 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich gönne mir Raum für mich selbst — Sehnsucht ist schön, aber ich brauche auch Stille.",
+            "en-US": "I give myself space — longing is beautiful, but I also need stillness."
+          },
+          "cluster_scores": { "passion": -0.18, "stability": 0.22, "future": 0.08 },
+          "type_scores": { "spark_seeker": 0.08, "soft_magnet": 0.62, "playful_current": 0.18 },
+          "duo_trait_deltas": { "closeness": -0.06, "alignment": 0.08, "tension": -0.04 }
+        }
+      ]
+    }
+  ],
+  "profiles": [
+    {
+      "id": "spark_seeker",
+      "title": {
+        "de-DE": "Funken-Sucher",
+        "en-US": "Spark Seeker"
+      },
+      "tagline": {
+        "de-DE": "Du brauchst das Knistern — und das ist kein Mangel, das ist deine Sprache.",
+        "en-US": "You need the electricity — and that's not a flaw, it's your language."
+      },
+      "description": {
+        "de-DE": "Für dich beginnt Anziehung mit einem Funken, nicht mit einer Entscheidung. Du liebst Intensität, direkte Kommunikation und den Moment, in dem klar ist: Hier ist etwas. Du bist offen und mutig, wenn du etwas willst — und du weißt, dass das Feuer am Anfang nichts über die Tiefe am Ende sagt.",
+        "en-US": "For you, attraction begins with a spark, not a decision. You love intensity, direct communication, and the moment when it's clear: something is here. You're open and bold when you want something — and you know that fire at the beginning says nothing about the depth at the end."
+      },
+      "stats": [
+        { "label": { "de-DE": "Direktheit", "en-US": "Directness" }, "value": 0.88 },
+        { "label": { "de-DE": "Intensität", "en-US": "Intensity" }, "value": 0.82 },
+        { "label": { "de-DE": "Mut", "en-US": "Courage" }, "value": 0.75 }
+      ],
+      "allies": ["playful_current"],
+      "challenge": "soft_magnet"
+    },
+    {
+      "id": "soft_magnet",
+      "title": {
+        "de-DE": "Sanfter Magnet",
+        "en-US": "Soft Magnet"
+      },
+      "tagline": {
+        "de-DE": "Du ziehst an, indem du da bist — kein Lärm, keine Show, nur echte Präsenz.",
+        "en-US": "You attract by being present — no noise, no show, just real presence."
+      },
+      "description": {
+        "de-DE": "Deine Anziehungskraft kommt aus Wärme und Aufmerksamkeit, nicht aus Performance. Du schenkst echte Präsenz und wirst dafür tief gemocht. Du liebst Verbindungen, die langsam wachsen und sicherer werden — nicht weil du schüchtern bist, sondern weil du weißt, dass das Beste sich Zeit lässt.",
+        "en-US": "Your magnetism comes from warmth and attention, not performance. You give real presence and are deeply liked for it. You love connections that grow slowly and become more secure — not because you're shy, but because you know the best things take time."
+      },
+      "stats": [
+        { "label": { "de-DE": "Wärme", "en-US": "Warmth" }, "value": 0.90 },
+        { "label": { "de-DE": "Tiefe", "en-US": "Depth" }, "value": 0.85 },
+        { "label": { "de-DE": "Geduld", "en-US": "Patience" }, "value": 0.78 }
+      ],
+      "allies": ["reliable_teammate"],
+      "challenge": "spark_seeker"
+    },
+    {
+      "id": "playful_current",
+      "title": {
+        "de-DE": "Verspielter Strom",
+        "en-US": "Playful Current"
+      },
+      "tagline": {
+        "de-DE": "Du flirtest mit dem Leben selbst — und die richtigen Menschen spüren das sofort.",
+        "en-US": "You flirt with life itself — and the right people feel it immediately."
+      },
+      "description": {
+        "de-DE": "Für dich ist Flirten eine Lebenshaltung, kein Mittel zum Zweck. Du bringst Leichtigkeit in Begegnungen und schaffst damit eine besondere Energie — offen, einladend, unvorhersehbar. Du weißt: Humor kann mehr Nähe schaffen als jedes ernste Gespräch. Und du willst jemanden, der das auch versteht.",
+        "en-US": "For you, flirting is a life attitude, not a means to an end. You bring lightness to encounters and create a special energy — open, inviting, unpredictable. You know: humor can create more closeness than any serious conversation. And you want someone who understands that too."
+      },
+      "stats": [
+        { "label": { "de-DE": "Leichtigkeit", "en-US": "Lightness" }, "value": 0.88 },
+        { "label": { "de-DE": "Humor", "en-US": "Humor" }, "value": 0.85 },
+        { "label": { "de-DE": "Offenheit", "en-US": "Openness" }, "value": 0.80 }
+      ],
+      "allies": ["spark_seeker"],
+      "challenge": "soft_magnet"
+    }
+  ],
+  "marker_emission": {
+    "cluster_domain_map": {
+      "passion": "love",
+      "stability": "emotion",
+      "future": "freedom"
+    },
+    "cluster_keyword_map": {
+      "passion": "passionate",
+      "stability": "anchor",
+      "future": "growth"
+    }
+  },
+  "contribution_event": {
+    "event_type": "quiz.completed",
+    "quiz_id": "partner_match_01",
+    "series_id": "partner_match_series",
+    "payload_template": {
+      "markers": ["marker.love.passionate", "marker.love.physical_touch", "marker.creative.expression"],
+      "traits": ["closeness", "alignment", "tension"],
+      "tags": ["tag.series.partner_match"]
+    }
+  }
+}
