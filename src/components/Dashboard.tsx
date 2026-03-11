@@ -607,16 +607,23 @@ export function Dashboard({
             <div className="morning-card p-5 sm:p-7 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <ArrowUp className="text-[#3D8B37] w-5 h-5" />
+                  <span className="text-2xl leading-none select-none text-[#3D8B37]">{ascEmoji}</span>
                   <Badge text={t("dashboard.western.ascLabel")} />
                 </div>
 
-                <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
-                  {ascSignName || "—"}
-                </h3>
-                <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50 mb-4">
-                  {t("dashboard.western.ascTitle")}
-                </p>
+                <div className="flex items-start justify-between gap-4 mb-4">
+                  <div className="min-w-0">
+                    <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
+                      {ascSignName || "—"}
+                    </h3>
+                    <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50">
+                      {t("dashboard.western.ascTitle")}
+                    </p>
+                  </div>
+                  {(() => { const art = getZodiacArt(ascendantSign); return art ? (
+                    <img src={art} alt={ascSignName} className="w-24 h-24 sm:w-28 sm:h-28 object-contain shrink-0 -mt-2" loading="lazy" />
+                  ) : null; })()}
+                </div>
 
                 <p className="text-xs text-[#1E2A3A]/55 leading-relaxed">
                   {ascSignData
