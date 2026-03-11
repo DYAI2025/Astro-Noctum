@@ -133,6 +133,12 @@ const BAFE_PUBLIC_URL = stripTrailingSlash(
 
 const BAFE_INTERNAL_URL = stripTrailingSlash(process.env.BAFE_INTERNAL_URL) || null;
 
+// Railway Public Domain fallback for APP_URL
+const APP_URL = stripTrailingSlash(
+  process.env.APP_URL || 
+  (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : "https://bazodiac.com")
+);
+
 // Primary URL for logging
 const BAFE_BASE_URL = BAFE_INTERNAL_URL || BAFE_PUBLIC_URL;
 
@@ -550,8 +556,8 @@ app.post("/api/checkout", express.json(), async (req, res) => {
       customer: customerId,
       line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
       mode: "payment",
-      success_url: `${process.env.APP_URL || "https://bazodiac.com"}?upgrade=success`,
-      cancel_url: `${process.env.APP_URL || "https://bazodiac.com"}?upgrade=cancelled`,
+      success_url: `${APP_URL}?upgrade=success`,
+      cancel_url: `${APP_URL}?upgrade=cancelled`,
       metadata: { userId },
     });
     res.json({ url: session.url });
@@ -619,7 +625,7 @@ app.post("/api/share", express.json(), async (req, res) => {
   if (!profile) return res.status(404).json({ error: "No profile found" });
 
   res.json({
-    shareUrl: `${process.env.APP_URL || "https://bazodiac.com"}/share/${hash}`,
+    shareUrl: `${APP_URL}/share/${hash}`,
     hash,
     profile: {
       sun_sign: profile.sun_sign,

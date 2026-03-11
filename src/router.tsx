@@ -4,6 +4,7 @@ import { Routes, Route, Link } from 'react-router-dom';
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const FuRingPage = lazy(() => import('./pages/FuRingPage'));
 const WuXingPage = lazy(() => import('./pages/WuXingPage'));
+const FuRingPrototypePage = lazy(() => import('./pages/FuRingPrototypePage'));
 
 function PageLoader() {
   return (
@@ -32,6 +33,7 @@ export function AppRoutes() {
         <Route path="/" element={<DashboardPage />} />
         <Route path="/fu-ring" element={<FuRingPage />} />
         <Route path="/wu-xing" element={<WuXingPage />} />
+        <Route path="/fu-ring-prototype" element={<FuRingPrototypePage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
