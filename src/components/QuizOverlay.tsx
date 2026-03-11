@@ -23,6 +23,9 @@ const KinkyQuiz01 = lazy(() => import('./quizzes/Kinky/KinkyQuiz01'));
 const KinkyQuiz02 = lazy(() => import('./quizzes/Kinky/KinkyQuiz02'));
 const KinkyQuiz03 = lazy(() => import('./quizzes/Kinky/KinkyQuiz03'));
 const KinkyQuiz04 = lazy(() => import('./quizzes/Kinky/KinkyQuiz04'));
+const PartnerMatchQuiz01 = lazy(() => import('./quizzes/PartnerMatch/PartnerMatchQuiz01'));
+const PartnerMatchQuiz02 = lazy(() => import('./quizzes/PartnerMatch/PartnerMatchQuiz02'));
+const PartnerMatchQuiz03 = lazy(() => import('./quizzes/PartnerMatch/PartnerMatchQuiz03'));
 
 // --- Types ---
 interface QuizOverlayProps {
@@ -57,6 +60,9 @@ const QUIZ_MAP: Record<string, React.LazyExoticComponent<React.ComponentType<Qui
   kinky_02: KinkyQuiz02,
   kinky_03: KinkyQuiz03,
   kinky_04: KinkyQuiz04,
+  partner_match_01: PartnerMatchQuiz01,
+  partner_match_02: PartnerMatchQuiz02,
+  partner_match_03: PartnerMatchQuiz03,
 };
 
 // --- Loading fallback ---

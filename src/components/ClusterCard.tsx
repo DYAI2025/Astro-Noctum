@@ -33,6 +33,9 @@ const MODULE_TO_QUIZ_ID: Record<string, string> = {
   'quiz.kinky_02.v1': 'kinky_02',
   'quiz.kinky_03.v1': 'kinky_03',
   'quiz.kinky_04.v1': 'kinky_04',
+  'quiz.partner_match_01.v1': 'partner_match_01',
+  'quiz.partner_match_02.v1': 'partner_match_02',
+  'quiz.partner_match_03.v1': 'partner_match_03',
 };
 
 // Human-readable quiz names
@@ -56,6 +59,9 @@ const QUIZ_NAMES: Record<string, { de: string; en: string }> = {
   'quiz.kinky_02.v1': { de: 'Innerer Antrieb', en: 'Inner Drive' },
   'quiz.kinky_03.v1': { de: 'Grenzbereitschaft', en: 'Boundary Readiness' },
   'quiz.kinky_04.v1': { de: 'Identität', en: 'Identity' },
+  'quiz.partner_match_01.v1': { de: 'Chemie & Ausdruck', en: 'Chemistry & Expression' },
+  'quiz.partner_match_02.v1': { de: 'Alltag & Eigenarten', en: 'Everyday Fit & Quirks' },
+  'quiz.partner_match_03.v1': { de: 'Vorlieben & Lebensstil', en: 'Preferences & Lifestyle' },
 };
 
 export function ClusterCard({ cluster, completedModules, onStartQuiz, isPremium, lang }: ClusterCardProps) {

@@ -66,6 +66,17 @@ export const CLUSTER_REGISTRY: ClusterDef[] = [
       'quiz.kinky_04.v1',
     ],
   },
+  {
+    id: 'cluster.partner_match.v1',
+    name: 'Partner Match',
+    icon: '\u{1F49E}',
+    color: '#9B3A6A',
+    quizModuleIds: [
+      'quiz.partner_match_01.v1',
+      'quiz.partner_match_02.v1',
+      'quiz.partner_match_03.v1',
+    ],
+  },
 ];
 
 export function findClusterForModule(moduleId: string): ClusterDef | null {
