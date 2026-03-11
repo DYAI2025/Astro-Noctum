@@ -315,8 +315,8 @@ export function Splash({ onEnter, onLanguageSelect }: SplashProps) {
 
                 {/* Ephemeris image */}
                 <img
-                  src="/ephemeris.jpg"
-                  alt="Ephemeris — celestial star chart"
+                  src="/ephemeris-fused-firmament.png"
+                  alt="Fused Firmament Engine — celestial star chart"
                   className="enter-ephemeris"
                 />
 

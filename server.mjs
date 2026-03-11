@@ -93,13 +93,14 @@ app.use(helmet({
         "https://elevenlabs.io", 
         "https://unpkg.com/@elevenlabs/convai-widget-embed",
         "https://www.googletagmanager.com",
-        "https://pagead2.googlesyndication.com"
+        "https://pagead2.googlesyndication.com",
+        "https://ep1.adtrafficquality.google"
       ],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "blob:", "https:"],
-      connectSrc: ["'self'", "https://*.supabase.co", "https://generativelanguage.googleapis.com", "https://bafe-production.up.railway.app", "https://bafe.vercel.app", "https://maps.googleapis.com", "https://elevenlabs.io", "wss://elevenlabs.io"],
-      frameSrc: ["'self'", "https://elevenlabs.io", "https://checkout.stripe.com"],
+      connectSrc: ["'self'", "https://*.supabase.co", "https://generativelanguage.googleapis.com", "https://bafe-production.up.railway.app", "https://bafe.vercel.app", "https://maps.googleapis.com", "https://elevenlabs.io", "wss://elevenlabs.io", "https://*.google-analytics.com", "https://*.analytics.google.com", "https://*.googlesyndication.com", "https://pagead2.googlesyndication.com", "https://ep1.adtrafficquality.google", "https://www.googletagmanager.com"],
+      frameSrc: ["'self'", "https://elevenlabs.io", "https://checkout.stripe.com", "https://pagead2.googlesyndication.com", "https://googleads.g.doubleclick.net"],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
     },
