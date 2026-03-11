@@ -10,7 +10,7 @@ import type {
   MappedWestern,
   MappedWuxing,
   MappedPillar,
-} from '@/src/types/bafe';
+} from '../types/bafe';
 
 export interface BirthData {
   date: string; // ISO 8601 local date time e.g. 2024-02-10T14:30:00

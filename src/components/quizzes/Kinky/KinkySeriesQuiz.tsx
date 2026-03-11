@@ -1,7 +1,8 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { ContributionEvent } from '@/src/lib/lme/types';
 import { kinkySeriesQuizToEvent } from '@/src/lib/fusion-ring/quiz-to-event';
+import { useLanguage } from '@/src/contexts/LanguageContext';
 
 // JSON imports
 import quiz01 from './kinky_quiz_01_sichtbarkeit.json';
@@ -42,9 +43,11 @@ interface QuizProfile {
   compatibility: { allies: string[]; nemesis: string[] };
 }
 
+type I18nString = { 'de-DE': string; 'en-US': string };
+
 interface QuizData {
-  series: { title: { 'de-DE': string }; quiz_index: number; quiz_count: number; theme: { 'de-DE': string } };
-  meta: { facet_label: { 'de-DE': string }; axis_key: string };
+  series: { title: I18nString; quiz_index: number; quiz_count: number; theme: I18nString };
+  meta: { facet_label: I18nString; axis_key: string };
   questions: QuizQuestion[];
   profiles: QuizProfile[];
   marker_emission: {
@@ -52,10 +55,12 @@ interface QuizData {
     cluster_keyword_map: Record<string, string>;
   };
   contribution_event: { series_id: string };
-  disclaimer: { 'de-DE': string };
+  disclaimer: I18nString;
 }
 
 type Screen = 'intro' | 'quiz' | 'loading' | 'result';
+type LocaleKey = 'de-DE' | 'en-US';
+const LOCALE_KEY: Record<'de' | 'en', LocaleKey> = { de: 'de-DE', en: 'en-US' };
 
 // ═══════════════════════════════════════════════════════════════
 // QUIZ DATA REGISTRY
@@ -76,26 +81,12 @@ const SERIES_ACCENT_LIGHT = '#E85555';
 // SUB-COMPONENTS
 // ═══════════════════════════════════════════════════════════════
 
-function CloseButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="absolute top-4 right-4 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 transition-colors"
-      aria-label="Schließen"
-    >
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-        <path d="M18 6L6 18M6 6l12 12" />
-      </svg>
-    </button>
-  );
-}
-
-function ProgressBar({ current, total }: { current: number; total: number }) {
+function ProgressBar({ current, total, lk }: { current: number; total: number; lk: LocaleKey }) {
   const pct = ((current + 1) / total) * 100;
   return (
     <div className="w-full mb-8">
       <div className="flex justify-between items-center mb-2">
-        <span className="text-xs text-white/40 uppercase tracking-widest font-sans">Frage</span>
+        <span className="text-xs text-white/40 uppercase tracking-widest font-sans">{lk === 'de-DE' ? 'Frage' : 'Question'}</span>
         <span className="text-sm font-medium tabular-nums" style={{ color: SERIES_ACCENT }}>
           {current + 1} / {total}
         </span>
@@ -133,7 +124,7 @@ function SeriesDots({ quizIndex, total }: { quizIndex: number; total: number }) 
 // SCREEN: INTRO
 // ═══════════════════════════════════════════════════════════════
 
-function IntroScreen({ data, quizIndex, onStart }: { data: QuizData; quizIndex: number; onStart: () => void }) {
+function IntroScreen({ data, quizIndex, lk, onStart }: { data: QuizData; quizIndex: number; lk: LocaleKey; onStart: () => void }) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -157,19 +148,19 @@ function IntroScreen({ data, quizIndex, onStart }: { data: QuizData; quizIndex: 
 
       {/* Series title */}
       <p className="text-xs uppercase tracking-[0.15em] mb-2 font-sans" style={{ color: SERIES_ACCENT }}>
-        Quiz {quizIndex} von {data.series.quiz_count}
+        {lk === 'de-DE' ? `Quiz ${quizIndex} von ${data.series.quiz_count}` : `Quiz ${quizIndex} of ${data.series.quiz_count}`}
       </p>
 
       <h1 className="font-serif text-2xl sm:text-3xl text-white mb-2 leading-tight">
-        {data.meta.facet_label['de-DE']}
+        {data.meta.facet_label[lk]}
       </h1>
 
       <p className="text-white/40 text-xs mb-4 font-sans">
-        {data.series.title['de-DE']}
+        {data.series.title[lk]}
       </p>
 
       <p className="text-white/60 text-sm sm:text-base max-w-md mb-8 leading-relaxed">
-        {data.series.theme['de-DE']}
+        {data.series.theme[lk]}
       </p>
 
       <div className="flex gap-6 text-white/40 text-xs mb-10">
@@ -178,14 +169,14 @@ function IntroScreen({ data, quizIndex, onStart }: { data: QuizData; quizIndex: 
             <circle cx="12" cy="12" r="10" />
             <path d="M12 6v6l4 2" />
           </svg>
-          <span>2 Minuten</span>
+          <span>{lk === 'de-DE' ? '2 Minuten' : '2 Minutes'}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M9 11l3 3L22 4" />
             <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
           </svg>
-          <span>{data.questions.length} Fragen</span>
+          <span>{data.questions.length} {lk === 'de-DE' ? 'Fragen' : 'Questions'}</span>
         </div>
       </div>
 
@@ -196,7 +187,7 @@ function IntroScreen({ data, quizIndex, onStart }: { data: QuizData; quizIndex: 
         onMouseEnter={e => (e.currentTarget.style.backgroundColor = SERIES_ACCENT_LIGHT)}
         onMouseLeave={e => (e.currentTarget.style.backgroundColor = SERIES_ACCENT)}
       >
-        Beginnen
+        {lk === 'de-DE' ? 'Beginnen' : 'Start'}
       </button>
     </motion.div>
   );
@@ -210,11 +201,13 @@ function QuestionScreen({
   question,
   index,
   total,
+  lk,
   onAnswer,
 }: {
   question: QuizQuestion;
   index: number;
   total: number;
+  lk: LocaleKey;
   onAnswer: (optionIdx: number) => void;
 }) {
   const [selected, setSelected] = useState<number | null>(null);
@@ -237,10 +230,10 @@ function QuestionScreen({
       transition={{ duration: 0.35, ease: 'easeOut' }}
       className="flex flex-col px-6 py-8 min-h-full"
     >
-      <ProgressBar current={index} total={total} />
+      <ProgressBar current={index} total={total} lk={lk} />
 
       <h2 className="font-serif text-lg sm:text-xl text-white mb-8 leading-snug">
-        {question.prompt['de-DE']}
+        {question.prompt[lk]}
       </h2>
 
       <div className="flex flex-col gap-3">
@@ -275,7 +268,7 @@ function QuestionScreen({
                     </svg>
                   )}
                 </span>
-                <span className="text-sm sm:text-base leading-relaxed">{option.label['de-DE']}</span>
+                <span className="text-sm sm:text-base leading-relaxed">{option.label[lk]}</span>
               </div>
             </button>
           );
@@ -289,7 +282,7 @@ function QuestionScreen({
 // SCREEN: LOADING
 // ═══════════════════════════════════════════════════════════════
 
-function LoadingScreen({ facetLabel }: { facetLabel: string }) {
+function LoadingScreen({ facetLabel, lk }: { facetLabel: string; lk: LocaleKey }) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -311,8 +304,8 @@ function LoadingScreen({ facetLabel }: { facetLabel: string }) {
           transition={{ duration: 1.8, repeat: Infinity, ease: 'linear' }}
         />
       </div>
-      <p className="font-serif text-xl text-white mb-2">Die Flamme liest dich...</p>
-      <p className="text-sm text-white/50">Dein {facetLabel}-Profil entsteht</p>
+      <p className="font-serif text-xl text-white mb-2">{lk === 'de-DE' ? 'Die Flamme liest dich...' : 'The flame reads you...'}</p>
+      <p className="text-sm text-white/50">{lk === 'de-DE' ? `Dein ${facetLabel}-Profil entsteht` : `Your ${facetLabel} profile is forming`}</p>
     </motion.div>
   );
 }
@@ -325,11 +318,15 @@ function ResultScreen({
   profile,
   quizIndex,
   totalQuizzes,
+  lk,
+  disclaimer,
   onClose,
 }: {
   profile: QuizProfile;
   quizIndex: number;
   totalQuizzes: number;
+  lk: LocaleKey;
+  disclaimer: string;
   onClose: () => void;
 }) {
   return (
@@ -360,11 +357,11 @@ function ResultScreen({
         {/* Header */}
         <div className="text-center mb-5">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] mb-3" style={{ color: SERIES_ACCENT }}>
-            Dein Profil
+            {lk === 'de-DE' ? 'Dein Profil' : 'Your Profile'}
           </p>
-          <h2 className="font-serif text-2xl text-white mb-1">{profile.title['de-DE']}</h2>
+          <h2 className="font-serif text-2xl text-white mb-1">{profile.title[lk]}</h2>
           <p className="font-serif text-sm italic" style={{ color: `${SERIES_ACCENT}cc` }}>
-            {profile.tagline['de-DE']}
+            {profile.tagline[lk]}
           </p>
         </div>
 
@@ -373,14 +370,14 @@ function ResultScreen({
 
         {/* Description */}
         <p className="text-sm text-white/60 leading-relaxed mb-5">
-          {profile.description['de-DE']}
+          {profile.description[lk]}
         </p>
 
         {/* Stats */}
         <div className="grid grid-cols-1 gap-2 mb-5">
           {profile.stats.map((stat) => (
-            <div key={stat.label['de-DE']} className="bg-white/5 rounded-lg p-3 flex justify-between items-center">
-              <span className="text-xs text-white/50">{stat.label['de-DE']}</span>
+            <div key={stat.label[lk]} className="bg-white/5 rounded-lg p-3 flex justify-between items-center">
+              <span className="text-xs text-white/50">{stat.label[lk]}</span>
               <span className="text-sm font-medium" style={{ color: SERIES_ACCENT }}>
                 {stat.value}
               </span>
@@ -391,13 +388,13 @@ function ResultScreen({
         {/* Compatibility */}
         <div className="bg-white/5 rounded-xl p-4">
           <div className="flex justify-between items-center text-sm mb-2 pb-2 border-b border-white/10">
-            <span className="text-white/50">Verbündete</span>
+            <span className="text-white/50">{lk === 'de-DE' ? 'Verbündete' : 'Allies'}</span>
             <span className="font-medium text-emerald-400">
               {profile.compatibility.allies.join(' & ')}
             </span>
           </div>
           <div className="flex justify-between items-center text-sm">
-            <span className="text-white/50">Herausforderung</span>
+            <span className="text-white/50">{lk === 'de-DE' ? 'Herausforderung' : 'Challenge'}</span>
             <span className="font-medium text-red-400">
               {profile.compatibility.nemesis.join(' & ')}
             </span>
@@ -414,13 +411,14 @@ function ResultScreen({
           onMouseEnter={e => (e.currentTarget.style.backgroundColor = SERIES_ACCENT_LIGHT)}
           onMouseLeave={e => (e.currentTarget.style.backgroundColor = SERIES_ACCENT)}
         >
-          {quizIndex < totalQuizzes ? 'Weiter zur nächsten Facette' : 'Fertig'}
+          {quizIndex < totalQuizzes
+            ? (lk === 'de-DE' ? 'Weiter zur nächsten Facette' : 'Continue to next facet')
+            : (lk === 'de-DE' ? 'Fertig' : 'Done')}
         </button>
       </div>
 
       <p className="text-[11px] text-white/30 text-center mt-6 max-w-sm">
-        Dieser Test dient der spielerischen Selbstreflexion und stellt{' '}
-        <strong>keine</strong> psychologische Diagnose dar.
+        {disclaimer}
       </p>
     </motion.div>
   );
@@ -476,10 +474,13 @@ function computeResult(
 
 export default function KinkySeriesQuiz({ onComplete, onClose, quizIndex }: KinkySeriesQuizProps) {
   const data = useMemo(() => QUIZ_DATA[quizIndex], [quizIndex]);
+  const { lang } = useLanguage();
+  const lk = LOCALE_KEY[lang];
   const [screen, setScreen] = useState<Screen>('intro');
   const [questionIdx, setQuestionIdx] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const [resultProfile, setResultProfile] = useState<QuizProfile | null>(null);
+  const pendingEventRef = useRef<ContributionEvent | null>(null);
 
   const handleStart = useCallback(() => {
     setScreen('quiz');
@@ -502,16 +503,16 @@ export default function KinkySeriesQuiz({ onComplete, onClose, quizIndex }: Kink
     [questionIdx, answers, data.questions.length],
   );
 
+  // Compute result and transition to result screen after loading delay
   useEffect(() => {
     if (screen !== 'loading') return;
     const timer = setTimeout(() => {
       const { clusterScores, primaryType } = computeResult(data.questions, answers);
       const profile = data.profiles.find(p => p.id === primaryType) ?? data.profiles[0];
       setResultProfile(profile);
-      setScreen('result');
 
-      const isSeriesComplete = quizIndex === 4;
-      const event = kinkySeriesQuizToEvent(
+      const isSeriesComplete = quizIndex === data.series.quiz_count;
+      pendingEventRef.current = kinkySeriesQuizToEvent(
         quizIndex,
         primaryType,
         clusterScores,
@@ -519,20 +520,26 @@ export default function KinkySeriesQuiz({ onComplete, onClose, quizIndex }: Kink
         data.marker_emission.cluster_keyword_map,
         isSeriesComplete,
       );
-      onComplete(event);
+      setScreen('result');
     }, 2000);
     return () => clearTimeout(timer);
-  }, [screen, answers, data, quizIndex, onComplete]);
+  }, [screen, answers, data, quizIndex]);
+
+  // Fire onComplete only after result screen has rendered
+  useEffect(() => {
+    if (screen !== 'result' || !pendingEventRef.current) return;
+    const event = pendingEventRef.current;
+    pendingEventRef.current = null;
+    onComplete(event);
+  }, [screen, onComplete]);
 
   if (!data) return null;
 
   return (
     <div className="relative w-full h-full min-h-[500px] flex flex-col">
-      <CloseButton onClick={onClose} />
-
       <AnimatePresence mode="wait">
         {screen === 'intro' && (
-          <IntroScreen key="intro" data={data} quizIndex={quizIndex} onStart={handleStart} />
+          <IntroScreen key="intro" data={data} quizIndex={quizIndex} lk={lk} onStart={handleStart} />
         )}
 
         {screen === 'quiz' && (
@@ -541,12 +548,13 @@ export default function KinkySeriesQuiz({ onComplete, onClose, quizIndex }: Kink
             question={data.questions[questionIdx]}
             index={questionIdx}
             total={data.questions.length}
+            lk={lk}
             onAnswer={handleAnswer}
           />
         )}
 
         {screen === 'loading' && (
-          <LoadingScreen key="loading" facetLabel={data.meta.facet_label['de-DE']} />
+          <LoadingScreen key="loading" facetLabel={data.meta.facet_label[lk]} lk={lk} />
         )}
 
         {screen === 'result' && resultProfile && (
@@ -555,6 +563,8 @@ export default function KinkySeriesQuiz({ onComplete, onClose, quizIndex }: Kink
             profile={resultProfile}
             quizIndex={quizIndex}
             totalQuizzes={data.series.quiz_count}
+            lk={lk}
+            disclaimer={data.disclaimer[lk]}
             onClose={onClose}
           />
         )}

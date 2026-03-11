@@ -76,7 +76,7 @@ export function ClusterCard({ cluster, completedModules, onStartQuiz, isPremium,
           : 'none',
       }}
       animate={progress > 0 && !isComplete ? { scale: [1, 1.003, 1] } : {}}
-      transition={progress > 0 && !isComplete ? { duration: 2, repeat: Infinity, ease: 'easeInOut' } : {}}
+      transition={progress > 0 && !isComplete ? { duration: 0.6, ease: 'easeOut' } : {}}
     >
       {/* Header */}
       <button

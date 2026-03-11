@@ -96,6 +96,15 @@ export interface MappedWuxing {
   [key: string]: unknown;
 }
 
+/** Composite type for the full API response after mapping in api.ts */
+export interface ApiData {
+  bazi?: MappedBazi;
+  western?: MappedWestern;
+  wuxing?: MappedWuxing;
+  fusion?: BafeFusionResponse;
+  tst?: BafeTstResponse;
+}
+
 // RFC 9457 Problem Details — BAFE will adopt this in C2
 export interface BafeProblemDetail {
   type?: string;

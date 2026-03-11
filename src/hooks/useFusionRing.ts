@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { ContributionEvent } from '@/src/lib/lme/types';
-import type { ApiResults } from '@/src/services/api';
+import type { ApiData } from '@/src/types/bafe';
 import type { FusionRingSignal } from '@/src/lib/fusion-ring';
 import {
   westernToSectors,
@@ -15,7 +15,7 @@ import {
 import { saveContributionEvent, loadUserEvents } from '@/src/services/contribution-events';
 
 export function useFusionRing(
-  apiResults: ApiResults | null,
+  apiResults: ApiData | null,
   userId?: string,
 ) {
   const [events, setEvents] = useState<ContributionEvent[]>([]);

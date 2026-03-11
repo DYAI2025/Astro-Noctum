@@ -98,7 +98,6 @@ function makeConNameSprite(text: string): THREE.Sprite {
 // ─── Props ────────────────────────────────────────────────────────────────────
 interface BirthChartOrreryProps {
   birthDate: Date;
-  height?: string;
   planetariumMode?: boolean;
   birthConstellation?: string;
   /** Auto-start time-lapse on mount (first visit experience) */
@@ -111,7 +110,6 @@ interface BirthChartOrreryProps {
 
 export function BirthChartOrrery({
   birthDate,
-  height = '460px',
   planetariumMode = false,
   birthConstellation,
   autoPlay = false,
@@ -514,6 +512,32 @@ export function BirthChartOrrery({
     el.addEventListener('mousemove',  onMouseMove);
     el.addEventListener('wheel',      onWheel, { passive: false });
 
+    // ── Touch events (mobile) ────────────────────────────────────────────
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        isDragging.current = true;
+        lastMouse.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+    };
+    const onTouchEnd = () => { isDragging.current = false; };
+    const onTouchMove = (e: TouchEvent) => {
+      if (!isDragging.current || e.touches.length !== 1) return;
+      e.preventDefault();
+      const dx = e.touches[0].clientX - lastMouse.current.x;
+      const dy = e.touches[0].clientY - lastMouse.current.y;
+      lastMouse.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      if (viewModeRef.current === 'orrery') {
+        sphT.current.theta -= dx * 0.005;
+        sphT.current.phi = Math.max(0.1, Math.min(Math.PI - 0.1, sphT.current.phi + dy * 0.005));
+      } else if (viewModeRef.current === 'planetarium') {
+        planLook.current.azimuth  = (planLook.current.azimuth - dx * 0.20 + 360) % 360;
+        planLook.current.altitude = Math.max(-5, Math.min(88, planLook.current.altitude - dy * 0.15));
+      }
+    };
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchend',   onTouchEnd);
+    el.addEventListener('touchmove',  onTouchMove, { passive: false });
+
     // ════════════════════════════════════════════════════════════════════════
     // ANIMATION LOOP
     // ════════════════════════════════════════════════════════════════════════
@@ -803,6 +827,9 @@ export function BirthChartOrrery({
       el.removeEventListener('mouseleave', onMouseLeave);
       el.removeEventListener('mousemove',  onMouseMove);
       el.removeEventListener('wheel',      onWheel);
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchend',   onTouchEnd);
+      el.removeEventListener('touchmove',  onTouchMove);
       renderer.dispose();
       if (el.contains(renderer.domElement)) el.removeChild(renderer.domElement);
     };
@@ -898,7 +925,8 @@ export function BirthChartOrrery({
       {/* Three.js Canvas */}
       <div
         ref={containerRef}
-        style={{ width: '100%', height, cursor: planetariumMode ? 'crosshair' : 'grab' }}
+        className="w-full h-[260px] md:h-[460px]"
+        style={{ cursor: planetariumMode ? 'crosshair' : 'grab' }}
       />
     </div>
   );

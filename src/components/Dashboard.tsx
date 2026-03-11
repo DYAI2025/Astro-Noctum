@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  ArrowUp, ArrowLeft, RefreshCw, Zap, Phone, PhoneOff, Lock,
+  ArrowUp, ArrowLeft, RefreshCw, Phone, PhoneOff, Lock,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { BirthChartOrrery } from "./BirthChartOrrery";
@@ -22,7 +22,10 @@ import { LegalFooter } from "./LegalFooter";
 import { BaZiFourPillars } from "./BaZiFourPillars";
 import { BaZiInterpretation } from "./BaZiInterpretation";
 import { getStemByCharacter } from "../lib/astro-data/heavenlyStems";
-import type { BafeData } from "../services/supabase";
+import type { ApiData } from "../types/bafe";
+import type { TileTexts, HouseTexts } from "../types/interpretation";
+import { ExpandableText } from "./ExpandableText";
+import { getZodiacArt } from "../lib/astro-data/zodiacAssets";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Static data
@@ -203,7 +206,7 @@ function Badge({ text }: { text: string }) {
 
 interface DashboardProps {
   interpretation: string;
-  apiData: BafeData;
+  apiData: ApiData;
   userId: string;
   birthDate: string | null;
   onReset: () => void;
@@ -213,6 +216,8 @@ interface DashboardProps {
   onStopAudio: () => void;
   onResumeAudio: () => void;
   isFirstReading?: boolean;
+  tileTexts?: TileTexts;
+  houseTexts?: HouseTexts;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -231,6 +236,8 @@ export function Dashboard({
   onStopAudio,
   onResumeAudio,
   isFirstReading = false,
+  tileTexts,
+  houseTexts,
 }: DashboardProps) {
   const { lang, t } = useLanguage();
   const { isPremium } = usePremium();
@@ -453,7 +460,6 @@ export function Dashboard({
       <motion.div className="mb-14" {...fadeIn(0.1)}>
         <BirthChartOrrery
           birthDate={orreryDate}
-          height="460px"
           planetariumMode={planetariumMode}
           birthConstellation={birthConstellationKey}
           autoPlay={showBirthSkyWelcome}
@@ -508,22 +514,29 @@ export function Dashboard({
             <div className="morning-card p-5 sm:p-7 flex flex-col justify-between" data-special="true">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
-                  >
-                    <img src="/icons/sun-sign.png" alt="" className="w-7 h-7 opacity-80" />
-                  </motion.div>
+                  <span className="text-2xl leading-none select-none text-[#C8930A]">{sunEmoji}</span>
                   <Badge text={t("dashboard.western.sunLabel")} />
                 </div>
 
-                {/* Sign name as primary title */}
-                <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
-                  {sunSignName || "—"}
-                </h3>
-                <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50 mb-4">
-                  {t("dashboard.western.sunTitle")}
-                </p>
+                {/* Sign name + decorative illustration */}
+                <div className="flex items-start justify-between gap-4 mb-4">
+                  <div className="min-w-0">
+                    <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
+                      {sunSignName || "—"}
+                    </h3>
+                    <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50">
+                      {t("dashboard.western.sunTitle")}
+                    </p>
+                  </div>
+                  {getZodiacArt(sunSign) && (
+                    <img
+                      src={getZodiacArt(sunSign)}
+                      alt={sunSignName}
+                      className="w-24 h-24 sm:w-28 sm:h-28 object-contain shrink-0 -mt-2"
+                      loading="lazy"
+                    />
+                  )}
+                </div>
 
                 {/* Sign-specific description */}
                 <p className="text-xs text-[#1E2A3A]/55 leading-relaxed">
@@ -531,6 +544,7 @@ export function Dashboard({
                     ? sunSignData.sun[lang]
                     : t("dashboard.western.sunDesc")}
                 </p>
+                <ExpandableText text={tileTexts?.sun} />
               </div>
               <div className="flex justify-between items-center border-t border-[#8B6914]/10 pt-4 mt-5">
                 <span className="text-2xl leading-none select-none text-[#C8930A]">{sunEmoji}</span>
@@ -547,27 +561,36 @@ export function Dashboard({
             <div className="morning-card p-5 sm:p-7 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <motion.div
-                    animate={{ rotate: [-12, 12, -12] }}
-                    transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    <img src="/icons/moon-sign.png" alt="" className="w-7 h-7 opacity-80" />
-                  </motion.div>
+                  <span className="text-2xl leading-none select-none text-[#1A6BB5]">{moonEmoji}</span>
                   <Badge text={t("dashboard.western.moonLabel")} />
                 </div>
 
-                <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
-                  {moonSignName || "—"}
-                </h3>
-                <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50 mb-4">
-                  {t("dashboard.western.moonTitle")}
-                </p>
+                {/* Sign name + decorative illustration */}
+                <div className="flex items-start justify-between gap-4 mb-4">
+                  <div className="min-w-0">
+                    <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
+                      {moonSignName || "—"}
+                    </h3>
+                    <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50">
+                      {t("dashboard.western.moonTitle")}
+                    </p>
+                  </div>
+                  {getZodiacArt(moonSign) && (
+                    <img
+                      src={getZodiacArt(moonSign)}
+                      alt={moonSignName}
+                      className="w-24 h-24 sm:w-28 sm:h-28 object-contain shrink-0 -mt-2"
+                      loading="lazy"
+                    />
+                  )}
+                </div>
 
                 <p className="text-xs text-[#1E2A3A]/55 leading-relaxed">
                   {moonSignData
                     ? moonSignData.moon[lang]
                     : t("dashboard.western.moonDesc")}
                 </p>
+                <ExpandableText text={tileTexts?.moon} />
               </div>
               <div className="flex justify-between items-center border-t border-[#8B6914]/10 pt-4 mt-5">
                 <span className="text-2xl leading-none select-none text-[#1A6BB5]">{moonEmoji}</span>
@@ -584,21 +607,23 @@ export function Dashboard({
             <div className="morning-card p-5 sm:p-7 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <motion.div
-                    animate={{ scale: [1, 1.15, 1], rotate: [0, 12, -12, 0] }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    <ArrowUp className="text-[#3D8B37] w-5 h-5" />
-                  </motion.div>
+                  <span className="text-2xl leading-none select-none text-[#3D8B37]">{ascEmoji}</span>
                   <Badge text={t("dashboard.western.ascLabel")} />
                 </div>
 
-                <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
-                  {ascSignName || "—"}
-                </h3>
-                <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50 mb-4">
-                  {t("dashboard.western.ascTitle")}
-                </p>
+                <div className="flex items-start justify-between gap-4 mb-4">
+                  <div className="min-w-0">
+                    <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
+                      {ascSignName || "—"}
+                    </h3>
+                    <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50">
+                      {t("dashboard.western.ascTitle")}
+                    </p>
+                  </div>
+                  {(() => { const art = getZodiacArt(ascendantSign); return art ? (
+                    <img src={art} alt={ascSignName} className="w-24 h-24 sm:w-28 sm:h-28 object-contain shrink-0 -mt-2" loading="lazy" />
+                  ) : null; })()}
+                </div>
 
                 <p className="text-xs text-[#1E2A3A]/55 leading-relaxed">
                   {ascSignData
@@ -625,7 +650,7 @@ export function Dashboard({
             <div className="morning-card p-5 sm:p-7 flex flex-col justify-between" data-special="true">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-2xl leading-none select-none">{yearBranch?.emoji || "✨"}</span>
+                  <span className="text-4xl font-serif leading-none select-none" style={{ color: yearBranch ? '#8B6914' : undefined }}>{yearBranch?.chinese || "✨"}</span>
                   <Badge text={t("dashboard.bazi.zodiacLabel")} />
                 </div>
                 <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
@@ -641,7 +666,7 @@ export function Dashboard({
                     <img
                       src={yearCoinSrc}
                       alt={yearAnimalName}
-                      className="w-[120px] h-[120px] object-contain rounded-full"
+                      className="w-32 h-32 sm:w-40 sm:h-40 object-contain rounded-full"
                       loading="lazy"
                     />
                   </div>
@@ -651,6 +676,7 @@ export function Dashboard({
                     {yearBranch.description[lang]}
                   </p>
                 )}
+                <ExpandableText text={tileTexts?.yearAnimal} />
               </div>
               <div className="flex justify-between items-center border-t border-[#8B6914]/10 pt-4 mt-5">
                 <div className="flex items-center gap-2">
@@ -659,7 +685,7 @@ export function Dashboard({
                   )}
                   {yearBranch && (
                     <span className="text-[10px] text-[#1E2A3A]/35">
-                      {yearBranch.element} · {yearBranch.pinyin}
+                      {getWuxingName(yearBranch.element, lang)} · {yearBranch.pinyin}
                     </span>
                   )}
                 </div>
@@ -678,7 +704,7 @@ export function Dashboard({
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-2xl leading-none select-none">{dominantWuxing?.emoji || "✨"}</span>
+                  <span className="text-4xl font-serif leading-none select-none" style={{ color: dominantWuxing?.color }}>{dominantWuxing?.chinese || "✨"}</span>
                   <Badge text={t("dashboard.bazi.essenceLabel")} />
                 </div>
                 <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
@@ -692,6 +718,7 @@ export function Dashboard({
                     {dominantWuxing.description[lang]}
                   </p>
                 )}
+                <ExpandableText text={tileTexts?.dominantWuXing} />
               </div>
               <div className="flex justify-between items-center border-t border-[#8B6914]/10 pt-4 mt-5">
                 <div className="flex items-center gap-2">
@@ -714,7 +741,7 @@ export function Dashboard({
             <div className="morning-card p-5 sm:p-7 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <Zap className="text-[#8B6914] w-5 h-5 shrink-0" />
+                  <span className="text-4xl font-serif leading-none select-none text-[#D4AF37]">{dayMaster}</span>
                   <Badge text={t("dashboard.bazi.vitalityLabel")} />
                 </div>
                 <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
@@ -730,6 +757,7 @@ export function Dashboard({
                     ? dayMasterStem.dayMaster[lang]
                     : t("dashboard.bazi.dayMasterDesc")}
                 </p>
+                <ExpandableText text={tileTexts?.dayMaster} />
               </div>
               <div className="flex justify-between items-center border-t border-[#8B6914]/10 pt-4 mt-5">
                 <div className="flex items-center gap-2">
@@ -899,8 +927,9 @@ export function Dashboard({
               // FR-07: Localised sign name
               const signDisplay = sign ? getSignName(sign, lang) : "—";
 
-              return (
-                <div key={houseKey} className="morning-card p-4 sm:p-5 overflow-hidden">
+              const houseText = num !== null ? houseTexts?.[String(num)] : undefined;
+              const cardContent = (
+                <>
                   {/* House number + name */}
                   <div className="flex items-baseline gap-1.5 sm:gap-2 mb-2 sm:mb-3 min-w-0">
                     <span className="font-serif text-base text-[#8B6914] font-medium leading-none shrink-0">
@@ -927,6 +956,18 @@ export function Dashboard({
                         : `${signDisplay} shapes your house of ${meaning.name.en}.`}
                     </p>
                   )}
+                </>
+              );
+
+              return houseText ? (
+                <Tooltip key={houseKey} content={houseText} wide>
+                  <div className="morning-card p-4 sm:p-5 overflow-hidden cursor-help">
+                    {cardContent}
+                  </div>
+                </Tooltip>
+              ) : (
+                <div key={houseKey} className="morning-card p-4 sm:p-5 overflow-hidden">
+                  {cardContent}
                 </div>
               );
             })}
@@ -983,7 +1024,8 @@ export function Dashboard({
         </div>
 
         {/* Levi — 1/3 width — visible teaser, interaction gated */}
-        <div ref={leviSectionRef} className="morning-card p-5 sm:p-7 flex flex-col gap-5 sm:gap-6">
+        {/* morning-card with backdrop-filter disabled: blur() + border-radius creates a clipping stacking context that hides the ElevenLabs popup */}
+        <div ref={leviSectionRef} className="morning-card p-5 sm:p-7 flex flex-col gap-5 sm:gap-6" style={{ backdropFilter: 'none', WebkitBackdropFilter: 'none', overflow: 'visible' }}>
           <div className="flex items-start gap-4">
             <div className="relative mt-1.5 shrink-0">
               <div className={`w-2 h-2 rounded-full breathing ${
@@ -1020,11 +1062,11 @@ export function Dashboard({
               <AnimatePresence>
                 {leviActive && (
                   <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
                     transition={{ duration: 0.4, ease: "easeOut" }}
-                    className="relative z-20 w-full flex justify-center overflow-hidden"
+                    className="relative z-[9999] w-full flex justify-center"
                   >
                     {/* @ts-ignore */}
                     <elevenlabs-convai

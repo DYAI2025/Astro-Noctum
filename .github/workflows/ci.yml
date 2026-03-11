@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'features/**'
+      - 'media/**'
+      - '*.md'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - 'features/**'
+      - 'media/**'
+      - '*.md'
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: TypeScript check (src/ only)
+        run: |
+          npx tsc --noEmit 2>&1 | tee /tmp/tsc-output.txt || true
+          if grep -q "^src/" /tmp/tsc-output.txt; then
+            echo "::error::TypeScript errors in src/"
+            grep "^src/" /tmp/tsc-output.txt
+            exit 1
+          fi
+          echo "No TypeScript errors in src/"
+
+  build:
+    name: Build
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Production build
+        run: npm run build
+        env:
+          # Dummy values so Vite doesn't fail on missing env vars
+          VITE_SUPABASE_URL: https://placeholder.supabase.co
+          VITE_SUPABASE_ANON_KEY: placeholder
+          VITE_GEMINI_API_KEY: placeholder
+          VITE_BAFE_BASE_URL: https://bafe.vercel.app
+
+      - name: Check bundle sizes
+        run: |
+          MAIN_SIZE=$(stat -c%s dist/assets/index-*.js 2>/dev/null || stat -f%z dist/assets/index-*.js)
+          MAIN_KB=$((MAIN_SIZE / 1024))
+          echo "Main bundle: ${MAIN_KB} KB"
+          if [ "$MAIN_KB" -gt 800 ]; then
+            echo "::warning::Main bundle is ${MAIN_KB} KB (>800 KB threshold)"
+          fi
+
+      - name: Verify dist structure
+        run: |
+          test -f dist/index.html || (echo "Missing index.html" && exit 1)
+          ls dist/assets/*.js | head -5
+          echo "Build artifacts verified"

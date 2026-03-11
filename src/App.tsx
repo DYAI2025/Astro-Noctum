@@ -14,6 +14,8 @@ import {
   insertNatalChart,
   fetchAstroProfile,
 } from "./services/supabase";
+import type { ApiData } from "./types/bafe";
+import type { TileTexts, HouseTexts } from "./types/interpretation";
 import { useAmbientePlayer } from "./hooks/useAmbientePlayer";
 import { trackEvent } from "./lib/analytics";
 import { usePlanetarium } from "./contexts/PlanetariumContext";
@@ -41,9 +43,11 @@ export default function App() {
 
   // Profile state machine
   const [profileState, setProfileState] = useState<ProfileState>("idle");
-  const [apiData, setApiData] = useState<any>(null);
+  const [apiData, setApiData] = useState<ApiData | null>(null);
   const [apiIssues, setApiIssues] = useState<ApiIssue[]>([]);
   const [interpretation, setInterpretation] = useState<string | null>(null);
+  const [tileTexts, setTileTexts] = useState<TileTexts>({});
+  const [houseTexts, setHouseTexts] = useState<HouseTexts>({});
   const [error, setError] = useState<string | null>(null);
   const [birthDateStr, setBirthDateStr] = useState<string | null>(null);
   const [isFirstReading, setIsFirstReading] = useState(false);
@@ -70,6 +74,8 @@ export default function App() {
       setProfileState("idle");
       setApiData(null);
       setInterpretation(null);
+      setTileTexts({});
+      setHouseTexts({});
       setBirthDateStr(null);
       setApiIssues([]);
       setError(null);
@@ -97,7 +103,7 @@ export default function App() {
           const wuxing  = json.wuxing  ?? json.bafe?.wuxing;
           const tst     = json.tst     ?? json.bafe?.tst;
 
-          setApiData({ bazi, western, fusion, wuxing, tst, issues: [] });
+          setApiData({ bazi, western, fusion, wuxing, tst });
 
           // Retrieve stored interpretation
           let storedInterpretation =
@@ -107,10 +113,13 @@ export default function App() {
           // generate it now so the Dashboard can show.
           if (!storedInterpretation) {
             try {
-              storedInterpretation = await generateInterpretation(
+              const aiResult = await generateInterpretation(
                 { bazi, western, fusion, wuxing, tst },
                 lang,
               );
+              storedInterpretation = aiResult.interpretation;
+              setTileTexts(aiResult.tiles || {});
+              setHouseTexts(aiResult.houses || {});
             } catch {
               storedInterpretation =
                 lang === "de"
@@ -157,14 +166,16 @@ export default function App() {
       setApiIssues(results.issues);
       setBirthDateStr(data.date);
 
-      const aiInterpretation = await generateInterpretation(results, lang);
-      setInterpretation(aiInterpretation);
+      const aiResult = await generateInterpretation(results, lang);
+      setInterpretation(aiResult.interpretation);
+      setTileTexts(aiResult.tiles || {});
+      setHouseTexts(aiResult.houses || {});
       trackEvent('reading_completed');
 
       // Persist to Supabase (all three functions check for duplicates internally)
       try {
         await Promise.all([
-          upsertAstroProfile(user.id, data, results, aiInterpretation),
+          upsertAstroProfile(user.id, data, results, aiResult.interpretation),
           insertBirthData(user.id, data),
           insertNatalChart(user.id, results),
         ]);
@@ -192,8 +203,10 @@ export default function App() {
     setIsLoading(true);
     setError(null);
     try {
-      const aiInterpretation = await generateInterpretation(apiData, lang);
-      setInterpretation(aiInterpretation);
+      const aiResult = await generateInterpretation(apiData, lang);
+      setInterpretation(aiResult.interpretation);
+      setTileTexts(aiResult.tiles || {});
+      setHouseTexts(aiResult.houses || {});
     } catch (err: unknown) {
       console.error("AI Generation Error:", err);
       const msg = err instanceof Error ? err.message : "";
@@ -209,6 +222,8 @@ export default function App() {
     if (profileState === "found") return; // immutable
     setApiData(null);
     setInterpretation(null);
+    setTileTexts({});
+    setHouseTexts({});
     setError(null);
     setApiIssues([]);
   };
@@ -299,6 +314,8 @@ export default function App() {
       <FusionRingProvider apiResults={apiData} userId={user.id}>
         <AppLayoutProvider value={{
           interpretation: interpretation!,
+          tileTexts,
+          houseTexts,
           apiData,
           userId: user.id,
           birthDate: birthDateStr,
@@ -454,7 +471,7 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
       </header>
 
       {/* ── Main content (routed) ──────────────────────────────────────── */}
-      <main className="flex-grow pt-24 md:pt-32 pb-24 md:pb-20 relative z-10 container mx-auto px-4 flex flex-col items-center justify-center">
+      <main className="flex-grow pt-6 md:pt-32 pb-24 md:pb-20 relative z-10 container mx-auto px-4 flex flex-col items-center justify-center">
         {error && (
           <div className="w-full max-w-md mb-8 bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded-xl text-sm text-center">
             {error}

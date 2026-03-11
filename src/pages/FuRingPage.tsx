@@ -156,7 +156,6 @@ export default function FuRingPage() {
         quizId={activeQuiz}
         onComplete={(event) => {
           addQuizResult(event);
-          setActiveQuiz(null);
         }}
         onClose={() => setActiveQuiz(null)}
       />
