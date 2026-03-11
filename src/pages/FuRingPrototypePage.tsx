@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import OptimizedFuRing from '../components/OptimizedFuRing';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Zap, Activity, Waves, Wind } from 'lucide-react';
+
+type RingMode = 'normal' | 'divergence' | 'equilibrium' | 'transit';
 
 export default function FuRingPrototypePage() {
   const [signals, setSignals] = useState([0.8, 0.2, 0.5, 0.1, 0.9, 0.3, 0.4, 0.7, 0.6, 0.2, 0.1, 0.5]);
+  const [mode, setMode] = useState<RingMode>('normal');
   const [fps, setFps] = useState(0);
 
   // FPS Counter
@@ -12,7 +15,6 @@ export default function FuRingPrototypePage() {
     let lastTime = performance.now();
     let frames = 0;
     let raf: number;
-
     const loop = () => {
       frames++;
       const now = performance.now();
@@ -32,78 +34,110 @@ export default function FuRingPrototypePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#020509] text-white font-sans p-8">
-      <header className="max-w-4xl mx-auto flex items-center justify-between mb-12">
+    <div className="min-h-screen bg-[#020509] text-white font-sans p-8 selection:bg-[#D4AF37]/30">
+      <header className="max-w-6xl mx-auto flex items-center justify-between mb-12">
         <Link to="/fu-ring" className="flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors">
           <ArrowLeft className="w-4 h-4" />
           Back to Fu-Ring
         </Link>
         <div className="text-right">
-          <h1 className="text-xl font-serif text-[#D4AF37]">Optimized Fu-Ring Prototype</h1>
-          <p className="text-[10px] uppercase tracking-widest text-white/30">Shader-Based WebGL Rendering</p>
+          <h1 className="text-xl font-serif text-[#D4AF37]">Advanced Fu-Ring Anatomie</h1>
+          <p className="text-[10px] uppercase tracking-widest text-white/30">Three.js Multi-Layer Shader Engine</p>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-        <div className="flex flex-col items-center gap-6">
+      <main className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+        
+        {/* Left: Visualization */}
+        <div className="lg:col-span-7 flex flex-col items-center gap-8">
           <div className="relative group">
-            <div className="absolute -inset-20 bg-blue-500/5 rounded-full blur-3xl group-hover:bg-blue-500/10 transition-colors" />
-            <OptimizedFuRing signals={signals} size={400} />
-            <div className="absolute top-0 right-0 bg-black/60 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full text-[10px] font-mono text-green-400">
+            {/* Glow Aura */}
+            <div className={`absolute -inset-24 rounded-full blur-[100px] transition-all duration-1000 opacity-20 ${
+              mode === 'divergence' ? 'bg-red-500' : 
+              mode === 'equilibrium' ? 'bg-blue-400' : 
+              mode === 'transit' ? 'bg-emerald-400' : 'bg-[#D4AF37]'
+            }`} />
+            
+            <div className="relative z-10 bg-black/40 rounded-full p-4 backdrop-blur-xl border border-white/5 shadow-2xl">
+              <OptimizedFuRing signals={signals} size={500} mode={mode} />
+            </div>
+
+            {/* Floating Stats */}
+            <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full text-[10px] font-mono text-green-400 z-20">
               {fps} FPS
             </div>
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-md border border-white/10 px-4 py-1.5 rounded-full text-[10px] uppercase tracking-widest text-[#D4AF37] z-20">
+              Current Mode: {mode}
+            </div>
           </div>
-          
-          <button 
-            onClick={randomize}
-            className="flex items-center gap-2 px-6 py-2 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-full text-[#D4AF37] hover:bg-[#D4AF37]/20 transition-all text-sm uppercase tracking-widest"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Randomize Data
-          </button>
+
+          <div className="flex flex-wrap justify-center gap-4">
+            <button onClick={randomize} className="flex items-center gap-2 px-6 py-2 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all text-[10px] uppercase tracking-widest">
+              <RefreshCw className="w-3 h-3" /> Randomize Data
+            </button>
+          </div>
         </div>
 
-        <div className="space-y-8 bg-white/5 p-8 rounded-3xl border border-white/10 backdrop-blur-sm">
-          <div>
-            <h2 className="text-sm uppercase tracking-[0.2em] text-white/60 mb-4 font-semibold">Technical Advantages</h2>
-            <ul className="space-y-4 text-xs leading-relaxed text-white/40">
-              <li className="flex gap-3">
-                <span className="text-[#D4AF37]">✦</span>
-                <span><strong>Hardware Acceleration:</strong> Uses WebGL fragment shaders to calculate every pixel in parallel on the GPU.</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="text-[#D4AF37]">✦</span>
-                <span><strong>No CPU Loops:</strong> Replaces the 720-step Canvas loop with a single draw call.</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="text-[#D4AF37]">✦</span>
-                <span><strong>Mobile-First:</strong> Low memory footprint and efficient battery usage due to optimized shader code.</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="text-[#D4AF37]">✦</span>
-                <span><strong>Real-time Bloom:</strong> High-quality glow effect using UnrealBloomPass, independent of drawing complexity.</span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="pt-6 border-t border-white/10">
-            <h2 className="text-sm uppercase tracking-[0.2em] text-white/60 mb-4 font-semibold">Current Signal (12 Sectors)</h2>
-            <div className="grid grid-cols-6 gap-2">
-              {signals.map((s, i) => (
-                <div key={i} className="flex flex-col items-center">
-                  <div className="w-full h-12 bg-white/5 rounded-lg relative overflow-hidden">
-                    <div 
-                      className="absolute bottom-0 w-full transition-all duration-500" 
-                      style={{ 
-                        height: `${s * 100}%`, 
-                        backgroundColor: SECTOR_COLORS_HEX[i],
-                        opacity: 0.6
-                      }} 
-                    />
+        {/* Right: Controls & Info */}
+        <div className="lg:col-span-5 space-y-6">
+          <div className="bg-white/5 p-8 rounded-3xl border border-white/10 backdrop-blur-md space-y-8">
+            <div>
+              <h2 className="text-xs uppercase tracking-[0.25em] text-white/40 mb-6 font-bold">Trigger Anatomical States</h2>
+              <div className="grid grid-cols-2 gap-3">
+                <button 
+                  onClick={() => setMode('normal')}
+                  className={`flex items-center gap-3 px-4 py-4 rounded-2xl border transition-all text-left ${mode === 'normal' ? 'bg-[#D4AF37]/20 border-[#D4AF37]/50 text-[#D4AF37]' : 'bg-white/5 border-white/5 hover:border-white/20'}`}
+                >
+                  <Activity className="w-5 h-5" />
+                  <div>
+                    <div className="text-[11px] font-bold uppercase tracking-wider">Soulprint</div>
+                    <div className="text-[9px] opacity-50">Standard State</div>
                   </div>
-                  <span className="text-[8px] mt-1 font-mono opacity-30">{Math.round(s * 100)}%</span>
-                </div>
-              ))}
+                </button>
+
+                <button 
+                  onClick={() => setMode('divergence')}
+                  className={`flex items-center gap-3 px-4 py-4 rounded-2xl border transition-all text-left ${mode === 'divergence' ? 'bg-red-500/20 border-red-500/50 text-red-400' : 'bg-white/5 border-white/5 hover:border-white/20'}`}
+                >
+                  <Zap className="w-5 h-5" />
+                  <div>
+                    <div className="text-[11px] font-bold uppercase tracking-wider">Divergence</div>
+                    <div className="text-[9px] opacity-50">Crystalline Spikes</div>
+                  </div>
+                </button>
+
+                <button 
+                  onClick={() => setMode('equilibrium')}
+                  className={`flex items-center gap-3 px-4 py-4 rounded-2xl border transition-all text-left ${mode === 'equilibrium' ? 'bg-blue-500/20 border-blue-500/50 text-blue-400' : 'bg-white/5 border-white/5 hover:border-white/20'}`}
+                >
+                  <Waves className="w-5 h-5" />
+                  <div>
+                    <div className="text-[11px] font-bold uppercase tracking-wider">Equilibrium</div>
+                    <div className="text-[9px] opacity-50">30d Mean Line</div>
+                  </div>
+                </button>
+
+                <button 
+                  onClick={() => setMode('transit')}
+                  className={`flex items-center gap-3 px-4 py-4 rounded-2xl border transition-all text-left ${mode === 'transit' ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400' : 'bg-white/5 border-white/5 hover:border-white/20'}`}
+                >
+                  <Wind className="w-5 h-5" />
+                  <div>
+                    <div className="text-[11px] font-bold uppercase tracking-wider">Transit Flow</div>
+                    <div className="text-[9px] opacity-50">Noise & Color</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <div className="pt-6 border-t border-white/10 space-y-4">
+              <h2 className="text-[10px] uppercase tracking-[0.2em] text-[#D4AF37] font-bold">Anatomical Components</h2>
+              <ul className="space-y-3 text-[10px] leading-relaxed text-white/40">
+                <li className="flex gap-3"><span className="text-[#D4AF37]">01</span> <span><strong>Eroded Base:</strong> Dynamic noise-distorted edge (Layer 1).</span></li>
+                <li className="flex gap-3"><span className="text-[#D4AF37]">02</span> <span><strong>Korona:</strong> Pulsing particle strands at signal peaks (Layer 3).</span></li>
+                <li className="flex gap-3"><span className="text-[#D4AF37]">03</span> <span><strong>Spike Mechanics:</strong> High-frequency eruptions triggered by transits (Layer 4).</span></li>
+                <li className="flex gap-3"><span className="text-[#D4AF37]">04</span> <span><strong>Equilibrium:</strong> The dashed reference line for energy variance (Layer 5).</span></li>
+              </ul>
             </div>
           </div>
         </div>
@@ -111,8 +145,3 @@ export default function FuRingPrototypePage() {
     </div>
   );
 }
-
-const SECTOR_COLORS_HEX = [
-  '#E63946', '#C9A227', '#E9C46A', '#A8DADC', '#F4A261', '#6B9080',
-  '#D4A5A5', '#9B2335', '#7B2D8E', '#2B2D42', '#00B4D8', '#48BFE3'
-];
