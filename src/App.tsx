@@ -15,6 +15,7 @@ import {
   fetchAstroProfile,
 } from "./services/supabase";
 import type { ApiData } from "./types/bafe";
+import type { TileTexts, HouseTexts } from "./types/interpretation";
 import { useAmbientePlayer } from "./hooks/useAmbientePlayer";
 import { trackEvent } from "./lib/analytics";
 import { usePlanetarium } from "./contexts/PlanetariumContext";
@@ -45,6 +46,8 @@ export default function App() {
   const [apiData, setApiData] = useState<ApiData | null>(null);
   const [apiIssues, setApiIssues] = useState<ApiIssue[]>([]);
   const [interpretation, setInterpretation] = useState<string | null>(null);
+  const [tileTexts, setTileTexts] = useState<TileTexts>({});
+  const [houseTexts, setHouseTexts] = useState<HouseTexts>({});
   const [error, setError] = useState<string | null>(null);
   const [birthDateStr, setBirthDateStr] = useState<string | null>(null);
   const [isFirstReading, setIsFirstReading] = useState(false);
@@ -71,6 +74,8 @@ export default function App() {
       setProfileState("idle");
       setApiData(null);
       setInterpretation(null);
+      setTileTexts({});
+      setHouseTexts({});
       setBirthDateStr(null);
       setApiIssues([]);
       setError(null);
@@ -108,10 +113,13 @@ export default function App() {
           // generate it now so the Dashboard can show.
           if (!storedInterpretation) {
             try {
-              storedInterpretation = await generateInterpretation(
+              const aiResult = await generateInterpretation(
                 { bazi, western, fusion, wuxing, tst },
                 lang,
               );
+              storedInterpretation = aiResult.interpretation;
+              setTileTexts(aiResult.tiles || {});
+              setHouseTexts(aiResult.houses || {});
             } catch {
               storedInterpretation =
                 lang === "de"
@@ -158,14 +166,16 @@ export default function App() {
       setApiIssues(results.issues);
       setBirthDateStr(data.date);
 
-      const aiInterpretation = await generateInterpretation(results, lang);
-      setInterpretation(aiInterpretation);
+      const aiResult = await generateInterpretation(results, lang);
+      setInterpretation(aiResult.interpretation);
+      setTileTexts(aiResult.tiles || {});
+      setHouseTexts(aiResult.houses || {});
       trackEvent('reading_completed');
 
       // Persist to Supabase (all three functions check for duplicates internally)
       try {
         await Promise.all([
-          upsertAstroProfile(user.id, data, results, aiInterpretation),
+          upsertAstroProfile(user.id, data, results, aiResult.interpretation),
           insertBirthData(user.id, data),
           insertNatalChart(user.id, results),
         ]);
@@ -193,8 +203,10 @@ export default function App() {
     setIsLoading(true);
     setError(null);
     try {
-      const aiInterpretation = await generateInterpretation(apiData, lang);
-      setInterpretation(aiInterpretation);
+      const aiResult = await generateInterpretation(apiData, lang);
+      setInterpretation(aiResult.interpretation);
+      setTileTexts(aiResult.tiles || {});
+      setHouseTexts(aiResult.houses || {});
     } catch (err: unknown) {
       console.error("AI Generation Error:", err);
       const msg = err instanceof Error ? err.message : "";
@@ -210,6 +222,8 @@ export default function App() {
     if (profileState === "found") return; // immutable
     setApiData(null);
     setInterpretation(null);
+    setTileTexts({});
+    setHouseTexts({});
     setError(null);
     setApiIssues([]);
   };
@@ -300,6 +314,8 @@ export default function App() {
       <FusionRingProvider apiResults={apiData} userId={user.id}>
         <AppLayoutProvider value={{
           interpretation: interpretation!,
+          tileTexts,
+          houseTexts,
           apiData,
           userId: user.id,
           birthDate: birthDateStr,

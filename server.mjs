@@ -35,27 +35,48 @@ const geminiClient = process.env.GEMINI_API_KEY
   : null;
 
 function buildGeminiPrompt(data, lang) {
+  const l = lang === 'de' ? 'German' : 'English';
+  const you = lang === 'de' ? 'du' : 'you';
   return `
 You are Bazodiac's fusion astrologer — the ONLY system that synthesizes Western astrology, Chinese BaZi, and Wu-Xing Five Elements into one unified reading.
 
 BIRTH DATA (JSON):
 ${JSON.stringify(data, null, 2)}
 
-TASK: Write a deeply personal ${lang === 'de' ? 'German' : 'English'} horoscope interpretation (400–500 words, 5 paragraphs, Markdown, no bullet points). Address the reader as "${lang === 'de' ? 'du' : 'you'}".
+TASK: Generate a deeply personal ${l} horoscope. Address the reader as "${you}". Respond with VALID JSON only — no markdown fences, no commentary outside the JSON.
 
-STRUCTURE — each paragraph MUST cross-reference at least two systems:
+OUTPUT FORMAT (strict JSON):
+{
+  "interpretation": "5 paragraphs, 400-500 words, Markdown formatted. Structure: 1) Cosmic Identity (Sun sign + Day Master), 2) Emotional Depths (Moon + BaZi pillars + dominant element), 3) Fusion Revelation (unique Western+BaZi+WuXing intersection), 4) WuXing Balance (element strengths/weaknesses + Ascendant + life recommendation), 5) Path Forward (synthesis + closing).",
+  "tiles": {
+    "sun": "2-3 sentences about this specific Sun sign personality in context of the full chart. Reference element and ruling planet.",
+    "moon": "2-3 sentences about this specific Moon sign emotional nature in context of the full chart.",
+    "yearAnimal": "2-3 sentences about the specific BaZi year animal + element combination and what it reveals about character.",
+    "dominantWuXing": "2-3 sentences about the dominant Wu-Xing element and how it shapes this person's energy.",
+    "dayMaster": "2-3 sentences about the Heavenly Stem Day Master and what it says about core vitality."
+  },
+  "houses": {
+    "1": "2-3 sentences: what this specific zodiac sign in the 1st house means for this person's self-image and appearance.",
+    "2": "2-3 sentences: what this sign in the 2nd house means for values and finances.",
+    "3": "2-3 sentences: what this sign in the 3rd house means for communication.",
+    "4": "2-3 sentences: what this sign in the 4th house means for home and roots.",
+    "5": "2-3 sentences: what this sign in the 5th house means for creativity and romance.",
+    "6": "2-3 sentences: what this sign in the 6th house means for health and daily routines.",
+    "7": "2-3 sentences: what this sign in the 7th house means for partnerships.",
+    "8": "2-3 sentences: what this sign in the 8th house means for transformation.",
+    "9": "2-3 sentences: what this sign in the 9th house means for philosophy and travel.",
+    "10": "2-3 sentences: what this sign in the 10th house means for career and public image.",
+    "11": "2-3 sentences: what this sign in the 11th house means for friendships and ideals.",
+    "12": "2-3 sentences: what this sign in the 12th house means for the subconscious and spirituality."
+  }
+}
 
-1. **Your Cosmic Identity**: Start with the Western Sun sign and immediately bridge to the BaZi Day Master. What does THIS specific combination reveal that neither system alone can show?
-
-2. **Emotional Depths**: Connect Moon sign with the BaZi pillars' emotional patterns. How does Wu-Xing's dominant element color these emotional currents?
-
-3. **The Fusion Revelation**: This is the core. Use the fusion data to reveal the UNIQUE intersection — the pattern that emerges ONLY when Western + BaZi + Wu-Xing are layered together. This is what no other app can show. Make this paragraph feel like a discovery.
-
-4. **Wu-Xing Balance**: Which elements are strong, which are weak? How does this elemental map interact with the Western Ascendant? Give one concrete life recommendation based on elemental balance.
-
-5. **Your Path Forward**: Synthesize all three systems into a forward-looking invitation. End with a sentence that makes the reader feel truly seen.
-
-TONE: Warm, precise, mystical but grounded. Never generic. Every sentence must feel like it was written for THIS specific birth chart.
+RULES:
+- Every text MUST reference specific data from the birth chart — never generic
+- If house data is missing or empty, omit the "houses" key entirely
+- Language: ALL text in ${l}
+- Do NOT hallucinate data not present in the birth chart
+- TONE: Warm, precise, mystical but grounded. Every sentence for THIS chart only.
 `.trim();
 }
 
@@ -638,9 +659,20 @@ app.post("/api/interpret", express.json({ limit: "50kb" }), async (req, res) => 
       }),
     ]);
     clearTimeout(timeout);
-    const text = response.text?.trim();
-    if (!text) return res.status(502).json({ error: "Empty response from AI" });
-    res.json({ text });
+    const raw = response.text?.trim();
+    if (!raw) return res.status(502).json({ error: "Empty response from AI" });
+
+    // Try to parse as structured JSON
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed.interpretation) {
+        return res.json(parsed);
+      }
+    } catch {
+      // Gemini returned plain text — fall back to legacy format
+    }
+    // Legacy fallback: return as plain text
+    res.json({ text: raw });
   } catch (err) {
     console.warn("[interpret] Gemini failed:", err?.message ?? String(err));
     res.status(502).json({ error: "AI interpretation failed" });

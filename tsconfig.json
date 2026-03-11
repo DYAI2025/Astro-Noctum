@@ -24,10 +24,19 @@
     "noEmit": true,
     "strict": false
   },
+  "include": ["src"],
   "exclude": [
     "node_modules",
     "features",
+    "docs",
+    "dist",
+    "public",
+    "media",
+    "landing",
     "vitest.config.ts",
+    "vite.config.ts",
+    "tailwind.config.js",
+    "postcss.config.js",
     "src/test-setup.*",
     "src/__tests__/**/*"
   ]
