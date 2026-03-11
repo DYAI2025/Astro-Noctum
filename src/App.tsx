@@ -106,31 +106,41 @@ export default function App() {
           setApiData({ bazi, western, fusion, wuxing, tst });
 
           // Retrieve stored interpretation
-          let storedInterpretation =
+          const storedInterpretation =
             json.interpretation ?? json.bafe?.interpretation ?? null;
 
           // If interpretation is missing (e.g. Gemini was down when profile was created),
           // generate it now so the Dashboard can show.
           if (!storedInterpretation) {
+            let regenerated: string;
             try {
               const aiResult = await generateInterpretation(
                 { bazi, western, fusion, wuxing, tst },
                 lang,
               );
-              storedInterpretation = aiResult.interpretation;
+              regenerated = aiResult.interpretation;
               setTileTexts(aiResult.tiles || {});
               setHouseTexts(aiResult.houses || {});
             } catch {
-              storedInterpretation =
+              regenerated =
                 lang === "de"
                   ? "Dein kosmisches Profil wird geladen…"
                   : "Loading your cosmic profile…";
+              // tiles/houses remain empty — catch path has no AI result
             }
+            setInterpretation(regenerated);
+          } else {
+            // Restore stored tiles/houses with type guards (JSONB may be malformed)
+            const rawTiles = json.tiles;
+            setTileTexts(rawTiles && typeof rawTiles === 'object' && !Array.isArray(rawTiles)
+              ? (rawTiles as TileTexts)
+              : {});
+            const rawHouses = json.houses;
+            setHouseTexts(rawHouses && typeof rawHouses === 'object' && !Array.isArray(rawHouses)
+              ? (rawHouses as HouseTexts)
+              : {});
+            setInterpretation(storedInterpretation);
           }
-
-          setInterpretation(storedInterpretation);
-          setTileTexts((json.tiles as TileTexts) || {});
-          setHouseTexts((json.houses as HouseTexts) || {});
 
           // Birth date
           if (profile.birth_date) {
