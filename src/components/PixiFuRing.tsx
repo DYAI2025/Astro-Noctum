@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react';
 import * as PIXI from 'pixi.js';
+import 'pixi.js/unsafe-eval';
 
 // ---------------------------------------------------------------------------
 // Constants & Shaders
@@ -10,8 +11,7 @@ const SECTOR_COLORS_RAW = [
   '#D4A5A5', '#9B2335', '#7B2D8E', '#2B2D42', '#00B4D8', '#48BFE3'
 ];
 
-// Convert hex to normalized RGB array for shader
-const SECTOR_COLORS_VEC3 = SECTOR_COLORS_RAW.flatMap(hex => {
+const SECTOR_COLORS_FLAT = SECTOR_COLORS_RAW.flatMap(hex => {
   const c = new PIXI.Color(hex);
   return [c.red, c.green, c.blue];
 });
@@ -79,8 +79,11 @@ const FRAGMENT_SHADER = `
   }
 
   void main() {
+    // Center UVs: 0.0 to 1.0 -> -1.0 to 1.0
     vec2 uv = vUv * 2.0 - 1.0;
     float dist = length(uv);
+    
+    // Pixi Y is down, so we flip or adjust angle calc
     float angle = atan(uv.y, uv.x) + PI / 2.0;
     if (angle < 0.0) angle += 2.0 * PI;
     if (angle > 2.0 * PI) angle -= 2.0 * PI;
@@ -95,7 +98,7 @@ const FRAGMENT_SHADER = `
     float innerR = 0.45;
     float outerR = innerR + (0.45 * (0.3 + signal * 0.7)) * breathing;
     
-    // Mask
+    // Mask with smooth edges
     float ringMask = smoothstep(innerR - 0.01, innerR, dist) * smoothstep(outerR + 0.01, outerR, dist);
     
     // Visual Polish
@@ -103,7 +106,9 @@ const FRAGMENT_SHADER = `
     float glow = exp(-pow(dist - (innerR + outerR) * 0.5, 2.0) * 50.0);
     color += baseColor * glow * 0.5;
 
-    gl_FragColor = vec4(color * ringMask * (0.8 + 0.2 * signal), ringMask * (0.8 + 0.2 * signal));
+    // IMPORTANT: PixiJS expects premultiplied alpha usually, 
+    // but here we just ensure we output valid color.
+    gl_FragColor = vec4(color * ringMask, ringMask);
   }
 `;
 
@@ -124,75 +129,88 @@ export default function PixiFuRing({
 }: PixiFuRingProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const appRef = useRef<PIXI.Application | null>(null);
-  const meshRef = useRef<PIXI.Mesh<PIXI.Geometry, PIXI.Shader> | null>(null);
+  const shaderRef = useRef<PIXI.Shader | null>(null);
 
   useEffect(() => {
+    let active = true;
+
     const initPixi = async () => {
       if (!containerRef.current) return;
 
       const app = new PIXI.Application();
-      await app.init({
-        width: size,
-        height: size,
-        backgroundAlpha: 0,
-        antialias: true,
-        resolution: Math.min(window.devicePixelRatio, 2),
-        autoDensity: true,
-      });
+      try {
+        await app.init({
+          width: size,
+          height: size,
+          backgroundAlpha: 0,
+          antialias: true,
+          resolution: Math.min(window.devicePixelRatio, 2),
+          autoDensity: true,
+        });
 
-      appRef.current = app;
-      if (containerRef.current) {
+        if (!active) {
+          app.destroy(true, { children: true, texture: true, context: true });
+          return;
+        }
+
+        appRef.current = app;
         containerRef.current.appendChild(app.canvas);
-      }
 
-      // Shader setup (PixiJS v8 style)
-      const geometry = new PIXI.Geometry({
-        attributes: {
-          aPosition: [-1, -1, 1, -1, 1, 1, -1, 1],
-          aUv: [0, 0, 1, 0, 1, 1, 0, 1],
-        },
-        indexBuffer: [0, 1, 2, 0, 2, 3],
-      });
-
-      const shader = PIXI.Shader.from({
-        gl: {
-          vertex: VERTEX_SHADER,
-          fragment: FRAGMENT_SHADER,
-        },
-        resources: {
-          uUniforms: {
-            uTime: { value: 0, type: 'f32' },
-            uSignals: { value: new Float32Array(signals), type: 'f32' },
-            uColors: { value: new Float32Array(SECTOR_COLORS_VEC3), type: 'vec3' },
+        // Quad Geometry
+        const geometry = new PIXI.Geometry({
+          attributes: {
+            aPosition: [-1, -1, 1, -1, 1, 1, -1, 1],
+            aUv: [0, 0, 1, 0, 1, 1, 0, 1],
           },
-        }
-      });
+          indexBuffer: [0, 1, 2, 0, 2, 3],
+        });
 
-      const mesh = new PIXI.Mesh({
-        geometry,
-        shader,
-      });
+        // Use a simpler resource structure for compatibility
+        const shader = PIXI.Shader.from({
+          gl: {
+            vertex: VERTEX_SHADER,
+            fragment: FRAGMENT_SHADER,
+          },
+          resources: {
+            // In v8, placing uniforms directly in resources often works best for WebGL 1 compat
+            ringUniforms: new PIXI.UniformGroup({
+              uTime: { value: 0, type: 'f32' },
+              uSignals: { value: new Float32Array(signals), type: 'f32' },
+              uColors: { value: new Float32Array(SECTOR_COLORS_FLAT), type: 'vec3' },
+            }),
+          }
+        });
 
-      // In PixiJS v8, mesh width/height might behave differently if scale is not set
-      mesh.scale.set(size / 2, size / 2);
-      mesh.position.set(size / 2, size / 2);
+        shaderRef.current = shader;
 
-      app.stage.addChild(mesh);
-      meshRef.current = mesh;
+        const mesh = new PIXI.Mesh({
+          geometry,
+          shader,
+        });
 
-      app.ticker.add((ticker) => {
-        if (meshRef.current) {
-          const u = meshRef.current.shader.resources.uUniforms.uniforms;
-          u.uTime = ticker.lastTime / 1000;
-        }
-      });
+        // Set mesh scale to half the size because geometry is -1 to 1 (width 2)
+        mesh.scale.set(size / 2);
+        mesh.position.set(size / 2);
+
+        app.stage.addChild(mesh);
+
+        app.ticker.add((ticker) => {
+          if (shaderRef.current) {
+            shaderRef.current.resources.ringUniforms.uniforms.uTime = ticker.lastTime / 1000;
+          }
+        });
+      } catch (err) {
+        console.error("PixiJS Init Failed:", err);
+      }
     };
 
     initPixi();
 
     return () => {
+      active = false;
       if (appRef.current) {
         appRef.current.destroy(true, { children: true, texture: true, context: true });
+        appRef.current = null;
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -200,8 +218,8 @@ export default function PixiFuRing({
 
   // Update signals when props change
   useEffect(() => {
-    if (meshRef.current) {
-      meshRef.current.shader.resources.uUniforms.uniforms.uSignals = new Float32Array(signals);
+    if (shaderRef.current) {
+      shaderRef.current.resources.ringUniforms.uniforms.uSignals = new Float32Array(signals);
     }
   }, [signals]);
 
@@ -209,10 +227,13 @@ export default function PixiFuRing({
   useEffect(() => {
     if (appRef.current) {
       appRef.current.renderer.resize(size, size);
-      if (meshRef.current) {
-        meshRef.current.scale.set(size / 2, size / 2);
-        meshRef.current.position.set(size / 2, size / 2);
-      }
+      // Meshes inside the stage don't auto-scale with the renderer unless we tell them
+      appRef.current.stage.children.forEach(child => {
+        if (child instanceof PIXI.Mesh) {
+          child.scale.set(size / 2);
+          child.position.set(size / 2);
+        }
+      });
     }
   }, [size]);
 

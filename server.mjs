@@ -85,7 +85,16 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://maps.googleapis.com", "https://elevenlabs.io", "https://unpkg.com/@elevenlabs/convai-widget-embed"],
+      scriptSrc: [
+        "'self'", 
+        "'unsafe-inline'", 
+        "'unsafe-eval'", 
+        "https://maps.googleapis.com", 
+        "https://elevenlabs.io", 
+        "https://unpkg.com/@elevenlabs/convai-widget-embed",
+        "https://www.googletagmanager.com",
+        "https://pagead2.googlesyndication.com"
+      ],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "blob:", "https:"],
