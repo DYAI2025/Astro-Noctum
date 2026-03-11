@@ -6,7 +6,7 @@
 // Ported from 3DSolarSystem_animation reference implementation
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { useRef, useEffect, useMemo } from 'react';
+import { useRef, useEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
 import { EffectComposer }  from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass }      from 'three/examples/jsm/postprocessing/RenderPass.js';
@@ -187,6 +187,9 @@ export function BirthChartOrrery({
   // Transition
   const transitionT = useRef(planetariumMode ? 1 : 0);
 
+  // WebGL failure state — if Three.js init throws, show static fallback
+  const [renderFailed, setRenderFailed] = useState(false);
+
   // Callback refs
   const setHoveredRef = useRef(setHoveredObject);
   useEffect(() => { setHoveredRef.current = setHoveredObject; });
@@ -206,8 +209,17 @@ export function BirthChartOrrery({
   useEffect(() => {
     if (!containerRef.current) return;
     const el = containerRef.current;
-    const W  = el.clientWidth;
-    const H  = el.clientHeight;
+    const W  = el.clientWidth  || 375;   // fallback: safe mobile default
+    const H  = el.clientHeight || 260;   // fallback: never let H = 0 → black canvas
+
+    // ── Mobile detection: reduce GPU load to prevent context loss / OOM ───
+    const isMobile = window.innerWidth < 768;
+
+    // Wrap entire Three.js initialisation — any failure (WebGL unavailable,
+    // OES_texture_float missing for bloom, shader compile error, OOM) must
+    // NOT crash the React tree.  We catch it, flag the fallback UI, and bail.
+    let cleanup: (() => void) | undefined;
+    try {
 
     // ── Scene / Camera / Renderer ──────────────────────────────────────────
     const scene = new THREE.Scene();
@@ -218,22 +230,37 @@ export function BirthChartOrrery({
     camera.lookAt(0, 0, 0);
     cameraRef.current = camera;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    const renderer = new THREE.WebGLRenderer({
+      antialias: !isMobile,  // antialias is expensive on mobile
+      alpha: false,
+      powerPreference: isMobile ? 'low-power' : 'high-performance',
+    });
     renderer.setSize(W, H);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type    = THREE.PCFSoftShadowMap;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1 : 2));
+    // Shadows are expensive; disable on mobile to prevent GPU OOM crash
+    renderer.shadowMap.enabled = !isMobile;
+    if (!isMobile) renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping       = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.1;
     el.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // ── Bloom Post-Processing ──────────────────────────────────────────────
-    const composer   = new EffectComposer(renderer);
-    composer.addPass(new RenderPass(scene, camera));
-    composer.addPass(new UnrealBloomPass(new THREE.Vector2(W, H), 0.75, 0.55, 0.18));
-    composer.addPass(new OutputPass());
-    composerRef.current = composer;
+    // Handle WebGL context loss (background tab, mobile resource pressure)
+    renderer.domElement.addEventListener('webglcontextlost', (e) => {
+      e.preventDefault();
+      setRenderFailed(true);
+    });
+
+    // ── Bloom Post-Processing (desktop only; requires float textures) ──────
+    // UnrealBloomPass needs OES_texture_float / EXT_color_buffer_float which
+    // is unreliable on mobile WebGL — skip it there to avoid a crash.
+    if (!isMobile) {
+      const composer   = new EffectComposer(renderer);
+      composer.addPass(new RenderPass(scene, camera));
+      composer.addPass(new UnrealBloomPass(new THREE.Vector2(W, H), 0.75, 0.55, 0.18));
+      composer.addPass(new OutputPass());
+      composerRef.current = composer;
+    }
 
     // ════════════════════════════════════════════════════════════════════════
     // ORRERY GRUPPE
@@ -244,8 +271,10 @@ export function BirthChartOrrery({
 
     // Beleuchtung
     const sunLight = new THREE.PointLight('#FFF8EE', 3.5, 1200);
-    sunLight.castShadow = true;
-    sunLight.shadow.mapSize.set(2048, 2048);
+    if (!isMobile) {
+      sunLight.castShadow = true;
+      sunLight.shadow.mapSize.set(512, 512); // reduced from 2048 — still good quality
+    }
     scene.add(sunLight);
     scene.add(new THREE.AmbientLight('#222233', 0.25));
     scene.add(new THREE.HemisphereLight('#3355AA', '#110A22', 0.45));
@@ -804,23 +833,38 @@ export function BirthChartOrrery({
       }
       setHoveredRef.current(hovered);
 
-      // Bloom Composer render
-      composerRef.current?.render();
+      // Render: use bloom composer on desktop, plain renderer on mobile
+      try {
+        if (composerRef.current) {
+          composerRef.current.render();
+        } else {
+          renderer.render(scene, camera);
+        }
+      } catch {
+        // Render error (context lost, shader failure) — stop loop gracefully
+        cancelAnimationFrame(raf);
+        setRenderFailed(true);
+        return;
+      }
     };
     animate();
 
     // ── Resize ──────────────────────────────────────────────────────────
     const onResize = () => {
-      const w = el.clientWidth, h = el.clientHeight;
+      const w = el.clientWidth || 375, h = el.clientHeight || 260;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
       composerRef.current?.setSize(w, h);
     };
+    // Use ResizeObserver (better than window resize for mobile chrome show/hide)
+    const ro = new ResizeObserver(() => onResize());
+    ro.observe(el);
     window.addEventListener('resize', onResize);
 
-    return () => {
+    cleanup = () => {
       cancelAnimationFrame(raf);
+      ro.disconnect();
       window.removeEventListener('resize', onResize);
       el.removeEventListener('mousedown',  onMouseDown);
       el.removeEventListener('mouseup',    onMouseUp);
@@ -833,12 +877,37 @@ export function BirthChartOrrery({
       renderer.dispose();
       if (el.contains(renderer.domElement)) el.removeChild(renderer.domElement);
     };
+
+    } catch (err) {
+      // Three.js init failed (WebGL unavailable, OOM, shader compile error, etc.)
+      // Show static fallback — DO NOT let this bubble up and crash the React tree.
+      console.warn('[BirthChartOrrery] WebGL init failed, showing fallback:', err);
+      setRenderFailed(true);
+    }
+
+    return () => cleanup?.();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Derived display ────────────────────────────────────────────────────────
   const locale  = lang === 'de' ? 'de-DE' : 'en-GB';
   const dateStr = birthDate.toLocaleDateString(locale, { day: '2-digit', month: 'long', year: 'numeric' });
+
+  // Static fallback when WebGL fails (no crash, just a placeholder)
+  if (renderFailed) {
+    return (
+      <div className="relative w-full rounded-2xl overflow-hidden border border-[#8B6914]/15 bg-[#0a1628]/90 shadow-[0_4px_32px_rgba(0,20,60,0.15)] orrery-canvas-container flex items-center justify-center">
+        <div className="text-center pointer-events-none select-none">
+          <p className="text-[#8B6914]/60 text-[8px] uppercase tracking-[0.4em] mb-2">
+            {lang === 'de' ? '☉ SONNENSYSTEM' : '☉ SOLAR SYSTEM'}
+          </p>
+          <p className="text-white/20 text-[10px] font-mono">
+            {lang === 'de' ? 'Visualisierung nicht verfügbar' : 'Visualisation unavailable'}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full rounded-2xl overflow-hidden border border-[#8B6914]/15 bg-[#0a1628]/90 shadow-[0_4px_32px_rgba(0,20,60,0.15)]">
@@ -922,10 +991,10 @@ export function BirthChartOrrery({
         </div>
       )}
 
-      {/* Three.js Canvas */}
+      {/* Three.js Canvas — height via .orrery-canvas-container in index.css */}
       <div
         ref={containerRef}
-        className="w-full h-[260px] md:h-[460px]"
+        className="orrery-canvas-container"
         style={{ cursor: planetariumMode ? 'crosshair' : 'grab' }}
       />
     </div>

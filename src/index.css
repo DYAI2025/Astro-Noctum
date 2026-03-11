@@ -260,6 +260,19 @@ body {
   .morning-grid-2 { grid-template-columns: 1fr; gap: 1rem; }
 }
 
+/* ── Orrery canvas container ─── responsive height via plain CSS ──────── */
+/* Using index.css (not Tailwind arbitrary values) so that clientHeight    */
+/* is always correct when Three.js reads it in useEffect.                   */
+.orrery-canvas-container {
+  width: 100%;
+  height: 260px;   /* mobile-first compact height */
+}
+@media (min-width: 768px) {
+  .orrery-canvas-container {
+    height: 460px; /* restore full height on tablet/desktop */
+  }
+}
+
 /* ── Typography ────────────────────────────────────────────────────────── */
 
 h1, h2, h3 { letter-spacing: 0.1em; }
