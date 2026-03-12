@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { Compass, Cpu, ShieldCheck, ChevronRight } from 'lucide-react';
+import { ARTICLES } from '../data/articles';
 
 // ── Content data (EN/DE) ────────────────────────────────────────────
 const CONTENT = {
@@ -93,6 +94,10 @@ const VICTORIA_IMG =
   'https://r2-bucket.flowith.net/f/db67c119da6f754e/cosmic_intuition_guidance_visual_index_2%402048x2048.jpeg';
 const SYNTHESIS_IMG =
   'https://images.unsplash.com/photo-1614732414444-af963171f61d?auto=format&fit=crop&w=2048&q=80';
+
+// ── Article data for landing page (public, SEO-facing) ──────────────
+const LANDING_ARTICLES = ARTICLES.slice(0, 3);
+const LANDING_ARTICLES_FULL = ARTICLES.slice(3);
 
 // ── Props ───────────────────────────────────────────────────────────
 interface LandingHeroProps {
@@ -582,6 +587,121 @@ export function LandingHero({ onContinue }: LandingHeroProps) {
                 backgroundSize: '60px 60px',
               }}
             />
+          </div>
+        </div>
+      </section>
+
+      {/* ── Kosmisches Wissen Section ───────────────────────────── */}
+      <section
+        id="landing-wissen"
+        aria-label="Kosmisches Wissen — Wissenschaftliche Artikel"
+        className="py-24 md:py-32 px-6 md:px-8 border-t border-white/5"
+      >
+        <div className="max-w-7xl mx-auto">
+          {/* Section header */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.9 }}
+            className="mb-14 md:mb-18 max-w-2xl"
+          >
+            <p className="mb-3 font-sans text-[9px] uppercase tracking-[0.45em] text-[#D4AF37]/50">
+              Kosmisches Wissen
+            </p>
+            <h2 className="font-serif text-3xl leading-tight text-white/85 md:text-4xl">
+              Was das Universum uns lehrt —<br />
+              <span className="text-[#D4AF37]/70">und was wir daraus lesen.</span>
+            </h2>
+            <p className="mt-4 font-sans text-sm leading-relaxed text-white/40">
+              Wissenschaftlich fundierte Artikel über Weltraumphysik, Quantenmechanik und die
+              ungelösten Geheimnisse des Kosmos. Für Menschen, die tiefer blicken wollen.
+            </p>
+          </motion.div>
+
+          {/* Article cards grid */}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {LANDING_ARTICLES.map((art, i) => (
+              <motion.article
+                key={art.slug}
+                initial={{ opacity: 0, y: 28 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-60px' }}
+                transition={{ duration: 0.8, delay: i * 0.12 }}
+                className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/8 bg-white/[0.02] backdrop-blur-sm transition-all duration-700 hover:border-[#D4AF37]/25 hover:bg-white/[0.04]"
+              >
+                {/* Image area */}
+                <div className="relative h-44 overflow-hidden bg-[#0a0f1a]">
+                  <img
+                    src={art.image}
+                    alt={art.imageAlt}
+                    loading="lazy"
+                    width="600"
+                    height="400"
+                    className="h-full w-full object-cover opacity-50 transition-all duration-700 group-hover:scale-105 group-hover:opacity-65"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#00050A]/90 via-[#00050A]/20 to-transparent" />
+                  <div className="absolute left-3 top-3">
+                    <span className="rounded-full border border-[#D4AF37]/15 bg-black/60 px-2.5 py-1 font-sans text-[8px] uppercase tracking-[0.25em] text-[#D4AF37]/70 backdrop-blur-sm">
+                      {art.category}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Text */}
+                <div className="flex flex-1 flex-col p-5">
+                  <div className="mb-2 flex items-center gap-1.5">
+                    <svg className="h-2.5 w-2.5 text-white/25" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
+                      <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    <span className="font-sans text-[9px] tracking-widest text-white/25">{art.readingTime} Min. Lektüre</span>
+                  </div>
+
+                  <h3 className="mb-2 font-serif text-base leading-snug text-white/88 transition-colors duration-300 group-hover:text-[#D4AF37]/85">
+                    {art.title}
+                  </h3>
+
+                  <p className="mb-4 flex-1 font-sans text-xs leading-relaxed text-white/40 line-clamp-3">
+                    {art.excerpt}
+                  </p>
+
+                  <button
+                    onClick={onContinue}
+                    aria-label={`Artikel lesen: ${art.title}`}
+                    className="inline-flex items-center gap-2 text-[#D4AF37]/50 transition-all duration-300 group-hover:text-[#D4AF37]/85"
+                  >
+                    <span className="font-sans text-[9px] uppercase tracking-[0.25em]">Weiterlesen</span>
+                    <ChevronRight className="h-3 w-3" />
+                  </button>
+                </div>
+
+                {/* Gold top accent on hover */}
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D4AF37]/30 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+              </motion.article>
+            ))}
+          </div>
+
+          {/* SEO text block — crawlable, valuable for search */}
+          <div className="mt-16 grid grid-cols-1 gap-8 border-t border-white/5 pt-16 md:grid-cols-2 lg:grid-cols-3">
+            {LANDING_ARTICLES_FULL.map((art, i) => (
+              <motion.div
+                key={art.slug}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ duration: 0.7, delay: i * 0.1 }}
+                className="space-y-2"
+              >
+                <p className="font-sans text-[9px] uppercase tracking-[0.25em] text-[#D4AF37]/40">
+                  {art.category}
+                </p>
+                <h4 className="font-serif text-sm leading-snug text-white/55">{art.title}</h4>
+                <p className="font-sans text-xs leading-relaxed text-white/28 line-clamp-3">
+                  {art.excerpt}
+                </p>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
