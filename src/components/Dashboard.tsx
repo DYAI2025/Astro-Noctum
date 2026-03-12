@@ -505,10 +505,8 @@ export function Dashboard({
           rightTitle={t("dashboard.bazi.sectionTitle")}
         />
 
-        <div className="morning-grid-2">
-
-          {/* ── LEFT — Western Signs ─────────────────────────────── */}
-          <div className="flex flex-col gap-5">
+        {/* ── Western Signs ─────────────────────────────── */}
+        <div className="grid md:grid-cols-3 gap-5 mb-10">
 
             {/* Sun Sign — FR-03.1 / FR-P05: data-special for gold border in Planetarium */}
             <div className="morning-card p-5 sm:p-7 flex flex-col justify-between" data-special="true">
@@ -643,8 +641,8 @@ export function Dashboard({
             </div>
           </div>
 
-          {/* ── RIGHT — BaZi / WuXing ───────────────────────────── */}
-          <div className="flex flex-col gap-5">
+          {/* ── BaZi / WuXing ───────────────────────────── */}
+          <div className="grid md:grid-cols-4 gap-5 mb-10">
 
             {/* Year Animal — FR-P05: data-special for gold border in Planetarium */}
             <div className="morning-card p-5 sm:p-7 flex flex-col justify-between" data-special="true">
@@ -806,7 +804,6 @@ export function Dashboard({
               </div>
             </div>
           </div>
-        </div>
       </motion.div>
 
       {/* ═══ BAZI & WUXING DEEP SECTION ═══════════════════════════════ */}
@@ -1066,7 +1063,8 @@ export function Dashboard({
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.4, ease: "easeOut" }}
-                    className="relative z-[9999] w-full flex justify-center"
+                    className="relative z-[9999] w-full flex justify-center mt-4 min-h-[500px]"
+                    style={{ overflow: "visible" }}
                   >
                     {/* @ts-ignore */}
                     <elevenlabs-convai
@@ -1075,6 +1073,7 @@ export function Dashboard({
                         user_id: userId,
                         chart_context: `${sunSign} / ${zodiacAnimal} / ${dominantEl}`,
                       })}
+                      style={{ width: "100%", height: "100%", minHeight: "500px" }}
                     >
                     {/* @ts-ignore */}
                     </elevenlabs-convai>
