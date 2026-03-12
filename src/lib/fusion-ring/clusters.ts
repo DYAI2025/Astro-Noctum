@@ -75,6 +75,7 @@ export const CLUSTER_REGISTRY: ClusterDef[] = [
       'quiz.partner_match_01.v1',
       'quiz.partner_match_02.v1',
       'quiz.partner_match_03.v1',
+      'quiz.partner_convo.v1',
     ],
   },
 ];

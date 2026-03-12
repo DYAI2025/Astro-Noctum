@@ -588,6 +588,47 @@ export function partnerMatchSeriesQuizToEvent(
 // GENERIC BUILDER
 // ═══════════════════════════════════════════════════════════════
 
+// ── CONVERSATION ANALYSIS ───────────────────────────────────────
+
+/**
+ * Converts a conversation analysis result into a ContributionEvent.
+ */
+export function conversationAnalysisToEvent(
+  markersA: Marker[],
+  markersB: Marker[],
+  resonance: number,
+  summary: string,
+  locale: string = 'de-DE'
+): ContributionEvent {
+  // Combine markers from both for the overall signal impact
+  const combinedMarkers = [...markersA, ...markersB];
+
+  return {
+    specVersion: 'sp.contribution.v1',
+    eventId: crypto.randomUUID(),
+    occurredAt: new Date().toISOString(),
+    source: {
+      vertical: 'quiz',
+      moduleId: 'partner_convo',
+      locale,
+    },
+    payload: {
+      markers: combinedMarkers,
+      tags: [
+        { id: 'tag.series.partner_match', label: 'Partner Match', kind: 'misc' },
+        { id: 'tag.analysis.conversation', label: 'Conversation Analysis', kind: 'misc' }
+      ],
+      summary: {
+        title: locale.startsWith('de') ? 'Gesprächs-Resonanz' : 'Conversation Resonance',
+        bullets: [
+          summary,
+          `${locale.startsWith('de') ? 'Resonanz-Level' : 'Resonance Level'}: ${Math.round(resonance * 100)}%`
+        ]
+      }
+    },
+  };
+}
+
 function buildEvent(
   moduleId: string,
   markers: Marker[],

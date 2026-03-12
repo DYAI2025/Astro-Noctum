@@ -984,6 +984,63 @@ app.get("*", (_req, res) => {
   res.sendFile(path.join(distPath, "index.html"));
 });
 
+// ── POST /api/analyze/conversation — Dialogue analysis with Gemini ──────
+app.post("/api/analyze/conversation", express.json(), async (req, res) => {
+  if (!geminiClient) {
+    return res.status(503).json({ error: "Gemini API not configured" });
+  }
+
+  const { text, lang } = req.body;
+  if (!text) return res.status(400).json({ error: "Missing text" });
+
+  try {
+    const model = geminiClient.getGenerativeModel({ model: "gemini-2.0-flash" });
+    
+    const prompt = `
+      You are an expert in semantic dialogue analysis using the LeanDeep framework.
+      
+      TASK:
+      1. Separate the following dialogue into "Person A" and "Person B".
+      2. For each person, identify 2-3 psychological markers from the LeanDeep framework.
+      3. Calculate a "resonance score" (0.0 to 1.0) indicating the quality of alignment between speakers.
+      4. Provide a 1-sentence summary of the conversation vibe.
+
+      LEANDEEP MARKER EXAMPLES (Use these format: marker.domain.keyword):
+      - marker.emotion.empathy
+      - marker.freedom.independence
+      - marker.love.passionate
+      - marker.emotion.security
+      - marker.freedom.growth
+      - marker.emotion.anchor
+      - marker.creative.expression
+      - marker.cognition.curiosity
+      
+      DIALOGUE:
+      ${text}
+
+      RESPONSE FORMAT:
+      Respond with VALID JSON only. No markdown fences.
+      {
+        "lines": [{"speaker": "Person A", "text": "..."}, ...],
+        "markersA": [{"id": "marker.emotion.empathy", "weight": 0.8}],
+        "markersB": [{"id": "marker.freedom.growth", "weight": 0.8}],
+        "resonance": 0.75,
+        "summary": "..."
+      }
+    `;
+
+    const result = await model.generateContent(prompt);
+    const responseText = result.response.text();
+    const cleanedJson = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
+    const analysis = JSON.parse(cleanedJson);
+
+    res.json(analysis);
+  } catch (error) {
+    console.error("Analysis failed:", error);
+    res.status(500).json({ error: "Analysis failed" });
+  }
+});
+
 const port = Number(process.env.PORT || 3000);
 if (process.env.NODE_ENV !== "test") {
   app.listen(port, "0.0.0.0", () => {
