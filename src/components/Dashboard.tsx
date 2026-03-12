@@ -498,11 +498,9 @@ export function Dashboard({
 
       {/* ═══ PRIMARY GRID: Western (left) | BaZi/WuXing (right) ═══════ */}
       <motion.div className="mb-12" {...fadeIn(0.2)}>
-        <DualSectionHeader
-          leftLabel={t("dashboard.western.sectionLabel")}
-          leftTitle={t("dashboard.western.sectionTitle")}
-          rightLabel={t("dashboard.bazi.sectionLabel")}
-          rightTitle={t("dashboard.bazi.sectionTitle")}
+        <SectionDivider
+          label={t("dashboard.western.sectionLabel")}
+          title={t("dashboard.western.sectionTitle")}
         />
 
         {/* ── Western Signs ─────────────────────────────── */}
@@ -640,6 +638,11 @@ export function Dashboard({
               </div>
             </div>
           </div>
+
+        <SectionDivider
+          label={t("dashboard.bazi.sectionLabel")}
+          title={t("dashboard.bazi.sectionTitle")}
+        />
 
           {/* ── BaZi / WuXing ───────────────────────────── */}
           <div className="grid md:grid-cols-4 gap-5 mb-10">
@@ -1056,16 +1059,9 @@ export function Dashboard({
                   : <><Phone className="w-4 h-4" /> {t("dashboard.levi.callBtn")}</>}
               </button>
 
-              <AnimatePresence>
+              <div className="mt-4">
                 {leviActive && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.4, ease: "easeOut" }}
-                    className="relative z-[9999] w-full flex justify-center mt-4 min-h-[500px]"
-                    style={{ overflow: "visible" }}
-                  >
+                  <div className="relative z-[9999] w-full flex justify-center">
                     {/* @ts-ignore */}
                     <elevenlabs-convai
                       agent-id={elevenLabsAgentId}
@@ -1073,13 +1069,12 @@ export function Dashboard({
                         user_id: userId,
                         chart_context: `${sunSign} / ${zodiacAnimal} / ${dominantEl}`,
                       })}
-                      style={{ width: "100%", height: "100%", minHeight: "500px" }}
                     >
                     {/* @ts-ignore */}
                     </elevenlabs-convai>
-                  </motion.div>
+                  </div>
                 )}
-              </AnimatePresence>
+              </div>
             </>
           ) : (
             <button
