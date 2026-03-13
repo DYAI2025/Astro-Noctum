@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { useAstroProfile } from '../hooks/useAstroProfile';
 import { parseAstroProfileJson } from '../types/bafe';
 
@@ -44,13 +44,16 @@ describe('useAstroProfile', () => {
 
   it('transitions to not-found when user has no profile', async () => {
     const { result } = renderHook(() => useAstroProfile(mockUser, 'de'));
-    await act(async () => { await new Promise(r => setTimeout(r, 50)); });
-    expect(result.current.profileState).toBe('not-found');
+    await waitFor(() => {
+      expect(result.current.profileState).toBe('not-found');
+    });
   });
 
   it('handleReset clears data in not-found state', async () => {
     const { result } = renderHook(() => useAstroProfile(mockUser, 'de'));
-    await act(async () => { await new Promise(r => setTimeout(r, 50)); });
+    await waitFor(() => {
+      expect(result.current.profileState).toBe('not-found');
+    });
     act(() => { result.current.handleReset(); });
     expect(result.current.apiData).toBeNull();
     expect(result.current.error).toBeNull();
@@ -58,7 +61,9 @@ describe('useAstroProfile', () => {
 
   it('handleSubmit sets profileState to found after success', async () => {
     const { result } = renderHook(() => useAstroProfile(mockUser, 'de'));
-    await act(async () => { await new Promise(r => setTimeout(r, 50)); });
+    await waitFor(() => {
+      expect(result.current.profileState).toBe('not-found');
+    });
     await act(async () => {
       await result.current.handleSubmit({
         date: '2000-01-01T12:00:00',
@@ -67,9 +72,11 @@ describe('useAstroProfile', () => {
         lon: 13.4,
       });
     });
-    expect(result.current.profileState).toBe('found');
-    expect(result.current.interpretation).toBe('Test interpretation');
-    expect(result.current.isFirstReading).toBe(true);
+    await waitFor(() => {
+      expect(result.current.profileState).toBe('found');
+      expect(result.current.interpretation).toBe('Test interpretation');
+      expect(result.current.isFirstReading).toBe(true);
+    });
   });
 });
 
