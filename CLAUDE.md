@@ -76,6 +76,7 @@ Defined in `src/router.tsx`, all lazy-loaded:
 | `src/components/PremiumGate.tsx` | Wrapper that locks content behind premium; triggers Stripe checkout via `/api/checkout` |
 | `src/data/articles.ts` | SEO article content (6 articles, full German text, TypeScript) |
 | `src/components/QuizOverlay.tsx` | Modal overlay that hosts the quiz system; launched from Dashboard |
+| `src/lib/lme/types.ts` | Lifecycle Mapping Engine event types — `ContributionEvent`, `Marker`, `TraitScore`, `Tag`. Typed contract between quizzes and the Fusion Ring; quizzes emit `ContributionEvent`s, `useFusionRing` consumes them |
 | `src/components/quizzes/` | 22 quiz components (14 regular + 4 Kinky + 4 PartnerMatch); results feed into Fusion Ring via `src/lib/fusion-ring/quiz-to-event.ts` |
 | `src/components/quizzes/Kinky/` | Kinky quiz series (multi-part, premium) |
 | `src/components/quizzes/PartnerMatch/` | PartnerMatch quiz series including `ConversationAnalysisQuiz` |
