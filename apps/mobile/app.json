@@ -53,7 +53,9 @@
       "expo-secure-store"
     ],
     "extra": {
-      "apiBaseUrl": "https://bazodiac.space"
+      "apiBaseUrl": "https://bazodiac.space",
+      "eas": {}
+
     }
   }
 }
