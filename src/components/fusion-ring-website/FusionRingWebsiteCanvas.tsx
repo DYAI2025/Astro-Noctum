@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type * as THREE_TYPES from 'three';
 import { createFusionAudio, type FusionAudioEngine } from './fusion-ring-audio';
+import { createDemoProfile, compileProfile, type DeformationChannels, type FusionRingProfile } from './fusion-ring-profile';
+import { FusionRingInputController } from './fusion-ring-input';
+import { createDemoTransitState, type RingEffectType, type TransitStateV1 } from './fusion-ring-transit';
+import type { QuizClusterResult } from './fusion-ring-input';
 
 function isWebGLAvailable(): boolean {
   try {
@@ -13,29 +17,16 @@ function isWebGLAvailable(): boolean {
   }
 }
 
-export type RingEffectType =
-  | 'resonanzsprung'
-  | 'dominanzwechsel'
-  | 'mond_event'
-  | 'spannungsachse'
-  | 'korona_eruption'
-  | 'divergenz_spike'
-  | 'burst'
-  | 'crunch';
-type EffectType = RingEffectType | null;
+type EffectType = 'resonanzsprung' | 'dominanzwechsel' | 'mond_event' | 'spannungsachse' | 'korona_eruption' | 'divergenz_spike' | 'burst' | 'crunch' | null;
 
 interface EffectState {
   type: EffectType;
   startTime: number;
   duration: number;
-}
-
-type QueuedEffect = { id: string; type: RingEffectType };
-
-interface FusionRingWebsiteCanvasProps {
-  queuedEffect?: QueuedEffect | null;
-  showEffectControls?: boolean;
-  className?: string;
+  /** Effect intensity 0–1 (default 1.0 for legacy button triggers) */
+  intensity: number;
+  /** Primary affected sector 0–11 */
+  sector: number;
 }
 
 const EFFECT_CONFIGS: Record<string, { label: string; sublabel: string; color: string; borderColor: string }> = {
@@ -90,15 +81,7 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
         alpha: false,
         powerPreference: 'high-performance',
       });
-      const getViewportSize = () => {
-        const host = canvasRef.current;
-        return {
-          width: Math.max(1, host?.clientWidth ?? window.innerWidth),
-          height: Math.max(1, host?.clientHeight ?? window.innerHeight),
-        };
-      };
-      const initialSize = getViewportSize();
-      renderer.setSize(initialSize.width, initialSize.height);
+      renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.8;
@@ -106,10 +89,11 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
       canvasRef.current?.appendChild?.(renderer.domElement);
 
       const scene = new THREE.Scene();
-      scene.fog = new THREE.Fog(0x030308, 12, 30);
+      scene.fog = new THREE.Fog(0x030308, 16, 40);
 
-      const camera = new THREE.PerspectiveCamera(40, initialSize.width / initialSize.height, 0.1, 100);
-      camera.position.set(0, 2.5, 5.5);
+      const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100);
+      // Initial position: top-down face view matching HOME constants
+      camera.position.set(0, Math.sin(1.48) * 8.5, Math.cos(1.48) * 8.5);
       camera.lookAt(0, 0, 0);
 
       const clock = new THREE.Clock();
@@ -136,56 +120,63 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
 
       // === RING GROUP ===
       const ringGroup = new THREE.Group();
-      ringGroup.rotation.set(0.35, 0, 0.05);
+      ringGroup.rotation.set(0, 0, 0);  // flat — camera angle handles perspective
       scene.add(ringGroup);
 
       const RADIUS = 2;
       const TUBE = 0.22;
 
       // ==========================================================
-      // === PARTICLE RING (Partikel-Struktur) ===
-      // Instead of a smooth mesh torus, the ring is built entirely
-      // from particles with noise-based displacement creating
-      // an organic, eroded, biological cell-wall texture.
+      // === PROFILE-DRIVEN PARTICLE RING ===
+      // The ring's permanent shape comes from the FusionRingProfile:
+      //   Layer 1: Astro base (zodiac sectors + Wu Xing) = immutable
+      //   Layer 2: Quiz stamps (dents, bulges, ridges, etc.) = permanent
+      // Both layers are compiled into 5 continuous deformation channels
+      // that the particle generator reads per-particle.
       // ==========================================================
+
+      const demoProfile = createDemoProfile();
+      const channels = compileProfile(demoProfile);
 
       const RING_PARTICLE_COUNT = 28000;
       const ringPositions = new Float32Array(RING_PARTICLE_COUNT * 3);
-      const ringBasePositions = new Float32Array(RING_PARTICLE_COUNT * 3); // store base for animation
+      const ringBasePositions = new Float32Array(RING_PARTICLE_COUNT * 3);
       const ringColors = new Float32Array(RING_PARTICLE_COUNT * 3);
       const ringSizes = new Float32Array(RING_PARTICLE_COUNT);
-      const ringPhases = new Float32Array(RING_PARTICLE_COUNT); // for animation variety
-      const ringNoiseOffsets = new Float32Array(RING_PARTICLE_COUNT); // noise displacement per particle
+      const ringPhases = new Float32Array(RING_PARTICLE_COUNT);
+      const ringNoiseOffsets = new Float32Array(RING_PARTICLE_COUNT);
 
       // Base monochrome color (titanium/iridium)
-      const baseColor = new THREE.Color(0x8a8a9a);
       const brightColor = new THREE.Color(0xc0c8d8);
       const dimColor = new THREE.Color(0x3a3a48);
 
       for (let i = 0; i < RING_PARTICLE_COUNT; i++) {
-        // Distribute around the torus
-        const mainAngle = (i / RING_PARTICLE_COUNT) * Math.PI * 2 + hash(i) * 0.02; // main ring angle
-        const tubeAngle = hash(i * 7 + 3) * Math.PI * 2; // angle around tube cross-section
-
-        // Soul profile deformation
+        const mainAngle = (i / RING_PARTICLE_COUNT) * Math.PI * 2 + hash(i) * 0.02;
+        const tubeAngle = hash(i * 7 + 3) * Math.PI * 2;
         const normalizedAngle = mainAngle % (Math.PI * 2);
+
+        // === READ PROFILE DEFORMATION CHANNELS ===
+        const profileRadius = channels.radiusOffset(normalizedAngle); // -0.4 to +0.4
+        const profileTube = channels.tubeScale(normalizedAngle);       // 0.4 to ~1.5
+        const profileRough = channels.roughness(normalizedAngle);      // 0 to 1
+        const profileTint = channels.colorTint(normalizedAngle);       // [r,g,b, intensity]
+        // Soul noise harmonics (micro-texture on top of profile shape)
         const soulVal = soulNoise(normalizedAngle, 1.0);
         const h1 = soulNoise(normalizedAngle * 3 + 0.5, 0.4);
         const h2 = soulNoise(normalizedAngle * 7 + 1.2, 0.2);
         const h3 = soulNoise(normalizedAngle * 13 + 2.1, 0.1);
         const h4 = soulNoise(normalizedAngle * 23 + 3.7, 0.06);
+        const soulDisplacement = (soulVal + h1 + h2 + h3 + h4 - 0.5) * 0.25;
 
-        // Combined displacement — creates the "corona hills"
-        const soulDisplacement = (soulVal + h1 + h2 + h3 + h4 - 0.5) * 0.45;
+        // Roughness-driven micro-noise (more roughness = more scatter)
+        const roughScale = 0.04 + profileRough * 0.10;
+        const microNoise = (hash(i * 13 + 7) - 0.5) * roughScale;
+        const medNoise = (hash(i * 31 + 11) - 0.5) * roughScale * 0.5;
 
-        // Micro-noise for surface roughness (eroded texture)
-        const microNoise = (hash(i * 13 + 7) - 0.5) * 0.08;
-        const medNoise = (hash(i * 31 + 11) - 0.5) * 0.04;
+        // Combined tube radius: base + profile deformation + soul texture + roughness
+        const localTube = (TUBE * profileTube) + (profileRadius * 0.5) + soulDisplacement + microNoise + medNoise;
 
-        // Tube radius with deformation
-        const localTube = TUBE + soulDisplacement + microNoise + medNoise;
-
-        // Position on torus with deformation
+        // Position on torus
         const r = RADIUS + Math.cos(tubeAngle) * localTube;
         const y = Math.sin(tubeAngle) * localTube;
         const x = Math.cos(mainAngle) * r;
@@ -194,34 +185,29 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
         ringPositions[i * 3] = x;
         ringPositions[i * 3 + 1] = y;
         ringPositions[i * 3 + 2] = z;
-
-        // Store base positions for animation
         ringBasePositions[i * 3] = x;
         ringBasePositions[i * 3 + 1] = y;
         ringBasePositions[i * 3 + 2] = z;
 
-        // Color: monochrome base tinted by Wu Xing element sector
-        // Each of 5 sectors (72°) gets a subtle element color tint
-        const ELEMENT_COLORS_HEX = [0x3aff6a, 0xff4a3a, 0xffc83a, 0xd0d8f0, 0x3a9aff]; // Wood, Fire, Earth, Metal, Water
-        const sectorIndex = Math.floor(((normalizedAngle / (Math.PI * 2)) * 5) % 5);
-        const sectorCenter = (sectorIndex + 0.5) / 5 * Math.PI * 2;
-        const sectorDist = Math.abs(normalizedAngle - sectorCenter);
-        const sectorBlend = Math.max(0, 1 - sectorDist / (Math.PI / 5)) * 0.25; // max 25% element color
-
+        // === COLOR: monochrome base + profile tint ===
         const brightness = 0.3 + soulVal * 0.5 + hash(i * 17) * 0.2;
         const col = new THREE.Color().lerpColors(dimColor, brightColor, brightness);
-        const elementCol = new THREE.Color(ELEMENT_COLORS_HEX[sectorIndex] ?? 0xd0d8f0);
-        col.lerp(elementCol, sectorBlend);
+        // Apply profile color tint
+        if (profileTint[3] > 0.01) {
+          const tintCol = new THREE.Color(profileTint[0], profileTint[1], profileTint[2]);
+          col.lerp(tintCol, profileTint[3]);
+        }
         ringColors[i * 3] = col.r;
         ringColors[i * 3 + 1] = col.g;
         ringColors[i * 3 + 2] = col.b;
 
-        // Size: varies with position on tube (outer = bigger) and soul value
-        const outerFactor = 0.5 + Math.cos(tubeAngle) * 0.5; // 0 inner, 1 outer
-        ringSizes[i] = (0.008 + outerFactor * 0.012 + soulVal * 0.006 + hash(i * 23) * 0.004);
+        // === SIZE: varies with tube position + profile influence ===
+        const outerFactor = 0.5 + Math.cos(tubeAngle) * 0.5;
+        const profileSizeBoost = Math.max(0, profileRadius) * 0.004; // bulges get slightly bigger particles
+        ringSizes[i] = (0.008 + outerFactor * 0.012 + soulVal * 0.004 + hash(i * 23) * 0.004 + profileSizeBoost);
 
         ringPhases[i] = hash(i * 41 + 13) * Math.PI * 2;
-        ringNoiseOffsets[i] = soulDisplacement;
+        ringNoiseOffsets[i] = soulDisplacement + profileRadius * 0.3;
       }
 
       const ringGeo = new THREE.BufferGeometry();
@@ -285,12 +271,20 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
         const h2 = soulNoise(normalizedAngle * 7 + 1.2, 0.2);
         const soulDisp = (soulVal + h1 + h2 - 0.3) * 0.55;
 
-        // Only emit corona at peaks (soul > threshold)
-        const isPeak = soulVal > 0.5;
-        const coronaHeight = isPeak ? soulDisp * 1.5 + hash(i + 70000) * 0.15 : soulDisp * 0.3;
+        // Profile: corona height factor (bulges/ridges → taller corona)
+        const cFactor = channels.coronaFactor(normalizedAngle);
+        const profileRadius = channels.radiusOffset(normalizedAngle);
+        const profileTint = channels.colorTint(normalizedAngle);
+
+        // Only emit corona at peaks (soul > threshold OR profile bulge)
+        const isPeak = soulVal > 0.5 || profileRadius > 0.1;
+        const coronaHeight = isPeak
+          ? soulDisp * cFactor * 1.2 + hash(i + 70000) * 0.15
+          : soulDisp * 0.3 * cFactor;
 
         const tubeAngle = hash(i * 11 + 70000) * Math.PI * 2;
-        const localTube = TUBE + coronaHeight + hash(i * 19 + 80000) * 0.05;
+        const profileTube = channels.tubeScale(normalizedAngle);
+        const localTube = (TUBE * profileTube) + coronaHeight + hash(i * 19 + 80000) * 0.05;
         const r = RADIUS + Math.cos(tubeAngle) * localTube;
         const y = Math.sin(tubeAngle) * localTube;
         const x = Math.cos(mainAngle) * r;
@@ -303,13 +297,18 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
         coronaBasePositions[i * 3 + 1] = y;
         coronaBasePositions[i * 3 + 2] = z;
 
+        // Corona color: profile tint blended with glow
         const intensity = isPeak ? 0.5 + soulVal * 0.5 : 0.2;
         const col = new THREE.Color().copy(glowColor).multiplyScalar(intensity);
+        if (profileTint[3] > 0.05) {
+          const tCol = new THREE.Color(profileTint[0], profileTint[1], profileTint[2]);
+          col.lerp(tCol, profileTint[3] * 0.5);
+        }
         coronaColors[i * 3] = col.r;
         coronaColors[i * 3 + 1] = col.g;
         coronaColors[i * 3 + 2] = col.b;
 
-        coronaSizes[i] = isPeak ? 0.02 + soulVal * 0.025 : 0.008 + hash(i * 29) * 0.005;
+        coronaSizes[i] = isPeak ? (0.02 + soulVal * 0.025) * cFactor : 0.008 + hash(i * 29) * 0.005;
         coronaPhases[i] = hash(i * 37 + 90000) * Math.PI * 2;
       }
 
@@ -416,39 +415,106 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
       const effectLight2 = new THREE.PointLight(0xffffff, 0, 8);
       scene.add(effectLight2);
 
-      // Spike meshes for Resonanzsprung/Divergenz
+      // === PROCEDURAL GLOW TEXTURES ===
+      // Soft radial glow — used for point sprites and energy nodes
+      const glowCanvas = document.createElement('canvas');
+      glowCanvas.width = 128; glowCanvas.height = 128;
+      const glowCtx = glowCanvas.getContext('2d')!;
+      const grad = glowCtx.createRadialGradient(64, 64, 0, 64, 64, 64);
+      grad.addColorStop(0, 'rgba(255,255,255,1)');
+      grad.addColorStop(0.15, 'rgba(255,255,255,0.8)');
+      grad.addColorStop(0.4, 'rgba(255,200,180,0.3)');
+      grad.addColorStop(0.7, 'rgba(255,120,80,0.08)');
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      glowCtx.fillStyle = grad;
+      glowCtx.fillRect(0, 0, 128, 128);
+      const glowTexture = new THREE.CanvasTexture(glowCanvas);
+
+      // Elongated vertical energy beam texture
+      const beamCanvas = document.createElement('canvas');
+      beamCanvas.width = 32; beamCanvas.height = 256;
+      const beamCtx = beamCanvas.getContext('2d')!;
+      const beamGrad = beamCtx.createLinearGradient(0, 0, 0, 256);
+      beamGrad.addColorStop(0, 'rgba(255,255,255,0)');
+      beamGrad.addColorStop(0.05, 'rgba(255,255,255,0.6)');
+      beamGrad.addColorStop(0.15, 'rgba(255,255,255,1)');
+      beamGrad.addColorStop(0.5, 'rgba(255,220,180,0.7)');
+      beamGrad.addColorStop(0.85, 'rgba(255,120,80,0.2)');
+      beamGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      beamCtx.fillStyle = beamGrad;
+      beamCtx.fillRect(0, 0, 32, 256);
+      // Add a bright core line
+      const coreGrad = beamCtx.createLinearGradient(0, 0, 32, 0);
+      coreGrad.addColorStop(0, 'rgba(255,255,255,0)');
+      coreGrad.addColorStop(0.35, 'rgba(255,255,255,0)');
+      coreGrad.addColorStop(0.5, 'rgba(255,255,255,0.9)');
+      coreGrad.addColorStop(0.65, 'rgba(255,255,255,0)');
+      coreGrad.addColorStop(1, 'rgba(255,255,255,0)');
+      beamCtx.globalCompositeOperation = 'lighter';
+      beamCtx.fillStyle = coreGrad;
+      beamCtx.fillRect(0, 0, 32, 256);
+      const beamTexture = new THREE.CanvasTexture(beamCanvas);
+
+      // === ENERGY SPIKE SPRITES (Resonanzsprung / Divergenz) ===
       const spikeMeshes: THREE_TYPES.Mesh[] = [];
       const spikeGroup = new THREE.Group();
       ringGroup.add(spikeGroup);
       for (let i = 0; i < 12; i++) {
-        const spikeGeo = new THREE.ConeGeometry(0.04, 0.8, 6);
+        const spikeGeo = new THREE.PlaneGeometry(0.12, 1.2);
         const spikeMat = new THREE.MeshBasicMaterial({
-          color: 0xff4a3a, transparent: true, opacity: 0,
-          blending: THREE.AdditiveBlending,
+          map: beamTexture, color: 0xff4a3a, transparent: true, opacity: 0,
+          blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false,
         });
         const spike = new THREE.Mesh(spikeGeo, spikeMat);
         spike.visible = false;
         spikeGroup.add(spike);
         spikeMeshes.push(spike);
+        // Add a perpendicular cross-plane for volumetric look
+        const crossGeo = new THREE.PlaneGeometry(0.12, 1.2);
+        const crossMat = new THREE.MeshBasicMaterial({
+          map: beamTexture, color: 0xff4a3a, transparent: true, opacity: 0,
+          blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false,
+        });
+        const cross = new THREE.Mesh(crossGeo, crossMat);
+        cross.rotation.y = Math.PI / 2;
+        spike.add(cross);
       }
 
-      // Energy beam for Spannungsachse
-      const beamGeo = new THREE.CylinderGeometry(0.015, 0.015, RADIUS * 2, 8);
+      // === ENERGY ARC BEAM (Spannungsachse) ===
+      // Core beam + outer glow halo
+      const beamGeo = new THREE.PlaneGeometry(0.06, RADIUS * 2.2);
       const beamMat = new THREE.MeshBasicMaterial({
-        color: 0xc850ff, transparent: true, opacity: 0,
-        blending: THREE.AdditiveBlending,
+        map: beamTexture, color: 0xc850ff, transparent: true, opacity: 0,
+        blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false,
       });
       const beam = new THREE.Mesh(beamGeo, beamMat);
       beam.visible = false;
       ringGroup.add(beam);
+      // Wide outer glow
+      const beamGlowGeo = new THREE.PlaneGeometry(0.35, RADIUS * 2.2);
+      const beamGlowMat = new THREE.MeshBasicMaterial({
+        map: beamTexture, color: 0xc850ff, transparent: true, opacity: 0,
+        blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false,
+      });
+      const beamGlow = new THREE.Mesh(beamGlowGeo, beamGlowMat);
+      beam.add(beamGlow);
+      // Cross plane
+      const beamCrossGeo = new THREE.PlaneGeometry(0.06, RADIUS * 2.2);
+      const beamCrossMat = new THREE.MeshBasicMaterial({
+        map: beamTexture, color: 0xc850ff, transparent: true, opacity: 0,
+        blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false,
+      });
+      const beamCross = new THREE.Mesh(beamCrossGeo, beamCrossMat);
+      beamCross.rotation.y = Math.PI / 2;
+      beam.add(beamCross);
 
-      // Pulse rings for Mond-Event
+      // === PULSE ENERGY RINGS (Mond-Event) ===
       const pulseRings: THREE_TYPES.Mesh[] = [];
       for (let i = 0; i < 3; i++) {
-        const pulseGeo = new THREE.TorusGeometry(RADIUS, 0.008, 8, 128);
+        const pulseGeo = new THREE.TorusGeometry(RADIUS, 0.035, 16, 128);
         const pulseMat = new THREE.MeshBasicMaterial({
           color: 0xb4c8ff, transparent: true, opacity: 0,
-          blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+          blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false,
         });
         const pr = new THREE.Mesh(pulseGeo, pulseMat);
         pr.visible = false;
@@ -456,79 +522,107 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
         pulseRings.push(pr);
       }
 
-      // Korona energy strands
+      // === KORONA ENERGY STRANDS (particle streams) ===
       const koronaStrands: THREE_TYPES.Mesh[] = [];
       const koronaGroup = new THREE.Group();
       ringGroup.add(koronaGroup);
-      for (let i = 0; i < 20; i++) {
-        const strandGeo = new THREE.CylinderGeometry(0.008, 0.002, 1.2, 4);
+      for (let i = 0; i < 24; i++) {
+        const strandGeo = new THREE.PlaneGeometry(0.06, 1.6);
         const strandMat = new THREE.MeshBasicMaterial({
-          color: 0x3aff6a, transparent: true, opacity: 0,
-          blending: THREE.AdditiveBlending,
+          map: beamTexture, color: 0x3aff6a, transparent: true, opacity: 0,
+          blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false,
         });
         const strand = new THREE.Mesh(strandGeo, strandMat);
         strand.visible = false;
         koronaGroup.add(strand);
         koronaStrands.push(strand);
+        // Cross plane for volume
+        const sCross = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.06, 1.6),
+          new THREE.MeshBasicMaterial({
+            map: beamTexture, color: 0x3aff6a, transparent: true, opacity: 0,
+            blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false,
+          })
+        );
+        sCross.rotation.y = Math.PI / 2;
+        strand.add(sCross);
       }
 
-      // Cascade particles for Dominanzwechsel
-      const cascadeCount = 200;
+      // === CASCADE ENERGY PARTICLES (Dominanzwechsel) ===
+      const cascadeCount = 400;
       const cascadePositions = new Float32Array(cascadeCount * 3);
       const cascadeGeo = new THREE.BufferGeometry();
       cascadeGeo.setAttribute('position', new THREE.BufferAttribute(cascadePositions, 3));
       const cascadeMat = new THREE.PointsMaterial({
-        color: 0xffc83a, size: 0.025, transparent: true, opacity: 0,
+        color: 0xffc83a, size: 0.08, transparent: true, opacity: 0,
         blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true,
+        map: glowTexture,
       });
       const cascadeParticles = new THREE.Points(cascadeGeo, cascadeMat);
       cascadeParticles.visible = false;
       ringGroup.add(cascadeParticles);
 
-      // Shockwave for Divergenz
-      const shockGeo = new THREE.RingGeometry(RADIUS - 0.1, RADIUS + 0.1, 64);
+      // === SHOCKWAVE ENERGY RING (Divergenz / Burst) ===
+      const shockGeo = new THREE.RingGeometry(RADIUS - 0.05, RADIUS + 0.25, 128);
       const shockMat = new THREE.MeshBasicMaterial({
         color: 0xff5040, transparent: true, opacity: 0,
-        blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false,
       });
       const shockwave = new THREE.Mesh(shockGeo, shockMat);
       shockwave.visible = false;
       ringGroup.add(shockwave);
+      // Inner glow ring
+      const shockInnerGeo = new THREE.RingGeometry(RADIUS - 0.02, RADIUS + 0.08, 128);
+      const shockInnerMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff, transparent: true, opacity: 0,
+        blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false,
+      });
+      const shockInner = new THREE.Mesh(shockInnerGeo, shockInnerMat);
+      shockwave.add(shockInner);
 
-      // === MOUSE CONTROLS ===
-      let targetRotY = 0;
-      let targetRotX = 0.35;
-      let currentRotY = 0;
-      let currentRotX = 0.35;
-      let zoom = 5.5;
-      let targetZoom = 5.5;
-      const mouse = { isDown: false, prevX: 0, prevY: 0 };
+      // === MOUSE / TOUCH CONTROLS ===
+      // Home position: top-down face view, fully zoomed out — see the full ring circle
+      const HOME_ROT_X = 1.48;  // near 90° (π/2=1.57) — almost straight down, slight depth
+      const HOME_ROT_Y = 0;     // centered, no horizontal rotation
+      const HOME_ZOOM = 8.5;    // far out — entire ring visible with breathing room
+
+      let targetRotY = HOME_ROT_Y;
+      let targetRotX = HOME_ROT_X;
+      let currentRotY = HOME_ROT_Y;
+      let currentRotX = HOME_ROT_X;
+      let zoom = HOME_ZOOM;
+      let targetZoom = HOME_ZOOM;
+      const mouse = { isDown: false, prevX: 0, prevY: 0, lastInteraction: 0 };
 
       const onWheel = (e: WheelEvent) => {
         e.preventDefault();
         targetZoom = Math.max(3, Math.min(10, targetZoom + e.deltaY * 0.005));
+        mouse.lastInteraction = Date.now();
       };
       const onMouseDown = (e: MouseEvent) => {
         mouse.isDown = true; mouse.prevX = e.clientX; mouse.prevY = e.clientY;
+        mouse.lastInteraction = Date.now();
       };
       const onMouseMove = (e: MouseEvent) => {
         if (mouse.isDown) {
           targetRotY += (e.clientX - mouse.prevX) * 0.005;
-          targetRotX = Math.max(0.1, Math.min(1.2, targetRotX + (e.clientY - mouse.prevY) * 0.003));
+          targetRotX = Math.max(0.05, Math.min(1.55, targetRotX + (e.clientY - mouse.prevY) * 0.003));
           mouse.prevX = e.clientX; mouse.prevY = e.clientY;
+          mouse.lastInteraction = Date.now();
         }
       };
       const onMouseUp = () => { mouse.isDown = false; };
       const onTouchStart = (e: TouchEvent) => {
         const t = e.touches?.[0];
-        if (t) { mouse.isDown = true; mouse.prevX = t.clientX; mouse.prevY = t.clientY; }
+        if (t) { mouse.isDown = true; mouse.prevX = t.clientX; mouse.prevY = t.clientY; mouse.lastInteraction = Date.now(); }
       };
       const onTouchMove = (e: TouchEvent) => {
         const t = e.touches?.[0];
         if (mouse.isDown && t) {
           targetRotY += (t.clientX - mouse.prevX) * 0.005;
-          targetRotX = Math.max(0.1, Math.min(1.2, targetRotX + (t.clientY - mouse.prevY) * 0.003));
+          targetRotX = Math.max(0.05, Math.min(1.55, targetRotX + (t.clientY - mouse.prevY) * 0.003));
           mouse.prevX = t.clientX; mouse.prevY = t.clientY;
+          mouse.lastInteraction = Date.now();
         }
       };
       const onTouchEnd = () => { mouse.isDown = false; };
@@ -543,11 +637,9 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
       window.addEventListener('touchend', onTouchEnd);
 
       const onResize = () => {
-        const width = Math.max(1, canvasRef.current?.clientWidth ?? window.innerWidth);
-        const height = Math.max(1, canvasRef.current?.clientHeight ?? window.innerHeight);
-        camera.aspect = width / height;
+        camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
-        renderer.setSize(width, height);
+        renderer.setSize(window.innerWidth, window.innerHeight);
         ringMat.uniforms.uPixelRatio!.value = Math.min(window.devicePixelRatio, 1.5);
         coronaMat.uniforms.uPixelRatio!.value = Math.min(window.devicePixelRatio, 1.5);
       };
@@ -565,12 +657,21 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
       const coronaDisplacementTarget = new Float32Array(CORONA_COUNT * 3);
       const coronaDisplacementCurrent = new Float32Array(CORONA_COUNT * 3);
 
+      /** Global intensity multiplier from EffectState.intensity (0–1). Applied to all effect amplitudes. */
+      let effectIntensityMultiplier = 1.0;
+      /** Active effect's primary sector (from EffectState.sector). Available to init/update functions. */
+      let effectPrimarySector = 0;
+
       function processEffect(t: number, dt: number) {
         const eff = effectRef.current;
         if (!eff || !eff.type) {
           fadeOutEffects(dt);
+          effectIntensityMultiplier = 1.0;
           return;
         }
+        // Read intensity/sector from effect state (default 1.0 / 0 for legacy button triggers)
+        effectIntensityMultiplier = eff.intensity ?? 1.0;
+        effectPrimarySector = eff.sector ?? 0;
         if (eff.startTime !== activeEffectStartTime) {
           activeEffectStartTime = eff.startTime;
           initializeEffect(eff.type, t);
@@ -600,13 +701,19 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
         }
       }
 
+      // Helper: sync opacity to mesh + all children
+      function setMeshTreeOpacity(mesh: THREE_TYPES.Object3D, opacity: number) {
+        if ((mesh as any).material) (mesh as any).material.opacity = opacity;
+        mesh.children.forEach(c => { if ((c as any).material) (c as any).material.opacity = opacity; });
+      }
+
       function hideAllEffects() {
-        spikeMeshes.forEach(s => { s.visible = false; (s.material as any).opacity = 0; });
-        beam.visible = false; (beamMat as any).opacity = 0;
+        spikeMeshes.forEach(s => { s.visible = false; setMeshTreeOpacity(s, 0); });
+        beam.visible = false; setMeshTreeOpacity(beam, 0);
         pulseRings.forEach(p => { p.visible = false; (p.material as any).opacity = 0; });
-        koronaStrands.forEach(s => { s.visible = false; (s.material as any).opacity = 0; });
+        koronaStrands.forEach(s => { s.visible = false; setMeshTreeOpacity(s, 0); });
         cascadeParticles.visible = false; (cascadeMat as any).opacity = 0;
-        shockwave.visible = false; (shockMat as any).opacity = 0;
+        shockwave.visible = false; setMeshTreeOpacity(shockwave, 0);
         effectLight1.intensity = 0;
         effectLight2.intensity = 0;
       }
@@ -614,17 +721,17 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
       function fadeOutEffects(dt: number) {
         const fs = dt * 2;
         spikeMeshes.forEach(s => {
-          if (s.visible) { (s.material as any).opacity = Math.max(0, (s.material as any).opacity - fs); if ((s.material as any).opacity <= 0) s.visible = false; }
+          if (s.visible) { const o = Math.max(0, (s.material as any).opacity - fs); setMeshTreeOpacity(s, o); if (o <= 0) s.visible = false; }
         });
-        if (beam.visible) { (beamMat as any).opacity = Math.max(0, (beamMat as any).opacity - fs); if ((beamMat as any).opacity <= 0) beam.visible = false; }
+        if (beam.visible) { const o = Math.max(0, (beamMat as any).opacity - fs); setMeshTreeOpacity(beam, o); if (o <= 0) beam.visible = false; }
         pulseRings.forEach(p => {
           if (p.visible) { (p.material as any).opacity = Math.max(0, (p.material as any).opacity - fs); if ((p.material as any).opacity <= 0) p.visible = false; }
         });
         koronaStrands.forEach(s => {
-          if (s.visible) { (s.material as any).opacity = Math.max(0, (s.material as any).opacity - fs); if ((s.material as any).opacity <= 0) s.visible = false; }
+          if (s.visible) { const o = Math.max(0, (s.material as any).opacity - fs); setMeshTreeOpacity(s, o); if (o <= 0) s.visible = false; }
         });
         if (cascadeParticles.visible) { (cascadeMat as any).opacity = Math.max(0, (cascadeMat as any).opacity - fs); if ((cascadeMat as any).opacity <= 0) cascadeParticles.visible = false; }
-        if (shockwave.visible) { (shockMat as any).opacity = Math.max(0, (shockMat as any).opacity - fs); if ((shockMat as any).opacity <= 0) shockwave.visible = false; }
+        if (shockwave.visible) { const o = Math.max(0, (shockMat as any).opacity - fs); setMeshTreeOpacity(shockwave, o); if (o <= 0) shockwave.visible = false; }
         effectLight1.intensity = Math.max(0, effectLight1.intensity - fs * 2);
         effectLight2.intensity = Math.max(0, effectLight2.intensity - fs * 2);
         // Fade out color injection
@@ -655,6 +762,8 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
 
       /** Sector burst: particles near sectorAngle explode outward + upward */
       function displaceSectorBurst(t: number, sectorIdx: number, amplitude: number, spread: number, upward: number) {
+        // Scale amplitude by global effect intensity multiplier
+        amplitude *= effectIntensityMultiplier;
         const sectorAngle = nodeAngles[sectorIdx] ?? 0;
         const nSector = sectorAngle < 0 ? sectorAngle + Math.PI * 2 : sectorAngle;
 
@@ -960,6 +1069,8 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
       }
 
       function injectColor(sectorIdx: number, color: THREE_TYPES.Color, intensity: number) {
+        // Scale intensity by global effect multiplier
+        intensity *= effectIntensityMultiplier;
         for (let i = 0; i < RING_PARTICLE_COUNT; i++) {
           const bx = ringBasePositions[i * 3] ?? 0;
           const bz = ringBasePositions[i * 3 + 2] ?? 0;
@@ -1059,7 +1170,7 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
           const spike = spikeMeshes[i];
           if (!spike?.visible) continue;
           spike.scale.set(1 + ease * 0.5, Math.pow(ease, 0.5) * (1.2 + Math.sin(t * 15 + i) * 0.3), 1 + ease * 0.5);
-          (spike.material as any).opacity = ease * 0.8;
+          setMeshTreeOpacity(spike, ease * 0.8);
         }
         effectLight1.intensity = ease * 5;
         ringGroup.position.x = Math.sin(t * 25) * ease * 0.015;
@@ -1101,7 +1212,7 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
         }
         pos.needsUpdate = true;
         (cascadeMat as any).opacity = ease * 0.9;
-        cascadeMat.size = 0.025 + ease * 0.02;
+        cascadeMat.size = 0.08 + ease * 0.05;
         effectLight1.position.set(Math.cos(fromAngle) * RADIUS, 0.3, Math.sin(fromAngle) * RADIUS);
         effectLight1.intensity = (1 - progress) * 3;
         effectLight2.position.set(Math.cos(toAngle) * RADIUS, 0.3, Math.sin(toAngle) * RADIUS);
@@ -1167,7 +1278,8 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
       function updateSpannungsachse(progress: number, t: number) {
         const ease = Math.sin(progress * Math.PI);
         const flicker = 1 + Math.sin(t * 20) * 0.2;
-        (beamMat as any).opacity = ease * 0.5 * flicker;
+        const beamOpacity = ease * 0.5 * flicker;
+        setMeshTreeOpacity(beam, beamOpacity);
         (beamMat as any).color.setHex(progress < 0.5 ? 0xc850ff : 0xff5040);
         const aAngle = nodeAngles[tensionA] ?? 0;
         const bAngle = nodeAngles[tensionB] ?? 0;
@@ -1189,7 +1301,7 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
       function initKoronaEruption() {
         koronaStrands.forEach((strand, i) => {
           strand.visible = true;
-          const angle = (i / 20) * Math.PI * 2 + i * 0.1;
+          const angle = (i / 24) * Math.PI * 2 + i * 0.1;
           strand.position.set(Math.cos(angle) * RADIUS, 0, Math.sin(angle) * RADIUS);
           strand.lookAt(Math.cos(angle) * (RADIUS + 2), Math.sin(i * 0.5) * 0.5, Math.sin(angle) * (RADIUS + 2));
           strand.rotateX(-Math.PI / 2);
@@ -1203,11 +1315,11 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
       function updateKoronaEruption(progress: number, t: number) {
         const ease = Math.sin(progress * Math.PI);
         koronaStrands.forEach((strand, i) => {
-          const delay = (i / 20) * 0.3;
+          const delay = (i / 24) * 0.3;
           const lp = Math.max(0, Math.min(1, (progress - delay) / (1 - delay)));
           const le = Math.sin(lp * Math.PI);
           strand.scale.set(1 + le * 0.5, le * (0.8 + Math.sin(t * 6 + i) * 0.3), 1 + le * 0.5);
-          (strand.material as any).opacity = le * 0.7;
+          setMeshTreeOpacity(strand, le * 0.7);
         });
         effectLight1.position.set(0, 1.5, 0);
         effectLight1.intensity = ease * 3;
@@ -1248,10 +1360,10 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
           if (!spike.visible) return;
           const tremble = phase2 * Math.sin(t * 30 + i * 2) * 0.15;
           spike.scale.set(1 + intensity * 0.8 + tremble * 0.5, intensity * (0.8 + Math.sin(i * 1.3) * 0.5 + tremble), 1 + intensity * 0.8 + tremble * 0.5);
-          (spike.material as any).opacity = intensity * 0.9;
+          setMeshTreeOpacity(spike, intensity * 0.9);
         });
         shockwave.scale.setScalar(0.5 + progress * 1.2);
-        (shockMat as any).opacity = intensity * 0.4;
+        setMeshTreeOpacity(shockwave, intensity * 0.4);
         const shake = phase2 * 0.025;
         ringGroup.position.x = Math.sin(t * 35) * shake;
         ringGroup.position.z = Math.cos(t * 40) * shake;
@@ -1316,7 +1428,7 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
 
         // Shockwave expanding ring
         shockwave.scale.setScalar(0.3 + progress * 2.0);
-        (shockMat as any).opacity = intensity * 0.5;
+        setMeshTreeOpacity(shockwave, intensity * 0.5);
 
         // Warm explosion color injection
         const burstColor = new THREE.Color(0xffc83a);
@@ -1421,14 +1533,21 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
         const t = clock.getElapsedTime();
         const dt = clock.getDelta() || 0.016;
 
-        if (!mouse.isDown) targetRotY += 0.001;
+        // Return-to-home: when user is not interacting, slowly drift back to home position
+        const IDLE_DELAY = 1500; // ms after last interaction before returning home
+        const RETURN_SPEED = 0.012; // slow, cinematic return
+        if (!mouse.isDown && (Date.now() - mouse.lastInteraction) > IDLE_DELAY) {
+          targetRotX += (HOME_ROT_X - targetRotX) * RETURN_SPEED;
+          targetRotY += (HOME_ROT_Y - targetRotY) * RETURN_SPEED;
+          targetZoom += (HOME_ZOOM - targetZoom) * RETURN_SPEED;
+        }
 
         currentRotY += (targetRotY - currentRotY) * 0.05;
         currentRotX += (targetRotX - currentRotX) * 0.05;
         zoom += (targetZoom - zoom) * 0.05;
 
         camera.position.x = Math.sin(currentRotY) * Math.cos(currentRotX) * zoom;
-        camera.position.y = Math.sin(currentRotX) * zoom * 0.6;
+        camera.position.y = Math.sin(currentRotX) * zoom;
         camera.position.z = Math.cos(currentRotY) * Math.cos(currentRotX) * zoom;
         camera.lookAt(0, 0, 0);
 
@@ -1440,9 +1559,7 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
           renderer.toneMappingExposure = 1.8;
         }
 
-        // Slow ring rotation
-        ringParticles.rotation.z = t * 0.012;
-        coronaParticles.rotation.z = t * 0.012;
+        // Subtle dust drift only (no ring/corona rotation)
         dust.rotation.y = t * 0.003;
 
         // Idle particle breathing — subtle displacement waves via target system
@@ -1508,6 +1625,9 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
         }
 
         processEffect(t, dt);
+        // Apply global intensity multiplier to effect lights
+        effectLight1.intensity *= effectIntensityMultiplier;
+        effectLight2.intensity *= effectIntensityMultiplier;
 
         renderer.render(scene, camera);
       };
@@ -1539,11 +1659,22 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
   return <div ref={canvasRef} style={{ width: '100%', height: '100%' }} />;
 }
 
-export function FusionRingWebsiteCanvas({
-  queuedEffect = null,
-  showEffectControls = false,
-  className,
-}: FusionRingWebsiteCanvasProps) {
+// Re-export RingEffectType for backward compatibility
+export type { RingEffectType } from './fusion-ring-transit';
+
+interface FusionRingWebsiteCanvasProps {
+  queuedEffect?: { id: string; type: string } | null;
+  showEffectControls?: boolean;
+  className?: string;
+}
+
+export function FusionRingWebsiteCanvas(_props: FusionRingWebsiteCanvasProps) {
+  return <FusionRingCanvasInner />;
+}
+
+export default FusionRingWebsiteCanvas;
+
+function FusionRingCanvasInner() {
   const [mounted, setMounted] = useState(false);
   const [webglSupported, setWebglSupported] = useState(true);
   const [activeEffect, setActiveEffect] = useState<EffectType>(null);
@@ -1564,22 +1695,77 @@ export function FusionRingWebsiteCanvas({
     setAudioEnabled((v) => !v);
   }, [audioEnabled]);
 
-  const triggerEffect = useCallback((type: EffectType) => {
+  /**
+   * Trigger an effect with optional intensity (0–1) and sector (0–11).
+   * Called from UI buttons (intensity=1.0) or from InputController (variable intensity).
+   */
+  const triggerEffect = useCallback((
+    type: EffectType,
+    options?: { intensity?: number; duration?: number; sector?: number }
+  ) => {
     if (!type) return;
     setActiveEffect(type);
-    const duration = type === 'divergenz_spike' ? 5 : type === 'burst' ? 3.5 : type === 'crunch' ? 4.5 : 4;
-    effectRef.current = { type, startTime: Date.now(), duration };
+    const defaultDuration = type === 'divergenz_spike' ? 5 : type === 'burst' ? 3.5 : type === 'crunch' ? 4.5 : 4;
+    const duration = options?.duration ?? defaultDuration;
+    const intensity = Math.max(0, Math.min(1, options?.intensity ?? 1.0));
+    const sector = options?.sector ?? 0;
+    effectRef.current = { type, startTime: Date.now(), duration, intensity, sector };
     setTimeout(() => setActiveEffect(null), duration * 1000);
   }, []);
 
+  // --- Input Controller ---
+  const inputControllerRef = useRef<FusionRingInputController | null>(null);
+  const [showDataPanel, setShowDataPanel] = useState(false);
+  const [manualIntensity, setManualIntensity] = useState(0.8);
+  const [manualDuration, setManualDuration] = useState(4);
+  const [manualSector, setManualSector] = useState(0);
+  const [transitLog, setTransitLog] = useState<string[]>([]);
+
   useEffect(() => {
-    if (!queuedEffect?.type) return;
-    triggerEffect(queuedEffect.type);
-  }, [queuedEffect?.id, queuedEffect?.type, triggerEffect]);
+    const profile = createDemoProfile();
+    const controller = new FusionRingInputController(profile);
+    controller.onEffectTrigger((trigger) => {
+      triggerEffect(trigger.type as EffectType, {
+        intensity: trigger.intensity,
+        duration: trigger.duration,
+        sector: trigger.sector,
+      });
+      setTransitLog(prev => [...prev.slice(-9), `▸ ${trigger.type} (I:${trigger.intensity.toFixed(2)}, S:${trigger.sector})`]);
+    });
+    inputControllerRef.current = controller;
+    return () => { controller.destroy(); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const ingestTransitJSON = useCallback((json: string) => {
+    try {
+      const state = JSON.parse(json) as TransitStateV1;
+      inputControllerRef.current?.ingestTransitState(state);
+      setTransitLog(prev => [...prev.slice(-9), `✓ Transit State ingested (${state.events?.length ?? 0} events)`]);
+    } catch (e: unknown) {
+      setTransitLog(prev => [...prev.slice(-9), `✗ Parse error: ${e instanceof Error ? e.message : 'unknown'}`]);
+    }
+  }, []);
+
+  const ingestQuizJSON = useCallback((json: string) => {
+    try {
+      const result = JSON.parse(json) as QuizClusterResult;
+      inputControllerRef.current?.ingestQuizCluster(result);
+      setTransitLog(prev => [...prev.slice(-9), `✓ Quiz Cluster ingested (${result.facettes?.length ?? 0} facettes)`]);
+    } catch (e: unknown) {
+      setTransitLog(prev => [...prev.slice(-9), `✗ Parse error: ${e instanceof Error ? e.message : 'unknown'}`]);
+    }
+  }, []);
+
+  const loadDemoTransit = useCallback(() => {
+    const demo = createDemoTransitState();
+    inputControllerRef.current?.ingestTransitState(demo);
+    setTransitLog(prev => [...prev.slice(-9), `✓ Demo Transit loaded (${demo.events.length} events)`]);
+  }, []);
 
   if (!mounted) {
     return (
-      <div className="w-full h-full bg-black flex items-center justify-center">
+      <div className="w-screen h-screen bg-black flex items-center justify-center">
         <div className="w-32 h-32 rounded-full border border-cyan-900/30 animate-pulse" />
       </div>
     );
@@ -1587,7 +1773,7 @@ export function FusionRingWebsiteCanvas({
 
   if (!webglSupported) {
     return (
-      <div className="w-full h-full bg-black flex items-center justify-center">
+      <div className="w-screen h-screen bg-black flex items-center justify-center">
         <FallbackRing />
       </div>
     );
@@ -1600,14 +1786,11 @@ export function FusionRingWebsiteCanvas({
   ] as EffectType[];
 
   return (
-    <div
-      className={className}
-      style={{ width: '100%', height: '100%', background: '#030308', position: 'relative', overflow: 'hidden' }}
-    >
+    <div style={{ width: '100vw', height: '100vh', background: '#030308', position: 'relative', overflow: 'hidden' }}>
       <ThreeScene effectRef={effectRef} audioRef={audioRef} />
 
       {/* Effect Buttons */}
-      {showEffectControls && <div style={{
+      <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0,
         display: 'flex', justifyContent: 'center', alignItems: 'flex-end',
         padding: '16px 12px', gap: '8px', flexWrap: 'wrap', zIndex: 10,
@@ -1653,7 +1836,7 @@ export function FusionRingWebsiteCanvas({
             </button>
           );
         })}
-      </div>}
+      </div>
 
       {/* Audio Toggle */}
       <button
@@ -1712,6 +1895,152 @@ export function FusionRingWebsiteCanvas({
         </div>
       )}
 
+      {/* Data Input Toggle */}
+      <button
+        onClick={() => setShowDataPanel(v => !v)}
+        style={{
+          position: 'absolute', top: '20px', left: '20px', zIndex: 20,
+          padding: '8px 14px', borderRadius: '8px',
+          background: showDataPanel ? 'rgba(20,180,220,0.15)' : 'rgba(10,10,20,0.6)',
+          border: `1px solid ${showDataPanel ? 'rgba(20,180,220,0.5)' : 'rgba(80,90,120,0.3)'}`,
+          color: showDataPanel ? 'rgba(20,180,220,0.9)' : 'rgba(120,130,150,0.6)',
+          cursor: 'pointer', fontFamily: '"SF Mono", "Fira Code", monospace',
+          fontSize: '9px', letterSpacing: '1.5px', fontWeight: 600,
+          backdropFilter: 'blur(10px)', transition: 'all 0.3s ease',
+        }}
+      >
+        {showDataPanel ? '✕ CLOSE' : '◈ DATA INPUT'}
+      </button>
+
+      {/* Data Input Panel */}
+      {showDataPanel && (
+        <div style={{
+          position: 'absolute', top: '70px', left: '20px', zIndex: 20,
+          width: '340px', maxHeight: 'calc(100vh - 140px)', overflowY: 'auto',
+          background: 'rgba(5,5,15,0.92)', border: '1px solid rgba(80,90,120,0.3)',
+          borderRadius: '12px', padding: '16px', backdropFilter: 'blur(20px)',
+          fontFamily: '"SF Mono", "Fira Code", monospace', color: 'rgba(180,190,210,0.8)',
+        }}>
+          {/* Manual Effect Trigger */}
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ fontSize: '9px', letterSpacing: '2px', color: 'rgba(20,180,220,0.7)', marginBottom: '8px', fontWeight: 700 }}>
+              MANUAL EFFECT TRIGGER
+            </div>
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '10px' }}>
+              {effects.map(eff => eff && (
+                <button key={eff} onClick={() => triggerEffect(eff, { intensity: manualIntensity, duration: manualDuration, sector: manualSector })}
+                  disabled={!!activeEffect}
+                  style={{
+                    padding: '4px 8px', fontSize: '8px', letterSpacing: '1px',
+                    background: 'rgba(20,20,40,0.8)', border: '1px solid rgba(80,90,120,0.3)',
+                    borderRadius: '4px', color: EFFECT_CONFIGS[eff]?.color ?? '#fff',
+                    cursor: activeEffect ? 'not-allowed' : 'pointer', opacity: activeEffect ? 0.4 : 1,
+                  }}
+                >{eff.toUpperCase()}</button>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: '12px', fontSize: '9px' }}>
+              <label style={{ flex: 1 }}>
+                <span style={{ opacity: 0.5 }}>Intensity: {manualIntensity.toFixed(2)}</span>
+                <input type="range" min="0" max="1" step="0.05" value={manualIntensity}
+                  onChange={e => setManualIntensity(parseFloat(e.target.value))}
+                  style={{ width: '100%', accentColor: '#14b4dc' }} />
+              </label>
+              <label style={{ flex: 1 }}>
+                <span style={{ opacity: 0.5 }}>Duration: {manualDuration}s</span>
+                <input type="range" min="1" max="10" step="0.5" value={manualDuration}
+                  onChange={e => setManualDuration(parseFloat(e.target.value))}
+                  style={{ width: '100%', accentColor: '#14b4dc' }} />
+              </label>
+            </div>
+            <label style={{ fontSize: '9px', display: 'block', marginTop: '6px' }}>
+              <span style={{ opacity: 0.5 }}>Sector: {manualSector}</span>
+              <input type="range" min="0" max="11" step="1" value={manualSector}
+                onChange={e => setManualSector(parseInt(e.target.value))}
+                style={{ width: '100%', accentColor: '#14b4dc' }} />
+            </label>
+          </div>
+
+          {/* Separator */}
+          <div style={{ height: '1px', background: 'rgba(80,90,120,0.3)', margin: '12px 0' }} />
+
+          {/* Transit State JSON Input */}
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ fontSize: '9px', letterSpacing: '2px', color: 'rgba(255,184,42,0.7)', marginBottom: '8px', fontWeight: 700 }}>
+              CHANNEL A · TRANSIT STATE
+            </div>
+            <textarea
+              id="transit-json-input"
+              placeholder='Paste TRANSIT_STATE_v1 JSON here...'
+              rows={4}
+              style={{
+                width: '100%', background: 'rgba(10,10,25,0.8)', border: '1px solid rgba(80,90,120,0.3)',
+                borderRadius: '6px', padding: '8px', color: 'rgba(180,190,210,0.8)',
+                fontSize: '9px', fontFamily: '"SF Mono", "Fira Code", monospace', resize: 'vertical',
+              }}
+            />
+            <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+              <button onClick={() => {
+                const el = document.getElementById('transit-json-input') as HTMLTextAreaElement;
+                if (el?.value) ingestTransitJSON(el.value);
+              }} style={{
+                flex: 1, padding: '6px', fontSize: '9px', letterSpacing: '1px',
+                background: 'rgba(255,184,42,0.1)', border: '1px solid rgba(255,184,42,0.3)',
+                borderRadius: '4px', color: 'rgba(255,184,42,0.8)', cursor: 'pointer',
+              }}>INGEST</button>
+              <button onClick={loadDemoTransit} style={{
+                flex: 1, padding: '6px', fontSize: '9px', letterSpacing: '1px',
+                background: 'rgba(20,180,220,0.1)', border: '1px solid rgba(20,180,220,0.3)',
+                borderRadius: '4px', color: 'rgba(20,180,220,0.8)', cursor: 'pointer',
+              }}>DEMO TRANSIT</button>
+            </div>
+          </div>
+
+          {/* Separator */}
+          <div style={{ height: '1px', background: 'rgba(80,90,120,0.3)', margin: '12px 0' }} />
+
+          {/* Quiz Cluster JSON Input */}
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ fontSize: '9px', letterSpacing: '2px', color: 'rgba(42,255,90,0.7)', marginBottom: '8px', fontWeight: 700 }}>
+              CHANNEL B · QUIZ CLUSTER
+            </div>
+            <textarea
+              id="quiz-json-input"
+              placeholder='Paste QuizClusterResult JSON here...'
+              rows={3}
+              style={{
+                width: '100%', background: 'rgba(10,10,25,0.8)', border: '1px solid rgba(80,90,120,0.3)',
+                borderRadius: '6px', padding: '8px', color: 'rgba(180,190,210,0.8)',
+                fontSize: '9px', fontFamily: '"SF Mono", "Fira Code", monospace', resize: 'vertical',
+              }}
+            />
+            <button onClick={() => {
+              const el = document.getElementById('quiz-json-input') as HTMLTextAreaElement;
+              if (el?.value) ingestQuizJSON(el.value);
+            }} style={{
+              width: '100%', marginTop: '6px', padding: '6px', fontSize: '9px', letterSpacing: '1px',
+              background: 'rgba(42,255,90,0.1)', border: '1px solid rgba(42,255,90,0.3)',
+              borderRadius: '4px', color: 'rgba(42,255,90,0.8)', cursor: 'pointer',
+            }}>INGEST QUIZ</button>
+          </div>
+
+          {/* Event Log */}
+          {transitLog.length > 0 && (
+            <div>
+              <div style={{ fontSize: '9px', letterSpacing: '2px', color: 'rgba(180,190,210,0.4)', marginBottom: '6px', fontWeight: 700 }}>
+                EVENT LOG
+              </div>
+              <div style={{
+                fontSize: '8px', lineHeight: '1.6', color: 'rgba(180,190,210,0.5)',
+                maxHeight: '100px', overflowY: 'auto',
+              }}>
+                {transitLog.map((log, i) => <div key={i}>{log}</div>)}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       <style>{`
         @keyframes pulse-border { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
         @keyframes fade-in-down { 0% { opacity: 0; transform: translateX(-50%) translateY(-10px); } 100% { opacity: 1; transform: translateX(-50%) translateY(0); } }
@@ -1719,8 +2048,6 @@ export function FusionRingWebsiteCanvas({
     </div>
   );
 }
-
-export default FusionRingWebsiteCanvas;
 
 function FallbackRing() {
   return (

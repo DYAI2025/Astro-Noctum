@@ -17,6 +17,7 @@ npm run clean      # Remove dist/
 npm run test       # Run Vitest test suite (once)
 npm run test:watch # Vitest in watch mode
 npm run test:coverage # Vitest with coverage
+npx vitest run src/__tests__/fusion-ring.test.ts  # Run a single test file
 
 # Full local dev (needs both):
 # Terminal 1: npm run dev                    (Vite on :3000)
@@ -75,7 +76,7 @@ Defined in `src/router.tsx`, all lazy-loaded:
 | `src/components/PremiumGate.tsx` | Wrapper that locks content behind premium; triggers Stripe checkout via `/api/checkout` |
 | `src/data/articles.ts` | SEO article content (6 articles, full German text, TypeScript) |
 | `src/components/QuizOverlay.tsx` | Modal overlay that hosts the quiz system; launched from Dashboard |
-| `src/components/quizzes/` | 15+ quiz components (Krafttier, AuraColors, CareerDNA, etc.); results feed into Fusion Ring via `src/lib/fusion-ring/quiz-to-event.ts` |
+| `src/components/quizzes/` | 22 quiz components (14 regular + 4 Kinky + 4 PartnerMatch); results feed into Fusion Ring via `src/lib/fusion-ring/quiz-to-event.ts` |
 | `src/components/quizzes/Kinky/` | Kinky quiz series (multi-part, premium) |
 | `src/components/quizzes/PartnerMatch/` | PartnerMatch quiz series including `ConversationAnalysisQuiz` |
 | `src/components/ClusterEnergySystem.tsx` | Renders quiz-result "energy clusters" on the Dashboard |
@@ -135,7 +136,13 @@ Quizzes emit "contribution events" via `src/lib/fusion-ring/quiz-to-event.ts`. E
 
 ### `features/plan/` Directory
 
-Contains `QuizzMe-main/` — a separate Next.js project and design reference that is **not part of the main app build**. It's excluded from Railway nixpacks. Treat it as a planning artefact / future integration target. Do not import from it into `src/`.
+Planning artefacts that are **not part of the main app build** and are excluded from Railway nixpacks. Do not import from them into `src/`.
+
+- `QuizzMe-main/` — separate Next.js project, design reference for quiz system
+- `allquizzes/` — HTML/JSON prototype quizzes + `quizzme-module-loader.ts` (has a **pre-existing TSC error at line 298** — Tag type mismatch — do not fix unless working on this file)
+- `Fu-Ring/` — Fusion Ring design assets
+- `Implementation-plan/` — implementation planning docs
+- `LeanDeep-annotator-main/` — annotation tool artefact
 
 ### Known Issues
 

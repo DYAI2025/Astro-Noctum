@@ -63,7 +63,16 @@ Custom tool for ElevenLabs voice agent.
 ### `POST /api/checkout`
 Creates a Stripe checkout session.
 - **Auth:** Authenticated.
-- **Response:** `{ "url": "https://checkout.stripe.com/..." }`
+- **Request Body (optional):**
+  - `successUrl` (string): deep-link or web URL to return after successful payment.
+  - `cancelUrl` (string): deep-link or web URL to return after cancellation.
+  - `platform` (string): client platform identifier (for diagnostics/metadata).
+- **Header telemetry (optional but recommended for mobile):**
+  - `X-App-Platform`
+  - `X-App-Version`
+  - `X-Device-Id`
+- **Response:** `{ "url": "https://checkout.stripe.com/...", "resolved": { "successUrl": "...", "cancelUrl": "..." } }`
+- **Validation:** Return URLs are allowlisted on the server. If rejected/missing, defaults fall back to `APP_URL`.
 
 ### `POST /api/webhook/stripe`
 Handles Stripe events.
@@ -76,6 +85,14 @@ Handles Stripe events.
 ### `GET /api/space-weather`
 Proxies NASA DONKI and NOAA APIs for geomagnetic activity.
 - **Response:** Current Kp-index and storm status.
+
+### `GET /api/mobile/bootstrap`
+Mobile app bootstrap contract.
+- **Response includes:**
+  - `min_supported_versions` (iOS/Android)
+  - `feature_flags` (mobile rollout toggles)
+  - `checkout` (default URLs + allowed schemes/origins)
+  - `voice` (Levi/ElevenLabs configuration envelope)
 
 ### `GET /api/debug-bafe`
 Status check for the BAFE fallback chain.

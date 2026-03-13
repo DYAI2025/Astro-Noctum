@@ -155,6 +155,70 @@ const APP_URL = stripTrailingSlash(
   (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : "https://bazodiac.com")
 );
 
+const APP_ORIGIN = (() => {
+  try {
+    return new URL(APP_URL).origin.toLowerCase();
+  } catch {
+    return "";
+  }
+})();
+
+const parseCsvSet = (value) =>
+  new Set(
+    String(value || "")
+      .split(",")
+      .map((entry) => entry.trim().toLowerCase())
+      .filter(Boolean),
+  );
+
+const MOBILE_RETURN_ORIGINS = parseCsvSet(
+  process.env.MOBILE_CHECKOUT_ALLOWED_ORIGINS || APP_ORIGIN,
+);
+const MOBILE_RETURN_SCHEMES = parseCsvSet(
+  process.env.MOBILE_CHECKOUT_ALLOWED_SCHEMES || "bazodiac,astroio,exp",
+);
+
+const toBoolean = (value, fallback) => {
+  if (value == null) return fallback;
+  const normalized = String(value).trim().toLowerCase();
+  if (["1", "true", "yes", "on"].includes(normalized)) return true;
+  if (["0", "false", "no", "off"].includes(normalized)) return false;
+  return fallback;
+};
+
+function extractClientTelemetry(req) {
+  const headerValue = (name) => {
+    const raw = req.get(name);
+    return typeof raw === "string" ? raw.trim().slice(0, 128) : "";
+  };
+  return {
+    appPlatform: headerValue("X-App-Platform"),
+    appVersion: headerValue("X-App-Version"),
+    deviceId: headerValue("X-Device-Id"),
+  };
+}
+
+function sanitizeCheckoutReturnUrl(rawUrl, fallbackUrl) {
+  if (typeof rawUrl !== "string" || rawUrl.length > 1024) return fallbackUrl;
+
+  try {
+    const parsed = new URL(rawUrl.trim());
+    const scheme = parsed.protocol.replace(":", "").toLowerCase();
+
+    if ((scheme === "http" || scheme === "https") && MOBILE_RETURN_ORIGINS.has(parsed.origin.toLowerCase())) {
+      return parsed.toString();
+    }
+
+    if (MOBILE_RETURN_SCHEMES.has(scheme)) {
+      return parsed.toString();
+    }
+  } catch {
+    return fallbackUrl;
+  }
+
+  return fallbackUrl;
+}
+
 // Primary URL for logging
 const BAFE_BASE_URL = BAFE_INTERNAL_URL || BAFE_PUBLIC_URL;
 
@@ -566,6 +630,46 @@ app.get("/api/space-weather", async (_req, res) => {
   return res.json(payload);
 });
 
+// ── /api/mobile/bootstrap ───────────────────────────────────────────
+// Mobile clients use this endpoint to bootstrap minimum-version gating,
+// feature flags, and external integration settings.
+app.get("/api/mobile/bootstrap", (_req, res) => {
+  const defaultSuccessUrl = `${APP_URL}?upgrade=success`;
+  const defaultCancelUrl = `${APP_URL}?upgrade=cancelled`;
+  const scheme = process.env.MOBILE_APP_SCHEME || "bazodiac";
+
+  res.set("Cache-Control", "no-store");
+  return res.json({
+    api_version: "2026-03-13",
+    server_time: new Date().toISOString(),
+    min_supported_versions: {
+      ios: process.env.MIN_IOS_APP_VERSION || "1.0.0",
+      android: process.env.MIN_ANDROID_APP_VERSION || "1.0.0",
+    },
+    feature_flags: {
+      quizzes_enabled: toBoolean(process.env.MOBILE_FEATURE_QUIZZES_ENABLED, true),
+      wissen_enabled: toBoolean(process.env.MOBILE_FEATURE_WISSEN_ENABLED, true),
+      levi_voice_enabled: toBoolean(process.env.MOBILE_FEATURE_LEVI_VOICE_ENABLED, true),
+      fu_ring_native_enabled: toBoolean(process.env.MOBILE_FEATURE_FU_RING_NATIVE_ENABLED, false),
+      transit_polling_enabled: toBoolean(process.env.MOBILE_FEATURE_TRANSIT_POLLING_ENABLED, true),
+    },
+    checkout: {
+      default_success_url: defaultSuccessUrl,
+      default_cancel_url: defaultCancelUrl,
+      allowed_return_origins: [...MOBILE_RETURN_ORIGINS],
+      allowed_return_schemes: [...MOBILE_RETURN_SCHEMES],
+      app_scheme: scheme,
+    },
+    voice: {
+      provider: "elevenlabs",
+      mode: "webview",
+      requires_premium: true,
+      agent_id: process.env.ELEVENLABS_AGENT_ID || null,
+      profile_endpoint_template: `${APP_URL}/api/profile/:userId`,
+    },
+  });
+});
+
 // ── /api/webhook/chart ──────────────────────────────────────────────
 app.post("/api/webhook/chart", express.json(), (req, res) => {
   proxyToBafeWithFallback(
@@ -805,8 +909,24 @@ app.post("/api/checkout", express.json(), async (req, res) => {
   const authedUser = await verifySupabaseUser(req);
   if (!authedUser) return res.status(401).json({ error: "Unauthorized" });
 
+  const telemetry = extractClientTelemetry(req);
   const userId = authedUser.id;
   const userEmail = authedUser.email || req.body.userEmail;
+  const platform =
+    (typeof req.body?.platform === "string" ? req.body.platform : telemetry.appPlatform || "web")
+      .trim()
+      .toLowerCase()
+      .slice(0, 24);
+
+  const defaultSuccessUrl = `${APP_URL}?upgrade=success`;
+  const defaultCancelUrl = `${APP_URL}?upgrade=cancelled`;
+  const successUrl = sanitizeCheckoutReturnUrl(req.body?.successUrl, defaultSuccessUrl);
+  const cancelUrl = sanitizeCheckoutReturnUrl(req.body?.cancelUrl, defaultCancelUrl);
+  if (telemetry.appPlatform || telemetry.appVersion || telemetry.deviceId) {
+    console.log(
+      `[checkout] telemetry platform=${telemetry.appPlatform || "unknown"} version=${telemetry.appVersion || "unknown"} device=${telemetry.deviceId || "unknown"}`,
+    );
+  }
 
   try {
     // Look up existing Stripe customer ID from DB
@@ -822,7 +942,11 @@ app.post("/api/checkout", express.json(), async (req, res) => {
       // First checkout — create Stripe customer and persist ID
       const customer = await stripe.customers.create({
         email: userEmail,
-        metadata: { userId },
+        metadata: {
+          userId,
+          platform,
+          appVersion: telemetry.appVersion || "",
+        },
       });
       customerId = customer.id;
 
@@ -836,11 +960,22 @@ app.post("/api/checkout", express.json(), async (req, res) => {
       customer: customerId,
       line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
       mode: "payment",
-      success_url: `${APP_URL}?upgrade=success`,
-      cancel_url: `${APP_URL}?upgrade=cancelled`,
-      metadata: { userId },
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      metadata: {
+        userId,
+        platform,
+        appVersion: telemetry.appVersion || "",
+        deviceId: telemetry.deviceId || "",
+      },
     });
-    res.json({ url: session.url });
+    res.json({
+      url: session.url,
+      resolved: {
+        successUrl,
+        cancelUrl,
+      },
+    });
   } catch (err) {
     console.error("[Stripe] Checkout error:", err.message);
     res.status(500).json({ error: "Checkout failed" });
@@ -887,6 +1022,13 @@ app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async
 app.post("/api/share", express.json(), async (req, res) => {
   const authedUser = await verifySupabaseUser(req);
   if (!authedUser) return res.status(401).json({ error: "Unauthorized" });
+
+  const telemetry = extractClientTelemetry(req);
+  if (telemetry.appPlatform || telemetry.appVersion || telemetry.deviceId) {
+    console.log(
+      `[share] telemetry platform=${telemetry.appPlatform || "unknown"} version=${telemetry.appVersion || "unknown"} device=${telemetry.deviceId || "unknown"}`,
+    );
+  }
 
   const userId = authedUser.id;
 
