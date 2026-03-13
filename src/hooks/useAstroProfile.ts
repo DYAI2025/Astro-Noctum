@@ -13,6 +13,20 @@ import { parseAstroProfileJson } from "../types/bafe";
 import type { TileTexts, HouseTexts } from "../types/interpretation";
 import { trackEvent } from "../lib/analytics";
 
+function getCalcErrorMessage(lang: string): string {
+  if (lang === "en") {
+    return "Calculation failed. Please try again.";
+  }
+  return "Berechnung fehlgeschlagen. Bitte versuche es erneut.";
+}
+
+function getAiErrorMessage(lang: string): string {
+  if (lang === "en") {
+    return "AI generation failed. Please try again.";
+  }
+  return "KI-Generierung fehlgeschlagen.";
+}
+
 export type ProfileState =
   | "idle"       // no user logged in
   | "loading"    // fetching from Supabase
@@ -151,7 +165,7 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
     } catch (err: unknown) {
       console.error("API Error:", err);
       const msg = err instanceof Error ? err.message : "";
-      setError(msg || "Berechnung fehlgeschlagen. Bitte versuche es erneut.");
+      setError(msg || getCalcErrorMessage(lang));
     } finally {
       setIsLoading(false);
     }
@@ -169,7 +183,7 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
       setHouseTexts(aiResult.houses || {});
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "";
-      setError(msg || "KI-Generierung fehlgeschlagen.");
+      setError(msg || getAiErrorMessage(lang));
     } finally {
       setIsLoading(false);
     }
