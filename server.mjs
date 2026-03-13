@@ -352,10 +352,32 @@ function bafeFallbackUrlsFromCandidates(routeCandidates) {
   return urls;
 }
 
+// ── Auth middleware — validates Supabase JWT ─────────────────────────
+async function requireUserAuth(req, res, next) {
+  if (!supabaseServer) {
+    return res.status(503).json({ error: "Auth service not configured" });
+  }
+  const authHeader = req.headers.authorization || "";
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+  if (!token) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+  try {
+    const { data: { user }, error } = await supabaseServer.auth.getUser(token);
+    if (error || !user) {
+      return res.status(401).json({ error: "Invalid or expired session" });
+    }
+    req.userId = user.id;
+    next();
+  } catch {
+    return res.status(503).json({ error: "Auth service temporarily unavailable" });
+  }
+}
+
 // ── /calculate/:endpoint  (bazi, western, fusion, wuxing, tst) ──────
 const CALC_ENDPOINTS = ["bazi", "western", "fusion", "wuxing", "tst"];
 
-app.post("/api/calculate/:endpoint", express.json(), (req, res) => {
+app.post("/api/calculate/:endpoint", requireUserAuth, express.json(), (req, res) => {
   const { endpoint } = req.params;
   if (!CALC_ENDPOINTS.includes(endpoint)) {
     return res.status(400).json({ error: `Unknown endpoint: ${endpoint}` });
@@ -368,7 +390,7 @@ app.post("/api/calculate/:endpoint", express.json(), (req, res) => {
 });
 
 // ── /chart ──────────────────────────────────────────────────────────
-app.post("/api/chart", express.json(), (req, res) => {
+app.post("/api/chart", requireUserAuth, express.json(), (req, res) => {
   proxyToBafeWithFallback(bafeFallbackUrls("/chart"), req, res);
 });
 

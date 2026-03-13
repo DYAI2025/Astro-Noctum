@@ -53,4 +53,38 @@ describe('server api routes', () => {
     expect(response.body.fetched_at).toEqual(expect.any(String));
     expect(response.body.cache_ttl_seconds).toBe(900);
   });
+
+  describe('BAFE proxy auth guard', () => {
+    it('returns 401 when no Authorization header is sent', async () => {
+      const app = await loadTestApp();
+      // No fetch mock needed — middleware returns before any fetch is called
+      const res = await request(app)
+        .post('/api/calculate/bazi')
+        .set('Content-Type', 'application/json')
+        .send({ date: '2000-01-01T12:00:00', tz: 'UTC', lat: 52, lon: 13 });
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('Authentication required');
+    });
+
+    it('returns 401 when Authorization token is rejected by Supabase', async () => {
+      const app = await loadTestApp();
+      // Mock ALL fetch calls to simulate Supabase returning auth error.
+      // The Supabase client calls fetch internally for auth.getUser().
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+        ok: false,
+        status: 401,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        text: async () => JSON.stringify({ message: 'invalid JWT' }),
+        json: async () => ({ message: 'invalid JWT' }),
+      } as Response);
+
+      const res = await request(app)
+        .post('/api/calculate/bazi')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', 'Bearer not-a-real-token')
+        .send({ date: '2000-01-01T12:00:00', tz: 'UTC', lat: 52, lon: 13 });
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('Invalid or expired session');
+    });
+  });
 });

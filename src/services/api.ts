@@ -11,6 +11,7 @@ import type {
   MappedWuxing,
   MappedPillar,
 } from '../types/bafe';
+import { supabase } from '../lib/supabase';
 
 export interface BirthData {
   date: string; // ISO 8601 local date time e.g. 2024-02-10T14:30:00
@@ -85,9 +86,15 @@ async function postCalculation<T = unknown>(
   endpoint: string,
   payload: Record<string, unknown>,
 ): Promise<T> {
+  const { data: { session } } = await supabase.auth.getSession();
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (session?.access_token) {
+    headers["Authorization"] = `Bearer ${session.access_token}`;
+  }
+
   const res = await fetchWithTimeout(`${BASE_URL}/calculate/${endpoint}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(payload),
   });
 
