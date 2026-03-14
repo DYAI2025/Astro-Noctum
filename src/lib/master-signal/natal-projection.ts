@@ -75,7 +75,11 @@ export function projectNatal(apiData: ApiData): ProjectedSignal {
   const moonD = signToDimensions(apiData.western?.moon_sign);
   const ascD = signToDimensions(apiData.western?.ascendant_sign);
   const western = zeroDimensions();
-  const hasWestern = !!(apiData.western?.zodiac_sign || apiData.western?.moon_sign);
+  const hasWestern = !!(
+    apiData.western?.zodiac_sign ||
+    apiData.western?.moon_sign ||
+    apiData.western?.ascendant_sign
+  );
   if (hasWestern) {
     sources++;
     for (const k of DIMENSION_KEYS) {
