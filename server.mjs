@@ -702,56 +702,55 @@ app.post("/api/webhook/chart", express.json(), (req, res) => {
 
 // ── Diagnostic: probe BAFE to discover available routes ─────────────
 // Only available in development — never expose internal URLs in production.
-app.get("/api/debug-bafe", async (_req, res) => {
-  if (process.env.NODE_ENV === "production") {
-    return res.status(404).json({ error: "Not found" });
-  }
-  const baseUrl = BAFE_PUBLIC_URL;
-  const probes = [
-    { label: "root /", method: "GET", url: `${baseUrl}/` },
-    { label: "/docs", method: "GET", url: `${baseUrl}/docs` },
-    { label: "/openapi.json", method: "GET", url: `${baseUrl}/openapi.json` },
-    { label: "/health", method: "GET", url: `${baseUrl}/health` },
-    { label: "/chart", method: "GET", url: `${baseUrl}/chart` },
-    { label: "POST /calculate/western", method: "POST", url: `${baseUrl}/calculate/western` },
-    { label: "POST /calculate/bazi", method: "POST", url: `${baseUrl}/calculate/bazi` },
-  ];
+if (process.env.NODE_ENV !== "production") {
+  app.get("/api/debug-bafe", async (_req, res) => {
+    const baseUrl = BAFE_PUBLIC_URL;
+    const probes = [
+      { label: "root /", method: "GET", url: `${baseUrl}/` },
+      { label: "/docs", method: "GET", url: `${baseUrl}/docs` },
+      { label: "/openapi.json", method: "GET", url: `${baseUrl}/openapi.json` },
+      { label: "/health", method: "GET", url: `${baseUrl}/health` },
+      { label: "/chart", method: "GET", url: `${baseUrl}/chart` },
+      { label: "POST /calculate/western", method: "POST", url: `${baseUrl}/calculate/western` },
+      { label: "POST /calculate/bazi", method: "POST", url: `${baseUrl}/calculate/bazi` },
+    ];
 
-  const testBody = JSON.stringify({
-    date: "1990-01-01T12:00:00", tz: "Europe/Berlin", lon: 13.405, lat: 52.52,
-  });
+    const testBody = JSON.stringify({
+      date: "1990-01-01T12:00:00", tz: "Europe/Berlin", lon: 13.405, lat: 52.52,
+    });
 
-  const results = [];
-  for (const { label, method, url } of probes) {
-    try {
-      const r = await fetch(url, {
-        method,
-        headers: method === "POST" ? { "Content-Type": "application/json" } : {},
-        body: method === "POST" ? testBody : undefined,
-      });
-      const text = await r.text();
-      results.push({
-        label, url,
-        status: r.status,
-        contentType: r.headers.get("content-type"),
-        body: text.slice(0, 500),
-      });
-    } catch (err) {
-      results.push({ label, url, error: err.message });
+    const results = [];
+    for (const { label, method, url } of probes) {
+      try {
+        const r = await fetch(url, {
+          method,
+          headers: method === "POST" ? { "Content-Type": "application/json" } : {},
+          body: method === "POST" ? testBody : undefined,
+        });
+        const text = await r.text();
+        results.push({
+          label, url,
+          status: r.status,
+          contentType: r.headers.get("content-type"),
+          body: text.slice(0, 500),
+        });
+      } catch (err) {
+        results.push({ label, url, error: err.message });
+      }
     }
-  }
 
-  res.json({
-    bafe_public_url: BAFE_PUBLIC_URL,
-    bafe_internal_url: BAFE_INTERNAL_URL,
-    bafe_active: BAFE_BASE_URL,
-    cache: {
-      size: bafeCache.size,
-      ttl_hours: CACHE_TTL / (60 * 60 * 1000),
-    },
-    probes: results,
+    res.json({
+      bafe_public_url: BAFE_PUBLIC_URL,
+      bafe_internal_url: BAFE_INTERNAL_URL,
+      bafe_active: BAFE_BASE_URL,
+      cache: {
+        size: bafeCache.size,
+        ttl_hours: CACHE_TTL / (60 * 60 * 1000),
+      },
+      probes: results,
+    });
   });
-});
+}
 
 // ── Supabase (server-side, service role key) ────────────────────────
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
