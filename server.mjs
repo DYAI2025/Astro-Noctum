@@ -390,7 +390,7 @@ app.post("/api/chart", requireUserAuth, express.json(), (req, res) => {
   proxyToBafeWithFallback(bafeFallbackUrls("/chart"), req, res);
 });
 
-app.get("/api/chart", (req, res) => {
+app.get("/api/chart", requireUserAuth, (req, res) => {
   const qs = new URLSearchParams(req.query).toString();
   const suffix = `/chart${qs ? `?${qs}` : ""}`;
   proxyToBafeWithFallback(bafeFallbackUrls(suffix), req, res);
