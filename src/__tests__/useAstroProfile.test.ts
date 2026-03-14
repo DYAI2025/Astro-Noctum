@@ -78,6 +78,44 @@ describe('useAstroProfile', () => {
       expect(result.current.isFirstReading).toBe(true);
     });
   });
+
+  it('re-generates interpretation when language changes after profile is loaded', async () => {
+    const { generateInterpretation } = await import('../services/gemini');
+    const mockGenerate = vi.mocked(generateInterpretation);
+    mockGenerate.mockResolvedValue({
+      interpretation: 'English interpretation',
+      tiles: {},
+      houses: {},
+    });
+
+    const { result, rerender } = renderHook(
+      ({ lang }: { lang: 'de' | 'en' }) => useAstroProfile(mockUser, lang),
+      { initialProps: { lang: 'de' as const } }
+    );
+
+    // Wait for profile to reach not-found, then submit to reach 'found'
+    await act(async () => { await new Promise(r => setTimeout(r, 50)); });
+    await act(async () => {
+      await result.current.handleSubmit({
+        date: '2000-01-01T12:00:00',
+        tz: 'Europe/Berlin',
+        lat: 52.5,
+        lon: 13.4,
+      });
+    });
+    expect(result.current.profileState).toBe('found');
+
+    const callCountAfterLoad = mockGenerate.mock.calls.length;
+
+    // Switch language — should trigger re-generation
+    await act(async () => {
+      rerender({ lang: 'en' });
+      await new Promise(r => setTimeout(r, 50));
+    });
+
+    expect(mockGenerate.mock.calls.length).toBeGreaterThan(callCountAfterLoad);
+    expect(result.current.interpretation).toBe('English interpretation');
+  });
 });
 
 describe('parseAstroProfileJson', () => {
