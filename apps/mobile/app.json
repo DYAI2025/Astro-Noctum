@@ -16,8 +16,12 @@
       "bundleIdentifier": "space.bazodiac.mobile",
       "supportsTablet": false,
       "associatedDomains": [
+        "applinks:bazodiac.space",
         "applinks:bazodiac.space"
-      ]
+      ],
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "space.bazodiac.mobile",
@@ -54,8 +58,9 @@
     ],
     "extra": {
       "apiBaseUrl": "https://bazodiac.space",
-      "eas": {}
-
+      "eas": {
+        "projectId": "3dc5ff64-329b-4fcf-bb89-34eb0132cfec"
+      }
     }
   }
 }
