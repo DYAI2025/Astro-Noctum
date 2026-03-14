@@ -4,3 +4,5 @@ export { buildGCB } from './gcb-builder';
 export { projectNatal } from './natal-projection';
 export { projectQuiz } from './quiz-projection';
 export { computeRelations } from './cross-reference';
+export { buildMasterSignal } from './master-signal-builder';
+export { generateNarratives } from './narratives';
