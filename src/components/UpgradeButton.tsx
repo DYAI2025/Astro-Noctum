@@ -20,6 +20,10 @@ export function UpgradeButton({ label, className }: Props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
+      if (!res.ok) {
+        setIsRedirecting(false);
+        return;
+      }
       const { url } = await res.json();
       if (url) window.location.href = url;
       else setIsRedirecting(false);
