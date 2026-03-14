@@ -402,6 +402,9 @@ app.get("/api/chart", requireUserAuth, (req, res) => {
 });
 
 // ── /api/transit-state/:userId ───────────────────────────────────────
+// TODO(Brief-02): This GET handler will be replaced by the new POST proxy.
+// The fallback block (fallbackStateFromProfile + respondWithFallback) stays
+// as fallback in the new handler.
 app.get("/api/transit-state/:userId", (req, res) => {
   const clamp01 = (value) => Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0));
   const normalizeElementValue = (value) => {
