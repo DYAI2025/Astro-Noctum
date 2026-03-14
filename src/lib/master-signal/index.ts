@@ -6,3 +6,4 @@ export { projectQuiz } from './quiz-projection';
 export { computeRelations } from './cross-reference';
 export { buildMasterSignal } from './master-signal-builder';
 export { generateNarratives } from './narratives';
+export { projectToRing } from './ring-projection';
