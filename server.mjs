@@ -4,7 +4,6 @@ import fs from "node:fs";
 import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
-import Stripe from "stripe";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { GoogleGenAI } from "@google/genai";
@@ -766,7 +765,7 @@ const supabaseServer =
 
 // ── Stripe ───────────────────────────────────────────────────────────
 const stripe = process.env.STRIPE_SECRET_KEY
-  ? new Stripe(process.env.STRIPE_SECRET_KEY)
+  ? new (await import("stripe")).default(process.env.STRIPE_SECRET_KEY)
   : null;
 
 // ── GET /api/profile/:userId — ElevenLabs Custom Tool endpoint ──────
