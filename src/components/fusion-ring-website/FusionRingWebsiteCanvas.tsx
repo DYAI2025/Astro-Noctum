@@ -1743,7 +1743,7 @@ function FusionRingCanvasInner() {
     });
     inputControllerRef.current = controller;
     return () => { controller.destroy(); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps — canvas/animation refs excluded; Three.js manages its own lifecycle
   }, []);
 
   const ingestTransitJSON = useCallback((json: string) => {

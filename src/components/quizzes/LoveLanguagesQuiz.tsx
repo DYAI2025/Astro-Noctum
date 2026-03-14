@@ -478,7 +478,7 @@ function LoveLanguagesQuiz({ onComplete, onClose }: LoveLanguagesQuizProps) {
               key={opt.id}
               onClick={() => handleSelectOption(opt)}
               disabled={isTransitioning}
-              className="rounded-xl border border-white/10 bg-white/5 px-5 py-4 text-left text-sm text-white/80 backdrop-blur transition-all hover:border-[#D4AF37]/50 hover:bg-white/10 hover:text-white active:scale-[0.98] disabled:pointer-events-none"
+              className="rounded-xl border border-white/10 bg-white/5 px-5 py-4 min-h-[44px] text-left text-sm text-white/80 backdrop-blur transition-all hover:border-[#D4AF37]/50 hover:bg-white/10 hover:text-white active:scale-[0.98] disabled:pointer-events-none"
             >
               {opt.text}
             </button>

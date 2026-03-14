@@ -155,7 +155,7 @@ export function DashboardAstroSection({
       const timer = setTimeout(() => setShowBirthSkyWelcome(false), 12000);
       return () => clearTimeout(timer);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps — setPlanetariumMode is a stable context setter; only isFirstReading should trigger
   }, [isFirstReading]);
 
   // ── Data extraction ────────────────────────────────────────────────

@@ -196,7 +196,7 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
     } else {
       hasRedirected.current = true;
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps — fire-once splash timer; deps intentionally empty
 
   const isFuRingRoute = location.pathname === "/fu-ring";
 

@@ -481,7 +481,7 @@ function QuestionScreen({
               onClick={() => handleSelect(idx)}
               disabled={selected !== null}
               className={`
-                relative text-left w-full p-4 rounded-xl border transition-all duration-200
+                relative text-left w-full p-4 min-h-[44px] rounded-xl border transition-all duration-200
                 ${
                   isSelected
                     ? 'bg-[#D4AF37]/15 border-[#D4AF37] text-white'
@@ -529,12 +529,12 @@ function LoadingScreen() {
         <motion.div
           className="absolute inset-0 border-2 border-transparent border-t-[#D4AF37] rounded-full"
           animate={{ rotate: 360 }}
-          transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
+          transition={{ duration: 1.2, repeat: Infinity /* Essential — communicates active processing state */, ease: 'linear' }}
         />
         <motion.div
           className="absolute inset-2 border-2 border-transparent border-t-[#6CA192] rounded-full"
           animate={{ rotate: -360 }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: 'linear' }}
+          transition={{ duration: 1.8, repeat: Infinity /* Essential — communicates active processing state */, ease: 'linear' }}
         />
       </div>
       <p className="font-serif text-xl text-white mb-2">Die Geister erwachen...</p>

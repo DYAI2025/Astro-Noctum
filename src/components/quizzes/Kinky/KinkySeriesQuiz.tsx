@@ -245,7 +245,7 @@ function QuestionScreen({
               onClick={() => handleSelect(idx)}
               disabled={selected !== null}
               className={`
-                relative text-left w-full p-4 rounded-xl border transition-all duration-200
+                relative text-left w-full p-4 min-h-[44px] rounded-xl border transition-all duration-200
                 ${
                   isSelected
                     ? 'border-opacity-100 text-white'
@@ -295,13 +295,13 @@ function LoadingScreen({ facetLabel, lk }: { facetLabel: string; lk: LocaleKey }
           className="absolute inset-0 border-2 border-transparent rounded-full"
           style={{ borderTopColor: SERIES_ACCENT }}
           animate={{ rotate: 360 }}
-          transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
+          transition={{ duration: 1.2, repeat: Infinity /* Essential — communicates active processing state */, ease: 'linear' }}
         />
         <motion.div
           className="absolute inset-2 border-2 border-transparent rounded-full"
           style={{ borderTopColor: '#D4AF37' }}
           animate={{ rotate: -360 }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: 'linear' }}
+          transition={{ duration: 1.8, repeat: Infinity /* Essential — communicates active processing state */, ease: 'linear' }}
         />
       </div>
       <p className="font-serif text-xl text-white mb-2">{lk === 'de-DE' ? 'Die Flamme liest dich...' : 'The flame reads you...'}</p>

@@ -110,7 +110,7 @@ export function WuXingPentagon({ balance, lang, size = 280, planetariumMode }: W
                   strokeWidth={1}
                   initial={{ opacity: 0.2, r: 6 }}
                   animate={{ opacity: [0.2, 0.5, 0.2], r: [6, 10, 6] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  transition={{ duration: 2, repeat: 3, ease: "easeInOut" }}
                 />
               )}
             </g>
