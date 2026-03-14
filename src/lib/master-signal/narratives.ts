@@ -26,7 +26,7 @@ function formatAlignment(value: number): string {
 
 export function generateNarratives(
   natal: ProjectedSignal, quiz: ProjectedSignal, gcb: ProjectedSignal,
-  relations: RelationScores, lang: Lang = 'de',
+  relations: RelationScores, lang: Lang = 'de', evidenceMode: string = 'heuristic_v1',
 ): Narratives {
   const labels = DIMENSION_LABELS[lang];
   const natalTop = topDimensions(natal, 2);
@@ -44,11 +44,11 @@ export function generateNarratives(
       + `The alignment between disposition and self-report is ${alignment}.`;
 
   const context_summary = lang === 'de'
-    ? `Dieses Kontextmodell (evidence_mode: heuristic_v1) positioniert dich in einer Lebensphase, `
+    ? `Dieses Kontextmodell (evidence_mode: ${evidenceMode}) positioniert dich in einer Lebensphase, `
       + `die typischerweise ${labels[gcbTop[0]]} und ${labels[gcbTop[1]]} betont. `
       + `Dies ist eine Referenzschicht, keine individuelle Wahrheitsaussage. `
       + `Generationskontext dient als Orientierungsrahmen, nicht als Persönlichkeitsdiagnose.`
-    : `This context model (evidence_mode: heuristic_v1) places you in a life stage `
+    : `This context model (evidence_mode: ${evidenceMode}) places you in a life stage `
       + `that typically emphasizes ${labels[gcbTop[0]]} and ${labels[gcbTop[1]]}. `
       + `This is a reference layer, not an individual truth claim. `
       + `Generational context serves as an orientation framework, not a personality diagnosis.`;
