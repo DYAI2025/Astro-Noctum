@@ -226,6 +226,9 @@ const BAFE_BASE_URL = BAFE_INTERNAL_URL || BAFE_PUBLIC_URL;
 const bafeCache = new Map(); // key → { body, contentType, status, timestamp }
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
+// Cache key is intentionally NOT scoped by user — BAFE calculate endpoints
+// are pure functions of birth data (deterministic, no PII in response).
+// Two users with identical birth data share a cached result, which is correct.
 function cacheKey(method, url, reqBody) {
   const raw = `${method}:${url}:${JSON.stringify(reqBody || {})}`;
   return crypto.createHash('sha256').update(raw).digest('hex').slice(0, 32);
