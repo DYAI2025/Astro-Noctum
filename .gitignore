@@ -11,3 +11,6 @@ coverage/
 # Claude internal files
 .claude/
 .mcp.json
+
+# Worktrees
+.worktrees/
