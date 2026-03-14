@@ -1,0 +1,598 @@
+{
+  "schema_version": "3.0.0",
+  "engine": "quizzme-quiz-engine",
+  "output_mode": "full_v2",
+  "series": {
+    "id": "partner_match_series",
+    "title": {
+      "de-DE": "Partner Match — Welcher Partner passt zu mir?",
+      "en-US": "Partner Match — Which partner fits me?"
+    },
+    "quiz_index": 3,
+    "quiz_count": 3,
+    "theme": {
+      "de-DE": "Nicht jeder passende Mensch sieht auf den ersten Blick passend aus. Dieses Format sucht nach Resonanz, nicht nach Schubladen.",
+      "en-US": "Not every fitting person looks fitting at first glance. This format looks for resonance, not boxes."
+    }
+  },
+  "meta": {
+    "id": "partner_match_03_vorlieben_lebensstil",
+    "hidden_cluster": "future",
+    "facet_label": {
+      "de-DE": "Vorlieben & Lebensstil",
+      "en-US": "Preferences & Lifestyle"
+    },
+    "axis_key": "tension",
+    "narrator_id": "oracle",
+    "tone": "premium_poetic",
+    "type_model": {
+      "types": ["adventure_companion", "curious_builder", "vision_match"],
+      "compute": "max_type_score"
+    }
+  },
+  "disclaimer": {
+    "de-DE": "Dieser Test dient der spielerischen Selbstreflexion und stellt KEINE psychologische Diagnose dar.",
+    "en-US": "This quiz is for playful self-reflection and is NOT a psychological diagnosis."
+  },
+  "questions": [
+    {
+      "id": "q01",
+      "prompt": {
+        "de-DE": "Euer Traumwochenende — was lässt dich wirklich aufleben?",
+        "en-US": "Your dream weekend — what makes you truly come alive?"
+      },
+      "question_type": "praeferenz",
+      "narrator_id": "oracle",
+      "tone": "premium_poetic",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ein spontanes Abenteuer — neuer Ort, unbekannte Energie, offener Ausgang.",
+            "en-US": "A spontaneous adventure — new place, unknown energy, open ending."
+          },
+          "cluster_scores": { "passion": 0.06, "stability": -0.08, "future": 0.34 },
+          "type_scores": { "adventure_companion": 0.80, "curious_builder": 0.26, "vision_match": 0.22 },
+          "duo_trait_deltas": { "closeness": 0.02, "alignment": 0.06, "tension": 0.08 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Etwas Neues ausprobieren, das wir beide noch nicht kennen — gemeinsam entdecken.",
+            "en-US": "Trying something new that neither of us knows — discovering together."
+          },
+          "cluster_scores": { "passion": 0.0, "stability": 0.14, "future": 0.20 },
+          "type_scores": { "adventure_companion": 0.18, "curious_builder": 0.82, "vision_match": 0.28 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.12, "tension": 0.0 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Etwas planen, auf das wir hinarbeiten — das Vorfreuen ist auch Teil des Erlebens.",
+            "en-US": "Planning something to work toward — the anticipation is part of the experience too."
+          },
+          "cluster_scores": { "passion": 0.02, "stability": 0.08, "future": 0.30 },
+          "type_scores": { "adventure_companion": 0.16, "curious_builder": 0.24, "vision_match": 0.84 },
+          "duo_trait_deltas": { "closeness": 0.06, "alignment": 0.18, "tension": -0.02 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Das Vertraute genießen — wir kennen unsere Lieblingsrestaurants und das reicht uns.",
+            "en-US": "Enjoying what's familiar — we know our favorite spots and that's enough for us."
+          },
+          "cluster_scores": { "passion": 0.04, "stability": 0.24, "future": -0.18 },
+          "type_scores": { "adventure_companion": 0.08, "curious_builder": 0.62, "vision_match": 0.18 },
+          "duo_trait_deltas": { "closeness": 0.10, "alignment": 0.06, "tension": -0.06 }
+        }
+      ]
+    },
+    {
+      "id": "q02",
+      "prompt": {
+        "de-DE": "Dein Partner hat eine Leidenschaft, die du noch nicht kennst. Wie reagierst du?",
+        "en-US": "Your partner has a passion you don't know yet. How do you react?"
+      },
+      "question_type": "reaktions_szenario",
+      "narrator_id": "oracle",
+      "tone": "premium_poetic",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Sofort dabei — ich will alles wissen und am besten auch mitmachen.",
+            "en-US": "Immediately in — I want to know everything and ideally join too."
+          },
+          "cluster_scores": { "passion": 0.06, "stability": -0.08, "future": 0.34 },
+          "type_scores": { "adventure_companion": 0.80, "curious_builder": 0.26, "vision_match": 0.22 },
+          "duo_trait_deltas": { "closeness": 0.02, "alignment": 0.06, "tension": 0.08 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Neugierig fragen — ich will verstehen, was daran so besonders ist.",
+            "en-US": "Ask with curiosity — I want to understand what makes it special."
+          },
+          "cluster_scores": { "passion": 0.0, "stability": 0.14, "future": 0.20 },
+          "type_scores": { "adventure_companion": 0.18, "curious_builder": 0.82, "vision_match": 0.28 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.12, "tension": 0.0 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Mir überlegen, wie das in unser gemeinsames Leben passt und passen könnte.",
+            "en-US": "Think about how this fits and could fit into our shared life."
+          },
+          "cluster_scores": { "passion": 0.02, "stability": 0.08, "future": 0.30 },
+          "type_scores": { "adventure_companion": 0.16, "curious_builder": 0.24, "vision_match": 0.84 },
+          "duo_trait_deltas": { "closeness": 0.06, "alignment": 0.18, "tension": -0.02 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Freuen, dass er sein Ding hat — ich brauche nicht bei allem dabei zu sein.",
+            "en-US": "Happy that they have their thing — I don't need to be part of everything."
+          },
+          "cluster_scores": { "passion": 0.04, "stability": 0.24, "future": -0.18 },
+          "type_scores": { "adventure_companion": 0.08, "curious_builder": 0.62, "vision_match": 0.18 },
+          "duo_trait_deltas": { "closeness": 0.10, "alignment": 0.06, "tension": -0.06 }
+        }
+      ]
+    },
+    {
+      "id": "q03",
+      "prompt": {
+        "de-DE": "Was soll euer gemeinsames Leben in fünf Jahren bewegt haben?",
+        "en-US": "What should your shared life have accomplished or moved toward in five years?"
+      },
+      "question_type": "wert_frage",
+      "narrator_id": "oracle",
+      "tone": "premium_poetic",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Viele Erfahrungen, Orte und Geschichten, die uns verbinden.",
+            "en-US": "Many experiences, places, and stories that connect us."
+          },
+          "cluster_scores": { "passion": 0.06, "stability": -0.08, "future": 0.34 },
+          "type_scores": { "adventure_companion": 0.80, "curious_builder": 0.26, "vision_match": 0.22 },
+          "duo_trait_deltas": { "closeness": 0.02, "alignment": 0.06, "tension": 0.08 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Wir haben beide etwas Neues gelernt und uns dabei gegenseitig inspiriert.",
+            "en-US": "We've both learned something new and inspired each other in the process."
+          },
+          "cluster_scores": { "passion": 0.0, "stability": 0.14, "future": 0.20 },
+          "type_scores": { "adventure_companion": 0.18, "curious_builder": 0.82, "vision_match": 0.28 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.12, "tension": 0.0 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Wir haben unser gemeinsames Bild vom Leben weiterentwickelt und sind ihm nähergekommen.",
+            "en-US": "We've evolved our shared vision of life and moved closer to it."
+          },
+          "cluster_scores": { "passion": 0.02, "stability": 0.08, "future": 0.30 },
+          "type_scores": { "adventure_companion": 0.16, "curious_builder": 0.24, "vision_match": 0.84 },
+          "duo_trait_deltas": { "closeness": 0.06, "alignment": 0.18, "tension": -0.02 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Wir haben uns ein stabiles, schönes Leben aufgebaut und sind damit glücklich.",
+            "en-US": "We've built a stable, beautiful life together and are happy with that."
+          },
+          "cluster_scores": { "passion": 0.04, "stability": 0.24, "future": -0.18 },
+          "type_scores": { "adventure_companion": 0.08, "curious_builder": 0.62, "vision_match": 0.18 },
+          "duo_trait_deltas": { "closeness": 0.10, "alignment": 0.06, "tension": -0.06 }
+        }
+      ]
+    },
+    {
+      "id": "q04",
+      "prompt": {
+        "de-DE": "Wie wichtig ist dir persönliches Wachstum in einer Beziehung?",
+        "en-US": "How important is personal growth to you within a relationship?"
+      },
+      "question_type": "wert_frage",
+      "narrator_id": "oracle",
+      "tone": "premium_poetic",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Sehr wichtig — Wachstum passiert für mich vor allem durch neue Erfahrungen zusammen.",
+            "en-US": "Very important — for me, growth happens mainly through new experiences together."
+          },
+          "cluster_scores": { "passion": 0.06, "stability": -0.08, "future": 0.34 },
+          "type_scores": { "adventure_companion": 0.80, "curious_builder": 0.26, "vision_match": 0.22 },
+          "duo_trait_deltas": { "closeness": 0.02, "alignment": 0.06, "tension": 0.08 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Sehr wichtig — ich will neugierig bleiben und meinen Partner dabei mitreißen.",
+            "en-US": "Very important — I want to stay curious and take my partner along for the ride."
+          },
+          "cluster_scores": { "passion": 0.0, "stability": 0.14, "future": 0.20 },
+          "type_scores": { "adventure_companion": 0.18, "curious_builder": 0.82, "vision_match": 0.28 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.12, "tension": 0.0 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Sehr wichtig — ich will, dass wir beide größer werden und uns dabei nicht verlieren.",
+            "en-US": "Very important — I want us both to grow and not lose each other in the process."
+          },
+          "cluster_scores": { "passion": 0.02, "stability": 0.08, "future": 0.30 },
+          "type_scores": { "adventure_companion": 0.16, "curious_builder": 0.24, "vision_match": 0.84 },
+          "duo_trait_deltas": { "closeness": 0.06, "alignment": 0.18, "tension": -0.02 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Wichtig, aber ich wachse lieber in meinem eigenen Tempo und Raum.",
+            "en-US": "Important, but I prefer to grow at my own pace and in my own space."
+          },
+          "cluster_scores": { "passion": 0.04, "stability": 0.24, "future": -0.18 },
+          "type_scores": { "adventure_companion": 0.08, "curious_builder": 0.62, "vision_match": 0.18 },
+          "duo_trait_deltas": { "closeness": 0.10, "alignment": 0.06, "tension": -0.06 }
+        }
+      ]
+    },
+    {
+      "id": "q05",
+      "prompt": {
+        "de-DE": "Ihr plant eine gemeinsame Reise. Wie läuft das bei euch ab?",
+        "en-US": "You're planning a trip together. How does that go for you?"
+      },
+      "question_type": "reaktions_szenario",
+      "narrator_id": "oracle",
+      "tone": "premium_poetic",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Möglichst offen planen — Überraschungen gehören dazu und sind der beste Teil.",
+            "en-US": "Plan as loosely as possible — surprises are part of it and the best part."
+          },
+          "cluster_scores": { "passion": 0.06, "stability": -0.08, "future": 0.34 },
+          "type_scores": { "adventure_companion": 0.80, "curious_builder": 0.26, "vision_match": 0.22 },
+          "duo_trait_deltas": { "closeness": 0.02, "alignment": 0.06, "tension": 0.08 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Erst recherchieren, was es dort zu entdecken gibt — lokale Kultur, unbekannte Ecken.",
+            "en-US": "First research what there is to discover — local culture, unknown corners."
+          },
+          "cluster_scores": { "passion": 0.0, "stability": 0.14, "future": 0.20 },
+          "type_scores": { "adventure_companion": 0.18, "curious_builder": 0.82, "vision_match": 0.28 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.12, "tension": 0.0 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Einen Rahmen planen, der uns Freiheit lässt, aber auch Sicherheit gibt.",
+            "en-US": "Plan a framework that gives us freedom but also certainty."
+          },
+          "cluster_scores": { "passion": 0.02, "stability": 0.08, "future": 0.30 },
+          "type_scores": { "adventure_companion": 0.16, "curious_builder": 0.24, "vision_match": 0.84 },
+          "duo_trait_deltas": { "closeness": 0.06, "alignment": 0.18, "tension": -0.02 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "An einen Ort zurückkehren, den wir kennen und lieben — Vertrautheit als Luxus.",
+            "en-US": "Return to a place we know and love — familiarity as luxury."
+          },
+          "cluster_scores": { "passion": 0.04, "stability": 0.24, "future": -0.18 },
+          "type_scores": { "adventure_companion": 0.08, "curious_builder": 0.62, "vision_match": 0.18 },
+          "duo_trait_deltas": { "closeness": 0.10, "alignment": 0.06, "tension": -0.06 }
+        }
+      ]
+    },
+    {
+      "id": "q06",
+      "prompt": {
+        "de-DE": "Wie wichtig ist es dir, dass ihr gemeinsame Interessen habt?",
+        "en-US": "How important is it to you that you have shared interests?"
+      },
+      "question_type": "wert_frage",
+      "narrator_id": "oracle",
+      "tone": "premium_poetic",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Sehr wichtig — gemeinsame Erlebnisse sind der Kitt.",
+            "en-US": "Very important — shared experiences are the glue."
+          },
+          "cluster_scores": { "passion": 0.06, "stability": -0.08, "future": 0.34 },
+          "type_scores": { "adventure_companion": 0.80, "curious_builder": 0.26, "vision_match": 0.22 },
+          "duo_trait_deltas": { "closeness": 0.02, "alignment": 0.06, "tension": 0.08 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Mittel wichtig — mir ist wichtiger, dass wir uns füreinander interessieren, nicht dass wir gleich sind.",
+            "en-US": "Medium important — I care more that we're interested in each other, not that we're the same."
+          },
+          "cluster_scores": { "passion": 0.0, "stability": 0.14, "future": 0.20 },
+          "type_scores": { "adventure_companion": 0.18, "curious_builder": 0.82, "vision_match": 0.28 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.12, "tension": 0.0 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Wichtig — ich will, dass wir eine gemeinsame Richtung spüren, auch wenn die Wege verschieden sind.",
+            "en-US": "Important — I want us to feel a shared direction, even if the paths differ."
+          },
+          "cluster_scores": { "passion": 0.02, "stability": 0.08, "future": 0.30 },
+          "type_scores": { "adventure_companion": 0.16, "curious_builder": 0.24, "vision_match": 0.84 },
+          "duo_trait_deltas": { "closeness": 0.06, "alignment": 0.18, "tension": -0.02 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Nicht so wichtig — eigene Welten sind gesund, solange wir uns in der Mitte treffen.",
+            "en-US": "Not that important — separate worlds are healthy as long as we meet in the middle."
+          },
+          "cluster_scores": { "passion": 0.04, "stability": 0.24, "future": -0.18 },
+          "type_scores": { "adventure_companion": 0.08, "curious_builder": 0.62, "vision_match": 0.18 },
+          "duo_trait_deltas": { "closeness": 0.10, "alignment": 0.06, "tension": -0.06 }
+        }
+      ]
+    },
+    {
+      "id": "q07",
+      "prompt": {
+        "de-DE": "Wie zeigt sich Neugier bei dir in einer Beziehung?",
+        "en-US": "How does curiosity show up for you in a relationship?"
+      },
+      "question_type": "praeferenz",
+      "narrator_id": "oracle",
+      "tone": "premium_poetic",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Ich schlage ständig neue Dinge vor — Erkundung ist mein Liebesausdruck.",
+            "en-US": "I constantly suggest new things — exploration is my love language."
+          },
+          "cluster_scores": { "passion": 0.06, "stability": -0.08, "future": 0.34 },
+          "type_scores": { "adventure_companion": 0.80, "curious_builder": 0.26, "vision_match": 0.22 },
+          "duo_trait_deltas": { "closeness": 0.02, "alignment": 0.06, "tension": 0.08 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Ich frage viel — ich will den anderen wirklich verstehen, nicht nur kennen.",
+            "en-US": "I ask a lot — I want to truly understand the other, not just know them."
+          },
+          "cluster_scores": { "passion": 0.0, "stability": 0.14, "future": 0.20 },
+          "type_scores": { "adventure_companion": 0.18, "curious_builder": 0.82, "vision_match": 0.28 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.12, "tension": 0.0 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Ich stelle mir vor, wo wir in fünf Jahren sein könnten — und spreche darüber.",
+            "en-US": "I imagine where we could be in five years — and talk about it."
+          },
+          "cluster_scores": { "passion": 0.02, "stability": 0.08, "future": 0.30 },
+          "type_scores": { "adventure_companion": 0.16, "curious_builder": 0.24, "vision_match": 0.84 },
+          "duo_trait_deltas": { "closeness": 0.06, "alignment": 0.18, "tension": -0.02 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ich genieße das Vertraute — die Tiefe, die entsteht, wenn man sich wirklich kennt.",
+            "en-US": "I enjoy the familiar — the depth that comes from truly knowing someone."
+          },
+          "cluster_scores": { "passion": 0.04, "stability": 0.24, "future": -0.18 },
+          "type_scores": { "adventure_companion": 0.08, "curious_builder": 0.62, "vision_match": 0.18 },
+          "duo_trait_deltas": { "closeness": 0.10, "alignment": 0.06, "tension": -0.06 }
+        }
+      ]
+    },
+    {
+      "id": "q08",
+      "prompt": {
+        "de-DE": "In welchem Lebenstempo fühlt sich eine Beziehung für dich richtig an?",
+        "en-US": "At what life pace does a relationship feel right for you?"
+      },
+      "question_type": "praeferenz",
+      "narrator_id": "oracle",
+      "tone": "premium_poetic",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Schnell und impulsiv — ich will das Leben nicht auf später verschieben.",
+            "en-US": "Fast and impulsive — I don't want to postpone life for later."
+          },
+          "cluster_scores": { "passion": 0.06, "stability": -0.08, "future": 0.34 },
+          "type_scores": { "adventure_companion": 0.80, "curious_builder": 0.26, "vision_match": 0.22 },
+          "duo_trait_deltas": { "closeness": 0.02, "alignment": 0.06, "tension": 0.08 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Varierend — manchmal schnell, manchmal langsam, je nachdem was gerade passt.",
+            "en-US": "Varying — sometimes fast, sometimes slow, depending on what fits."
+          },
+          "cluster_scores": { "passion": 0.0, "stability": 0.14, "future": 0.20 },
+          "type_scores": { "adventure_companion": 0.18, "curious_builder": 0.82, "vision_match": 0.28 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.12, "tension": 0.0 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Bewusst und mit Richtung — ich will, dass wir wissen, wohin wir gehen.",
+            "en-US": "Deliberate and with direction — I want us to know where we're going."
+          },
+          "cluster_scores": { "passion": 0.02, "stability": 0.08, "future": 0.30 },
+          "type_scores": { "adventure_companion": 0.16, "curious_builder": 0.24, "vision_match": 0.84 },
+          "duo_trait_deltas": { "closeness": 0.06, "alignment": 0.18, "tension": -0.02 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Ruhig und gemächlich — ich will ankommen und nicht ständig unterwegs sein.",
+            "en-US": "Calm and unhurried — I want to arrive and not be constantly on the move."
+          },
+          "cluster_scores": { "passion": 0.04, "stability": 0.24, "future": -0.18 },
+          "type_scores": { "adventure_companion": 0.08, "curious_builder": 0.62, "vision_match": 0.18 },
+          "duo_trait_deltas": { "closeness": 0.10, "alignment": 0.06, "tension": -0.06 }
+        }
+      ]
+    },
+    {
+      "id": "q09",
+      "prompt": {
+        "de-DE": "Welche Art von Zukunftsvisionen teilt ihr am liebsten miteinander?",
+        "en-US": "What kind of future visions do you most like sharing with each other?"
+      },
+      "question_type": "wert_frage",
+      "narrator_id": "oracle",
+      "tone": "premium_poetic",
+      "options": [
+        {
+          "id": "A",
+          "label": {
+            "de-DE": "Reisepläne, Abenteuer, Erfahrungen, die wir noch nicht hatten.",
+            "en-US": "Travel plans, adventures, experiences we haven't had yet."
+          },
+          "cluster_scores": { "passion": 0.06, "stability": -0.08, "future": 0.34 },
+          "type_scores": { "adventure_companion": 0.80, "curious_builder": 0.26, "vision_match": 0.22 },
+          "duo_trait_deltas": { "closeness": 0.02, "alignment": 0.06, "tension": 0.08 }
+        },
+        {
+          "id": "B",
+          "label": {
+            "de-DE": "Dinge, die wir lernen oder aufbauen wollen — gemeinsame Projekte und Ideen.",
+            "en-US": "Things we want to learn or build — shared projects and ideas."
+          },
+          "cluster_scores": { "passion": 0.0, "stability": 0.14, "future": 0.20 },
+          "type_scores": { "adventure_companion": 0.18, "curious_builder": 0.82, "vision_match": 0.28 },
+          "duo_trait_deltas": { "closeness": 0.08, "alignment": 0.12, "tension": 0.0 }
+        },
+        {
+          "id": "C",
+          "label": {
+            "de-DE": "Wie wir leben wollen — Werte, Ziele, das Bild vom gemeinsamen Leben.",
+            "en-US": "How we want to live — values, goals, the image of our shared life."
+          },
+          "cluster_scores": { "passion": 0.02, "stability": 0.08, "future": 0.30 },
+          "type_scores": { "adventure_companion": 0.16, "curious_builder": 0.24, "vision_match": 0.84 },
+          "duo_trait_deltas": { "closeness": 0.06, "alignment": 0.18, "tension": -0.02 }
+        },
+        {
+          "id": "D",
+          "label": {
+            "de-DE": "Das Hier und Jetzt verbessern — die Zukunft ist schön, aber der Alltag ist echter.",
+            "en-US": "Improving here and now — the future is beautiful, but everyday life is more real."
+          },
+          "cluster_scores": { "passion": 0.04, "stability": 0.24, "future": -0.18 },
+          "type_scores": { "adventure_companion": 0.08, "curious_builder": 0.62, "vision_match": 0.18 },
+          "duo_trait_deltas": { "closeness": 0.10, "alignment": 0.06, "tension": -0.06 }
+        }
+      ]
+    }
+  ],
+  "profiles": [
+    {
+      "id": "adventure_companion",
+      "title": {
+        "de-DE": "Abenteuer-Gefährte",
+        "en-US": "Adventure Companion"
+      },
+      "tagline": {
+        "de-DE": "Du liebst jemanden, mit dem das Leben größer wird — nicht kleiner.",
+        "en-US": "You love someone who makes life larger — not smaller."
+      },
+      "description": {
+        "de-DE": "Für dich ist Liebe ein Abenteuer, keine Festung. Du willst jemanden, der mitzieht, wenn der Impuls kommt — spontan, neugierig, offen für das Unbekannte. Du weißt, dass die stärksten Verbindungen in unerwarteten Momenten entstehen, und du suchst jemanden, der das genauso fühlt.",
+        "en-US": "For you, love is an adventure, not a fortress. You want someone who comes along when the impulse hits — spontaneous, curious, open to the unknown. You know the strongest bonds form in unexpected moments, and you're looking for someone who feels that too."
+      },
+      "stats": [
+        { "label": { "de-DE": "Spontaneität", "en-US": "Spontaneity" }, "value": 0.90 },
+        { "label": { "de-DE": "Offenheit", "en-US": "Openness" }, "value": 0.85 },
+        { "label": { "de-DE": "Energie", "en-US": "Energy" }, "value": 0.82 }
+      ],
+      "allies": ["curious_builder"],
+      "challenge": "vision_match"
+    },
+    {
+      "id": "curious_builder",
+      "title": {
+        "de-DE": "Neugieriger Gestalter",
+        "en-US": "Curious Builder"
+      },
+      "tagline": {
+        "de-DE": "Du baust mit — mit Ideen, Fragen und der Überzeugung, dass zusammen mehr entsteht.",
+        "en-US": "You build together — with ideas, questions, and the belief that more grows jointly."
+      },
+      "description": {
+        "de-DE": "Du bist neugierig auf deinen Partner als Person — nicht nur als Begleitung. Du willst gemeinsam lernen, wachsen, Ideen teilen und Projekte starten. Für dich ist eine Beziehung kein Zustand, den man hält, sondern etwas, das man gemeinsam gestaltet. Und dein Partner darf sich dabei verändern — du auch.",
+        "en-US": "You're curious about your partner as a person — not just as a companion. You want to learn together, grow, share ideas, and start projects. For you, a relationship isn't a state you maintain, but something you shape together. And your partner can change — so can you."
+      },
+      "stats": [
+        { "label": { "de-DE": "Neugier", "en-US": "Curiosity" }, "value": 0.90 },
+        { "label": { "de-DE": "Wachstum", "en-US": "Growth" }, "value": 0.86 },
+        { "label": { "de-DE": "Tiefe", "en-US": "Depth" }, "value": 0.82 }
+      ],
+      "allies": ["vision_match"],
+      "challenge": "adventure_companion"
+    },
+    {
+      "id": "vision_match",
+      "title": {
+        "de-DE": "Horizont-Partner",
+        "en-US": "Vision Match"
+      },
+      "tagline": {
+        "de-DE": "Du willst nicht nur jemanden neben dir — du willst jemanden, der in die gleiche Richtung schaut.",
+        "en-US": "You don't just want someone beside you — you want someone looking in the same direction."
+      },
+      "description": {
+        "de-DE": "Für dich ist Beziehung auch Lebensgestaltung. Du denkst in Bildern der Zukunft und willst jemanden, der das teilt — nicht als Einschränkung, sondern als Orientierung. Geteilte Werte, ähnliche Vorstellungen vom Leben und das Gefühl, dass ihr in die gleiche Richtung geht: das ist dein Fundament.",
+        "en-US": "For you, a relationship is also life design. You think in images of the future and want someone who shares that — not as a constraint, but as orientation. Shared values, similar ideas about life, and the feeling that you're heading in the same direction: that's your foundation."
+      },
+      "stats": [
+        { "label": { "de-DE": "Vision", "en-US": "Vision" }, "value": 0.90 },
+        { "label": { "de-DE": "Ausrichtung", "en-US": "Alignment" }, "value": 0.86 },
+        { "label": { "de-DE": "Tiefe", "en-US": "Depth" }, "value": 0.84 }
+      ],
+      "allies": ["curious_builder"],
+      "challenge": "adventure_companion"
+    }
+  ],
+  "marker_emission": {
+    "cluster_domain_map": {
+      "passion": "love",
+      "stability": "emotion",
+      "future": "freedom"
+    },
+    "cluster_keyword_map": {
+      "passion": "passionate",
+      "stability": "anchor",
+      "future": "growth"
+    }
+  },
+  "contribution_event": {
+    "event_type": "quiz.completed",
+    "quiz_id": "partner_match_03",
+    "series_id": "partner_match_series",
+    "series_complete": true,
+    "payload_template": {
+      "markers": ["marker.cognition.vision", "marker.freedom.growth", "marker.cognition.curiosity"],
+      "traits": ["closeness", "alignment", "tension"],
+      "tags": ["tag.series.partner_match", "tag.series.partner_match_complete"]
+    }
+  }
+}

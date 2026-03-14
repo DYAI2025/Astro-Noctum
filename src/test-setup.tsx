@@ -2,6 +2,16 @@ import "@testing-library/jest-dom";
 
 // Mock Three.js (WebGL not available in happy-dom)
 vi.mock("three", () => {
+  const Color = vi.fn(function Color(this: { value: string }, value = "#000000") {
+    this.value = value;
+  });
+  Color.prototype.clone = vi.fn(function clone(this: { value: string }) {
+    return this;
+  });
+  Color.prototype.set = vi.fn(function set(this: { value: string }, value: string) {
+    this.value = value;
+    return this;
+  });
   const Vector3 = vi.fn().mockImplementation((x = 0, y = 0, z = 0) => ({
     x, y, z,
     set: vi.fn().mockReturnThis(),
@@ -46,7 +56,14 @@ vi.mock("three", () => {
     })),
     PointLight: vi.fn(), AmbientLight: vi.fn(), HemisphereLight: vi.fn(),
     Clock: vi.fn().mockImplementation(() => ({ getDelta: vi.fn().mockReturnValue(0.016) })),
-    Vector3, AdditiveBlending: 2, BackSide: 1,
+    Vector3,
+    Color,
+    MathUtils: {
+      lerp: (a: number, b: number, t: number) => a + (b - a) * t,
+    },
+    AdditiveBlending: 2,
+    BackSide: 1,
+    DoubleSide: 2,
   };
 });
 

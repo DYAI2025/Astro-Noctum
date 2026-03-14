@@ -28,6 +28,14 @@ export default defineConfig(({mode}) => {
           target: 'http://localhost:3001',
           changeOrigin: true,
         },
+        '/api/transit-state': {
+          target: 'http://localhost:3001',
+          changeOrigin: true,
+        },
+        '/api/space-weather': {
+          target: 'http://localhost:3001',
+          changeOrigin: true,
+        },
         '/api/agent': {
           target: 'http://localhost:3001',
           changeOrigin: true,

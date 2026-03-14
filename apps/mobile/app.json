@@ -1,0 +1,61 @@
+{
+  "expo": {
+    "name": "Bazodiac",
+    "slug": "bazodiac-mobile",
+    "scheme": "bazodiac",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#060b12"
+    },
+    "ios": {
+      "bundleIdentifier": "space.bazodiac.mobile",
+      "supportsTablet": false,
+      "associatedDomains": [
+        "applinks:bazodiac.space"
+      ]
+    },
+    "android": {
+      "package": "space.bazodiac.mobile",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ],
+          "data": [
+            {
+              "scheme": "bazodiac"
+            }
+          ]
+        },
+        {
+          "action": "VIEW",
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ],
+          "data": [
+            {
+              "scheme": "https",
+              "host": "bazodiac.space"
+            }
+          ]
+        }
+      ]
+    },
+    "plugins": [
+      "expo-secure-store"
+    ],
+    "extra": {
+      "apiBaseUrl": "https://bazodiac.space",
+      "eas": {}
+
+    }
+  }
+}

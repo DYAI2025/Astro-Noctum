@@ -207,6 +207,7 @@ If all attempts fail → returns empty object → Dashboard shows `—` (gracefu
 | `/api/checkout` | POST | Supabase JWT | Create Stripe checkout session |
 | `/api/webhook/stripe` | POST | STRIPE_WEBHOOK_SECRET | Payment confirmed → set premium |
 | `/api/profile/:userId` | GET | ELEVENLABS_TOOL_SECRET | Levi Bazi tool — user profile |
+| `/api/analyze/conversation` | POST | Supabase JWT | Dialogue marker analysis (LeanDeep) |
 | `/api/debug-bafe` | GET | — | Cache stats, retry counts |
 
 **Request format** (calculate endpoints):

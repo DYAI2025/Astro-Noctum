@@ -16,7 +16,7 @@ const app = express();
 // ── Boot-time env var validation ─────────────────────────────────────
 const REQUIRED_ENV_VARS = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
 const missing = REQUIRED_ENV_VARS.filter(v => !process.env[v]);
-if (missing.length > 0) {
+if (missing.length > 0 && process.env.NODE_ENV !== "test") {
   console.error(`[server] Missing required environment variables: ${missing.join(', ')}`);
   console.error('[server] Copy .env.example to .env and fill in the required values.');
   process.exit(1);
@@ -35,27 +35,48 @@ const geminiClient = process.env.GEMINI_API_KEY
   : null;
 
 function buildGeminiPrompt(data, lang) {
+  const l = lang === 'de' ? 'German' : 'English';
+  const you = lang === 'de' ? 'du' : 'you';
   return `
 You are Bazodiac's fusion astrologer — the ONLY system that synthesizes Western astrology, Chinese BaZi, and Wu-Xing Five Elements into one unified reading.
 
 BIRTH DATA (JSON):
 ${JSON.stringify(data, null, 2)}
 
-TASK: Write a deeply personal ${lang === 'de' ? 'German' : 'English'} horoscope interpretation (400–500 words, 5 paragraphs, Markdown, no bullet points). Address the reader as "${lang === 'de' ? 'du' : 'you'}".
+TASK: Generate a deeply personal ${l} horoscope. Address the reader as "${you}". Respond with VALID JSON only — no markdown fences, no commentary outside the JSON.
 
-STRUCTURE — each paragraph MUST cross-reference at least two systems:
+OUTPUT FORMAT (strict JSON):
+{
+  "interpretation": "5 paragraphs, 400-500 words, Markdown formatted. Structure: 1) Cosmic Identity (Sun sign + Day Master), 2) Emotional Depths (Moon + BaZi pillars + dominant element), 3) Fusion Revelation (unique Western+BaZi+WuXing intersection), 4) WuXing Balance (element strengths/weaknesses + Ascendant + life recommendation), 5) Path Forward (synthesis + closing).",
+  "tiles": {
+    "sun": "2-3 sentences about this specific Sun sign personality in context of the full chart. Reference element and ruling planet.",
+    "moon": "2-3 sentences about this specific Moon sign emotional nature in context of the full chart.",
+    "yearAnimal": "2-3 sentences about the specific BaZi year animal + element combination and what it reveals about character.",
+    "dominantWuXing": "2-3 sentences about the dominant Wu-Xing element and how it shapes this person's energy.",
+    "dayMaster": "2-3 sentences about the Heavenly Stem Day Master and what it says about core vitality."
+  },
+  "houses": {
+    "1": "2-3 sentences: what this specific zodiac sign in the 1st house means for this person's self-image and appearance.",
+    "2": "2-3 sentences: what this sign in the 2nd house means for values and finances.",
+    "3": "2-3 sentences: what this sign in the 3rd house means for communication.",
+    "4": "2-3 sentences: what this sign in the 4th house means for home and roots.",
+    "5": "2-3 sentences: what this sign in the 5th house means for creativity and romance.",
+    "6": "2-3 sentences: what this sign in the 6th house means for health and daily routines.",
+    "7": "2-3 sentences: what this sign in the 7th house means for partnerships.",
+    "8": "2-3 sentences: what this sign in the 8th house means for transformation.",
+    "9": "2-3 sentences: what this sign in the 9th house means for philosophy and travel.",
+    "10": "2-3 sentences: what this sign in the 10th house means for career and public image.",
+    "11": "2-3 sentences: what this sign in the 11th house means for friendships and ideals.",
+    "12": "2-3 sentences: what this sign in the 12th house means for the subconscious and spirituality."
+  }
+}
 
-1. **Your Cosmic Identity**: Start with the Western Sun sign and immediately bridge to the BaZi Day Master. What does THIS specific combination reveal that neither system alone can show?
-
-2. **Emotional Depths**: Connect Moon sign with the BaZi pillars' emotional patterns. How does Wu-Xing's dominant element color these emotional currents?
-
-3. **The Fusion Revelation**: This is the core. Use the fusion data to reveal the UNIQUE intersection — the pattern that emerges ONLY when Western + BaZi + Wu-Xing are layered together. This is what no other app can show. Make this paragraph feel like a discovery.
-
-4. **Wu-Xing Balance**: Which elements are strong, which are weak? How does this elemental map interact with the Western Ascendant? Give one concrete life recommendation based on elemental balance.
-
-5. **Your Path Forward**: Synthesize all three systems into a forward-looking invitation. End with a sentence that makes the reader feel truly seen.
-
-TONE: Warm, precise, mystical but grounded. Never generic. Every sentence must feel like it was written for THIS specific birth chart.
+RULES:
+- Every text MUST reference specific data from the birth chart — never generic
+- If house data is missing or empty, omit the "houses" key entirely
+- Language: ALL text in ${l}
+- Do NOT hallucinate data not present in the birth chart
+- TONE: Warm, precise, mystical but grounded. Every sentence for THIS chart only.
 `.trim();
 }
 
@@ -64,12 +85,28 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://maps.googleapis.com", "https://elevenlabs.io", "https://unpkg.com/@elevenlabs/convai-widget-embed"],
+      scriptSrc: [
+        "'self'", 
+        "'unsafe-inline'", 
+        "'unsafe-eval'", 
+        "blob:",
+        "https://maps.googleapis.com", 
+        "https://elevenlabs.io", 
+        "https://*.elevenlabs.io",
+        "https://cdn.jsdelivr.net",
+        "https://unpkg.com",
+        "https://www.googletagmanager.com",
+        "https://pagead2.googlesyndication.com",
+        "https://*.adtrafficquality.google"
+      ],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "blob:", "https:"],
-      connectSrc: ["'self'", "https://*.supabase.co", "https://generativelanguage.googleapis.com", "https://bafe-production.up.railway.app", "https://bafe.vercel.app", "https://maps.googleapis.com", "https://elevenlabs.io", "wss://elevenlabs.io"],
-      frameSrc: ["'self'", "https://elevenlabs.io", "https://checkout.stripe.com"],
+      connectSrc: ["'self'", "https://*.supabase.co", "wss://*.supabase.co", "https://generativelanguage.googleapis.com", "https://bafe-production.up.railway.app", "https://bafe.vercel.app", "https://maps.googleapis.com", "https://elevenlabs.io", "https://*.elevenlabs.io", "wss://elevenlabs.io", "wss://*.elevenlabs.io", "https://*.google-analytics.com", "https://*.analytics.google.com", "https://*.googlesyndication.com", "https://pagead2.googlesyndication.com", "https://*.adtrafficquality.google", "https://www.googletagmanager.com", "https://api.nasa.gov", "https://services.swpc.noaa.gov"],
+      frameSrc: ["'self'", "https://elevenlabs.io", "https://*.elevenlabs.io", "https://checkout.stripe.com", "https://pagead2.googlesyndication.com", "https://googleads.g.doubleclick.net"],
+      mediaSrc: ["'self'", "blob:", "https://elevenlabs.io", "https://*.elevenlabs.io"],
+      workerSrc: ["'self'", "blob:", "https://elevenlabs.io", "https://*.elevenlabs.io", "https://unpkg.com"],
+      workletSrc: ["'self'", "blob:", "data:", "https://unpkg.com", "https://cdn.jsdelivr.net", "https://elevenlabs.io", "https://*.elevenlabs.io"],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
     },
@@ -112,6 +149,76 @@ const BAFE_PUBLIC_URL = stripTrailingSlash(
 
 const BAFE_INTERNAL_URL = stripTrailingSlash(process.env.BAFE_INTERNAL_URL) || null;
 
+// Railway Public Domain fallback for APP_URL
+const APP_URL = stripTrailingSlash(
+  process.env.APP_URL || 
+  (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : "https://bazodiac.com")
+);
+
+const APP_ORIGIN = (() => {
+  try {
+    return new URL(APP_URL).origin.toLowerCase();
+  } catch {
+    return "";
+  }
+})();
+
+const parseCsvSet = (value) =>
+  new Set(
+    String(value || "")
+      .split(",")
+      .map((entry) => entry.trim().toLowerCase())
+      .filter(Boolean),
+  );
+
+const MOBILE_RETURN_ORIGINS = parseCsvSet(
+  process.env.MOBILE_CHECKOUT_ALLOWED_ORIGINS || APP_ORIGIN,
+);
+const MOBILE_RETURN_SCHEMES = parseCsvSet(
+  process.env.MOBILE_CHECKOUT_ALLOWED_SCHEMES || "bazodiac,astroio,exp",
+);
+
+const toBoolean = (value, fallback) => {
+  if (value == null) return fallback;
+  const normalized = String(value).trim().toLowerCase();
+  if (["1", "true", "yes", "on"].includes(normalized)) return true;
+  if (["0", "false", "no", "off"].includes(normalized)) return false;
+  return fallback;
+};
+
+function extractClientTelemetry(req) {
+  const headerValue = (name) => {
+    const raw = req.get(name);
+    return typeof raw === "string" ? raw.trim().slice(0, 128) : "";
+  };
+  return {
+    appPlatform: headerValue("X-App-Platform"),
+    appVersion: headerValue("X-App-Version"),
+    deviceId: headerValue("X-Device-Id"),
+  };
+}
+
+function sanitizeCheckoutReturnUrl(rawUrl, fallbackUrl) {
+  if (typeof rawUrl !== "string" || rawUrl.length > 1024) return fallbackUrl;
+
+  try {
+    const parsed = new URL(rawUrl.trim());
+    const scheme = parsed.protocol.replace(":", "").toLowerCase();
+
+    if ((scheme === "http" || scheme === "https") && MOBILE_RETURN_ORIGINS.has(parsed.origin.toLowerCase())) {
+      return parsed.toString();
+    }
+
+    if (MOBILE_RETURN_SCHEMES.has(scheme)) {
+      return parsed.toString();
+    }
+  } catch {
+    return fallbackUrl;
+  }
+
+  return fallbackUrl;
+}
+
 // Primary URL for logging
 const BAFE_BASE_URL = BAFE_INTERNAL_URL || BAFE_PUBLIC_URL;
 
@@ -121,11 +228,7 @@ const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
 function cacheKey(method, url, reqBody) {
   const raw = `${method}:${url}:${JSON.stringify(reqBody || {})}`;
-  let h = 0;
-  for (let i = 0; i < raw.length; i++) {
-    h = ((h << 5) - h + raw.charCodeAt(i)) | 0;
-  }
-  return String(h);
+  return crypto.createHash('sha256').update(raw).digest('hex').slice(0, 32);
 }
 
 // Evict expired entries every hour
@@ -143,6 +246,9 @@ setInterval(() => {
 const RETRY_ATTEMPTS = 3;
 const RETRY_BASE_MS = 200;
 const FETCH_TIMEOUT_MS = 10_000;
+const SPACE_WEATHER_CACHE_TTL_MS = 15 * 60 * 1000;
+
+let spaceWeatherCache = null;
 
 // ── Proxy with fallback chain + cache + retry + timeout ──────────────
 async function proxyToBafeWithFallback(targetUrls, req, res) {
@@ -233,10 +339,41 @@ function bafeFallbackUrls(routePath) {
   return urls;
 }
 
+function bafeFallbackUrlsFromCandidates(routeCandidates) {
+  const urls = [];
+  for (const routePath of routeCandidates) {
+    if (BAFE_INTERNAL_URL) urls.push(`${BAFE_INTERNAL_URL}${routePath}`);
+    urls.push(`${BAFE_PUBLIC_URL}${routePath}`);
+  }
+  return urls;
+}
+
+// ── Auth middleware — validates Supabase JWT ─────────────────────────
+async function requireUserAuth(req, res, next) {
+  if (!supabaseServer) {
+    return res.status(503).json({ error: "Auth service not configured" });
+  }
+  const authHeader = req.headers.authorization || "";
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+  if (!token) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+  try {
+    const { data: { user }, error } = await supabaseServer.auth.getUser(token);
+    if (error || !user) {
+      return res.status(401).json({ error: "Invalid or expired session" });
+    }
+    req.userId = user.id;
+    next();
+  } catch {
+    return res.status(503).json({ error: "Auth service temporarily unavailable" });
+  }
+}
+
 // ── /calculate/:endpoint  (bazi, western, fusion, wuxing, tst) ──────
 const CALC_ENDPOINTS = ["bazi", "western", "fusion", "wuxing", "tst"];
 
-app.post("/api/calculate/:endpoint", express.json(), (req, res) => {
+app.post("/api/calculate/:endpoint", requireUserAuth, express.json(), (req, res) => {
   const { endpoint } = req.params;
   if (!CALC_ENDPOINTS.includes(endpoint)) {
     return res.status(400).json({ error: `Unknown endpoint: ${endpoint}` });
@@ -249,7 +386,7 @@ app.post("/api/calculate/:endpoint", express.json(), (req, res) => {
 });
 
 // ── /chart ──────────────────────────────────────────────────────────
-app.post("/api/chart", express.json(), (req, res) => {
+app.post("/api/chart", requireUserAuth, express.json(), (req, res) => {
   proxyToBafeWithFallback(bafeFallbackUrls("/chart"), req, res);
 });
 
@@ -257,6 +394,298 @@ app.get("/api/chart", (req, res) => {
   const qs = new URLSearchParams(req.query).toString();
   const suffix = `/chart${qs ? `?${qs}` : ""}`;
   proxyToBafeWithFallback(bafeFallbackUrls(suffix), req, res);
+});
+
+// ── /api/transit-state/:userId ───────────────────────────────────────
+app.get("/api/transit-state/:userId", (req, res) => {
+  const clamp01 = (value) => Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0));
+  const normalizeElementValue = (value) => {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return null;
+    return clamp01(n > 1 ? n / 100 : n);
+  };
+  const hashToUnit = (seed) => {
+    const hex = crypto.createHash("sha256").update(seed).digest("hex").slice(0, 8);
+    const int = parseInt(hex, 16);
+    return (int % 1000) / 1000;
+  };
+  const fallbackStateFromProfile = (userId, profile) => {
+    const astro = profile?.astro_json ?? {};
+    const wuxing = astro?.wuxing ?? {};
+
+    const rawElements = Object.values(
+      wuxing?.element_percentages || wuxing?.balance || {},
+    )
+      .map(normalizeElementValue)
+      .filter((v) => v != null);
+
+    const baseFromElements = rawElements.length > 0
+      ? Array.from({ length: 12 }, (_, i) => rawElements[i % rawElements.length])
+      : null;
+
+    const baseFromHash = Array.from({ length: 12 }, (_, i) => {
+      const u = hashToUnit(`${userId}:${profile?.sun_sign || ""}:${profile?.moon_sign || ""}:${i}`);
+      // Stable pseudo profile between 0.25 and 0.75
+      return 0.25 + u * 0.5;
+    });
+
+    const soulprint = (baseFromElements ?? baseFromHash).map(clamp01);
+    const ring = soulprint.map((value, i) => {
+      const drift = (hashToUnit(`${userId}:drift:${i}`) - 0.5) * 0.12;
+      return clamp01(value + drift);
+    });
+
+    return {
+      ring: { sectors: ring },
+      soulprint: { sectors: soulprint },
+      transit_contribution: { transit_intensity: 0.35 },
+      delta: { vs_30day_avg: { avg_sectors: soulprint } },
+      events: [],
+      resolution: 33,
+    };
+  };
+
+  const userId = String(req.params.userId || "").trim();
+  if (!userId) {
+    return res.status(400).json({ error: "Missing userId" });
+  }
+
+  res.set("Cache-Control", "no-store");
+
+  const safeUserId = encodeURIComponent(userId);
+  const candidates = bafeFallbackUrlsFromCandidates([
+    `/api/transit-state/${safeUserId}`,
+    `/transit-state/${safeUserId}`,
+  ]);
+
+  const fetchUpstreamTransit = async () => {
+    let lastResponse = null;
+
+    for (const targetUrl of candidates) {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+        const upstream = await fetch(targetUrl, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+
+        const contentType = upstream.headers.get("content-type") || "application/json";
+        const body = await upstream.text();
+
+        if (upstream.ok) {
+          return { ok: true, status: upstream.status, contentType, body };
+        }
+
+        lastResponse = { ok: false, status: upstream.status, contentType, body, targetUrl };
+
+        // try the next fallback endpoint on any non-2xx
+        continue;
+      } catch (err) {
+        lastResponse = {
+          ok: false,
+          status: 502,
+          contentType: "application/json",
+          body: JSON.stringify({ error: err?.message || "network error" }),
+          targetUrl,
+        };
+      }
+    }
+
+    return lastResponse;
+  };
+
+  const respondWithFallback = async () => {
+    if (!supabaseServer) {
+      return res
+        .status(200)
+        .set("X-Transit-Fallback", "neutral")
+        .json(fallbackStateFromProfile(userId, null));
+    }
+
+    const { data: profile } = await supabaseServer
+      .from("astro_profiles")
+      .select("user_id, sun_sign, moon_sign, astro_json")
+      .eq("user_id", userId)
+      .single();
+
+    return res
+      .status(200)
+      .set("X-Transit-Fallback", profile ? "profile-derived" : "neutral")
+      .json(fallbackStateFromProfile(userId, profile || null));
+  };
+
+  fetchUpstreamTransit()
+    .then(async (upstream) => {
+      if (upstream?.ok) {
+        return res
+          .status(upstream.status)
+          .set("Content-Type", upstream.contentType)
+          .send(upstream.body);
+      }
+
+      console.warn(
+        "[transit-state] upstream unavailable, serving fallback",
+        upstream?.status,
+        upstream?.targetUrl || "",
+      );
+      return respondWithFallback();
+    })
+    .catch(async (err) => {
+      console.warn("[transit-state] unexpected failure, serving fallback:", err?.message || err);
+      return respondWithFallback();
+    });
+});
+
+// ── /api/space-weather ───────────────────────────────────────────────
+// Primary source: NOAA SWPC (no API key required, highly reliable)
+// Fallback: NASA DONKI (requires NASA_API_KEY or uses DEMO_KEY with rate limits)
+
+async function fetchKpFromNOAA() {
+  // NOAA 1-minute Kp planetary index — returns array of {time_tag, kp, estimated, noaa_scale}
+  const url = "https://services.swpc.noaa.gov/json/planetary_k_index_1m.json";
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (!response.ok) throw new Error(`NOAA responded with ${response.status}`);
+    const records = await response.json();
+    if (!Array.isArray(records) || records.length === 0) throw new Error("NOAA returned empty data");
+    // Get most recent non-estimated reading, or last entry as fallback
+    const real = records.filter((r) => !r.estimated).at(-1) ?? records.at(-1);
+    const kpRaw = real?.kp ?? real?.kp_index ?? 0;
+    const kp = Math.max(0, Math.min(9, Number.parseFloat(String(kpRaw)) || 0));
+    return { kp_index: kp, source: "NOAA" };
+  } catch (err) {
+    clearTimeout(timeout);
+    throw err;
+  }
+}
+
+async function fetchKpFromDONKI() {
+  const endDate = new Date();
+  const startDate = new Date(endDate.getTime() - 24 * 60 * 60 * 1000);
+  const apiKey = process.env.NASA_API_KEY || "DEMO_KEY";
+  const url =
+    `https://api.nasa.gov/DONKI/KP?startDate=${startDate.toISOString().slice(0, 10)}` +
+    `&endDate=${endDate.toISOString().slice(0, 10)}&api_key=${apiKey}`;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (!response.ok) throw new Error(`DONKI responded with ${response.status}`);
+    const records = await response.json();
+    const latest = Array.isArray(records) && records.length > 0 ? records[records.length - 1] : null;
+    const kpRaw =
+      latest?.kpIndex ??
+      latest?.kp_index ??
+      latest?.estimatedKp ??
+      latest?.allKpIndex?.[latest?.allKpIndex?.length - 1]?.kpIndex ??
+      0;
+    const kp = Math.max(0, Math.min(9, Number.parseFloat(String(kpRaw)) || 0));
+    return { kp_index: kp, source: "DONKI" };
+  } catch (err) {
+    clearTimeout(timeout);
+    throw err;
+  }
+}
+
+app.get("/api/space-weather", async (_req, res) => {
+  res.set("Cache-Control", "public, max-age=900");
+
+  const now = Date.now();
+  if (spaceWeatherCache && now - spaceWeatherCache.timestamp < SPACE_WEATHER_CACHE_TTL_MS) {
+    return res.json(spaceWeatherCache.payload);
+  }
+
+  let result = null;
+
+  // 1. Try NOAA (primary — no API key, production-grade)
+  try {
+    result = await fetchKpFromNOAA();
+    console.log(`[space-weather] NOAA Kp=${result.kp_index}`);
+  } catch (noaaErr) {
+    console.warn("[space-weather] NOAA failed, trying NASA DONKI:", noaaErr?.message || noaaErr);
+  }
+
+  // 2. Try NASA DONKI (fallback)
+  if (!result) {
+    try {
+      result = await fetchKpFromDONKI();
+      console.log(`[space-weather] DONKI Kp=${result.kp_index}`);
+    } catch (donkiErr) {
+      console.warn("[space-weather] DONKI also failed:", donkiErr?.message || donkiErr);
+    }
+  }
+
+  // 3. Serve stale cache if both fail
+  if (!result && spaceWeatherCache?.payload) {
+    console.warn("[space-weather] both sources failed — serving stale cache");
+    return res.json(spaceWeatherCache.payload);
+  }
+
+  // 4. Neutral fallback
+  if (!result) {
+    console.warn("[space-weather] all sources failed — returning neutral Kp=0");
+    return res.json({
+      kp_index: 0,
+      source: "fallback",
+      fetched_at: new Date().toISOString(),
+      cache_ttl_seconds: Math.round(SPACE_WEATHER_CACHE_TTL_MS / 1000),
+    });
+  }
+
+  const payload = {
+    ...result,
+    fetched_at: new Date().toISOString(),
+    cache_ttl_seconds: Math.round(SPACE_WEATHER_CACHE_TTL_MS / 1000),
+  };
+  spaceWeatherCache = { timestamp: now, payload };
+  return res.json(payload);
+});
+
+// ── /api/mobile/bootstrap ───────────────────────────────────────────
+// Mobile clients use this endpoint to bootstrap minimum-version gating,
+// feature flags, and external integration settings.
+app.get("/api/mobile/bootstrap", (_req, res) => {
+  const defaultSuccessUrl = `${APP_URL}?upgrade=success`;
+  const defaultCancelUrl = `${APP_URL}?upgrade=cancelled`;
+  const scheme = process.env.MOBILE_APP_SCHEME || "bazodiac";
+
+  res.set("Cache-Control", "no-store");
+  return res.json({
+    api_version: "2026-03-13",
+    server_time: new Date().toISOString(),
+    min_supported_versions: {
+      ios: process.env.MIN_IOS_APP_VERSION || "1.0.0",
+      android: process.env.MIN_ANDROID_APP_VERSION || "1.0.0",
+    },
+    feature_flags: {
+      quizzes_enabled: toBoolean(process.env.MOBILE_FEATURE_QUIZZES_ENABLED, true),
+      wissen_enabled: toBoolean(process.env.MOBILE_FEATURE_WISSEN_ENABLED, true),
+      levi_voice_enabled: toBoolean(process.env.MOBILE_FEATURE_LEVI_VOICE_ENABLED, true),
+      fu_ring_native_enabled: toBoolean(process.env.MOBILE_FEATURE_FU_RING_NATIVE_ENABLED, false),
+      transit_polling_enabled: toBoolean(process.env.MOBILE_FEATURE_TRANSIT_POLLING_ENABLED, true),
+    },
+    checkout: {
+      default_success_url: defaultSuccessUrl,
+      default_cancel_url: defaultCancelUrl,
+      allowed_return_origins: [...MOBILE_RETURN_ORIGINS],
+      allowed_return_schemes: [...MOBILE_RETURN_SCHEMES],
+      app_scheme: scheme,
+    },
+    voice: {
+      provider: "elevenlabs",
+      mode: "webview",
+      requires_premium: true,
+      agent_id: process.env.ELEVENLABS_AGENT_ID || null,
+      profile_endpoint_template: `${APP_URL}/api/profile/:userId`,
+    },
+  });
 });
 
 // ── /api/webhook/chart ──────────────────────────────────────────────
@@ -498,8 +927,24 @@ app.post("/api/checkout", express.json(), async (req, res) => {
   const authedUser = await verifySupabaseUser(req);
   if (!authedUser) return res.status(401).json({ error: "Unauthorized" });
 
+  const telemetry = extractClientTelemetry(req);
   const userId = authedUser.id;
   const userEmail = authedUser.email || req.body.userEmail;
+  const platform =
+    (typeof req.body?.platform === "string" ? req.body.platform : telemetry.appPlatform || "web")
+      .trim()
+      .toLowerCase()
+      .slice(0, 24);
+
+  const defaultSuccessUrl = `${APP_URL}?upgrade=success`;
+  const defaultCancelUrl = `${APP_URL}?upgrade=cancelled`;
+  const successUrl = sanitizeCheckoutReturnUrl(req.body?.successUrl, defaultSuccessUrl);
+  const cancelUrl = sanitizeCheckoutReturnUrl(req.body?.cancelUrl, defaultCancelUrl);
+  if (telemetry.appPlatform || telemetry.appVersion || telemetry.deviceId) {
+    console.log(
+      `[checkout] telemetry platform=${telemetry.appPlatform || "unknown"} version=${telemetry.appVersion || "unknown"} device=${telemetry.deviceId || "unknown"}`,
+    );
+  }
 
   try {
     // Look up existing Stripe customer ID from DB
@@ -515,7 +960,11 @@ app.post("/api/checkout", express.json(), async (req, res) => {
       // First checkout — create Stripe customer and persist ID
       const customer = await stripe.customers.create({
         email: userEmail,
-        metadata: { userId },
+        metadata: {
+          userId,
+          platform,
+          appVersion: telemetry.appVersion || "",
+        },
       });
       customerId = customer.id;
 
@@ -529,11 +978,22 @@ app.post("/api/checkout", express.json(), async (req, res) => {
       customer: customerId,
       line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
       mode: "payment",
-      success_url: `${process.env.APP_URL || "https://bazodiac.com"}?upgrade=success`,
-      cancel_url: `${process.env.APP_URL || "https://bazodiac.com"}?upgrade=cancelled`,
-      metadata: { userId },
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      metadata: {
+        userId,
+        platform,
+        appVersion: telemetry.appVersion || "",
+        deviceId: telemetry.deviceId || "",
+      },
     });
-    res.json({ url: session.url });
+    res.json({
+      url: session.url,
+      resolved: {
+        successUrl,
+        cancelUrl,
+      },
+    });
   } catch (err) {
     console.error("[Stripe] Checkout error:", err.message);
     res.status(500).json({ error: "Checkout failed" });
@@ -581,6 +1041,13 @@ app.post("/api/share", express.json(), async (req, res) => {
   const authedUser = await verifySupabaseUser(req);
   if (!authedUser) return res.status(401).json({ error: "Unauthorized" });
 
+  const telemetry = extractClientTelemetry(req);
+  if (telemetry.appPlatform || telemetry.appVersion || telemetry.deviceId) {
+    console.log(
+      `[share] telemetry platform=${telemetry.appPlatform || "unknown"} version=${telemetry.appVersion || "unknown"} device=${telemetry.deviceId || "unknown"}`,
+    );
+  }
+
   const userId = authedUser.id;
 
   if (!supabaseServer) {
@@ -598,7 +1065,7 @@ app.post("/api/share", express.json(), async (req, res) => {
   if (!profile) return res.status(404).json({ error: "No profile found" });
 
   res.json({
-    shareUrl: `${process.env.APP_URL || "https://bazodiac.com"}/share/${hash}`,
+    shareUrl: `${APP_URL}/share/${hash}`,
     hash,
     profile: {
       sun_sign: profile.sun_sign,
@@ -638,9 +1105,20 @@ app.post("/api/interpret", express.json({ limit: "50kb" }), async (req, res) => 
       }),
     ]);
     clearTimeout(timeout);
-    const text = response.text?.trim();
-    if (!text) return res.status(502).json({ error: "Empty response from AI" });
-    res.json({ text });
+    const raw = response.text?.trim();
+    if (!raw) return res.status(502).json({ error: "Empty response from AI" });
+
+    // Try to parse as structured JSON
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed.interpretation) {
+        return res.json(parsed);
+      }
+    } catch {
+      // Gemini returned plain text — fall back to legacy format
+    }
+    // Legacy fallback: return as plain text
+    res.json({ text: raw });
   } catch (err) {
     console.warn("[interpret] Gemini failed:", err?.message ?? String(err));
     res.status(502).json({ error: "AI interpretation failed" });
@@ -666,9 +1144,70 @@ app.get("*", (_req, res) => {
   res.sendFile(path.join(distPath, "index.html"));
 });
 
-const port = Number(process.env.PORT || 3000);
-app.listen(port, "0.0.0.0", () => {
-  console.log(`Astro-Noctum listening on port ${port}`);
-  console.log(`BAFE public  → ${BAFE_PUBLIC_URL}`);
-  if (BAFE_INTERNAL_URL) console.log(`BAFE internal → ${BAFE_INTERNAL_URL}`);
+// ── POST /api/analyze/conversation — Dialogue analysis with Gemini ──────
+app.post("/api/analyze/conversation", express.json(), async (req, res) => {
+  if (!geminiClient) {
+    return res.status(503).json({ error: "Gemini API not configured" });
+  }
+
+  const { text, lang } = req.body;
+  if (!text) return res.status(400).json({ error: "Missing text" });
+
+  try {
+    const model = geminiClient.getGenerativeModel({ model: "gemini-2.0-flash" });
+    
+    const prompt = `
+      You are an expert in semantic dialogue analysis using the LeanDeep framework.
+      
+      TASK:
+      1. Separate the following dialogue into "Person A" and "Person B".
+      2. For each person, identify 2-3 psychological markers from the LeanDeep framework.
+      3. Calculate a "resonance score" (0.0 to 1.0) indicating the quality of alignment between speakers.
+      4. Provide a 1-sentence summary of the conversation vibe.
+
+      LEANDEEP MARKER EXAMPLES (Use these format: marker.domain.keyword):
+      - marker.emotion.empathy
+      - marker.freedom.independence
+      - marker.love.passionate
+      - marker.emotion.security
+      - marker.freedom.growth
+      - marker.emotion.anchor
+      - marker.creative.expression
+      - marker.cognition.curiosity
+      
+      DIALOGUE:
+      ${text}
+
+      RESPONSE FORMAT:
+      Respond with VALID JSON only. No markdown fences.
+      {
+        "lines": [{"speaker": "Person A", "text": "..."}, ...],
+        "markersA": [{"id": "marker.emotion.empathy", "weight": 0.8}],
+        "markersB": [{"id": "marker.freedom.growth", "weight": 0.8}],
+        "resonance": 0.75,
+        "summary": "..."
+      }
+    `;
+
+    const result = await model.generateContent(prompt);
+    const responseText = result.response.text();
+    const cleanedJson = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
+    const analysis = JSON.parse(cleanedJson);
+
+    res.json(analysis);
+  } catch (error) {
+    console.error("Analysis failed:", error);
+    res.status(500).json({ error: "Analysis failed" });
+  }
 });
+
+const port = Number(process.env.PORT || 3000);
+if (process.env.NODE_ENV !== "test") {
+  app.listen(port, "0.0.0.0", () => {
+    console.log(`Astro-Noctum listening on port ${port}`);
+    console.log(`BAFE public  → ${BAFE_PUBLIC_URL}`);
+    if (BAFE_INTERNAL_URL) console.log(`BAFE internal → ${BAFE_INTERNAL_URL}`);
+  });
+}
+
+export { app };

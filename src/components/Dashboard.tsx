@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  ArrowUp, ArrowLeft, RefreshCw, Zap, Phone, PhoneOff, Lock,
+  ArrowUp, ArrowLeft, RefreshCw, Phone, PhoneOff, Lock,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { BirthChartOrrery } from "./BirthChartOrrery";
@@ -23,6 +23,9 @@ import { BaZiFourPillars } from "./BaZiFourPillars";
 import { BaZiInterpretation } from "./BaZiInterpretation";
 import { getStemByCharacter } from "../lib/astro-data/heavenlyStems";
 import type { ApiData } from "../types/bafe";
+import type { TileTexts, HouseTexts } from "../types/interpretation";
+import { ExpandableText } from "./ExpandableText";
+import { getZodiacArt } from "../lib/astro-data/zodiacAssets";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Static data
@@ -213,6 +216,8 @@ interface DashboardProps {
   onStopAudio: () => void;
   onResumeAudio: () => void;
   isFirstReading?: boolean;
+  tileTexts?: TileTexts;
+  houseTexts?: HouseTexts;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -231,6 +236,8 @@ export function Dashboard({
   onStopAudio,
   onResumeAudio,
   isFirstReading = false,
+  tileTexts,
+  houseTexts,
 }: DashboardProps) {
   const { lang, t } = useLanguage();
   const { isPremium } = usePremium();
@@ -491,23 +498,19 @@ export function Dashboard({
 
       {/* ═══ PRIMARY GRID: Western (left) | BaZi/WuXing (right) ═══════ */}
       <motion.div className="mb-12" {...fadeIn(0.2)}>
-        <DualSectionHeader
-          leftLabel={t("dashboard.western.sectionLabel")}
-          leftTitle={t("dashboard.western.sectionTitle")}
-          rightLabel={t("dashboard.bazi.sectionLabel")}
-          rightTitle={t("dashboard.bazi.sectionTitle")}
+        <SectionDivider
+          label={t("dashboard.western.sectionLabel")}
+          title={t("dashboard.western.sectionTitle")}
         />
 
-        <div className="morning-grid-2">
-
-          {/* ── LEFT — Western Signs ─────────────────────────────── */}
-          <div className="flex flex-col gap-5">
+        {/* ── Western Signs ─────────────────────────────── */}
+        <div className="grid md:grid-cols-3 gap-5 mb-10">
 
             {/* Sun Sign — FR-03.1 / FR-P05: data-special for gold border in Planetarium */}
             <div className="morning-card p-5 sm:p-7 flex flex-col justify-between" data-special="true">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <img src="/icons/sun-sign.webp" alt="" className="w-6 h-6 opacity-70" />
+                  <span className="text-2xl leading-none select-none text-[#C8930A]">{sunEmoji}</span>
                   <Badge text={t("dashboard.western.sunLabel")} />
                 </div>
 
@@ -521,11 +524,9 @@ export function Dashboard({
                       {t("dashboard.western.sunTitle")}
                     </p>
                   </div>
-                  <img
-                    src="/icons/sun-sign.webp"
-                    alt=""
-                    className="w-20 h-20 sm:w-24 sm:h-24 opacity-50 shrink-0 -mt-2"
-                  />
+                  {(() => { const art = getZodiacArt(sunSign); return art ? (
+                    <img src={art} alt={sunSignName} className="w-24 h-24 sm:w-28 sm:h-28 object-contain shrink-0 -mt-2" loading="lazy" />
+                  ) : null; })()}
                 </div>
 
                 {/* Sign-specific description */}
@@ -534,6 +535,7 @@ export function Dashboard({
                     ? sunSignData.sun[lang]
                     : t("dashboard.western.sunDesc")}
                 </p>
+                <ExpandableText text={tileTexts?.sun} />
               </div>
               <div className="flex justify-between items-center border-t border-[#8B6914]/10 pt-4 mt-5">
                 <span className="text-2xl leading-none select-none text-[#C8930A]">{sunEmoji}</span>
@@ -550,7 +552,7 @@ export function Dashboard({
             <div className="morning-card p-5 sm:p-7 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <img src="/icons/moon-sign.webp" alt="" className="w-6 h-6 opacity-70" />
+                  <span className="text-2xl leading-none select-none text-[#1A6BB5]">{moonEmoji}</span>
                   <Badge text={t("dashboard.western.moonLabel")} />
                 </div>
 
@@ -564,11 +566,9 @@ export function Dashboard({
                       {t("dashboard.western.moonTitle")}
                     </p>
                   </div>
-                  <img
-                    src="/icons/moon-sign.webp"
-                    alt=""
-                    className="w-20 h-20 sm:w-24 sm:h-24 opacity-50 shrink-0 -mt-2"
-                  />
+                  {(() => { const art = getZodiacArt(moonSign); return art ? (
+                    <img src={art} alt={moonSignName} className="w-24 h-24 sm:w-28 sm:h-28 object-contain shrink-0 -mt-2" loading="lazy" />
+                  ) : null; })()}
                 </div>
 
                 <p className="text-xs text-[#1E2A3A]/55 leading-relaxed">
@@ -576,6 +576,7 @@ export function Dashboard({
                     ? moonSignData.moon[lang]
                     : t("dashboard.western.moonDesc")}
                 </p>
+                <ExpandableText text={tileTexts?.moon} />
               </div>
               <div className="flex justify-between items-center border-t border-[#8B6914]/10 pt-4 mt-5">
                 <span className="text-2xl leading-none select-none text-[#1A6BB5]">{moonEmoji}</span>
@@ -592,16 +593,23 @@ export function Dashboard({
             <div className="morning-card p-5 sm:p-7 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <ArrowUp className="text-[#3D8B37] w-5 h-5" />
+                  <span className="text-2xl leading-none select-none text-[#3D8B37]">{ascEmoji}</span>
                   <Badge text={t("dashboard.western.ascLabel")} />
                 </div>
 
-                <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
-                  {ascSignName || "—"}
-                </h3>
-                <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50 mb-4">
-                  {t("dashboard.western.ascTitle")}
-                </p>
+                <div className="flex items-start justify-between gap-4 mb-4">
+                  <div className="min-w-0">
+                    <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
+                      {ascSignName || "—"}
+                    </h3>
+                    <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50">
+                      {t("dashboard.western.ascTitle")}
+                    </p>
+                  </div>
+                  {(() => { const art = getZodiacArt(ascendantSign); return art ? (
+                    <img src={art} alt={ascSignName} className="w-24 h-24 sm:w-28 sm:h-28 object-contain shrink-0 -mt-2" loading="lazy" />
+                  ) : null; })()}
+                </div>
 
                 <p className="text-xs text-[#1E2A3A]/55 leading-relaxed">
                   {ascSignData
@@ -621,14 +629,19 @@ export function Dashboard({
             </div>
           </div>
 
-          {/* ── RIGHT — BaZi / WuXing ───────────────────────────── */}
-          <div className="flex flex-col gap-5">
+        <SectionDivider
+          label={t("dashboard.bazi.sectionLabel")}
+          title={t("dashboard.bazi.sectionTitle")}
+        />
+
+          {/* ── BaZi / WuXing ───────────────────────────── */}
+          <div className="grid md:grid-cols-4 gap-5 mb-10">
 
             {/* Year Animal — FR-P05: data-special for gold border in Planetarium */}
             <div className="morning-card p-5 sm:p-7 flex flex-col justify-between" data-special="true">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-2xl leading-none select-none">{yearBranch?.emoji || "✨"}</span>
+                  <span className="text-4xl font-serif leading-none select-none" style={{ color: yearBranch ? '#8B6914' : undefined }}>{yearBranch?.chinese || "✨"}</span>
                   <Badge text={t("dashboard.bazi.zodiacLabel")} />
                 </div>
                 <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
@@ -644,7 +657,7 @@ export function Dashboard({
                     <img
                       src={yearCoinSrc}
                       alt={yearAnimalName}
-                      className="w-[120px] h-[120px] object-contain rounded-full"
+                      className="w-32 h-32 sm:w-40 sm:h-40 object-contain rounded-full"
                       loading="lazy"
                     />
                   </div>
@@ -654,6 +667,7 @@ export function Dashboard({
                     {yearBranch.description[lang]}
                   </p>
                 )}
+                <ExpandableText text={tileTexts?.yearAnimal} />
               </div>
               <div className="flex justify-between items-center border-t border-[#8B6914]/10 pt-4 mt-5">
                 <div className="flex items-center gap-2">
@@ -681,7 +695,7 @@ export function Dashboard({
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-2xl leading-none select-none">{dominantWuxing?.emoji || "✨"}</span>
+                  <span className="text-4xl font-serif leading-none select-none" style={{ color: dominantWuxing?.color }}>{dominantWuxing?.chinese || "✨"}</span>
                   <Badge text={t("dashboard.bazi.essenceLabel")} />
                 </div>
                 <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
@@ -695,6 +709,7 @@ export function Dashboard({
                     {dominantWuxing.description[lang]}
                   </p>
                 )}
+                <ExpandableText text={tileTexts?.dominantWuXing} />
               </div>
               <div className="flex justify-between items-center border-t border-[#8B6914]/10 pt-4 mt-5">
                 <div className="flex items-center gap-2">
@@ -717,7 +732,7 @@ export function Dashboard({
             <div className="morning-card p-5 sm:p-7 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <Zap className="text-[#8B6914] w-5 h-5 shrink-0" />
+                  <span className="text-4xl font-serif leading-none select-none text-[#D4AF37]">{dayMaster}</span>
                   <Badge text={t("dashboard.bazi.vitalityLabel")} />
                 </div>
                 <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
@@ -733,6 +748,7 @@ export function Dashboard({
                     ? dayMasterStem.dayMaster[lang]
                     : t("dashboard.bazi.dayMasterDesc")}
                 </p>
+                <ExpandableText text={tileTexts?.dayMaster} />
               </div>
               <div className="flex justify-between items-center border-t border-[#8B6914]/10 pt-4 mt-5">
                 <div className="flex items-center gap-2">
@@ -781,7 +797,6 @@ export function Dashboard({
               </div>
             </div>
           </div>
-        </div>
       </motion.div>
 
       {/* ═══ BAZI & WUXING DEEP SECTION ═══════════════════════════════ */}
@@ -902,8 +917,9 @@ export function Dashboard({
               // FR-07: Localised sign name
               const signDisplay = sign ? getSignName(sign, lang) : "—";
 
-              return (
-                <div key={houseKey} className="morning-card p-4 sm:p-5 overflow-hidden">
+              const houseText = num !== null ? houseTexts?.[String(num)] : undefined;
+              const cardContent = (
+                <>
                   {/* House number + name */}
                   <div className="flex items-baseline gap-1.5 sm:gap-2 mb-2 sm:mb-3 min-w-0">
                     <span className="font-serif text-base text-[#8B6914] font-medium leading-none shrink-0">
@@ -930,6 +946,18 @@ export function Dashboard({
                         : `${signDisplay} shapes your house of ${meaning.name.en}.`}
                     </p>
                   )}
+                </>
+              );
+
+              return houseText ? (
+                <Tooltip key={houseKey} content={houseText} wide>
+                  <div className="morning-card p-4 sm:p-5 overflow-hidden cursor-help">
+                    {cardContent}
+                  </div>
+                </Tooltip>
+              ) : (
+                <div key={houseKey} className="morning-card p-4 sm:p-5 overflow-hidden">
+                  {cardContent}
                 </div>
               );
             })}
@@ -986,7 +1014,8 @@ export function Dashboard({
         </div>
 
         {/* Levi — 1/3 width — visible teaser, interaction gated */}
-        <div ref={leviSectionRef} className="morning-card p-5 sm:p-7 flex flex-col gap-5 sm:gap-6">
+        {/* morning-card with backdrop-filter disabled: blur() + border-radius creates a clipping stacking context that hides the ElevenLabs popup */}
+        <div ref={leviSectionRef} className="morning-card p-5 sm:p-7 flex flex-col gap-5 sm:gap-6" style={{ backdropFilter: 'none', WebkitBackdropFilter: 'none', overflow: 'visible' }}>
           <div className="flex items-start gap-4">
             <div className="relative mt-1.5 shrink-0">
               <div className={`w-2 h-2 rounded-full breathing ${
@@ -1020,15 +1049,9 @@ export function Dashboard({
                   : <><Phone className="w-4 h-4" /> {t("dashboard.levi.callBtn")}</>}
               </button>
 
-              <AnimatePresence>
+              <div className="mt-4">
                 {leviActive && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.4, ease: "easeOut" }}
-                    className="relative z-20 w-full flex justify-center overflow-hidden"
-                  >
+                  <div className="relative z-[9999] w-full flex justify-center">
                     {/* @ts-ignore */}
                     <elevenlabs-convai
                       agent-id={elevenLabsAgentId}
@@ -1039,9 +1062,9 @@ export function Dashboard({
                     >
                     {/* @ts-ignore */}
                     </elevenlabs-convai>
-                  </motion.div>
+                  </div>
                 )}
-              </AnimatePresence>
+              </div>
             </>
           ) : (
             <button

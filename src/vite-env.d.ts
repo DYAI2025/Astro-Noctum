@@ -10,3 +10,8 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+declare module '*.glsl?raw' {
+  const shaderSource: string;
+  export default shaderSource;
+}

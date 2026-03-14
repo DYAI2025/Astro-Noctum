@@ -1,0 +1,38 @@
+name: Mobile CI
+
+on:
+  pull_request:
+    paths:
+      - "apps/mobile/**"
+      - "packages/shared/**"
+      - ".github/workflows/mobile-ci.yml"
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "apps/mobile/**"
+      - "packages/shared/**"
+      - ".github/workflows/mobile-ci.yml"
+
+jobs:
+  mobile-typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install mobile dependencies
+        working-directory: apps/mobile
+        run: npm install
+
+      - name: Typecheck mobile app
+        working-directory: apps/mobile
+        run: npm run typecheck

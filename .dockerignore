@@ -1,0 +1,15 @@
+node_modules
+dist
+.git
+.github
+docs
+features/plan
+*.zip
+*.pdf
+*.png
+*.jpg
+*.jpeg
+.DS_Store
+*.log
+.env*
+!.env.example

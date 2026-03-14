@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <rect width="256" height="256" fill="#1a1a1a"/>
+  <defs>
+    <radialGradient id="nodeGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#00d9ff;stop-opacity:1"/>
+      <stop offset="50%" style="stop-color:#ffd700;stop-opacity:0.8"/>
+      <stop offset="100%" style="stop-color:#00d9ff;stop-opacity:0"/>
+    </radialGradient>
+  </defs>
+  <circle cx="128" cy="128" r="72" fill="none" stroke="#3a3a3a" stroke-width="16"/>
+  <circle cx="128" cy="128" r="72" fill="none" stroke="#4a5a5f" stroke-width="12"/>
+  <circle cx="128" cy="128" r="72" fill="none" stroke="#5a6a70" stroke-width="8" opacity="0.6"/>
+  <circle cx="128" cy="56" r="12" fill="url(#nodeGlow)"/>
+  <circle cx="128" cy="56" r="6" fill="#00d9ff"/>
+  <circle cx="196.85" cy="105.43" r="12" fill="url(#nodeGlow)"/>
+  <circle cx="196.85" cy="105.43" r="6" fill="#ffd700"/>
+  <circle cx="196.85" cy="150.57" r="12" fill="url(#nodeGlow)"/>
+  <circle cx="196.85" cy="150.57" r="6" fill="#00d9ff"/>
+  <circle cx="59.15" cy="150.57" r="12" fill="url(#nodeGlow)"/>
+  <circle cx="59.15" cy="150.57" r="6" fill="#ffd700"/>
+  <circle cx="59.15" cy="105.43" r="12" fill="url(#nodeGlow)"/>
+  <circle cx="59.15" cy="105.43" r="6" fill="#00d9ff"/>
+</svg>

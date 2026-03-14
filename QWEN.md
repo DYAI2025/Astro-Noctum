@@ -8,8 +8,9 @@
 - **Frontend:** React 19 + TypeScript + Vite + Tailwind CSS v4
 - **Backend:** Express.js (production server), Vite proxy (development)
 - **Database:** Supabase (PostgreSQL with Row Level Security)
-- **External APIs:** BAFE (astrology calculations), Gemini (text generation), ElevenLabs (voice agent)
+- **External APIs:** BAFE (astrology calculations), Gemini (text generation), ElevenLabs (voice agent), NASA DONKI (space weather)
 - **Deployment:** Railway (nixpacks-based build)
+- **Payments:** Stripe (premium upgrades)
 
 **UI Language:** German (with English toggle)  
 **Aesthetic:** Dark luxury (obsidian/gold) for splash/auth; Morning theme (bluish-gray) for main app
@@ -21,14 +22,19 @@
 ```
 Astro-Noctum/
 ├── src/
-│   ├── components/       # React components (BirthForm, Dashboard, Orrery, etc.)
-│   ├── contexts/         # React Context providers (AuthContext, LanguageContext)
-│   ├── hooks/            # Custom React hooks (useAmbientePlayer)
+│   ├── components/       # React components (BirthForm, Dashboard, FusionRing, BaZiPillars, etc.)
+│   ├── contexts/         # React Context providers (AuthContext, LanguageContext, PlanetariumContext)
+│   ├── hooks/            # Custom React hooks (useAmbientePlayer, usePlanetarium)
 │   ├── i18n/             # Internationalization translations (de/en)
-│   ├── lib/              # Utilities (astronomy calculations, 3D materials, supabase client)
+│   ├── lib/              # Utilities (astronomy calculations, 3D materials, supabase client, analytics)
+│   ├── pages/            # Page components (Atlas, Dashboard pages)
 │   ├── services/         # API clients (api.ts, gemini.ts, supabase.ts)
+│   ├── types/            # TypeScript type definitions (bafe, interpretation)
+│   ├── shaders/          # GLSL shaders for 3D visualizations
+│   ├── stories/          # Storybook component stories
 │   ├── App.tsx           # Main application component (state-driven SPA)
 │   ├── main.tsx          # Entry point
+│   ├── router.tsx        # React Router configuration
 │   └── index.css         # Global styles + Tailwind v4 config
 ├── media/                # Static assets
 ├── public/               # Public static files
@@ -82,6 +88,11 @@ npm run start        # Express serves dist/ on PORT (default 3000)
 ```bash
 npm run lint         # TypeScript type-check (tsc --noEmit)
 npm run clean        # Remove dist/
+npm run storybook    # Start Storybook dev server (port 6006)
+npm run build-storybook  # Build Storybook static
+npm run test         # Run Vitest tests
+npm run test:watch   # Run tests in watch mode
+npm run test:coverage # Run tests with coverage report
 ```
 
 ---
@@ -101,6 +112,11 @@ Create `.env.local` from `.env.example`. Variables prefixed with `VITE_` are exp
 | `VITE_ELEVENLABS_AGENT_ID` | Client | ElevenLabs voice agent ID |
 | `ELEVENLABS_TOOL_SECRET` | Server | Secret token for ElevenLabs tool auth |
 | `VITE_GOOGLE_PLACES_API_KEY` | Client | Optional: Google Places API for city autocomplete |
+| `STRIPE_SECRET_KEY` | Server | Stripe secret key for payments |
+| `STRIPE_PRICE_ID` | Server | Stripe price ID for premium tier |
+| `STRIPE_WEBHOOK_SECRET` | Server | Stripe webhook signing secret |
+| `NASA_API_KEY` | Server | NASA DONKI API key (space weather data) |
+| `APP_URL` | Server | Application base URL for Stripe redirects |
 
 ---
 
@@ -109,10 +125,10 @@ Create `.env.local` from `.env.example`. Variables prefixed with `VITE_` are exp
 ### Application Flow
 
 ```
-Splash → AuthGate → BirthForm → Dashboard
+Splash → AuthGate → BirthForm → Dashboard → FusionRing / Atlas
 ```
 
-State-driven single-page app (no router). Authentication via Supabase Auth.
+State-driven single-page app using React Router. Authentication via Supabase Auth.
 
 ### Data Flow
 
@@ -125,14 +141,14 @@ State-driven single-page app (no router). Authentication via Supabase Auth.
    - `/calculate/tst` — Time Space Theory
 3. **services/gemini.ts** → Sends combined results to Gemini for AI interpretation
 4. **services/supabase.ts** → Persists data to Supabase (non-blocking)
-5. **Dashboard** renders results + 3D orrery + ElevenLabs widget
+5. **Dashboard** renders results + 3D orrery + ElevenLabs widget + Fusion Ring visualization
 
 ### Server Contexts
 
 | Context | Purpose |
 |---------|---------|
-| **Vite dev server** (`npm run dev`) | Proxies `/api/calculate/*` to BAFE; `/api/auth`, `/api/profile`, `/api/agent` to local Express (port 3001) |
-| **Express production server** (`server.mjs`) | Serves `dist/`, proxies BAFE with fallback chain, handles server-side auth, ElevenLabs endpoints |
+| **Vite dev server** (`npm run dev`) | Proxies `/api/calculate/*` to BAFE; `/api/auth`, `/api/profile`, `/api/agent`, `/api/transit-state`, `/api/space-weather`, `/api/interpret` to local Express (port 3001) |
+| **Express production server** (`server.mjs`) | Serves `dist/`, proxies BAFE with fallback chain, handles server-side auth, ElevenLabs endpoints, Stripe checkout, Gemini interpretation |
 
 ### BAFE Fallback Chain
 
@@ -140,7 +156,13 @@ The production server uses an ordered fallback chain for BAFE API requests:
 1. Internal Railway URL (`BAFE_INTERNAL_URL`) if configured
 2. Public URL (`https://bafe-production.up.railway.app`)
 
-This handles IPv6-only private networking issues gracefully.
+This handles IPv6-only private networking issues gracefully (`ENETUNREACH` errors).
+
+### Caching Strategy
+
+- **BAFE responses:** 24-hour in-memory cache with automatic eviction
+- **Space weather (NASA DONKI):** 15-minute cache
+- **Transit state:** No-store cache, fallback to profile-derived data if upstream unavailable
 
 ---
 
@@ -148,17 +170,23 @@ This handles IPv6-only private networking issues gracefully.
 
 | File | Purpose |
 |------|---------|
-| `src/contexts/AuthContext.tsx` | Supabase auth provider (signIn/signUp/signOut) |
+| `src/contexts/AuthContext.tsx` | Supabase auth provider (signIn/signUp/signOut) with disposable email blocking |
 | `src/contexts/LanguageContext.tsx` | i18n provider (German/English toggle) |
+| `src/contexts/PlanetariumContext.tsx` | Planetarium mode toggle state |
+| `src/contexts/FusionRingContext.tsx` | Fusion Ring 3D state management |
 | `src/services/api.ts` | BAFE API client with response normalization and fallback handling |
 | `src/services/gemini.ts` | Gemini Flash integration for horoscope text generation |
 | `src/services/supabase.ts` | Database operations (birth_data, astro_profiles, natal_charts) |
 | `src/components/BirthChartOrrery.tsx` | Three.js 3D solar system visualization |
+| `src/components/FusionRing.tsx` | Real-time fusion divergence field visualization |
 | `src/components/BirthForm.tsx` | Birth data input with Google Places autocomplete |
-| `src/components/Dashboard.tsx` | Results display, orrery, ElevenLabs widget |
+| `src/components/Dashboard.tsx` | Results display, orrery, ElevenLabs widget, BaZi pillars |
+| `src/components/BaZiFourPillars.tsx` | Chinese Four Pillars display component |
+| `src/components/WuXingPentagon.tsx` | Five Elements pentagon visualization |
 | `src/lib/astronomy/` | Keplerian orbital mechanics, star catalog, constellation data |
 | `src/lib/3d/materials.ts` | Custom GLSL shaders (sun corona, atmospheric glow, Saturn rings) |
-| `server.mjs` | Production Express server with BAFE proxy, Supabase admin auth, ElevenLabs endpoints |
+| `src/lib/analytics.ts` | Google Analytics event tracking |
+| `server.mjs` | Production Express server with BAFE proxy, Supabase admin auth, ElevenLabs endpoints, Stripe, Gemini |
 
 ---
 
@@ -169,23 +197,13 @@ Tables (all with Row Level Security enabled):
 | Table | Description |
 |-------|-------------|
 | `profiles` | User profile (auto-created on signup via trigger) |
-| `birth_data` | User-submitted birth information |
-| `astro_profiles` | Computed astrological data (upsert per user) |
-| `natal_charts` | History of chart calculations |
+| `birth_data` | User-submitted birth information (one per user) |
+| `astro_profiles` | Computed astrological data (one per user, read by ElevenLabs) |
+| `natal_charts` | Natal chart payload (one per user) |
 | `agent_conversations` | ElevenLabs Levi Bazi session summaries |
+| `readings` | Completed reading history with interpretation |
 
 See `supabase-schema.sql` for full DDL and RLS policies.
-
----
-
-## External Dependencies
-
-| Service | Purpose |
-|---------|---------|
-| **BAFE API** | Astrology calculation backend (German field names for BaZi pillars) |
-| **Supabase** | Auth + PostgreSQL database |
-| **Gemini API** | Text generation (`gemini-3-flash-preview`) |
-| **ElevenLabs** | Voice agent widget (Levi Bazi) |
 
 ---
 
@@ -219,12 +237,13 @@ See `supabase-schema.sql` for full DDL and RLS policies.
 
 ## Development Conventions
 
-- **TypeScript:** Strict mode, no emit (type-check only via `npm run lint`)
+- **TypeScript:** Strict mode disabled (`strict: false`), no emit (type-check only via `npm run lint`)
 - **Path Alias:** `@/*` maps to project root (configured in `tsconfig.json` and `vite.config.ts`)
 - **React:** Functional components with hooks, React 19
-- **Testing:** No test suite currently configured
+- **Testing:** Vitest with happy-dom environment, tests in `src/**/__tests__/**`
 - **Code Style:** Inferred from existing code — semicolons, double quotes, trailing commas in objects
 - **i18n:** All user-facing strings use the `LanguageContext` with `t()` helper
+- **State Management:** React Context for global state (auth, language, planetarium, fusion ring)
 
 ---
 
@@ -258,6 +277,11 @@ cmd = "npm run start"
 - `VITE_ELEVENLABS_AGENT_ID`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `ELEVENLABS_TOOL_SECRET`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_PRICE_ID`
+- `STRIPE_WEBHOOK_SECRET`
+- `NASA_API_KEY`
+- `APP_URL`
 
 ---
 
@@ -268,9 +292,28 @@ cmd = "npm run start"
 | `/api/calculate/:endpoint` | POST | Proxy to BAFE (`bazi`, `western`, `fusion`, `wuxing`, `tst`) |
 | `/api/chart` | GET/POST | Proxy to BAFE chart endpoint |
 | `/api/webhook/chart` | POST | Proxy to BAFE webhook |
+| `/api/transit-state/:userId` | GET | Transit state with fallback to profile-derived data |
+| `/api/space-weather` | GET | NASA DONKI Kp-index data (cached 15min) |
 | `/api/profile/:userId` | GET | ElevenLabs tool: fetch user's astro profile |
 | `/api/agent/conversation` | POST | ElevenLabs tool: save conversation summary |
-| `/api/debug-bafe` | GET | Diagnostic: probe BAFE endpoints |
+| `/api/interpret` | POST | Server-side Gemini interpretation generation |
+| `/api/checkout` | POST | Stripe checkout session creation |
+| `/api/debug-bafe` | GET | Diagnostic: probe BAFE endpoints (dev only) |
+
+---
+
+## External Dependencies
+
+| Service | Purpose |
+|---------|---------|
+| **BAFE API** | Astrology calculation backend (German field names for BaZi pillars) |
+| **Supabase** | Auth + PostgreSQL database |
+| **Gemini API** | Text generation (`gemini-3-flash-preview`) |
+| **ElevenLabs** | Voice agent widget (Levi Bazi) |
+| **NASA DONKI** | Space weather data (Kp-index for Fusion Ring) |
+| **Stripe** | Payment processing for premium upgrades |
+| **Google Places** | City autocomplete in BirthForm |
+| **Google Analytics** | Event tracking |
 
 ---
 
@@ -287,6 +330,10 @@ See `BUGS.md` for current limitations:
 - `README.md` — User-facing setup and deployment guide
 - `CLAUDE.md` — Developer guidance for Claude Code
 - `AGENTS.md` — Agent-specific instructions
+- `GEMINI.md` — Gemini integration documentation
 - `SETUP-ELEVENLABS.txt` — ElevenLabs agent configuration
 - `elevenlabs-tool.json` — ElevenLabs tool definition
 - `elevenlabs-tool-save-conversation.json` — Conversation save tool config
+- `RAILWAY_DEPLOYMENT.md` — Railway deployment guide
+- `CHANGELOG.md` — Version history
+- `QUIZ_MAPPING_MARKERS.md` — Quiz component documentation

@@ -113,3 +113,111 @@ export interface BafeProblemDetail {
   detail?: string;
   instance?: string;
 }
+
+// ── AstroProfileJson — versioned storage format ──────────────────────
+// v1 (current): flat format, explicit version field
+// legacy (pre-2026-03): BAFE data nested under 'bafe' key, no version
+
+export interface AstroProfileJsonV1 {
+  version: 1;
+  bazi: MappedBazi | undefined;
+  western: MappedWestern | undefined;
+  fusion: BafeFusionResponse | undefined;
+  wuxing: MappedWuxing | undefined;
+  tst: BafeTstResponse | undefined;
+  interpretation: string;
+  tiles: Record<string, string>;
+  houses: Record<string, string>;
+}
+
+interface AstroProfileJsonLegacy {
+  version?: never;
+  bafe?: {
+    bazi?: unknown;
+    western?: unknown;
+    fusion?: unknown;
+    wuxing?: unknown;
+    tst?: unknown;
+    interpretation?: string;
+  };
+  // Pre-legacy: some profiles had these at top level
+  bazi?: unknown;
+  western?: unknown;
+  fusion?: unknown;
+  wuxing?: unknown;
+  tst?: unknown;
+  interpretation?: string;
+  tiles?: unknown;
+  houses?: unknown;
+}
+
+export type AstroProfileJson = AstroProfileJsonV1 | AstroProfileJsonLegacy;
+
+export interface ParsedAstroProfile {
+  apiData: ApiData;
+  interpretation: string;
+  tiles: Record<string, string>;
+  houses: Record<string, string>;
+}
+
+export function parseAstroProfileJson(raw: unknown): ParsedAstroProfile | null {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const json = raw as AstroProfileJson;
+
+  let bazi: unknown;
+  let western: unknown;
+  let fusion: unknown;
+  let wuxing: unknown;
+  let tst: unknown;
+  let interpretation: string;
+  let tiles: Record<string, string>;
+  let houses: Record<string, string>;
+
+  if ('version' in json && json.version === 1) {
+    // V1 flat format
+    bazi = json.bazi;
+    western = json.western;
+    fusion = json.fusion;
+    wuxing = json.wuxing;
+    tst = json.tst;
+    interpretation = json.interpretation || '';
+
+    const rawTilesV1 = json.tiles;
+    tiles = (rawTilesV1 && typeof rawTilesV1 === 'object' && !Array.isArray(rawTilesV1))
+      ? (rawTilesV1 as Record<string, string>)
+      : {};
+
+    const rawHousesV1 = json.houses;
+    houses = (rawHousesV1 && typeof rawHousesV1 === 'object' && !Array.isArray(rawHousesV1))
+      ? (rawHousesV1 as Record<string, string>)
+      : {};
+  } else {
+    // Legacy format — data may be under 'bafe' key or at top level
+    const legacy = json as AstroProfileJsonLegacy;
+    bazi    = legacy.bazi    ?? legacy.bafe?.bazi;
+    western = legacy.western ?? legacy.bafe?.western;
+    fusion  = legacy.fusion  ?? legacy.bafe?.fusion;
+    wuxing  = legacy.wuxing  ?? legacy.bafe?.wuxing;
+    tst     = legacy.tst     ?? legacy.bafe?.tst;
+    interpretation = (legacy.interpretation ?? legacy.bafe?.interpretation) || '';
+    const rawTiles = legacy.tiles;
+    tiles = (rawTiles && typeof rawTiles === 'object' && !Array.isArray(rawTiles))
+      ? (rawTiles as Record<string, string>) : {};
+    const rawHouses = legacy.houses;
+    houses = (rawHouses && typeof rawHouses === 'object' && !Array.isArray(rawHouses))
+      ? (rawHouses as Record<string, string>) : {};
+  }
+
+  return {
+    apiData: {
+      bazi: bazi as MappedBazi | undefined,
+      western: western as MappedWestern | undefined,
+      fusion: fusion as BafeFusionResponse | undefined,
+      wuxing: wuxing as MappedWuxing | undefined,
+      tst: tst as BafeTstResponse | undefined,
+    },
+    interpretation,
+    tiles,
+    houses,
+  };
+}

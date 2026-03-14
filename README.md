@@ -4,66 +4,48 @@
 
 # Astro-Noctum (Bazodiac)
 
-## Local Run
+A high-end fusion astrology platform combining Western Astrology, Chinese BaZi (Four Pillars), and Wu-Xing (Five Elements).
 
-1. Install dependencies:
-   `npm install`
-2. Create `.env.local` from `.env.example` and fill all required values.
-3. Start development:
-   `npm run dev`
+## 📖 Documentation
 
-## Runtime Requirements
+For detailed technical information, please refer to the following documents:
 
-- Node.js **20.19+** (defined in `package.json` `engines` and `.nvmrc`)
-- npm 10+
+- [**BAZODIAC.md**](./docs/BAZODIAC.md): Product overview, USP, and high-level architecture.
+- [**API_REFERENCE.md**](./docs/API_REFERENCE.md): Backend endpoints, request/response formats, and external API integrations.
+- [**FRONTEND_INTERNALS.md**](./docs/FRONTEND_INTERNALS.md): React components, state management, and the Fusion Ring engine.
+- [**DATABASE_SCHEMA.md**](./docs/DATABASE_SCHEMA.md): Supabase PostgreSQL tables, RLS policies, and triggers.
+- [**STRUCTURE.md**](./docs/STRUCTURE.md): Codebase directory map.
 
-This project intentionally avoids native Node build dependencies during install, so CI/deploy installs remain deterministic without `node-gyp` toolchain requirements.
+## 🚀 Getting Started
 
-## Railway Deployment
+### Local Development
 
-This repo is prepared for Railway with:
-- `nixpacks.toml` to pin Nixpacks runtime to Node 20 and avoid engine drift
-- `railway.json` build/deploy commands
-- production server (`server.mjs`) to serve `dist/`
-- startup command `npm run start`
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+2. **Environment Setup:**
+   Copy `.env.example` to `.env.local` and fill in all required secrets (Gemini, Supabase, Stripe, ElevenLabs).
+3. **Start the application:**
+   ```bash
+   # Terminal 1: Vite Frontend (port 3000)
+   npm run dev
+   
+   # Terminal 2: Express Backend (port 3001)
+   PORT=3001 node server.mjs
+   ```
 
-### Required Railway Variables
-- `VITE_GEMINI_API_KEY`
-- `VITE_BAFE_BASE_URL`
-- `VITE_SUPABASE_URL` (default: `https://ykoijifgweoapitabgxx.supabase.co`)
-- `VITE_SUPABASE_ANON_KEY`
-- `VITE_ELEVENLABS_AGENT_ID` (default Levi Bazi agent)
+## 🛠 Tech Stack
 
-## Supabase Database Connection
+- **Frontend:** React 19, Vite 6, Tailwind CSS v4, Framer Motion, Three.js, Pixi.js.
+- **Backend:** Node.js (Express), BAFE API Proxy.
+- **Infrastructure:** Supabase (Auth & DB), Railway (Deployment), Stripe (Payments).
+- **AI:** Google Gemini (Horoscope Generation), ElevenLabs (Voice Agent).
 
-The app persists completed readings into Supabase via REST (`/rest/v1/readings`) from `src/services/supabase.ts`.
+## 📡 Runtime Requirements
 
-Example table schema:
+- **Node.js:** >= 20.19.0 (pinned in `.nvmrc`)
+- **npm:** >= 10.x
 
-```sql
-create table if not exists public.readings (
-  id bigint generated always as identity primary key,
-  created_at timestamptz not null default now(),
-  birth_input jsonb not null,
-  api_data jsonb not null,
-  interpretation text not null,
-  api_issues jsonb not null default '[]'::jsonb
-);
-
-alter table public.readings enable row level security;
-
-create policy "insert_readings_anon"
-on public.readings
-for insert
-to anon
-with check (true);
-```
-
-## ElevenLabs Voice Agent
-
-The dashboard embeds Levi Bazi via:
-
-```html
-<elevenlabs-convai agent-id="agent_1801kje0zqc8e4b89swbt7wekawv"></elevenlabs-convai>
-<script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
-```
+---
+*Bazodiac · DYAI2025 · Confidential*
