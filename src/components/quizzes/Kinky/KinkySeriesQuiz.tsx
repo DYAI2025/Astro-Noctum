@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { ContributionEvent } from '@/src/lib/lme/types';
 import { kinkySeriesQuizToEvent } from '@/src/lib/fusion-ring/quiz-to-event';
+import { SPINNER_OUTER, SPINNER_INNER } from '../quiz-transitions';
 import { useLanguage } from '@/src/contexts/LanguageContext';
 
 // JSON imports
@@ -295,13 +296,13 @@ function LoadingScreen({ facetLabel, lk }: { facetLabel: string; lk: LocaleKey }
           className="absolute inset-0 border-2 border-transparent rounded-full"
           style={{ borderTopColor: SERIES_ACCENT }}
           animate={{ rotate: 360 }}
-          transition={{ duration: 1.2, repeat: Infinity /* Essential — communicates active processing state */, ease: 'linear' }}
+          transition={SPINNER_OUTER}
         />
         <motion.div
           className="absolute inset-2 border-2 border-transparent rounded-full"
           style={{ borderTopColor: '#D4AF37' }}
           animate={{ rotate: -360 }}
-          transition={{ duration: 1.8, repeat: Infinity /* Essential — communicates active processing state */, ease: 'linear' }}
+          transition={SPINNER_INNER}
         />
       </div>
       <p className="font-serif text-xl text-white mb-2">{lk === 'de-DE' ? 'Die Flamme liest dich...' : 'The flame reads you...'}</p>

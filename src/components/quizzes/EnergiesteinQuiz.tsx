@@ -9,6 +9,7 @@ import {
   type DimensionScores,
   type ValidationProfile
 } from './energiestein/data';
+import { SPINNER_OUTER, SPINNER_INNER } from './quiz-transitions';
 
 // ═══════════════════════════════════════════════════════════════
 // TYPES
@@ -226,12 +227,12 @@ function LoadingScreen() {
         <motion.div
           className="absolute inset-0 border-2 border-transparent border-t-[#D4AF37] rounded-full"
           animate={{ rotate: 360 }}
-          transition={{ duration: 1.2, repeat: Infinity /* Essential — communicates active processing state */, ease: 'linear' }}
+          transition={SPINNER_OUTER}
         />
         <motion.div
           className="absolute inset-2 border-2 border-transparent border-t-[#6CA192] rounded-full"
           animate={{ rotate: -360 }}
-          transition={{ duration: 1.8, repeat: Infinity /* Essential — communicates active processing state */, ease: 'linear' }}
+          transition={SPINNER_INNER}
         />
       </div>
       <p className="font-serif text-xl text-white mb-2">Dein Stein kristallisiert sich...</p>

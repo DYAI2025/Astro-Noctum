@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { ContributionEvent } from '@/src/lib/lme/types';
 import { celebritySoulmateToEvent } from '@/src/lib/fusion-ring/quiz-to-event';
+import { SPINNER_OUTER, SPINNER_INNER } from './quiz-transitions';
 import { celebrities, Celebrity } from './celebrity-soulmate/data';
 
 // ═══════════════════════════════════════════════════════════════
@@ -381,12 +382,12 @@ function LoadingScreen() {
         <motion.div
           className="absolute inset-0 border-2 border-transparent border-t-[#D4AF37] rounded-full"
           animate={{ rotate: 360 }}
-          transition={{ duration: 1.2, repeat: Infinity /* Essential — communicates active processing state */, ease: 'linear' }}
+          transition={SPINNER_OUTER}
         />
         <motion.div
           className="absolute inset-2 border-2 border-transparent border-t-[#6CA192] rounded-full"
           animate={{ rotate: -360 }}
-          transition={{ duration: 1.8, repeat: Infinity /* Essential — communicates active processing state */, ease: 'linear' }}
+          transition={SPINNER_INNER}
         />
       </div>
       <p className="font-serif text-xl text-white mb-2">Scanne 100 Celebrity-Profile...</p>
