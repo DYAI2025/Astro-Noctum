@@ -586,6 +586,112 @@ export const ARTICLES: Article[] = [
       },
     ],
   },
+  {
+    slug: 'bazi-wuxing-energetische-landkarte',
+    category: 'Chinesische Metaphysik',
+    categoryEn: 'Chinese Metaphysics',
+    readingTime: 7,
+    title: 'BaZi & WuXing: Deine energetische Landkarte',
+    subtitle: 'Chinesische Astrologie vs. BaZi Schicksalsanalyse — Ein tiefer Einblick in deine kosmische DNA',
+    excerpt:
+      'BaZi und WuXing sind keine Wahrsagerei, sondern jahrtausendealte Systeme zur Analyse deiner einzigartigen energetischen Prägung bei der Geburt. Ein kosmischer Bauplan, der dir hilft, Talente, Potenziale und deinen Lebensweg zu verstehen.',
+    image: '/images/artikel/bazi-wuxing.jpg',
+    imageAlt: 'Chinesische Kalligraphie der Fünf Elemente — Holz, Feuer, Erde, Metall, Wasser',
+    imageCredit: 'Bazodiac',
+    imageCreditUrl: 'https://bazodiac.space',
+    keywords: 'BaZi, Schicksalsanalyse, Vier Säulen des Schicksals, chinesische Astrologie, Tagesmeister, Fünf Elemente, WuXing, energetisches Profil, Selbsterkenntnis, Lebensweg, Glückszyklen, Geburtsdatum, Tierkreiszeichen',
+    ctaText: 'Dein BaZi-Profil jetzt berechnen',
+    ctaHref: '/fu-ring',
+    sections: [
+      {
+        type: 'p',
+        content:
+          'Willkommen in der faszinierenden Welt der chinesischen Metaphysik! BaZi (Acht Zeichen) und WuXing (Fünf Wandlungsphasen) sind keine Wahrsagerei, sondern jahrtausendealte Systeme zur Analyse deiner einzigartigen energetischen Prägung bei der Geburt. Betrachte es als eine Art kosmischen Bauplan oder eine Landkarte, die dir hilft, deine Talente, Potenziale und deinen Lebensweg besser zu verstehen.',
+      },
+      {
+        type: 'h2',
+        content: '1. Was ist BaZi?',
+      },
+      {
+        type: 'p',
+        content:
+          'BaZi wird oft als „Vier Säulen des Schicksals" bezeichnet. Warum? Weil es auf deinem Geburtsjahr, -monat, -tag und deiner Geburtsstunde basiert. Jede dieser vier Einheiten bildet eine „Säule". Jede Säule besteht wiederum aus zwei Zeichen: einem Himmelsstamm (der äußeren, sichtbaren Energie) und einem Erdzweig (der inneren, verborgenen Energie, die oft durch ein Tier repräsentiert wird). Zusammen ergeben das 4×2=8 Zeichen – daher der Name BaZi (八字), was wörtlich „Acht Zeichen" bedeutet.',
+      },
+      {
+        type: 'h2',
+        content: '2. WuXing: Die Fünf Wandlungsphasen',
+      },
+      {
+        type: 'p',
+        content:
+          'WuXing ist das fundamentale Konzept, das allem in der chinesischen Metaphysik zugrunde liegt. Es beschreibt, wie Energie (Qi) fließt und sich wandelt. Es geht nicht um statische Substanzen, sondern um Dynamiken und Prozesse: Holz nährt Feuer, Feuer erzeugt Erde, Erde trägt Metall, Metall formt Wasser, Wasser nährt Holz. Dieser ewige Kreislauf spiegelt sich in deinem Geburtsmoment wider.',
+      },
+      {
+        type: 'h2',
+        content: '3. Die 12 Tiere (Erdzweige)',
+      },
+      {
+        type: 'p',
+        content:
+          'Die 12 Tiere des chinesischen Tierkreises sind viel mehr als nur Jahreszeichen. Sie sind die Erdzweige im BaZi-Chart und repräsentieren die innere Dynamik, verborgene Talente, emotionale Muster und deine Beziehung zur Umwelt (Familie, Gesellschaft, Partner, Kinder). Jedes Tier ist einem bestimmten Element und einer Yin/Yang-Polarität zugeordnet.',
+      },
+      {
+        type: 'h2',
+        content: '4. Die 10 Himmelsstämme: Die sichtbare Oberfläche',
+      },
+      {
+        type: 'p',
+        content:
+          'Die Himmelsstämme repräsentieren die äußere, bewusste Seite deiner Persönlichkeit – wie du denkst, Entscheidungen triffst, kommunizierst und auf andere wirkst. Sie sind die Kombination aus den 5 Elementen und ihrer Yin/Yang-Form.',
+      },
+      {
+        type: 'h2',
+        content: '5. Der Tagesmeister: Dein kosmisches „Ich"',
+      },
+      {
+        type: 'highlight',
+        content:
+          'Dies ist der wichtigste Punkt in deinem gesamten BaZi-Chart! Der Himmelsstamm deiner Tagessäule ist dein Tagesmeister (Day Master). Er repräsentiert dich selbst in deiner reinsten Essenz – dein Kern-Ich, deine grundlegendste Natur und Identität.',
+      },
+      {
+        type: 'p',
+        content:
+          'Alle anderen Elemente und Tiere in deinem Chart werden in Bezug auf deinen Tagesmeister analysiert. Ist er stark oder schwach? Welche Elemente nähren ihn, welche kontrollieren ihn? Die Antwort darauf zeigt, welche Lebensbereiche, Berufe, Farben oder Umgebungen dir Kraft geben und welche dich fordern. Deinen Tagesmeister zu kennen, ist der erste Schritt zur Selbsterkenntnis und bewussten Lebensgestaltung.',
+      },
+      {
+        type: 'h2',
+        content: 'BaZi: Mehr als nur ein Horoskop',
+      },
+      {
+        type: 'p',
+        content:
+          'In der westlichen Welt wird „Chinesische Astrologie" oft synonym mit dem Tierkreiszeichen des Geburtsjahres verwendet. Doch das ist nur die Spitze des Eisbergs. Das eigentliche, tiefgründige System zur Analyse des menschlichen Schicksals und Potenzials ist die BaZi Schicksalsanalyse — die Vier Säulen des Schicksals.',
+      },
+      {
+        type: 'p',
+        content:
+          'Während sich die populäre Astrologie auf das Jahr beschränkt, berücksichtigt BaZi den exakten Moment deiner Geburt: Jahr, Monat, Tag und Stunde. Aus diesen vier Datenpunkten wird ein komplexes Chart aus acht Zeichen erstellt, das ein präzises energetisches Profil deiner Persönlichkeit, deiner Talente, Stärken, Schwächen und deines Lebenswegs liefert.',
+      },
+      {
+        type: 'h3',
+        content: 'Welche Potenziale liegen in dir?',
+      },
+      {
+        type: 'list',
+        content: 'BaZi offenbart auf drei Ebenen:',
+        items: [
+          'Wer bist du wirklich? — Der Tagesmeister im BaZi ist dein Kern-Ich. Seine Stärke und Beziehung zu den anderen Elementen definiert deine grundlegendste Natur.',
+          'Welche Potenziale liegen in dir? — Die Kombination der Fünf Elemente (WuXing) und der 12 Tiere offenbart verborgene Talente, emotionale Muster und wie du mit deiner Umwelt interagierst.',
+          'Wann sind gute Zeiten für Veränderungen? — Durch die Analyse der Glückszyklen (10-Jahres-Zyklen) und Jahresenergien erkennst du, wann du Rückenwind für Karriere, Partnerschaft oder Gesundheit hast.',
+        ],
+      },
+      {
+        type: 'quote',
+        content:
+          'Vermeide die Vereinfachung der populären Astrologie. Tauche ein in die Tiefe deiner kosmischen DNA mit einer fundierten BaZi Schicksalsanalyse.',
+      },
+    ],
+  },
 ];
 
 export function getArticleBySlug(slug: string): Article | undefined {

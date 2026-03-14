@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { loadGoogleMaps } from "./PlaceAutocomplete";
+import type { Map, Marker } from "leaflet";
 
 interface LocationMapProps {
   onLocationSelect: (location: {
@@ -12,90 +12,114 @@ interface LocationMapProps {
   visible: boolean;
 }
 
-export function LocationMap({
-  onLocationSelect,
-  center,
-  visible,
-}: LocationMapProps) {
+async function reverseGeocode(lat: number, lon: number): Promise<string | null> {
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=de`;
+    const res = await fetch(url, { headers: { "User-Agent": "Bazodiac/1.0" } });
+    const data = await res.json();
+    const a = data.address || {};
+    const city = a.city || a.town || a.village || a.county || "";
+    const country = a.country || "";
+    return city && country ? `${city}, ${country}` : (data.display_name || null);
+  } catch {
+    return null;
+  }
+}
+
+export function LocationMap({ onLocationSelect, center, visible }: LocationMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<any>(null);
-  const markerRef = useRef<any>(null);
-  const [_mapReady, setMapReady] = useState(false);
+  const mapRef = useRef<Map | null>(null);
+  const markerRef = useRef<Marker | null>(null);
+  const [leafletReady, setLeafletReady] = useState(false);
 
-  // Initialize map
+  // Lazy-load Leaflet CSS + module
   useEffect(() => {
-    if (!visible || !mapContainerRef.current || mapRef.current) return;
+    if (!visible || leafletReady) return;
 
-    loadGoogleMaps().then(() => {
-      const google = (window as any).google;
-      if (!google?.maps || !mapContainerRef.current) return;
+    // Inject Leaflet CSS once
+    if (!document.getElementById("leaflet-css")) {
+      const link = document.createElement("link");
+      link.id = "leaflet-css";
+      link.rel = "stylesheet";
+      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+      document.head.appendChild(link);
+    }
 
-      const defaultCenter = center || { lat: 52.52, lon: 13.405 };
+    setLeafletReady(true);
+  }, [visible, leafletReady]);
 
-      const map = new google.maps.Map(mapContainerRef.current, {
-        center: { lat: defaultCenter.lat, lng: defaultCenter.lon },
-        zoom: 6,
-        disableDefaultUI: true,
+  // Init map
+  useEffect(() => {
+    if (!leafletReady || !visible || !mapContainerRef.current || mapRef.current) return;
+
+    let map: Map;
+
+    import("leaflet").then((L) => {
+      if (!mapContainerRef.current || mapRef.current) return;
+
+      const defaultCenter: [number, number] = center
+        ? [center.lat, center.lon]
+        : [52.52, 13.405];
+
+      map = L.map(mapContainerRef.current, {
+        center: defaultCenter,
+        zoom: center ? 10 : 6,
         zoomControl: true,
-        mapTypeControl: false,
-        streetViewControl: false,
-        fullscreenControl: false,
-        styles: [
-          { featureType: "all", elementType: "labels.text.fill", stylers: [{ color: "#1E2A3A" }] },
-          { featureType: "water", elementType: "geometry", stylers: [{ color: "#e8e4d8" }] },
-          { featureType: "landscape", elementType: "geometry", stylers: [{ color: "#f5f2eb" }] },
-        ],
+        attributionControl: false,
       });
 
-      mapRef.current = map;
-      setMapReady(true);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+      }).addTo(map);
 
-      map.addListener("click", async (e: any) => {
-        const lat = e.latLng.lat();
-        const lon = e.latLng.lng();
+      // Dark overlay to match app aesthetic
+      const style = mapContainerRef.current.style;
+      style.filter = "brightness(0.85) saturate(0.7) hue-rotate(180deg) invert(1) hue-rotate(180deg)";
+
+      mapRef.current = map;
+
+      if (center) {
+        const marker = L.marker(defaultCenter).addTo(map);
+        markerRef.current = marker;
+      }
+
+      map.on("click", async (e) => {
+        const { lat, lng: lon } = e.latlng;
 
         if (markerRef.current) {
-          markerRef.current.setPosition(e.latLng);
+          markerRef.current.setLatLng([lat, lon]);
         } else {
-          markerRef.current = new google.maps.Marker({
-            position: e.latLng,
-            map,
-          });
+          markerRef.current = L.marker([lat, lon]).addTo(map);
         }
 
-        let name: string | null = null;
-        try {
-          const geocoder = new google.maps.Geocoder();
-          const result = await geocoder.geocode({ location: e.latLng });
-          if (result.results?.[0]) {
-            name = result.results[0].formatted_address;
-          }
-        } catch {
-          // Reverse geocode failed — coords still work
-        }
-
+        const name = await reverseGeocode(lat, lon);
         onLocationSelect({ lat, lon, name });
       });
     });
-  }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Update center when PlaceAutocomplete selects a city
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+        markerRef.current = null;
+      }
+    };
+  }, [leafletReady, visible]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Pan to new center when PlaceAutocomplete selects a city
   useEffect(() => {
     if (!mapRef.current || !center) return;
-    const google = (window as any).google;
-    if (!google?.maps) return;
-    const latLng = new google.maps.LatLng(center.lat, center.lon);
-    mapRef.current.panTo(latLng);
-    mapRef.current.setZoom(10);
 
-    if (markerRef.current) {
-      markerRef.current.setPosition(latLng);
-    } else {
-      markerRef.current = new google.maps.Marker({
-        position: latLng,
-        map: mapRef.current,
-      });
-    }
+    import("leaflet").then((L) => {
+      if (!mapRef.current) return;
+      mapRef.current.setView([center.lat, center.lon], 10, { animate: true });
+
+      if (markerRef.current) {
+        markerRef.current.setLatLng([center.lat, center.lon]);
+      } else {
+        markerRef.current = L.marker([center.lat, center.lon]).addTo(mapRef.current!);
+      }
+    });
   }, [center?.lat, center?.lon]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
@@ -108,10 +132,7 @@ export function LocationMap({
           transition={{ duration: 0.3, ease: "easeInOut" }}
           className="overflow-hidden rounded-lg border border-[#8B6914]/15"
         >
-          <div
-            ref={mapContainerRef}
-            className="w-full h-[250px]"
-          />
+          <div ref={mapContainerRef} className="w-full h-[250px]" />
         </motion.div>
       )}
     </AnimatePresence>
