@@ -56,6 +56,13 @@ describe('buildGCB', () => {
     expect(keys).toEqual(['autonomy', 'connection', 'future', 'passion', 'stability']);
   });
 
+  it('clamps age to 0 for future birth years', () => {
+    const gcb = buildGCB(2090);
+    expect(gcb.age).toBe(0);
+    expect(gcb.life_stage).toBe('childhood');
+    expect(gcb.baseline_vector.passion).toBeGreaterThan(0);
+  });
+
   it('different life stages produce different baseline vectors', () => {
     const young = buildGCB(2005);
     const mature = buildGCB(1970);
