@@ -99,7 +99,6 @@ export function DashboardLeviSection({
           <div className="mt-4">
             {leviActive && (
               <div className="relative z-[9999] w-full flex justify-center">
-                {/* @ts-ignore */}
                 <elevenlabs-convai
                   agent-id={elevenLabsAgentId}
                   dynamic-variables={JSON.stringify({
@@ -107,7 +106,6 @@ export function DashboardLeviSection({
                     chart_context: `${sunSign} / ${zodiacAnimal} / ${dominantEl}`,
                   })}
                 >
-                {/* @ts-ignore */}
                 </elevenlabs-convai>
               </div>
             )}

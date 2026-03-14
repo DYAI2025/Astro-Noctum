@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { ContributionEvent } from '@/src/lib/lme/types';
 import { blumenwesenToEvent } from '@/src/lib/fusion-ring/quiz-to-event';
+import { SPINNER_OUTER, SPINNER_INNER } from './quiz-transitions';
 import {
   questions,
   quizMeta,
@@ -186,7 +187,7 @@ function QuestionScreen({
               onClick={() => handleSelect(idx)}
               disabled={selected !== null}
               className={`
-                relative text-left w-full p-4 rounded-xl border transition-all duration-200
+                relative text-left w-full p-4 min-h-[44px] rounded-xl border transition-all duration-200
                 ${
                   isSelected
                     ? 'bg-[#D4AF37]/15 border-[#D4AF37] text-white'
@@ -234,12 +235,12 @@ function LoadingScreen() {
         <motion.div
           className="absolute inset-0 border-2 border-transparent border-t-[#D4AF37] rounded-full"
           animate={{ rotate: 360 }}
-          transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
+          transition={SPINNER_OUTER}
         />
         <motion.div
           className="absolute inset-2 border-2 border-transparent border-t-[#6CA192] rounded-full"
           animate={{ rotate: -360 }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: 'linear' }}
+          transition={SPINNER_INNER}
         />
       </div>
       <p className="font-serif text-xl text-white mb-2">Dein Blumenwesen erwacht...</p>

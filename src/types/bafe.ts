@@ -210,7 +210,7 @@ export function parseAstroProfileJson(raw: unknown): ParsedAstroProfile | null {
 
   // Casts below are deliberate trust boundaries: we validated the object shape
   // in the if/else above (version check + dual-path legacy extraction).
-  // Will be replaced by generated types once BAFE OpenAPI spec is stable.
+  // These will be replaced by generated types once BAFE OpenAPI spec is stable.
   return {
     apiData: {
       bazi: bazi as MappedBazi | undefined,

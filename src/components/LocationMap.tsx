@@ -104,7 +104,7 @@ export function LocationMap({ onLocationSelect, center, visible }: LocationMapPr
         markerRef.current = null;
       }
     };
-  }, [leafletReady, visible]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [leafletReady, visible]); // eslint-disable-line react-hooks/exhaustive-deps — map/marker refs excluded; Leaflet manages its own lifecycle
 
   // Pan to new center when PlaceAutocomplete selects a city
   useEffect(() => {
@@ -120,7 +120,7 @@ export function LocationMap({ onLocationSelect, center, visible }: LocationMapPr
         markerRef.current = L.marker([center.lat, center.lon]).addTo(mapRef.current!);
       }
     });
-  }, [center?.lat, center?.lon]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [center?.lat, center?.lon]); // eslint-disable-line react-hooks/exhaustive-deps — mapRef excluded; intentional one-way lat/lon sync
 
   return (
     <AnimatePresence>

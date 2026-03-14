@@ -544,7 +544,7 @@ export default function PersonalityQuiz({ onComplete, onClose }: PersonalityQuiz
                   <button
                     key={i}
                     onClick={() => selectAnswer(q.id, opt.scores)}
-                    className={`rounded-xl border px-4 py-3.5 text-left text-sm leading-relaxed
+                    className={`rounded-xl border px-4 py-3.5 min-h-[44px] text-left text-sm leading-relaxed
                                transition-all duration-200
                                ${
                                  isSelected

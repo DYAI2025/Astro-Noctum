@@ -26,6 +26,13 @@ npx vitest run src/__tests__/fusion-ring.test.ts  # Run a single test file
 
 Node 20.19+ required (pinned in `.nvmrc`). Tests live in `src/__tests__/` and use Vitest. Copy `.env.example` to `.env.local` and fill values before starting dev.
 
+## Conventions
+
+- **Commits**: Conventional Commits with ticket IDs — `feat(AN-15): add upgrade banner`, `fix(AN-17): scale down ring`
+- **Components**: PascalCase (`BirthForm`), hooks: `use` prefix + camelCase (`useAmbientePlayer`), contexts: suffix `Context`
+- **Styling**: Tailwind utility classes; colocated component styles over global overrides
+- **Language**: UI text is German; code identifiers and comments in English
+
 ## Architecture
 
 **React 19 SPA** — Vite + React Router v6 + Tailwind CSS v4 + TypeScript. The top-level auth/onboarding flow is state-driven in `App.tsx` (`Splash → AuthGate → BirthForm`), then React Router takes over for authenticated pages.
@@ -49,7 +56,7 @@ Defined in `src/router.tsx`, all lazy-loaded:
 
 ### Data Flow
 
-1. `BirthForm` collects date/time/coordinates/timezone
+1. `BirthForm` collects date/time/coordinates/timezone (location search uses OpenStreetMap/Nominatim — Google Maps was removed)
 2. `services/api.ts` → `calculateAll()` fires 5 parallel requests to BAFE (bazi, western, fusion, wuxing, tst) via same-origin proxy. Each endpoint has independent fallback to empty data on failure.
 3. `services/gemini.ts` → sends combined results to Gemini for AI interpretation (with German fallback text if API unavailable)
 4. `services/supabase.ts` → persists birth_data, astro_profiles (upsert), natal_charts to Supabase (non-blocking, fire-and-forget)
@@ -144,6 +151,10 @@ Planning artefacts that are **not part of the main app build** and are excluded 
 - `Fu-Ring/` — Fusion Ring design assets
 - `Implementation-plan/` — implementation planning docs
 - `LeanDeep-annotator-main/` — annotation tool artefact
+
+### BaZi Stem Content Structure
+
+BaZi stem descriptions are defined in `src/lib/astro-data/heavenlyStems.ts` and follow a 5-part structure per context (dayMaster, monthStem, etc.): identity, daily life, gifts, shadow, growth — in both DE and EN. When adding or editing stem content, maintain this pattern.
 
 ### Known Issues
 
