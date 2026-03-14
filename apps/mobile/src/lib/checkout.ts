@@ -43,7 +43,7 @@ export async function beginCheckout(bootstrap: MobileBootstrap | null): Promise<
     throw new Error("checkout URL missing");
   }
 
-  const returnUrl = Linking.createURL("checkout/success");
+  const returnUrl = Linking.createURL("checkout");
   const authResult = await WebBrowser.openAuthSessionAsync(payload.url, returnUrl);
 
   if (authResult.type === "success") {

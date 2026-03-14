@@ -13,7 +13,13 @@ export async function getOrCreateDeviceId(): Promise<string> {
   const existing = await SecureStore.getItemAsync(DEVICE_ID_KEY);
   if (existing) return existing;
 
-  const nativeId = Application.getAndroidId?.() || Application.getIosIdForVendor?.() || generateFallbackId();
+  let nativeId: string | null = Application.getAndroidId?.() || null;
+  if (!nativeId && Platform.OS === "ios") {
+    nativeId = await Application.getIosIdForVendorAsync();
+  }
+  if (!nativeId) {
+    nativeId = generateFallbackId();
+  }
   await SecureStore.setItemAsync(DEVICE_ID_KEY, nativeId);
   return nativeId;
 }

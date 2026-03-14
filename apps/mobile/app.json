@@ -30,6 +30,18 @@
           ],
           "data": [
             {
+              "scheme": "bazodiac"
+            }
+          ]
+        },
+        {
+          "action": "VIEW",
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ],
+          "data": [
+            {
               "scheme": "https",
               "host": "bazodiac.space"
             }
@@ -41,7 +53,9 @@
       "expo-secure-store"
     ],
     "extra": {
-      "apiBaseUrl": "https://bazodiac.space"
+      "apiBaseUrl": "https://bazodiac.space",
+      "eas": {}
+
     }
   }
 }

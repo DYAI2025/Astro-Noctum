@@ -37,7 +37,7 @@ export function WuXingScreen() {
                 <Text style={styles.value}>{item.value.toFixed(3)}</Text>
               </View>
               <View style={styles.track}>
-                <View style={[styles.fill, { width }]} />
+                <View style={[styles.fill, { width: width as `${number}%` }]} />
               </View>
             </View>
           );

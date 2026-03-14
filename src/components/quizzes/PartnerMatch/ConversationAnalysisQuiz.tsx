@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Send, User, Users, Sparkles, Loader2, MessageSquare } from 'lucide-react';
 import { useLanguage } from '@/src/contexts/LanguageContext';
 import { conversationAnalysisToEvent } from '@/src/lib/fusion-ring/quiz-to-event';
+import type { ContributionEvent, Marker } from '@/src/lib/lme/types';
 
 interface ConversationAnalysisQuizProps {
   onComplete: (event: ContributionEvent) => void;
