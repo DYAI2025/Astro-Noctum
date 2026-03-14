@@ -7,6 +7,7 @@ import { usePremium } from "../hooks/usePremium";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { LegalFooter } from "./LegalFooter";
+import { UpgradeButton } from "./UpgradeButton";
 import type { ApiData } from "../types/bafe";
 import type { TileTexts, HouseTexts } from "../types/interpretation";
 import { DashboardLeviSection } from "./dashboard/DashboardLeviSection";
@@ -188,6 +189,26 @@ export function Dashboard({
           &ldquo;{BAZODIAC_QUOTES[SESSION_QUOTE_INDEX][lang]}&rdquo;
         </p>
       </motion.header>
+
+      {/* Upgrade Banner for free users */}
+      {!isPremium && (
+        <motion.div
+          className="mb-8 w-full max-w-6xl rounded-2xl border border-[#D4AF37]/25 bg-gradient-to-r from-[#D4AF37]/05 to-transparent p-5 flex items-center justify-between gap-4"
+          {...fadeIn(0.15)}
+        >
+          <div>
+            <p className="text-sm font-medium text-[#1E2A3A]">
+              {lang === 'de' ? 'Schalte dein volles kosmisches Profil frei' : 'Unlock your full cosmic profile'}
+            </p>
+            <p className="text-xs text-[#1E2A3A]/50 mt-1">
+              {lang === 'de'
+                ? 'Vier Säulen, Häuser-Analyse, Levi Bazi Sprachagent und mehr'
+                : 'Four Pillars, Houses analysis, Levi Bazi voice agent and more'}
+            </p>
+          </div>
+          <UpgradeButton />
+        </motion.div>
+      )}
 
       {/* ═══ ASTRO SECTION (Orrery + Western + BaZi/WuXing + Houses) ═══ */}
       <SectionErrorBoundary name="Astro">
