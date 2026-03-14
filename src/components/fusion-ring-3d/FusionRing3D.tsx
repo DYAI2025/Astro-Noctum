@@ -91,7 +91,7 @@ export const FusionRing3D = ({
       aria-label={labels.regionLabel}
       className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#030308] shadow-[0_0_60px_rgba(0,0,0,0.45)]"
     >
-      <div className="relative h-[62vh] min-h-[420px] w-full max-h-[760px]">
+      <div className="relative h-[55vh] min-h-[340px] w-full max-h-[700px] sm:h-[62vh] sm:min-h-[420px] sm:max-h-[760px]">
         {loading && !signalData && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/45 text-xs uppercase tracking-[0.2em] text-white/70">
             {labels.loading}
