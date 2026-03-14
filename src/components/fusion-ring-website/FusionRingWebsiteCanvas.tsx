@@ -71,9 +71,15 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
   useEffect(() => {
     if (!canvasRef?.current) return;
     let disposed = false;
+    const container = canvasRef.current;
 
     const initScene = async () => {
       const THREE = await import('three');
+
+      // === CONTAINER DIMENSIONS ===
+      const rect = container.getBoundingClientRect();
+      const width = rect.width || window.innerWidth;
+      const height = rect.height || window.innerHeight;
 
       // === RENDERER ===
       const renderer = new THREE.WebGLRenderer({
@@ -81,19 +87,19 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
         alpha: false,
         powerPreference: 'high-performance',
       });
-      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setSize(width, height);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.8;
       renderer.setClearColor(0x030308);
-      canvasRef.current?.appendChild?.(renderer.domElement);
+      container.appendChild(renderer.domElement);
 
       const scene = new THREE.Scene();
       scene.fog = new THREE.Fog(0x030308, 16, 40);
 
-      const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100);
+      const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
       // Initial position: top-down face view matching HOME constants
-      camera.position.set(0, Math.sin(1.48) * 8.5, Math.cos(1.48) * 8.5);
+      camera.position.set(0, Math.sin(1.48) * 11.5, Math.cos(1.48) * 11.5);
       camera.lookAt(0, 0, 0);
 
       const clock = new THREE.Clock();
@@ -637,13 +643,20 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
       window.addEventListener('touchend', onTouchEnd);
 
       const onResize = () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
+        const rect = container.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) return;
+        camera.aspect = rect.width / rect.height;
         camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setSize(rect.width, rect.height);
         ringMat.uniforms.uPixelRatio!.value = Math.min(window.devicePixelRatio, 1.5);
         coronaMat.uniforms.uPixelRatio!.value = Math.min(window.devicePixelRatio, 1.5);
       };
-      window.addEventListener('resize', onResize);
+      if (typeof ResizeObserver !== 'undefined') {
+        const resizeObserver = new ResizeObserver(onResize);
+        resizeObserver.observe(container);
+      } else {
+        window.addEventListener('resize', onResize);
+      }
 
       // === EFFECT PROCESSING ===
       let activeEffectStartTime = -1;
@@ -1644,7 +1657,7 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
         el.removeEventListener('touchstart', onTouchStart);
         window.removeEventListener('touchmove', onTouchMove);
         window.removeEventListener('touchend', onTouchEnd);
-        window.removeEventListener('resize', onResize);
+        resizeObserver.disconnect();
         renderer.dispose();
         if (canvasRef.current?.contains?.(renderer.domElement)) {
           canvasRef.current.removeChild(renderer.domElement);
@@ -1734,7 +1747,7 @@ function FusionRingCanvasInner() {
     });
     inputControllerRef.current = controller;
     return () => { controller.destroy(); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps — canvas/animation refs excluded; Three.js manages its own lifecycle
   }, []);
 
   const ingestTransitJSON = useCallback((json: string) => {

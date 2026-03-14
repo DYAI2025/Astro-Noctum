@@ -39,6 +39,13 @@ Bitte lade diese NASA-Bilder herunter und speichere sie mit den angegebenen Date
 
 ---
 
+## 7. bazi-wuxing.jpg
+**Motiv:** Ba Zi / Chinesische Astrologie — Mandala oder kosmische Elemente
+**Quelle:** https://unsplash.com/s/photos/chinese-astrology
+**Alt:** BaZi und WuXing — die fünf Elemente als energetische Landkarte
+
+---
+
 ## Alternative: Unsplash (kostenlos, keine Attribution nötig)
 Falls NASA-Downloads nicht möglich:
 - Weltraumwetter: https://unsplash.com/s/photos/solar-flare

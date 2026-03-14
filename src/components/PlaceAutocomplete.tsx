@@ -12,35 +12,29 @@ interface PlaceAutocompleteProps {
   className?: string;
 }
 
-const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY || "";
-
-// Load Google Maps script once
-let scriptLoaded = false;
-let scriptPromise: Promise<void> | null = null;
-
+/** @deprecated No longer used — kept for type compat */
 export function loadGoogleMaps(): Promise<void> {
-  if (scriptLoaded) return Promise.resolve();
-  if (scriptPromise) return scriptPromise;
+  return Promise.resolve();
+}
 
-  scriptPromise = new Promise((resolve, reject) => {
-    if ((window as any).google?.maps?.places) {
-      scriptLoaded = true;
-      resolve();
-      return;
-    }
+interface NominatimResult {
+  display_name: string;
+  lat: string;
+  lon: string;
+  address?: {
+    city?: string;
+    town?: string;
+    village?: string;
+    county?: string;
+    country?: string;
+  };
+}
 
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places&language=de`;
-    script.async = true;
-    script.onload = () => {
-      scriptLoaded = true;
-      resolve();
-    };
-    script.onerror = () => reject(new Error("Google Maps script failed to load"));
-    document.head.appendChild(script);
-  });
-
-  return scriptPromise;
+function getShortName(result: NominatimResult): string {
+  const a = result.address;
+  const city = a?.city || a?.town || a?.village || a?.county || "";
+  const country = a?.country || "";
+  return city && country ? `${city}, ${country}` : result.display_name;
 }
 
 export function PlaceAutocomplete({
@@ -48,56 +42,92 @@ export function PlaceAutocomplete({
   placeholder = "Geburtsort suchen...",
   className = "",
 }: PlaceAutocompleteProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const autocompleteRef = useRef<any>(null);
-  const [ready, setReady] = useState(false);
   const [value, setValue] = useState("");
+  const [suggestions, setSuggestions] = useState<NominatimResult[]>([]);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!API_KEY) return;
+  const search = useCallback(async (query: string) => {
+    if (query.length < 2) { setSuggestions([]); setOpen(false); return; }
 
-    loadGoogleMaps()
-      .then(() => setReady(true))
-      .catch(() => {});
+    setLoading(true);
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=6&addressdetails=1&featuretype=city&accept-language=de`;
+      const res = await fetch(url, {
+        headers: { "Accept-Language": "de", "User-Agent": "Bazodiac/1.0" },
+      });
+      const data: NominatimResult[] = await res.json();
+      setSuggestions(data);
+      setOpen(data.length > 0);
+    } catch {
+      setSuggestions([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const q = e.target.value;
+    setValue(q);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => search(q), 350);
+  };
+
+  const handleSelect = (result: NominatimResult) => {
+    const name = getShortName(result);
+    setValue(name);
+    setSuggestions([]);
+    setOpen(false);
+    onSelect({ name, lat: parseFloat(result.lat), lon: parseFloat(result.lon) });
+  };
+
+  // Close dropdown on outside click
   useEffect(() => {
-    if (!ready || !inputRef.current || autocompleteRef.current) return;
-
-    const google = (window as any).google;
-    const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
-      types: ["(cities)"],
-      fields: ["geometry", "name", "formatted_address"],
-    });
-
-    autocomplete.addListener("place_changed", () => {
-      const place = autocomplete.getPlace();
-      if (place?.geometry?.location) {
-        const lat = place.geometry.location.lat();
-        const lon = place.geometry.location.lng();
-        const name = place.formatted_address || place.name || "";
-        setValue(name);
-        onSelect({ name, lat, lon });
+    const handler = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
       }
-    });
-
-    autocompleteRef.current = autocomplete;
-  }, [ready, onSelect]);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   return (
-    <input
-      ref={inputRef}
-      type="text"
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-      placeholder={placeholder}
-      className={className}
-      autoComplete="off"
-    />
+    <div ref={containerRef} className="relative w-full">
+      <input
+        type="text"
+        value={value}
+        onChange={handleChange}
+        onFocus={() => suggestions.length > 0 && setOpen(true)}
+        placeholder={placeholder}
+        className={className}
+        autoComplete="off"
+      />
+      {loading && (
+        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+          <div className="w-4 h-4 rounded-full border-2 border-gold/30 border-t-gold animate-spin" />
+        </div>
+      )}
+      {open && suggestions.length > 0 && (
+        <ul className="absolute z-50 mt-1 w-full rounded-xl border border-white/10 bg-[#0a0c14] shadow-xl overflow-hidden">
+          {suggestions.map((s, i) => (
+            <li
+              key={i}
+              onMouseDown={() => handleSelect(s)}
+              className="px-4 py-2.5 text-sm text-white/80 hover:bg-white/10 cursor-pointer truncate"
+            >
+              {getShortName(s)}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
-/** Check if Google Places API key is configured. */
+/** Always available — no API key needed (uses OpenStreetMap Nominatim). */
 export function hasPlacesApiKey(): boolean {
-  return !!API_KEY;
+  return true;
 }

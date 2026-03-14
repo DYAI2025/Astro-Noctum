@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { ContributionEvent } from '@/src/lib/lme/types';
 import type { ApiData } from '@/src/types/bafe';
 import type { FusionRingSignal } from '@/src/lib/fusion-ring';
+import type { MasterSignal } from '@/src/lib/master-signal';
 import {
   westernToSectors,
   baziToSectors,
@@ -87,6 +88,13 @@ export function useFusionRing(
     return computeFusionSignal(W, B, X, T, completedClusters, CLUSTER_REGISTRY.length);
   }, [W, B, X, T, apiResults, completedIds]);
 
+  // Master Signal V1 — parallel 5D analysis pipeline
+  // Note: birthYear wiring from BirthForm context is a future iteration task
+  const masterSignal: MasterSignal | null = useMemo(() => {
+    // Placeholder: Will be connected when birthYear is available in context
+    return null;
+  }, [apiResults, events]);
+
   // Quiz-Completion Handler
   const addQuizResult = useCallback((event: ContributionEvent) => {
     // Duplikat-Check: selbes moduleId nicht doppelt
@@ -106,6 +114,7 @@ export function useFusionRing(
 
   return {
     signal,
+    masterSignal,
     events,
     addQuizResult,
     completedModules,

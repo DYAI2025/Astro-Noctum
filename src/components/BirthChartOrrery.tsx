@@ -138,7 +138,7 @@ export function BirthChartOrrery({
   useEffect(() => {
     setSimTime(daysSinceJ2000(birthDate));
     setIsPlaying(autoPlay);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps — setSimTime/setIsPlaying are stable state setters; only birthDate should trigger re-sync
   }, [birthDate]);
 
   // ── Three.js Objekt-Refs ─────────────────────────────────────────────────
@@ -886,7 +886,7 @@ export function BirthChartOrrery({
     }
 
     return () => cleanup?.();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps — Three.js scene init runs once; refs are stable
   }, []);
 
   // ── Derived display ────────────────────────────────────────────────────────

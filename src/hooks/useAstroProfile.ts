@@ -128,7 +128,7 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
         console.error("Profile load failed:", err);
         setProfileState("error");
       });
-  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user]); // lang intentionally excluded — handled by separate lang-change effect below
 
   // ── Onboarding submit ────────────────────────────────────────────────
   const handleSubmit = useCallback(async (data: BirthData) => {
@@ -188,6 +188,16 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
       setIsLoading(false);
     }
   }, [apiData, lang]);
+
+  // ── Re-generate when language changes for a loaded profile ───────────
+  const langRef = useRef<string>(lang);
+  useEffect(() => {
+    const prevLang = langRef.current;
+    langRef.current = lang;
+    if (prevLang === lang) return;              // no actual change
+    if (profileState !== "found" || !apiData) return; // not loaded yet
+    handleRegenerate();
+  }, [lang, profileState, apiData, handleRegenerate]);
 
   // ── Reset (blocked if profile is persisted) ──────────────────────────
   const handleReset = useCallback(() => {
