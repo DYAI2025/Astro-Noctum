@@ -4,7 +4,6 @@ import fs from "node:fs";
 import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
-import Stripe from "stripe";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { GoogleGenAI } from "@google/genai";
@@ -16,10 +15,13 @@ const app = express();
 // ── Boot-time env var validation ─────────────────────────────────────
 const REQUIRED_ENV_VARS = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
 const missing = REQUIRED_ENV_VARS.filter(v => !process.env[v]);
-if (missing.length > 0 && process.env.NODE_ENV !== "test") {
+if (missing.length > 0 && !['test', 'development'].includes(process.env.NODE_ENV)) {
   console.error(`[server] Missing required environment variables: ${missing.join(', ')}`);
   console.error('[server] Copy .env.example to .env and fill in the required values.');
   process.exit(1);
+}
+if (missing.length > 0) {
+  console.warn(`[server] WARNING: Missing env vars (dev mode): ${missing.join(', ')}`);
 }
 
 const OPTIONAL_ENV_VARS = ['GEMINI_API_KEY', 'ELEVENLABS_TOOL_SECRET'];
@@ -400,6 +402,9 @@ app.get("/api/chart", requireUserAuth, (req, res) => {
 });
 
 // ── /api/transit-state/:userId ───────────────────────────────────────
+// TODO(Brief-02): This GET handler will be replaced by the new POST proxy.
+// The fallback block (fallbackStateFromProfile + respondWithFallback) stays
+// as fallback in the new handler.
 app.get("/api/transit-state/:userId", (req, res) => {
   const clamp01 = (value) => Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0));
   const normalizeElementValue = (value) => {
@@ -702,56 +707,55 @@ app.post("/api/webhook/chart", express.json(), (req, res) => {
 
 // ── Diagnostic: probe BAFE to discover available routes ─────────────
 // Only available in development — never expose internal URLs in production.
-app.get("/api/debug-bafe", async (_req, res) => {
-  if (process.env.NODE_ENV === "production") {
-    return res.status(404).json({ error: "Not found" });
-  }
-  const baseUrl = BAFE_PUBLIC_URL;
-  const probes = [
-    { label: "root /", method: "GET", url: `${baseUrl}/` },
-    { label: "/docs", method: "GET", url: `${baseUrl}/docs` },
-    { label: "/openapi.json", method: "GET", url: `${baseUrl}/openapi.json` },
-    { label: "/health", method: "GET", url: `${baseUrl}/health` },
-    { label: "/chart", method: "GET", url: `${baseUrl}/chart` },
-    { label: "POST /calculate/western", method: "POST", url: `${baseUrl}/calculate/western` },
-    { label: "POST /calculate/bazi", method: "POST", url: `${baseUrl}/calculate/bazi` },
-  ];
+if (process.env.NODE_ENV !== "production") {
+  app.get("/api/debug-bafe", async (_req, res) => {
+    const baseUrl = BAFE_PUBLIC_URL;
+    const probes = [
+      { label: "root /", method: "GET", url: `${baseUrl}/` },
+      { label: "/docs", method: "GET", url: `${baseUrl}/docs` },
+      { label: "/openapi.json", method: "GET", url: `${baseUrl}/openapi.json` },
+      { label: "/health", method: "GET", url: `${baseUrl}/health` },
+      { label: "/chart", method: "GET", url: `${baseUrl}/chart` },
+      { label: "POST /calculate/western", method: "POST", url: `${baseUrl}/calculate/western` },
+      { label: "POST /calculate/bazi", method: "POST", url: `${baseUrl}/calculate/bazi` },
+    ];
 
-  const testBody = JSON.stringify({
-    date: "1990-01-01T12:00:00", tz: "Europe/Berlin", lon: 13.405, lat: 52.52,
-  });
+    const testBody = JSON.stringify({
+      date: "1990-01-01T12:00:00", tz: "Europe/Berlin", lon: 13.405, lat: 52.52,
+    });
 
-  const results = [];
-  for (const { label, method, url } of probes) {
-    try {
-      const r = await fetch(url, {
-        method,
-        headers: method === "POST" ? { "Content-Type": "application/json" } : {},
-        body: method === "POST" ? testBody : undefined,
-      });
-      const text = await r.text();
-      results.push({
-        label, url,
-        status: r.status,
-        contentType: r.headers.get("content-type"),
-        body: text.slice(0, 500),
-      });
-    } catch (err) {
-      results.push({ label, url, error: err.message });
+    const results = [];
+    for (const { label, method, url } of probes) {
+      try {
+        const r = await fetch(url, {
+          method,
+          headers: method === "POST" ? { "Content-Type": "application/json" } : {},
+          body: method === "POST" ? testBody : undefined,
+        });
+        const text = await r.text();
+        results.push({
+          label, url,
+          status: r.status,
+          contentType: r.headers.get("content-type"),
+          body: text.slice(0, 500),
+        });
+      } catch (err) {
+        results.push({ label, url, error: err.message });
+      }
     }
-  }
 
-  res.json({
-    bafe_public_url: BAFE_PUBLIC_URL,
-    bafe_internal_url: BAFE_INTERNAL_URL,
-    bafe_active: BAFE_BASE_URL,
-    cache: {
-      size: bafeCache.size,
-      ttl_hours: CACHE_TTL / (60 * 60 * 1000),
-    },
-    probes: results,
+    res.json({
+      bafe_public_url: BAFE_PUBLIC_URL,
+      bafe_internal_url: BAFE_INTERNAL_URL,
+      bafe_active: BAFE_BASE_URL,
+      cache: {
+        size: bafeCache.size,
+        ttl_hours: CACHE_TTL / (60 * 60 * 1000),
+      },
+      probes: results,
+    });
   });
-});
+}
 
 // ── Supabase (server-side, service role key) ────────────────────────
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -767,7 +771,7 @@ const supabaseServer =
 
 // ── Stripe ───────────────────────────────────────────────────────────
 const stripe = process.env.STRIPE_SECRET_KEY
-  ? new Stripe(process.env.STRIPE_SECRET_KEY)
+  ? new (await import("stripe")).default(process.env.STRIPE_SECRET_KEY)
   : null;
 
 // ── GET /api/profile/:userId — ElevenLabs Custom Tool endpoint ──────
