@@ -2,6 +2,7 @@ import type { GenerationalContextBaseline, LifeStage, DimensionVector } from './
 import { clampVector } from './dimensions';
 
 const CURRENT_YEAR = new Date().getFullYear();
+const MIN_BIRTH_YEAR = 1900;
 
 function generationLabel(year: number): string {
   if (year <= 1945) return 'silent_generation';
@@ -41,15 +42,16 @@ const LIFE_STAGE_BASELINES: Record<LifeStage, DimensionVector> = {
 };
 
 export function buildGCB(birthYear: number): GenerationalContextBaseline {
-  const age = CURRENT_YEAR - birthYear;
+  const safeBirthYear = Math.min(CURRENT_YEAR, Math.max(MIN_BIRTH_YEAR, birthYear));
+  const age = CURRENT_YEAR - safeBirthYear;
   const stage = lifeStage(age);
 
   return {
-    birth_year: birthYear,
+    birth_year: safeBirthYear,
     age,
-    cohort_5y: cohort5y(birthYear),
-    cohort_10y: cohort10y(birthYear),
-    generation_label: generationLabel(birthYear),
+    cohort_5y: cohort5y(safeBirthYear),
+    cohort_10y: cohort10y(safeBirthYear),
+    generation_label: generationLabel(safeBirthYear),
     life_stage: stage,
     baseline_vector: clampVector({ ...LIFE_STAGE_BASELINES[stage] }),
     baseline_explanation: [
