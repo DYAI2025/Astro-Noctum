@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { BrowserRouter, Link, useLocation } from "react-router-dom";
+import { BrowserRouter, Link, useLocation, useNavigate } from "react-router-dom";
 import { BirthForm } from "./components/BirthForm";
 import { Splash } from "./components/Splash";
 import { AuthGate } from "./components/AuthGate";
@@ -186,6 +186,18 @@ interface AppShellProps {
 
 function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, togglePlanetarium, ambiente, signOut, error }: AppShellProps) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const hasRedirected = useRef(false);
+
+  useEffect(() => {
+    if (!hasRedirected.current && location.pathname !== '/') {
+      hasRedirected.current = true;
+      navigate('/', { replace: true });
+    } else {
+      hasRedirected.current = true;
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const isFuRingRoute = location.pathname === "/fu-ring";
 
   return (
