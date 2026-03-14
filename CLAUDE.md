@@ -154,7 +154,7 @@ Planning artefacts that are **not part of the main app build** and are excluded 
 
 ### BaZi Stem Content Structure
 
-Stem description files in `src/data/stems/` follow a 5-part structure per context (dayMaster, monthStem, etc.): identity, daily life, gifts, shadow, growth — in both DE and EN. When adding or editing stem content, maintain this pattern.
+BaZi stem descriptions are defined in `src/lib/astro-data/heavenlyStems.ts` and follow a 5-part structure per context (dayMaster, monthStem, etc.): identity, daily life, gifts, shadow, growth — in both DE and EN. When adding or editing stem content, maintain this pattern.
 
 ### Known Issues
 
