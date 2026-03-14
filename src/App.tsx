@@ -186,17 +186,6 @@ interface AppShellProps {
 
 function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, togglePlanetarium, ambiente, signOut, error }: AppShellProps) {
   const location = useLocation();
-  const navigate = useNavigate();
-  const hasRedirected = useRef(false);
-
-  useEffect(() => {
-    if (!hasRedirected.current && location.pathname !== '/') {
-      hasRedirected.current = true;
-      navigate('/', { replace: true });
-    } else {
-      hasRedirected.current = true;
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps — run once on initial mount to enforce redirect to '/'; deps intentionally empty so routing changes don't alter this first-load behavior
 
   const isFuRingRoute = location.pathname === "/fu-ring";
 

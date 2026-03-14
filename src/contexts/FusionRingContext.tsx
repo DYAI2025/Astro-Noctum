@@ -3,9 +3,11 @@ import { useFusionRing } from '../hooks/useFusionRing';
 import type { FusionRingSignal } from '../lib/fusion-ring/signal';
 import type { ContributionEvent } from '../lib/lme/types';
 import type { ApiData } from '../types/bafe';
+import type { MasterSignal } from '../lib/master-signal';
 
 interface FusionRingContextValue {
   signal: FusionRingSignal | null;
+  masterSignal: MasterSignal | null;
   addQuizResult: (event: ContributionEvent) => void;
   completedModules: Set<string>;
 }
@@ -19,9 +21,9 @@ interface ProviderProps {
 }
 
 export function FusionRingProvider({ apiResults, userId, children }: ProviderProps) {
-  const { signal, addQuizResult, completedModules } = useFusionRing(apiResults, userId);
+  const { signal, masterSignal, addQuizResult, completedModules } = useFusionRing(apiResults, userId);
   return (
-    <FusionRingCtx.Provider value={{ signal, addQuizResult, completedModules }}>
+    <FusionRingCtx.Provider value={{ signal, masterSignal, addQuizResult, completedModules }}>
       {children}
     </FusionRingCtx.Provider>
   );
