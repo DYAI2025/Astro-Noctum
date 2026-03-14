@@ -30,6 +30,7 @@ export function UpgradeButton({ label, className }: Props) {
 
   return (
     <button
+      type="button"
       onClick={handleUpgrade}
       disabled={isRedirecting}
       className={className || "shrink-0 px-5 py-2.5 bg-[#D4AF37] text-[#00050A] text-sm font-semibold rounded-xl hover:bg-[#D4AF37]/90 transition-colors disabled:opacity-60 disabled:cursor-wait"}
