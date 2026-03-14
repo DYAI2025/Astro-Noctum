@@ -726,11 +726,9 @@ export function DashboardAstroSection({
                     <span className="truncate">{signDisplay}</span>
                   </div>
 
-                  {meaning && sign && (
+                  {meaning && (
                     <p className="text-[9px] sm:text-[10px] text-[#1E2A3A]/40 leading-relaxed line-clamp-2">
-                      {lang === "de"
-                        ? `${signDisplay} pr\u00e4gt das Lebensfeld ${meaning.name.de}.`
-                        : `${signDisplay} shapes your house of ${meaning.name.en}.`}
+                      {meaning.keyword[lang]}
                     </p>
                   )}
                 </>
