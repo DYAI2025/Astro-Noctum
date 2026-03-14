@@ -1,7 +1,16 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
 import { buildGCB } from '@/src/lib/master-signal/gcb-builder';
 
 describe('buildGCB', () => {
+  beforeAll(() => {
+    // Freeze time so age and life_stage calculations are deterministic
+    vi.setSystemTime(new Date('2025-01-01T00:00:00Z'));
+  });
+
+  afterAll(() => {
+    // Restore real timers after tests complete
+    vi.useRealTimers();
+  });
   it('computes correct fields for 1988 birth year', () => {
     const gcb = buildGCB(1988);
     expect(gcb.birth_year).toBe(1988);
