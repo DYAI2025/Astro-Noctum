@@ -252,7 +252,7 @@ export function DashboardAstroSection({
   return (
     <>
       {/* ═══ 3D ORRERY ════════════════════════════════════════════════ */}
-      <motion.div className="mb-14" {...fadeIn(0.1)}>
+      <motion.div className="mb-14 -mx-4 md:-mx-6" {...fadeIn(0.1)}>
         <BirthChartOrrery
           birthDate={orreryDate}
           planetariumMode={planetariumMode}

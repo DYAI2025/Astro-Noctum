@@ -163,7 +163,7 @@ export function Dashboard({
 
       {/* ═══ PAGE HEADER ═══════════════════════════════════════════════ */}
       <motion.header
-        className="mb-12 text-center"
+        className="mb-6 text-center"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
@@ -184,7 +184,7 @@ export function Dashboard({
             <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
           </button>
         </div>
-        <p className="mt-4 italic text-[#1E2A3A]/42 font-serif text-base leading-relaxed max-w-xl mx-auto">
+        <p className="mt-3 italic text-[#1E2A3A]/42 font-serif text-sm leading-relaxed max-w-md mx-auto">
           &ldquo;{BAZODIAC_QUOTES[SESSION_QUOTE_INDEX][lang]}&rdquo;
         </p>
       </motion.header>
