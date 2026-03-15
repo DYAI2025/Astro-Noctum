@@ -102,6 +102,7 @@ export const FusionRing3D = ({
           queuedEffect={queuedEffect}
           showEffectControls={isInteractive && !!import.meta.env.DEV}
           className="h-full w-full"
+          soulProfile={signalData?.baseSignals ?? null}
         />
       </div>
 
