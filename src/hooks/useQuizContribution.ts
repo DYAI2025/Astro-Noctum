@@ -20,6 +20,9 @@ export function useQuizContribution(completedModuleIds: Set<string>) {
     const sectorWeights = eventToSectorSignals(event);
     if (!sectorWeights || sectorWeights.length !== 12) return;
 
+    // Map signals from [-1, 1] to [0, 1] as required by /api/contribute
+    const normalizedSectorWeights = sectorWeights.map((signal) => (signal + 1) / 2);
+
     // Check cluster gate — only contribute if entire cluster is complete
     const cluster = findClusterForModule(moduleId);
     if (cluster) {
@@ -32,6 +35,6 @@ export function useQuizContribution(completedModuleIds: Set<string>) {
     }
 
     // Fire and forget — never blocks UI
-    void contributeQuizResult(moduleId, sectorWeights, 0.75);
+    void contributeQuizResult(moduleId, normalizedSectorWeights, 0.75);
   }, [completedModuleIds]);
 }
