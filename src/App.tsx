@@ -187,7 +187,7 @@ interface AppShellProps {
 function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, togglePlanetarium, ambiente, signOut, error }: AppShellProps) {
   const location = useLocation();
 
-  const isFuRingRoute = location.pathname === "/signatur";
+  const isSignaturRoute = location.pathname === "/signatur";
 
   return (
     <motion.div
