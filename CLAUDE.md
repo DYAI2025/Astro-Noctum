@@ -44,7 +44,7 @@ Defined in `src/router.tsx`, all lazy-loaded:
 | Route | Page |
 |-------|------|
 | `/` | `DashboardPage` — main astro dashboard |
-| `/fu-ring` | `FuRingPage` — Fusion Ring visualization |
+| `/signatur` | `FuRingPage` — Signatur (Fusion Ring) visualization |
 | `/wu-xing` | `WuXingPage` — Wu Xing five-elements detail |
 | `/wissen` | `WissenPage` — SEO article index |
 | `/wissen/:slug` | `ArtikelPage` — individual SEO article |
@@ -96,6 +96,9 @@ Defined in `src/router.tsx`, all lazy-loaded:
 | `src/contexts/LanguageContext.tsx` | i18n context (German UI default) |
 | `src/contexts/AppLayoutContext.tsx` | Layout/sidebar state shared across pages |
 | `src/types/bafe.ts` | TypeScript types for raw BAFE API responses (characterization-based; see BAFE mapping gotcha) |
+| `src/lib/master-signal/` | Master Signal engine — GCB (Grand Cosmic Blueprint) builder, natal/quiz/ring projections, cross-referencing, narrative generation. Combines all astrological layers into a single unified signal |
+| `src/lib/master-signal/master-signal-builder.ts` | Orchestrates GCB → dimensional scores → projections pipeline |
+| `src/lib/master-signal/gcb-builder.ts` | Builds GCB from raw BAFE data (BaZi pillars + Western planets + Wu-Xing elements) |
 | `src/types/interpretation.ts` | Types for Gemini AI interpretation results |
 
 ### BAFE Response Mapping (Important Gotcha)
@@ -151,6 +154,14 @@ Planning artefacts that are **not part of the main app build** and are excluded 
 - `Fu-Ring/` — Fusion Ring design assets
 - `Implementation-plan/` — implementation planning docs
 - `LeanDeep-annotator-main/` — annotation tool artefact
+
+### Naming: "Signatur" (formerly "Fusion Ring" / "Fu-Ring")
+
+The user-facing name for the Fusion Ring feature was renamed to **"Signatur"** across all UI text, routes, and navigation. Code identifiers (`FusionRing`, `useFusionRing`, etc.) still use the old name internally. When adding new UI-facing text, use "Signatur" — when writing code, use the existing `FusionRing` identifiers.
+
+### `bazodiac_engine/` (Python Reference)
+
+Python reference implementation of the GCB engine and master signal math. Not part of the web app build — used for prototyping and validation. Contains `gcb_engine.py`, `master_signal.py`, and `test_engine.py`.
 
 ### BaZi Stem Content Structure
 
