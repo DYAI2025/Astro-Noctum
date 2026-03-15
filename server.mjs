@@ -497,12 +497,18 @@ app.get("/api/transit-state/:userId", async (req, res) => {
   const respondWithFallback = async (reason) => {
     let profile = null;
     if (supabaseServer) {
-      const { data } = await supabaseServer
-        .from("astro_profiles")
-        .select("user_id, sun_sign, moon_sign, astro_json")
-        .eq("user_id", userId)
-        .single();
-      profile = data;
+      try {
+        const { data } = await supabaseServer
+          .from("astro_profiles")
+          .select("user_id, sun_sign, moon_sign, astro_json")
+          .eq("user_id", userId)
+          .single();
+        profile = data;
+      } catch (err) {
+        console.error("[transit-state] profile fallback lookup failed:", err);
+        // Leave profile as null to fall back to neutral state
+        profile = null;
+      }
     }
     console.warn("[transit-state] fallback:", reason);
     return res
