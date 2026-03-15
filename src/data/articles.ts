@@ -874,7 +874,7 @@ export const ARTICLES: Article[] = [
       {
         type: 'p',
         content:
-          'Während die westliche Astrologie auf der geometrischen Position der Planeten am Himmel basiert, ist BaZi ein energetisch-klimatologisches Modell. Es nutzt das solare Jahr und die 24 Solartermine, um die „Temperatur" und Qualität der Energie (Qi) zu messen, die zum Zeitpunkt deiner Geburt herrschte. In Bazodiac werden beide Welten im Signatur vereint, um ein vollständiges Bild zu ergeben.',
+          'Während die westliche Astrologie auf der geometrischen Position der Planeten am Himmel basiert, ist BaZi ein energetisch-klimatologisches Modell. Es nutzt das solare Jahr und die 24 Solartermine, um die „Temperatur" und Qualität der Energie (Qi) zu messen, die zum Zeitpunkt deiner Geburt herrschte. In Bazodiac werden beide Welten in der Signatur vereint, um ein vollständiges Bild zu ergeben.',
       },
       {
         type: 'h3',
