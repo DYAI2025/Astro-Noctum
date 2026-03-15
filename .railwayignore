@@ -1,0 +1,22 @@
+# Large directories not needed for build
+node_modules/
+.worktrees/
+media/
+features/plan/
+docs/
+
+# Build artifacts
+dist/
+build/
+coverage/
+
+# Dev/editor files
+.claude/
+.git/
+.github/
+.DS_Store
+*.log
+
+# Secrets
+.env*
+!.env.example

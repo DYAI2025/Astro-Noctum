@@ -171,7 +171,7 @@ export default function WissenPage() {
               Muster und synthetisiert sie zu einem persönlichen Resonanzprofil.
             </p>
             <Link
-              to="/fu-ring"
+              to="/signatur"
               className="inline-flex items-center gap-3 rounded-full border border-[#D4AF37]/25 bg-[#D4AF37]/8 px-6 py-3 font-sans text-[10px] uppercase tracking-[0.3em] text-[#D4AF37]/80 transition-all duration-500 hover:border-[#D4AF37]/50 hover:bg-[#D4AF37]/15 hover:text-[#D4AF37]"
             >
               <span>Mein Profil berechnen</span>

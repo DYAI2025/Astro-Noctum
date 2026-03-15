@@ -187,7 +187,7 @@ interface AppShellProps {
 function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, togglePlanetarium, ambiente, signOut, error }: AppShellProps) {
   const location = useLocation();
 
-  const isFuRingRoute = location.pathname === "/fu-ring";
+  const isSignaturRoute = location.pathname === "/signatur";
 
   return (
     <motion.div
@@ -209,8 +209,8 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
           <Link to="/" className={`transition-colors ${location.pathname === "/" ? "text-[#8B6914]" : "text-[#1E2A3A]/60 hover:text-[#8B6914]"}`}>
             {t("nav.atlas")}
           </Link>
-          <Link to="/fu-ring" className={`transition-colors ${location.pathname === "/fu-ring" ? "text-[#8B6914]" : "text-[#1E2A3A]/60 hover:text-[#8B6914]"}`}>
-            Fu-Ring
+          <Link to="/signatur" className={`transition-colors ${location.pathname === "/signatur" ? "text-[#8B6914]" : "text-[#1E2A3A]/60 hover:text-[#8B6914]"}`}>
+            Signatur
           </Link>
         </nav>
 
@@ -323,9 +323,9 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
           <span className="text-[8px] uppercase tracking-tighter">{t("nav.atlas")}</span>
         </Link>
 
-        <Link to="/fu-ring" className={`flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-gold/50 rounded ${location.pathname === "/fu-ring" ? "text-[#8B6914]" : "text-[#1E2A3A]/40"}`}>
+        <Link to="/signatur" className={`flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-gold/50 rounded ${location.pathname === "/signatur" ? "text-[#8B6914]" : "text-[#1E2A3A]/40"}`}>
           <CircleDot className="w-5 h-5" aria-hidden="true" />
-          <span className="text-[8px] uppercase tracking-tighter">Fu-Ring</span>
+          <span className="text-[8px] uppercase tracking-tighter">Signatur</span>
         </Link>
 
         <button
