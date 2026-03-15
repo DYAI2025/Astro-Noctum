@@ -837,7 +837,7 @@ export const ARTICLES: Article[] = [
       {
         type: 'highlight',
         content:
-          'Innerhalb der Bazodiac-App fließt die WuXing-Verteilung mit einer Gewichtung von 20 % in die Masterformel deines Signaturs ein. So wird sichtbar, welche energetischen Phasen in dir besonders stark resonieren und wo das tägliche „Energiewetter" dich besonders trifft.',
+          'Innerhalb der Bazodiac-App fließt die WuXing-Verteilung mit einer Gewichtung von 20 % in die Masterformel deiner Signatur ein. So wird sichtbar, welche energetischen Phasen in dir besonders stark resonieren und wo das tägliche „Energiewetter" dich besonders trifft.',
       },
     ],
   },
