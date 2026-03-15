@@ -2,8 +2,14 @@
 node_modules/
 .worktrees/
 media/
-features/plan/
+features/
 docs/
+bazodiac_engine/
+apps/
+packages/
+landing/
+plans/
+projekt_snapshot_outcome_der_erste_ankunftsmoment_.md
 
 # Build artifacts
 dist/
