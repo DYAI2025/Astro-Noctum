@@ -246,7 +246,9 @@ const SIGN_NAMES_DE: Record<string, string> = {
 
 /**
  * Generates a substantive house interpretation by combining house domain + sign archetype.
- * Returns 2-3 sentences covering: what the house governs, how the sign manifests, personal strength/tension.
+ * Typically returns four sentences covering: what the house governs, how the sign manifests,
+ * the native's strength in this area, and their main growth or tension theme. In fallback cases
+ * (when no template or archetype is found), returns a single concise sentence.
  */
 export function getHouseInterpretation(houseNum: number, sign: string, lang: Lang): string {
   const house = HOUSE_TEMPLATES[houseNum];
