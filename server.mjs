@@ -460,6 +460,16 @@ function mapFufireEvent(ev, generatedAt) {
 app.get("/api/transit-state/:userId", async (req, res) => {
   const userId = String(req.params.userId || "").trim();
   if (!userId) return res.status(400).json({ error: "Missing userId" });
+
+  // Require an authenticated user and ensure they are only accessing their own state.
+  const authenticatedUserId = String(req.userId || "").trim();
+  if (!authenticatedUserId) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+  if (authenticatedUserId !== userId) {
+    return res.status(403).json({ error: "Forbidden: cannot access another user's transit state" });
+  }
+
   res.set("Cache-Control", "no-store");
 
   const clamp01 = (value) => Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0));
