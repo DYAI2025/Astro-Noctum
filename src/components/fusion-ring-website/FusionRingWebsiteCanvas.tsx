@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import type * as THREE_TYPES from 'three';
 import { createFusionAudio, type FusionAudioEngine } from './fusion-ring-audio';
 import { createDemoProfile, compileProfile, type DeformationChannels, type FusionRingProfile } from './fusion-ring-profile';
@@ -40,22 +40,27 @@ const EFFECT_CONFIGS: Record<string, { label: string; sublabel: string; color: s
   crunch: { label: 'CRUNCH', sublabel: 'Compression · Inward Collapse', color: 'rgba(100,180,255,0.95)', borderColor: 'rgba(60,120,255,0.5)' },
 };
 
-// === SOUL PROFILE (simulated horoscope/quiz mapping) ===
-const SOUL_PROFILE = [
+// === SOUL PROFILE (fallback when no real user data available) ===
+const DEFAULT_SOUL_PROFILE = [
   0.6, 0.45, 0.8, 0.35, 0.7, 0.55, 0.9, 0.4,
   0.65, 0.5, 0.75, 0.3, 0.85, 0.6, 0.42, 0.72,
   0.58, 0.88, 0.38, 0.68, 0.52, 0.78, 0.44, 0.82,
   0.56, 0.7, 0.48, 0.62, 0.9, 0.36, 0.74, 0.54,
 ];
 
+// Module-level active profile — updated by FusionRingCanvasInner when
+// soulProfile prop changes. Read by soulNoise() in the draw loop.
+let _activeSoulProfile: number[] = DEFAULT_SOUL_PROFILE;
+
 function soulNoise(angle: number, seed: number): number {
-  const idx = ((angle / (Math.PI * 2)) * SOUL_PROFILE.length) % SOUL_PROFILE.length;
-  const i0 = Math.floor(idx) % SOUL_PROFILE.length;
-  const i1 = (i0 + 1) % SOUL_PROFILE.length;
+  const profile = _activeSoulProfile;
+  const idx = ((angle / (Math.PI * 2)) * profile.length) % profile.length;
+  const i0 = Math.floor(idx) % profile.length;
+  const i1 = (i0 + 1) % profile.length;
   const frac = idx - Math.floor(idx);
   const t = frac * frac * (3 - 2 * frac);
-  const v0 = SOUL_PROFILE[i0] ?? 0.5;
-  const v1 = SOUL_PROFILE[i1] ?? 0.5;
+  const v0 = profile[i0] ?? 0.5;
+  const v1 = profile[i1] ?? 0.5;
   return (v0 * (1 - t) + v1 * t) * seed;
 }
 
@@ -651,8 +656,9 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
         ringMat.uniforms.uPixelRatio!.value = Math.min(window.devicePixelRatio, 1.5);
         coronaMat.uniforms.uPixelRatio!.value = Math.min(window.devicePixelRatio, 1.5);
       };
+      let resizeObserver: ResizeObserver | null = null;
       if (typeof ResizeObserver !== 'undefined') {
-        const resizeObserver = new ResizeObserver(onResize);
+        resizeObserver = new ResizeObserver(onResize);
         resizeObserver.observe(container);
       } else {
         window.addEventListener('resize', onResize);
@@ -1657,7 +1663,7 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
         el.removeEventListener('touchstart', onTouchStart);
         window.removeEventListener('touchmove', onTouchMove);
         window.removeEventListener('touchend', onTouchEnd);
-        resizeObserver.disconnect();
+        resizeObserver?.disconnect();
         renderer.dispose();
         if (canvasRef.current?.contains?.(renderer.domElement)) {
           canvasRef.current.removeChild(renderer.domElement);
@@ -1679,21 +1685,54 @@ interface FusionRingWebsiteCanvasProps {
   queuedEffect?: { id: string; type: string } | null;
   showEffectControls?: boolean;
   className?: string;
+  soulProfile?: number[] | null; // 12 sector values [0..1]
 }
 
-export function FusionRingWebsiteCanvas(_props: FusionRingWebsiteCanvasProps) {
-  return <FusionRingCanvasInner />;
+export function FusionRingWebsiteCanvas(props: FusionRingWebsiteCanvasProps) {
+  const { soulProfile } = props;
+
+  const effectiveProfile = useMemo(() => {
+    if (soulProfile && soulProfile.length === 12) {
+      // Interpolate 12 sector values → 32 ring points via smoothstep
+      return Array.from({ length: 32 }, (_, i) => {
+        const t = (i / 32) * 12;
+        const i0 = Math.floor(t) % 12;
+        const i1 = (i0 + 1) % 12;
+        const frac = t - Math.floor(t);
+        const s = frac * frac * (3 - 2 * frac);
+        return (soulProfile[i0] ?? 0.5) * (1 - s) + (soulProfile[i1] ?? 0.5) * s;
+      });
+    }
+    return null;
+  }, [soulProfile]);
+
+  return <FusionRingCanvasInner {...props} soulProfileOverride={effectiveProfile} />;
 }
 
 export default FusionRingWebsiteCanvas;
 
-function FusionRingCanvasInner() {
+type FusionRingCanvasInnerProps = FusionRingWebsiteCanvasProps & {
+  soulProfileOverride?: number[] | null;
+};
+
+function FusionRingCanvasInner({
+  soulProfileOverride,
+  queuedEffect,
+  showEffectControls,
+  className,
+}: FusionRingCanvasInnerProps) {
   const [mounted, setMounted] = useState(false);
   const [webglSupported, setWebglSupported] = useState(true);
   const [activeEffect, setActiveEffect] = useState<EffectType>(null);
   const effectRef = useRef<EffectState | null>(null);
   const audioRef = useRef<FusionAudioEngine | null>(null);
   const [audioEnabled, setAudioEnabled] = useState(false);
+
+  // Sync soul profile override to module-level variable for soulNoise()
+  useEffect(() => {
+    _activeSoulProfile = soulProfileOverride ?? DEFAULT_SOUL_PROFILE;
+    return () => { _activeSoulProfile = DEFAULT_SOUL_PROFILE; };
+  }, [soulProfileOverride]);
 
   useEffect(() => {
     setMounted(true);

@@ -1,74 +1,3 @@
-import React, { useCallback } from "react";
-
-type LocationMapProps = {
-  /**
-   * Called when a location has been reverse-geocoded.
-   * `placeName` is the human-readable address returned by Nominatim.
-   */
-  onLocationResolved?: (placeName: string, lat: number, lon: number) => void;
-};
-
-const NOMINATIM_REVERSE_URL = "https://nominatim.openstreetmap.org/reverse";
-
-async function reverseGeocode(lat: number, lon: number): Promise<string> {
-  const params = new URLSearchParams({
-    format: "jsonv2",
-    lat: lat.toString(),
-    lon: lon.toString(),
-  });
-
-  // IMPORTANT:
-  // Do NOT set a `User-Agent` header here. Browsers forbid setting it
-  // and doing so would cause `fetch` to throw.
-  const response = await fetch(`${NOMINATIM_REVERSE_URL}?${params.toString()}`, {
-    method: "GET",
-    headers: {
-      // Safe headers only; omit `User-Agent` in browser code.
-      Accept: "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Reverse geocoding failed with status ${response.status}`);
-  }
-
-  const data: { display_name?: string } = await response.json();
-  return data.display_name ?? "";
-}
-
-const LocationMap: React.FC<LocationMapProps> = ({ onLocationResolved }) => {
-  const handleClick = useCallback(
-    async (event: React.MouseEvent<HTMLDivElement>) => {
-      // In a real implementation, derive lat/lon from the click position
-      // and the map's current bounds/zoom. Here we use placeholder values.
-      const lat = 0;
-      const lon = 0;
-
-      if (!onLocationResolved) {
-        return;
-      }
-
-      try {
-        const placeName = await reverseGeocode(lat, lon);
-        onLocationResolved(placeName, lat, lon);
-      } catch (error) {
-        // Swallow or log the error depending on your error-handling strategy.
-        // console.error("Reverse geocoding error:", error);
-      }
-    },
-    [onLocationResolved]
-  );
-
-  // Placeholder element to capture clicks. Replace with your actual map component.
-  return (
-    <div
-      style={{ width: "100%", height: "100%", cursor: "pointer" }}
-      onClick={handleClick}
-    />
-  );
-};
-
-export default LocationMap;
 import { useRef, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import type { Map, Marker } from "leaflet";
@@ -175,7 +104,7 @@ export function LocationMap({ onLocationSelect, center, visible }: LocationMapPr
         markerRef.current = null;
       }
     };
-  }, [leafletReady, visible]); // eslint-disable-line react-hooks/exhaustive-deps — map/marker refs excluded; Leaflet manages its own lifecycle
+  }, [leafletReady, visible]); // eslint-disable-line react-hooks/exhaustive-deps -- map should initialize only when Leaflet is ready and visible; including more deps would re-create the map unnecessarily
 
   // Pan to new center when PlaceAutocomplete selects a city
   useEffect(() => {
@@ -191,7 +120,7 @@ export function LocationMap({ onLocationSelect, center, visible }: LocationMapPr
         markerRef.current = L.marker([center.lat, center.lon]).addTo(mapRef.current!);
       }
     });
-  }, [center?.lat, center?.lon]); // eslint-disable-line react-hooks/exhaustive-deps — mapRef excluded; intentional one-way lat/lon sync
+  }, [center?.lat, center?.lon]); // eslint-disable-line react-hooks/exhaustive-deps -- only rerun when center coordinates change; map and marker refs are stable and excluded on purpose
 
   return (
     <AnimatePresence>

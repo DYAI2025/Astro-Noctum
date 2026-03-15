@@ -17,6 +17,7 @@ import { BaZiInterpretation } from "../BaZiInterpretation";
 import { getStemByCharacter } from "../../lib/astro-data/heavenlyStems";
 import { ExpandableText } from "../ExpandableText";
 import { getZodiacArt } from "../../lib/astro-data/zodiacAssets";
+import { getHouseInterpretation } from "../../lib/astro-data/houseInterpretations";
 import type { ApiData } from "../../types/bafe";
 import type { TileTexts, HouseTexts } from "../../types/interpretation";
 
@@ -128,6 +129,7 @@ interface DashboardAstroSectionProps {
   isFirstReading: boolean;
   tileTexts?: TileTexts;
   houseTexts?: HouseTexts;
+  leviSlot?: React.ReactNode;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -141,6 +143,7 @@ export function DashboardAstroSection({
   isFirstReading,
   tileTexts,
   houseTexts,
+  leviSlot,
 }: DashboardAstroSectionProps) {
   const { lang, t } = useLanguage();
   const { planetariumMode, setPlanetariumMode } = usePlanetarium();
@@ -208,6 +211,16 @@ export function DashboardAstroSection({
     () => Math.max(...Object.values(wuxingCounts).map(Number), 1),
     [wuxingCounts],
   );
+
+  // Development-only WuXing data verification
+  useEffect(() => {
+    if (import.meta.env.DEV && Object.keys(wuxingCounts).length > 0) {
+      console.log("[WuXing Verify] Raw API elements:", apiData.wuxing?.elements);
+      console.log("[WuXing Verify] Mapped counts:", wuxingCounts);
+      console.log("[WuXing Verify] Total:", totalCount, "Max:", maxCount, "Has data:", hasWuxingData);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps — dev-only logging, no need to re-run on every dep change
+  }, [wuxingCounts]);
 
   // Houses
   const houses: Record<string, HouseValue> = useMemo(
@@ -631,7 +644,7 @@ export function DashboardAstroSection({
               {t("dashboard.wuxing.sectionDesc")}
             </p>
 
-            <div className="morning-card p-6 md:p-8">
+            <div className="morning-card p-5 md:p-6 max-w-2xl">
               <div className="space-y-4">
                 {WUXING_ELEMENTS.map((el) => {
                   const count = Number(wuxingCounts[el.key] ?? wuxingCounts[el.name.de] ?? 0);
@@ -686,6 +699,13 @@ export function DashboardAstroSection({
         </motion.div>
       </PremiumGate>
 
+      {/* ═══ LEVI CTA SLOT ═════════════════════════════════════════ */}
+      {leviSlot && (
+        <motion.div className="mb-12" {...fadeIn(0.35)}>
+          {leviSlot}
+        </motion.div>
+      )}
+
       {/* ═══ WESTERN HOUSES — PREMIUM ════════════════════════════════ */}
       {houseEntries.length > 0 && (
         <PremiumGate teaser={t("dashboard.premium.teaserHouses")}>
@@ -708,6 +728,10 @@ export function DashboardAstroSection({
               const signDisplay = sign ? getSignName(sign, lang) : "\u2014";
 
               const houseText = num !== null ? houseTexts?.[String(num)] : undefined;
+              const fallbackText = num !== null && sign ? getHouseInterpretation(num, sign, lang) : "";
+              const tooltipContent = houseText || fallbackText;
+              const previewText = tooltipContent.length > 90 ? tooltipContent.slice(0, 90) + "\u2026" : tooltipContent;
+
               const cardContent = (
                 <>
                   <div className="flex items-baseline gap-1.5 sm:gap-2 mb-2 sm:mb-3 min-w-0">
@@ -726,16 +750,16 @@ export function DashboardAstroSection({
                     <span className="truncate">{signDisplay}</span>
                   </div>
 
-                  {meaning && (
+                  {previewText && (
                     <p className="text-[9px] sm:text-[10px] text-[#1E2A3A]/40 leading-relaxed line-clamp-2">
-                      {meaning.keyword[lang]}
+                      {previewText}
                     </p>
                   )}
                 </>
               );
 
-              return houseText ? (
-                <Tooltip key={houseKey} content={houseText} wide>
+              return tooltipContent ? (
+                <Tooltip key={houseKey} content={tooltipContent} wide>
                   <div className="morning-card p-4 sm:p-5 overflow-hidden cursor-help">
                     {cardContent}
                   </div>

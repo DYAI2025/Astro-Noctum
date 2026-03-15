@@ -133,6 +133,7 @@ const authLimiter = rateLimit({
   message: { error: "Too many attempts, please try again later." },
 });
 app.use("/api/checkout", authLimiter);
+app.use("/api/customer-portal", authLimiter);
 
 const distPath = path.join(__dirname, "dist");
 
@@ -400,48 +401,89 @@ app.get("/api/chart", requireUserAuth, (req, res) => {
   proxyToBafeWithFallback(bafeFallbackUrls(suffix), req, res);
 });
 
-// ── /api/transit-state/:userId ───────────────────────────────────────
-// TODO(Brief-02): This GET handler will be replaced by the new POST proxy.
-// The fallback block (fallbackStateFromProfile + respondWithFallback) stays
-// as fallback in the new handler.
-app.get("/api/transit-state/:userId", (req, res) => {
-  const clamp01 = (value) => Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0));
-  const normalizeElementValue = (value) => {
-    const n = Number(value);
-    if (!Number.isFinite(n)) return null;
-    return clamp01(n > 1 ? n / 100 : n);
-  };
+// ── Transit-state helpers ────────────────────────────────────────────
+
+/** Derive 12 soulprint sectors from astro_profiles.astro_json */
+function deriveSoulprintSectors(astroJson, userId) {
+  const clamp01 = (v) => Math.max(0, Math.min(1, Number.isFinite(v) ? v : 0));
+  const wuxing = astroJson?.wuxing ?? {};
+  const rawElements = Object.values(
+    wuxing?.element_percentages || wuxing?.balance || {},
+  )
+    .map((v) => { const n = Number(v); return Number.isFinite(n) ? clamp01(n > 1 ? n / 100 : n) : null; })
+    .filter((v) => v != null);
+
+  if (rawElements.length > 0) {
+    return Array.from({ length: 12 }, (_, i) => rawElements[i % rawElements.length]);
+  }
   const hashToUnit = (seed) => {
     const hex = crypto.createHash("sha256").update(seed).digest("hex").slice(0, 8);
-    const int = parseInt(hex, 16);
-    return (int % 1000) / 1000;
+    return (parseInt(hex, 16) % 1000) / 1000;
   };
-  const fallbackStateFromProfile = (userId, profile) => {
-    const astro = profile?.astro_json ?? {};
-    const wuxing = astro?.wuxing ?? {};
+  return Array.from({ length: 12 }, (_, i) =>
+    0.25 + hashToUnit(`${userId}:soulprint:${i}`) * 0.5
+  );
+}
 
-    const rawElements = Object.values(
-      wuxing?.element_percentages || wuxing?.balance || {},
-    )
-      .map(normalizeElementValue)
-      .filter((v) => v != null);
+/** Merge contribution_events sector_weights into a single 12-element average */
+function mergeContributions(contribs) {
+  if (!contribs?.length) return Array(12).fill(0.5);
+  const sum = Array(12).fill(0);
+  let count = 0;
+  for (const c of contribs) {
+    const weights = c.payload?.sector_weights;
+    if (!Array.isArray(weights) || weights.length !== 12) continue;
+    for (let i = 0; i < 12; i++) sum[i] += Number(weights[i]) || 0;
+    count++;
+  }
+  if (count === 0) return Array(12).fill(0.5);
+  return sum.map((v) => Math.max(0, Math.min(1, v / count)));
+}
 
-    const baseFromElements = rawElements.length > 0
-      ? Array.from({ length: 12 }, (_, i) => rawElements[i % rawElements.length])
-      : null;
+/** Map FuFirE event format to Astro-Noctum TransitEvent schema */
+function mapFufireEvent(ev, generatedAt) {
+  return {
+    id: `${ev.type || "event"}:${ev.sector ?? 0}:${generatedAt}`,
+    type: ev.type || "resonance_jump",
+    sector: ev.sector ?? 0,
+    delta: [0.4, 0.25, 0.15, 0.1][Math.min((ev.priority || 1) - 1, 3)] ?? 0.1,
+    trigger_planet: ev.trigger_planet || "",
+    trigger_symbol: "",
+    sector_domain: "",
+    timestamp: Date.parse(generatedAt) || Date.now(),
+  };
+}
 
-    const baseFromHash = Array.from({ length: 12 }, (_, i) => {
-      const u = hashToUnit(`${userId}:${profile?.sun_sign || ""}:${profile?.moon_sign || ""}:${i}`);
-      // Stable pseudo profile between 0.25 and 0.75
-      return 0.25 + u * 0.5;
+// ── /api/transit-state/:userId ───────────────────────────────────────
+// POSTs to FuFirE /transit/state with soulprint + quiz sectors,
+// falls back to profile-derived synthetic state on any error.
+app.get("/api/transit-state/:userId", async (req, res) => {
+  const userId = String(req.params.userId || "").trim();
+  if (!userId) return res.status(400).json({ error: "Missing userId" });
+
+  // Require an authenticated user and ensure they are only accessing their own state.
+  const authenticatedUserId = String(req.userId || "").trim();
+  if (!authenticatedUserId) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+  if (authenticatedUserId !== userId) {
+    return res.status(403).json({ error: "Forbidden: cannot access another user's transit state" });
+  }
+
+  res.set("Cache-Control", "no-store");
+
+  const clamp01 = (value) => Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0));
+  const hashToUnit = (seed) => {
+    const hex = crypto.createHash("sha256").update(seed).digest("hex").slice(0, 8);
+    return (parseInt(hex, 16) % 1000) / 1000;
+  };
+
+  const fallbackStateFromProfile = (uid, profile) => {
+    const soulprint = deriveSoulprintSectors(profile?.astro_json, uid);
+    const ring = soulprint.map((v, i) => {
+      const drift = (hashToUnit(`${uid}:drift:${i}`) - 0.5) * 0.12;
+      return clamp01(v + drift);
     });
-
-    const soulprint = (baseFromElements ?? baseFromHash).map(clamp01);
-    const ring = soulprint.map((value, i) => {
-      const drift = (hashToUnit(`${userId}:drift:${i}`) - 0.5) * 0.12;
-      return clamp01(value + drift);
-    });
-
     return {
       ring: { sectors: ring },
       soulprint: { sectors: soulprint },
@@ -452,98 +494,156 @@ app.get("/api/transit-state/:userId", (req, res) => {
     };
   };
 
-  const userId = String(req.params.userId || "").trim();
-  if (!userId) {
-    return res.status(400).json({ error: "Missing userId" });
-  }
-
-  res.set("Cache-Control", "no-store");
-
-  const safeUserId = encodeURIComponent(userId);
-  const candidates = bafeFallbackUrlsFromCandidates([
-    `/api/transit-state/${safeUserId}`,
-    `/transit-state/${safeUserId}`,
-  ]);
-
-  const fetchUpstreamTransit = async () => {
-    let lastResponse = null;
-
-    for (const targetUrl of candidates) {
+  const respondWithFallback = async (reason) => {
+    let profile = null;
+    if (supabaseServer) {
       try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-        const upstream = await fetch(targetUrl, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-          signal: controller.signal,
-        });
-        clearTimeout(timeout);
-
-        const contentType = upstream.headers.get("content-type") || "application/json";
-        const body = await upstream.text();
-
-        if (upstream.ok) {
-          return { ok: true, status: upstream.status, contentType, body };
-        }
-
-        lastResponse = { ok: false, status: upstream.status, contentType, body, targetUrl };
-
-        // try the next fallback endpoint on any non-2xx
-        continue;
+        const { data } = await supabaseServer
+          .from("astro_profiles")
+          .select("user_id, sun_sign, moon_sign, astro_json")
+          .eq("user_id", userId)
+          .single();
+        profile = data;
       } catch (err) {
-        lastResponse = {
-          ok: false,
-          status: 502,
-          contentType: "application/json",
-          body: JSON.stringify({ error: err?.message || "network error" }),
-          targetUrl,
-        };
+        console.error("[transit-state] profile fallback lookup failed:", err);
+        // Leave profile as null to fall back to neutral state
+        profile = null;
       }
     }
-
-    return lastResponse;
+    console.warn("[transit-state] fallback:", reason);
+    return res
+      .status(200)
+      .set("X-Transit-Fallback", profile ? "profile-derived" : "neutral")
+      .json(fallbackStateFromProfile(userId, profile));
   };
 
-  const respondWithFallback = async () => {
+  try {
     if (!supabaseServer) {
-      return res
-        .status(200)
-        .set("X-Transit-Fallback", "neutral")
-        .json(fallbackStateFromProfile(userId, null));
+      return respondWithFallback("no supabase");
     }
 
+    // Step 1: Load user profile
     const { data: profile } = await supabaseServer
       .from("astro_profiles")
       .select("user_id, sun_sign, moon_sign, astro_json")
       .eq("user_id", userId)
       .single();
 
-    return res
-      .status(200)
-      .set("X-Transit-Fallback", profile ? "profile-derived" : "neutral")
-      .json(fallbackStateFromProfile(userId, profile || null));
-  };
+    const soulprintSectors = deriveSoulprintSectors(profile?.astro_json, userId);
 
-  fetchUpstreamTransit()
-    .then(async (upstream) => {
-      if (upstream?.ok) {
-        return res
-          .status(upstream.status)
-          .set("Content-Type", upstream.contentType)
-          .send(upstream.body);
-      }
+    // Step 2: Load quiz contributions
+    const { data: contribs } = await supabaseServer
+      .from("contribution_events")
+      .select("payload")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(20);
 
-      console.warn(
-        "[transit-state] upstream unavailable, serving fallback",
-        upstream?.status,
-        upstream?.targetUrl || "",
-      );
-      return respondWithFallback();
-    })
-    .catch(async (err) => {
-      console.warn("[transit-state] unexpected failure, serving fallback:", err?.message || err);
-      return respondWithFallback();
+    const quizSectors = mergeContributions(contribs ?? []);
+
+    // Step 3: POST to FuFirE /transit/state
+    const bafePrimaryUrl = process.env.BAFE_INTERNAL_URL
+      || process.env.VITE_BAFE_BASE_URL
+      || "https://bafe-production.up.railway.app";
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+    const fufireRes = await fetch(`${bafePrimaryUrl}/transit/state`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        soulprint_sectors: soulprintSectors,
+        quiz_sectors: quizSectors,
+      }),
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
+
+    if (!fufireRes.ok) {
+      return respondWithFallback(`FuFirE ${fufireRes.status}`);
+    }
+
+    const fufireData = await fufireRes.json();
+
+    // Step 4: Map response to client schema
+    const generatedAt = fufireData.generated_at || new Date().toISOString();
+    const resolution = Math.min(100, 33 + (contribs?.length ?? 0) * 4);
+
+    const response = {
+      ring: fufireData.ring ?? { sectors: soulprintSectors },
+      soulprint: { sectors: soulprintSectors },
+      transit_contribution: {
+        transit_intensity: fufireData.transit_contribution?.transit_intensity ?? 0.35,
+      },
+      delta: {
+        vs_30day_avg: {
+          avg_sectors: fufireData.delta?.vs_30day_avg?.avg_sectors ?? soulprintSectors,
+        },
+      },
+      events: (fufireData.events ?? []).map((ev) => mapFufireEvent(ev, generatedAt)),
+      resolution,
+    };
+
+    return res.status(200).json(response);
+  } catch (err) {
+    return respondWithFallback(err?.message || "unexpected error");
+  }
+});
+
+// ── /api/contribute ──────────────────────────────────────────────────
+// Persists quiz sector weights to contribution_events table.
+// Authenticated via Supabase JWT. Upserts on (user_id, module_id).
+app.post("/api/contribute", express.json(), async (req, res) => {
+  if (!supabaseServer) {
+    return res.status(503).json({ error: "Supabase not configured" });
+  }
+
+  const token = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
+  if (!token) {
+    return res.status(401).json({ error: "Missing authorization" });
+  }
+
+  const { data: { user }, error: authErr } = await supabaseServer.auth.getUser(token);
+  if (authErr || !user) {
+    return res.status(401).json({ error: "Invalid token" });
+  }
+
+  const { source, sector_weights, confidence } = req.body;
+
+  if (typeof source !== "string" || !source) {
+    return res.status(400).json({ error: "Missing source" });
+  }
+  if (!Array.isArray(sector_weights) || sector_weights.length !== 12) {
+    return res.status(400).json({ error: "sector_weights must be number[12]" });
+  }
+  if (sector_weights.some((v) => typeof v !== "number" || v < 0 || v > 1)) {
+    return res.status(400).json({ error: "sector_weights values must be [0..1]" });
+  }
+
+  const eventId = `${source}:${user.id}:${Date.now()}`;
+
+  const { error: insertErr } = await supabaseServer
+    .from("contribution_events")
+    .upsert({
+      user_id: user.id,
+      event_id: eventId,
+      module_id: source,
+      occurred_at: new Date().toISOString(),
+      payload: {
+        sector_weights,
+        confidence: typeof confidence === "number" ? Math.max(0, Math.min(1, confidence)) : 0.7,
+      },
+    }, {
+      onConflict: "user_id,module_id",
+    });
+
+  if (insertErr) {
+    console.error("[contribute] insert error:", insertErr.message);
+    return res.status(500).json({ error: "Failed to save contribution" });
+  }
+
+  return res.status(201).json({ ok: true });
 });
 
 // ── /api/space-weather ───────────────────────────────────────────────
@@ -926,12 +1026,14 @@ async function verifySupabaseUser(req) {
 // Reuses existing Stripe customer if one exists in profiles.stripe_customer_id,
 // otherwise creates a new customer and saves the ID immediately.
 app.post("/api/checkout", express.json(), async (req, res) => {
-  if (!stripe) return res.status(503).json({ error: "Payment not configured" });
   if (!supabaseServer) return res.status(500).json({ error: "Database not configured" });
 
   // Verify the caller is the authenticated user
   const authedUser = await verifySupabaseUser(req);
   if (!authedUser) return res.status(401).json({ error: "Unauthorized" });
+  if (!stripe) return res.status(503).json({ error: "Payment not configured" });
+  const stripePriceId = process.env.STRIPE_PRICE_ID;
+  if (!stripePriceId) return res.status(503).json({ error: "Stripe price not configured" });
 
   const telemetry = extractClientTelemetry(req);
   const userId = authedUser.id;
@@ -982,7 +1084,7 @@ app.post("/api/checkout", express.json(), async (req, res) => {
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
+      line_items: [{ price: stripePriceId, quantity: 1 }],
       mode: "payment",
       success_url: successUrl,
       cancel_url: cancelUrl,
@@ -1006,15 +1108,84 @@ app.post("/api/checkout", express.json(), async (req, res) => {
   }
 });
 
+// ── Stripe: Customer Portal (manage billing) ──────────────────────────
+app.post("/api/customer-portal", express.json(), async (req, res) => {
+  if (!supabaseServer) return res.status(500).json({ error: "Database not configured" });
+
+  const authedUser = await verifySupabaseUser(req);
+  if (!authedUser) return res.status(401).json({ error: "Unauthorized" });
+  if (!stripe) return res.status(503).json({ error: "Payment not configured" });
+
+  const returnUrl = sanitizeCheckoutReturnUrl(req.body?.returnUrl, APP_URL);
+
+  try {
+    const { data: profile, error: profileError } = await supabaseServer
+      .from("profiles")
+      .select("tier, stripe_customer_id")
+      .eq("id", authedUser.id)
+      .single();
+
+    if (profileError) {
+      console.error("[Stripe] Customer portal profile lookup failed:", profileError);
+      return res.status(500).json({ error: "Profile lookup failed" });
+    }
+
+    if (profile?.tier !== "premium") {
+      return res.status(403).json({ error: "Premium account required" });
+    }
+
+    let customerId = profile?.stripe_customer_id;
+
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: authedUser.email || undefined,
+        metadata: {
+          userId: authedUser.id,
+          source: "portal-recovery",
+        },
+      });
+      customerId = customer.id;
+
+      const { error: customerPersistError } = await supabaseServer
+        .from("profiles")
+        .update({ stripe_customer_id: customerId })
+        .eq("id", authedUser.id);
+
+      if (customerPersistError) {
+        console.error("[Stripe] Customer portal persist failed:", customerPersistError);
+        return res.status(500).json({ error: "Customer sync failed" });
+      }
+    }
+
+    const portalSession = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: returnUrl,
+    });
+
+    return res.json({
+      url: portalSession.url,
+      resolved: { returnUrl },
+    });
+  } catch (err) {
+    console.error("[Stripe] Customer portal error:", err.message);
+    return res.status(500).json({ error: "Customer portal failed" });
+  }
+});
+
 // ── Stripe: Webhook (raw body required for signature verification) ───
 app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async (req, res) => {
   if (!stripe) return res.status(503).end();
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret) return res.status(503).json({ error: "Webhook not configured" });
 
   const sig = req.headers["stripe-signature"];
+  if (typeof sig !== "string" || !sig) {
+    return res.status(400).send("Missing stripe-signature header");
+  }
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
   } catch (err) {
     console.error("[Stripe] Webhook sig error:", err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
@@ -1037,6 +1208,9 @@ app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async
       if (error) console.error("[Stripe] Profile update failed:", error);
       else console.log(`[Stripe] User ${userId} upgraded to premium`);
     }
+  } else if (event.type === "checkout.session.expired") {
+    const session = event.data.object;
+    console.log(`[Stripe] Checkout expired for session ${session.id}`);
   }
 
   res.json({ received: true });

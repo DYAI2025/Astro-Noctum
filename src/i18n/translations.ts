@@ -67,8 +67,8 @@ const translationsEn: DeepStringRecord = {
   },
   furing3d: {
     back: "Dashboard",
-    badge: "FU-RING 3D",
-    title: "Fusion Ring — Live Divergence Field",
+    badge: "SIGNATUR 3D",
+    title: "Signatur — Live Divergence Field",
     subtitle: "A real-time field that blends your soulprint, current transit pressure, and cosmic weather. Press M to toggle sound.",
     loading: "Syncing transit state…",
     reducedMotionHint: "Reduced Motion / fallback mode active",
@@ -80,13 +80,13 @@ const translationsEn: DeepStringRecord = {
     reload: "Reload",
     eventAnnouncePrefix: "Transit event",
     a11y: {
-      regionLabel: "Bazodiac Fusion Ring 3D",
+      regionLabel: "Bazodiac Signatur 3D",
     },
     cards: {
       resonanceTitle: "Resonance",
       resonanceText: "Twelve sectors pulse with your current fusion signal and reveal where your field is currently expanding.",
       spaceWeatherTitle: "Space Weather",
-      spaceWeatherText: "Kp-index turbulence modulates ring deformation and visual noise in subtle waves.",
+      spaceWeatherText: "Kp-index turbulence modulates the signature's deformation and visual noise in subtle waves.",
       accessibilityTitle: "Accessibility",
       accessibilityText: "Reduced Motion, keyboard shortcuts, and screenreader updates are supported.",
     },
@@ -245,8 +245,8 @@ const translationsDe: DeepStringRecord = {
   },
   furing3d: {
     back: "Dashboard",
-    badge: "FU-RING 3D",
-    title: "Fusion Ring — Live-Divergenzfeld",
+    badge: "SIGNATUR 3D",
+    title: "Signatur — Live-Divergenzfeld",
     subtitle: "Ein Echtzeit-Feld aus Soulprint, Transitdruck und kosmischem Wetter. Mit Taste M kannst du den Sound umschalten.",
     loading: "Transit-Zustand wird synchronisiert…",
     reducedMotionHint: "Reduced Motion / Fallback aktiv",
@@ -258,13 +258,13 @@ const translationsDe: DeepStringRecord = {
     reload: "Neu laden",
     eventAnnouncePrefix: "Transit-Event",
     a11y: {
-      regionLabel: "Bazodiac Fusion Ring 3D",
+      regionLabel: "Bazodiac Signatur 3D",
     },
     cards: {
       resonanceTitle: "Resonanz",
       resonanceText: "Zwölf Sektoren pulsieren mit deinem aktuellen Fusion-Signal und zeigen, wo sich dein Feld gerade öffnet.",
       spaceWeatherTitle: "Weltraumwetter",
-      spaceWeatherText: "Kp-Index-Turbulenzen modulieren Deformation und visuelles Noise des Rings in feinen Wellen.",
+      spaceWeatherText: "Kp-Index-Turbulenzen modulieren Deformation und visuelles Noise der Signatur in feinen Wellen.",
       accessibilityTitle: "Barrierefreiheit",
       accessibilityText: "Reduced Motion, Tastatur-Shortcuts und Screenreader-Updates werden unterstützt.",
     },

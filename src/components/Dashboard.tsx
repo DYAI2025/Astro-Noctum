@@ -8,6 +8,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { LegalFooter } from "./LegalFooter";
 import { UpgradeButton } from "./UpgradeButton";
+import { ManageSubscription } from "./ManageSubscription";
 import type { ApiData } from "../types/bafe";
 import type { TileTexts, HouseTexts } from "../types/interpretation";
 import { DashboardLeviSection } from "./dashboard/DashboardLeviSection";
@@ -209,8 +210,16 @@ export function Dashboard({
           <UpgradeButton />
         </motion.div>
       )}
+      {isPremium && (
+        <motion.div
+          className="mb-8 flex justify-end"
+          {...fadeIn(0.15)}
+        >
+          <ManageSubscription className="text-[#1E2A3A]/45 hover:text-[#8B6914]" />
+        </motion.div>
+      )}
 
-      {/* ═══ ASTRO SECTION (Orrery + Western + BaZi/WuXing + Houses) ═══ */}
+      {/* ═══ ASTRO SECTION (Orrery + Western + BaZi/WuXing + Levi + Houses) ═══ */}
       <SectionErrorBoundary name="Astro">
         <DashboardAstroSection
           apiData={apiData}
@@ -219,10 +228,23 @@ export function Dashboard({
           isFirstReading={isFirstReading}
           tileTexts={tileTexts}
           houseTexts={houseTexts}
+          leviSlot={
+            <SectionErrorBoundary name="Levi">
+              <DashboardLeviSection
+                isPremium={isPremium}
+                userId={userId}
+                onStopAudio={onStopAudio}
+                onResumeAudio={onResumeAudio}
+                sunSign={sunSign}
+                zodiacAnimal={zodiacAnimal}
+                dominantEl={dominantEl}
+              />
+            </SectionErrorBoundary>
+          }
         />
       </SectionErrorBoundary>
 
-      {/* ═══ AI INTERPRETATION ═══════════════════════════════════════ */}
+      {/* ═══ GESAMTANALYSE — full-width below Houses ═══════════════ */}
       <motion.div
         className="mb-12 sm:mb-16"
         {...fadeIn(0.45)}
@@ -231,24 +253,6 @@ export function Dashboard({
           <DashboardInterpretationSection
             interpretation={interpretation}
             isPremium={isPremium}
-          />
-        </SectionErrorBoundary>
-      </motion.div>
-
-      {/* ═══ LEVI — centered full-width card ════════════════════════ */}
-      <motion.div
-        className="mb-12 sm:mb-16 max-w-2xl mx-auto"
-        {...fadeIn(0.48)}
-      >
-        <SectionErrorBoundary name="Levi">
-          <DashboardLeviSection
-            isPremium={isPremium}
-            userId={userId}
-            onStopAudio={onStopAudio}
-            onResumeAudio={onResumeAudio}
-            sunSign={sunSign}
-            zodiacAnimal={zodiacAnimal}
-            dominantEl={dominantEl}
           />
         </SectionErrorBoundary>
       </motion.div>

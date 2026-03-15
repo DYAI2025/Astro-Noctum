@@ -41,8 +41,8 @@ export async function generateInterpretation(data: unknown, lang: string = "en")
   if (templateText) return fallbackResponse(templateText);
 
   const fallbackMsg = lang === "de"
-    ? "## Dein Bazodiac Fusion-Blueprint\n\nDein kosmisches Profil wird berechnet. Die vollständige Interpretation basierend auf deinen Geburtsdaten wird in Kürze verfügbar sein."
-    : "## Your Bazodiac Fusion Blueprint\n\nYour cosmic profile is being calculated. The full interpretation based on your birth data will be available shortly.";
+    ? "## Dein kosmisches Profil\n\nDie KI-gestützte Interpretation ist derzeit nicht verfügbar. Deine astrologischen Daten wurden erfolgreich berechnet \u2014 die Karten oben zeigen dein vollständiges Profil. Die ausführliche Analyse wird automatisch generiert, sobald der Dienst wieder erreichbar ist."
+    : "## Your Cosmic Profile\n\nThe AI-powered interpretation is currently unavailable. Your astrological data has been calculated successfully \u2014 the cards above show your complete profile. The detailed analysis will be generated automatically once the service is available again.";
 
   return fallbackResponse(fallbackMsg);
 }
