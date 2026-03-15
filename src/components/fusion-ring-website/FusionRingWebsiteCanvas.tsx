@@ -1688,7 +1688,9 @@ interface FusionRingWebsiteCanvasProps {
   soulProfile?: number[] | null; // 12 sector values [0..1]
 }
 
-export function FusionRingWebsiteCanvas({ soulProfile }: FusionRingWebsiteCanvasProps) {
+export function FusionRingWebsiteCanvas(props: FusionRingWebsiteCanvasProps) {
+  const { soulProfile } = props;
+
   const effectiveProfile = useMemo(() => {
     if (soulProfile && soulProfile.length === 12) {
       // Interpolate 12 sector values → 32 ring points via smoothstep
@@ -1704,12 +1706,21 @@ export function FusionRingWebsiteCanvas({ soulProfile }: FusionRingWebsiteCanvas
     return null;
   }, [soulProfile]);
 
-  return <FusionRingCanvasInner soulProfileOverride={effectiveProfile} />;
+  return <FusionRingCanvasInner {...props} soulProfileOverride={effectiveProfile} />;
 }
 
 export default FusionRingWebsiteCanvas;
 
-function FusionRingCanvasInner({ soulProfileOverride }: { soulProfileOverride?: number[] | null }) {
+type FusionRingCanvasInnerProps = FusionRingWebsiteCanvasProps & {
+  soulProfileOverride?: number[] | null;
+};
+
+function FusionRingCanvasInner({
+  soulProfileOverride,
+  queuedEffect,
+  showEffectControls,
+  className,
+}: FusionRingCanvasInnerProps) {
   const [mounted, setMounted] = useState(false);
   const [webglSupported, setWebglSupported] = useState(true);
   const [activeEffect, setActiveEffect] = useState<EffectType>(null);
