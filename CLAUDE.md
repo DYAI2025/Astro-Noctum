@@ -62,6 +62,25 @@ Defined in `src/router.tsx`, all lazy-loaded:
 4. `services/supabase.ts` → persists birth_data, astro_profiles (upsert), natal_charts to Supabase (non-blocking, fire-and-forget)
 5. `Dashboard` renders results + 3D orrery + ElevenLabs voice widget
 
+### Signatur (Fusion Ring) Data Pipeline
+
+The ring visualization is fed by a multi-stage pipeline:
+
+1. **Transit State fetch**: `useFusionSignal(userId)` polls `GET /api/transit-state/:userId` every 800ms with exponential backoff
+2. **Server proxy** (`server.mjs`): Loads user's `astro_profiles` + `contribution_events` from Supabase, POSTs `soulprint_sectors` + `quiz_sectors` to FuFirE `/transit/state`, maps response to client schema. Falls back to profile-derived synthetic state on any error (marked via `X-Transit-Fallback` header)
+3. **Canvas rendering**: `FusionRing3D` passes `signalData.baseSignals` (12 sectors) as `soulProfile` prop to `FusionRingWebsiteCanvas`, which interpolates 12→32 points via smoothstep and syncs to a module-level `_activeSoulProfile` for the WebGL draw loop's `soulNoise()` function
+4. **Quiz contribution**: On quiz completion, `useQuizContribution` converts `ContributionEvent` → sector weights via `eventToSectorSignals()` + `AFFINITY_MAP`, checks cluster completion gate, then fire-and-forget POSTs to `POST /api/contribute` which upserts to `contribution_events` table
+
+```
+Quiz → ContributionEvent → eventToSectorSignals() → POST /api/contribute → contribution_events
+                                                                                    ↓
+useFusionSignal ← GET /api/transit-state ← server loads profile + contributions → POST FuFirE
+       ↓
+FusionRing3D → soulProfile prop → FusionRingWebsiteCanvas → _activeSoulProfile → soulNoise()
+```
+
+**Important**: `QuizOverlay` is defined but currently not mounted in any page component. To activate the quiz→ring pipeline, mount it with `useQuizContribution` as the `onComplete` handler. The caller must hydrate `completedModuleIds` from Supabase `contribution_events` on mount for the cluster gate to work correctly.
+
 ### Key Modules
 
 | Path | Purpose |
@@ -75,21 +94,25 @@ Defined in `src/router.tsx`, all lazy-loaded:
 | `src/components/BirthChartOrrery.tsx` | Three.js 3D solar system visualization with Keplerian orbital mechanics |
 | `src/lib/astronomy/` | Orbital calculations (Kepler solver, J2000 epoch), star catalog (150 stars), constellation data, planet orbital elements |
 | `src/lib/3d/materials.ts` | Custom GLSL shaders (sun corona, atmospheric Fresnel glow, Saturn rings with Cassini division) |
-| `server.mjs` | Production Express server: BAFE proxy with fallback chain, Supabase admin auth, ElevenLabs tool endpoints, Stripe checkout + webhook, debug probe at `/api/debug-bafe` |
+| `server.mjs` | Production Express server: BAFE proxy with fallback chain, transit-state proxy (POST to FuFirE), `/api/contribute` endpoint, Supabase admin auth, ElevenLabs tool endpoints, Stripe checkout + webhook + customer portal |
 | `src/lib/fusion-ring/` | Fusion Ring engine — signal computation, BaZi/Western/Wu-Xing layers, transit math, canvas draw utilities |
 | `src/contexts/FusionRingContext.tsx` | React context providing Fusion Ring state to the whole app |
 | `src/hooks/useFusionRing.ts` | Hook that combines BAFE data + transit data into FusionRing signal |
+| `src/hooks/useFusionSignal.ts` | Polls `/api/transit-state/:userId`, parses via Zod `TransitStateSchema`, computes `FusionSignalData` (targetSignals, baseSignals, thirtyDayAvg, transitIntensity) |
+| `src/hooks/useQuizContribution.ts` | Quiz `onComplete` handler: converts `ContributionEvent` → sector weights, checks cluster gate, fire-and-forget POSTs to `/api/contribute` |
+| `src/services/contribute.ts` | Client-side fire-and-forget service: gets Supabase JWT, POSTs sector weights to `/api/contribute` |
+| `src/lib/schemas/transit-state.ts` | Zod schemas for `TransitState`, `TransitEvent`, `FusionSignalData` — shared contract between server and client |
 | `src/hooks/usePremium.ts` | Reads `profiles.is_premium` from Supabase; re-fetches on tab focus (for Stripe redirect return) |
 | `src/components/PremiumGate.tsx` | Wrapper that locks content behind premium; triggers Stripe checkout via `/api/checkout` |
 | `src/data/articles.ts` | SEO article content (6 articles, full German text, TypeScript) |
-| `src/components/QuizOverlay.tsx` | Modal overlay that hosts the quiz system; launched from Dashboard |
+| `src/components/QuizOverlay.tsx` | Modal overlay that hosts the quiz system. **Currently orphaned** — defined but not mounted in any page. Needs to be imported and rendered with `useQuizContribution` as `onComplete` |
 | `src/lib/lme/types.ts` | Lifecycle Mapping Engine event types — `ContributionEvent`, `Marker`, `TraitScore`, `Tag`. Typed contract between quizzes and the Fusion Ring; quizzes emit `ContributionEvent`s, `useFusionRing` consumes them |
 | `src/components/quizzes/` | 22 quiz components (14 regular + 4 Kinky + 4 PartnerMatch); results feed into Fusion Ring via `src/lib/fusion-ring/quiz-to-event.ts` |
 | `src/components/quizzes/Kinky/` | Kinky quiz series (multi-part, premium) |
 | `src/components/quizzes/PartnerMatch/` | PartnerMatch quiz series including `ConversationAnalysisQuiz` |
 | `src/components/ClusterEnergySystem.tsx` | Renders quiz-result "energy clusters" on the Dashboard |
 | `src/components/fusion-ring-3d/FusionRing3D.tsx` | Three.js 3D Fusion Ring — used on `/fu-ring` page |
-| `src/components/fusion-ring-website/FusionRingWebsiteCanvas.tsx` | Canvas-based Fusion Ring for the landing/marketing view |
+| `src/components/fusion-ring-website/FusionRingWebsiteCanvas.tsx` | Canvas-based Fusion Ring. Accepts `soulProfile` prop (12 sectors) which is interpolated to 32 ring points and fed to `soulNoise()` via module-level `_activeSoulProfile`. Falls back to `DEFAULT_SOUL_PROFILE` when no prop provided |
 | `src/hooks/useSpaceWeather.ts` | Fetches NASA space-weather data (solar wind, Kp-index) and feeds it into the Fusion Ring signal |
 | `src/hooks/useAmbientePlayer.ts` | Ambient audio playback control |
 | `src/contexts/PlanetariumContext.tsx` | Context for the 3D orrery/planetarium state |
@@ -113,7 +136,7 @@ If BAFE schema changes, update the mappers in `api.ts` — the Dashboard expects
 ### External Dependencies
 
 - **BAFE API**: Astrology calculation backend (routes at `/calculate/{bazi,western,fusion,wuxing,tst}` and `/chart`). Default: `https://bafe.vercel.app`. BAFE is not always reachable from dev environments (see Known Issues).
-- **Supabase**: Auth + Postgres. Schema in `supabase-schema.sql`. Tables: `profiles`, `birth_data`, `astro_profiles`, `natal_charts`, `agent_conversations`. RLS enabled on all tables. Signup trigger auto-creates profile row.
+- **Supabase**: Auth + Postgres. Schema in `supabase-schema.sql`. Tables: `profiles`, `birth_data`, `astro_profiles`, `natal_charts`, `contribution_events`, `agent_conversations`. RLS enabled on all tables. Signup trigger auto-creates profile row. `contribution_events` stores quiz sector weights (upserted on `user_id,module_id`) — read by the transit-state proxy to compute `quiz_sectors`.
 - **Gemini API**: Text generation via `@google/genai` SDK (model: `gemini-3-flash-preview`). Falls back to hardcoded German text if unavailable.
 - **ElevenLabs**: Voice agent widget (Levi Bazi). Tool configs in `elevenlabs-tool.json` and `elevenlabs-tool-save-conversation.json`. The widget calls back to `/api/profile/:userId` on the server (requires `ELEVENLABS_TOOL_SECRET` Bearer auth).
 
@@ -143,7 +166,7 @@ Railway via `nixpacks.toml` + `railway.json`. Build: `npm ci && npm run build`. 
 
 ### Quiz → Fusion Ring Integration
 
-Quizzes emit "contribution events" via `src/lib/fusion-ring/quiz-to-event.ts`. Each completed quiz adjusts the user's Fusion Ring signal (stored in `FusionRingContext`). Series quizzes (Kinky, PartnerMatch) share state via a series-level component that wraps individual quiz steps.
+Quizzes emit `ContributionEvent`s via `src/lib/fusion-ring/quiz-to-event.ts`. The `useQuizContribution` hook converts events to 12-sector weights using `eventToSectorSignals()` + `AFFINITY_MAP`, checks the cluster completion gate (a cluster's contribution is only persisted when ALL quizzes in the cluster are complete), then fire-and-forget POSTs to `/api/contribute`. Series quizzes (Kinky, PartnerMatch) share state via a series-level component that wraps individual quiz steps. There are 6 clusters defined in `src/lib/fusion-ring/clusters.ts` (naturkind, mentalist, stratege, mystiker, kinky, partner_match) with 4 modules each.
 
 ### `features/plan/` Directory
 

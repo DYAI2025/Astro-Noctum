@@ -95,5 +95,25 @@ describe('server api routes', () => {
       expect(res.status).toBe(401);
       expect(res.body.error).toBe('Authentication required');
     });
+
+    it('returns 401 on POST /api/checkout when no Authorization header', async () => {
+      const app = await loadTestApp();
+      const res = await request(app)
+        .post('/api/checkout')
+        .set('Content-Type', 'application/json')
+        .send({});
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('Unauthorized');
+    });
+
+    it('returns 401 on POST /api/customer-portal when no Authorization header', async () => {
+      const app = await loadTestApp();
+      const res = await request(app)
+        .post('/api/customer-portal')
+        .set('Content-Type', 'application/json')
+        .send({});
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('Unauthorized');
+    });
   });
 });

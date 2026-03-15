@@ -12,7 +12,11 @@ export function DashboardInterpretationSection({
   interpretation,
   isPremium,
 }: DashboardInterpretationSectionProps) {
-  const { t } = useLanguage();
+  const { lang, t } = useLanguage();
+
+  const isLoading = !interpretation
+    || interpretation.includes("wird geladen")
+    || interpretation.includes("Loading your cosmic");
 
   const interpretationParagraphs = useMemo(
     () => interpretation?.split('\n\n') || [],
@@ -34,7 +38,7 @@ export function DashboardInterpretationSection({
   `;
 
   return (
-    <div className="morning-card p-5 sm:p-8">
+    <div className="morning-card p-5 sm:p-8 max-w-4xl mx-auto">
       <div className="flex items-center gap-4 mb-5">
         <span className="h-[1px] w-10 bg-[#8B6914]/20" />
         <span className="text-[9px] uppercase tracking-[0.4em] text-[#8B6914]/55">
@@ -45,16 +49,32 @@ export function DashboardInterpretationSection({
         {t('dashboard.interpretation.sectionTitle')}
       </h3>
 
-      <div className={proseClasses}>
-        <ReactMarkdown>{isPremium ? interpretation : freeInterpretation}</ReactMarkdown>
-      </div>
-
-      {!isPremium && hasPremiumInterpretation && (
-        <PremiumGate teaser={t('dashboard.premium.teaserInterpretation')}>
-          <div className={`${proseClasses} mt-4`}>
-            <ReactMarkdown>{interpretationParagraphs.slice(2).join('\n\n')}</ReactMarkdown>
+      {isLoading ? (
+        <div className="space-y-3 animate-pulse">
+          <div className="h-3 bg-[#8B6914]/8 rounded w-3/4" />
+          <div className="h-3 bg-[#8B6914]/8 rounded w-full" />
+          <div className="h-3 bg-[#8B6914]/8 rounded w-5/6" />
+          <div className="h-3 bg-[#8B6914]/8 rounded w-2/3" />
+          <p className="text-[11px] text-[#1E2A3A]/30 italic mt-4">
+            {lang === 'de'
+              ? 'Deine persönliche Analyse wird generiert\u2026'
+              : 'Generating your personal analysis\u2026'}
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className={proseClasses}>
+            <ReactMarkdown>{isPremium ? interpretation : freeInterpretation}</ReactMarkdown>
           </div>
-        </PremiumGate>
+
+          {!isPremium && hasPremiumInterpretation && (
+            <PremiumGate teaser={t('dashboard.premium.teaserInterpretation')}>
+              <div className={`${proseClasses} mt-4`}>
+                <ReactMarkdown>{interpretationParagraphs.slice(2).join('\n\n')}</ReactMarkdown>
+              </div>
+            </PremiumGate>
+          )}
+        </>
       )}
     </div>
   );
