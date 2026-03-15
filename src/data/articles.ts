@@ -55,7 +55,7 @@ export const ARTICLES: Article[] = [
     imageCreditUrl: 'https://images.nasa.gov/details/GSFC_20171208_Archive_e002130',
     keywords: 'Weltraumwetter, Sonneneruption, Sonnenwind, geomagnetischer Sturm, Kp-Index, Schumann Resonanz, Carrington Event, Nordlichter',
     ctaText: 'Dein kosmisches Resonanzprofil berechnen',
-    ctaHref: '/fu-ring',
+    ctaHref: '/signatur',
     sections: [
       {
         type: 'p',
@@ -157,7 +157,7 @@ export const ARTICLES: Article[] = [
     imageCreditUrl: 'https://chandra.harvard.edu/photo/2006/1e0657/',
     keywords: 'Dunkle Materie, Dunkle Energie, Universum, Galaxienrotation, kosmisches Netz, Bullet Cluster, Fritz Zwicky',
     ctaText: 'Das verborgene Profil deines Geburtsmoments entdecken',
-    ctaHref: '/fu-ring',
+    ctaHref: '/signatur',
     sections: [
       {
         type: 'p',
@@ -240,7 +240,7 @@ export const ARTICLES: Article[] = [
     imageCreditUrl: 'https://www.esa.int/ESA_Multimedia/Images/2013/03/Planck_CMB',
     keywords: 'Simulation Theorie, Bostrom Argument, Holographisches Universum, digitale Physik, Quantenmechanik, Realität, Matrix, Bewusstsein',
     ctaText: 'Den Code deines Geburtsmoments entschlüsseln',
-    ctaHref: '/fu-ring',
+    ctaHref: '/signatur',
     sections: [
       {
         type: 'p',
@@ -336,7 +336,7 @@ export const ARTICLES: Article[] = [
     imageCreditUrl: 'https://hubblesite.org/contents/media/images/2014/27/3392-Image.html',
     keywords: 'Ungelöste Geheimnisse Universum, WOW Signal, Fast Radio Bursts, Antimaterie, Galaxienrotation, Quantengravitation, Physik Rätsel',
     ctaText: 'Kosmische Muster in deinem Geburtsmoment entdecken',
-    ctaHref: '/fu-ring',
+    ctaHref: '/signatur',
     sections: [
       {
         type: 'p',
@@ -433,7 +433,7 @@ export const ARTICLES: Article[] = [
     imageCreditUrl: 'https://www.jpl.nasa.gov/',
     keywords: 'Quantenverschränkung, Nichtlokalität, Bells Theorem, EPR Paradoxon, Quantenmechanik, Bewusstsein, Alain Aspect, Quantenkorrelation',
     ctaText: 'Deine kosmische Resonanzstruktur berechnen',
-    ctaHref: '/fu-ring',
+    ctaHref: '/signatur',
     sections: [
       {
         type: 'p',
@@ -516,7 +516,7 @@ export const ARTICLES: Article[] = [
     imageCreditUrl: 'https://images.nasa.gov/details/iss030e005927',
     keywords: 'Schumann Resonanz, kosmische Frequenz, Planetenschwingungen, 432 Hz, elektromagnetisches Feld, Sonnenwind, Bioresonanz, kosmische Strahlung',
     ctaText: 'Die Frequenz deines Geburtsmoments analysieren',
-    ctaHref: '/fu-ring',
+    ctaHref: '/signatur',
     sections: [
       {
         type: 'p',
@@ -601,7 +601,7 @@ export const ARTICLES: Article[] = [
     imageCreditUrl: 'https://bazodiac.space',
     keywords: 'BaZi, Schicksalsanalyse, Vier Säulen des Schicksals, chinesische Astrologie, Tagesmeister, Fünf Elemente, WuXing, energetisches Profil, Selbsterkenntnis, Lebensweg, Glückszyklen, Geburtsdatum, Tierkreiszeichen',
     ctaText: 'Dein BaZi-Profil jetzt berechnen',
-    ctaHref: '/fu-ring',
+    ctaHref: '/signatur',
     sections: [
       {
         type: 'p',
@@ -837,7 +837,7 @@ export const ARTICLES: Article[] = [
       {
         type: 'highlight',
         content:
-          'Innerhalb der Bazodiac-App fließt die WuXing-Verteilung mit einer Gewichtung von 20 % in die Masterformel deines Fusion Rings ein. So wird sichtbar, welche energetischen Phasen in dir besonders stark resonieren und wo das tägliche „Energiewetter" dich besonders trifft.',
+          'Innerhalb der Bazodiac-App fließt die WuXing-Verteilung mit einer Gewichtung von 20 % in die Masterformel deines Signaturs ein. So wird sichtbar, welche energetischen Phasen in dir besonders stark resonieren und wo das tägliche „Energiewetter" dich besonders trifft.',
       },
     ],
   },
@@ -854,9 +854,9 @@ export const ARTICLES: Article[] = [
     imageAlt: 'FAQ — BaZi und WuXing Fragen und Antworten zur chinesischen Metaphysik',
     imageCredit: 'Bazodiac',
     imageCreditUrl: 'https://bazodiac.space',
-    keywords: 'BaZi FAQ, WuXing Fragen, Vier Säulen des Schicksals, Tagesmeister, Fusion Ring, chinesische Astrologie Unterschied, Geburtsstunde BaZi, Wahrsagerei, Selbsterkenntnis',
+    keywords: 'BaZi FAQ, WuXing Fragen, Vier Säulen des Schicksals, Tagesmeister, Signatur, chinesische Astrologie Unterschied, Geburtsstunde BaZi, Wahrsagerei, Selbsterkenntnis',
     ctaText: 'Dein kosmisches Profil entdecken',
-    ctaHref: '/fu-ring',
+    ctaHref: '/signatur',
     sections: [
       {
         type: 'h3',
@@ -874,7 +874,7 @@ export const ARTICLES: Article[] = [
       {
         type: 'p',
         content:
-          'Während die westliche Astrologie auf der geometrischen Position der Planeten am Himmel basiert, ist BaZi ein energetisch-klimatologisches Modell. Es nutzt das solare Jahr und die 24 Solartermine, um die „Temperatur" und Qualität der Energie (Qi) zu messen, die zum Zeitpunkt deiner Geburt herrschte. In Bazodiac werden beide Welten im Fusion Ring vereint, um ein vollständiges Bild zu ergeben.',
+          'Während die westliche Astrologie auf der geometrischen Position der Planeten am Himmel basiert, ist BaZi ein energetisch-klimatologisches Modell. Es nutzt das solare Jahr und die 24 Solartermine, um die „Temperatur" und Qualität der Energie (Qi) zu messen, die zum Zeitpunkt deiner Geburt herrschte. In Bazodiac werden beide Welten im Signatur vereint, um ein vollständiges Bild zu ergeben.',
       },
       {
         type: 'h3',
@@ -919,7 +919,7 @@ export const ARTICLES: Article[] = [
       {
         type: 'highlight',
         content:
-          'Das ist die Besonderheit von Bazodiac: Die App nutzt eine Masterformel, die deine BaZi-Daten (30%), dein westliches Sternzeichen (30%), die WuXing-Elemente (20%) und deine Ergebnisse aus den Persönlichkeits-Quizzes (20%) zu einem einzigen Signal verschmilzt. Das Ergebnis ist der Fusion Ring – eine lebendige Visualisierung deiner Identität, die sich mit den täglichen Planetentransiten verändert.',
+          'Das ist die Besonderheit von Bazodiac: Die App nutzt eine Masterformel, die deine BaZi-Daten (30%), dein westliches Sternzeichen (30%), die WuXing-Elemente (20%) und deine Ergebnisse aus den Persönlichkeits-Quizzes (20%) zu einem einzigen Signal verschmilzt. Das Ergebnis ist der Signatur – eine lebendige Visualisierung deiner Identität, die sich mit den täglichen Planetentransiten verändert.',
       },
       {
         type: 'h3',
@@ -928,7 +928,7 @@ export const ARTICLES: Article[] = [
       {
         type: 'p',
         content:
-          'Ohne die Geburtsstunde fehlt die vierte Säule (die Stundensäule). Diese Säule liefert wertvolle Informationen über deine tiefsten Wünsche und dein verborgenes Potenzial. Während das BaZi-Chart auch ohne Stunde zu etwa 75% interpretierbar bleibt, ist die exakte Zeit für eine vollständige Analyse und die Berechnung bestimmter Sektoren im Fusion Ring unerlässlich.',
+          'Ohne die Geburtsstunde fehlt die vierte Säule (die Stundensäule). Diese Säule liefert wertvolle Informationen über deine tiefsten Wünsche und dein verborgenes Potenzial. Während das BaZi-Chart auch ohne Stunde zu etwa 75% interpretierbar bleibt, ist die exakte Zeit für eine vollständige Analyse und die Berechnung bestimmter Sektoren im Signatur unerlässlich.',
       },
       {
         type: 'h3',
@@ -942,7 +942,7 @@ export const ARTICLES: Article[] = [
       {
         type: 'quote',
         content:
-          'Möchtest du mehr über die einzelnen Tiere oder die Berechnungslogik erfahren? Lies unseren ausführlichen Artikel über die Fünf Wandlungsphasen oder entdecke dein persönliches BaZi-Profil im Fusion Ring.',
+          'Möchtest du mehr über die einzelnen Tiere oder die Berechnungslogik erfahren? Lies unseren ausführlichen Artikel über die Fünf Wandlungsphasen oder entdecke dein persönliches BaZi-Profil im Signatur.',
       },
     ],
   },
@@ -961,7 +961,7 @@ export const ARTICLES: Article[] = [
     imageCreditUrl: 'https://bazodiac.space',
     keywords: 'chinesische Astrologie, BaZi Schicksalsanalyse, Vier Säulen des Schicksals, Tagesmeister, kosmische DNA, Tierkreiszeichen, Glückszyklen, energetisches Profil, WuXing, Geburtsdatum',
     ctaText: 'Deine kosmische DNA entschlüsseln',
-    ctaHref: '/fu-ring',
+    ctaHref: '/signatur',
     sections: [
       {
         type: 'p',
