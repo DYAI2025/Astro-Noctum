@@ -33,6 +33,7 @@ export function AppRoutes() {
       <Routes>
         <Route path="/" element={<DashboardPage />} />
         <Route path="/signatur" element={<FuRingPage />} />
+        <Route path="/fu-ring" element={<FuRingPage />} />
         <Route path="/wu-xing" element={<WuXingPage />} />
         <Route path="/wissen" element={<WissenPage />} />
         <Route path="/wissen/:slug" element={<ArtikelPage />} />
