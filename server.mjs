@@ -591,6 +591,214 @@ app.get("/api/transit-state/:userId", async (req, res) => {
   }
 });
 
+// ── /api/horoscope/daily ─────────────────────────────────────────────
+// Generates or returns cached daily horoscope for a user.
+// On-demand with 24h cache per user.
+const horoscopeCache = new Map(); // userId:dateStr → { horoscope, timestamp }
+const HOROSCOPE_CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
+
+// Sector domain labels for template generation
+const SECTOR_DOMAINS = [
+  { de: 'Antrieb', en: 'Drive' },       // 0 Aries
+  { de: 'Stabilität', en: 'Stability' }, // 1 Taurus
+  { de: 'Kommunikation', en: 'Communication' }, // 2 Gemini
+  { de: 'Geborgenheit', en: 'Nurture' }, // 3 Cancer
+  { de: 'Ausdruck', en: 'Expression' },  // 4 Leo
+  { de: 'Ordnung', en: 'Order' },        // 5 Virgo
+  { de: 'Balance', en: 'Balance' },      // 6 Libra
+  { de: 'Tiefe', en: 'Depth' },          // 7 Scorpio
+  { de: 'Expansion', en: 'Expansion' },  // 8 Sagittarius
+  { de: 'Struktur', en: 'Structure' },   // 9 Capricorn
+  { de: 'Freiheit', en: 'Freedom' },     // 10 Aquarius
+  { de: 'Intuition', en: 'Intuition' },  // 11 Pisces
+];
+
+// Template sets for server-side generation
+const HOROSCOPE_TEMPLATES = {
+  de: {
+    high: {
+      headlines: [
+        'Dein {domain}-Feld flammt heute besonders.',
+        'Heute pulsiert dein {domain}-Bereich mit ungewöhnlicher Intensität.',
+      ],
+      bodies: [
+        'Die Energie in deinem {domain}-Feld ist heute deutlich spürbar. Das ist kein Zufall — dein Profil zeigt hier eine natürliche Empfänglichkeit, die heute besonders aktiviert wird.',
+        'Dein {domain}-Sektor reagiert heute auf eine starke kosmische Bewegung. Diese Resonanz ist ein Hinweis darauf, dass sich etwas in diesem Bereich deines Lebens bewegen möchte.',
+      ],
+      advices: [
+        'Lass diese Energie fließen, ohne sie kontrollieren zu wollen.',
+        'Nimm wahr, was sich heute in diesem Feld bewegt — ohne Bewertung.',
+      ],
+    },
+    moderate: {
+      headlines: ['Leichte Bewegung in deinem {domain}-Feld.', 'Dein {domain}-Bereich zeigt heute sanfte Aktivität.'],
+      bodies: [
+        'Heute zeigt sich eine moderate Bewegung in deinem {domain}-Feld. Es ist weniger ein Signal zum Handeln als eine Einladung zum Wahrnehmen.',
+      ],
+      advices: ['Beobachte, was heute in diesem Bereich lebendig wird.'],
+    },
+    calm: {
+      headlines: ['Ein ruhiger Tag für dein kosmisches Feld.', 'Heute liegt Stille über deinem Ring.'],
+      bodies: [
+        'Heute zeigen sich keine starken Transit-Signale in deinem Profil. Das bedeutet nicht Stillstand, sondern Raum für Integration und Vertiefung.',
+      ],
+      advices: ['Ruhetage sind keine verlorenen Tage — sie sind Integrationszeit.'],
+    },
+  },
+  en: {
+    high: {
+      headlines: ['Your {domain} field is especially active today.', 'Today pulses with unusual intensity in your {domain} area.'],
+      bodies: [
+        'The energy in your {domain} field is clearly perceptible today. This is no coincidence — your profile shows a natural receptivity here that is especially activated today.',
+      ],
+      advices: ['Let this energy flow without trying to control it.'],
+    },
+    moderate: {
+      headlines: ['Gentle movement in your {domain} field.'],
+      bodies: ['Today shows moderate movement in your {domain} field. It\'s less a signal to act and more an invitation to notice.'],
+      advices: ['Observe what comes alive in this area today.'],
+    },
+    calm: {
+      headlines: ['A quiet day for your cosmic field.'],
+      bodies: ['Today shows no strong transit signals in your profile. This doesn\'t mean stagnation, but space for integration and deepening.'],
+      advices: ['Rest days aren\'t lost days — they\'re integration time.'],
+    },
+  },
+};
+
+function deterministicIndex(dateStr, sector, max) {
+  let hash = 0;
+  const seed = `${dateStr}:${sector}`;
+  for (let i = 0; i < seed.length; i++) {
+    hash = ((hash << 5) - hash + seed.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash) % max;
+}
+
+app.get("/api/horoscope/daily/:userId", async (req, res) => {
+  const userId = String(req.params.userId || "").trim();
+  if (!userId) return res.status(400).json({ error: "Missing userId" });
+
+  const lang = req.query.lang === "en" ? "en" : "de";
+  const dateStr = new Date().toISOString().slice(0, 10);
+  const cacheKeyH = `${userId}:${dateStr}`;
+
+  // Check cache
+  const cached = horoscopeCache.get(cacheKeyH);
+  if (cached && Date.now() - cached.timestamp < HOROSCOPE_CACHE_TTL) {
+    return res.status(200).json(cached.horoscope);
+  }
+
+  try {
+    // Fetch transit data (reuse existing transit-state logic)
+    let transitSectors = Array(12).fill(0.35);
+    let transitIntensity = 0.35;
+    let events = [];
+
+    if (supabaseServer) {
+      const { data: profile } = await supabaseServer
+        .from("astro_profiles")
+        .select("user_id, astro_json")
+        .eq("user_id", userId)
+        .single();
+
+      const soulprintSectors = deriveSoulprintSectors(profile?.astro_json, userId);
+
+      try {
+        const bafePrimaryUrl = process.env.BAFE_INTERNAL_URL
+          || process.env.VITE_BAFE_BASE_URL
+          || "https://bafe-production.up.railway.app";
+
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+        const fufireRes = await fetch(`${bafePrimaryUrl}/transit/state`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ soulprint_sectors: soulprintSectors, quiz_sectors: Array(12).fill(0.5) }),
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+
+        if (fufireRes.ok) {
+          const fufireData = await fufireRes.json();
+          transitSectors = fufireData.transit_contribution?.sectors ?? soulprintSectors;
+          transitIntensity = fufireData.transit_contribution?.transit_intensity ?? 0.35;
+          events = (fufireData.events ?? []).map(ev => ({
+            type: ev.type || "resonance_jump",
+            sector: ev.sector ?? 0,
+            priority: ev.priority ?? 30,
+            trigger_planet: ev.trigger_planet || "",
+            description_de: ev.description_de || "",
+          }));
+        }
+      } catch { /* use defaults */ }
+    }
+
+    // Compute sector impacts
+    const sectorImpacts = transitSectors.map((s, i) => ({
+      sector: i,
+      intensity: Math.min(1, s),
+      impact: Math.min(1, s * (0.3 + Math.random() * 0.2)), // slight personalization
+    }));
+
+    const sorted = [...sectorImpacts].sort((a, b) => b.impact - a.impact);
+    const primary = sorted[0];
+    const maxImpact = primary.impact;
+
+    const tier = maxImpact >= 0.5 ? "high" : maxImpact >= 0.2 ? "moderate" : "calm";
+    const templates = HOROSCOPE_TEMPLATES[lang][tier];
+    const domain = SECTOR_DOMAINS[primary.sector % 12][lang];
+
+    const hi = deterministicIndex(dateStr, primary.sector, templates.headlines.length);
+    const bi = deterministicIndex(dateStr, primary.sector + 100, templates.bodies.length);
+    const ai = deterministicIndex(dateStr, primary.sector + 200, templates.advices.length);
+
+    const headline = templates.headlines[hi].replace(/\{domain\}/g, domain);
+    const body = templates.bodies[bi].replace(/\{domain\}/g, domain);
+    const advice = templates.advices[ai];
+
+    const pushworthy = events.some(e => e.priority >= 60) || maxImpact >= 0.6;
+    const activeSectors = sorted.filter(s => s.impact > 0.2).map(s => s.sector);
+
+    const horoscope = {
+      headline,
+      body,
+      advice,
+      pushworthy,
+      push_text: pushworthy ? headline : undefined,
+      active_sectors: activeSectors,
+      ring_effects: sorted.slice(0, 3).map(s => ({
+        sector: s.sector,
+        intensity: s.impact,
+        type: s.impact >= 0.6 ? "pulse" : s.impact >= 0.4 ? "glow" : "highlight",
+      })),
+      tier: "freemium",
+      generated_at: new Date().toISOString(),
+      transit_intensity: transitIntensity,
+      evidence_mode: "heuristic_v1",
+    };
+
+    // Cache result
+    horoscopeCache.set(cacheKeyH, { horoscope, timestamp: Date.now() });
+
+    return res.status(200).json(horoscope);
+  } catch (err) {
+    console.error("[horoscope] error:", err?.message || err);
+    return res.status(500).json({ error: "Horoscope generation failed" });
+  }
+});
+
+// Evict expired horoscope cache entries hourly
+setInterval(() => {
+  const now = Date.now();
+  const expired = [...horoscopeCache.entries()]
+    .filter(([, entry]) => now - entry.timestamp > HOROSCOPE_CACHE_TTL)
+    .map(([key]) => key);
+  expired.forEach(key => horoscopeCache.delete(key));
+  if (expired.length > 0) console.log(`[horoscope-cache] evicted ${expired.length} entries`);
+}, 60 * 60 * 1000);
+
 // ── /api/contribute ──────────────────────────────────────────────────
 // Persists quiz sector weights to contribution_events table.
 // Authenticated via Supabase JWT. Upserts on (user_id, module_id).
