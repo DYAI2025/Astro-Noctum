@@ -4,11 +4,11 @@ dist
 .github
 docs
 features/plan
+media
+.worktrees
+.claude
 *.zip
 *.pdf
-*.png
-*.jpg
-*.jpeg
 .DS_Store
 *.log
 .env*

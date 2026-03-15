@@ -34,7 +34,7 @@ export function DashboardInterpretationSection({
   `;
 
   return (
-    <div className="morning-card p-5 sm:p-8 md:col-span-2">
+    <div className="morning-card p-5 sm:p-8">
       <div className="flex items-center gap-4 mb-5">
         <span className="h-[1px] w-10 bg-[#8B6914]/20" />
         <span className="text-[9px] uppercase tracking-[0.4em] text-[#8B6914]/55">

@@ -222,20 +222,24 @@ export function Dashboard({
         />
       </SectionErrorBoundary>
 
-      {/* ═══ INTERPRETATION + LEVI ═══════════════════════════════════ */}
+      {/* ═══ AI INTERPRETATION ═══════════════════════════════════════ */}
       <motion.div
-        className="grid md:grid-cols-3 gap-5 sm:gap-8 mb-12 sm:mb-16"
+        className="mb-12 sm:mb-16"
         {...fadeIn(0.45)}
       >
-        {/* AI Interpretation — 2/3 width */}
         <SectionErrorBoundary name="Interpretation">
           <DashboardInterpretationSection
             interpretation={interpretation}
             isPremium={isPremium}
           />
         </SectionErrorBoundary>
+      </motion.div>
 
-        {/* Levi — 1/3 width — visible teaser, interaction gated */}
+      {/* ═══ LEVI — centered full-width card ════════════════════════ */}
+      <motion.div
+        className="mb-12 sm:mb-16 max-w-2xl mx-auto"
+        {...fadeIn(0.48)}
+      >
         <SectionErrorBoundary name="Levi">
           <DashboardLeviSection
             isPremium={isPremium}
