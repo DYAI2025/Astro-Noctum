@@ -298,7 +298,7 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
       {/* ── Main content (routed) ──────────────────────────────────────── */}
       <main
         className={
-          isFuRingRoute
+          isSignaturRoute
             ? "flex-grow pt-6 md:pt-24 pb-24 md:pb-20 relative z-10 w-full"
             : "flex-grow pt-6 md:pt-32 pb-24 md:pb-20 relative z-10 container mx-auto px-4 flex flex-col items-center justify-center"
         }

@@ -656,8 +656,9 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
         ringMat.uniforms.uPixelRatio!.value = Math.min(window.devicePixelRatio, 1.5);
         coronaMat.uniforms.uPixelRatio!.value = Math.min(window.devicePixelRatio, 1.5);
       };
+      let resizeObserver: ResizeObserver | null = null;
       if (typeof ResizeObserver !== 'undefined') {
-        const resizeObserver = new ResizeObserver(onResize);
+        resizeObserver = new ResizeObserver(onResize);
         resizeObserver.observe(container);
       } else {
         window.addEventListener('resize', onResize);
@@ -1662,7 +1663,7 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
         el.removeEventListener('touchstart', onTouchStart);
         window.removeEventListener('touchmove', onTouchMove);
         window.removeEventListener('touchend', onTouchEnd);
-        resizeObserver.disconnect();
+        resizeObserver?.disconnect();
         renderer.dispose();
         if (canvasRef.current?.contains?.(renderer.domElement)) {
           canvasRef.current.removeChild(renderer.domElement);

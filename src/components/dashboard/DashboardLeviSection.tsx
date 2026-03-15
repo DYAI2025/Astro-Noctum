@@ -62,30 +62,31 @@ export function DashboardLeviSection({
   const handleHangUp = () => { setLeviActive(false); onResumeAudio(); };
 
   return (
-    <div ref={leviSectionRef} className="morning-card p-5 sm:p-7 flex flex-col gap-5 sm:gap-6" style={{ backdropFilter: 'none', WebkitBackdropFilter: 'none', overflow: 'visible' }}>
-      <div className="flex items-start gap-4">
-        <div className="relative mt-1.5 shrink-0">
-          <div className={`w-2 h-2 rounded-full breathing ${
-            leviActive
-              ? "bg-emerald-500 shadow-[0_0_10px_rgba(52,211,153,0.75)]"
-              : "bg-[#8B6914] shadow-[0_0_8px_rgba(139,105,20,0.55)]"
-          }`} />
+    <div ref={leviSectionRef} className="morning-card p-5 sm:p-7 md:p-8 max-w-3xl mx-auto" style={{ backdropFilter: 'none', WebkitBackdropFilter: 'none', overflow: 'visible' }}>
+      {/* ── Status + Action row ─────────────────────────────────── */}
+      <div className="flex flex-col md:flex-row md:items-center gap-5 sm:gap-6">
+        <div className="flex items-start gap-4 flex-1 min-w-0">
+          <div className="relative mt-1.5 shrink-0">
+            <div className={`w-2 h-2 rounded-full breathing ${
+              leviActive
+                ? "bg-emerald-500 shadow-[0_0_10px_rgba(52,211,153,0.75)]"
+                : "bg-[#8B6914] shadow-[0_0_8px_rgba(139,105,20,0.55)]"
+            }`} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-[#8B6914] mb-1.5 font-semibold">
+              {leviActive ? t("dashboard.levi.active") : t("dashboard.levi.ready")}
+            </p>
+            <p className="text-[11px] text-[#1E2A3A]/45 italic leading-relaxed">
+              {leviActive ? t("dashboard.levi.activeDesc") : t("dashboard.levi.readyDesc")}
+            </p>
+          </div>
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-[#8B6914] mb-1.5 font-semibold">
-            {leviActive ? t("dashboard.levi.active") : t("dashboard.levi.ready")}
-          </p>
-          <p className="text-[11px] text-[#1E2A3A]/45 italic leading-relaxed">
-            {leviActive ? t("dashboard.levi.activeDesc") : t("dashboard.levi.readyDesc")}
-          </p>
-        </div>
-      </div>
 
-      {isPremium ? (
-        <>
+        {isPremium ? (
           <button
             onClick={leviActive ? handleHangUp : handleCallLevi}
-            className={`w-full flex items-center justify-center gap-2 px-5 py-3 rounded-full text-[10px] uppercase tracking-[0.2em] font-semibold transition-all ${
+            className={`shrink-0 flex items-center justify-center gap-2 px-6 py-3 rounded-full text-[10px] uppercase tracking-[0.2em] font-semibold transition-all ${
               leviActive
                 ? "bg-red-50 border border-red-300 text-red-600 hover:bg-red-100"
                 : "bg-[#8B6914]/10 border border-[#8B6914]/30 text-[#8B6914] hover:bg-[#8B6914]/[0.18]"
@@ -95,30 +96,29 @@ export function DashboardLeviSection({
               ? <><PhoneOff className="w-4 h-4" /> {t("dashboard.levi.hangUpBtn")}</>
               : <><Phone className="w-4 h-4" /> {t("dashboard.levi.callBtn")}</>}
           </button>
+        ) : (
+          <button
+            onClick={handleLeviUpgrade}
+            disabled={leviUpgrading}
+            className="shrink-0 flex items-center justify-center gap-2 px-6 py-3 rounded-full text-[10px] uppercase tracking-[0.2em] font-semibold bg-gold/10 border border-gold/30 text-gold hover:bg-gold/20 transition-all disabled:opacity-60 disabled:cursor-wait"
+          >
+            {leviUpgrading ? "..." : <><Lock className="w-4 h-4" /> {t("dashboard.premium.cta")}</>}
+          </button>
+        )}
+      </div>
 
-          <div className="mt-4">
-            {leviActive && (
-              <div className="relative z-[9999] w-full flex justify-center">
-                <elevenlabs-convai
-                  agent-id={elevenLabsAgentId}
-                  dynamic-variables={JSON.stringify({
-                    user_id: userId,
-                    chart_context: `${sunSign} / ${zodiacAnimal} / ${dominantEl}`,
-                  })}
-                >
-                </elevenlabs-convai>
-              </div>
-            )}
-          </div>
-        </>
-      ) : (
-        <button
-          onClick={handleLeviUpgrade}
-          disabled={leviUpgrading}
-          className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-full text-[10px] uppercase tracking-[0.2em] font-semibold bg-gold/10 border border-gold/30 text-gold hover:bg-gold/20 transition-all disabled:opacity-60 disabled:cursor-wait"
-        >
-          {leviUpgrading ? "..." : <><Lock className="w-4 h-4" /> {t("dashboard.premium.cta")}</>}
-        </button>
+      {/* ── ElevenLabs widget (expands below when active) ────────── */}
+      {isPremium && leviActive && (
+        <div className="mt-6 relative z-[9999] w-full flex justify-center">
+          <elevenlabs-convai
+            agent-id={elevenLabsAgentId}
+            dynamic-variables={JSON.stringify({
+              user_id: userId,
+              chart_context: `${sunSign} / ${zodiacAnimal} / ${dominantEl}`,
+            })}
+          >
+          </elevenlabs-convai>
+        </div>
       )}
     </div>
   );
