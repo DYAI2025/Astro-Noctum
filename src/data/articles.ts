@@ -919,7 +919,7 @@ export const ARTICLES: Article[] = [
       {
         type: 'highlight',
         content:
-          'Das ist die Besonderheit von Bazodiac: Die App nutzt eine Masterformel, die deine BaZi-Daten (30%), dein westliches Sternzeichen (30%), die WuXing-Elemente (20%) und deine Ergebnisse aus den Persönlichkeits-Quizzes (20%) zu einem einzigen Signal verschmilzt. Das Ergebnis ist der Signatur – eine lebendige Visualisierung deiner Identität, die sich mit den täglichen Planetentransiten verändert.',
+          'Das ist die Besonderheit von Bazodiac: Die App nutzt eine Masterformel, die deine BaZi-Daten (30%), dein westliches Sternzeichen (30%), die WuXing-Elemente (20%) und deine Ergebnisse aus den Persönlichkeits-Quizzes (20%) zu einem einzigen Signal verschmilzt. Das Ergebnis ist die Signatur – eine lebendige Visualisierung deiner Identität, die sich mit den täglichen Planetentransiten verändert.',
       },
       {
         type: 'h3',
@@ -928,7 +928,7 @@ export const ARTICLES: Article[] = [
       {
         type: 'p',
         content:
-          'Ohne die Geburtsstunde fehlt die vierte Säule (die Stundensäule). Diese Säule liefert wertvolle Informationen über deine tiefsten Wünsche und dein verborgenes Potenzial. Während das BaZi-Chart auch ohne Stunde zu etwa 75% interpretierbar bleibt, ist die exakte Zeit für eine vollständige Analyse und die Berechnung bestimmter Sektoren im Signatur unerlässlich.',
+          'Ohne die Geburtsstunde fehlt die vierte Säule (die Stundensäule). Diese Säule liefert wertvolle Informationen über deine tiefsten Wünsche und dein verborgenes Potenzial. Während das BaZi-Chart auch ohne Stunde zu etwa 75% interpretierbar bleibt, ist die exakte Zeit für eine vollständige Analyse und die Berechnung bestimmter Sektoren in der Signatur unerlässlich.',
       },
       {
         type: 'h3',
