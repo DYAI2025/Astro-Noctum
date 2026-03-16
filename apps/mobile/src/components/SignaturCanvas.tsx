@@ -62,6 +62,12 @@ interface SignaturCanvasProps {
   paused?: boolean;
 }
 
+type ExpoThreeRenderer = Renderer & {
+  setSize: (width: number, height: number) => void;
+  setClearColor: (color: number | string | Color, alpha?: number) => void;
+  render: (scene: Scene, camera: PerspectiveCamera) => void;
+};
+
 export function SignaturCanvas({ sectors, paused = false }: SignaturCanvasProps) {
   const rafRef = useRef<number>(0);
   const pausedRef = useRef(paused);
@@ -145,7 +151,7 @@ export function SignaturCanvas({ sectors, paused = false }: SignaturCanvasProps)
 
   const onContextCreate = useCallback((gl: ExpoWebGLRenderingContext) => {
     // === RENDERER ===
-    const renderer = new Renderer({ gl });
+    const renderer = new Renderer({ gl }) as ExpoThreeRenderer;
     renderer.setSize(gl.drawingBufferWidth, gl.drawingBufferHeight);
     renderer.setClearColor(0x030308);
 
