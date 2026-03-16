@@ -269,7 +269,7 @@ The proxy adds a 10-20s timeout per endpoint, a 10KB payload size limit, and ret
 {
   "date": "2026-03-16",
   "western": {
-    "summary": "Fuer dich als Cancer stehen heute Tiefe, Karriere im Fokus. Die Planetenkonstellation aktiviert deine Sektoren 8 und 10.",
+    "summary": "Fuer dich als Krebs stehen heute Tiefe, Karriere im Fokus. Die Planetenkonstellation aktiviert deine Sektoren 8 und 10.",
     "themes": ["Tiefe", "Karriere"],
     "caution": "Achte in Sektor 10 auf Ueberanstrengung — hier liegt heute Spannung.",
     "opportunity": "Sektor 8 bietet dir heute besonderes Potenzial. Nutze die Energie aktiv.",
