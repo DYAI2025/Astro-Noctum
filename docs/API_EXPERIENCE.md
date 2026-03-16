@@ -376,7 +376,7 @@ All values `[0, 1]` except `orbit_count`.
 | `angularity` | `float` | `Metall + Feuer` element weights, clamped |
 | `density` | `float` | Sum of top-3 sectors / total |
 | `contrast` | `float` | `max(sectors) - min(sectors)` |
-| `orbit_count` | `int [1,7]` | `ceil(harmony * 5) + 1`, clamped to `[2, 5]` |
+| `orbit_count` | `int [1,7]` | `ceil(harmony * 5) + 1` (theoretical range `[1, 7]`), clamped to effective range `[2, 5]` |
 
 ### SignatureBlueprint
 
