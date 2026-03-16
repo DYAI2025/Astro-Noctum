@@ -800,7 +800,7 @@ setInterval(() => {
 }, 60 * 60 * 1000);
 
 // ── Experience API proxy ──────────────────────────────────────────
-app.post('/api/experience/bootstrap', async (req, res) => {
+app.post('/api/experience/bootstrap', requireUserAuth, async (req, res) => {
   try {
     const bodyStr = JSON.stringify(req.body);
     if (bodyStr.length > 10000) {
@@ -820,7 +820,7 @@ app.post('/api/experience/bootstrap', async (req, res) => {
   }
 });
 
-app.post('/api/experience/signature-delta', async (req, res) => {
+app.post('/api/experience/signature-delta', requireUserAuth, async (req, res) => {
   try {
     const bodyStr = JSON.stringify(req.body);
     if (bodyStr.length > 10000) {
