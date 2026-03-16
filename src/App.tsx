@@ -63,17 +63,17 @@ export default function App() {
     ambiente.start();
   };
 
-  // ── Onboarding submit: run BAFE flow + bootstrap in parallel ────────
+  // ── Onboarding submit: coordinate BAFE flow with bootstrap ──────────
   const handleOnboardingSubmit = async (formData: { date: string; tz: string; lon: number; lat: number }) => {
-    // Start existing BAFE flow
-    handleSubmit(formData);
-
-    // Skip bootstrap if feature flag is off — fall through to normal BAFE flow
+    // If the signature onboarding feature is disabled, keep the existing
+    // behavior: immediately start the BAFE flow and return.
     if (!isFeatureEnabled('signature_onboarding_v1')) {
+      handleSubmit(formData);
       return;
     }
 
-    // Also call bootstrap experience (non-blocking for BAFE)
+    // With the feature enabled, first run bootstrap so that onboardingPhase
+    // is updated deterministically before the BAFE flow can complete.
     try {
       // Parse date and time from the ISO string (BirthForm sends "YYYY-MM-DDThh:mm:ss")
       const [datePart, timePart] = formData.date.split('T');
@@ -90,8 +90,12 @@ export default function App() {
     } catch (err) {
       console.error('[onboarding] Bootstrap failed:', err);
       // Fall through to normal flow on error — phase stays 'form',
-      // BAFE flow will complete and show Dashboard normally
+      // BAFE flow will complete and show Dashboard normally.
     }
+
+    // Start the existing BAFE flow after bootstrap has either succeeded
+    // or failed, avoiding a race between profile completion and phase.
+    handleSubmit(formData);
   };
 
   const handleSignatureComplete = (_delta: SignatureDeltaResponse | null) => {
