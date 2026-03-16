@@ -81,6 +81,8 @@ export function useFirstRunDaily(
           .single();
 
         if (cancelled) return;
+        // First-run only: once user has seen the modal, they won't see it again.
+        // Future: change to daily_modal_seen_date for daily recurrence.
         if (profile?.daily_modal_seen) return;
 
         // 2. Check localStorage cache

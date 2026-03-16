@@ -80,6 +80,9 @@ const BAZODIAC_QUOTES: { en: string; de: string }[] = [
 // Pick one quote per session (stable across re-renders)
 const SESSION_QUOTE_INDEX = Math.floor(Math.random() * BAZODIAC_QUOTES.length);
 
+// Stable empty array to avoid referential instability in hooks
+const EMPTY_SECTORS: number[] = [];
+
 // ── Animation helper ──────────────────────────────────────────────────────
 
 function fadeIn(delay = 0) {
@@ -144,7 +147,7 @@ export function Dashboard({
     birthInput: { date: string; time: string; tz: string; lat: number; lon: number } | null;
     soulprintSectors: number[] | null;
     quizSectors: number[];
-  }>({ birthInput: null, soulprintSectors: null, quizSectors: [] });
+  }>({ birthInput: null, soulprintSectors: null, quizSectors: EMPTY_SECTORS });
 
   useEffect(() => {
     if (!userId) return;
@@ -173,7 +176,7 @@ export function Dashboard({
         ? data.soulprint_sectors as number[]
         : null;
 
-      setProfileMeta({ birthInput: birthInput, soulprintSectors: soulprint, quizSectors: [] });
+      setProfileMeta({ birthInput: birthInput, soulprintSectors: soulprint, quizSectors: EMPTY_SECTORS });
     })();
 
     return () => { cancelled = true; };

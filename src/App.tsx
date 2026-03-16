@@ -141,7 +141,7 @@ export default function App() {
 
   // ── Determine what to show ────────────────────────────────────────────
   const hasCompleteProfile = profileState === "found" && apiData && interpretation;
-  const showOnboarding = !hasCompleteProfile;
+  const showOnboarding = !hasCompleteProfile || onboardingPhase === 'signature';
 
   // ── Main app ──────────────────────────────────────────────────────────
 

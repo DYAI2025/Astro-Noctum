@@ -31,6 +31,14 @@ export function SignatureReveal({ bootstrapData, onComplete }: Props) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const hasTrackedRef = useRef(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const mountedRef = useRef(true);
+
+  // Cleanup timeouts and track unmount
+  useEffect(() => () => {
+    mountedRef.current = false;
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+  }, []);
 
   // Track reveal on mount
   useEffect(() => {
@@ -62,8 +70,8 @@ export function SignatureReveal({ bootstrapData, onComplete }: Props) {
       setActiveSectors(delta.quiz_sectors);
 
       // Wait 2s for the user to see the animation, then complete
-      setTimeout(() => {
-        onComplete(delta);
+      timeoutRef.current = setTimeout(() => {
+        if (mountedRef.current) onComplete(delta);
       }, 2000);
     } catch (err) {
       console.error('[SignatureReveal] Delta failed:', err);
@@ -72,8 +80,8 @@ export function SignatureReveal({ bootstrapData, onComplete }: Props) {
       setSelectedKeyword(null);
 
       // Allow fallthrough after a brief delay on error
-      setTimeout(() => {
-        onComplete(null);
+      timeoutRef.current = setTimeout(() => {
+        if (mountedRef.current) onComplete(null);
       }, 3000);
     }
   }, [isAnimating, selectedKeyword, soulprint_sectors, signature_blueprint, onComplete]);
