@@ -21,7 +21,7 @@ The proxy adds a 10-20s timeout per endpoint, a 10KB payload size limit, and ret
 
 **Purpose:** Full profile bootstrap from birth data. Computes BaZi pillars, Western chart, Fusion analysis, then derives the 12-sector soulprint vector and a deterministic signature blueprint used to drive the Signatur ring visualization.
 
-**Rate limit:** 30/min (per IP)
+**Rate limit (via proxy):** 100 requests per 15 minutes per IP, shared across all `/api/*` endpoints (enforced by `server.mjs`).
 
 **Proxy timeout:** 15s
 
@@ -231,7 +231,7 @@ The proxy adds a 10-20s timeout per endpoint, a 10KB payload size limit, and ret
 
 **Purpose:** Generate a daily horoscope combining Western transits, BaZi day-pillar analysis, and a Fusion synthesis. All content is template-based and deterministic (same inputs + date = same output).
 
-**Rate limit:** 30/min (per IP)
+**Rate limit (via proxy):** 100 requests per 15 minutes per IP, shared across all `/api/*` endpoints (enforced by `server.mjs`).
 
 **Proxy timeout:** 20s
 
