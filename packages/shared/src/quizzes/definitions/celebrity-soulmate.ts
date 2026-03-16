@@ -1,0 +1,187 @@
+import type { QuizDefinition } from '../schema';
+
+export const celebritySoulmateQuiz: QuizDefinition = {
+  id: 'quiz.celebrity_soulmate.v1',
+  title: 'Celebrity Soulmate',
+  titleDe: 'Welcher Star ist dein Seelenverwandter?',
+  subtitle: 'Discover which of 100 celebrities shares your energy',
+  subtitleDe: 'Entdecke, welcher von 100 Celebrities deine Energie teilt \u2013 basierend auf deiner Pers\u00f6nlichkeit, nicht deinem Geschmack.',
+  emoji: '\ud83c\udf1f',
+  accentColor: '#D4AF37',
+  scoringModel: 'profile-driven',
+  questions: [
+    {
+      id: 'cq1',
+      text: 'Wie reagierst du?',
+      context: 'Ein spontaner Roadtrip wird geplant...',
+      options: [
+        { id: 'cq1a', text: 'Ich \u00fcbernehme die Planung \u2013 jemand muss ja', profileId: 'ambitious' },
+        { id: 'cq1b', text: 'Klingt wild, ich bin dabei \u2013 wohin geht\u2019s?', profileId: 'energetic' },
+        { id: 'cq1c', text: 'K\u00f6nnte ich dar\u00fcber nachdenken? Spontan ist nicht so meins', profileId: 'reserved' },
+        { id: 'cq1d', text: 'Nur wenn ich die Playlist kontrolliere', profileId: 'creative' },
+      ],
+    },
+    {
+      id: 'cq2',
+      text: 'Was ist dein erster Impuls?',
+      context: 'Dein Projekt wird \u00f6ffentlich kritisiert...',
+      options: [
+        { id: 'cq2a', text: 'Die Kritik analysieren \u2013 ist da was dran?', profileId: 'ambitious' },
+        { id: 'cq2b', text: 'Verteidigen, was ich gemacht habe', profileId: 'energetic' },
+        { id: 'cq2c', text: 'Mit Freunden dar\u00fcber reden, das tut gut', profileId: 'bonding' },
+        { id: 'cq2d', text: 'Ignorieren und weitermachen \u2013 Hater gonna hate', profileId: 'creative' },
+      ],
+    },
+    {
+      id: 'cq3',
+      text: 'Was passiert damit?',
+      context: 'Du gewinnst unerwartet 10.000\u20ac...',
+      options: [
+        { id: 'cq3a', text: 'Investieren \u2013 langfristig denken', profileId: 'ambitious' },
+        { id: 'cq3b', text: 'Ein Teil f\u00fcr mich, ein Teil f\u00fcr andere', profileId: 'bonding' },
+        { id: 'cq3c', text: 'Endlich das kreative Projekt starten', profileId: 'creative' },
+        { id: 'cq3d', text: 'Erstmal feiern \u2013 das Leben ist kurz', profileId: 'energetic' },
+      ],
+    },
+    {
+      id: 'cq4',
+      text: 'Wie verh\u00e4ltst du dich?',
+      context: 'Auf einer Party kennst du niemanden...',
+      options: [
+        { id: 'cq4a', text: 'Aktiv auf Leute zugehen und Gespr\u00e4che starten', profileId: 'energetic' },
+        { id: 'cq4b', text: 'Erstmal beobachten, dann selektiv ansprechen', profileId: 'creative' },
+        { id: 'cq4c', text: 'Eine Person finden und tiefes Gespr\u00e4ch f\u00fchren', profileId: 'bonding' },
+        { id: 'cq4d', text: 'Ehrlich? Wahrscheinlich fr\u00fch gehen', profileId: 'reserved' },
+      ],
+    },
+    {
+      id: 'cq5',
+      text: 'Was denkst du zuerst?',
+      context: 'Dir wird eine F\u00fchrungsposition angeboten...',
+      options: [
+        { id: 'cq5a', text: 'Endlich \u2013 das habe ich verdient', profileId: 'ambitious' },
+        { id: 'cq5b', text: 'Kann ich das Team gut f\u00fchren?', profileId: 'bonding' },
+        { id: 'cq5c', text: 'Weniger kreative Freiheit \u2013 ist es das wert?', profileId: 'creative' },
+        { id: 'cq5d', text: 'Ich brauche Zeit, das zu verarbeiten', profileId: 'reserved' },
+      ],
+    },
+    {
+      id: 'cq6',
+      text: 'Wie hilfst du?',
+      context: 'Ein Freund ist emotional am Limit...',
+      options: [
+        { id: 'cq6a', text: 'Praktische L\u00f6sungen vorschlagen', profileId: 'ambitious' },
+        { id: 'cq6b', text: 'Einfach da sein und zuh\u00f6ren', profileId: 'bonding' },
+        { id: 'cq6c', text: 'Ablenkung organisieren \u2013 rausgehen, was unternehmen', profileId: 'energetic' },
+        { id: 'cq6d', text: 'Tief eintauchen in die Gef\u00fchle, gemeinsam durcharbeiten', profileId: 'bonding' },
+      ],
+    },
+    {
+      id: 'cq7',
+      text: 'Was wiegt schwerer?',
+      context: 'Du musst dich zwischen zwei Jobs entscheiden...',
+      options: [
+        { id: 'cq7a', text: 'Das Gehalt und die Sicherheit', profileId: 'ambitious' },
+        { id: 'cq7b', text: 'Das Team und die Kultur', profileId: 'bonding' },
+        { id: 'cq7c', text: 'Die kreative Freiheit und Lernchancen', profileId: 'creative' },
+        { id: 'cq7d', text: 'Der Impact und die Bedeutung der Arbeit', profileId: 'creative' },
+      ],
+    },
+    {
+      id: 'cq8',
+      text: 'Was klingt am verlockendsten?',
+      context: 'Dein Wochenende ist komplett frei...',
+      options: [
+        { id: 'cq8a', text: 'Socializing \u2013 Freunde treffen, Aktivit\u00e4ten planen', profileId: 'energetic' },
+        { id: 'cq8b', text: 'Kreatives Projekt \u2013 endlich Zeit daf\u00fcr', profileId: 'creative' },
+        { id: 'cq8c', text: 'Produktiv sein \u2013 Dinge erledigen', profileId: 'ambitious' },
+        { id: 'cq8d', text: 'Absolute Ruhe \u2013 allein aufladen', profileId: 'reserved' },
+      ],
+    },
+    {
+      id: 'cq9',
+      text: 'Was passiert?',
+      context: 'In einer Diskussion merkst du, dass du falsch liegst...',
+      options: [
+        { id: 'cq9a', text: 'Sofort zugeben \u2013 Ehrlichkeit ist wichtiger als Ego', profileId: 'bonding' },
+        { id: 'cq9b', text: 'Erstmal die andere Position verstehen wollen', profileId: 'creative' },
+        { id: 'cq9c', text: 'Zugeben, aber meine urspr\u00fcngliche Logik erkl\u00e4ren', profileId: 'ambitious' },
+        { id: 'cq9d', text: 'Inner cringe, aber smooth wechseln', profileId: 'energetic' },
+      ],
+    },
+    {
+      id: 'cq10',
+      text: 'Wie gehst du damit um?',
+      context: 'Du hast eine kontroverse Meinung...',
+      options: [
+        { id: 'cq10a', text: 'Laut und stolz vertreten \u2013 authentisch bleiben', profileId: 'energetic' },
+        { id: 'cq10b', text: 'Nur mit engen Freunden teilen', profileId: 'bonding' },
+        { id: 'cq10c', text: 'Diplomatisch verpacken, aber aussprechen', profileId: 'ambitious' },
+        { id: 'cq10d', text: 'F\u00fcr mich behalten \u2013 nicht jeder muss alles wissen', profileId: 'reserved' },
+      ],
+    },
+    {
+      id: 'cq11',
+      text: 'Was tust du?',
+      context: 'Ein riesige Chance kommt, aber das Timing ist schlecht...',
+      options: [
+        { id: 'cq11a', text: 'Zugreifen \u2013 solche Chancen kommen nicht oft', profileId: 'ambitious' },
+        { id: 'cq11b', text: 'Ablehnen \u2013 die bestehenden Commitments z\u00e4hlen', profileId: 'bonding' },
+        { id: 'cq11c', text: 'Verhandeln \u2013 vielleicht geht beides', profileId: 'creative' },
+        { id: 'cq11d', text: 'Rat holen bei Menschen, denen ich vertraue', profileId: 'bonding' },
+      ],
+    },
+    {
+      id: 'cq12',
+      text: 'Was w\u00e4re es?',
+      context: 'Du k\u00f6nntest eine Sache an dir \u00e4ndern...',
+      options: [
+        { id: 'cq12a', text: 'Weniger Overthinking, mehr Aktion', profileId: 'creative' },
+        { id: 'cq12b', text: 'Mehr Geduld mit anderen', profileId: 'ambitious' },
+        { id: 'cq12c', text: 'Mehr Selbstbewusstsein', profileId: 'reserved' },
+        { id: 'cq12d', text: 'Mehr Work-Life-Balance', profileId: 'ambitious' },
+      ],
+    },
+  ],
+  profiles: [
+    {
+      id: 'energetic',
+      title: 'Energetisch',
+      emoji: '\u26a1',
+      color: '#FF6B35',
+      description: 'Du teilst die F\u00e4higkeit, R\u00e4ume zu f\u00fcllen und Energie zu verbreiten. Dein Charisma ist ansteckend.',
+    },
+    {
+      id: 'creative',
+      title: 'Kreativ',
+      emoji: '\ud83c\udfa8',
+      color: '#9B59B6',
+      description: 'Eure K\u00f6pfe arbeiten \u00e4hnlich \u2013 unkonventionell, \u00fcberraschend, manchmal genial. Kreativit\u00e4t ist ein Werkzeug, kein Selbstzweck.',
+    },
+    {
+      id: 'bonding',
+      title: 'Verbindend',
+      emoji: '\ud83e\udec2',
+      color: '#E74C3C',
+      description: 'Menschen sind f\u00fcr dich keine Ressourcen, sondern der eigentliche Punkt. Tiefe Verbindungen sind dein Treibstoff.',
+    },
+    {
+      id: 'ambitious',
+      title: 'Ambitioniert',
+      emoji: '\ud83d\ude80',
+      color: '#F39C12',
+      description: 'Du teilst den unbedingten Willen, Ergebnisse zu sehen. Ambition ja, aber nicht um jeden Preis.',
+    },
+    {
+      id: 'reserved',
+      title: 'Reflektiert',
+      emoji: '\ud83c\udf19',
+      color: '#2C3E50',
+      description: 'Wahre St\u00e4rke liegt in der Stille. Du w\u00e4hlst deine Menschen und Momente sehr bewusst.',
+    },
+  ],
+  resultMapping: {
+    markerId: 'quiz.celebrity_soulmate.v1',
+    profileToTraits: {},
+  },
+};
