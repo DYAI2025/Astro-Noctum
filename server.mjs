@@ -799,6 +799,55 @@ setInterval(() => {
   if (expired.length > 0) console.log(`[horoscope-cache] evicted ${expired.length} entries`);
 }, 60 * 60 * 1000);
 
+// ── Experience API proxy ──────────────────────────────────────────
+app.post('/api/experience/bootstrap', async (req, res) => {
+  try {
+    const resp = await fetch(`${BAFE_BASE_URL}/experience/bootstrap`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body),
+      signal: AbortSignal.timeout(15000),
+    });
+    const data = await resp.json();
+    res.status(resp.status).json(data);
+  } catch (err) {
+    console.error('[experience/bootstrap] Error:', err.message);
+    res.status(502).json({ error: 'experience_unavailable', message: err.message });
+  }
+});
+
+app.post('/api/experience/signature-delta', async (req, res) => {
+  try {
+    const resp = await fetch(`${BAFE_BASE_URL}/experience/signature-delta`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body),
+      signal: AbortSignal.timeout(10000),
+    });
+    const data = await resp.json();
+    res.status(resp.status).json(data);
+  } catch (err) {
+    console.error('[experience/signature-delta] Error:', err.message);
+    res.status(502).json({ error: 'experience_unavailable', message: err.message });
+  }
+});
+
+app.post('/api/experience/daily', async (req, res) => {
+  try {
+    const resp = await fetch(`${BAFE_BASE_URL}/experience/daily`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body),
+      signal: AbortSignal.timeout(20000),
+    });
+    const data = await resp.json();
+    res.status(resp.status).json(data);
+  } catch (err) {
+    console.error('[experience/daily] Error:', err.message);
+    res.status(502).json({ error: 'experience_unavailable', message: err.message });
+  }
+});
+
 // ── /api/contribute ──────────────────────────────────────────────────
 // Persists quiz sector weights to contribution_events table.
 // Authenticated via Supabase JWT. Upserts on (user_id, module_id).

@@ -1,4 +1,5 @@
-import { motion } from "motion/react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import {
   ArrowLeft, RefreshCw,
 } from "lucide-react";
@@ -9,6 +10,10 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { LegalFooter } from "./LegalFooter";
 import { UpgradeButton } from "./UpgradeButton";
 import { ManageSubscription } from "./ManageSubscription";
+import { DailyHoroscopeModal } from "./dashboard/DailyHoroscopeModal";
+import { FusionRingWebsiteCanvas } from "./fusion-ring-website/FusionRingWebsiteCanvas";
+import { useFirstRunDaily } from "../hooks/useFirstRunDaily";
+import { supabase } from "../lib/supabase";
 import type { ApiData } from "../types/bafe";
 import type { TileTexts, HouseTexts } from "../types/interpretation";
 import { DashboardLeviSection } from "./dashboard/DashboardLeviSection";
@@ -134,6 +139,54 @@ export function Dashboard({
   const zodiacAnimal  = apiData.bazi?.zodiac_sign         || "";
   const dominantEl    = apiData.wuxing?.dominant_element   || "";
 
+  // ── Fetch profile data for daily modal + signature widget ───────────
+  const [profileMeta, setProfileMeta] = useState<{
+    birthInput: { date: string; time: string; tz: string; lat: number; lon: number } | null;
+    soulprintSectors: number[] | null;
+    quizSectors: number[];
+  }>({ birthInput: null, soulprintSectors: null, quizSectors: [] });
+
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+
+    (async () => {
+      const { data } = await supabase
+        .from('astro_profiles')
+        .select('birth_date, birth_time, iana_time_zone, birth_lat, birth_lng, soulprint_sectors')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (cancelled || !data) return;
+
+      const birthInput = (data.birth_date && data.birth_lat != null && data.birth_lng != null)
+        ? {
+            date: data.birth_date,
+            time: data.birth_time || '12:00',
+            tz: data.iana_time_zone || 'Europe/Berlin',
+            lat: data.birth_lat,
+            lon: data.birth_lng,
+          }
+        : null;
+
+      const soulprint = Array.isArray(data.soulprint_sectors) && data.soulprint_sectors.length === 12
+        ? data.soulprint_sectors as number[]
+        : null;
+
+      setProfileMeta({ birthInput: birthInput, soulprintSectors: soulprint, quizSectors: [] });
+    })();
+
+    return () => { cancelled = true; };
+  }, [userId]);
+
+  // ── Daily horoscope modal ───────────────────────────────────────────
+  const { dailyData, showModal, handleClose: handleDailyClose } = useFirstRunDaily(
+    userId,
+    profileMeta.birthInput,
+    profileMeta.soulprintSectors,
+    profileMeta.quizSectors,
+  );
+
   // ── Render ────────────────────────────────────────────────────────────
 
   return (
@@ -161,6 +214,21 @@ export function Dashboard({
             ))}
           </ul>
         </div>
+      )}
+
+      {/* ═══ PERSISTENT SIGNATURE WIDGET ═══════════════════════════════ */}
+      {profileMeta.soulprintSectors && (
+        <motion.div
+          className="flex justify-center mb-4"
+          {...fadeIn(0.05)}
+        >
+          <div className="w-20 h-20 opacity-70 hover:opacity-100 transition-opacity">
+            <FusionRingWebsiteCanvas
+              soulProfile={profileMeta.soulprintSectors}
+              className="w-full h-full"
+            />
+          </div>
+        </motion.div>
       )}
 
       {/* ═══ PAGE HEADER ═══════════════════════════════════════════════ */}
@@ -267,6 +335,13 @@ export function Dashboard({
 
       {/* ═══ LEGAL FOOTER ═══════════════════════════════════════════════ */}
       <LegalFooter lang={lang} />
+
+      {/* ═══ DAILY HOROSCOPE MODAL ═══════════════════════════════════════ */}
+      <AnimatePresence>
+        {showModal && dailyData && (
+          <DailyHoroscopeModal data={dailyData} onClose={handleDailyClose} />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
