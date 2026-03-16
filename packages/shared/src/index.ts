@@ -7,3 +7,4 @@ export * from "./i18n/keys";
 export * from "./quizzes/modules";
 export * from "./quizzes/schema";
 export * from "./quizzes/scoring";
+export { QUIZ_DEFINITIONS } from "./quizzes/definitions";
