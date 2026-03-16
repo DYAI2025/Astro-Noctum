@@ -12,6 +12,7 @@ import {
 import type { QuizDefinition } from '@bazodiac/shared';
 import type { QuizResult } from '@bazodiac/shared';
 import { scoreQuiz } from '@bazodiac/shared';
+import { COLORS } from '../theme';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -23,20 +24,6 @@ interface QuizRendererProps {
   onClose: () => void;
   isPremium?: boolean;
 }
-
-// ---------------------------------------------------------------------------
-// Theme constants
-// ---------------------------------------------------------------------------
-
-const COLORS = {
-  bg: '#060b12',
-  card: '#0f1823',
-  gold: '#D4AF37',
-  goldDim: 'rgba(212, 175, 55, 0.15)',
-  text: '#ffffff',
-  textDim: 'rgba(255, 255, 255, 0.5)',
-  border: 'rgba(212, 175, 55, 0.2)',
-};
 
 const AUTO_ADVANCE_MS = 400;
 const FAKE_LOADING_MS = 1500;
