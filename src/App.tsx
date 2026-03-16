@@ -4,6 +4,7 @@ import { BrowserRouter, Link, useLocation, useNavigate } from "react-router-dom"
 import { BirthForm } from "./components/BirthForm";
 import { Splash } from "./components/Splash";
 import { AuthGate } from "./components/AuthGate";
+import { SignatureReveal } from "./components/onboarding/SignatureReveal";
 import { useAuth } from "./contexts/AuthContext";
 import { useLanguage } from "./contexts/LanguageContext";
 import { useAmbientePlayer } from "./hooks/useAmbientePlayer";
@@ -13,6 +14,9 @@ import { usePlanetarium } from "./contexts/PlanetariumContext";
 import { FusionRingProvider } from "./contexts/FusionRingContext";
 import { AppLayoutProvider } from "./contexts/AppLayoutContext";
 import { AppRoutes } from "./router";
+import { bootstrapExperience } from "./services/experience";
+import { isFeatureEnabled } from "./lib/feature-flags";
+import type { BootstrapResponse, SignatureDeltaResponse } from "./lib/schemas/experience";
 import { Volume2, VolumeX, LogOut, LayoutGrid, Telescope, CircleDot } from "lucide-react";
 
 export default function App() {
@@ -22,6 +26,8 @@ export default function App() {
 
   const [showSplash, setShowSplash] = useState(true);
   const [siteVisible, setSiteVisible] = useState(false);
+  const [bootstrapData, setBootstrapData] = useState<BootstrapResponse | null>(null);
+  const [onboardingPhase, setOnboardingPhase] = useState<'form' | 'signature' | 'done'>('form');
 
   const ambiente = useAmbientePlayer();
 
@@ -55,6 +61,45 @@ export default function App() {
     setShowSplash(false);
     setTimeout(() => setSiteVisible(true), 100);
     ambiente.start();
+  };
+
+  // ── Onboarding submit: coordinate BAFE flow with bootstrap ──────────
+  const handleOnboardingSubmit = async (formData: { date: string; tz: string; lon: number; lat: number }) => {
+    // If the signature onboarding feature is disabled, keep the existing
+    // behavior: immediately start the BAFE flow and return.
+    if (!isFeatureEnabled('signature_onboarding_v1')) {
+      handleSubmit(formData);
+      return;
+    }
+
+    // With the feature enabled, first run bootstrap so that onboardingPhase
+    // is updated deterministically before the BAFE flow can complete.
+    try {
+      // Parse date and time from the ISO string (BirthForm sends "YYYY-MM-DDThh:mm:ss")
+      const [datePart, timePart] = formData.date.split('T');
+      const birth = {
+        date: datePart,
+        time: timePart?.slice(0, 5) || '12:00',
+        tz: formData.tz || 'Europe/Berlin',
+        lat: formData.lat,
+        lon: formData.lon,
+      };
+      const data = await bootstrapExperience(birth);
+      setBootstrapData(data);
+      setOnboardingPhase('signature');
+    } catch (err) {
+      console.error('[onboarding] Bootstrap failed:', err);
+      // Fall through to normal flow on error — phase stays 'form',
+      // BAFE flow will complete and show Dashboard normally.
+    }
+
+    // Start the existing BAFE flow after bootstrap has either succeeded
+    // or failed, avoiding a race between profile completion and phase.
+    handleSubmit(formData);
+  };
+
+  const handleSignatureComplete = (_delta: SignatureDeltaResponse | null) => {
+    setOnboardingPhase('done');
   };
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -106,12 +151,12 @@ export default function App() {
 
   // ── Determine what to show ────────────────────────────────────────────
   const hasCompleteProfile = profileState === "found" && apiData && interpretation;
-  const showOnboarding = !hasCompleteProfile;
+  const showOnboarding = !hasCompleteProfile || onboardingPhase === 'signature';
 
   // ── Main app ──────────────────────────────────────────────────────────
 
   // Onboarding (no routing needed)
-  if (showOnboarding) {
+  if (showOnboarding && onboardingPhase !== 'done') {
     return (
       <motion.div
         initial={{ opacity: 0 }}
@@ -125,7 +170,12 @@ export default function App() {
               {error}
             </div>
           )}
-          <BirthForm onSubmit={handleSubmit} isLoading={isLoading} />
+          {onboardingPhase === 'form' && (
+            <BirthForm onSubmit={handleOnboardingSubmit} isLoading={isLoading} />
+          )}
+          {onboardingPhase === 'signature' && bootstrapData && (
+            <SignatureReveal bootstrapData={bootstrapData} onComplete={handleSignatureComplete} />
+          )}
         </main>
       </motion.div>
     );
