@@ -124,6 +124,26 @@ FusionRing3D → soulProfile prop → FusionRingWebsiteCanvas → _activeSoulPro
 | `src/lib/master-signal/gcb-builder.ts` | Builds GCB from raw BAFE data (BaZi pillars + Western planets + Wu-Xing elements) |
 | `src/types/interpretation.ts` | Types for Gemini AI interpretation results |
 
+### Experience API & Onboarding Signatur
+
+The Experience API is a high-level layer on FuFirE that orchestrates bootstrap, quiz interaction, and daily horoscope generation. See `docs/API_EXPERIENCE.md` for the full API reference and `docs/ARCHITECTURE_EXPERIENCE.md` for architecture diagrams.
+
+**Onboarding flow:** `App.tsx` now has a three-phase onboarding state (`form` → `signature` → `done`). After the user submits birth data, `bootstrapExperience()` is called in parallel with the legacy BAFE flow. If bootstrap succeeds, the `SignatureReveal` phase shows the Signatur ring driven by the soulprint, a profile summary, and a single quiz question. The quiz answer triggers `signatureDelta()` which animates the ring, then transitions to the Dashboard.
+
+| Path | Purpose |
+|------|---------|
+| `src/services/experience.ts` | Experience API client — `bootstrapExperience()`, `signatureDelta()`, `fetchDailyExperience()`. All POST to `/api/experience/*` proxy |
+| `src/lib/schemas/experience.ts` | Zod schemas for all Experience API responses (`BootstrapResponseSchema`, `SignatureDeltaResponseSchema`, `DailyResponseSchema`) |
+| `src/lib/feature-flags.ts` | Feature flag module with localStorage override. Two flags: `signature_onboarding_v1` (onboarding flow), `daily_modal_v1` (daily modal) |
+| `src/components/onboarding/SignatureReveal.tsx` | Signatur reveal phase — shows FusionRingWebsiteCanvas with soulprint, profile summary, quiz question. Calls `signatureDelta()` on answer |
+| `src/components/dashboard/DailyHoroscopeModal.tsx` | 3-tab modal (Westlich/BaZi/Fusion) showing the daily horoscope. Rendered on first Dashboard visit |
+| `src/hooks/useFirstRunDaily.ts` | Hook that checks `profiles.daily_modal_seen`, then fetches daily horoscope via Experience API. Caches in localStorage by date |
+| `supabase-migrations/20260316_experience_tables.sql` | Migration: creates `user_signature_state`, `daily_horoscope_cache` tables; adds `soulprint_sectors` to `astro_profiles` and `daily_modal_seen` to `profiles` |
+
+**Feature flags:** Override in browser console via `localStorage.setItem('ff_signature_onboarding_v1', 'false')`. When off, the app falls through to the legacy BAFE-only flow.
+
+**Server proxy:** `server.mjs` proxies all three Experience endpoints (`/api/experience/bootstrap`, `/api/experience/signature-delta`, `/api/experience/daily`) to FuFirE. The bootstrap and signature-delta routes are protected with `requireUserAuth`, while the daily route is currently unauthenticated. All three use 10KB payload limits, 10–20s timeouts, and return 502 on FuFirE failure.
+
 ### BAFE Response Mapping (Important Gotcha)
 
 `services/api.ts` transforms BAFE responses before the Dashboard consumes them:
