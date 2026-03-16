@@ -1,0 +1,172 @@
+import type { QuizDefinition } from '../schema';
+
+export const blumenwesenQuiz: QuizDefinition = {
+  id: 'quiz.blumenwesen.v1',
+  title: 'Your Inner Flower Being',
+  titleDe: 'Dein inneres Blumenwesen',
+  subtitle: 'Every soul carries a seed within',
+  subtitleDe: 'Jede Seele tr\u00e4gt einen Samen in sich',
+  emoji: '\ud83c\udf38',
+  accentColor: '#D4AF37',
+  scoringModel: 'profile-driven',
+  questions: [
+    {
+      id: 'q1',
+      text: 'Stell dir vor, deine Seele ist ein Garten. Wo steht deine innere Pflanze am liebsten?',
+      context: 'Der innere Garten',
+      options: [
+        { id: 'q1_a', text: 'Mitten im Sonnenlicht, wo jeder sie sehen kann', profileId: 'sunflower' },
+        { id: 'q1_b', text: 'Am Rand, halb im Schatten, mit Blick aufs Ganze', profileId: 'orchid' },
+        { id: 'q1_c', text: 'Unter einem gro\u00dfen Baum, gesch\u00fctzt und geborgen', profileId: 'lavender' },
+        { id: 'q1_d', text: '\u00dcberall und nirgends \u2013 ich wandere mit dem Wind', profileId: 'wildflower' },
+      ],
+    },
+    {
+      id: 'q2',
+      text: 'Wenn du an einen gl\u00fccklichen Moment deiner Kindheit denkst \u2013 was brauchtest du daf\u00fcr am meisten?',
+      context: 'Kindheitserinnerung',
+      options: [
+        { id: 'q2_a', text: 'Die volle Aufmerksamkeit eines Menschen, der mich sah', profileId: 'sunflower' },
+        { id: 'q2_b', text: 'Einen sicheren Ort, der immer gleich blieb', profileId: 'lavender' },
+        { id: 'q2_c', text: 'Die Freiheit, einfach zu sein, ohne Erwartungen', profileId: 'wildflower' },
+        { id: 'q2_d', text: 'Zeit f\u00fcr mich allein, um zu tr\u00e4umen und zu f\u00fchlen', profileId: 'orchid' },
+      ],
+    },
+    {
+      id: 'q3',
+      text: 'Was passiert mit dir, wenn du zu lange keine emotionale Verbindung hattest?',
+      context: 'Emotionale Nahrung',
+      options: [
+        { id: 'q3_a', text: 'Ich welke \u2013 ich brauche regelm\u00e4\u00dfig tiefe Gespr\u00e4che', profileId: 'poppy' },
+        { id: 'q3_b', text: 'Ich ziehe mich zur\u00fcck und regeneriere mich selbst', profileId: 'lavender' },
+        { id: 'q3_c', text: 'Ich suche mir neue Verbindungen, spontan und ungeplant', profileId: 'wildflower' },
+        { id: 'q3_d', text: 'Ich warte geduldig \u2013 die richtigen Menschen kommen zu mir', profileId: 'lavender' },
+      ],
+    },
+    {
+      id: 'q4',
+      text: 'Wie reagierst du, wenn das Leben pl\u00f6tzlich kalt und hart wird?',
+      context: 'Der erste Frost',
+      options: [
+        { id: 'q4_a', text: 'Ich ziehe meine Bl\u00e4tter ein und warte auf bessere Zeiten', profileId: 'lavender' },
+        { id: 'q4_b', text: 'Ich bl\u00fche gerade dann auf \u2013 Krisen bringen meine St\u00e4rke hervor', profileId: 'poppy' },
+        { id: 'q4_c', text: 'Ich transformiere mich \u2013 jeder Winter macht mich weiser', profileId: 'lotus' },
+        { id: 'q4_d', text: 'Ich biege mich mit dem Sturm, breche aber nicht', profileId: 'wildflower' },
+      ],
+    },
+    {
+      id: 'q5',
+      text: 'Was h\u00e4tte dein inneres Kind am liebsten \u00f6fter geh\u00f6rt?',
+      context: 'Das inneres Kind spricht',
+      options: [
+        { id: 'q5_a', text: '\u201eDu strahlst! Wie wunderbar, dass du da bist.\u201c', profileId: 'sunflower' },
+        { id: 'q5_b', text: '\u201eDu bist sicher. Ich bin immer f\u00fcr dich da.\u201c', profileId: 'lavender' },
+        { id: 'q5_c', text: '\u201eDu darfst wild sein. Sei frei, erkunde die Welt.\u201c', profileId: 'wildflower' },
+        { id: 'q5_d', text: '\u201eDu bist genug. Auch leise. Auch langsam.\u201c', profileId: 'orchid' },
+      ],
+    },
+    {
+      id: 'q6',
+      text: 'Wie entfaltest du dich am besten?',
+      context: 'Wachstumsmuster',
+      options: [
+        { id: 'q6_a', text: 'Schnell und sichtbar \u2013 wenn ich bl\u00fche, soll es jeder sehen', profileId: 'sunflower' },
+        { id: 'q6_b', text: 'Langsam und stetig \u2013 echtes Wachstum braucht Zeit', profileId: 'lavender' },
+        { id: 'q6_c', text: 'In Zyklen \u2013 manchmal intensiv, manchmal ruhend', profileId: 'lotus' },
+        { id: 'q6_d', text: '\u00dcberraschend \u2013 ich bl\u00fche, wenn niemand damit rechnet', profileId: 'wildflower' },
+      ],
+    },
+    {
+      id: 'q7',
+      text: 'Wonach sehnt sich dein Herz am meisten?',
+      context: 'Tiefste Sehnsucht',
+      options: [
+        { id: 'q7_a', text: 'Gesehen und gefeiert zu werden f\u00fcr das, was ich bin', profileId: 'sunflower' },
+        { id: 'q7_b', text: 'Einem Ort, der sich wie Zuhause anf\u00fchlt \u2013 f\u00fcr immer', profileId: 'lavender' },
+        { id: 'q7_c', text: 'Tiefe Verschmelzung mit einem anderen Herzen', profileId: 'lotus' },
+        { id: 'q7_d', text: 'Ungebundene Freiheit und immer neue Abenteuer', profileId: 'wildflower' },
+      ],
+    },
+    {
+      id: 'q8',
+      text: 'Was heilt dich, wenn du innerlich verletzt bist?',
+      context: 'Heilungskraft',
+      options: [
+        { id: 'q8_a', text: 'Warmherzige Gesellschaft und liebevolle Zuwendung', profileId: 'poppy' },
+        { id: 'q8_b', text: 'Stille und R\u00fcckzug in meine eigene Welt', profileId: 'orchid' },
+        { id: 'q8_c', text: 'Bewegung und Ver\u00e4nderung \u2013 irgendwo Neues sein', profileId: 'wildflower' },
+        { id: 'q8_d', text: 'Rituale und vertraute Routinen, die mich erden', profileId: 'lavender' },
+      ],
+    },
+    {
+      id: 'q9',
+      text: 'In Beziehungen \u2013 was gibst du am meisten?',
+      context: 'Beziehungsmuster',
+      options: [
+        { id: 'q9_a', text: 'W\u00e4rme und Freude \u2013 ich bringe Licht in dunkle Momente', profileId: 'sunflower' },
+        { id: 'q9_b', text: 'Stabilit\u00e4t und Treue \u2013 auf mich kann man sich verlassen', profileId: 'lavender' },
+        { id: 'q9_c', text: 'Tiefe und Intensit\u00e4t \u2013 ich liebe ganz oder gar nicht', profileId: 'lotus' },
+        { id: 'q9_d', text: 'Inspiration und Freiheit \u2013 ich lasse Menschen wachsen', profileId: 'wildflower' },
+      ],
+    },
+    {
+      id: 'q10',
+      text: 'Wenn dein Leben ein Garten w\u00e4re \u2013 was w\u00e4re dein wichtigstes Geschenk an die Welt?',
+      context: 'Deine Essenz',
+      options: [
+        { id: 'q10_a', text: 'Mein Strahlen \u2013 ich erinnere andere daran, dass Freude m\u00f6glich ist', profileId: 'sunflower' },
+        { id: 'q10_b', text: 'Meine Tiefe \u2013 ich zeige, dass aus Dunkelheit Sch\u00f6nheit wachsen kann', profileId: 'lotus' },
+        { id: 'q10_c', text: 'Meine Heilkraft \u2013 ich bringe Ruhe in aufgew\u00fchlte Seelen', profileId: 'lavender' },
+        { id: 'q10_d', text: 'Meine Wildheit \u2013 ich erinnere andere an ihre eigene Freiheit', profileId: 'wildflower' },
+      ],
+    },
+  ],
+  profiles: [
+    {
+      id: 'sunflower',
+      title: 'Die Sonnenblume',
+      emoji: '\ud83c\udf3b',
+      color: '#E8C87A',
+      description: 'Dein innerer Samen wurde in Licht gepflanzt \u2013 und sehnt sich noch immer danach. Heute strahlst du nat\u00fcrlich \u2013 nicht um zu blenden, sondern weil Freude deine Muttersprache ist.',
+    },
+    {
+      id: 'lotus',
+      title: 'Die Lotusblume',
+      emoji: '\ud83e\udeb7',
+      color: '#4A0E4E',
+      description: 'Dein Samen wurde im Schlamm gepflanzt \u2013 und genau dort hast du gelernt, dass Dunkelheit nicht das Ende ist, sondern der Anfang von allem. Deine Tiefe ist ein Brunnen, aus dem andere trinken k\u00f6nnen.',
+    },
+    {
+      id: 'wildflower',
+      title: 'Die Wildblume',
+      emoji: '\ud83c\udf38',
+      color: '#8FB8A8',
+      description: 'Dein Samen wurde vom Wind getragen \u2013 und landete genau dort, wo du sein solltest. Heute bist du \u00fcberall zuhause und nirgends festgewurzelt. Deine Wildheit inspiriert andere.',
+    },
+    {
+      id: 'orchid',
+      title: 'Die Orchidee',
+      emoji: '\ud83e\udebb',
+      color: '#5B8A9A',
+      description: 'Dein Samen brauchte besondere Bedingungen \u2013 und das ist keine Schw\u00e4che, sondern ein Hinweis auf deine Einzigartigkeit. Deine Sensibilit\u00e4t ist ein Instrument.',
+    },
+    {
+      id: 'lavender',
+      title: 'Der Lavendel',
+      emoji: '\ud83d\udc9c',
+      color: '#1C5B5C',
+      description: 'Dein Samen wurde in kargen Boden gepflanzt \u2013 und gerade deshalb hast du gelernt, mit wenig zu gedeihen und viel zu geben. Deine blo\u00dfe Pr\u00e4senz beruhigt.',
+    },
+    {
+      id: 'poppy',
+      title: 'Die Mohnblume',
+      emoji: '\ud83c\udf3a',
+      color: '#C45D4A',
+      description: 'Dein Samen wurde in feurige Erde gepflanzt \u2013 und du hast nie gelernt, weniger zu f\u00fchlen. Deine Intensit\u00e4t ist ein Geschenk. Du lebst, w\u00e4hrend andere nur existieren.',
+    },
+  ],
+  resultMapping: {
+    markerId: 'quiz.blumenwesen.v1',
+    profileToTraits: {},
+  },
+};

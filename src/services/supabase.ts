@@ -1,5 +1,5 @@
 import { supabase } from "../lib/supabase";
-import type { ApiResults } from "./api";
+import type { ApiData } from "../types/bafe";
 import type { TileTexts, HouseTexts } from "../types/interpretation";
 
 // ── Types ───────────────────────────────────────────────────────────
@@ -12,8 +12,8 @@ export interface BirthInput {
   place?: string;
 }
 
-/** Alias for the full BAFE engine response used for storage and display */
-export type BafeData = ApiResults;
+/** BAFE data accepted for storage — ApiData (without issues) is sufficient */
+export type BafeData = ApiData;
 
 // ── Fetch profile (client-side, for re-display on revisit) ──────────
 // Returns the single astro_profile row for this user, or null.
@@ -32,9 +32,10 @@ export async function fetchAstroProfile(userId: string) {
   return data;
 }
 
-// ── Insert astro_profiles (write-once, NEVER overwrite) ─────────────
-// astro_profiles.user_id is PRIMARY KEY → only one row per user.
-// If a profile already exists, the insert is silently skipped (23505).
+// ── Upsert astro_profiles ────────────────────────────────────────────
+// astro_profiles.user_id is PRIMARY KEY → one row per user.
+// On conflict (re-calculation / regeneration), UPDATE the existing row
+// so that WuXing, interpretation, and all BAFE data stay fresh.
 
 export async function upsertAstroProfile(
   userId: string,
@@ -48,35 +49,38 @@ export async function upsertAstroProfile(
   const moonSign = bafeData.western?.moon_sign || null;
   const ascSign = bafeData.western?.ascendant_sign || null;
 
-  const { error } = await supabase.from("astro_profiles").insert({
-    user_id: userId,
-    birth_date: birth.date.split("T")[0],
-    birth_time: birth.date.includes("T")
-      ? birth.date.split("T")[1]?.slice(0, 5)
-      : null,
-    iana_time_zone: birth.tz,
-    birth_lat: birth.lat,
-    birth_lng: birth.lon,
-    birth_place_name: birth.place || null,
-    sun_sign: sunSign,
-    moon_sign: moonSign,
-    asc_sign: ascSign,
-    astro_json: {
-      bazi:    bafeData.bazi,
-      western: bafeData.western,
-      fusion:  bafeData.fusion,
-      wuxing:  bafeData.wuxing,
-      tst:     bafeData.tst,
-      interpretation,
-      tiles,
-      houses,
+  const { error } = await supabase.from("astro_profiles").upsert(
+    {
+      user_id: userId,
+      birth_date: birth.date.split("T")[0],
+      birth_time: birth.date.includes("T")
+        ? birth.date.split("T")[1]?.slice(0, 5)
+        : null,
+      iana_time_zone: birth.tz,
+      birth_lat: birth.lat,
+      birth_lng: birth.lon,
+      birth_place_name: birth.place || null,
+      sun_sign: sunSign,
+      moon_sign: moonSign,
+      asc_sign: ascSign,
+      astro_json: {
+        version: 1 as const,
+        bazi:    bafeData.bazi,
+        western: bafeData.western,
+        fusion:  bafeData.fusion,
+        wuxing:  bafeData.wuxing,
+        tst:     bafeData.tst,
+        interpretation,
+        tiles,
+        houses,
+      },
+      astro_computed_at: new Date().toISOString(),
     },
-    astro_computed_at: new Date().toISOString(),
-  });
+    { onConflict: "user_id" },
+  );
 
   if (error) {
-    if (error.code === "23505") return;  // already exists — expected
-    console.error("insertAstroProfile error:", error);
+    console.error("upsertAstroProfile error:", error);
     throw error;
   }
 }
