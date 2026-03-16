@@ -77,9 +77,9 @@ sequenceDiagram
                               │         server.mjs          │
                               │    Experience Proxy Layer    │
                               │                             │
-                              │  /api/experience/bootstrap  │
-                              │  /api/experience/sig-delta  │
-                              │  /api/experience/daily      │
+                              │  /api/experience/bootstrap      │
+                              │  /api/experience/signature-delta│
+                              │  /api/experience/daily          │
                               │                             │
                               │  - 10KB payload limit       │
                               │  - 10-20s timeouts          │
