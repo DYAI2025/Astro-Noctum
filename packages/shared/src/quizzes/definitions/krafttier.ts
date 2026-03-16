@@ -8,7 +8,7 @@ export const krafttierQuiz: QuizDefinition = {
   subtitleDe: 'Entdecke das archetypische Krafttier, das seit jeher \u00fcber dich wacht',
   emoji: '\uD83D\uDC3A',
   accentColor: '#D4AF37',
-  scoringModel: 'profile-driven',
+  scoringModel: 'dimensional',
   dimensions: [
     'mut', 'instinkt', 'sozial', 'weisheit', 'schatten',
     'klarheit', 'freiheit', 'neugier', 'anpassung',

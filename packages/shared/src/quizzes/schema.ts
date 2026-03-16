@@ -1,6 +1,12 @@
 /** Scoring models that cover all 22 Bazodiac quizzes */
 export type ScoringModel = 'multi-dimension' | 'categorical' | 'profile-driven';
 
+/**
+ * An option may carry both `scores` and `profileId` (e.g., Kinky series).
+ * The scoring engine picks the field matching the quiz's `scoringModel`:
+ *   - multi-dimension / categorical → uses `scores`, ignores `profileId`
+ *   - profile-driven → uses `profileId`, ignores `scores`
+ */
 export interface QuizOption {
   id: string;
   text: string;

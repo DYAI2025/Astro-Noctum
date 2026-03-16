@@ -8,7 +8,7 @@ export const auraColorsQuiz: QuizDefinition = {
   subtitleDe: 'Entdecke das unsichtbare Licht deiner Seele',
   emoji: '\uD83D\uDD2E',
   accentColor: '#D4AF37',
-  scoringModel: 'profile-driven',
+  scoringModel: 'multi-dimension',
   dimensions: ['energiefluss', 'rhythmus', 'wahrnehmung', 'resonanz'],
 
   questions: [
