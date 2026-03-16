@@ -173,7 +173,7 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
 
   // ── Regenerate interpretation ────────────────────────────────────────
   const handleRegenerate = useCallback(async () => {
-    if (!apiData) return;
+    if (!apiData || !user) return;
     setIsLoading(true);
     setError(null);
     try {
@@ -181,13 +181,26 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
       setInterpretation(aiResult.interpretation);
       setTileTexts(aiResult.tiles || {});
       setHouseTexts(aiResult.houses || {});
+
+      // Persist updated interpretation back to Supabase
+      if (birthDateStr) {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        upsertAstroProfile(
+          user.id,
+          { date: birthDateStr, tz, lat: 0, lon: 0 },
+          apiData,
+          aiResult.interpretation,
+          aiResult.tiles || {},
+          aiResult.houses || {},
+        ).catch((e) => console.warn("Persist after regenerate failed:", e));
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "";
       setError(msg || getAiErrorMessage(lang));
     } finally {
       setIsLoading(false);
     }
-  }, [apiData, lang]);
+  }, [apiData, lang, user, birthDateStr]);
 
   // ── Re-generate when language changes for a loaded profile ───────────
   const langRef = useRef<string>(lang);
