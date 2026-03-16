@@ -15,6 +15,7 @@ import { FusionRingProvider } from "./contexts/FusionRingContext";
 import { AppLayoutProvider } from "./contexts/AppLayoutContext";
 import { AppRoutes } from "./router";
 import { bootstrapExperience } from "./services/experience";
+import { isFeatureEnabled } from "./lib/feature-flags";
 import type { BootstrapResponse, SignatureDeltaResponse } from "./lib/schemas/experience";
 import { Volume2, VolumeX, LogOut, LayoutGrid, Telescope, CircleDot } from "lucide-react";
 
@@ -66,6 +67,11 @@ export default function App() {
   const handleOnboardingSubmit = async (formData: { date: string; tz: string; lon: number; lat: number }) => {
     // Start existing BAFE flow
     handleSubmit(formData);
+
+    // Skip bootstrap if feature flag is off — fall through to normal BAFE flow
+    if (!isFeatureEnabled('signature_onboarding_v1')) {
+      return;
+    }
 
     // Also call bootstrap experience (non-blocking for BAFE)
     try {

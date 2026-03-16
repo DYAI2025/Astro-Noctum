@@ -20,6 +20,7 @@ import { DashboardLeviSection } from "./dashboard/DashboardLeviSection";
 import { DashboardAstroSection } from "./dashboard/DashboardAstroSection";
 import { DashboardInterpretationSection } from "./dashboard/DashboardInterpretationSection";
 import { SectionErrorBoundary } from "./dashboard/SectionErrorBoundary";
+import { isFeatureEnabled } from "../lib/feature-flags";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Static data
@@ -182,6 +183,9 @@ export function Dashboard({
     return () => { cancelled = true; };
   }, [userId]);
 
+  // ── Feature flags ──────────────────────────────────────────────────
+  const dailyEnabled = isFeatureEnabled('daily_modal_v1');
+
   // ── Daily horoscope modal ───────────────────────────────────────────
   const { dailyData, showModal, handleClose: handleDailyClose } = useFirstRunDaily(
     userId,
@@ -341,7 +345,7 @@ export function Dashboard({
 
       {/* ═══ DAILY HOROSCOPE MODAL ═══════════════════════════════════════ */}
       <AnimatePresence>
-        {showModal && dailyData && (
+        {dailyEnabled && showModal && dailyData && (
           <DailyHoroscopeModal data={dailyData} onClose={handleDailyClose} />
         )}
       </AnimatePresence>
