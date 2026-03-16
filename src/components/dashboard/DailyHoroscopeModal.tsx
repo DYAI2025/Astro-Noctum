@@ -69,6 +69,8 @@ export function DailyHoroscopeModal({ data, onClose }: Props) {
       }}
     >
       <motion.div
+        role="dialog"
+        aria-modal="true"
         initial={{ opacity: 0, y: 20, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 10, scale: 0.97 }}
