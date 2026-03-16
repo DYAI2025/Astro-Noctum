@@ -142,7 +142,7 @@ The Experience API is a high-level layer on FuFirE that orchestrates bootstrap, 
 
 **Feature flags:** Override in browser console via `localStorage.setItem('ff_signature_onboarding_v1', 'false')`. When off, the app falls through to the legacy BAFE-only flow.
 
-**Server proxy:** `server.mjs` proxies all three Experience endpoints (`/api/experience/bootstrap`, `/api/experience/signature-delta`, `/api/experience/daily`) to FuFirE with 10KB payload limits and 10-20s timeouts. Returns 502 on FuFirE failure.
+**Server proxy:** `server.mjs` proxies all three Experience endpoints (`/api/experience/bootstrap`, `/api/experience/signature-delta`, `/api/experience/daily`) to FuFirE. The bootstrap and signature-delta routes are protected with `requireUserAuth`, while the daily route is currently unauthenticated. All three use 10KB payload limits, 10–20s timeouts, and return 502 on FuFirE failure.
 
 ### BAFE Response Mapping (Important Gotcha)
 
