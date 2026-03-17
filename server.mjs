@@ -12,6 +12,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 
+const DEV_ALLOWED_ORIGIN_PATTERN = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i;
+
 // ── Boot-time env var validation ─────────────────────────────────────
 const REQUIRED_ENV_VARS = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
 const missing = REQUIRED_ENV_VARS.filter(v => !process.env[v]);
@@ -114,6 +116,28 @@ app.use(helmet({
   },
   crossOriginEmbedderPolicy: false, // needed for external resources
 }));
+
+app.use((req, res, next) => {
+  const origin = req.get("origin");
+  const isDevOrigin = origin && DEV_ALLOWED_ORIGIN_PATTERN.test(origin);
+
+  if (isDevOrigin) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Authorization, Content-Type, X-App-Platform, X-App-Version, X-Device-Id",
+    );
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  }
+
+  if (req.method === "OPTIONS" && isDevOrigin) {
+    return res.status(204).end();
+  }
+
+  next();
+});
 
 // ── Rate Limiting ────────────────────────────────────────────────────
 const apiLimiter = rateLimit({
@@ -798,6 +822,67 @@ setInterval(() => {
   expired.forEach(key => horoscopeCache.delete(key));
   if (expired.length > 0) console.log(`[horoscope-cache] evicted ${expired.length} entries`);
 }, 60 * 60 * 1000);
+
+// ── Experience API proxy ──────────────────────────────────────────
+app.post('/api/experience/bootstrap', requireUserAuth, async (req, res) => {
+  try {
+    const bodyStr = JSON.stringify(req.body);
+    if (bodyStr.length > 10000) {
+      return res.status(413).json({ error: 'payload_too_large' });
+    }
+    const resp = await fetch(`${BAFE_BASE_URL}/experience/bootstrap`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: bodyStr,
+      signal: AbortSignal.timeout(15000),
+    });
+    const data = await resp.json();
+    res.status(resp.status).json(data);
+  } catch (err) {
+    console.error('[experience/bootstrap] Error:', err.message);
+    res.status(502).json({ error: 'experience_unavailable' });
+  }
+});
+
+app.post('/api/experience/signature-delta', requireUserAuth, async (req, res) => {
+  try {
+    const bodyStr = JSON.stringify(req.body);
+    if (bodyStr.length > 10000) {
+      return res.status(413).json({ error: 'payload_too_large' });
+    }
+    const resp = await fetch(`${BAFE_BASE_URL}/experience/signature-delta`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: bodyStr,
+      signal: AbortSignal.timeout(10000),
+    });
+    const data = await resp.json();
+    res.status(resp.status).json(data);
+  } catch (err) {
+    console.error('[experience/signature-delta] Error:', err.message);
+    res.status(502).json({ error: 'experience_unavailable' });
+  }
+});
+
+app.post('/api/experience/daily', async (req, res) => {
+  try {
+    const bodyStr = JSON.stringify(req.body);
+    if (bodyStr.length > 10000) {
+      return res.status(413).json({ error: 'payload_too_large' });
+    }
+    const resp = await fetch(`${BAFE_BASE_URL}/experience/daily`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: bodyStr,
+      signal: AbortSignal.timeout(20000),
+    });
+    const data = await resp.json();
+    res.status(resp.status).json(data);
+  } catch (err) {
+    console.error('[experience/daily] Error:', err.message);
+    res.status(502).json({ error: 'experience_unavailable' });
+  }
+});
 
 // ── /api/contribute ──────────────────────────────────────────────────
 // Persists quiz sector weights to contribution_events table.

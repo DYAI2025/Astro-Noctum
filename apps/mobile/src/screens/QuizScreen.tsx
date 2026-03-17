@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  Alert,
   Modal,
   Pressable,
   SectionList,
@@ -131,8 +132,8 @@ export function QuizScreen() {
       await flushContributionQueue();
       setPendingCount(await getQueuedContributionCount());
 
-      // 4. Close modal
-      setActiveQuiz(null);
+      // Note: modal is closed by QuizRenderer via onClose, not here.
+      // This avoids closing the modal before the result screen is shown.
     },
     [activeQuiz, completed, userId],
   );
@@ -172,16 +173,48 @@ export function QuizScreen() {
         )}
         renderItem={({ item: quiz }) => {
           const isDone = Boolean(completed[quiz.id]);
-          const isLocked = Boolean(quiz.premium) && !isPremium;
+          const isPartnerMatch = quiz.seriesId === "partner-match";
+          const isKinky = quiz.seriesId === "kinky";
+          const isLocked =
+            isPartnerMatch ||
+            (isKinky && !isPremium) ||
+            (Boolean(quiz.premium) && !isPremium);
+
+          const handlePress = () => {
+            if (isPartnerMatch) {
+              Alert.alert(
+                "Coming soon",
+                "Partner Match wird in einem kommenden Update verfügbar.",
+              );
+              return;
+            }
+            if (isLocked) {
+              Alert.alert(
+                "Gesperrt",
+                "Dieses Quiz wird bald freigeschaltet.",
+              );
+              return;
+            }
+            setActiveQuiz(quiz);
+          };
 
           return (
             <Pressable
-              style={[styles.card, isDone && styles.cardDone]}
-              onPress={() => setActiveQuiz(quiz)}
+              style={[
+                styles.card,
+                isDone && styles.cardDone,
+                isLocked && styles.cardLocked,
+              ]}
+              onPress={handlePress}
             >
-              <Text style={styles.cardEmoji}>{quiz.emoji}</Text>
+              <Text style={[styles.cardEmoji, isLocked && styles.cardEmojiLocked]}>
+                {quiz.emoji}
+              </Text>
               <View style={styles.cardTextContainer}>
-                <Text style={styles.cardTitle} numberOfLines={1}>
+                <Text
+                  style={[styles.cardTitle, isLocked && styles.cardTitleLocked]}
+                  numberOfLines={1}
+                >
                   {quiz.titleDe}
                 </Text>
               </View>
@@ -327,6 +360,9 @@ const styles = StyleSheet.create({
     borderColor: COLORS.green,
     backgroundColor: COLORS.greenBg,
   },
+  cardLocked: {
+    opacity: 0.45,
+  },
   cardEmoji: {
     fontSize: 24,
     width: 32,
@@ -339,6 +375,12 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     fontWeight: "600",
     fontSize: 15,
+  },
+  cardTitleLocked: {
+    color: COLORS.textDim,
+  },
+  cardEmojiLocked: {
+    opacity: 0.5,
   },
   checkmark: {
     color: COLORS.green,

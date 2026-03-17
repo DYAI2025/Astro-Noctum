@@ -1,4 +1,4 @@
-import { apiFetch } from "./api";
+import { apiFetch, authedFetch } from "./api";
 
 export interface BirthData {
   date: string;
@@ -37,7 +37,7 @@ function signFromDegrees(deg: number | undefined | null): string | undefined {
 }
 
 async function postCalculation<T = unknown>(endpoint: string, payload: BirthData): Promise<T> {
-  const response = await apiFetch(`/api/calculate/${endpoint}`, {
+  const response = await authedFetch(`/api/calculate/${endpoint}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),

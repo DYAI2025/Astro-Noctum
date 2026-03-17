@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchAstroProfile, fetchTier } from "../lib/profile";
 import { supabase } from "../lib/supabase";
 
@@ -6,16 +6,22 @@ export function useProfile(userId?: string) {
   const [profile, setProfile] = useState<any | null>(null);
   const [tier, setTier] = useState<"free" | "premium">("free");
   const [loading, setLoading] = useState(true);
+  const isInitialLoad = useRef(true);
 
   const refresh = useCallback(async () => {
     if (!userId) {
       setProfile(null);
       setTier("free");
       setLoading(false);
+      isInitialLoad.current = false;
       return;
     }
 
-    setLoading(true);
+    // Only show loading spinner on initial load — subsequent refreshes
+    // update data silently to avoid flashing LoadingScreen in MobileRoot.
+    if (isInitialLoad.current) {
+      setLoading(true);
+    }
     try {
       const [nextProfile, nextTier] = await Promise.all([
         fetchAstroProfile(userId),
@@ -25,6 +31,7 @@ export function useProfile(userId?: string) {
       setTier(nextTier);
     } finally {
       setLoading(false);
+      isInitialLoad.current = false;
     }
   }, [userId]);
 

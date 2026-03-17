@@ -151,11 +151,17 @@ export default function QuizRenderer({
     loop2.start();
 
     const timer = setTimeout(() => {
-      const scored = scoreQuiz(quiz, answers);
-      setResult(scored);
+      try {
+        const scored = scoreQuiz(quiz, answers);
+        setResult(scored);
+      } catch {
+        // If scoring fails, still show result screen with null result
+      }
       loop1.stop();
       loop2.stop();
-      fadeTransition(() => setScreen('result'));
+      // Set screen directly instead of inside fadeTransition callback
+      // to avoid the result screen never appearing if the animation is interrupted
+      setScreen('result');
     }, FAKE_LOADING_MS);
 
     return () => {
@@ -174,10 +180,16 @@ export default function QuizRenderer({
     outputRange: ['0deg', '-360deg'],
   });
 
-  // ---- complete ----
+  // ---- complete: persist result, then close ----
   const handleComplete = useCallback(() => {
-    if (result) onComplete(result);
-  }, [result, onComplete]);
+    if (result) {
+      onComplete(result);
+    }
+    // Always close the modal after the user taps "Schließen",
+    // even if onComplete already triggers a close via the parent.
+    // This ensures the modal closes in all cases.
+    onClose();
+  }, [result, onComplete, onClose]);
 
   // ---- render helpers ----
 
@@ -354,25 +366,37 @@ export default function QuizRenderer({
         )}
 
         {/* ===================== RESULT ===================== */}
-        {screen === 'result' && result && (
+        {screen === 'result' && (
           <ScrollView
             contentContainerStyle={styles.centeredContainer}
             bounces={false}
           >
-            <Text style={styles.emoji}>{result.profile.emoji}</Text>
-            <Text style={styles.title}>{result.profile.title}</Text>
+            {result ? (
+              <>
+                <Text style={styles.emoji}>{result.profile.emoji}</Text>
+                <Text style={styles.title}>{result.profile.title}</Text>
 
-            {/* Accent color bar */}
-            <View
-              style={[
-                styles.accentBar,
-                { backgroundColor: result.profile.color || COLORS.gold },
-              ]}
-            />
+                {/* Accent color bar */}
+                <View
+                  style={[
+                    styles.accentBar,
+                    { backgroundColor: result.profile.color || COLORS.gold },
+                  ]}
+                />
 
-            <Text style={styles.resultDescription}>
-              {result.profile.description}
-            </Text>
+                <Text style={styles.resultDescription}>
+                  {result.profile.description}
+                </Text>
+              </>
+            ) : (
+              <>
+                <Text style={styles.emoji}>{quiz.emoji}</Text>
+                <Text style={styles.title}>Quiz abgeschlossen</Text>
+                <Text style={styles.resultDescription}>
+                  Dein Ergebnis wurde gespeichert.
+                </Text>
+              </>
+            )}
 
             <Pressable style={styles.goldButton} onPress={handleComplete}>
               <Text style={styles.goldButtonText}>Schließen</Text>
