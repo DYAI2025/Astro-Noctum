@@ -566,7 +566,7 @@ After a successful first-time onboarding, Supabase contains:
 |-------|------|-----------|
 | `profiles` | `daily_modal_seen: true` | `useFirstRunDaily.handleClose()` |
 | `birth_data` | Raw birth input | `handleSubmit()` via `services/supabase.ts` |
-| `astro_profiles` | BAFE results + `soulprint_sectors` | `handleSubmit()` via `services/supabase.ts` |
+| `astro_profiles` | BAFE results (no `soulprint_sectors` persisted yet) | `handleSubmit()` via `services/supabase.ts` |
 | `natal_charts` | Detailed chart data | `handleSubmit()` via `services/supabase.ts` |
 | `user_signature_state` | Blueprint + soulprint + quiz_sectors | (not yet written — M7 future work) |
 | `daily_horoscope_cache` | Daily JSON payload | (server-side only, via service role) |
