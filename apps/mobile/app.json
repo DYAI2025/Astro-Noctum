@@ -58,6 +58,8 @@
     ],
     "extra": {
       "apiBaseUrl": "https://bazodiac.space",
+      "supabaseUrl": "https://ykoijifgweoapitabgxx.supabase.co",
+      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlrb2lqaWZnd2VvYXBpdGFiZ3h4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1NDU5OTUsImV4cCI6MjA3ODEyMTk5NX0.N7E6zkSaNaMZTtSns-Tchgko6lUAC-KoH7LqAoVvcYQ",
       "eas": {
         "projectId": "3dc5ff64-329b-4fcf-bb89-34eb0132cfec"
       }

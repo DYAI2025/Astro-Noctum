@@ -6,8 +6,10 @@ export const mobileConfig = {
   apiBaseUrl:
     process.env.EXPO_PUBLIC_API_BASE_URL ||
     (typeof appConfig.apiBaseUrl === "string" ? appConfig.apiBaseUrl : "https://bazodiac.space"),
-  supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL || "",
-  supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || "",
+  supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL ||
+    (typeof appConfig.supabaseUrl === "string" ? appConfig.supabaseUrl : ""),
+  supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ||
+    (typeof appConfig.supabaseAnonKey === "string" ? appConfig.supabaseAnonKey : ""),
   googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || "",
 };
 
