@@ -85,7 +85,7 @@ User visits bazodiac.space
 ```
 
 **Backend processes:**
-- **Sign Up:** `supabase.auth.signUp({ email, password })` → Supabase creates user, auto-confirms (no email verification). Supabase trigger creates `profiles` row with defaults (`is_premium: false`, `daily_modal_seen: false`).
+- **Sign Up:** `supabase.auth.signUp({ email, password })` → Supabase creates user, auto-confirms (no email verification). A signup trigger inserts a `profiles` row with `(id, email)` only; premium status is tracked via `profiles.tier` (default `'free'`), and `daily_modal_seen` is a separate column with default `false`.
 - **Sign In:** `supabase.auth.signInWithPassword({ email, password })` → returns session JWT.
 
 **Post-auth:** `useAuth()` detects `user` → App.tsx exits AuthGate, enters profile loading phase.
