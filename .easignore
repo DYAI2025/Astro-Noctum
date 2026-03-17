@@ -1,10 +1,25 @@
-# EAS Build — exclude non-mobile files to reduce upload (was 1.2GB)
-dist/
+# EAS Build — exclude everything the mobile app doesn't need
+# Goal: reduce from 676MB to <100MB
+
+# Large non-mobile directories
 .worktrees/
-features/plan/
+features/
 media/
-bazodiac_engine/__pycache__/
+public/
+dist/
+landing/
+bazodiac_engine/
 docs/
+
+# Web app source (not needed for mobile build)
+src/
+server.mjs
+
+# Build artifacts and caches
+coverage/
+.expo/
 *.log
 .DS_Store
-coverage/
+
+# Git
+.git/
