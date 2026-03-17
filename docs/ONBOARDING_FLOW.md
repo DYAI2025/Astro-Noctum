@@ -161,8 +161,9 @@ User clicks [Berechnen]
 │     └─ ON? → continue ↓                         │
 │                                                  │
 │  2. Parse birth data from formData               │
+│     birthDateTime: "1990-08-14T07:42:00"         │
 │     date: "1990-08-14"                           │
-│     time: "07:42" → "07:42:00"                   │
+│     time: "07:42"                                │
 │     tz: "Europe/Berlin"                          │
 │     lat: 53.5511, lon: 9.9937                    │
 │                                                  │
