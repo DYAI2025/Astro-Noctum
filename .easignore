@@ -1,25 +1,26 @@
-# EAS Build — exclude everything the mobile app doesn't need
-# Goal: reduce from 676MB to <100MB
+# EAS Build — exclude non-mobile files
+# Keep: apps/mobile/, packages/shared/, node_modules/
 
-# Large non-mobile directories
+# Large directories not needed for mobile
 .worktrees/
 features/
 media/
-public/
 dist/
 landing/
 bazodiac_engine/
 docs/
+public/
 
-# Web app source (not needed for mobile build)
-src/
+# Web app files (not needed for mobile build)
 server.mjs
+supabase-schema.sql
+vite.config.ts
+vitest.config.ts
+index.html
+nixpacks.toml
+railway.json
 
 # Build artifacts and caches
 coverage/
-.expo/
 *.log
 .DS_Store
-
-# Git
-.git/
