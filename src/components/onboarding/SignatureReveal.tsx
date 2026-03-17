@@ -1,8 +1,11 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { FusionRingWebsiteCanvas } from '../fusion-ring-website/FusionRingWebsiteCanvas';
+import FusionRingCanvasV2 from '../fusion-ring-website/FusionRingCanvasV2';
+import { soulprintToNatalWeights, quizSectorsToQuizWeights } from '../fusion-ring-website/signatur-bridge';
 import { signatureDelta } from '../../services/experience';
 import { trackEvent } from '../../lib/analytics';
+import { isFeatureEnabled } from '../../lib/feature-flags';
 import type { BootstrapResponse, SignatureDeltaResponse } from '../../lib/schemas/experience';
 
 // ── Quiz options (German UI) ─────────────────────────────────────────
@@ -27,6 +30,9 @@ export function SignatureReveal({ bootstrapData, onComplete }: Props) {
   const { profile, soulprint_sectors, signature_blueprint } = bootstrapData;
 
   const [activeSectors, setActiveSectors] = useState<number[]>(soulprint_sectors);
+  const useV2 = isFeatureEnabled('signatur_engine_v2');
+  const [natalWeights] = useState(() => soulprintToNatalWeights(soulprint_sectors));
+  const [quizWeights, setQuizWeights] = useState<Record<string, number> | undefined>();
   const [selectedKeyword, setSelectedKeyword] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,6 +74,7 @@ export function SignatureReveal({ bootstrapData, onComplete }: Props) {
       // Animate: blend old sectors to new quiz_sectors over ~800ms
       // We set the new sectors and let the canvas interpolate visually
       setActiveSectors(delta.quiz_sectors);
+      setQuizWeights(quizSectorsToQuizWeights(delta.quiz_sectors));
 
       // Wait 2s for the user to see the animation, then complete
       timeoutRef.current = setTimeout(() => {
@@ -100,10 +107,19 @@ export function SignatureReveal({ bootstrapData, onComplete }: Props) {
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 1.2, ease: 'easeOut', delay: 0.2 }}
       >
-        <FusionRingWebsiteCanvas
-          soulProfile={activeSectors}
-          className="w-full h-full"
-        />
+        {useV2 ? (
+          <FusionRingCanvasV2
+            natalWeights={natalWeights}
+            quizWeights={quizWeights}
+            showUI={false}
+            className="w-full h-full"
+          />
+        ) : (
+          <FusionRingWebsiteCanvas
+            soulProfile={activeSectors}
+            className="w-full h-full"
+          />
+        )}
       </motion.div>
 
       {/* Profile summary */}
