@@ -12,6 +12,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 
+const DEV_ALLOWED_ORIGIN_PATTERN = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i;
+
 // ── Boot-time env var validation ─────────────────────────────────────
 const REQUIRED_ENV_VARS = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
 const missing = REQUIRED_ENV_VARS.filter(v => !process.env[v]);
@@ -114,6 +116,28 @@ app.use(helmet({
   },
   crossOriginEmbedderPolicy: false, // needed for external resources
 }));
+
+app.use((req, res, next) => {
+  const origin = req.get("origin");
+  const isDevOrigin = origin && DEV_ALLOWED_ORIGIN_PATTERN.test(origin);
+
+  if (isDevOrigin) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Authorization, Content-Type, X-App-Platform, X-App-Version, X-Device-Id",
+    );
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  }
+
+  if (req.method === "OPTIONS" && isDevOrigin) {
+    return res.status(204).end();
+  }
+
+  next();
+});
 
 // ── Rate Limiting ────────────────────────────────────────────────────
 const apiLimiter = rateLimit({
