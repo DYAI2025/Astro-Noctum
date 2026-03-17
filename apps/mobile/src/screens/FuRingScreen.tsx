@@ -33,7 +33,7 @@ export function FuRingScreen() {
 
   return (
     <View style={styles.container}>
-      {/* 3D Ring — fills available space */}
+      {/* 3D Signatur — fills available space */}
       <View style={styles.canvasWrapper}>
         <SignaturCanvas sectors={fusion.sectors} paused={!isFocused} />
       </View>

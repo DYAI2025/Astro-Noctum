@@ -2,35 +2,27 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer, type LinkingOptions } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as Linking from "expo-linking";
-import { Text } from "react-native";
-import { ArticleScreen } from "../screens/ArticleScreen";
+import { Ionicons } from "@expo/vector-icons";
 import { DashboardScreen } from "../screens/DashboardScreen";
-import { FuRingScreen } from "../screens/FuRingScreen";
 import { QuizScreen } from "../screens/QuizScreen";
+import { ProfileScreen } from "../screens/ProfileScreen";
 import { VoiceScreen } from "../screens/VoiceScreen";
-import { WissenScreen } from "../screens/WissenScreen";
-import { WuXingScreen } from "../screens/WuXingScreen";
+import { FuRingScreen } from "../screens/FuRingScreen";
 
 export type RootTabParamList = {
-  Dashboard: undefined;
-  FuRing: undefined;
-  WuXing: undefined;
-  Wissen: undefined;
+  Home: undefined;
+  Quizzes: undefined;
+  Profil: undefined;
 };
 
 export type RootStackParamList = {
   Tabs: undefined;
-  Article: { slug: string };
   Voice: undefined;
-  Quiz: { moduleId?: string } | undefined;
+  Signatur: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<RootTabParamList>();
-
-const iconLabel = (label: string) => ({ color }: { color: string }) => (
-  <Text style={{ color, fontSize: 12, fontWeight: "700" }}>{label}</Text>
-);
 
 function Tabs() {
   return (
@@ -39,31 +31,46 @@ function Tabs() {
         headerStyle: { backgroundColor: "#0f1823" },
         headerTitleStyle: { color: "#f5f7fb" },
         headerTintColor: "#f5f7fb",
-        tabBarStyle: { backgroundColor: "#0f1823", borderTopColor: "#213044", minHeight: 64, paddingBottom: 8 },
+        tabBarStyle: {
+          backgroundColor: "#0f1823",
+          borderTopColor: "#213044",
+          minHeight: 64,
+          paddingBottom: 8,
+        },
         tabBarActiveTintColor: "#d4af37",
         tabBarInactiveTintColor: "#8fa0bc",
         tabBarLabelStyle: { fontSize: 11, fontWeight: "600" },
       }}
     >
       <Tab.Screen
-        name="Dashboard"
+        name="Home"
         component={DashboardScreen}
-        options={{ tabBarIcon: iconLabel("D"), title: "Dashboard" }}
+        options={{
+          title: "Home",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home-outline" size={size} color={color} />
+          ),
+        }}
       />
       <Tab.Screen
-        name="FuRing"
-        component={FuRingScreen}
-        options={{ tabBarIcon: iconLabel("F"), title: "Fu Ring" }}
+        name="Quizzes"
+        component={QuizScreen}
+        options={{
+          title: "Quizzes",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="sparkles-outline" size={size} color={color} />
+          ),
+        }}
       />
       <Tab.Screen
-        name="WuXing"
-        component={WuXingScreen}
-        options={{ tabBarIcon: iconLabel("W"), title: "Wu Xing" }}
-      />
-      <Tab.Screen
-        name="Wissen"
-        component={WissenScreen}
-        options={{ tabBarIcon: iconLabel("K"), title: "Wissen" }}
+        name="Profil"
+        component={ProfileScreen}
+        options={{
+          title: "Profil",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person-outline" size={size} color={color} />
+          ),
+        }}
       />
     </Tab.Navigator>
   );
@@ -75,15 +82,13 @@ const linking: LinkingOptions<RootStackParamList> = {
     screens: {
       Tabs: {
         screens: {
-          Dashboard: "dashboard",
-          FuRing: "fu-ring",
-          WuXing: "wu-xing",
-          Wissen: "wissen",
+          Home: "dashboard",
+          Quizzes: "quizzes",
+          Profil: "profil",
         },
       },
-      Article: "article/:slug",
       Voice: "levi",
-      Quiz: "quiz/:moduleId?",
+      Signatur: "signatur",
     },
   },
 };
@@ -100,9 +105,8 @@ export function RootNavigator() {
         }}
       >
         <Stack.Screen name="Tabs" component={Tabs} options={{ headerShown: false }} />
-        <Stack.Screen name="Article" component={ArticleScreen} options={{ title: "Wissen" }} />
         <Stack.Screen name="Voice" component={VoiceScreen} options={{ title: "Levi Voice" }} />
-        <Stack.Screen name="Quiz" component={QuizScreen} options={{ title: "Quiz" }} />
+        <Stack.Screen name="Signatur" component={FuRingScreen} options={{ title: "Signatur" }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -1,0 +1,10 @@
+# EAS Build — exclude non-mobile files to reduce upload (was 1.2GB)
+dist/
+.worktrees/
+features/plan/
+media/
+bazodiac_engine/__pycache__/
+docs/
+*.log
+.DS_Store
+coverage/
