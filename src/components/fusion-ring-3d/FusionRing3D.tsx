@@ -8,6 +8,9 @@ import {
   FusionRingWebsiteCanvas,
   type RingEffectType,
 } from '@/src/components/fusion-ring-website/FusionRingWebsiteCanvas';
+import FusionRingCanvasV2 from '@/src/components/fusion-ring-website/FusionRingCanvasV2';
+import { soulprintToNatalWeights } from '@/src/components/fusion-ring-website/signatur-bridge';
+import { isFeatureEnabled } from '@/src/lib/feature-flags';
 
 export type FusionRing3DLabels = {
   regionLabel: string;
@@ -98,12 +101,20 @@ export const FusionRing3D = ({
           </div>
         )}
 
-        <FusionRingWebsiteCanvas
-          queuedEffect={queuedEffect}
-          showEffectControls={isInteractive && !!import.meta.env.DEV}
-          className="h-full w-full"
-          soulProfile={signalData?.baseSignals ?? null}
-        />
+        {isFeatureEnabled('signatur_engine_v2') ? (
+          <FusionRingCanvasV2
+            natalWeights={signalData?.baseSignals ? soulprintToNatalWeights(signalData.baseSignals) : undefined}
+            showUI={isInteractive}
+            className="h-full w-full"
+          />
+        ) : (
+          <FusionRingWebsiteCanvas
+            queuedEffect={queuedEffect}
+            showEffectControls={isInteractive && !!import.meta.env.DEV}
+            className="h-full w-full"
+            soulProfile={signalData?.baseSignals ?? null}
+          />
+        )}
       </div>
 
       <div className="grid gap-2 border-t border-white/10 bg-black/30 px-4 py-3 text-xs text-white/75 md:grid-cols-3 md:px-5">
