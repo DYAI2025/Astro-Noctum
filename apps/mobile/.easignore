@@ -1,0 +1,9 @@
+# EAS Build ignore — keep the upload small
+ios/
+android/
+.expo/
+node_modules/
+dist/
+coverage/
+.DS_Store
+*.log

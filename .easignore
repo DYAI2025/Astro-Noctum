@@ -1,0 +1,26 @@
+# EAS Build — exclude non-mobile files
+# Keep: apps/mobile/, packages/shared/, node_modules/
+
+# Large directories not needed for mobile
+.worktrees/
+features/
+media/
+dist/
+landing/
+bazodiac_engine/
+docs/
+public/
+
+# Web app files (not needed for mobile build)
+server.mjs
+supabase-schema.sql
+vite.config.ts
+vitest.config.ts
+index.html
+nixpacks.toml
+railway.json
+
+# Build artifacts and caches
+coverage/
+*.log
+.DS_Store

@@ -81,37 +81,31 @@ export function DashboardScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.card}>
-        <Text style={styles.kicker}>Cosmic Profile</Text>
+        <Text style={styles.kicker}>Kosmisches Profil</Text>
         <Text style={styles.title}>{summary}</Text>
         <Text style={styles.meta}>Tier: {tier === "premium" ? "Premium" : "Free"}</Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.kicker}>Space Weather</Text>
+        <Text style={styles.kicker}>Weltraumwetter</Text>
         <Text style={styles.titleSmall}>{weatherLoading ? "Loading..." : `Kp ${kpIndex.toFixed(1)}`}</Text>
         <Text style={styles.body}>Current geomagnetic signal feeds your transit intensity layer.</Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.kicker}>Interpretation</Text>
+        <Text style={styles.kicker}>KI-Deutung</Text>
         <Text style={styles.body} numberOfLines={8}>
           {interpretation || "Your interpretation is ready once onboarding finishes."}
         </Text>
       </View>
 
-      <View style={styles.actionRow}>
-        <Pressable style={styles.actionButton} onPress={() => navigation.navigate("Voice")}>
-          <Text style={styles.actionText}>Open Levi Voice</Text>
-        </Pressable>
-
-        <Pressable style={styles.actionButton} onPress={() => navigation.navigate("Quiz") }>
-          <Text style={styles.actionText}>Quiz Signals</Text>
-        </Pressable>
-      </View>
+      <Pressable style={styles.signaturButton} onPress={() => navigation.navigate("Signatur")}>
+        <Text style={styles.signaturText}>Signatur öffnen</Text>
+      </Pressable>
 
       <View style={styles.actionRow}>
         <Pressable style={[styles.actionButton, styles.secondary]} onPress={openShare} disabled={busyShare}>
-          <Text style={styles.secondaryText}>{busyShare ? "Sharing..." : "Share Profile"}</Text>
+          <Text style={styles.secondaryText}>{busyShare ? "Sharing..." : "Teilen"}</Text>
         </Pressable>
 
         {tier !== "premium" ? (
@@ -120,7 +114,7 @@ export function DashboardScreen() {
           </Pressable>
         ) : (
           <Pressable style={[styles.actionButton, styles.secondary]} onPress={() => void refreshProfile()}>
-            <Text style={styles.secondaryText}>Refresh</Text>
+            <Text style={styles.secondaryText}>Aktualisieren</Text>
           </Pressable>
         )}
       </View>
@@ -165,6 +159,19 @@ const styles = StyleSheet.create({
     color: "#d0dae8",
     lineHeight: 22,
     fontSize: 14,
+  },
+  signaturButton: {
+    minHeight: 52,
+    borderRadius: 14,
+    backgroundColor: "#d4af37",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  signaturText: {
+    color: "#060b12",
+    fontSize: 16,
+    fontWeight: "800",
+    letterSpacing: 0.5,
   },
   actionRow: {
     flexDirection: "row",

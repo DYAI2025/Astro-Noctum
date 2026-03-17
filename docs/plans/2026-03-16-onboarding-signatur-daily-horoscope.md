@@ -17,7 +17,7 @@
 ## Codebase Orientation
 
 ### FuFirE (Fusion Firmament Engine)
-- **Location:** `BAFE/`
+- **Location:** `/Users/benjaminpoersch/Projects/SaaS/FuFirE/BAFE/`
 - **Git remote:** `DYAI2025/BAFE`
 - **Framework:** FastAPI, Python 3.10+, Pydantic v2
 - **App factory:** `bazi_engine/app.py` — mounts all routers, registers exception handlers
@@ -32,7 +32,7 @@
 - **Affinity tools:** `tools/affinity_math.py`, `tools/affinity_descriptions.json`, `tools/derive_affinity.py`
 
 ### Astro-Noctum (Frontend + Server Proxy)
-- **Location:** `Astro-Noctum/`
+- **Location:** `/Users/benjaminpoersch/Projects/codebase/Bazodiac-WebApp/Astro-Noctum/`
 - **Git remote:** `DYAI2025/Astro-Noctum`
 - **Framework:** React 19, Vite, TypeScript, Tailwind v4, React Router v6
 - **Entry point:** `src/App.tsx` — state machine: Splash → AuthGate → BirthForm → Dashboard
