@@ -197,7 +197,7 @@ User clicks [Berechnen]
 └──────────────────────────────────────────────────┘
 ```
 
-**Important:** `bootstrapExperience()` and `handleSubmit()` run in parallel. The bootstrap is faster (single request vs. 5+1). If bootstrap succeeds, the user sees SignatureReveal while BAFE+Gemini complete in the background.
+**Important:** `handleOnboardingSubmit` first awaits `bootstrapExperience()` (success or failure) and only then calls `handleSubmit()`. The two entrypoints are therefore not started in parallel; instead, in the success path the Signature phase begins as soon as the bootstrap response arrives, while the longer-running BAFE + Gemini work triggered by `handleSubmit()` continues in the background and overlaps with the Signature reveal.
 
 **Backend detail — what FuFirE `/experience/bootstrap` computes:**
 
