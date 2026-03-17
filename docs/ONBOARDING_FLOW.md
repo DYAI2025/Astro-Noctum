@@ -360,7 +360,8 @@ useFirstRunDaily(userId, birthData, soulprintSectors, quizSectors)
 │    └─ false? → continue ↓             │
 │                                        │
 │ 2. Check localStorage cache            │
-│    key: `bazodiac:daily:2026-03-17`    │
+│    key: `daily_horoscope_cache`        │
+│    value: { date: '2026-03-17', data } │
 │    └─ found? → use cached data         │
 │    └─ not found? → continue ↓         │
 │                                        │
