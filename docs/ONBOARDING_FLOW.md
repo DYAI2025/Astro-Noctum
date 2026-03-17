@@ -328,7 +328,7 @@ The Dashboard renders the full content. On **first visit**, two additional thing
 
 ### 5a: Persistent Signature Widget
 
-A small (80x80px) FusionRingWebsiteCanvas appears at the top of the Dashboard, driven by `soulprint_sectors` fetched from `astro_profiles`. This provides visual continuity from the onboarding reveal.
+A small (80x80px) FusionRingWebsiteCanvas appears at the top of the Dashboard, conceptually driven by `soulprint_sectors` fetched from `astro_profiles`. This provides visual continuity from the onboarding reveal. **Implementation note:** as of now, the Supabase persistence layer (`upsertAstroProfile` in `src/services/supabase.ts`) does not yet write `soulprint_sectors`, so this widget will only render if that column has been populated by another process (or once persistence for `soulprint_sectors` is implemented).
 
 ```
 ┌────────────────────────────┐
