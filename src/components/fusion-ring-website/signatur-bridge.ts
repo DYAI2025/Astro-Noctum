@@ -42,7 +42,7 @@ export function deriveWeightsFromApiData(apiData: any): Record<string, number> {
     Sun: 0.7, Moon: 0.5, Mercury: 0.4,
     Venus: 0.4, Mars: 0.5, Jupiter: 0.5, Saturn: 0.4,
   };
-  const sunSign = apiData?.western?.sun_sign || apiData?.sun_sign;
+  const sunSign = apiData?.western?.zodiac_sign || apiData?.western?.sun_sign || apiData?.sun_sign;
   const moonSign = apiData?.western?.moon_sign || apiData?.moon_sign;
   const sunRuler = sunSign ? ZODIAC_RULER[sunSign] : undefined;
   if (sunRuler && base[sunRuler] !== undefined) base[sunRuler] = Math.min(base[sunRuler]! + 0.2, 1);
