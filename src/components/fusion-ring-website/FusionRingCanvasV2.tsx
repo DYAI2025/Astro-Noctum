@@ -1382,7 +1382,7 @@ export default function FusionRingCanvas({
 
   if (!webglSupported) {
     return (
-      <div className="w-screen h-screen bg-black flex items-center justify-center">
+      <div className={`bg-black flex items-center justify-center ${className ?? ''}`}>
         <FallbackRing />
       </div>
     );
@@ -1395,7 +1395,10 @@ export default function FusionRingCanvas({
   ] as EffectType[];
 
   return (
-    <div style={{ width: '100vw', height: '100vh', background: '#08080e', position: 'relative', overflow: 'hidden' }}>
+    <div
+      className={className}
+      style={{ width: '100%', height: '100%', background: '#08080e', position: 'relative', overflow: 'hidden' }}
+    >
       <ThreeScene 
         effectRef={effectRef} 
         audioRef={audioRef} 
