@@ -1,5 +1,5 @@
 /** Scoring models that cover all 22 Bazodiac quizzes */
-export type ScoringModel = 'multi-dimension' | 'categorical' | 'profile-driven';
+export type ScoringModel = 'multi-dimension' | 'categorical' | 'profile-driven' | 'dimensional';
 
 /**
  * An option may carry both `scores` and `profileId` (e.g., Kinky series).

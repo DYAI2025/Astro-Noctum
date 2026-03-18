@@ -68,7 +68,7 @@ The ring visualization is fed by a multi-stage pipeline:
 
 1. **Transit State fetch**: `useFusionSignal(userId)` polls `GET /api/transit-state/:userId` every 800ms with exponential backoff
 2. **Server proxy** (`server.mjs`): Loads user's `astro_profiles` + `contribution_events` from Supabase, POSTs `soulprint_sectors` + `quiz_sectors` to FuFirE `/transit/state`, maps response to client schema. Falls back to profile-derived synthetic state on any error (marked via `X-Transit-Fallback` header)
-3. **Canvas rendering**: `FusionRing3D` passes `signalData.baseSignals` (12 sectors) as `soulProfile` prop to `FusionRingWebsiteCanvas`, which interpolates 12→32 points via smoothstep and syncs to a module-level `_activeSoulProfile` for the WebGL draw loop's `soulNoise()` function
+3. **Canvas rendering (V2)**: `FusionRing3D` passes `signalData.baseSignals` (12 sectors) through `soulprintToNatalWeights()` → 7 planet weights → `FusionRingCanvasV2` which uses Cousto-frequency spirograph geometry with 28K particles, 4-tier detail, kaleidoscope folding. Gated by `signature_engine_v2` feature flag; falls back to V1 `FusionRingWebsiteCanvas` (12→32 sector deformation) when disabled
 4. **Quiz contribution**: On quiz completion, `useQuizContribution` converts `ContributionEvent` → sector weights via `eventToSectorSignals()` + `AFFINITY_MAP`, checks cluster completion gate, then fire-and-forget POSTs to `POST /api/contribute` which upserts to `contribution_events` table
 
 ```
@@ -76,7 +76,9 @@ Quiz → ContributionEvent → eventToSectorSignals() → POST /api/contribute �
                                                                                     ↓
 useFusionSignal ← GET /api/transit-state ← server loads profile + contributions → POST FuFirE
        ↓
-FusionRing3D → soulProfile prop → FusionRingWebsiteCanvas → _activeSoulProfile → soulNoise()
+FusionRing3D → baseSignals[12] → soulprintToNatalWeights() → natalWeights{7} → FusionRingCanvasV2
+                                                                                (spirograph engine)
+       (V1 fallback: baseSignals → soulProfile prop → FusionRingWebsiteCanvas → soulNoise())
 ```
 
 **Important**: `QuizOverlay` is defined but currently not mounted in any page component. To activate the quiz→ring pipeline, mount it with `useQuizContribution` as the `onComplete` handler. The caller must hydrate `completedModuleIds` from Supabase `contribution_events` on mount for the cluster gate to work correctly.
@@ -112,7 +114,10 @@ FusionRing3D → soulProfile prop → FusionRingWebsiteCanvas → _activeSoulPro
 | `src/components/quizzes/PartnerMatch/` | PartnerMatch quiz series including `ConversationAnalysisQuiz` |
 | `src/components/ClusterEnergySystem.tsx` | Renders quiz-result "energy clusters" on the Dashboard |
 | `src/components/fusion-ring-3d/FusionRing3D.tsx` | Three.js 3D Fusion Ring — used on `/fu-ring` page |
-| `src/components/fusion-ring-website/FusionRingWebsiteCanvas.tsx` | Canvas-based Fusion Ring. Accepts `soulProfile` prop (12 sectors) which is interpolated to 32 ring points and fed to `soulNoise()` via module-level `_activeSoulProfile`. Falls back to `DEFAULT_SOUL_PROFILE` when no prop provided |
+| `src/components/fusion-ring-website/bazodiac-engine.ts` | V2 Signatur engine (891 lines) — Cousto-frequency spirograph math, 7 planet definitions with Hz/color/zodiac, 4-tier particle generation (glow→curve→fractal→subfractal), kaleidoscope folding, emergence/pattern-jump detection. Pure TypeScript, no framework deps |
+| `src/components/fusion-ring-website/FusionRingCanvasV2.tsx` | V2 Three.js renderer (1699 lines) — consumes `natalWeights` (7 planets) + `quizWeights` (6 dimensions) props, renders 28K spirograph particles with bloom postprocessing. Has built-in config panel, audio integration, effect system. Replaces V1 when `signature_engine_v2` flag is enabled |
+| `src/components/fusion-ring-website/signatur-bridge.ts` | Adapter: `soulprintToNatalWeights()` converts 12-sector soulprint → 7 planet weights via zodiac affinity mapping (Sun→Leo, Moon→Cancer, etc.). `quizSectorsToQuizWeights()` converts 12-sector quiz data → 6 quiz dimensions |
+| `src/components/fusion-ring-website/FusionRingWebsiteCanvas.tsx` | V1 canvas-based Fusion Ring (kept as fallback). Accepts `soulProfile` prop (12 sectors) which is interpolated to 32 ring points and fed to `soulNoise()` via module-level `_activeSoulProfile`. Falls back to `DEFAULT_SOUL_PROFILE` when no prop provided |
 | `src/hooks/useSpaceWeather.ts` | Fetches NASA space-weather data (solar wind, Kp-index) and feeds it into the Fusion Ring signal |
 | `src/hooks/useAmbientePlayer.ts` | Ambient audio playback control |
 | `src/contexts/PlanetariumContext.tsx` | Context for the 3D orrery/planetarium state |
@@ -134,13 +139,13 @@ The Experience API is a high-level layer on FuFirE that orchestrates bootstrap, 
 |------|---------|
 | `src/services/experience.ts` | Experience API client — `bootstrapExperience()`, `signatureDelta()`, `fetchDailyExperience()`. All POST to `/api/experience/*` proxy |
 | `src/lib/schemas/experience.ts` | Zod schemas for all Experience API responses (`BootstrapResponseSchema`, `SignatureDeltaResponseSchema`, `DailyResponseSchema`) |
-| `src/lib/feature-flags.ts` | Feature flag module with localStorage override. Two flags: `signature_onboarding_v1` (onboarding flow), `daily_modal_v1` (daily modal) |
-| `src/components/onboarding/SignatureReveal.tsx` | Signatur reveal phase — shows FusionRingWebsiteCanvas with soulprint, profile summary, quiz question. Calls `signatureDelta()` on answer |
+| `src/lib/feature-flags.ts` | Feature flag module with localStorage override. Three flags: `signature_onboarding_v1` (onboarding flow), `daily_modal_v1` (daily modal), `signature_engine_v2` (V2 spirograph engine, default true) |
+| `src/components/onboarding/SignatureReveal.tsx` | Signatur reveal phase — shows V2 or V1 ring (gated by `signature_engine_v2`), profile summary, quiz question. Calls `signatureDelta()` on answer, passes quiz weights to V2 |
 | `src/components/dashboard/DailyHoroscopeModal.tsx` | 3-tab modal (Westlich/BaZi/Fusion) showing the daily horoscope. Rendered on first Dashboard visit |
 | `src/hooks/useFirstRunDaily.ts` | Hook that checks `profiles.daily_modal_seen`, then fetches daily horoscope via Experience API. Caches in localStorage by date |
 | `supabase-migrations/20260316_experience_tables.sql` | Migration: creates `user_signature_state`, `daily_horoscope_cache` tables; adds `soulprint_sectors` to `astro_profiles` and `daily_modal_seen` to `profiles` |
 
-**Feature flags:** Override in browser console via `localStorage.setItem('ff_signature_onboarding_v1', 'false')`. When off, the app falls through to the legacy BAFE-only flow.
+**Feature flags:** Override in browser console via `localStorage.setItem('ff_signature_onboarding_v1', 'false')`. When off, the app falls through to the legacy BAFE-only flow. The V2 engine can be disabled via `localStorage.setItem('ff_signature_engine_v2', 'false')` — all three ring mount points (SignatureReveal, Dashboard, FuRingPage) instantly fall back to V1.
 
 **Server proxy:** `server.mjs` proxies all three Experience endpoints (`/api/experience/bootstrap`, `/api/experience/signature-delta`, `/api/experience/daily`) to FuFirE. The bootstrap and signature-delta routes are protected with `requireUserAuth`, while the daily route is currently unauthenticated. All three use 10KB payload limits, 10–20s timeouts, and return 502 on FuFirE failure.
 

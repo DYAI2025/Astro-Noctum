@@ -26,15 +26,16 @@ export function resolveMarkerToSectors(marker: Marker): number[] {
  */
 export function eventToSectorSignals(event: ContributionEvent): number[] {
   const signals = new Array(SECTOR_COUNT).fill(0);
+  const markers = Array.isArray(event.payload?.markers) ? event.payload.markers : [];
 
-  for (const marker of event.payload.markers) {
+  for (const marker of markers) {
     const contribution = resolveMarkerToSectors(marker);
     for (let s = 0; s < SECTOR_COUNT; s++) {
       signals[s] += contribution[s];
     }
   }
 
-  if (event.payload.tags) {
+  if (event.payload?.tags) {
     for (const tag of event.payload.tags) {
       const archetype = tag.id.split('.').pop();
       if (archetype && TAG_AFFINITY[archetype]) {
@@ -51,7 +52,7 @@ export function eventToSectorSignals(event: ContributionEvent): number[] {
 }
 
 function avgConfidence(event: ContributionEvent): number {
-  const markers = event.payload.markers;
+  const markers = Array.isArray(event.payload?.markers) ? event.payload.markers : [];
   if (markers.length === 0) return 0.5;
 
   const confidences = markers
