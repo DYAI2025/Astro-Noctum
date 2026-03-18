@@ -15,6 +15,7 @@ export function scoreQuiz(
   switch (quiz.scoringModel) {
     case 'profile-driven':
       return scoreProfileDriven(quiz, answers);
+    case 'dimensional':
     case 'multi-dimension':
     case 'categorical':
       return scoreDimensional(quiz, answers);
