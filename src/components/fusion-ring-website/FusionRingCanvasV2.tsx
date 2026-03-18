@@ -1327,7 +1327,14 @@ export default function FusionRingCanvas({
     setMounted(true);
     setWebglSupported(isWebGLAvailable());
     audioRef.current = createFusionAudio();
-    return () => { audioRef.current?.dispose(); audioRef.current = null; };
+    return () => {
+      audioRef.current?.dispose();
+      audioRef.current = null;
+      if (effectTimeoutRef.current !== null) {
+        clearTimeout(effectTimeoutRef.current);
+        effectTimeoutRef.current = null;
+      }
+    };
   }, []);
 
   const toggleAudio = useCallback(() => {
@@ -1335,6 +1342,8 @@ export default function FusionRingCanvas({
     if (audioEnabled) { audioRef.current.disable(); } else { audioRef.current.enable(); }
     setAudioEnabled((v) => !v);
   }, [audioEnabled]);
+
+  const effectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const triggerEffect = useCallback((
     type: EffectType,
@@ -1347,7 +1356,13 @@ export default function FusionRingCanvas({
     const intensity = Math.max(0, Math.min(1, options?.intensity ?? 1.0));
     const sector = options?.sector ?? 0;
     effectRef.current = { type, startTime: Date.now(), duration, intensity, sector };
-    setTimeout(() => setActiveEffect(null), duration * 1000);
+    if (effectTimeoutRef.current !== null) {
+      clearTimeout(effectTimeoutRef.current);
+    }
+    effectTimeoutRef.current = setTimeout(() => {
+      setActiveEffect(null);
+      effectTimeoutRef.current = null;
+    }, duration * 1000);
   }, []);
 
   // --- Input Controller ---
