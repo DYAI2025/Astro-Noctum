@@ -35,7 +35,7 @@ src/components/fusion-ring-website/FusionRingCanvasV2.tsx ← NEU (umbenennen!)
    - `'use client'` entfernen (Vite braucht das nicht)
    - Import-Pfade anpassen: `'./bazodiac-engine'` bleibt gleich (selber Ordner)
    - `fusion-ring-audio`, `fusion-ring-input`, `fusion-ring-transit`, `fusion-ring-profile` — diese existieren bereits in Astro-Noctum unter gleichem Pfad → Imports prüfen/bestätigen
-   - Prop-Interface `FusionRingCanvasProps` exportieren mit:
+   - Prop-Interface `FusionRingCanvasV2Props` exportieren mit:
      ```ts
      interface FusionRingCanvasV2Props {
        natalWeights?: Record<string, number>;  // Planet → Weight 0-1
