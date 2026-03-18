@@ -158,7 +158,7 @@ export function OnboardingScreen({ onCompleted }: Props) {
         <Text style={styles.subtitle}>Gib deine Geburtsdaten ein, um dein kosmisches Profil zu erstellen.</Text>
 
         <View style={styles.group}>
-          <Text style={styles.label}>Birth date (YYYY-MM-DD)</Text>
+          <Text style={styles.label}>Geburtsdatum (JJJJ-MM-TT)</Text>
           <TextInput
             style={styles.input}
             value={date}
@@ -169,7 +169,7 @@ export function OnboardingScreen({ onCompleted }: Props) {
         </View>
 
         <View style={styles.group}>
-          <Text style={styles.label}>Birth time (HH:MM)</Text>
+          <Text style={styles.label}>Geburtszeit (HH:MM)</Text>
           <TextInput
             style={styles.input}
             value={time}
@@ -191,34 +191,34 @@ export function OnboardingScreen({ onCompleted }: Props) {
         </View>
 
         <View style={styles.group}>
-          <Text style={styles.label}>Place lookup</Text>
+          <Text style={styles.label}>Ortssuche</Text>
           <TextInput
             style={styles.input}
             value={placeQuery}
             onChangeText={setPlaceQuery}
             autoCapitalize="words"
             autoCorrect={false}
-            placeholder="Berlin, Germany"
+            placeholder="Berlin, Deutschland"
             placeholderTextColor="#6f7785"
           />
           <Pressable accessibilityRole="button" style={styles.secondaryButton} onPress={lookupPlace} disabled={resolving}>
-            <Text style={styles.secondaryButtonText}>{resolving ? "Resolving..." : "Resolve place + timezone"}</Text>
+            <Text style={styles.secondaryButtonText}>{resolving ? "Wird ermittelt..." : "Ort + Zeitzone ermitteln"}</Text>
           </Pressable>
-          {placeName ? <Text style={styles.helper}>Selected: {placeName}</Text> : null}
+          {placeName ? <Text style={styles.helper}>Ausgewählt: {placeName}</Text> : null}
         </View>
 
         <View style={styles.group}>
-          <Text style={styles.label}>Latitude</Text>
+          <Text style={styles.label}>Breitengrad</Text>
           <TextInput style={styles.input} value={lat} onChangeText={setLat} autoCapitalize="none" />
         </View>
 
         <View style={styles.group}>
-          <Text style={styles.label}>Longitude</Text>
+          <Text style={styles.label}>Längengrad</Text>
           <TextInput style={styles.input} value={lon} onChangeText={setLon} autoCapitalize="none" />
         </View>
 
         <View style={styles.group}>
-          <Text style={styles.label}>Timezone (IANA)</Text>
+          <Text style={styles.label}>Zeitzone (IANA)</Text>
           <TextInput style={styles.input} value={tz} onChangeText={setTz} autoCapitalize="none" />
         </View>
 
@@ -230,7 +230,7 @@ export function OnboardingScreen({ onCompleted }: Props) {
           onPress={submit}
           disabled={submitting}
         >
-          <Text style={styles.primaryButtonText}>{submitting ? "Calculating..." : "Create my reading"}</Text>
+          <Text style={styles.primaryButtonText}>{submitting ? "Berechnung läuft..." : "Mein Reading erstellen"}</Text>
         </Pressable>
       </ScrollView>
     </SafeAreaView>
