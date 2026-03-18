@@ -1031,7 +1031,7 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
 
     const cleanup = initScene();
     return () => { cleanup?.then?.((fn) => fn?.()); };
-  }, []);
+  }, [revealProgress, isMini]);
 
   return <div ref={canvasRef} style={{ width: '100%', height: '100%' }} />;
 }
