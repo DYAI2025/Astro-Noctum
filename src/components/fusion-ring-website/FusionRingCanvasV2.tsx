@@ -620,12 +620,18 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
 
       const onResize = () => {
         if (disposed) return;
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
+        const rect = el.getBoundingClientRect();
+        const width = rect.width || window.innerWidth;
+        const height = rect.height || window.innerHeight;
+
+        renderer.setSize(width, height);
+        if (height > 0) {
+          camera.aspect = width / height;
+          camera.updateProjectionMatrix();
+        }
 
         if (composer) {
-          composer.setSize(window.innerWidth, window.innerHeight);
+          composer.setSize(width, height);
         }
       };
       window.addEventListener('resize', onResize);
