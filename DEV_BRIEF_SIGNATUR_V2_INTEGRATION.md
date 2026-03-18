@@ -60,7 +60,7 @@ src/components/fusion-ring-website/FusionRingCanvasV2.tsx ← NEU (umbenennen!)
 
 **Problem:** Die neue Engine erwartet `natalWeights: Record<string, number>` (z.B. `{ Sun: 0.93, Mars: 1.0, ... }`). Astro-Noctum liefert stattdessen `soulprint_sectors: number[12]` aus der Bootstrap API.
 
-**Was:** Einen Adapter schreiben der beide Richtungen abdeckt.
+**Was:** Einen Adapter schreiben, der beide Richtungen abdeckt.
 
 **Datei:** `src/components/fusion-ring-website/signatur-bridge.ts` (NEU)
 
