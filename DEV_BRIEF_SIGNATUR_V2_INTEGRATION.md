@@ -229,23 +229,23 @@ Diese Komponenten aus der Quelle sind UI-Entwürfe mit Mock-Daten. Sie können i
 
 **Datei:** `src/lib/feature-flags.ts`
 
-**Was:** Ein neues Flag `signatur_engine_v2` hinzufügen (default: `true`).
+**Was:** Ein neues Flag `signature_engine_v2` hinzufügen (default: `true`).
 
 ```ts
 export const FEATURE_FLAGS = {
   signature_onboarding_v1: true,
   daily_modal_v1: true,
-  signatur_engine_v2: true,  // ← NEU
+  signature_engine_v2: true,  // ← NEU
 } as const;
 ```
 
-Damit kann man über `localStorage.setItem('ff_signatur_engine_v2', 'false')` auf die alte Engine zurückfallen, falls die neue Probleme macht.
+Damit kann man über `localStorage.setItem('ff_signature_engine_v2', 'false')` auf die alte Engine zurückfallen, falls die neue Probleme macht.
 
 In den Tasks 3–5 dann:
 ```ts
 import { isFeatureEnabled } from '../../lib/feature-flags';
 
-const useV2 = isFeatureEnabled('signatur_engine_v2');
+const useV2 = isFeatureEnabled('signature_engine_v2');
 // Bedingt V2 oder V1 rendern
 ```
 
