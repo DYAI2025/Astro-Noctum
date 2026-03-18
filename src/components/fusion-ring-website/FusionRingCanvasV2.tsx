@@ -1042,7 +1042,16 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
     return () => { cleanup?.then?.((fn) => fn?.()); };
   }, [revealProgress, isMini]);
 
-  return <div ref={canvasRef} style={{ width: '100%', height: '100%' }} />;
+  return (
+    <div
+      ref={canvasRef}
+      style={{
+        width: '100%',
+        height: '100%',
+        pointerEvents: isMini ? 'none' : 'auto',
+      }}
+    />
+  );
 }
 
 // ═══════════════════════════════════════════════════════════════════
