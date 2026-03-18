@@ -8,3 +8,4 @@ export * from "./quizzes/modules";
 export * from "./quizzes/schema";
 export * from "./quizzes/scoring";
 export { QUIZ_DEFINITIONS } from "./quizzes/definitions";
+export * from "./experience";
