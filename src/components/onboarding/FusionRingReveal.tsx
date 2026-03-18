@@ -37,20 +37,27 @@ export default function FusionRingReveal({
     if (isRevealed) {
       let startTime: number | null = null;
       const duration = 2500; // 2.5 seconds for full reveal
+      let frameId: number | null = null;
 
       const animate = (time: number) => {
-        if (!startTime) startTime = time;
+        if (startTime === null) startTime = time;
         const progress = Math.min((time - startTime) / duration, 1);
         setRevealProgress(progress);
 
         if (progress < 1) {
-          requestAnimationFrame(animate);
+          frameId = requestAnimationFrame(animate);
         } else if (onComplete) {
           onComplete();
         }
       };
 
-      requestAnimationFrame(animate);
+      frameId = requestAnimationFrame(animate);
+
+      return () => {
+        if (frameId !== null) {
+          cancelAnimationFrame(frameId);
+        }
+      };
     }
   }, [isRevealed, onComplete]);
 
