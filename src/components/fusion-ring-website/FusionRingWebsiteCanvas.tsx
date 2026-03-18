@@ -1841,6 +1841,7 @@ function FusionRingCanvasInner({
     <div style={{ width: '100vw', height: '100vh', background: '#030308', position: 'relative', overflow: 'hidden' }}>
       <ThreeScene effectRef={effectRef} audioRef={audioRef} />
 
+      {showEffectControls && (<>
       {/* Effect Buttons */}
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0,
@@ -2092,6 +2093,8 @@ function FusionRingCanvasInner({
           )}
         </div>
       )}
+
+      </>)}
 
       <style>{`
         @keyframes pulse-border { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
