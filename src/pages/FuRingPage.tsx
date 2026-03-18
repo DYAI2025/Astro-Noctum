@@ -1,18 +1,68 @@
+import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/src/contexts/LanguageContext';
 import { useAppLayout } from '@/src/contexts/AppLayoutContext';
 import { FusionRing3D } from '@/src/components/fusion-ring-3d/FusionRing3D';
+import QuizOverlay from '@/src/components/QuizOverlay';
+import { useQuizContribution } from '@/src/hooks/useQuizContribution';
+import { useCompletedModules } from '@/src/hooks/useCompletedModules';
+import { useQuizSuggestion } from '@/src/hooks/useQuizSuggestion';
+import { usePremium } from '@/src/hooks/usePremium';
+import { ClusterSidebar } from '@/src/components/signatur/ClusterSidebar';
+import { ClusterPipeline } from '@/src/components/signatur/ClusterPipeline';
+import {
+  CLUSTER_REGISTRY,
+  isClusterComplete,
+  findClusterForModule,
+} from '@/src/lib/fusion-ring/clusters';
+import { quizSectorsToQuizWeights } from '@/src/components/fusion-ring-website/signatur-bridge';
+import type { ContributionEvent } from '@/src/lib/lme/types';
+import { eventToSectorSignals } from '@/src/lib/fusion-ring/test-signal';
 
 export default function FuRingPage() {
   const { t, lang } = useLanguage();
   const { userId } = useAppLayout();
+  const { isPremium } = usePremium();
+  const { completedModuleIds, addModule } = useCompletedModules();
+  const suggestedModule = useQuizSuggestion(completedModuleIds);
+  const quizContribution = useQuizContribution(completedModuleIds);
+
+  const [activeQuiz, setActiveQuiz] = useState<string | null>(null);
+  const [justCompletedCluster, setJustCompletedCluster] = useState<string | null>(null);
+  const [liveQuizWeights, setLiveQuizWeights] = useState<Record<string, number> | undefined>();
+
+  const handleQuizComplete = useCallback((event: ContributionEvent) => {
+    quizContribution(event);
+    const moduleId = event.source?.moduleId;
+    if (moduleId) {
+      addModule(moduleId);
+
+      // Check if this completion finishes a cluster
+      const cluster = findClusterForModule(moduleId);
+      if (cluster) {
+        const updated = new Set([...completedModuleIds, moduleId]);
+        if (isClusterComplete(cluster, updated)) {
+          setJustCompletedCluster(cluster.id);
+        }
+      }
+
+      // Compute live quizWeights for immediate ring reactivity
+      const sectors = eventToSectorSignals(event);
+      if (sectors && sectors.length === 12) {
+        const normalized = sectors.map(s => (s + 1) / 2);
+        setLiveQuizWeights(quizSectorsToQuizWeights(normalized));
+      }
+    }
+    setActiveQuiz(null);
+  }, [quizContribution, completedModuleIds, addModule]);
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-[#020509] text-white">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(0,180,216,0.18),transparent_40%),radial-gradient(circle_at_80%_0%,rgba(212,175,55,0.2),transparent_42%),radial-gradient(circle_at_center,rgba(255,255,255,0.03),transparent_65%)]" />
 
-      <section className="relative mx-auto flex w-full max-w-[1100px] flex-col gap-8 px-4 pb-20 pt-10 md:px-10 md:pt-20">
+      <section className="relative mx-auto flex w-full max-w-[1400px] flex-col gap-8 px-4 pb-20 pt-10 md:px-10 md:pt-20">
+        {/* Header */}
         <header className="flex items-center justify-between gap-4">
           <Link
             to="/"
@@ -28,6 +78,7 @@ export default function FuRingPage() {
           </div>
         </header>
 
+        {/* Title */}
         <div className="max-w-3xl space-y-4">
           <h1 className="font-serif text-3xl leading-tight text-[#D4AF37] md:text-5xl">
             {t('furing3d.title')}
@@ -37,22 +88,54 @@ export default function FuRingPage() {
           </p>
         </div>
 
-        <FusionRing3D
-          userId={userId}
-          labels={{
-            regionLabel: t('furing3d.a11y.regionLabel'),
-            loading: t('furing3d.loading'),
-            reducedMotionHint: t('furing3d.reducedMotionHint'),
-            resolution: t('furing3d.resolutionLabel'),
-            audioOn: t('furing3d.audioOn'),
-            audioOff: t('furing3d.audioOff'),
-            latestEvents: t('furing3d.latestEvents'),
-            renderError: t('furing3d.renderError'),
-            reload: t('furing3d.reload'),
-            eventAnnouncePrefix: t('furing3d.eventAnnouncePrefix'),
-          }}
-        />
+        {/* Main content: Sidebar + Ring */}
+        <div className="flex gap-6">
+          {/* Cluster Sidebar — hidden on mobile, shown on md+ */}
+          <div className="hidden md:block">
+            <ClusterSidebar
+              completedModuleIds={completedModuleIds}
+              onStartQuiz={setActiveQuiz}
+              isPremium={isPremium}
+              lang={lang}
+              suggestedModule={suggestedModule}
+            />
 
+            {/* Pipeline animations for completed clusters */}
+            {CLUSTER_REGISTRY.map(cluster => (
+              <ClusterPipeline
+                key={cluster.id}
+                clusterId={cluster.id}
+                clusterColor={cluster.color}
+                isComplete={
+                  isClusterComplete(cluster, completedModuleIds) ||
+                  justCompletedCluster === cluster.id
+                }
+              />
+            ))}
+          </div>
+
+          {/* Ring */}
+          <div className="min-w-0 flex-1">
+            <FusionRing3D
+              userId={userId}
+              quizWeights={liveQuizWeights}
+              labels={{
+                regionLabel: t('furing3d.a11y.regionLabel'),
+                loading: t('furing3d.loading'),
+                reducedMotionHint: t('furing3d.reducedMotionHint'),
+                resolution: t('furing3d.resolutionLabel'),
+                audioOn: t('furing3d.audioOn'),
+                audioOff: t('furing3d.audioOff'),
+                latestEvents: t('furing3d.latestEvents'),
+                renderError: t('furing3d.renderError'),
+                reload: t('furing3d.reload'),
+                eventAnnouncePrefix: t('furing3d.eventAnnouncePrefix'),
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Info cards */}
         <div className="grid gap-3 md:grid-cols-3">
           <article className="rounded-2xl border border-white/10 bg-black/35 p-4">
             <div className="mb-2 inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-white/60">
@@ -77,6 +160,13 @@ export default function FuRingPage() {
           </article>
         </div>
       </section>
+
+      {/* Quiz overlay */}
+      <QuizOverlay
+        quizId={activeQuiz}
+        onComplete={handleQuizComplete}
+        onClose={() => setActiveQuiz(null)}
+      />
     </div>
   );
 }

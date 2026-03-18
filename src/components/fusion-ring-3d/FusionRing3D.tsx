@@ -30,6 +30,7 @@ type FusionRing3DProps = {
   isInteractive?: boolean;
   onSpikeClick?: (sector: number) => void;
   labels: FusionRing3DLabels;
+  quizWeights?: Record<string, number>;
 };
 
 type QueuedEffect = { id: string; type: RingEffectType };
@@ -61,8 +62,9 @@ const pickLatestEvent = (events: TransitEvent[]): TransitEvent | null => {
 
 export const FusionRing3D = ({
   userId,
-  isInteractive = true,
+  isInteractive = false,
   labels,
+  quizWeights,
 }: FusionRing3DProps) => {
   const prefersReducedMotion = useReducedMotion();
   const { signalData, events, resolution, loading, error } = useFusionSignal(userId);
@@ -109,6 +111,7 @@ export const FusionRing3D = ({
         {isFeatureEnabled('signature_engine_v2') ? (
           <FusionRingCanvasV2
             natalWeights={v2NatalWeights}
+            quizWeights={quizWeights}
             showUI={isInteractive}
             className="h-full w-full"
           />

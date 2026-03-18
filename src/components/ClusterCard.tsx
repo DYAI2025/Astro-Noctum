@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Lock, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import type { ClusterDef } from '@/src/lib/fusion-ring/clusters';
 import { clusterProgress } from '@/src/lib/fusion-ring/clusters';
+import { MODULE_TO_QUIZ_ID, QUIZ_NAMES } from '@/src/lib/fusion-ring/quiz-maps';
 
 interface ClusterCardProps {
   cluster: ClusterDef;
@@ -11,60 +12,6 @@ interface ClusterCardProps {
   isPremium: boolean;
   lang: 'de' | 'en';
 }
-
-// Map moduleId → quiz display ID (used by QuizOverlay QUIZ_MAP)
-const MODULE_TO_QUIZ_ID: Record<string, string> = {
-  'quiz.aura_colors.v1': 'aura_colors',
-  'quiz.krafttier.v1': 'krafttier',
-  'quiz.blumenwesen.v1': 'blumenwesen',
-  'quiz.energiestein.v1': 'energiestein',
-  'quiz.love_languages.v1': 'love_languages',
-  'quiz.charme.v1': 'charme',
-  'quiz.eq.v1': 'eq',
-  'quiz.personality.v1': 'personality',
-  'quiz.career_dna.v2': 'career_dna',
-  'quiz.social_role.v2': 'social_role',
-  'quiz.spotlight.v2': 'spotlight',
-  'quiz.destiny.v1': 'destiny',
-  'quiz.rpg_identity.v1': 'rpg_identity',
-  'quiz.party_need.v1': 'party_need',
-  'quiz.celebrity_soulmate.v1': 'celebrity_soulmate',
-  'quiz.kinky_01.v1': 'kinky_01',
-  'quiz.kinky_02.v1': 'kinky_02',
-  'quiz.kinky_03.v1': 'kinky_03',
-  'quiz.kinky_04.v1': 'kinky_04',
-  'quiz.partner_match_01.v1': 'partner_match_01',
-  'quiz.partner_match_02.v1': 'partner_match_02',
-  'quiz.partner_match_03.v1': 'partner_match_03',
-  'quiz.partner_convo.v1': 'partner_convo',
-};
-
-// Human-readable quiz names
-const QUIZ_NAMES: Record<string, { de: string; en: string }> = {
-  'quiz.aura_colors.v1': { de: 'Aura-Farben', en: 'Aura Colors' },
-  'quiz.krafttier.v1': { de: 'Krafttier', en: 'Spirit Animal' },
-  'quiz.blumenwesen.v1': { de: 'Blumenwesen', en: 'Flower Being' },
-  'quiz.energiestein.v1': { de: 'Energiestein', en: 'Energy Stone' },
-  'quiz.love_languages.v1': { de: 'Liebessprache', en: 'Love Language' },
-  'quiz.charme.v1': { de: 'Charme', en: 'Charm' },
-  'quiz.eq.v1': { de: 'EQ-Signatur', en: 'EQ Signature' },
-  'quiz.personality.v1': { de: 'Persönlichkeit', en: 'Personality' },
-  'quiz.career_dna.v2': { de: 'Karriere-DNA', en: 'Career DNA' },
-  'quiz.social_role.v2': { de: 'Soziale Rolle', en: 'Social Role' },
-  'quiz.spotlight.v2': { de: 'Spotlight', en: 'Spotlight' },
-  'quiz.destiny.v1': { de: 'Destiny', en: 'Destiny' },
-  'quiz.rpg_identity.v1': { de: 'RPG-Identität', en: 'RPG Identity' },
-  'quiz.party_need.v1': { de: 'Party-Bedürfnis', en: 'Party Need' },
-  'quiz.celebrity_soulmate.v1': { de: 'Celebrity Soulmate', en: 'Celebrity Soulmate' },
-  'quiz.kinky_01.v1': { de: 'Sichtbarkeit', en: 'Visibility' },
-  'quiz.kinky_02.v1': { de: 'Innerer Antrieb', en: 'Inner Drive' },
-  'quiz.kinky_03.v1': { de: 'Grenzbereitschaft', en: 'Boundary Readiness' },
-  'quiz.kinky_04.v1': { de: 'Identität', en: 'Identity' },
-  'quiz.partner_match_01.v1': { de: 'Chemie & Ausdruck', en: 'Chemistry & Expression' },
-  'quiz.partner_match_02.v1': { de: 'Alltag & Eigenarten', en: 'Everyday Fit & Quirks' },
-  'quiz.partner_match_03.v1': { de: 'Vorlieben & Lebensstil', en: 'Preferences & Lifestyle' },
-  'quiz.partner_convo.v1': { de: 'Gesprächs-Analyse', en: 'Conversation Analysis' },
-};
 
 export function ClusterCard({ cluster, completedModules, onStartQuiz, isPremium, lang }: ClusterCardProps) {
   const [expanded, setExpanded] = useState(false);
