@@ -1262,17 +1262,37 @@ export default function FusionRingCanvas({
 
   // Bazodiac state
   const bazStateRef = useRef<BazodiacState>({
-    natal: new Map(Object.entries(natalWeights || createTestPreset().natal)),
-    quiz: new Map(Object.entries(quizWeights || createTestPreset().quiz) as any),
+    natal: new Map(
+      natalWeights
+        ? natalWeights instanceof Map
+          ? Array.from(natalWeights.entries())
+          : Object.entries(natalWeights)
+        : Array.from(createTestPreset().natal.entries())
+    ),
+    quiz: new Map(
+      quizWeights
+        ? quizWeights instanceof Map
+          ? Array.from(quizWeights.entries())
+          : Object.entries(quizWeights)
+        : Array.from(createTestPreset().quiz.entries())
+    ) as any,
   });
 
   // Sync props to state ref
   useEffect(() => {
     if (natalWeights) {
-      bazStateRef.current.natal = new Map(Object.entries(natalWeights));
+      bazStateRef.current.natal = new Map(
+        natalWeights instanceof Map
+          ? Array.from(natalWeights.entries())
+          : Object.entries(natalWeights)
+      );
     }
     if (quizWeights) {
-      bazStateRef.current.quiz = new Map(Object.entries(quizWeights) as any);
+      bazStateRef.current.quiz = new Map(
+        (quizWeights instanceof Map
+          ? Array.from(quizWeights.entries())
+          : Object.entries(quizWeights)) as any
+      );
     }
     setBazVersion(v => v + 1);
     const rebuild = (window as any).__fusionRingRebuild;
