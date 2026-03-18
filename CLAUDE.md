@@ -191,7 +191,13 @@ Railway via `nixpacks.toml` + `railway.json`. Build: `npm ci && npm run build`. 
 
 ### Quiz → Fusion Ring Integration
 
-Quizzes emit `ContributionEvent`s via `src/lib/fusion-ring/quiz-to-event.ts`. The `useQuizContribution` hook converts events to 12-sector weights using `eventToSectorSignals()` + `AFFINITY_MAP`, checks the cluster completion gate (a cluster's contribution is only persisted when ALL quizzes in the cluster are complete), then fire-and-forget POSTs to `/api/contribute`. Series quizzes (Kinky, PartnerMatch) share state via a series-level component that wraps individual quiz steps. There are 6 clusters defined in `src/lib/fusion-ring/clusters.ts` (naturkind, mentalist, stratege, mystiker, kinky, partner_match) with 4 modules each.
+All 22 quiz components share the same props contract: `{ onComplete: (event: ContributionEvent) => void, onClose: () => void }`. Each quiz calls its dedicated converter from `quiz-to-event.ts` (e.g., `loveLangToEvent()`, `kinkySeriesQuizToEvent()`) which produces a `ContributionEvent` with semantic `Marker`s (format: `marker.{domain}.{keyword}`, weight 0–1).
+
+The `useQuizContribution` hook converts events to 12-sector weights using `eventToSectorSignals()` + `AFFINITY_MAP` (maps marker keywords to 12-element zodiac-sector weight vectors), checks the cluster completion gate (a cluster's contribution is only persisted when ALL quizzes in the cluster are complete), then fire-and-forget POSTs to `/api/contribute`. Series quizzes (Kinky, PartnerMatch) share state via a series-level component that wraps individual quiz steps and load quiz data from colocated JSON files.
+
+Six clusters in `src/lib/fusion-ring/clusters.ts`: naturkind (4 quizzes), mentalist (3), stratege (4), mystiker (4), kinky (4, premium), partner_match (4). The `ConversationAnalysisQuiz` in PartnerMatch is AI-powered — it calls `/api/analyze/conversation` server-side to extract markers from pasted dialogue.
+
+`QuizOverlay` is the master router — maps quiz IDs to lazy-loaded components via `QUIZ_MAP`. **Currently orphaned** (not mounted). To activate: mount with `useQuizContribution(completedModuleIds)` as `onComplete`, hydrate `completedModuleIds` from Supabase `contribution_events` on mount.
 
 ### `features/plan/` Directory
 
@@ -221,3 +227,4 @@ BaZi stem descriptions are defined in `src/lib/astro-data/heavenlyStems.ts` and 
 - No contract tests against BAFE; schema changes require manual verification.
 - The README references a legacy `readings` table — the current Supabase schema uses `astro_profiles`, `birth_data`, `natal_charts` (see `supabase-schema.sql`).
 - Stripe is optional at runtime: `server.mjs` checks `process.env.STRIPE_SECRET_KEY` before initializing; checkout returns 503 if unconfigured.
+- Typo directory `src/componets/` exists but is empty — all components live in `src/components/`.
