@@ -11,7 +11,6 @@ import {
 } from "react-native";
 import { useAuth } from "../contexts/AuthContext";
 import { calculateAll, generateInterpretation } from "../lib/reading";
-import { mobileConfig } from "../lib/config";
 import { persistReading } from "../lib/profile";
 
 type Props = {
@@ -35,47 +34,47 @@ export function OnboardingScreen({ onCompleted }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [resolving, setResolving] = useState(false);
 
-  const hasGoogleApi = useMemo(() => Boolean(mobileConfig.googleMapsApiKey), []);
-
   const lookupPlace = async () => {
-    if (!hasGoogleApi) {
-      Alert.alert("Google Places not configured", "Set EXPO_PUBLIC_GOOGLE_MAPS_API_KEY to use place lookup.");
-      return;
-    }
-
     if (!placeQuery.trim()) {
-      Alert.alert("Place required", "Enter a city or place name first.");
+      Alert.alert("Ort eingeben", "Bitte gib zuerst einen Ort ein.");
       return;
     }
 
     setResolving(true);
     try {
-      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(placeQuery)}&key=${mobileConfig.googleMapsApiKey}`;
-      const geocodeResponse = await fetch(geocodeUrl);
-      const geocode = await geocodeResponse.json();
-      const best = geocode?.results?.[0];
-      const location = best?.geometry?.location;
+      // Use OpenStreetMap Nominatim (same as web app — no API key needed)
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(placeQuery)}&format=json&limit=1&addressdetails=1`;
+      const response = await fetch(url, {
+        headers: { 'User-Agent': 'Bazodiac-Mobile/1.0' },
+      });
+      const results = await response.json();
+      const best = results?.[0];
 
-      if (!location) {
-        Alert.alert("Place not found", "Try a different search term.");
+      if (!best) {
+        Alert.alert("Ort nicht gefunden", "Versuche einen anderen Suchbegriff.");
         return;
       }
 
-      const nextLat = Number(location.lat);
-      const nextLon = Number(location.lng);
+      const nextLat = Number(best.lat);
+      const nextLon = Number(best.lon);
       setLat(nextLat.toFixed(6));
       setLon(nextLon.toFixed(6));
-      setPlaceName(best.formatted_address || placeQuery);
+      setPlaceName(best.display_name || placeQuery);
 
-      const ts = Math.floor(Date.now() / 1000);
-      const tzUrl = `https://maps.googleapis.com/maps/api/timezone/json?location=${nextLat},${nextLon}&timestamp=${ts}&key=${mobileConfig.googleMapsApiKey}`;
-      const tzResponse = await fetch(tzUrl);
-      const tzPayload = await tzResponse.json();
-      if (tzPayload?.timeZoneId) {
-        setTz(tzPayload.timeZoneId);
+      // Detect timezone from coordinates using timeapi.io (free, no key)
+      try {
+        const tzResponse = await fetch(
+          `https://timeapi.io/api/timezone/coordinate?latitude=${nextLat}&longitude=${nextLon}`,
+        );
+        const tzData = await tzResponse.json();
+        if (tzData?.timeZone) {
+          setTz(tzData.timeZone);
+        }
+      } catch {
+        // Timezone detection failed — keep default, user can edit manually
       }
     } catch (err) {
-      Alert.alert("Lookup failed", err instanceof Error ? err.message : "Unknown error");
+      Alert.alert("Suche fehlgeschlagen", err instanceof Error ? err.message : "Unbekannter Fehler");
     } finally {
       setResolving(false);
     }
@@ -112,7 +111,12 @@ export function OnboardingScreen({ onCompleted }: Props) {
         lon: parsedLon,
       });
 
-      const interpretation = await generateInterpretation(reading, "en");
+      let interpretation: string;
+      try {
+        interpretation = await generateInterpretation(reading, "de");
+      } catch {
+        interpretation = "Dein kosmisches Profil wurde berechnet. Die KI-Deutung wird beim nächsten Öffnen nachgeladen.";
+      }
 
       await persistReading(
         user.id,
@@ -129,7 +133,7 @@ export function OnboardingScreen({ onCompleted }: Props) {
 
       await onCompleted();
     } catch (err) {
-      Alert.alert("Onboarding failed", err instanceof Error ? err.message : "Unknown error");
+      Alert.alert("Fehler", err instanceof Error ? err.message : "Profilerstellung fehlgeschlagen");
     } finally {
       setSubmitting(false);
     }
@@ -138,9 +142,9 @@ export function OnboardingScreen({ onCompleted }: Props) {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Text style={styles.badge}>Step 1 / 2</Text>
-        <Text style={styles.title}>Birth Data</Text>
-        <Text style={styles.subtitle}>Touch-first onboarding with immutable profile creation.</Text>
+        <Text style={styles.badge}>Schritt 1 / 2</Text>
+        <Text style={styles.title}>Geburtsdaten</Text>
+        <Text style={styles.subtitle}>Gib deine Geburtsdaten ein, um dein kosmisches Profil zu erstellen.</Text>
 
         <View style={styles.group}>
           <Text style={styles.label}>Birth date (YYYY-MM-DD)</Text>
@@ -186,7 +190,7 @@ export function OnboardingScreen({ onCompleted }: Props) {
             placeholderTextColor="#6f7785"
           />
           <Pressable style={styles.secondaryButton} onPress={lookupPlace} disabled={resolving}>
-            <Text style={styles.secondaryButtonText}>{resolving ? "Resolving..." : "Resolve place + timezone"}</Text>
+            <Text style={styles.secondaryButtonText}>{resolving ? "Suche..." : "Ort + Zeitzone ermitteln"}</Text>
           </Pressable>
           {placeName ? <Text style={styles.helper}>Selected: {placeName}</Text> : null}
         </View>
@@ -207,7 +211,7 @@ export function OnboardingScreen({ onCompleted }: Props) {
         </View>
 
         <Pressable style={[styles.primaryButton, submitting && styles.disabled]} onPress={submit} disabled={submitting}>
-          <Text style={styles.primaryButtonText}>{submitting ? "Calculating..." : "Create my reading"}</Text>
+          <Text style={styles.primaryButtonText}>{submitting ? "Berechne..." : "Profil erstellen"}</Text>
         </Pressable>
       </ScrollView>
     </SafeAreaView>
