@@ -93,6 +93,8 @@ const linking: LinkingOptions<RootStackParamList> = {
       },
       Voice: "levi",
       Signatur: "signatur",
+      Article: "wissen/:slug",
+      Quiz: "quiz",
     },
   },
 };
