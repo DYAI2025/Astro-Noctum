@@ -6,6 +6,7 @@
 const FLAGS = {
   signature_onboarding_v1: true,
   daily_modal_v1: true,
+  signature_engine_v2: true,
 } as const;
 
 type FlagName = keyof typeof FLAGS;

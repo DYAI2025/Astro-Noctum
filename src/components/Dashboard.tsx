@@ -12,6 +12,8 @@ import { UpgradeButton } from "./UpgradeButton";
 import { ManageSubscription } from "./ManageSubscription";
 import { DailyHoroscopeModal } from "./dashboard/DailyHoroscopeModal";
 import { FusionRingWebsiteCanvas } from "./fusion-ring-website/FusionRingWebsiteCanvas";
+import FusionRingCanvasV2 from "./fusion-ring-website/FusionRingCanvasV2";
+import { soulprintToNatalWeights } from "./fusion-ring-website/signatur-bridge";
 import { useFirstRunDaily } from "../hooks/useFirstRunDaily";
 import { supabase } from "../lib/supabase";
 import type { ApiData } from "../types/bafe";
@@ -230,10 +232,19 @@ export function Dashboard({
           {...fadeIn(0.05)}
         >
           <div className="w-20 h-20 opacity-70 hover:opacity-100 transition-opacity">
-            <FusionRingWebsiteCanvas
-              soulProfile={profileMeta.soulprintSectors}
-              className="w-full h-full"
-            />
+            {isFeatureEnabled('signature_engine_v2') ? (
+              <FusionRingCanvasV2
+                natalWeights={soulprintToNatalWeights(profileMeta.soulprintSectors)}
+                isMini={true}
+                showUI={false}
+                className="w-full h-full"
+              />
+            ) : (
+              <FusionRingWebsiteCanvas
+                soulProfile={profileMeta.soulprintSectors}
+                className="w-full h-full"
+              />
+            )}
           </div>
         </motion.div>
       )}
