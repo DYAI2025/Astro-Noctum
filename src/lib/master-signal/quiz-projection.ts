@@ -48,7 +48,8 @@ export function projectQuiz(events: ContributionEvent[]): ProjectedSignal {
   let totalWeight = 0;
 
   for (const event of events) {
-    for (const marker of event.payload.markers) {
+    const markers = Array.isArray(event.payload?.markers) ? event.payload.markers : [];
+    for (const marker of markers) {
       const domain = extractDomain(marker.id);
       const affinities = DOMAIN_DIMENSION_MAP[domain] ?? FALLBACK_DIMENSION;
       const w = marker.weight * (marker.evidence?.confidence ?? 0.7);
