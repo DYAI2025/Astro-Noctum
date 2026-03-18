@@ -11,6 +11,7 @@ import {
   calculateFusionSignal,
   clamp01,
 } from '@/src/utils/math';
+import { authedFetch } from '@/src/lib/authedFetch';
 
 type FusionSignalState = {
   signalData: FusionSignalData | null;
@@ -44,7 +45,7 @@ export const useFusionSignal = (userId: string): FusionSignalState => {
         setLoading(true);
       }
 
-      const response = await fetch(`/api/transit-state/${encodeURIComponent(userId)}`, {
+      const response = await authedFetch(`/api/transit-state/${encodeURIComponent(userId)}`, {
         headers: { 'Content-Type': 'application/json' },
         cache: 'no-store',
       });
