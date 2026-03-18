@@ -315,8 +315,34 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
       // === ZODIAC RING SPRITES ===
       const zodiacSprites: THREE_TYPES.Sprite[] = [];
       function createZodiacRing() {
-        // Remove old
-        zodiacSprites.forEach(s => ringGroup.remove(s));
+        // Remove old and dispose materials/textures to avoid leaks
+        zodiacSprites.forEach(sprite => {
+          // Dispose sprite material(s) and their maps
+          const material = sprite.material as
+            | THREE_TYPES.Material
+            | THREE_TYPES.Material[]
+            | undefined;
+
+          const disposeMaterial = (mat: THREE_TYPES.Material | undefined) => {
+            if (!mat) return;
+            const anyMat = mat as THREE_TYPES.Material & {
+              map?: THREE_TYPES.Texture | null;
+            };
+            if (anyMat.map) {
+              anyMat.map.dispose();
+              anyMat.map = null;
+            }
+            mat.dispose();
+          };
+
+          if (Array.isArray(material)) {
+            material.forEach(m => disposeMaterial(m));
+          } else {
+            disposeMaterial(material);
+          }
+
+          ringGroup.remove(sprite);
+        });
         zodiacSprites.length = 0;
 
         ZODIAC_SIGNS.forEach(sign => {
