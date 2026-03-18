@@ -33,6 +33,7 @@ export function OnboardingScreen({ onCompleted }: Props) {
   const [tz, setTz] = useState("Europe/Berlin");
   const [submitting, setSubmitting] = useState(false);
   const [resolving, setResolving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const lookupPlace = async () => {
     if (!placeQuery.trim()) {
@@ -81,8 +82,12 @@ export function OnboardingScreen({ onCompleted }: Props) {
   };
 
   const submit = async () => {
+    setError(null);
+
     if (!user) {
-      Alert.alert("Authentication required", "Please sign in again.");
+      const message = "Please sign in again.";
+      setError(message);
+      Alert.alert("Authentication required", message);
       return;
     }
 
@@ -90,12 +95,16 @@ export function OnboardingScreen({ onCompleted }: Props) {
     const parsedLon = Number(lon);
 
     if (!Number.isFinite(parsedLat) || parsedLat < -90 || parsedLat > 90) {
-      Alert.alert("Invalid latitude", "Latitude must be between -90 and 90.");
+      const message = "Latitude must be between -90 and 90.";
+      setError(message);
+      Alert.alert("Invalid latitude", message);
       return;
     }
 
     if (!Number.isFinite(parsedLon) || parsedLon < -180 || parsedLon > 180) {
-      Alert.alert("Invalid longitude", "Longitude must be between -180 and 180.");
+      const message = "Longitude must be between -180 and 180.";
+      setError(message);
+      Alert.alert("Invalid longitude", message);
       return;
     }
 
@@ -133,7 +142,9 @@ export function OnboardingScreen({ onCompleted }: Props) {
 
       await onCompleted();
     } catch (err) {
-      Alert.alert("Fehler", err instanceof Error ? err.message : "Profilerstellung fehlgeschlagen");
+      const message = err instanceof Error ? err.message : "Unknown error";
+      setError(message);
+      Alert.alert("Onboarding failed", message);
     } finally {
       setSubmitting(false);
     }
@@ -169,6 +180,7 @@ export function OnboardingScreen({ onCompleted }: Props) {
           />
 
           <Pressable
+            accessibilityRole="button"
             style={[styles.pill, timeUnknown && styles.pillActive]}
             onPress={() => setTimeUnknown((prev) => !prev)}
           >
@@ -189,8 +201,8 @@ export function OnboardingScreen({ onCompleted }: Props) {
             placeholder="Berlin, Germany"
             placeholderTextColor="#6f7785"
           />
-          <Pressable style={styles.secondaryButton} onPress={lookupPlace} disabled={resolving}>
-            <Text style={styles.secondaryButtonText}>{resolving ? "Suche..." : "Ort + Zeitzone ermitteln"}</Text>
+          <Pressable accessibilityRole="button" style={styles.secondaryButton} onPress={lookupPlace} disabled={resolving}>
+            <Text style={styles.secondaryButtonText}>{resolving ? "Resolving..." : "Resolve place + timezone"}</Text>
           </Pressable>
           {placeName ? <Text style={styles.helper}>Selected: {placeName}</Text> : null}
         </View>
@@ -210,8 +222,15 @@ export function OnboardingScreen({ onCompleted }: Props) {
           <TextInput style={styles.input} value={tz} onChangeText={setTz} autoCapitalize="none" />
         </View>
 
-        <Pressable style={[styles.primaryButton, submitting && styles.disabled]} onPress={submit} disabled={submitting}>
-          <Text style={styles.primaryButtonText}>{submitting ? "Berechne..." : "Profil erstellen"}</Text>
+        {error ? <Text style={styles.error}>{error}</Text> : null}
+
+        <Pressable
+          accessibilityRole="button"
+          style={[styles.primaryButton, submitting && styles.disabled]}
+          onPress={submit}
+          disabled={submitting}
+        >
+          <Text style={styles.primaryButtonText}>{submitting ? "Calculating..." : "Create my reading"}</Text>
         </Pressable>
       </ScrollView>
     </SafeAreaView>
@@ -265,6 +284,11 @@ const styles = StyleSheet.create({
   helper: {
     color: "#8fa0bc",
     fontSize: 12,
+  },
+  error: {
+    color: "#ff7a7a",
+    fontSize: 13,
+    lineHeight: 20,
   },
   pill: {
     minHeight: 44,
