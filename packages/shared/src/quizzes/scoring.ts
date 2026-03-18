@@ -18,6 +18,10 @@ export function scoreQuiz(
     case 'multi-dimension':
     case 'categorical':
       return scoreDimensional(quiz, answers);
+    default: {
+      const unknownModel: never = quiz.scoringModel;
+      throw new Error(`Unsupported scoring model: ${unknownModel}`);
+    }
   }
 }
 
@@ -25,6 +29,10 @@ function scoreProfileDriven(
   quiz: QuizDefinition,
   answers: Record<string, string>,
 ): QuizResult {
+  if (quiz.profiles.length === 0) {
+    throw new Error(`Quiz "${quiz.id}" has no profiles configured.`);
+  }
+
   const votes: Record<string, number> = {};
 
   for (const q of quiz.questions) {
@@ -59,6 +67,10 @@ function scoreDimensional(
   quiz: QuizDefinition,
   answers: Record<string, string>,
 ): QuizResult {
+  if (quiz.profiles.length === 0) {
+    throw new Error(`Quiz "${quiz.id}" has no profiles configured.`);
+  }
+
   const scores: Record<string, number> = {};
 
   for (const q of quiz.questions) {

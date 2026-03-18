@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
+import type { DimensionValue } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useAppState } from "../contexts/AppStateContext";
@@ -106,7 +107,7 @@ export function DashboardScreen() {
           <Text style={styles.kicker}>WUXING 五行</Text>
           {wuxingElements.map(el => {
             const pct = Math.round((el.value / wuxingTotal) * 100);
-            const barWidth = `${(el.value / wuxingMax) * 100}%`;
+            const barWidth: DimensionValue = `${(el.value / wuxingMax) * 100}%`;
             return (
               <View key={el.key} style={styles.wuxingRow}>
                 <Text style={[styles.wuxingLabel, { color: el.color }]}>{el.chinese}</Text>
