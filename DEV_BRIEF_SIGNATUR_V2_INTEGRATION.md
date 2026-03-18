@@ -229,7 +229,7 @@ Diese Komponenten aus der Quelle sind UI-Entwürfe mit Mock-Daten. Sie können i
 
 **Datei:** `src/lib/feature-flags.ts`
 
-**Was:** Neuen Flag `signatur_engine_v2` hinzufügen (default: `true`).
+**Was:** Ein neues Flag `signatur_engine_v2` hinzufügen (default: `true`).
 
 ```ts
 export const FEATURE_FLAGS = {
