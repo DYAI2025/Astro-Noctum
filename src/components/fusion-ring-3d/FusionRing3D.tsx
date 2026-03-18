@@ -68,6 +68,11 @@ export const FusionRing3D = ({
   const { signalData, events, resolution, loading, error } = useFusionSignal(userId);
   const { kpIndex } = useSpaceWeather();
 
+  const v2NatalWeights = useMemo(
+    () => signalData?.baseSignals ? soulprintToNatalWeights(signalData.baseSignals) : undefined,
+    [signalData?.baseSignals]
+  );
+
   const [queuedEffect, setQueuedEffect] = useState<QueuedEffect | null>(null);
   const lastEventRef = useRef<string>('');
 
@@ -103,7 +108,7 @@ export const FusionRing3D = ({
 
         {isFeatureEnabled('signature_engine_v2') ? (
           <FusionRingCanvasV2
-            natalWeights={signalData?.baseSignals ? soulprintToNatalWeights(signalData.baseSignals) : undefined}
+            natalWeights={v2NatalWeights}
             showUI={isInteractive}
             className="h-full w-full"
           />

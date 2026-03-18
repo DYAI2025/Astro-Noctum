@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   ArrowLeft, RefreshCw,
@@ -188,6 +188,12 @@ export function Dashboard({
   // ── Feature flags ──────────────────────────────────────────────────
   const dailyEnabled = isFeatureEnabled('daily_modal_v1');
 
+  // ── V2 Signatur weights (memoized to avoid new object every render) ──
+  const v2NatalWeights = useMemo(
+    () => profileMeta.soulprintSectors ? soulprintToNatalWeights(profileMeta.soulprintSectors) : undefined,
+    [profileMeta.soulprintSectors]
+  );
+
   // ── Daily horoscope modal ───────────────────────────────────────────
   const { dailyData, showModal, handleClose: handleDailyClose } = useFirstRunDaily(
     userId,
@@ -226,28 +232,30 @@ export function Dashboard({
       )}
 
       {/* ═══ PERSISTENT SIGNATURE WIDGET ═══════════════════════════════ */}
-      {profileMeta.soulprintSectors && (
-        <motion.div
-          className="flex justify-center mb-4"
-          {...fadeIn(0.05)}
-        >
-          <div className="w-20 h-20 opacity-70 hover:opacity-100 transition-opacity">
-            {isFeatureEnabled('signature_engine_v2') ? (
-              <FusionRingCanvasV2
-                natalWeights={soulprintToNatalWeights(profileMeta.soulprintSectors)}
-                isMini={true}
-                showUI={false}
-                className="w-full h-full"
-              />
-            ) : (
-              <FusionRingWebsiteCanvas
-                soulProfile={profileMeta.soulprintSectors}
-                className="w-full h-full"
-              />
-            )}
-          </div>
-        </motion.div>
-      )}
+      <SectionErrorBoundary name="Signatur">
+        {profileMeta.soulprintSectors && (
+          <motion.div
+            className="flex justify-center mb-4"
+            {...fadeIn(0.05)}
+          >
+            <div className="w-20 h-20 opacity-70 hover:opacity-100 transition-opacity">
+              {isFeatureEnabled('signature_engine_v2') ? (
+                <FusionRingCanvasV2
+                  natalWeights={v2NatalWeights}
+                  isMini={true}
+                  showUI={false}
+                  className="w-full h-full"
+                />
+              ) : (
+                <FusionRingWebsiteCanvas
+                  soulProfile={profileMeta.soulprintSectors}
+                  className="w-full h-full"
+                />
+              )}
+            </div>
+          </motion.div>
+        )}
+      </SectionErrorBoundary>
 
       {/* ═══ PAGE HEADER ═══════════════════════════════════════════════ */}
       <motion.header
