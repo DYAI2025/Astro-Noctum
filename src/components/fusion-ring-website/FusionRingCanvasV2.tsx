@@ -138,9 +138,9 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
 
         bloomPass = new UnrealBloomPass(
           new THREE.Vector2(window.innerWidth, window.innerHeight),
-          0.8,   // strength
+          0.35,  // strength (reduced for subtlety)
           0.4,   // radius
-          0.85   // threshold
+          0.9    // threshold (higher = only brightest particles bloom)
         );
         composer.addPass(bloomPass);
 
@@ -444,8 +444,8 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
 
           switch (p.layer) {
             case 'glow':
-              sizeScale = 0.12;
-              alphaScale = 0.6;
+              sizeScale = 0.07;
+              alphaScale = 0.25;
               yOffset = (hash01(p.phase, 42) - 0.5) * 0.4;
               break;
             case 'curve':
@@ -889,7 +889,7 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
         // Emergence-driven bloom and material intensity
         if (bloomPass && currentSignature) {
           const emergenceVal = currentSignature.emergence.emergence;
-          bloomPass.strength = lerp(0.6, 1.4, emergenceVal);
+          bloomPass.strength = lerp(0.25, 0.55, emergenceVal);
         }
 
         // Return-to-home
@@ -1000,8 +1000,8 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
           if (bloomPass) {
             // Dynamic bloom pulse based on signature emergence or just time
             const intensityBase = currentSignature?.emergence.emergence || 0.5;
-            bloomPass.strength = 1.2 + Math.sin(t * 0.5) * 0.3 * intensityBase;
-            bloomPass.threshold = 0.2 + Math.sin(t * 0.3) * 0.1;
+            bloomPass.strength = 0.35 + Math.sin(t * 0.5) * 0.15 * intensityBase;
+            bloomPass.threshold = 0.85 + Math.sin(t * 0.3) * 0.05;
           }
           composer.render();
         } else {
