@@ -8,6 +8,8 @@ import { QuizScreen } from "../screens/QuizScreen";
 import { ProfileScreen } from "../screens/ProfileScreen";
 import { VoiceScreen } from "../screens/VoiceScreen";
 import { FuRingScreen } from "../screens/FuRingScreen";
+import { ArticleScreen } from "../screens/ArticleScreen";
+import { WissenScreen } from "../screens/WissenScreen";
 
 export type RootTabParamList = {
   Home: undefined;
@@ -19,6 +21,8 @@ export type RootStackParamList = {
   Tabs: undefined;
   Voice: undefined;
   Signatur: undefined;
+  Article: { slug: string };
+  Quiz: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -107,6 +111,8 @@ export function RootNavigator() {
         <Stack.Screen name="Tabs" component={Tabs} options={{ headerShown: false }} />
         <Stack.Screen name="Voice" component={VoiceScreen} options={{ title: "Levi Voice" }} />
         <Stack.Screen name="Signatur" component={FuRingScreen} options={{ title: "Signatur" }} />
+        <Stack.Screen name="Article" component={ArticleScreen} options={{ title: "Wissen" }} />
+        <Stack.Screen name="Quiz" component={WissenScreen} options={{ title: "Wissen" }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
