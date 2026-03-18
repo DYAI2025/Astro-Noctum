@@ -1,70 +1,238 @@
-import { useEffect, useRef } from 'react';
-import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
+import { useMemo } from 'react';
+import { ActivityIndicator, Animated, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useAppState } from '../contexts/AppStateContext';
+import { useBootstrapSignatur } from '../hooks/useBootstrapSignatur';
+import { COLORS } from '../theme';
+
+const SECTOR_LABELS = [
+  'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+  'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces',
+];
+
+const SECTOR_EMOJIS = [
+  '\u2648', '\u2649', '\u264A', '\u264B', '\u264C', '\u264D', '\u264E', '\u264F', '\u2650', '\u2651', '\u2652', '\u2653',
+];
+
+const SECTOR_COLORS = [
+  '#D63B0F', '#3D8B37', '#C49A2A', '#2E6BB5', '#D63B0F', '#C49A2A',
+  '#8A8A8A', '#2E6BB5', '#D63B0F', '#C49A2A', '#8A8A8A', '#2E6BB5',
+];
 
 export function FuRingScreen() {
-  const spin = useRef(new Animated.Value(0)).current;
+  const { profile } = useAppState();
+  const { bootstrap, loading } = useBootstrapSignatur(profile);
 
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.timing(spin, {
-        toValue: 1,
-        duration: 4000,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }),
+  const sectors = useMemo(() => {
+    if (!bootstrap?.soulprint_sectors) return null;
+    const max = Math.max(...bootstrap.soulprint_sectors, 0.01);
+    return bootstrap.soulprint_sectors.map((value, i) => ({
+      label: SECTOR_LABELS[i],
+      emoji: SECTOR_EMOJIS[i],
+      color: SECTOR_COLORS[i],
+      value,
+      pct: Math.round((value / max) * 100),
+    }));
+  }, [bootstrap]);
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator color={COLORS.gold} size="large" />
+        <Text style={styles.loadingText}>Signatur wird geladen...</Text>
+      </View>
     );
-    loop.start();
-    return () => loop.stop();
-  }, [spin]);
+  }
 
-  const rotation = spin.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
+  if (!bootstrap || !sectors) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.emoji}>{'\u2726'}</Text>
+        <Text style={styles.title}>Signatur</Text>
+        <Text style={styles.subtitle}>
+          Deine Signatur wird berechnet, sobald die Verbindung zum Server steht.
+        </Text>
+      </View>
+    );
+  }
+
+  const bp = bootstrap.profile;
+  const seed = bootstrap.signature_blueprint?.seed || '\u2014';
+  const harmony = bootstrap.profile?.harmony_index ?? 0;
+  const harmonyPct = Math.round(harmony * 100);
 
   return (
-    <View style={styles.container}>
-      <Animated.View
-        style={[styles.ring, { transform: [{ rotate: rotation }] }]}
-      />
-      <Text style={styles.title}>Signatur</Text>
-      <Text style={styles.message}>
-        Deine Signatur wird in einem kommenden Update verfügbar.
-      </Text>
-    </View>
+    <ScrollView contentContainerStyle={styles.container}>
+      {/* Profile summary */}
+      <View style={styles.card}>
+        <Text style={styles.kicker}>DEINE SIGNATUR</Text>
+        <Text style={styles.profileLine}>
+          {'\u2609'} {bp.sun_sign} {'\u00B7'} {'\u263D'} {bp.moon_sign} {'\u00B7'} {'\u2191'} {bp.ascendant_sign}
+        </Text>
+        <Text style={styles.profileLine}>
+          Tagesmeister: {bp.day_master}
+        </Text>
+        <View style={styles.harmonyRow}>
+          <Text style={styles.harmonyLabel}>Harmonie-Index</Text>
+          <View style={styles.harmonyTrack}>
+            <View style={[styles.harmonyFill, { width: `${harmonyPct}%` }]} />
+          </View>
+          <Text style={styles.harmonyPct}>{harmonyPct}%</Text>
+        </View>
+      </View>
+
+      {/* Soulprint Sectors */}
+      <View style={styles.card}>
+        <Text style={styles.kicker}>SOULPRINT {'\u00B7'} 12 SEKTOREN</Text>
+        {sectors.map((s, i) => (
+          <View key={i} style={styles.sectorRow}>
+            <Text style={styles.sectorEmoji}>{s.emoji}</Text>
+            <Text style={styles.sectorLabel}>{s.label}</Text>
+            <View style={styles.sectorTrack}>
+              <View
+                style={[
+                  styles.sectorFill,
+                  { backgroundColor: s.color, width: `${Math.max(s.pct, 2)}%` },
+                ]}
+              />
+            </View>
+            <Text style={styles.sectorValue}>{s.value.toFixed(2)}</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* Signature Seed */}
+      <View style={styles.card}>
+        <Text style={styles.kicker}>SIGNATUR-SEED</Text>
+        <Text style={styles.seedText}>{seed}</Text>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    padding: 16,
+    gap: 14,
+    paddingBottom: 40,
+  },
+  center: {
     flex: 1,
-    backgroundColor: '#030308',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 32,
+    padding: 24,
+    backgroundColor: COLORS.bg,
   },
-  ring: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 2,
-    borderColor: 'transparent',
-    borderTopColor: 'rgba(212, 175, 55, 0.8)',
-    borderRightColor: 'rgba(212, 175, 55, 0.3)',
-    marginBottom: 32,
+  loadingText: {
+    color: COLORS.textDim,
+    marginTop: 12,
+    fontSize: 14,
+  },
+  emoji: {
+    fontSize: 48,
+    marginBottom: 16,
   },
   title: {
-    color: '#f5f7fb',
-    fontSize: 26,
+    color: COLORS.text,
+    fontSize: 24,
     fontWeight: '700',
-    marginBottom: 12,
-    letterSpacing: 0.5,
+    marginBottom: 8,
   },
-  message: {
-    color: 'rgba(255, 255, 255, 0.5)',
-    fontSize: 16,
+  subtitle: {
+    color: COLORS.textDim,
+    fontSize: 14,
     textAlign: 'center',
-    lineHeight: 24,
-    maxWidth: 300,
+    lineHeight: 22,
+    maxWidth: 280,
+  },
+  card: {
+    backgroundColor: COLORS.card,
+    borderColor: COLORS.border,
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 14,
+    gap: 8,
+  },
+  kicker: {
+    color: COLORS.gold,
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 2,
+    marginBottom: 4,
+  },
+  profileLine: {
+    color: COLORS.text,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  harmonyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 8,
+  },
+  harmonyLabel: {
+    color: COLORS.textDim,
+    fontSize: 12,
+    width: 100,
+  },
+  harmonyTrack: {
+    flex: 1,
+    height: 6,
+    backgroundColor: '#1a2636',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  harmonyFill: {
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: COLORS.gold,
+  },
+  harmonyPct: {
+    color: COLORS.gold,
+    fontSize: 12,
+    fontWeight: '700',
+    width: 36,
+    textAlign: 'right',
+  },
+  sectorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 2,
+  },
+  sectorEmoji: {
+    fontSize: 16,
+    width: 24,
+    textAlign: 'center',
+  },
+  sectorLabel: {
+    color: COLORS.textDim,
+    fontSize: 11,
+    width: 72,
+  },
+  sectorTrack: {
+    flex: 1,
+    height: 6,
+    backgroundColor: '#1a2636',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  sectorFill: {
+    height: 6,
+    borderRadius: 3,
+  },
+  sectorValue: {
+    color: COLORS.textDim,
+    fontSize: 10,
+    width: 36,
+    textAlign: 'right',
+    fontVariant: ['tabular-nums'],
+  },
+  seedText: {
+    color: COLORS.text,
+    fontSize: 14,
+    fontFamily: undefined, // monospace would be ideal but RN default is fine
+    letterSpacing: 0.5,
+    opacity: 0.7,
   },
 });

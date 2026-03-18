@@ -6,18 +6,16 @@ import { useAppState } from "../contexts/AppStateContext";
 import { beginCheckout } from "../lib/checkout";
 import { authedFetch } from "../lib/api";
 import { useSpaceWeather } from "../hooks/useSpaceWeather";
+import { useDailyHoroscope } from "../hooks/useDailyHoroscope";
 import type { RootStackParamList } from "../navigation/RootNavigator";
 
 type Navigation = NativeStackNavigationProp<RootStackParamList>;
-
-function extractInterpretation(profile: any): string {
-  return String(profile?.astro_json?.interpretation || "");
-}
 
 export function DashboardScreen() {
   const navigation = useNavigation<Navigation>();
   const { profile, tier, bootstrap, refreshProfile } = useAppState();
   const { kpIndex, loading: weatherLoading } = useSpaceWeather();
+  const { daily, loading: dailyLoading } = useDailyHoroscope(profile);
   const [busyCheckout, setBusyCheckout] = useState(false);
   const [busyShare, setBusyShare] = useState(false);
 
@@ -28,7 +26,18 @@ export function DashboardScreen() {
     return `${sun} Sun • ${moon} Moon • ${asc} Rising`;
   }, [profile]);
 
-  const interpretation = useMemo(() => extractInterpretation(profile), [profile]);
+  const wuxingElements = useMemo(() => {
+    const els = profile?.astro_json?.wuxing?.elements || {};
+    return [
+      { key: 'Wood', label: 'Holz', chinese: '木', color: '#3D8B37', value: Number(els.Wood || els.Holz || 0) },
+      { key: 'Fire', label: 'Feuer', chinese: '火', color: '#D63B0F', value: Number(els.Fire || els.Feuer || 0) },
+      { key: 'Earth', label: 'Erde', chinese: '土', color: '#C49A2A', value: Number(els.Earth || els.Erde || 0) },
+      { key: 'Metal', label: 'Metall', chinese: '金', color: '#8A8A8A', value: Number(els.Metal || els.Metall || 0) },
+      { key: 'Water', label: 'Wasser', chinese: '水', color: '#2E6BB5', value: Number(els.Water || els.Wasser || 0) },
+    ];
+  }, [profile]);
+  const wuxingTotal = useMemo(() => wuxingElements.reduce((s, e) => s + e.value, 0), [wuxingElements]);
+  const wuxingMax = useMemo(() => Math.max(...wuxingElements.map(e => e.value), 1), [wuxingElements]);
 
   const openUpgrade = async () => {
     setBusyCheckout(true);
@@ -89,14 +98,46 @@ export function DashboardScreen() {
       <View style={styles.card}>
         <Text style={styles.kicker}>Weltraumwetter</Text>
         <Text style={styles.titleSmall}>{weatherLoading ? "Loading..." : `Kp ${kpIndex.toFixed(1)}`}</Text>
-        <Text style={styles.body}>Current geomagnetic signal feeds your transit intensity layer.</Text>
+        <Text style={styles.body}>Aktuelle geomagnetische Aktivität beeinflusst deine Transit-Intensität.</Text>
       </View>
 
+      {wuxingTotal > 0 && (
+        <View style={styles.card}>
+          <Text style={styles.kicker}>WUXING 五行</Text>
+          {wuxingElements.map(el => {
+            const pct = Math.round((el.value / wuxingTotal) * 100);
+            const barWidth = `${(el.value / wuxingMax) * 100}%`;
+            return (
+              <View key={el.key} style={styles.wuxingRow}>
+                <Text style={[styles.wuxingLabel, { color: el.color }]}>{el.chinese}</Text>
+                <Text style={styles.wuxingName}>{el.label}</Text>
+                <View style={styles.wuxingTrack}>
+                  <View style={[styles.wuxingFill, { backgroundColor: el.color, width: barWidth }]} />
+                </View>
+                <Text style={styles.wuxingPct}>{pct}%</Text>
+              </View>
+            );
+          })}
+        </View>
+      )}
+
       <View style={styles.card}>
-        <Text style={styles.kicker}>KI-Deutung</Text>
-        <Text style={styles.body} numberOfLines={8}>
-          {interpretation || "Your interpretation is ready once onboarding finishes."}
-        </Text>
+        <Text style={styles.kicker}>TAGESIMPULS</Text>
+        {dailyLoading ? (
+          <Text style={styles.body}>Dein Tageshoroskop wird geladen...</Text>
+        ) : daily ? (
+          <>
+            <Text style={styles.titleSmall}>{daily.fusion.summary}</Text>
+            <Text style={styles.body}>{daily.fusion.action}</Text>
+            {daily.fusion.pushworthy && daily.fusion.push_text && (
+              <View style={styles.pushHighlight}>
+                <Text style={styles.pushText}>⚡ {daily.fusion.push_text}</Text>
+              </View>
+            )}
+          </>
+        ) : (
+          <Text style={styles.body}>Tagesimpuls nicht verfügbar.</Text>
+        )}
       </View>
 
       <Pressable style={styles.signaturButton} onPress={() => navigation.navigate("Signatur")}>
@@ -205,5 +246,52 @@ const styles = StyleSheet.create({
   premiumText: {
     color: "#101926",
     fontWeight: "800",
+  },
+  pushHighlight: {
+    marginTop: 8,
+    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+    borderLeftWidth: 3,
+    borderLeftColor: '#d4af37',
+    borderRadius: 8,
+    padding: 10,
+  },
+  pushText: {
+    color: '#d4af37',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  wuxingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 6,
+  },
+  wuxingLabel: {
+    fontSize: 20,
+    width: 28,
+    textAlign: 'center',
+  },
+  wuxingName: {
+    color: '#95a6be',
+    fontSize: 12,
+    width: 48,
+  },
+  wuxingTrack: {
+    flex: 1,
+    height: 6,
+    backgroundColor: '#1a2636',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  wuxingFill: {
+    height: 6,
+    borderRadius: 3,
+  },
+  wuxingPct: {
+    color: '#95a6be',
+    fontSize: 11,
+    width: 32,
+    textAlign: 'right',
+    fontVariant: ['tabular-nums'],
   },
 });
