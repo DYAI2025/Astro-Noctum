@@ -30,7 +30,7 @@ export function SignatureReveal({ bootstrapData, onComplete }: Props) {
   const { profile, soulprint_sectors, signature_blueprint } = bootstrapData;
 
   const [activeSectors, setActiveSectors] = useState<number[]>(soulprint_sectors);
-  const useV2 = isFeatureEnabled('signatur_engine_v2');
+  const useV2 = isFeatureEnabled('signature_engine_v2');
   const [natalWeights] = useState(() => soulprintToNatalWeights(soulprint_sectors));
   const [quizWeights, setQuizWeights] = useState<Record<string, number> | undefined>();
   const [selectedKeyword, setSelectedKeyword] = useState<string | null>(null);

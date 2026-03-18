@@ -101,7 +101,7 @@ export const FusionRing3D = ({
           </div>
         )}
 
-        {isFeatureEnabled('signatur_engine_v2') ? (
+        {isFeatureEnabled('signature_engine_v2') ? (
           <FusionRingCanvasV2
             natalWeights={signalData?.baseSignals ? soulprintToNatalWeights(signalData.baseSignals) : undefined}
             showUI={isInteractive}

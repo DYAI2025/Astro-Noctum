@@ -232,7 +232,7 @@ export function Dashboard({
           {...fadeIn(0.05)}
         >
           <div className="w-20 h-20 opacity-70 hover:opacity-100 transition-opacity">
-            {isFeatureEnabled('signatur_engine_v2') ? (
+            {isFeatureEnabled('signature_engine_v2') ? (
               <FusionRingCanvasV2
                 natalWeights={soulprintToNatalWeights(profileMeta.soulprintSectors)}
                 isMini={true}
