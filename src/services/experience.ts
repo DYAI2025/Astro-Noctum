@@ -1,10 +1,11 @@
 import { BootstrapResponseSchema, SignatureDeltaResponseSchema, DailyResponseSchema } from '../lib/schemas/experience';
 import type { BootstrapResponse, SignatureDeltaResponse, DailyResponse } from '../lib/schemas/experience';
+import { authedFetch } from '../lib/authedFetch';
 
 export async function bootstrapExperience(birth: {
   date: string; time: string; tz: string; lat: number; lon: number; place_label?: string;
 }, locale = 'de-DE'): Promise<BootstrapResponse> {
-  const resp = await fetch('/api/experience/bootstrap', {
+  const resp = await authedFetch('/api/experience/bootstrap', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ birth, locale }),
@@ -18,7 +19,7 @@ export async function signatureDelta(
   signatureBlueprint: { seed: string; visual?: any; elements?: Record<string, number> },
   keyword: string,
 ): Promise<SignatureDeltaResponse> {
-  const resp = await fetch('/api/experience/signature-delta', {
+  const resp = await authedFetch('/api/experience/signature-delta', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -38,7 +39,7 @@ export async function fetchDailyExperience(
   targetDate: string,
   locale = 'de-DE',
 ): Promise<DailyResponse> {
-  const resp = await fetch('/api/experience/daily', {
+  const resp = await authedFetch('/api/experience/daily', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
