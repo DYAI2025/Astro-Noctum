@@ -210,8 +210,8 @@ export class FusionRingInputController {
     // Process explicit transit events and deposit sediment
     if (state.events) {
       for (const event of state.events) {
-        // Only priority 1-2 events create sediment
-        if (event.priority > 2) continue;
+        // Only high-priority events (>= 40) create sediment
+        if (event.priority < 40) continue;
         
         // Map event type to sediment event type
         const sedimentType = this.mapToSedimentEventType(event.type);
