@@ -650,6 +650,7 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
         const c = canvasRef.current;
         const w = c?.clientWidth || window.innerWidth;
         const h = c?.clientHeight || window.innerHeight;
+        if (h <= 0) return;
         renderer.setSize(w, h);
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
