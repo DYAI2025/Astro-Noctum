@@ -7,14 +7,16 @@ const STORAGE_KEY = 'bazodiac_quiz_last_suggestion';
 export function pickSuggestion(completedModuleIds: Set<string>): string | null {
   const today = new Date().toISOString().slice(0, 10);
   if (localStorage.getItem(STORAGE_KEY) === today) return null;
-  if (Math.random() > 0.3) return null;
 
   const allModules = CLUSTER_REGISTRY.flatMap(c => c.quizModuleIds);
   const open = allModules.filter(id => !completedModuleIds.has(id));
   if (open.length === 0) return null;
 
-  const pick = open[Math.floor(Math.random() * open.length)];
+  // Record that we've attempted a suggestion today, regardless of RNG hit/miss.
   localStorage.setItem(STORAGE_KEY, today);
+  if (Math.random() > 0.3) return null;
+
+  const pick = open[Math.floor(Math.random() * open.length)];
   return pick;
 }
 
