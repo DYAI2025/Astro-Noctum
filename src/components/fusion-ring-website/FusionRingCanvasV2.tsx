@@ -94,6 +94,8 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
   isMini?: boolean;
 }) {
   const canvasRef = useRef<HTMLDivElement>(null);
+  const revealRef = useRef(revealProgress);
+  useEffect(() => { revealRef.current = revealProgress; }, [revealProgress]);
 
   useEffect(() => {
     if (!canvasRef?.current) return;
@@ -229,7 +231,7 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
 
       const particleUniforms = {
         uTime: { value: 0 },
-        uReveal: { value: revealProgress }
+        uReveal: { value: revealRef.current }
       };
 
       // Custom shader material for particles
@@ -315,7 +317,13 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
       const zodiacSprites: THREE_TYPES.Sprite[] = [];
       function createZodiacRing() {
         // Remove old
-        zodiacSprites.forEach(s => ringGroup.remove(s));
+        zodiacSprites.forEach(s => {
+          ringGroup.remove(s);
+          if (s.material instanceof THREE.SpriteMaterial) {
+            s.material.map?.dispose();
+            s.material.dispose();
+          }
+        });
         zodiacSprites.length = 0;
 
         ZODIAC_SIGNS.forEach(sign => {
@@ -536,7 +544,7 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
       rebuildFromState();
 
       // Instance-scoped bridge for external rebuild
-      (renderer.domElement as any).__fusionRingRebuild = rebuildFromState;
+      (window as any).__fusionRingRebuild = rebuildFromState;
 
       // ========================================
       // MOUSE / TOUCH CONTROLS
@@ -1002,7 +1010,7 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
         effectLight2.intensity *= effectIntensityMultiplier;
 
         particleUniforms.uTime.value = t;
-        particleUniforms.uReveal.value = revealProgress;
+        particleUniforms.uReveal.value = revealRef.current;
         bgMat.uniforms.uTime.value = t;
 
         if (composer) {
@@ -1031,6 +1039,23 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
         window.removeEventListener('touchmove', onTouchMove);
         window.removeEventListener('touchend', onTouchEnd);
         window.removeEventListener('resize', onResize);
+        delete (window as any).__fusionRingRebuild;
+        zodiacSprites.forEach(s => {
+          if (s.material instanceof THREE.SpriteMaterial) {
+            s.material.map?.dispose();
+            s.material.dispose();
+          }
+        });
+        geometry.dispose();
+        particleMat.dispose();
+        dustGeo.dispose();
+        dustMat.dispose();
+        bgGeo.dispose();
+        bgMat.dispose();
+        if (composer) {
+          composer.renderTarget1?.dispose();
+          composer.renderTarget2?.dispose();
+        }
         renderer.dispose();
         if (canvasRef.current?.contains?.(renderer.domElement)) {
           canvasRef.current.removeChild(renderer.domElement);
@@ -1040,7 +1065,8 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
 
     const cleanup = initScene();
     return () => { cleanup?.then?.((fn) => fn?.()); };
-  }, [revealProgress, isMini]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div

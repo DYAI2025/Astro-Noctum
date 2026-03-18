@@ -35,7 +35,7 @@ export function eventToSectorSignals(event: ContributionEvent): number[] {
     }
   }
 
-  if (event.payload.tags) {
+  if (event.payload?.tags) {
     for (const tag of event.payload.tags) {
       const archetype = tag.id.split('.').pop();
       if (archetype && TAG_AFFINITY[archetype]) {
