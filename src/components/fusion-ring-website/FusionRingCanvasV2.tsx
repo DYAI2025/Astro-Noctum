@@ -532,8 +532,8 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
 
       rebuildFromState();
 
-      // Window bridge for external rebuild
-      (window as any).__fusionRingRebuild = rebuildFromState;
+      // Instance-scoped bridge for external rebuild
+      (renderer.domElement as any).__fusionRingRebuild = rebuildFromState;
 
       // ========================================
       // MOUSE / TOUCH CONTROLS
