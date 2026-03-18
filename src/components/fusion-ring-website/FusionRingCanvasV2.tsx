@@ -113,7 +113,10 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
 
       // === CORE OBJECTS ===
       const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+      const container = canvasRef.current;
+      const width = container?.clientWidth || window.innerWidth;
+      const height = container?.clientHeight || window.innerHeight;
+      const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
       const geometry = new THREE.BufferGeometry();
 
       // === RENDERER ===
@@ -122,7 +125,7 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
         alpha: false,
         powerPreference: 'high-performance',
       });
-      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setSize(width, height);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.8;
@@ -137,7 +140,7 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
         composer.addPass(renderPass);
 
         bloomPass = new UnrealBloomPass(
-          new THREE.Vector2(window.innerWidth, window.innerHeight),
+          new THREE.Vector2(width, height),
           0.35,  // strength (reduced for subtlety)
           0.4,   // radius
           0.9    // threshold (higher = only brightest particles bloom)
