@@ -978,7 +978,22 @@ RULES:
       }
     });
 
-    let jsonStr = result.text;
+    // Normalize and validate model response text before using it.
+    const rawText =
+      typeof result?.text === "string"
+        ? result.text
+        : typeof result?.response?.text === "string"
+          ? result.response.text
+          : undefined;
+    let jsonStr = rawText?.trim() || "";
+
+    if (!jsonStr) {
+      console.error("[experience/daily] Empty response text from model");
+      return res
+        .status(502)
+        .json({ error: "experience_unavailable", details: "empty_model_response" });
+    }
+
     if (jsonStr.startsWith('```json')) {
       jsonStr = jsonStr.replace(/^```json\s*/, '').replace(/\s*```$/, '');
     }
