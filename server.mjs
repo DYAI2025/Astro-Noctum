@@ -1872,7 +1872,9 @@ app.get("/api/space-weather/timeline", async (_req, res) => {
 
     const donkiEvents = [];
     if (extendedWeatherCache?.payload?.events) {
+      const allowedTimelineTypes = new Set(["flare", "cme", "cme_arrival", "kp_peak", "sep"]);
       for (const evt of extendedWeatherCache.payload.events) {
+        if (!allowedTimelineTypes.has(evt.type)) continue;
         donkiEvents.push({
           id: evt.event_id,
           type: evt.type,
