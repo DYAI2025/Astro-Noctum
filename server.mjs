@@ -864,20 +864,110 @@ app.post('/api/experience/signature-delta', requireUserAuth, async (req, res) =>
   }
 });
 
-app.post('/api/experience/daily', async (req, res) => {
+app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
   try {
+    const userId = req.userId;
     const bodyStr = JSON.stringify(req.body);
     if (bodyStr.length > 10000) {
       return res.status(413).json({ error: 'payload_too_large' });
     }
-    const resp = await fetch(`${BAFE_BASE_URL}/experience/daily`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: bodyStr,
-      signal: AbortSignal.timeout(20000),
+    
+    const { birth, target_date, locale } = req.body;
+    const lang = locale?.startsWith('en') ? 'en' : 'de';
+    const targetDate = target_date || new Date().toISOString().slice(0, 10);
+    const cacheKeyD = `daily:${userId}:${targetDate}:${lang}`;
+
+    if (horoscopeCache.has(cacheKeyD)) {
+      const cached = horoscopeCache.get(cacheKeyD);
+      if (Date.now() - cached.timestamp < HOROSCOPE_CACHE_TTL) {
+         return res.json(cached.data);
+      }
+    }
+
+    if (!geminiClient) {
+      console.warn('[experience/daily] Gemini API key missing, falling back to proxy');
+      const resp = await fetch(`${BAFE_BASE_URL}/experience/daily`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: bodyStr,
+        signal: AbortSignal.timeout(20000),
+      });
+      const data = await resp.json();
+      return res.status(resp.status).json(data);
+    }
+
+    // Call BAFE for natal data to feed Gemini
+    const bafeRes = await fetch(`${BAFE_BASE_URL}/chart`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        birthDate: birth.date,
+        birthTime: birth.time,
+        lat: birth.lat,
+        lng: birth.lon,
+        timeZone: birth.tz
+      })
     });
-    const data = await resp.json();
-    res.status(resp.status).json(data);
+    const bafeData = bafeRes.ok ? await bafeRes.json() : {};
+
+    const prompt = `
+You are Bazodiac's fusion astrologer.
+Write a daily horoscope for today (${targetDate}) based on the user's birth chart:
+${JSON.stringify(bafeData, null, 2)}
+
+Respond with STRICT JSON matching this EXACT structure (No markdown code blocks, just raw JSON).
+{
+  "date": "${targetDate}",
+  "western": {
+    "summary": "1-2 sentences about Western transits.",
+    "themes": ["theme1", "theme2"],
+    "caution": "1 sentence caution",
+    "opportunity": "1 sentence opportunity",
+    "evidence": { "transit_sectors": [1, 5] }
+  },
+  "eastern": {
+    "summary": "1-2 sentences about BaZi daily energy.",
+    "themes": ["theme1", "theme2"],
+    "caution": "1 sentence caution",
+    "opportunity": "1 sentence opportunity",
+    "evidence": { "day_master": "${bafeData?.bazi?.pillars?.day?.stem || ''}" }
+  },
+  "fusion": {
+    "summary": "1-2 sentences synthesizing both systems for today.",
+    "synthesis": "A deeper 2-3 sentence paragraph explaining the fusion.",
+    "action": "One actionable advice",
+    "pushworthy": true,
+    "push_text": "Short push notification string"
+  },
+  "meta": { "engine_version": "v1-gemini-daily" }
+}
+
+RULES:
+- Language: ${lang === 'de' ? 'German' : 'English'}
+- The output MUST be valid parsing JSON.
+- DO NOT wrap the response in \`\`\`json ... \`\`\`. Start directly with {.
+`;
+
+    const model = geminiClient.models;
+    const result = await model.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+      config: {
+        temperature: 0.7,
+        responseMimeType: "application/json",
+      }
+    });
+
+    let jsonStr = result.text;
+    if (jsonStr.startsWith('```json')) {
+      jsonStr = jsonStr.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    }
+    
+    const parsedData = JSON.parse(jsonStr);
+    
+    horoscopeCache.set(cacheKeyD, { data: parsedData, timestamp: Date.now() });
+
+    res.status(200).json(parsedData);
   } catch (err) {
     console.error('[experience/daily] Error:', err.message);
     res.status(502).json({ error: 'experience_unavailable' });
@@ -1219,6 +1309,21 @@ app.get("/api/profile/:userId", async (req, res) => {
       )
     : null;
 
+  // ── Levi V2 Context ───────────────────────────────────────────────
+  const soulprintSectors = deriveSoulprintSectors(raw, userId);
+  const PLANET_MAP = {
+    Sun: [4], Moon: [3], Mercury: [2, 5], Venus: [1, 6], Mars: [0, 7], Jupiter: [8, 11], Saturn: [9, 10]
+  };
+  const natal_weights = {};
+  for (const [planet, indices] of Object.entries(PLANET_MAP)) {
+    natal_weights[planet] = Number((indices.reduce((sum, i) => sum + (soulprintSectors[i] ?? 0.5), 0) / indices.length).toFixed(3));
+  }
+  
+  const sortedPlanets = Object.entries(natal_weights).sort(([, a], [, b]) => b - a);
+  const dominant_planet = sortedPlanets[0][0];
+  const weakest_planet = sortedPlanets[sortedPlanets.length - 1][0];
+  const emergence_target = weakest_planet;
+
   // Fetch past conversation summaries for session continuity
   let pastConversations = [];
   try {
@@ -1263,6 +1368,12 @@ app.get("/api/profile/:userId", async (req, res) => {
 
     // AI interpretation (the Gemini text the user already saw)
     interpretation: bafe.interpretation || raw.interpretation || null,
+
+    // Levi V2 Signature parameters
+    natal_weights,
+    dominant_planet,
+    weakest_planet,
+    emergence_target,
 
     // Past conversation summaries for session continuity
     past_conversations: pastConversations,
