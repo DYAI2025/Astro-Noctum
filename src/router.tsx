@@ -9,6 +9,7 @@ const WuXingPage = lazy(() => import('./pages/WuXingPage'));
 const WissenPage = lazy(() => import('./pages/WissenPage'));
 const ArtikelPage = lazy(() => import('./pages/ArtikelPage'));
 const OnboardingPage = lazy(() => import('./pages/OnboardingPage'));
+const SkyPage = lazy(() => import('./pages/SkyPage'));
 
 function PageLoader() {
   return (
@@ -53,6 +54,7 @@ export function AppRoutes({ hasCompleteProfile, onboardingProps }: AppRoutesProp
           path="/onboarding"
           element={hasCompleteProfile ? <Navigate to="/" replace /> : <OnboardingPage {...onboardingProps} />}
         />
+        <Route path="/sky" element={<SkyPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>

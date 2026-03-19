@@ -1465,6 +1465,79 @@ async function fetchKpFromDONKI() {
   }
 }
 
+// ── /api/jieqi/current ──────────────────────────────────────────────
+const JIEQI_TERMS = [
+  { index: 0, name: 'Li Chun', nameDE: 'Fruehlingsbeginn', longitude: 315, approxDate: '02-04' },
+  { index: 1, name: 'Yu Shui', nameDE: 'Regenwasser', longitude: 330, approxDate: '02-19' },
+  { index: 2, name: 'Jing Zhe', nameDE: 'Erwachen der Insekten', longitude: 345, approxDate: '03-06' },
+  { index: 3, name: 'Chun Fen', nameDE: 'Fruehlings-Tagundnachtgleiche', longitude: 0, approxDate: '03-21' },
+  { index: 4, name: 'Qing Ming', nameDE: 'Lichte Klarheit', longitude: 15, approxDate: '04-05' },
+  { index: 5, name: 'Gu Yu', nameDE: 'Getreideregen', longitude: 30, approxDate: '04-20' },
+  { index: 6, name: 'Li Xia', nameDE: 'Sommerbeginn', longitude: 45, approxDate: '05-06' },
+  { index: 7, name: 'Xiao Man', nameDE: 'Kleine Fuelle', longitude: 60, approxDate: '05-21' },
+  { index: 8, name: 'Mang Zhong', nameDE: 'Kornreife', longitude: 75, approxDate: '06-06' },
+  { index: 9, name: 'Xia Zhi', nameDE: 'Sommersonnenwende', longitude: 90, approxDate: '06-21' },
+  { index: 10, name: 'Xiao Shu', nameDE: 'Kleine Hitze', longitude: 105, approxDate: '07-07' },
+  { index: 11, name: 'Da Shu', nameDE: 'Grosse Hitze', longitude: 120, approxDate: '07-23' },
+  { index: 12, name: 'Li Qiu', nameDE: 'Herbstbeginn', longitude: 135, approxDate: '08-07' },
+  { index: 13, name: 'Chu Shu', nameDE: 'Ende der Hitze', longitude: 150, approxDate: '08-23' },
+  { index: 14, name: 'Bai Lu', nameDE: 'Weisser Tau', longitude: 165, approxDate: '09-08' },
+  { index: 15, name: 'Qiu Fen', nameDE: 'Herbst-Tagundnachtgleiche', longitude: 180, approxDate: '09-23' },
+  { index: 16, name: 'Han Lu', nameDE: 'Kalter Tau', longitude: 195, approxDate: '10-08' },
+  { index: 17, name: 'Shuang Jiang', nameDE: 'Frostabstieg', longitude: 210, approxDate: '10-23' },
+  { index: 18, name: 'Li Dong', nameDE: 'Winterbeginn', longitude: 225, approxDate: '11-07' },
+  { index: 19, name: 'Xiao Xue', nameDE: 'Kleiner Schnee', longitude: 240, approxDate: '11-22' },
+  { index: 20, name: 'Da Xue', nameDE: 'Grosser Schnee', longitude: 255, approxDate: '12-07' },
+  { index: 21, name: 'Dong Zhi', nameDE: 'Wintersonnenwende', longitude: 270, approxDate: '12-22' },
+  { index: 22, name: 'Xiao Han', nameDE: 'Kleine Kaelte', longitude: 285, approxDate: '01-06' },
+  { index: 23, name: 'Da Han', nameDE: 'Grosse Kaelte', longitude: 300, approxDate: '01-20' },
+];
+
+function computeJieqiServer() {
+  const now = new Date();
+  const y = now.getUTCFullYear(), m = now.getUTCMonth() + 1;
+  const d = now.getUTCDate() + now.getUTCHours() / 24 + now.getUTCMinutes() / 1440;
+  let Y = y, M = m;
+  if (M <= 2) { Y -= 1; M += 12; }
+  const A = Math.floor(Y / 100);
+  const B = 2 - A + Math.floor(A / 4);
+  const JD = Math.floor(365.25 * (Y + 4716)) + Math.floor(30.6001 * (M + 1)) + d + B - 1524.5;
+  const T = (JD - 2451545.0) / 36525;
+  const Mrad = ((357.5291 + 35999.0503 * T) % 360) * Math.PI / 180;
+  const C = 1.9146 * Math.sin(Mrad) + 0.02 * Math.sin(2 * Mrad);
+  let lambda = (280.4665 + 36000.7698 * T + C) % 360;
+  if (lambda < 0) lambda += 360;
+
+  let currentIdx = 0;
+  for (let i = 0; i < JIEQI_TERMS.length; i++) {
+    if ((lambda - 315 + 360) % 360 >= (JIEQI_TERMS[i].longitude - 315 + 360) % 360) {
+      currentIdx = i;
+    }
+  }
+  const nextIdx = (currentIdx + 1) % JIEQI_TERMS.length;
+  let degToNext = (JIEQI_TERMS[nextIdx].longitude - lambda + 360) % 360;
+  if (degToNext === 0) degToNext = 360;
+  const secondsToNext = Math.round((degToNext / 0.9856) * 86400);
+
+  return {
+    current: JIEQI_TERMS[currentIdx],
+    next: JIEQI_TERMS[nextIdx],
+    nextTransitionAt: new Date(now.getTime() + secondsToNext * 1000).toISOString(),
+    secondsToNext,
+    isTransitionWindow: secondsToNext < 48 * 3600,
+  };
+}
+
+app.get("/api/jieqi/current", (_req, res) => {
+  res.set("Cache-Control", "public, max-age=3600");
+  try {
+    return res.json(computeJieqiServer());
+  } catch (err) {
+    console.error("[jieqi] error:", err?.message);
+    return res.status(500).json({ error: "Jieqi computation failed" });
+  }
+});
+
 app.get("/api/space-weather", async (_req, res) => {
   res.set("Cache-Control", "public, max-age=900");
 
