@@ -94,7 +94,11 @@ export default function App() {
       };
       const data = await bootstrapExperience(birth);
       setBootstrapData(data);
-      setOnboardingPhase('signature');
+      // In encounter mode, CosmicEncounter handles its own phase transitions internally.
+      // Only transition to 'signature' for the legacy (non-encounter) flow.
+      if (onboardingPhase !== 'encounter') {
+        setOnboardingPhase('signature');
+      }
     } catch (err) {
       console.error('[onboarding] Bootstrap failed:', err);
       // Fallback: always show a reveal, even if Experience is down.
@@ -115,7 +119,9 @@ export default function App() {
         signature_blueprint: { seed: `fallback:${Date.now()}` },
         meta: { engine_version: 'fallback' },
       });
-      setOnboardingPhase('signature');
+      if (onboardingPhase !== 'encounter') {
+        setOnboardingPhase('signature');
+      }
     }
 
     // Start the existing BAFE flow after bootstrap has either succeeded

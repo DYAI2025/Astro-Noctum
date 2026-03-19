@@ -62,6 +62,16 @@ export function CosmicEncounterScene({
   const frameRef = useRef<number>(0);
   const elapsedRef = useRef<number>(0);
   const materializeStartRef = useRef<number | null>(null);
+  const formOffsetRef = useRef(formOffset);
+  const leviOffsetRef = useRef(leviOffset);
+  const formPulseRef = useRef(formPulse);
+  const leviSpeakingRef = useRef(leviSpeaking);
+
+  // Keep refs in sync with props (avoids RAF restart on every mousemove)
+  formOffsetRef.current = formOffset;
+  leviOffsetRef.current = leviOffset;
+  formPulseRef.current = formPulse;
+  leviSpeakingRef.current = leviSpeaking;
 
   const isMobile = isMobileViewport();
 
@@ -155,10 +165,10 @@ export function CosmicEncounterScene({
         const scaleForm = tForm < 1 ? elasticOut(tForm) : 1;
         form.scale.setScalar(scaleForm);
         form.update(elapsed, delta);
-        form.heartbeat = formPulse;
+        form.heartbeat = formPulseRef.current;
         form.position.set(
-          FORM_POS.x + formOffset.x * 0.01,
-          FORM_POS.y + formOffset.y * 0.01,
+          FORM_POS.x + formOffsetRef.current.x * 0.01,
+          FORM_POS.y + formOffsetRef.current.y * 0.01,
           FORM_POS.z,
         );
       }
@@ -169,10 +179,10 @@ export function CosmicEncounterScene({
         const scaleLevi = tLevi < 1 ? elasticOut(tLevi) : 1;
         levi.scale.setScalar(scaleLevi);
         levi.update(elapsed, delta);
-        levi.speaking = leviSpeaking;
+        levi.speaking = leviSpeakingRef.current;
         levi.position.set(
-          LEVI_POS.x + leviOffset.x * 0.01,
-          LEVI_POS.y + leviOffset.y * 0.01,
+          LEVI_POS.x + leviOffsetRef.current.x * 0.01,
+          LEVI_POS.y + leviOffsetRef.current.y * 0.01,
           LEVI_POS.z,
         );
       }
@@ -182,7 +192,8 @@ export function CosmicEncounterScene({
 
     frameRef.current = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(frameRef.current);
-  }, [formOffset, leviOffset, formPulse, leviSpeaking]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Props read via refs — no deps needed, loop runs once
 
   useEffect(() => {
     const handleResize = () => {

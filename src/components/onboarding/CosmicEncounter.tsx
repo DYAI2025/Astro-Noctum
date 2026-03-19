@@ -126,20 +126,27 @@ export function CosmicEncounter({
 
   // ── Phase 2: levi-speaks → birth-input ────────────────────────────
 
+  const greetingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const handleGreetingComplete = useCallback(() => {
     // After greeting finishes, show form prompt then transition
     setLeviText(LEVI_TEXTS.formPrompt);
     setLeviSpeaking(0.5);
 
-    const timer = setTimeout(() => {
+    greetingTimerRef.current = setTimeout(() => {
       if (phaseRef.current === 'levi-speaks') {
         setPhase('birth-input');
         setFormPulse(1);
         setLeviSpeaking(0);
       }
     }, 2500);
+  }, []);
 
-    return () => clearTimeout(timer);
+  // Cleanup greeting timer on unmount
+  useEffect(() => {
+    return () => {
+      if (greetingTimerRef.current) clearTimeout(greetingTimerRef.current);
+    };
   }, []);
 
   // ── Phase 3→4: birth-input → calculating ─────────────────────────
@@ -289,7 +296,7 @@ export function CosmicEncounter({
           >
             <EncounterBirthForm
               onSubmit={handleBirthSubmit}
-              disabled={phase === 'calculating'}
+              isLoading={phase === 'calculating'}
             />
           </motion.div>
         )}
