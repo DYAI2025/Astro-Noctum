@@ -22,7 +22,6 @@ export default function SkyPage() {
         {isFeatureEnabled('sky_aurora_layer') && <AuroraLayer />}
         {isFeatureEnabled('sky_epoch_mood') && <EpochMoodLayer weather={weather} />}
         {isFeatureEnabled('sky_neo_ribbon') && <NeoRibbon />}
-        {/* Components will be mounted here by subsequent tasks */}
       </main>
     </div>
   );
