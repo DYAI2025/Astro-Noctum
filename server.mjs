@@ -748,7 +748,7 @@ function mapFufireEvent(ev, generatedAt) {
 // ── /api/transit-state/:userId ───────────────────────────────────────
 // POSTs to FuFirE /transit/state with soulprint + quiz sectors,
 // falls back to profile-derived synthetic state on any error.
-app.get("/api/transit-state/:userId", async (req, res) => {
+app.get("/api/transit-state/:userId", requireUserAuth, async (req, res) => {
   const userId = String(req.params.userId || "").trim();
   if (!userId) return res.status(400).json({ error: "Missing userId" });
 
@@ -1465,6 +1465,67 @@ async function fetchKpFromDONKI() {
   }
 }
 
+// ── /api/jieqi/current ──────────────────────────────────────────────
+// Load Jieqi terms from a shared canonical JSON file to avoid duplication
+const JIEQI_TERMS_JSON_PATH = path.join(__dirname, "src", "lib", "jieqi", "jieqi-terms.json");
+
+/** @type {Array<{ index: number; name: string; nameDE: string; longitude: number; approxDate: string }>} */
+let JIEQI_TERMS = [];
+
+try {
+  const jieqiJsonContent = fs.readFileSync(JIEQI_TERMS_JSON_PATH, "utf8");
+  JIEQI_TERMS = JSON.parse(jieqiJsonContent);
+} catch (error) {
+  console.error("Failed to load Jieqi terms from JSON file:", error);
+  // Fallback to an empty array to avoid crashing the server; callers should handle empty data.
+  JIEQI_TERMS = [];
+}
+
+function computeJieqiServer() {
+  const now = new Date();
+  const y = now.getUTCFullYear(), m = now.getUTCMonth() + 1;
+  const d = now.getUTCDate() + now.getUTCHours() / 24 + now.getUTCMinutes() / 1440;
+  let Y = y, M = m;
+  if (M <= 2) { Y -= 1; M += 12; }
+  const A = Math.floor(Y / 100);
+  const B = 2 - A + Math.floor(A / 4);
+  const JD = Math.floor(365.25 * (Y + 4716)) + Math.floor(30.6001 * (M + 1)) + d + B - 1524.5;
+  const T = (JD - 2451545.0) / 36525;
+  const Mrad = ((357.5291 + 35999.0503 * T) % 360) * Math.PI / 180;
+  const C = 1.9146 * Math.sin(Mrad) + 0.02 * Math.sin(2 * Mrad);
+  let lambda = (280.4665 + 36000.7698 * T + C) % 360;
+  if (lambda < 0) lambda += 360;
+
+  let currentIdx = 0;
+  for (let i = 0; i < JIEQI_TERMS.length; i++) {
+    if ((lambda - 315 + 360) % 360 >= (JIEQI_TERMS[i].longitude - 315 + 360) % 360) {
+      currentIdx = i;
+    }
+  }
+  const nextIdx = (currentIdx + 1) % JIEQI_TERMS.length;
+  let degToNext = (JIEQI_TERMS[nextIdx].longitude - lambda + 360) % 360;
+  if (degToNext === 0) degToNext = 360;
+  const secondsToNext = Math.round((degToNext / 0.9856) * 86400);
+
+  return {
+    current: JIEQI_TERMS[currentIdx],
+    next: JIEQI_TERMS[nextIdx],
+    nextTransitionAt: new Date(now.getTime() + secondsToNext * 1000).toISOString(),
+    secondsToNext,
+    isTransitionWindow: secondsToNext < 48 * 3600,
+  };
+}
+
+app.get("/api/jieqi/current", (_req, res) => {
+  res.set("Cache-Control", "public, max-age=3600");
+  try {
+    return res.json(computeJieqiServer());
+  } catch (err) {
+    console.error("[jieqi] error:", err?.message);
+    return res.status(500).json({ error: "Jieqi computation failed" });
+  }
+});
+
 app.get("/api/space-weather", async (_req, res) => {
   res.set("Cache-Control", "public, max-age=900");
 
@@ -1763,6 +1824,86 @@ app.get("/api/space-weather/extended", async (_req, res) => {
   return res.json(payload);
 });
 
+// ── /api/space-weather/timeline ─────────────────────────────────────
+let timelineCache = null;
+const TIMELINE_CACHE_TTL_MS = 10 * 60 * 1000;
+
+app.get("/api/space-weather/timeline", async (_req, res) => {
+  res.set("Cache-Control", "public, max-age=600");
+
+  const now = Date.now();
+  if (timelineCache && now - timelineCache.timestamp < TIMELINE_CACHE_TTL_MS) {
+    return res.json(timelineCache.payload);
+  }
+
+  try {
+    const [xrayRes, kpRes] = await Promise.allSettled([
+      fetch("https://services.swpc.noaa.gov/json/goes/primary/xrays-6-hour.json", { signal: AbortSignal.timeout(8000) }),
+      fetch("https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json", { signal: AbortSignal.timeout(8000) }),
+    ]);
+
+    const xrayCurve = [];
+    if (xrayRes.status === "fulfilled" && xrayRes.value.ok) {
+      const xrayData = await xrayRes.value.json();
+      if (Array.isArray(xrayData)) {
+        for (const point of xrayData.slice(-360)) {
+          if (point.time_tag && point.flux != null) {
+            xrayCurve.push({ timestamp: point.time_tag, flux: point.flux });
+          }
+        }
+      }
+    }
+
+    const kpBars = [];
+    if (kpRes.status === "fulfilled" && kpRes.value.ok) {
+      const kpData = await kpRes.value.json();
+      if (Array.isArray(kpData)) {
+        for (const row of kpData.slice(-24)) {
+          if (Array.isArray(row) && row.length >= 2) {
+            const kp = parseFloat(row[1]);
+            if (!isNaN(kp)) {
+              const noaaScale = kp >= 9 ? "G5" : kp >= 8 ? "G4" : kp >= 7 ? "G3" : kp >= 6 ? "G2" : kp >= 5 ? "G1" : "G0";
+              kpBars.push({ timestamp: row[0], kp, noaaScale });
+            }
+          }
+        }
+      }
+    }
+
+    const donkiEvents = [];
+    if (extendedWeatherCache?.payload?.events) {
+      const allowedTimelineTypes = new Set(["flare", "cme", "cme_arrival", "kp_peak", "sep"]);
+      for (const evt of extendedWeatherCache.payload.events) {
+        if (!allowedTimelineTypes.has(evt.type)) continue;
+        donkiEvents.push({
+          id: evt.event_id,
+          type: evt.type,
+          timestamp: evt.started_at,
+          label: evt.description || evt.type,
+          intensity: evt.signature_weight,
+          details: `Severity: ${evt.severity}`,
+        });
+      }
+    }
+
+    let enlilWindow = null;
+    if (extendedWeatherCache?.payload?.events) {
+      const cmeArrival = extendedWeatherCache.payload.events.find(e => e.type === "cme_arrival");
+      if (cmeArrival) {
+        enlilWindow = { startAt: cmeArrival.started_at, endAt: cmeArrival.expires_at };
+      }
+    }
+
+    const payload = { xrayCurve, kpBars, events: donkiEvents, enlilWindow };
+    timelineCache = { timestamp: now, payload };
+    return res.json(payload);
+  } catch (err) {
+    console.error("[timeline] error:", err?.message);
+    if (timelineCache?.payload) return res.json(timelineCache.payload);
+    return res.status(502).json({ error: "Timeline data unavailable" });
+  }
+});
+
 // ── POST /api/contribution/space-weather ────────────────────────────
 // Accepts a space-weather event and converts it to 12-sector contribution
 // weights, then upserts into contribution_events for the authenticated user.
@@ -1831,6 +1972,208 @@ app.post("/api/contribution/space-weather", express.json(), async (req, res) => 
 
   console.log(`[contribution/space-weather] upserted module_id=${moduleId} for user=${user.id}`);
   return res.status(201).json({ ok: true, module_id: moduleId });
+});
+
+// ── /api/aurora ─────────────────────────────────────────────────────
+let auroraCache = null;
+const AURORA_CACHE_TTL_MS = 30 * 60 * 1000;
+
+app.get("/api/aurora", async (_req, res) => {
+  res.set("Cache-Control", "public, max-age=1800");
+
+  const now = Date.now();
+  if (auroraCache && now - auroraCache.timestamp < AURORA_CACHE_TTL_MS) {
+    return res.json(auroraCache.payload);
+  }
+
+  let currentKp = 0;
+  if (extendedWeatherCache?.payload?.current?.kp) {
+    currentKp = extendedWeatherCache.payload.current.kp;
+  }
+
+  let europeForecast = [];
+  let gfzKp = null;
+
+  if (currentKp >= 3) {
+    try {
+      const ovationRes = await fetch(
+        "https://services.swpc.noaa.gov/json/ovation_aurora_latest.json",
+        { signal: AbortSignal.timeout(8000) }
+      );
+      if (ovationRes.ok) {
+        const ovationData = await ovationRes.json();
+        if (Array.isArray(ovationData)) {
+          europeForecast = ovationData
+            .filter(p => Array.isArray(p) && p.length >= 4 && p[1] >= 45 && p[1] <= 72 && p[2] >= -15 && p[2] <= 40 && p[3] > 5)
+            .map(p => ({ lat: p[1], lon: p[2], probability: p[3] }))
+            .slice(0, 200);
+        }
+      }
+    } catch (err) {
+      console.warn("[aurora] NOAA ovation fetch failed:", err?.message);
+    }
+
+    try {
+      const gfzBase = process.env.GFZ_KP_BASE_URL || "https://www-app3.gfz-potsdam.de/kp_index/";
+      const gfzRes = await fetch(`${gfzBase}Kp_ap_nowcast.txt`, { signal: AbortSignal.timeout(5000) });
+      if (gfzRes.ok) {
+        const text = await gfzRes.text();
+        const lines = text.trim().split('\n').filter(l => !l.startsWith('#'));
+        const lastLine = lines[lines.length - 1];
+        if (lastLine) {
+          const parts = lastLine.trim().split(/\s+/);
+          const kpVal = parseFloat(parts[parts.length - 2]);
+          if (!isNaN(kpVal)) gfzKp = kpVal;
+        }
+      }
+    } catch (err) {
+      console.warn("[aurora] GFZ fetch failed:", err?.message);
+    }
+  }
+
+  let visibilityDE = "Keine Aurora-Aktivitaet erwartet.";
+  if (currentKp >= 8) visibilityDE = "Aussergewoehnlich starke Aurora — moeglicherweise bis Sueddeutschland sichtbar!";
+  else if (currentKp >= 7) visibilityDE = "Starke Aurora — in Norddeutschland gut sichtbar, vereinzelt bis Mitteldeutschland.";
+  else if (currentKp >= 6) visibilityDE = "Aurora moeglich — am noerdlichen Horizont in Norddeutschland sichtbar bei klarem Himmel.";
+  else if (currentKp >= 5) visibilityDE = "Aurora-Aktivitaet erhoet — in Skandinavien gut sichtbar, vereinzelt in Norddeutschland.";
+  else if (currentKp >= 4) visibilityDE = "Schwache Aurora — nur in hohen Breitengraden (Skandinavien) sichtbar.";
+
+  const payload = {
+    kp: currentKp,
+    auroraActive: currentKp >= 5,
+    europeForecast,
+    gfzKp,
+    visibilityDE,
+    updatedAt: new Date().toISOString(),
+  };
+
+  auroraCache = { timestamp: now, payload };
+  return res.json(payload);
+});
+
+// ── /api/geometry/verify ────────────────────────────────────────────
+// JPL Horizons proxy for verified geometry events. 1h cache per query.
+const geometryVerifyCache = new Map();
+const GEOMETRY_CACHE_TTL_MS = 60 * 60 * 1000;
+
+app.get("/api/geometry/verify", async (req, res) => {
+  const { body1, body2, date } = req.query;
+  if (!body1 || !body2 || !date) {
+    return res.status(400).json({ error: "body1, body2, date query params required" });
+  }
+
+  const cacheKey = `${body1}-${body2}-${date}`;
+  const cached = geometryVerifyCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < GEOMETRY_CACHE_TTL_MS) {
+    return res.json(cached.payload);
+  }
+
+  try {
+    const jplBase = process.env.JPL_HORIZONS_BASE_URL || "https://ssd.jpl.nasa.gov/api/horizons.api";
+    const params = new URLSearchParams({
+      format: "json",
+      COMMAND: String(body1),
+      CENTER: String(body2),
+      EPHEM_TYPE: "OBSERVER",
+      START_TIME: String(date),
+      STOP_TIME: String(date),
+      STEP_SIZE: "1d",
+      QUANTITIES: "1,20",
+    });
+
+    const jplRes = await fetch(`${jplBase}?${params}`, { signal: AbortSignal.timeout(15000) });
+    if (!jplRes.ok) throw new Error(`JPL returned ${jplRes.status}`);
+    const jplData = await jplRes.json();
+
+    const raw = typeof jplData.result === "string" ? jplData.result.substring(0, 2000) : null;
+
+    const payload = {
+      body1,
+      body2,
+      date,
+      raw,
+      verified: raw !== null,
+      source: "JPL Horizons",
+    };
+
+    geometryVerifyCache.set(cacheKey, { timestamp: Date.now(), payload });
+
+    // Evict old entries if cache grows
+    if (geometryVerifyCache.size > 100) {
+      const oldest = [...geometryVerifyCache.entries()].sort((a, b) => a[1].timestamp - b[1].timestamp);
+      geometryVerifyCache.delete(oldest[0][0]);
+    }
+
+    return res.json(payload);
+  } catch (err) {
+    console.error("[geometry/verify] JPL Horizons error:", err?.message);
+    return res.status(502).json({ error: "JPL Horizons unavailable" });
+  }
+});
+
+// ── /api/neo/upcoming ───────────────────────────────────────────────
+let neoCache = null;
+const NEO_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+
+app.get("/api/neo/upcoming", async (_req, res) => {
+  res.set("Cache-Control", "public, max-age=21600");
+
+  const now = Date.now();
+  if (neoCache && now - neoCache.timestamp < NEO_CACHE_TTL_MS) {
+    return res.json(neoCache.payload);
+  }
+
+  try {
+    const apiKey = process.env.NASA_API_KEY || "DEMO_KEY";
+    const today = new Date().toISOString().slice(0, 10);
+    const endDate = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
+
+    const neoRes = await fetch(
+      `https://api.nasa.gov/neo/rest/v1/feed?start_date=${today}&end_date=${endDate}&api_key=${apiKey}`,
+      { signal: AbortSignal.timeout(15000) }
+    );
+    if (!neoRes.ok) throw new Error(`NeoWs returned ${neoRes.status}`);
+
+    const neoData = await neoRes.json();
+    const objects = [];
+    const EARTH_RADIUS_KM = 6371;
+
+    for (const [, dayObjects] of Object.entries(neoData.near_earth_objects || {})) {
+      for (const neo of dayObjects) {
+        const approach = neo.close_approach_data?.[0];
+        if (!approach) continue;
+
+        const distKm = parseFloat(approach.miss_distance?.kilometers || "0");
+        objects.push({
+          designation: neo.neo_reference_id || neo.id,
+          name: neo.name || null,
+          closeApproachDate: approach.close_approach_date_full || approach.close_approach_date,
+          distanceKm: distKm,
+          distanceEarthRadii: Math.round((distKm / EARTH_RADIUS_KM) * 10) / 10,
+          velocityKmS: Math.round(parseFloat(approach.relative_velocity?.kilometers_per_second || "0") * 10) / 10,
+          estimatedDiameterM: Math.round(
+            (parseFloat(neo.estimated_diameter?.meters?.estimated_diameter_min || "0") +
+             parseFloat(neo.estimated_diameter?.meters?.estimated_diameter_max || "0")) / 2
+          ),
+          isPotentiallyHazardous: neo.is_potentially_hazardous_asteroid || false,
+        });
+      }
+    }
+
+    objects.sort((a, b) => a.distanceKm - b.distanceKm);
+
+    const payload = {
+      objects: objects.slice(0, 5),
+      fetchedAt: new Date().toISOString(),
+    };
+
+    neoCache = { timestamp: now, payload };
+    return res.json(payload);
+  } catch (err) {
+    console.error("[neo] fetch error:", err?.message);
+    if (neoCache?.payload) return res.json(neoCache.payload);
+    return res.status(502).json({ error: "NEO data unavailable" });
+  }
 });
 
 // ── /api/mobile/bootstrap ───────────────────────────────────────────

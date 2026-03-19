@@ -309,6 +309,7 @@ export function createNoaaAdapter(): NoaaAdapter {
   function withFallback<T>(
     primary: () => Promise<T>,
     fallback: () => Promise<T>,
+    emptyValue: T,
   ): () => Promise<T> {
     return async () => {
       try {
@@ -321,7 +322,7 @@ export function createNoaaAdapter(): NoaaAdapter {
         try {
           return await fallback();
         } catch {
-          return null as unknown as T;
+          return emptyValue;
         }
       }
     };
@@ -329,11 +330,11 @@ export function createNoaaAdapter(): NoaaAdapter {
 
   return {
     version: 'v2' as NoaaVersion,
-    fetchKp: withFallback(v2.fetchKp, v1.fetchKp),
-    fetchF107: withFallback(v2.fetchF107, v1.fetchF107),
-    fetchXray: withFallback(v2.fetchXray, v1.fetchXray),
-    fetchProton: withFallback(v2.fetchProton, v1.fetchProton),
-    fetchKpForecast: withFallback(v2.fetchKpForecast, v1.fetchKpForecast),
-    fetch3DayForecast: withFallback(v2.fetch3DayForecast, v1.fetch3DayForecast),
+    fetchKp: withFallback(v2.fetchKp, v1.fetchKp, null as KpReading | null),
+    fetchF107: withFallback(v2.fetchF107, v1.fetchF107, null as F107Reading | null),
+    fetchXray: withFallback(v2.fetchXray, v1.fetchXray, null as XrayFluxReading | null),
+    fetchProton: withFallback(v2.fetchProton, v1.fetchProton, null as ProtonFluxReading | null),
+    fetchKpForecast: withFallback(v2.fetchKpForecast, v1.fetchKpForecast, [] as KpForecast[]),
+    fetch3DayForecast: withFallback(v2.fetch3DayForecast, v1.fetch3DayForecast, [] as ThreeDayForecast[]),
   };
 }

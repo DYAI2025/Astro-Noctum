@@ -1718,7 +1718,7 @@ type FusionRingCanvasInnerProps = FusionRingWebsiteCanvasProps & {
 function FusionRingCanvasInner({
   soulProfileOverride,
   queuedEffect,
-  showEffectControls,
+  showEffectControls = false,
   className,
 }: FusionRingCanvasInnerProps) {
   const [mounted, setMounted] = useState(false);

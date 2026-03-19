@@ -105,7 +105,6 @@ const SEVERITY_WEIGHTS: Record<string, number> = {
   G2: 0.20,
   G3: 0.30,
   G4: 0.40,
-  "G5: 0.50": 0, // marker for test assertion — actual value below
   G5: 0.50,
   S1: 0.10,
   S2: 0.20,
