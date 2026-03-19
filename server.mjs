@@ -1836,6 +1836,84 @@ app.get("/api/space-weather/extended", async (_req, res) => {
   return res.json(payload);
 });
 
+// ── /api/space-weather/timeline ─────────────────────────────────────
+let timelineCache = null;
+const TIMELINE_CACHE_TTL_MS = 10 * 60 * 1000;
+
+app.get("/api/space-weather/timeline", async (_req, res) => {
+  res.set("Cache-Control", "public, max-age=600");
+
+  const now = Date.now();
+  if (timelineCache && now - timelineCache.timestamp < TIMELINE_CACHE_TTL_MS) {
+    return res.json(timelineCache.payload);
+  }
+
+  try {
+    const [xrayRes, kpRes] = await Promise.allSettled([
+      fetch("https://services.swpc.noaa.gov/json/goes/primary/xrays-6-hour.json", { signal: AbortSignal.timeout(8000) }),
+      fetch("https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json", { signal: AbortSignal.timeout(8000) }),
+    ]);
+
+    const xrayCurve = [];
+    if (xrayRes.status === "fulfilled" && xrayRes.value.ok) {
+      const xrayData = await xrayRes.value.json();
+      if (Array.isArray(xrayData)) {
+        for (const point of xrayData.slice(-360)) {
+          if (point.time_tag && point.flux != null) {
+            xrayCurve.push({ timestamp: point.time_tag, flux: point.flux });
+          }
+        }
+      }
+    }
+
+    const kpBars = [];
+    if (kpRes.status === "fulfilled" && kpRes.value.ok) {
+      const kpData = await kpRes.value.json();
+      if (Array.isArray(kpData)) {
+        for (const row of kpData.slice(-24)) {
+          if (Array.isArray(row) && row.length >= 2) {
+            const kp = parseFloat(row[1]);
+            if (!isNaN(kp)) {
+              const noaaScale = kp >= 9 ? "G5" : kp >= 8 ? "G4" : kp >= 7 ? "G3" : kp >= 6 ? "G2" : kp >= 5 ? "G1" : "G0";
+              kpBars.push({ timestamp: row[0], kp, noaaScale });
+            }
+          }
+        }
+      }
+    }
+
+    const donkiEvents = [];
+    if (extendedWeatherCache?.payload?.events) {
+      for (const evt of extendedWeatherCache.payload.events) {
+        donkiEvents.push({
+          id: evt.event_id,
+          type: evt.type,
+          timestamp: evt.started_at,
+          label: evt.description || evt.type,
+          intensity: evt.signature_weight,
+          details: `Severity: ${evt.severity}`,
+        });
+      }
+    }
+
+    let enlilWindow = null;
+    if (extendedWeatherCache?.payload?.events) {
+      const cmeArrival = extendedWeatherCache.payload.events.find(e => e.type === "cme_arrival");
+      if (cmeArrival) {
+        enlilWindow = { startAt: cmeArrival.started_at, endAt: cmeArrival.expires_at };
+      }
+    }
+
+    const payload = { xrayCurve, kpBars, events: donkiEvents, enlilWindow };
+    timelineCache = { timestamp: now, payload };
+    return res.json(payload);
+  } catch (err) {
+    console.error("[timeline] error:", err?.message);
+    if (timelineCache?.payload) return res.json(timelineCache.payload);
+    return res.status(502).json({ error: "Timeline data unavailable" });
+  }
+});
+
 // ── POST /api/contribution/space-weather ────────────────────────────
 // Accepts a space-weather event and converts it to 12-sector contribution
 // weights, then upserts into contribution_events for the authenticated user.
@@ -1904,6 +1982,83 @@ app.post("/api/contribution/space-weather", express.json(), async (req, res) => 
 
   console.log(`[contribution/space-weather] upserted module_id=${moduleId} for user=${user.id}`);
   return res.status(201).json({ ok: true, module_id: moduleId });
+});
+
+// ── /api/aurora ─────────────────────────────────────────────────────
+let auroraCache = null;
+const AURORA_CACHE_TTL_MS = 30 * 60 * 1000;
+
+app.get("/api/aurora", async (_req, res) => {
+  res.set("Cache-Control", "public, max-age=1800");
+
+  const now = Date.now();
+  if (auroraCache && now - auroraCache.timestamp < AURORA_CACHE_TTL_MS) {
+    return res.json(auroraCache.payload);
+  }
+
+  let currentKp = 0;
+  if (extendedWeatherCache?.payload?.current?.kp) {
+    currentKp = extendedWeatherCache.payload.current.kp;
+  }
+
+  let europeForecast = [];
+  let gfzKp = null;
+
+  if (currentKp >= 3) {
+    try {
+      const ovationRes = await fetch(
+        "https://services.swpc.noaa.gov/json/ovation_aurora_latest.json",
+        { signal: AbortSignal.timeout(8000) }
+      );
+      if (ovationRes.ok) {
+        const ovationData = await ovationRes.json();
+        if (Array.isArray(ovationData)) {
+          europeForecast = ovationData
+            .filter(p => Array.isArray(p) && p.length >= 4 && p[1] >= 45 && p[1] <= 72 && p[2] >= -15 && p[2] <= 40 && p[3] > 5)
+            .map(p => ({ lat: p[1], lon: p[2], probability: p[3] }))
+            .slice(0, 200);
+        }
+      }
+    } catch (err) {
+      console.warn("[aurora] NOAA ovation fetch failed:", err?.message);
+    }
+
+    try {
+      const gfzBase = process.env.GFZ_KP_BASE_URL || "https://www-app3.gfz-potsdam.de/kp_index/";
+      const gfzRes = await fetch(`${gfzBase}Kp_ap_nowcast.txt`, { signal: AbortSignal.timeout(5000) });
+      if (gfzRes.ok) {
+        const text = await gfzRes.text();
+        const lines = text.trim().split('\n').filter(l => !l.startsWith('#'));
+        const lastLine = lines[lines.length - 1];
+        if (lastLine) {
+          const parts = lastLine.trim().split(/\s+/);
+          const kpVal = parseFloat(parts[parts.length - 2]);
+          if (!isNaN(kpVal)) gfzKp = kpVal;
+        }
+      }
+    } catch (err) {
+      console.warn("[aurora] GFZ fetch failed:", err?.message);
+    }
+  }
+
+  let visibilityDE = "Keine Aurora-Aktivitaet erwartet.";
+  if (currentKp >= 8) visibilityDE = "Aussergewoehnlich starke Aurora — moeglicherweise bis Sueddeutschland sichtbar!";
+  else if (currentKp >= 7) visibilityDE = "Starke Aurora — in Norddeutschland gut sichtbar, vereinzelt bis Mitteldeutschland.";
+  else if (currentKp >= 6) visibilityDE = "Aurora moeglich — am noerdlichen Horizont in Norddeutschland sichtbar bei klarem Himmel.";
+  else if (currentKp >= 5) visibilityDE = "Aurora-Aktivitaet erhoet — in Skandinavien gut sichtbar, vereinzelt in Norddeutschland.";
+  else if (currentKp >= 4) visibilityDE = "Schwache Aurora — nur in hohen Breitengraden (Skandinavien) sichtbar.";
+
+  const payload = {
+    kp: currentKp,
+    auroraActive: currentKp >= 5,
+    europeForecast,
+    gfzKp,
+    visibilityDE,
+    updatedAt: new Date().toISOString(),
+  };
+
+  auroraCache = { timestamp: now, payload };
+  return res.json(payload);
 });
 
 // ── /api/mobile/bootstrap ───────────────────────────────────────────

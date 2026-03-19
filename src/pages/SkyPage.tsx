@@ -1,5 +1,7 @@
 import { useSpaceWeather } from '@/src/hooks/useSpaceWeather';
 import { JieqiBanner } from '@/src/components/sky/JieqiBanner';
+import { FlareTimeline } from '@/src/components/sky/FlareTimeline';
+import { AuroraLayer } from '@/src/components/sky/AuroraLayer';
 import { isFeatureEnabled } from '@/src/lib/feature-flags';
 
 export default function SkyPage() {
@@ -14,6 +16,8 @@ export default function SkyPage() {
 
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
         {isFeatureEnabled('sky_jieqi_banner') && <JieqiBanner weather={weather} />}
+        {isFeatureEnabled('sky_flare_timeline') && <FlareTimeline />}
+        {isFeatureEnabled('sky_aurora_layer') && <AuroraLayer />}
         {/* Components will be mounted here by subsequent tasks */}
       </main>
     </div>
