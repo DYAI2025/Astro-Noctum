@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import type { JieqiState } from '@/src/lib/jieqi/types';
+import { z } from 'zod';
+
+const JieqiStateSchema: z.ZodType<JieqiState> = z.object({}).passthrough();
 
 export function useJieqi() {
   const [state, setState] = useState<JieqiState | null>(null);
@@ -13,7 +16,8 @@ export function useJieqi() {
       try {
         const res = await fetch('/api/jieqi/current');
         if (!res.ok) throw new Error(`Jieqi fetch failed: ${res.status}`);
-        const data = await res.json();
+        const json = await res.json();
+        const data = JieqiStateSchema.parse(json);
         if (mountedRef.current) {
           setState(data);
           setLoading(false);
