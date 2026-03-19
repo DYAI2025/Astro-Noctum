@@ -1,10 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { BrowserRouter, Link, useLocation, useNavigate } from "react-router-dom";
-import { BirthForm } from "./components/BirthForm";
+import { BrowserRouter, Link, useLocation } from "react-router-dom";
 import { Splash } from "./components/Splash";
 import { AuthGate } from "./components/AuthGate";
-import { SignatureReveal } from "./components/onboarding/SignatureReveal";
 import { useAuth } from "./contexts/AuthContext";
 import { useLanguage } from "./contexts/LanguageContext";
 import { useAmbientePlayer } from "./hooks/useAmbientePlayer";
@@ -89,8 +87,20 @@ export default function App() {
       setOnboardingPhase('signature');
     } catch (err) {
       console.error('[onboarding] Bootstrap failed:', err);
-      // Fall through to normal flow on error — phase stays 'form',
-      // BAFE flow will complete and show Dashboard normally.
+      // Fallback: always show a reveal, even if Experience is down.
+      setBootstrapData({
+        profile: {
+          sun_sign: '—',
+          moon_sign: '—',
+          ascendant_sign: '—',
+          day_master: '—',
+          harmony_index: 0.5,
+        },
+        soulprint_sectors: Array(12).fill(0.5),
+        signature_blueprint: { seed: `fallback:${Date.now()}` },
+        meta: { engine_version: 'fallback' },
+      });
+      setOnboardingPhase('signature');
     }
 
     // Start the existing BAFE flow after bootstrap has either succeeded
@@ -127,7 +137,7 @@ export default function App() {
   if (authLoading) {
     return (
       <div className="min-h-screen morning-bg flex items-center justify-center">
-        <div className="w-1 h-1 bg-[#8B6914] rounded-full animate-ping" />
+        <div className="w-1 h-1 bg-gold-deep rounded-full animate-ping" />
       </div>
     );
   }
@@ -141,8 +151,8 @@ export default function App() {
   if (profileState === "loading" || profileState === "idle") {
     return (
       <div className="min-h-screen morning-bg flex flex-col items-center justify-center gap-6">
-        <div className="w-1 h-1 bg-[#8B6914] rounded-full animate-ping" />
-        <p className="text-[10px] uppercase tracking-[0.4em] text-[#8B6914]/50 font-mono">
+        <div className="w-1 h-1 bg-gold-deep rounded-full animate-ping" />
+        <p className="text-[10px] uppercase tracking-[0.4em] text-gold-deep/50 font-mono">
           {lang === "de" ? "Lade dein kosmisches Profil…" : "Loading your cosmic profile…"}
         </p>
       </div>
@@ -150,36 +160,7 @@ export default function App() {
   }
 
   // ── Determine what to show ────────────────────────────────────────────
-  const hasCompleteProfile = profileState === "found" && apiData && interpretation;
-  const showOnboarding = !hasCompleteProfile || onboardingPhase === 'signature';
-
-  // ── Main app ──────────────────────────────────────────────────────────
-
-  // Onboarding (no routing needed)
-  if (showOnboarding && onboardingPhase !== 'done') {
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: siteVisible ? 1 : 0 }}
-        transition={{ duration: 2, ease: "easeOut", delay: 0.3 }}
-        className={`morning-bg min-h-screen font-sans selection:bg-[#8B6914]/20 flex flex-col ${planetariumMode ? "planetarium text-slate-100" : "text-[#1E2A3A]"}`}
-      >
-        <main className="flex-grow pt-24 md:pt-32 pb-24 md:pb-20 relative z-10 container mx-auto px-4 flex flex-col items-center justify-center">
-          {error && (
-            <div className="w-full max-w-md mb-8 bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded-xl text-sm text-center">
-              {error}
-            </div>
-          )}
-          {onboardingPhase === 'form' && (
-            <BirthForm onSubmit={handleOnboardingSubmit} isLoading={isLoading} />
-          )}
-          {onboardingPhase === 'signature' && bootstrapData && (
-            <SignatureReveal bootstrapData={bootstrapData} onComplete={handleSignatureComplete} />
-          )}
-        </main>
-      </motion.div>
-    );
-  }
+  const hasCompleteProfile = profileState === "found" && Boolean(apiData) && Boolean(interpretation);
 
   // Authenticated app with routing
   return (
@@ -211,6 +192,17 @@ export default function App() {
             ambiente={ambiente}
             signOut={signOut}
             error={error}
+            hasCompleteProfile={hasCompleteProfile}
+            onboardingProps={{
+              hasCompleteProfile,
+              onboardingPhase,
+              bootstrapData,
+              apiData,
+              isLoading,
+              error,
+              onSubmitBirth: handleOnboardingSubmit,
+              onSignatureComplete: handleSignatureComplete,
+            }}
           />
         </AppLayoutProvider>
       </FusionRingProvider>
@@ -232,34 +224,38 @@ interface AppShellProps {
   ambiente: { playing: boolean; volume: number; setVolume: (v: number) => void; toggle: () => void; pause: () => void; resume: () => void };
   signOut: () => void;
   error: string | null;
+  hasCompleteProfile: boolean;
+  onboardingProps: import("./pages/OnboardingPage").OnboardingPageProps;
 }
 
-function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, togglePlanetarium, ambiente, signOut, error }: AppShellProps) {
+function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, togglePlanetarium, ambiente, signOut, error, hasCompleteProfile, onboardingProps }: AppShellProps) {
   const location = useLocation();
 
   const isSignaturRoute = location.pathname === "/signatur";
+  const isOnboardingRoute = location.pathname === "/onboarding";
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: siteVisible ? 1 : 0 }}
       transition={{ duration: 2, ease: "easeOut", delay: 0.3 }}
-      className={`morning-bg min-h-screen font-sans selection:bg-[#8B6914]/20 flex flex-col ${planetariumMode ? "planetarium text-slate-100" : "text-[#1E2A3A]"}`}
+      className={`morning-bg min-h-screen font-sans selection:bg-gold-deep/20 flex flex-col ${planetariumMode ? "planetarium text-slate-100" : "text-ink"}`}
     >
       {/* ── Top Nav (Desktop) ────────────────────────────────────────── */}
+      {!isOnboardingRoute && (
       <header className="hidden md:flex fixed top-0 w-full h-20 items-center justify-between px-12 z-50 morning-header">
         <Link
           to="/"
-          className="font-serif text-xl tracking-widest text-[#8B6914] cursor-pointer select-none"
+          className="font-serif text-xl tracking-widest text-gold-deep cursor-pointer select-none"
         >
           Bazodiac
         </Link>
 
         <nav className="flex space-x-12 text-[10px] uppercase tracking-[0.3em]">
-          <Link to="/" className={`transition-colors ${location.pathname === "/" ? "text-[#8B6914]" : "text-[#1E2A3A]/60 hover:text-[#8B6914]"}`}>
+          <Link to="/" className={`transition-colors ${location.pathname === "/" ? "text-gold-deep" : "text-ink/60 hover:text-gold-deep"}`}>
             {t("nav.atlas")}
           </Link>
-          <Link to="/signatur" className={`transition-colors ${location.pathname === "/signatur" ? "text-[#8B6914]" : "text-[#1E2A3A]/60 hover:text-[#8B6914]"}`}>
+          <Link to="/signatur" className={`transition-colors ${location.pathname === "/signatur" ? "text-gold-deep" : "text-ink/60 hover:text-gold-deep"}`}>
             Signatur
           </Link>
         </nav>
@@ -270,48 +266,48 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
             <button
               className={lang === "de" ? "active" : ""}
               onClick={() => setLang("de")}
-              aria-pressed={lang === "de"}
+              aria-pressed={lang === "de" ? "true" : "false"}
             >
               DE
             </button>
             <button
               className={lang === "en" ? "active" : ""}
               onClick={() => setLang("en")}
-              aria-pressed={lang === "en"}
+              aria-pressed={lang === "en" ? "true" : "false"}
             >
               EN
             </button>
           </div>
 
-          <div className="w-[1px] h-4 bg-[#8B6914]/20" />
+          <div className="w-px h-4 bg-gold-deep/20" />
 
           {/* Planetarium toggle */}
           <button
             onClick={togglePlanetarium}
-            aria-pressed={planetariumMode}
+            aria-pressed={planetariumMode ? "true" : "false"}
             aria-label={planetariumMode ? "Exit Planetarium Mode" : "Enter Planetarium Mode"}
             className={`flex items-center gap-1.5 text-[9px] uppercase tracking-[0.2em] transition-all rounded-md px-2 py-1 ${
               planetariumMode
-                ? "planetarium-toggle-active bg-[#D4AF37]/10 border border-[#D4AF37]/30"
-                : "text-[#1E2A3A]/40 hover:text-[#8B6914] hover:bg-[#8B6914]/08 border border-transparent"
+                ? "planetarium-toggle-active bg-gold/10 border border-gold/30"
+                : "text-ink/40 hover:text-gold-deep hover:bg-gold-deep/08 border border-transparent"
             }`}
           >
             <Telescope className="w-4 h-4 shrink-0" />
             <span className="hidden lg:inline">Planetarium</span>
           </button>
 
-          <div className="w-[1px] h-4 bg-[#8B6914]/20" />
+          <div className="w-px h-4 bg-gold-deep/20" />
 
           {/* Audio toggle & Volume Slider */}
           <div className="flex items-center gap-2 group/audio">
             <button
               onClick={ambiente.toggle}
-              className="text-[#1E2A3A]/40 hover:text-[#8B6914] transition-colors"
+              className="text-ink/40 hover:text-gold-deep transition-colors"
               title={ambiente.playing ? t("nav.pauseAudioTitle") : t("nav.playAudioTitle")}
               aria-label={ambiente.playing ? t("nav.pauseAudioTitle") : t("nav.playAudioTitle")}
             >
               {ambiente.playing && ambiente.volume > 0 ? (
-                <Volume2 className="w-4 h-4 text-[#8B6914]" aria-hidden="true" />
+                <Volume2 className="w-4 h-4 text-gold-deep" aria-hidden="true" />
               ) : (
                 <VolumeX className="w-4 h-4" aria-hidden="true" />
               )}
@@ -323,27 +319,28 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
               step="0.01"
               value={ambiente.volume}
               onChange={(e) => ambiente.setVolume(parseFloat(e.target.value))}
-              className="w-16 h-1 bg-[#8B6914]/20 rounded-full appearance-none cursor-pointer accent-[#8B6914] opacity-0 group-hover/audio:opacity-100 transition-opacity"
+              className="w-16 h-1 bg-gold-deep/20 rounded-full appearance-none cursor-pointer accent-[#8B6914] opacity-0 group-hover/audio:opacity-100 transition-opacity"
               title="Lautstärke"
             />
           </div>
 
-          <div className="w-[1px] h-4 bg-[#8B6914]/20" />
+          <div className="w-px h-4 bg-gold-deep/20" />
 
           {/* User + sign-out */}
-          <span className="text-[9px] text-[#1E2A3A]/35 tracking-wider max-w-[120px] truncate">
+          <span className="text-[9px] text-ink/35 tracking-wider max-w-[120px] truncate">
             {user.email}
           </span>
           <button
             onClick={signOut}
-            className="w-8 h-8 rounded-full border border-[#8B6914]/25 flex items-center justify-center hover:bg-[#8B6914]/10 hover:border-[#8B6914]/45 transition-colors"
+            className="w-8 h-8 rounded-full border border-gold-deep/25 flex items-center justify-center hover:bg-gold-deep/10 hover:border-gold-deep/45 transition-colors"
             title={t("nav.signOut")}
             aria-label={t("nav.signOut")}
           >
-            <LogOut className="w-3 h-3 text-[#8B6914]/70" aria-hidden="true" />
+            <LogOut className="w-3 h-3 text-gold-deep/70" aria-hidden="true" />
           </button>
         </div>
       </header>
+      )}
 
       {/* ── Main content (routed) ──────────────────────────────────────── */}
       <main
@@ -358,31 +355,32 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
             {error}
           </div>
         )}
-        <AppRoutes />
+        <AppRoutes hasCompleteProfile={hasCompleteProfile} onboardingProps={onboardingProps} />
       </main>
 
       {/* ── Bottom Nav (Mobile) ───────────────────────────────────────── */}
-      <nav className="md:hidden fixed bottom-0 w-full bg-white/70 backdrop-blur-xl border-t border-[#8B6914]/15 flex items-center justify-around z-50 h-16">
+      {!isOnboardingRoute && (
+      <nav className="md:hidden fixed bottom-0 w-full bg-white/70 backdrop-blur-xl border-t border-gold-deep/15 flex items-center justify-around z-50 h-16">
         <div className="lang-toggle" role="group" aria-label="Sprache">
-          <button className={lang === "de" ? "active" : ""} onClick={() => setLang("de")} aria-pressed={lang === "de"}>DE</button>
-          <button className={lang === "en" ? "active" : ""} onClick={() => setLang("en")} aria-pressed={lang === "en"}>EN</button>
+          <button className={lang === "de" ? "active" : ""} onClick={() => setLang("de")} aria-pressed={lang === "de" ? "true" : "false"}>DE</button>
+          <button className={lang === "en" ? "active" : ""} onClick={() => setLang("en")} aria-pressed={lang === "en" ? "true" : "false"}>EN</button>
         </div>
 
-        <Link to="/" className={`flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-gold/50 rounded ${location.pathname === "/" ? "text-[#8B6914]" : "text-[#1E2A3A]/40"}`}>
+        <Link to="/" className={`flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-gold/50 rounded ${location.pathname === "/" ? "text-gold-deep" : "text-ink/40"}`}>
           <LayoutGrid className="w-5 h-5" aria-hidden="true" />
           <span className="text-[8px] uppercase tracking-tighter">{t("nav.atlas")}</span>
         </Link>
 
-        <Link to="/signatur" className={`flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-gold/50 rounded ${location.pathname === "/signatur" ? "text-[#8B6914]" : "text-[#1E2A3A]/40"}`}>
+        <Link to="/signatur" className={`flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-gold/50 rounded ${location.pathname === "/signatur" ? "text-gold-deep" : "text-ink/40"}`}>
           <CircleDot className="w-5 h-5" aria-hidden="true" />
           <span className="text-[8px] uppercase tracking-tighter">Signatur</span>
         </Link>
 
         <button
           onClick={togglePlanetarium}
-          aria-pressed={planetariumMode}
+          aria-pressed={planetariumMode ? "true" : "false"}
           aria-label="Planetarium"
-          className={planetariumMode ? "text-[#D4AF37]" : "text-[#1E2A3A]/40"}
+          className={planetariumMode ? "text-gold" : "text-ink/40"}
         >
           <Telescope className="w-5 h-5" aria-hidden="true" />
         </button>
@@ -391,10 +389,10 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
           <button
             onClick={ambiente.toggle}
             aria-label={ambiente.playing ? t("nav.pauseAudioTitle") : t("nav.playAudioTitle")}
-            className="text-[#1E2A3A]/40 hover:text-[#8B6914] transition-colors"
+            className="text-ink/40 hover:text-gold-deep transition-colors"
           >
             {ambiente.playing && ambiente.volume > 0 ? (
-              <Volume2 className="w-5 h-5 text-[#8B6914]" aria-hidden="true" />
+              <Volume2 className="w-5 h-5 text-gold-deep" aria-hidden="true" />
             ) : (
               <VolumeX className="w-5 h-5" aria-hidden="true" />
             )}
@@ -406,10 +404,11 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
             step="0.01"
             value={ambiente.volume}
             onChange={(e) => ambiente.setVolume(parseFloat(e.target.value))}
-            className="w-10 h-1 bg-[#8B6914]/20 rounded-full appearance-none cursor-pointer accent-[#8B6914]"
+            className="w-10 h-1 bg-gold-deep/20 rounded-full appearance-none cursor-pointer accent-[#8B6914]"
           />
         </div>
       </nav>
+      )}
     </motion.div>
   );
 }

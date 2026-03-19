@@ -11,18 +11,21 @@ import { LegalFooter } from "./LegalFooter";
 import { UpgradeButton } from "./UpgradeButton";
 import { ManageSubscription } from "./ManageSubscription";
 import { DailyHoroscopeModal } from "./dashboard/DailyHoroscopeModal";
-import { FusionRingWebsiteCanvas } from "./fusion-ring-website/FusionRingWebsiteCanvas";
-import FusionRingCanvasV2 from "./fusion-ring-website/FusionRingCanvasV2";
 import { soulprintToNatalWeights } from "./fusion-ring-website/signatur-bridge";
 import { useFirstRunDaily } from "../hooks/useFirstRunDaily";
 import { supabase } from "../lib/supabase";
 import type { ApiData } from "../types/bafe";
 import type { TileTexts, HouseTexts } from "../types/interpretation";
-import { DashboardLeviSection } from "./dashboard/DashboardLeviSection";
 import { DashboardAstroSection } from "./dashboard/DashboardAstroSection";
 import { DashboardInterpretationSection } from "./dashboard/DashboardInterpretationSection";
 import { SectionErrorBoundary } from "./dashboard/SectionErrorBoundary";
 import { isFeatureEnabled } from "../lib/feature-flags";
+
+import BlueprintCard from "./dashboard/BlueprintCard";
+import MiniSignature from "./dashboard/MiniSignature";
+import LeviOrb from "./dashboard/LeviOrb";
+import InfluenceGauges from "./dashboard/InfluenceGauges";
+import { useFusionRingContext } from "../contexts/FusionRingContext";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Static data
@@ -139,8 +142,34 @@ export function Dashboard({
   const { lang, t } = useLanguage();
   const { isPremium } = usePremium();
   const { user } = useAuth();
+  const { signal } = useFusionRingContext();
 
-  // ── Data extraction (kept for Levi + ShareCard) ─────────────────────
+  const influences = useMemo(() => {
+    if (!signal) return undefined;
+    const active = signal.sectors
+      .map((intensity, index) => ({ index, intensity }))
+      .sort((a, b) => b.intensity - a.intensity)
+      .slice(0, 4);
+
+    const colors = [
+      "bg-linear-to-r from-red-500 to-orange-400",
+      "bg-linear-to-r from-cyan-400 to-blue-500",
+      "bg-linear-to-r from-purple-400 to-pink-400",
+      "bg-linear-to-r from-zinc-400 to-zinc-200"
+    ];
+
+    const labelsDe = ["Antrieb", "Fokus", "Balance", "Tiefe", "Expansion", "Struktur", "Freiheit", "Intuition", "Wandel", "Verbindung", "Klarheit", "Ruhe"];
+    const labelsEn = ["Drive", "Focus", "Balance", "Depth", "Expansion", "Structure", "Freedom", "Intuition", "Shift", "Connection", "Clarity", "Calm"];
+    const textLabels = lang === 'de' ? labelsDe : labelsEn;
+
+    return active.map((sec, i) => ({
+      label: textLabels[sec.index % 12] + "-Feld",
+      value: sec.intensity,
+      color: colors[i] || colors[0]
+    }));
+  }, [signal, lang]);
+
+  // ── Data extraction (kept for ShareCard) ─────────────────────
   const sunSign       = apiData.western?.zodiac_sign      || "";
   const zodiacAnimal  = apiData.bazi?.zodiac_sign         || "";
   const dominantEl    = apiData.wuxing?.dominant_element   || "";
@@ -214,7 +243,7 @@ export function Dashboard({
       {/* Back */}
       <button
         onClick={onReset}
-        className="flex items-center gap-2 text-[#1E2A3A]/40 hover:text-[#8B6914] transition-colors mb-10 text-[10px] uppercase tracking-[0.3em]"
+        className="flex items-center gap-2 text-ink/40 hover:text-gold-deep transition-colors mb-10 text-[10px] uppercase tracking-[0.3em]"
       >
         <ArrowLeft className="w-4 h-4" /> {t("dashboard.startOver")}
       </button>
@@ -231,31 +260,28 @@ export function Dashboard({
         </div>
       )}
 
-      {/* ═══ PERSISTENT SIGNATURE WIDGET ═══════════════════════════════ */}
-      <SectionErrorBoundary name="Signatur">
-        {profileMeta.soulprintSectors && (
-          <motion.div
-            className="flex justify-center mb-4"
-            {...fadeIn(0.05)}
-          >
-            <div className="w-20 h-20 opacity-70 hover:opacity-100 transition-opacity">
-              {isFeatureEnabled('signature_engine_v2') ? (
-                <FusionRingCanvasV2
-                  natalWeights={v2NatalWeights}
-                  isMini={true}
-                  showUI={false}
-                  className="w-full h-full"
-                />
-              ) : (
-                <FusionRingWebsiteCanvas
-                  soulProfile={profileMeta.soulprintSectors}
-                  className="w-full h-full"
-                />
-              )}
-            </div>
-          </motion.div>
-        )}
-      </SectionErrorBoundary>
+      {/* ═══ DAILY ZONES (Signature, Levi, Gauges) ═══════════════════════ */}
+      <div className="mb-12 space-y-6 lg:space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+          <SectionErrorBoundary name="MiniSignature">
+             <MiniSignature
+               natalWeights={v2NatalWeights}
+               onExpand={() => {}}
+             />
+          </SectionErrorBoundary>
+          
+          <SectionErrorBoundary name="LeviOrb">
+             <LeviOrb
+               onActivate={onResumeAudio}
+               isListening={false}
+             />
+          </SectionErrorBoundary>
+        </div>
+
+        <SectionErrorBoundary name="InfluenceGauges">
+          <InfluenceGauges influences={influences} />
+        </SectionErrorBoundary>
+      </div>
 
       {/* ═══ PAGE HEADER ═══════════════════════════════════════════════ */}
       <motion.header
@@ -264,38 +290,45 @@ export function Dashboard({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
       >
-        <p className="text-[#8B6914]/55 text-[9px] uppercase tracking-[0.5em] mb-3">
+        <p className="text-gold-deep/55 text-[9px] uppercase tracking-[0.5em] mb-3">
           {t("dashboard.welcome")}
         </p>
         <div className="flex items-center justify-center gap-4">
-          <h1 className="font-serif text-3xl sm:text-[2.75rem] md:text-[3.5rem] leading-tight text-[#1E2A3A]">
+          <h1 className="font-serif text-3xl sm:text-[2.75rem] md:text-[3.5rem] leading-tight text-ink">
             {t("dashboard.title")}
           </h1>
           <button
             onClick={onRegenerate}
             disabled={isLoading}
-            className="shrink-0 p-2.5 text-[#8B6914]/45 hover:text-[#8B6914] hover:bg-[#8B6914]/10 rounded-full transition-all disabled:opacity-40 disabled:cursor-not-allowed border border-[#8B6914]/20"
+            className="shrink-0 p-2.5 text-gold-deep/45 hover:text-gold-deep hover:bg-gold-deep/10 rounded-full transition-all disabled:opacity-40 disabled:cursor-not-allowed border border-gold-deep/20"
             title="Regenerate"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
           </button>
         </div>
-        <p className="mt-3 italic text-[#1E2A3A]/42 font-serif text-sm leading-relaxed max-w-md mx-auto">
-          &ldquo;{BAZODIAC_QUOTES[SESSION_QUOTE_INDEX][lang]}&rdquo;
-        </p>
+        
+        <div className="mt-8 text-left">
+          <SectionErrorBoundary name="BlueprintCard">
+            <BlueprintCard
+              title={lang === 'de' ? "Kosmischer Blueprint" : "Cosmic Blueprint"}
+              content={interpretation.split('\n\n')[0] || ""} 
+              onCtaClick={() => document.getElementById("interpretation-section")?.scrollIntoView({ behavior: "smooth" })}
+            />
+          </SectionErrorBoundary>
+        </div>
       </motion.header>
 
       {/* Upgrade Banner for free users */}
       {!isPremium && (
         <motion.div
-          className="mb-8 w-full max-w-6xl rounded-2xl border border-[#D4AF37]/25 bg-gradient-to-r from-[#D4AF37]/05 to-transparent p-5 flex items-center justify-between gap-4"
+          className="mb-8 w-full max-w-6xl rounded-2xl border border-gold/25 bg-linear-to-r from-[#D4AF37]/05 to-transparent p-5 flex items-center justify-between gap-4"
           {...fadeIn(0.15)}
         >
           <div>
-            <p className="text-sm font-medium text-[#1E2A3A]">
+            <p className="text-sm font-medium text-ink">
               {lang === 'de' ? 'Schalte dein volles kosmisches Profil frei' : 'Unlock your full cosmic profile'}
             </p>
-            <p className="text-xs text-[#1E2A3A]/50 mt-1">
+            <p className="text-xs text-ink/50 mt-1">
               {lang === 'de'
                 ? 'Vier Säulen, Häuser-Analyse, Levi Bazi Sprachagent und mehr'
                 : 'Four Pillars, Houses analysis, Levi Bazi voice agent and more'}
@@ -309,11 +342,11 @@ export function Dashboard({
           className="mb-8 flex justify-end"
           {...fadeIn(0.15)}
         >
-          <ManageSubscription className="text-[#1E2A3A]/45 hover:text-[#8B6914]" />
+          <ManageSubscription className="text-ink/45 hover:text-gold-deep" />
         </motion.div>
       )}
 
-      {/* ═══ ASTRO SECTION (Orrery + Western + BaZi/WuXing + Levi + Houses) ═══ */}
+      {/* ═══ ASTRO SECTION (Orrery + Western + BaZi/WuXing + Houses) ═══ */}
       <SectionErrorBoundary name="Astro">
         <DashboardAstroSection
           apiData={apiData}
@@ -322,21 +355,10 @@ export function Dashboard({
           isFirstReading={isFirstReading}
           tileTexts={tileTexts}
           houseTexts={houseTexts}
-          leviSlot={
-            <SectionErrorBoundary name="Levi">
-              <DashboardLeviSection
-                isPremium={isPremium}
-                userId={userId}
-                onStopAudio={onStopAudio}
-                onResumeAudio={onResumeAudio}
-                sunSign={sunSign}
-                zodiacAnimal={zodiacAnimal}
-                dominantEl={dominantEl}
-              />
-            </SectionErrorBoundary>
-          }
         />
       </SectionErrorBoundary>
+
+      <div id="interpretation-section" />
 
       {/* ═══ GESAMTANALYSE — full-width below Houses ═══════════════ */}
       <motion.div

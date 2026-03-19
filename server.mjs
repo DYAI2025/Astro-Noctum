@@ -449,6 +449,273 @@ function deriveSoulprintSectors(astroJson, userId) {
   );
 }
 
+// ── Master Signal JS Port (Sprint 04) ────────────────────────────────
+
+const DIMENSION_KEYS = ['passion', 'stability', 'future', 'connection', 'autonomy'];
+
+function zeroDimensions() {
+  return { passion: 0, stability: 0, future: 0, connection: 0, autonomy: 0 };
+}
+
+function clampVector(v) {
+  const out = {};
+  for (const k of DIMENSION_KEYS) out[k] = Math.max(0, Math.min(1, v[k] ?? 0));
+  return out;
+}
+
+function cosineSimilarity(A, B) {
+  let dotProduct = 0; let normA = 0; let normB = 0;
+  for (const k of DIMENSION_KEYS) {
+    dotProduct += A[k] * B[k];
+    normA += A[k] * A[k];
+    normB += B[k] * B[k];
+  }
+  if (normA === 0 || normB === 0) return 0.5; // fallback for no data
+  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+}
+
+// 1. NATAL
+const ELEMENT_DIMENSION_MAP = {
+  Fire:  { passion: 0.8, stability: 0.1, future: 0.2, connection: 0.3, autonomy: 0.6 },
+  Earth: { passion: 0.2, stability: 0.8, future: 0.3, connection: 0.7, autonomy: 0.2 },
+  Metal: { passion: 0.1, stability: 0.6, future: 0.7, connection: 0.2, autonomy: 0.5 },
+  Water: { passion: 0.3, stability: 0.3, future: 0.6, connection: 0.8, autonomy: 0.3 },
+  Wood:  { passion: 0.7, stability: 0.3, future: 0.5, connection: 0.4, autonomy: 0.7 },
+};
+
+const SIGN_ELEMENT = {
+  Aries: 'Fire', Leo: 'Fire', Sagittarius: 'Fire',
+  Taurus: 'Earth', Virgo: 'Earth', Capricorn: 'Earth',
+  Gemini: 'Metal', Libra: 'Metal', Aquarius: 'Metal',
+  Cancer: 'Water', Scorpio: 'Water', Pisces: 'Water',
+};
+
+function computeNatalDimensions(apiData) {
+  let sources = 0;
+  
+  const signToD = (sign) => {
+    if (!sign) return zeroDimensions();
+    const e = SIGN_ELEMENT[sign];
+    if (!e || !ELEMENT_DIMENSION_MAP[e]) return zeroDimensions();
+    const aff = ELEMENT_DIMENSION_MAP[e];
+    const out = zeroDimensions();
+    for (const k of DIMENSION_KEYS) out[k] = aff[k] ?? 0;
+    return out;
+  };
+
+  const sunD = signToD(apiData.western?.zodiac_sign);
+  const moonD = signToD(apiData.western?.moon_sign);
+  const ascD = signToD(apiData.western?.ascendant_sign);
+  const western = zeroDimensions();
+  
+  const hasWestern = !!(apiData.western?.zodiac_sign || apiData.western?.moon_sign || apiData.western?.ascendant_sign);
+  if (hasWestern) {
+    sources++;
+    for (const k of DIMENSION_KEYS) western[k] = 0.50 * sunD[k] + 0.30 * moonD[k] + 0.20 * ascD[k];
+  }
+
+  const bazi = zeroDimensions();
+  const hasBazi = !!(apiData.bazi?.pillars);
+  if (hasBazi) {
+    sources++;
+    const weights = { day: 0.40, year: 0.25, month: 0.20, hour: 0.15 };
+    for (const [pillar, weight] of Object.entries(weights)) {
+      const p = apiData.bazi.pillars[pillar];
+      if (!p || !p.element) continue;
+      const affinity = ELEMENT_DIMENSION_MAP[p.element];
+      if (!affinity) continue;
+      for (const k of DIMENSION_KEYS) bazi[k] += weight * (affinity[k] ?? 0);
+    }
+  }
+
+  const wuxingRaw = apiData.wuxing?.elements || apiData.wuxing?.element_percentages || apiData.wuxing?.balance;
+  const wuxing = zeroDimensions();
+  const hasWuxing = !!wuxingRaw && Object.keys(wuxingRaw).length > 0;
+  if (hasWuxing) {
+    sources++;
+    const total = Object.values(wuxingRaw).reduce((s, v) => s + v, 0);
+    if (total > 0) {
+      for (const [elem, count] of Object.entries(wuxingRaw)) {
+        const ratio = count / total;
+        const affinity = ELEMENT_DIMENSION_MAP[elem];
+        if (!affinity) continue;
+        for (const k of DIMENSION_KEYS) wuxing[k] += ratio * (affinity[k] ?? 0);
+      }
+    }
+  }
+
+  const dimensions = zeroDimensions();
+  if (sources === 0) return dimensions;
+
+  for (const k of DIMENSION_KEYS) {
+    let sum = 0;
+    if (hasWestern) sum += western[k];
+    if (hasBazi) sum += bazi[k];
+    if (hasWuxing) sum += wuxing[k];
+    dimensions[k] = sum / sources;
+  }
+  return clampVector(dimensions);
+}
+
+// 2. QUIZ
+const DOMAIN_DIMENSION_MAP = {
+  love:       { passion: 0.5, stability: 0.1, future: 0.1, connection: 0.8, autonomy: 0.1 },
+  emotion:    { passion: 0.4, stability: 0.2, future: 0.1, connection: 0.7, autonomy: 0.1 },
+  eq:         { passion: 0.2, stability: 0.3, future: 0.2, connection: 0.8, autonomy: 0.2 },
+  social:     { passion: 0.3, stability: 0.2, future: 0.3, connection: 0.6, autonomy: 0.3 },
+  leadership: { passion: 0.3, stability: 0.3, future: 0.5, connection: 0.3, autonomy: 0.7 },
+  cognition:  { passion: 0.1, stability: 0.3, future: 0.6, connection: 0.2, autonomy: 0.5 },
+  skills:     { passion: 0.2, stability: 0.4, future: 0.5, connection: 0.2, autonomy: 0.5 },
+  instinct:   { passion: 0.7, stability: 0.2, future: 0.1, connection: 0.3, autonomy: 0.6 },
+  energy:     { passion: 0.6, stability: 0.3, future: 0.3, connection: 0.3, autonomy: 0.4 },
+  creative:   { passion: 0.7, stability: 0.1, future: 0.4, connection: 0.3, autonomy: 0.6 },
+  spiritual:  { passion: 0.3, stability: 0.5, future: 0.3, connection: 0.6, autonomy: 0.2 },
+  flower:     { passion: 0.3, stability: 0.5, future: 0.2, connection: 0.6, autonomy: 0.2 },
+  stone:      { passion: 0.2, stability: 0.6, future: 0.3, connection: 0.5, autonomy: 0.2 },
+  aura:       { passion: 0.4, stability: 0.3, future: 0.3, connection: 0.6, autonomy: 0.3 },
+  values:     { passion: 0.3, stability: 0.6, future: 0.5, connection: 0.4, autonomy: 0.3 },
+  lifestyle:  { passion: 0.3, stability: 0.5, future: 0.4, connection: 0.4, autonomy: 0.4 },
+  freedom:    { passion: 0.5, stability: 0.1, future: 0.4, connection: 0.2, autonomy: 0.8 },
+};
+
+const FALLBACK_DIMENSION = {
+  passion: 0.2, stability: 0.2, future: 0.2, connection: 0.2, autonomy: 0.2,
+};
+
+function computeQuizDimensions(events) {
+  if (!events || events.length === 0) return zeroDimensions();
+  const accumulated = zeroDimensions();
+  let totalWeight = 0;
+
+  for (const event of events) {
+    const markers = Array.isArray(event.payload?.markers) ? event.payload.markers : (event.markers || []);
+    for (const marker of markers) {
+      if (!marker || !marker.id) continue;
+      const p = marker.id.split('.');
+      const domain = p.length >= 2 ? p[1] : 'unknown';
+      const affinities = DOMAIN_DIMENSION_MAP[domain] ?? FALLBACK_DIMENSION;
+      const w = (marker.weight ?? 1) * (marker.evidence?.confidence ?? 0.7);
+      for (const k of DIMENSION_KEYS) accumulated[k] += affinities[k] * w;
+      totalWeight += w;
+    }
+  }
+  
+  if (totalWeight === 0) return zeroDimensions();
+  for (const k of DIMENSION_KEYS) accumulated[k] /= totalWeight;
+  return clampVector(accumulated);
+}
+
+// 3. GCB
+const LIFE_STAGE_BASELINES = {
+  childhood:        { passion: 0.70, stability: 0.30, future: 0.40, connection: 0.65, autonomy: 0.25 },
+  adolescence:      { passion: 0.75, stability: 0.25, future: 0.55, connection: 0.60, autonomy: 0.55 },
+  early_adulthood:  { passion: 0.65, stability: 0.40, future: 0.65, connection: 0.55, autonomy: 0.70 },
+  mid_adulthood:    { passion: 0.52, stability: 0.61, future: 0.56, connection: 0.58, autonomy: 0.64 },
+  mature_adulthood: { passion: 0.45, stability: 0.70, future: 0.45, connection: 0.65, autonomy: 0.55 },
+  senior:           { passion: 0.40, stability: 0.75, future: 0.35, connection: 0.70, autonomy: 0.50 },
+};
+
+function computeGCBDimensions(birthYear) {
+  const currentYear = new Date().getFullYear();
+  const age = currentYear - (birthYear || 2000);
+  let stage = 'senior';
+  if (age <= 12) stage = 'childhood';
+  else if (age <= 19) stage = 'adolescence';
+  else if (age <= 29) stage = 'early_adulthood';
+  else if (age <= 44) stage = 'mid_adulthood';
+  else if (age <= 59) stage = 'mature_adulthood';
+  return { ...LIFE_STAGE_BASELINES[stage] };
+}
+
+// 4. RING PROJECTION
+const SECTOR_AFFINITIES = [
+  { primary: 'passion',    secondary: 'autonomy' },
+  { primary: 'stability',  secondary: 'connection' },
+  { primary: 'future',     secondary: 'autonomy' },
+  { primary: 'connection', secondary: 'stability' },
+  { primary: 'passion',    secondary: 'autonomy' },
+  { primary: 'stability',  secondary: 'future' },
+  { primary: 'connection', secondary: 'future' },
+  { primary: 'passion',    secondary: 'connection' },
+  { primary: 'future',     secondary: 'passion' },
+  { primary: 'stability',  secondary: 'autonomy' },
+  { primary: 'autonomy',   secondary: 'future' },
+  { primary: 'connection', secondary: 'passion' },
+];
+
+function projectToRing(nDim, qDim, nCov = 1, qCov = 0) {
+  const totalCoverage = nCov + qCov;
+  const nWeight = totalCoverage > 0 ? nCov / totalCoverage : 0.5;
+  const qWeight = totalCoverage > 0 ? qCov / totalCoverage : 0.5;
+
+  const blended = zeroDimensions();
+  for (const k of DIMENSION_KEYS) {
+    blended[k] = (nDim[k] || 0) * nWeight + (qDim[k] || 0) * qWeight;
+  }
+
+  const sectors = [];
+  for (let s = 0; s < 12; s++) {
+    const { primary, secondary } = SECTOR_AFFINITIES[s];
+    const value = blended[primary] * 0.65 + blended[secondary] * 0.35;
+    sectors.push(Number(Math.max(0, Math.min(1, value)).toFixed(4)));
+  }
+  return sectors;
+}
+
+const DIMENSION_LABELS = {
+  de: {
+    passion: 'Leidenschaft', stability: 'Stabilität', future: 'Zukunftsorientierung',
+    connection: 'Verbundenheit', autonomy: 'Autonomie',
+  },
+  en: {
+    passion: 'Passion', stability: 'Stability', future: 'Future Orientation',
+    connection: 'Connection', autonomy: 'Autonomy',
+  },
+};
+
+function generateNarratives(natalDim, quizDim, gcbDim, lang = 'de') {
+  const labels = DIMENSION_LABELS[lang] || DIMENSION_LABELS.en;
+  
+  const getTop = (dim) => {
+    return Object.entries(dim)
+      .sort(([, a], [, b]) => b - a)
+      .map(([k]) => k)
+      .slice(0, 2);
+  };
+
+  const nTop = getTop(natalDim);
+  const qTop = getTop(quizDim);
+  const gTop = getTop(gcbDim);
+  
+  const alignmentVal = cosineSimilarity(natalDim, quizDim);
+  const contextFitVal = (cosineSimilarity(natalDim, gcbDim) + cosineSimilarity(quizDim, gcbDim)) / 2;
+
+  const alignment = alignmentVal >= 0.8 ? 'hoch' : alignmentVal >= 0.5 ? 'moderat' : 'gering';
+  const contextFit = contextFitVal >= 0.75 ? 'hoch' : contextFitVal >= 0.5 ? 'moderat' : 'gering';
+
+  if (lang === 'de') {
+    return {
+      core_summary: `Dein integratives Profil zeigt ein Kernmuster mit Schwerpunkt auf ${labels[nTop[0]]} und ${labels[nTop[1]]}. `
+        + (qTop[0] ? `Deine Selbsteinschätzung betont ${labels[qTop[0]]}. ` : '')
+        + `Übereinstimmung: ${alignment}.`,
+      context_summary: `Dieses Kontextmodell (evidence_mode: heuristic_v1) positioniert dich in einer Lebensphase, `
+        + `die typischerweise ${labels[gTop[0]]} und ${labels[gTop[1]]} betont.`,
+      integration_summary: `Die Passung zwischen Anlage und Selbstbericht ist ${alignment}. `
+        + `Profil ${contextFit === 'hoch' ? 'stimmt gut' : 'weicht ab'} vom Kohortenrahmen.`
+    };
+  } else {
+    return {
+      core_summary: `Your profile shows a core pattern emphasizing ${labels[nTop[0]]} and ${labels[nTop[1]]}. `
+        + (qTop[0] ? `Self-report emphasizes ${labels[qTop[0]]}. ` : '')
+        + `Alignment: ${alignmentVal >= 0.8 ? 'high' : 'moderate'}.`,
+      context_summary: `This context model (evidence_mode: heuristic_v1) places you in a life stage `
+        + `typically emphasizing ${labels[gTop[0]]} and ${labels[gTop[1]]}.`,
+      integration_summary: `The fit between disposition and self-report is ${alignmentVal >= 0.8 ? 'high' : 'moderate'}. `
+        + `Profile ${contextFitVal >= 0.75 ? 'aligns well' : 'diverges'} from cohort.`
+    };
+  }
+}
+
 /** Merge contribution_events sector_weights into a single 12-element average */
 function mergeContributions(contribs) {
   if (!contribs?.length) return Array(12).fill(0.5);
@@ -824,60 +1091,264 @@ setInterval(() => {
 }, 60 * 60 * 1000);
 
 // ── Experience API proxy ──────────────────────────────────────────
-app.post('/api/experience/bootstrap', requireUserAuth, async (req, res) => {
+app.post('/api/experience/bootstrap', requireUserAuth, express.json(), async (req, res) => {
   try {
-    const bodyStr = JSON.stringify(req.body);
-    if (bodyStr.length > 10000) {
-      return res.status(413).json({ error: 'payload_too_large' });
-    }
-    const resp = await fetch(`${BAFE_BASE_URL}/experience/bootstrap`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: bodyStr,
-      signal: AbortSignal.timeout(15000),
+    const { birth } = req.body;
+    if (!birth) return res.status(400).json({ error: 'Missing birth data' });
+
+    // 1. Fetch Natal Chart from BAFE
+    const bafeRes = await fetch(`${BAFE_BASE_URL}/chart`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        birthDate: birth.date,
+        birthTime: birth.time,
+        lat: birth.lat,
+        lng: birth.lon,
+        timeZone: birth.tz
+      }),
+      signal: AbortSignal.timeout(15000)
     });
-    const data = await resp.json();
-    res.status(resp.status).json(data);
+
+    if (!bafeRes.ok) {
+        throw new Error(`BAFE responded with ${bafeRes.status}`);
+    }
+    const bafeData = await bafeRes.json();
+
+    // 2. Compute Master Signal (N + G)
+    const birthYear = parseInt(birth.date.substring(0, 4), 10);
+    const nDim = computeNatalDimensions(bafeData);
+    const qDim = zeroDimensions(); // No quiz yet
+    const gcbDim = computeGCBDimensions(birthYear);
+
+    // 3. Project to Ring (Initial Soulprint)
+    const soulprintSectors = projectToRing(nDim, qDim, 1, 0);
+
+    const narratives = generateNarratives(nDim, qDim, gcbDim, req.query.lang === 'en' ? 'en' : 'de');
+
+    // 4. Generate Blueprint
+    const signatureSeed = crypto.createHash('sha256').update(req.userId + Date.now().toString()).digest('hex').substring(0, 16);
+
+    const profileData = {
+      sun_sign: bafeData.western?.zodiac_sign || "Unknown",
+      moon_sign: bafeData.western?.moon_sign || "Unknown",
+      ascendant_sign: bafeData.western?.ascendant_sign || "Unknown",
+      day_master: bafeData.bazi?.day_master || "Unknown",
+      harmony_index: bafeData.fusion?.harmony_index || 0.8
+    };
+
+    const responsePayload = {
+      profile: profileData,
+      soulprint_sectors: soulprintSectors,
+      narratives: narratives,
+      signature_blueprint: {
+        seed: signatureSeed,
+        visual: { symmetry: 0.5, curvature: 0.5, angularity: 0.5, density: 0.5, contrast: 0.5, orbit_count: 5 }
+      },
+      meta: { engine_version: "master_signal_v1_js", generated_at: new Date().toISOString() }
+    };
+
+    // 5. Save to Supabase
+    if (supabaseServer) {
+        const { error: updateError } = await supabaseServer.from("astro_profiles").update({ 
+            soulprint_sectors: soulprintSectors 
+        }).eq("user_id", req.userId);
+        
+        if (updateError) console.warn("[bootstrap] failed to save soulprint_sectors:", updateError.message);
+    }
+
+    res.status(200).json(responsePayload);
   } catch (err) {
     console.error('[experience/bootstrap] Error:', err.message);
     res.status(502).json({ error: 'experience_unavailable' });
   }
 });
 
-app.post('/api/experience/signature-delta', requireUserAuth, async (req, res) => {
+app.post('/api/experience/signature-delta', requireUserAuth, express.json(), async (req, res) => {
   try {
-    const bodyStr = JSON.stringify(req.body);
-    if (bodyStr.length > 10000) {
-      return res.status(413).json({ error: 'payload_too_large' });
+    const { quiz_answer, signature_blueprint } = req.body;
+    if (!quiz_answer) return res.status(400).json({ error: "Missing quiz_answer" });
+
+    // 1. Compute Quiz dimensions
+    // We expect quiz_answer to be an array of markers [{id, weight}]
+    const quizEvents = [{ payload: { markers: Array.isArray(quiz_answer) ? quiz_answer : [] } }];
+    const qDim = computeQuizDimensions(quizEvents);
+
+    // 2. Get Natal dimensions (from profile)
+    let nDim = zeroDimensions();
+    if (supabaseServer) {
+        const { data: profile } = await supabaseServer.from("astro_profiles").select("astro_json").eq("user_id", req.userId).single();
+        if (profile?.astro_json) {
+            nDim = computeNatalDimensions(profile.astro_json);
+        }
     }
-    const resp = await fetch(`${BAFE_BASE_URL}/experience/signature-delta`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: bodyStr,
-      signal: AbortSignal.timeout(10000),
-    });
-    const data = await resp.json();
-    res.status(resp.status).json(data);
+
+    // 3. Blended projection
+    const newSectors = projectToRing(nDim, qDim, 1, 1); // 50/50 blend for delta show
+    const alignment = cosineSimilarity(nDim, qDim);
+    const gcbDim = computeGCBDimensions(2000); // fallback birth year or we should get it from profile
+    const narratives = generateNarratives(nDim, qDim, gcbDim, req.query.lang === 'en' ? 'en' : 'de');
+
+    const payload = {
+      quiz_sectors: newSectors,
+      narratives: narratives,
+      signature_delta: {
+        curvature: Number((0.5 + (alignment * 0.2)).toFixed(2)),
+        contrast: Number((0.5 + ((1 - alignment) * 0.15)).toFixed(2)),
+        density: 0.6
+      },
+      signature_blueprint: signature_blueprint || {
+          seed: "delta_fallback",
+          visual: { symmetry: 0.5, curvature: 0.5, angularity: 0.5, density: 0.5, contrast: 0.5, orbit_count: 5 }
+      }
+    };
+
+    res.status(200).json(payload);
   } catch (err) {
     console.error('[experience/signature-delta] Error:', err.message);
     res.status(502).json({ error: 'experience_unavailable' });
   }
 });
 
-app.post('/api/experience/daily', async (req, res) => {
+app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
   try {
+    const userId = req.userId;
     const bodyStr = JSON.stringify(req.body);
     if (bodyStr.length > 10000) {
       return res.status(413).json({ error: 'payload_too_large' });
     }
-    const resp = await fetch(`${BAFE_BASE_URL}/experience/daily`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: bodyStr,
-      signal: AbortSignal.timeout(20000),
+
+    const { birth, target_date, locale } = req.body || {};
+    if (!birth || typeof birth !== 'object') {
+      return res.status(400).json({
+        error: 'invalid_birth',
+        message: 'Missing or invalid birth data in request body.'
+      });
+    }
+    const { date, time, lat, lon, tz } = birth;
+    if (
+      typeof date !== 'string' ||
+      typeof time !== 'string' ||
+      typeof lat !== 'number' ||
+      typeof lon !== 'number' ||
+      typeof tz !== 'string'
+    ) {
+      return res.status(400).json({
+        error: 'invalid_birth',
+        message: 'Birth data must include date, time, lat, lon, and tz with correct types.'
+      });
+    }
+
+    const lang = locale?.startsWith('en') ? 'en' : 'de';
+    const targetDate = target_date || new Date().toISOString().slice(0, 10);
+    const cacheKeyD = `daily:${userId}:${targetDate}:${lang}`;
+
+    if (horoscopeCache.has(cacheKeyD)) {
+      const cached = horoscopeCache.get(cacheKeyD);
+      if (Date.now() - cached.timestamp < HOROSCOPE_CACHE_TTL) {
+         return res.json(cached.data);
+      }
+    }
+
+    if (!geminiClient) {
+      console.warn('[experience/daily] Gemini API key missing, falling back to proxy');
+      const resp = await fetch(`${BAFE_BASE_URL}/experience/daily`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: bodyStr,
+        signal: AbortSignal.timeout(20000),
+      });
+      const data = await resp.json();
+      return res.status(resp.status).json(data);
+    }
+
+    // Call BAFE for natal data to feed Gemini
+    const bafeRes = await fetch(`${BAFE_BASE_URL}/chart`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        birthDate: birth.date,
+        birthTime: birth.time,
+        lat: birth.lat,
+        lng: birth.lon,
+        timeZone: birth.tz
+      })
     });
-    const data = await resp.json();
-    res.status(resp.status).json(data);
+    const bafeData = bafeRes.ok ? await bafeRes.json() : {};
+
+    const prompt = `
+You are Bazodiac's fusion astrologer.
+Write a daily horoscope for today (${targetDate}) based on the user's birth chart:
+${JSON.stringify(bafeData, null, 2)}
+
+Respond with STRICT JSON matching this EXACT structure (No markdown code blocks, just raw JSON).
+{
+  "date": "${targetDate}",
+  "western": {
+    "summary": "1-2 sentences about Western transits.",
+    "themes": ["theme1", "theme2"],
+    "caution": "1 sentence caution",
+    "opportunity": "1 sentence opportunity",
+    "evidence": { "transit_sectors": [1, 5] }
+  },
+  "eastern": {
+    "summary": "1-2 sentences about BaZi daily energy.",
+    "themes": ["theme1", "theme2"],
+    "caution": "1 sentence caution",
+    "opportunity": "1 sentence opportunity",
+    "evidence": { "day_master": "${bafeData?.bazi?.pillars?.day?.stem || ''}" }
+  },
+  "fusion": {
+    "summary": "1-2 sentences synthesizing both systems for today.",
+    "synthesis": "A deeper 2-3 sentence paragraph explaining the fusion.",
+    "action": "One actionable advice",
+    "pushworthy": true,
+    "push_text": "Short push notification string"
+  },
+  "meta": { "engine_version": "v1-gemini-daily" }
+}
+
+RULES:
+- Language: ${lang === 'de' ? 'German' : 'English'}
+- The output MUST be valid parsing JSON.
+- DO NOT wrap the response in \`\`\`json ... \`\`\`. Start directly with {.
+`;
+
+    const model = geminiClient.models;
+    const result = await model.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+      config: {
+        temperature: 0.7,
+        responseMimeType: "application/json",
+      }
+    });
+
+    // Normalize and validate model response text before using it.
+    const rawText =
+      typeof result?.text === "string"
+        ? result.text
+        : typeof result?.response?.text === "string"
+          ? result.response.text
+          : undefined;
+    let jsonStr = rawText?.trim() || "";
+
+    if (!jsonStr) {
+      console.error("[experience/daily] Empty response text from model");
+      return res
+        .status(502)
+        .json({ error: "experience_unavailable", details: "empty_model_response" });
+    }
+
+    if (jsonStr.startsWith('```json')) {
+      jsonStr = jsonStr.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    }
+    
+    const parsedData = JSON.parse(jsonStr);
+    
+    horoscopeCache.set(cacheKeyD, { data: parsedData, timestamp: Date.now() });
+
+    res.status(200).json(parsedData);
   } catch (err) {
     console.error('[experience/daily] Error:', err.message);
     res.status(502).json({ error: 'experience_unavailable' });
@@ -1166,6 +1637,13 @@ const stripe = process.env.STRIPE_SECRET_KEY
   ? new (await import("stripe")).default(process.env.STRIPE_SECRET_KEY)
   : null;
 
+if (stripe) {
+  const testMode = process.env.STRIPE_SECRET_KEY?.startsWith('sk_test_');
+  console.log(`[stripe] initialized (${testMode ? 'TEST' : 'LIVE'} mode)`);
+} else {
+  console.log('[stripe] not configured — checkout will return 503');
+}
+
 // ── GET /api/profile/:userId — ElevenLabs Custom Tool endpoint ──────
 app.get("/api/profile/:userId", async (req, res) => {
   // Verify bearer token
@@ -1219,6 +1697,43 @@ app.get("/api/profile/:userId", async (req, res) => {
       )
     : null;
 
+  // ── Levi V2 Signatur Context ──────────────────────────────────────
+  // Prefer the persisted soulprint_sectors column (set during bootstrap)
+  // over the legacy derivation from Wu-Xing percentages.
+  const soulprintSectors = Array.isArray(data.soulprint_sectors) && data.soulprint_sectors.length === 12
+    ? data.soulprint_sectors
+    : deriveSoulprintSectors(raw, userId);
+
+  // Helper: compute 7-planet natal weights from a 12-sector soulprint.
+  // Mirrors soulprintToNatalWeights() in signatur-bridge.ts — inlined here
+  // because server.mjs cannot import TypeScript source directly.
+  function computeNatalWeights(sectors) {
+    if (!Array.isArray(sectors) || sectors.length === 0) return null;
+    const PLANET_SECTOR_MAP = {
+      Sun:     [4],        // Leo
+      Moon:    [3],        // Cancer
+      Mercury: [2, 5],     // Gemini, Virgo
+      Venus:   [1, 6],     // Taurus, Libra
+      Mars:    [0, 7],     // Aries, Scorpio
+      Jupiter: [8, 11],    // Sagittarius, Pisces
+      Saturn:  [9, 10],    // Capricorn, Aquarius
+    };
+    const weights = {};
+    for (const [planet, indices] of Object.entries(PLANET_SECTOR_MAP)) {
+      const avg = indices.reduce((sum, i) => sum + (sectors[i] ?? 0.5), 0) / indices.length;
+      weights[planet] = Number(avg.toFixed(3));
+    }
+    return weights;
+  }
+
+  const natal_weights = computeNatalWeights(soulprintSectors);
+  const sortedPlanets = natal_weights
+    ? Object.entries(natal_weights).sort(([, a], [, b]) => b - a)
+    : null;
+  const dominant_planet = sortedPlanets ? sortedPlanets[0][0] : null;
+  const weakest_planet = sortedPlanets ? sortedPlanets[sortedPlanets.length - 1][0] : null;
+  const emergence_target = weakest_planet;
+
   // Fetch past conversation summaries for session continuity
   let pastConversations = [];
   try {
@@ -1263,6 +1778,13 @@ app.get("/api/profile/:userId", async (req, res) => {
 
     // AI interpretation (the Gemini text the user already saw)
     interpretation: bafe.interpretation || raw.interpretation || null,
+
+    // Levi V2 Signatur parameters
+    soulprint_sectors: soulprintSectors,
+    natal_weights,
+    dominant_planet,
+    weakest_planet,
+    emergence_target,
 
     // Past conversation summaries for session continuity
     past_conversations: pastConversations,

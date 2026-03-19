@@ -31,6 +31,7 @@ type FusionRing3DProps = {
   onSpikeClick?: (sector: number) => void;
   labels: FusionRing3DLabels;
   quizWeights?: Record<string, number>;
+  effectTrigger?: { type: string; color?: string; timestamp: number } | null;
 };
 
 type QueuedEffect = { id: string; type: RingEffectType };
@@ -65,6 +66,7 @@ export const FusionRing3D = ({
   isInteractive = false,
   labels,
   quizWeights,
+  effectTrigger,
 }: FusionRing3DProps) => {
   const prefersReducedMotion = useReducedMotion();
   const { signalData, events, resolution, loading, error } = useFusionSignal(userId);
@@ -112,6 +114,7 @@ export const FusionRing3D = ({
           <FusionRingCanvasV2
             natalWeights={v2NatalWeights}
             quizWeights={quizWeights}
+            effectTrigger={effectTrigger}
             showUI={isInteractive}
             className="h-full w-full"
           />
@@ -125,11 +128,13 @@ export const FusionRing3D = ({
         )}
       </div>
 
-      <div className="grid gap-2 border-t border-white/10 bg-black/30 px-4 py-3 text-xs text-white/75 md:grid-cols-3 md:px-5">
-        <p>{resolutionText}</p>
-        <p>{`Kp: ${kpIndex.toFixed(1)}`}</p>
-        <p className="truncate">{eventDescription}</p>
-      </div>
+      {!!import.meta.env.DEV && (
+        <div className="grid gap-2 border-t border-white/10 bg-black/30 px-4 py-3 text-xs text-white/75 md:grid-cols-3 md:px-5">
+          <p>{resolutionText}</p>
+          <p>{`Kp: ${kpIndex.toFixed(1)}`}</p>
+          <p className="truncate">{eventDescription}</p>
+        </div>
+      )}
 
       {prefersReducedMotion && (
         <p className="border-t border-white/10 bg-black/40 px-4 py-2 text-xs text-white/70">

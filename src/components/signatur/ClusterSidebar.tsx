@@ -12,6 +12,7 @@ import { MODULE_TO_QUIZ_ID, QUIZ_NAMES } from '@/src/lib/fusion-ring/quiz-maps';
 interface ClusterSidebarProps {
   completedModuleIds: Set<string>;
   onStartQuiz: (quizId: string) => void;
+  onPremiumClick?: (clusterName: string) => void;
   isPremium: boolean;
   lang: 'de' | 'en';
   suggestedModule: string | null;
@@ -21,6 +22,7 @@ function ClusterPanel({
   cluster,
   completedModuleIds,
   onStartQuiz,
+  onPremiumClick,
   isPremium,
   lang,
   suggestedModule,
@@ -28,6 +30,7 @@ function ClusterPanel({
   cluster: ClusterDef;
   completedModuleIds: Set<string>;
   onStartQuiz: (quizId: string) => void;
+  onPremiumClick?: (clusterName: string) => void;
   isPremium: boolean;
   lang: 'de' | 'en';
   suggestedModule: string | null;
@@ -56,12 +59,13 @@ function ClusterPanel({
         onClick={() => setExpanded(prev => !prev)}
         className="flex w-full cursor-pointer items-center justify-between p-3"
         aria-expanded={expanded}
+        aria-controls={`cluster-panel-${cluster.id}`}
       >
         <div className="flex items-center gap-2.5">
-          <span className="text-lg">{cluster.icon}</span>
+          <span className="text-lg" aria-hidden="true">{cluster.icon}</span>
           <div className="text-left">
             <h3 className="text-sm font-medium text-white/90">{cluster.name}</h3>
-            <span className="text-[10px] text-white/40">
+            <span className="text-[10px] text-white/60">
               {complete
                 ? (lang === 'de' ? 'Abgeschlossen' : 'Completed')
                 : `${done}/${total}`}
@@ -69,10 +73,10 @@ function ClusterPanel({
           </div>
         </div>
         <div className="flex items-center gap-1.5">
-          {complete && <Check className="h-3.5 w-3.5 text-emerald-400" />}
+          {complete && <Check className="h-3.5 w-3.5 text-emerald-400" aria-hidden="true" />}
           {expanded
-            ? <ChevronUp className="h-3.5 w-3.5 text-white/30" />
-            : <ChevronDown className="h-3.5 w-3.5 text-white/30" />
+            ? <ChevronUp className="h-3.5 w-3.5 text-white/40" aria-hidden="true" />
+            : <ChevronDown className="h-3.5 w-3.5 text-white/40" aria-hidden="true" />
           }
         </div>
       </button>
@@ -80,7 +84,14 @@ function ClusterPanel({
       {/* Progress bar */}
       {!complete && progress > 0 && (
         <div className="px-3 pb-2">
-          <div className="h-0.5 overflow-hidden rounded-full bg-white/10">
+          <div
+            className="h-0.5 overflow-hidden rounded-full bg-white/10"
+            role="progressbar"
+            aria-valuenow={Math.round(progress * 100)}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`${cluster.name} ${Math.round(progress * 100)}%`}
+          >
             <motion.div
               className="h-full rounded-full"
               style={{ backgroundColor: cluster.color }}
@@ -96,6 +107,8 @@ function ClusterPanel({
       <AnimatePresence>
         {expanded && (
           <motion.div
+            id={`cluster-panel-${cluster.id}`}
+            role="region"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -117,13 +130,19 @@ function ClusterPanel({
                   <button
                     key={moduleId}
                     type="button"
-                    disabled={quizDone || needsPremium}
-                    onClick={() => quizId && onStartQuiz(quizId)}
+                    disabled={quizDone}
+                    onClick={() => {
+                      if (needsPremium && onPremiumClick) {
+                        onPremiumClick(cluster.name);
+                      } else if (quizId) {
+                        onStartQuiz(quizId);
+                      }
+                    }}
                     className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition-all ${
                       quizDone
                         ? 'border opacity-60'
                         : needsPremium
-                        ? 'cursor-not-allowed border border-white/5 bg-white/[0.02] opacity-30'
+                        ? 'cursor-pointer border border-white/5 bg-white/[0.02] opacity-50 hover:opacity-70'
                         : 'cursor-pointer border border-white/5 bg-white/[0.04] hover:bg-white/[0.08]'
                     }`}
                     style={
@@ -142,13 +161,19 @@ function ClusterPanel({
                         : undefined
                     }
                   >
-                    <span className={quizDone ? 'text-white/80' : 'text-white/50'}>
+                    <span className={quizDone ? 'text-white/80' : 'text-white/60'}>
                       {name}
                     </span>
                     {quizDone ? (
-                      <Check className="h-3 w-3 shrink-0 text-emerald-400" />
+                      <>
+                        <Check className="h-3 w-3 shrink-0 text-emerald-400" aria-hidden="true" />
+                        <span className="sr-only">{lang === 'de' ? 'Abgeschlossen' : 'Completed'}</span>
+                      </>
                     ) : needsPremium ? (
-                      <Lock className="h-3 w-3 shrink-0 text-white/20" />
+                      <>
+                        <Lock className="h-3 w-3 shrink-0 text-white/30" aria-hidden="true" />
+                        <span className="sr-only">Premium</span>
+                      </>
                     ) : null}
                   </button>
                 );
@@ -164,6 +189,7 @@ function ClusterPanel({
 export function ClusterSidebar({
   completedModuleIds,
   onStartQuiz,
+  onPremiumClick,
   isPremium,
   lang,
   suggestedModule,
@@ -171,7 +197,7 @@ export function ClusterSidebar({
   return (
     <nav
       aria-label={lang === 'de' ? 'Quiz-Cluster' : 'Quiz clusters'}
-      className="flex w-64 shrink-0 flex-col gap-2 overflow-y-auto pr-1"
+      className="flex w-56 shrink-0 flex-col gap-2 overflow-y-auto pr-1"
     >
       {CLUSTER_REGISTRY.map(cluster => (
         <ClusterPanel
@@ -179,6 +205,7 @@ export function ClusterSidebar({
           cluster={cluster}
           completedModuleIds={completedModuleIds}
           onStartQuiz={onStartQuiz}
+          onPremiumClick={onPremiumClick}
           isPremium={isPremium}
           lang={lang}
           suggestedModule={suggestedModule}

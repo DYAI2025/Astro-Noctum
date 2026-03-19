@@ -1,4 +1,4 @@
-import { useEffect, useCallback, Suspense, lazy } from 'react';
+import { useEffect, useCallback, useRef, Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { ContributionEvent } from '@/src/lib/lme/types';
 import { QuizErrorBoundary } from './QuizErrorBoundary';
@@ -70,7 +70,7 @@ const QUIZ_MAP: Record<string, React.LazyExoticComponent<React.ComponentType<Qui
 // --- Loading fallback ---
 function QuizLoadingFallback() {
   return (
-    <div className="flex items-center justify-center py-20">
+    <div className="flex items-center justify-center py-20" role="status" aria-label="Loading quiz">
       <div className="h-8 w-8 animate-spin rounded-full border-2 border-gold/30 border-t-gold" />
     </div>
   );
@@ -78,6 +78,8 @@ function QuizLoadingFallback() {
 
 // --- Component ---
 export default function QuizOverlay({ quizId, onComplete, onClose }: QuizOverlayProps) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
   // Close on Escape key
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -89,8 +91,11 @@ export default function QuizOverlay({ quizId, onComplete, onClose }: QuizOverlay
   useEffect(() => {
     if (!quizId) return;
     document.addEventListener('keydown', handleKeyDown);
-    // Prevent body scroll while overlay is open
     document.body.style.overflow = 'hidden';
+    // Move focus to close button when dialog opens
+    requestAnimationFrame(() => {
+      closeButtonRef.current?.focus();
+    });
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
@@ -125,6 +130,7 @@ export default function QuizOverlay({ quizId, onComplete, onClose }: QuizOverlay
           >
             {/* Close button */}
             <button
+              ref={closeButtonRef}
               type="button"
               onClick={onClose}
               className="absolute right-4 top-4 rounded-full p-1.5 text-gold/50 transition-colors hover:bg-gold/10 hover:text-gold"

@@ -4,9 +4,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-Bazodiac (Astro-Noctum) — a fusion astrology web app combining Western astrology, Chinese BaZi, and Wu-Xing (Five Elements). Users enter birth data, get chart calculations from the external BAFE API, AI-generated interpretations via Gemini, and can talk to "Levi Bazi" (an ElevenLabs voice agent). The UI is German-language, dark luxury aesthetic (obsidian/gold palette).
+Bazodiac (Astro-Noctum) — a fusion astrology web + mobile app combining Western astrology, Chinese BaZi, and Wu-Xing (Five Elements). Users enter birth data, get chart calculations from the external BAFE API, AI-generated interpretations via Gemini, and can talk to "Levi Bazi" (an ElevenLabs voice agent). The UI is German-language, dark luxury aesthetic (obsidian/gold palette).
+
+## Monorepo Structure
+
+```
+├── src/                    # Web app (React 19 SPA)
+├── server.mjs              # Express production server
+├── apps/mobile/            # iOS app (Expo 53 / React Native 0.79)
+├── packages/shared/        # @bazodiac/shared — fusion signal math, quiz schemas/scoring, i18n
+├── features/plan/          # Planning artefacts (NOT part of build)
+├── bazodiac_engine/        # Python reference implementation (NOT part of build)
+└── docs/plans/             # Implementation plans
+```
+
+The mobile app depends on `@bazodiac/shared` via `"file:../../packages/shared"` in its package.json. The web app imports shared code directly from `packages/shared/src/` (no build step needed — TypeScript source).
 
 ## Commands
+
+### Web App (root)
 
 ```bash
 npm run dev        # Vite dev server on :3000 with HMR
@@ -24,7 +40,26 @@ npx vitest run src/__tests__/fusion-ring.test.ts  # Run a single test file
 # Terminal 2: PORT=3001 node server.mjs      (Express API on :3001, for /api/auth, /api/profile, /api/agent)
 ```
 
-Node 20.19+ required (pinned in `.nvmrc`). Tests live in `src/__tests__/` and use Vitest. Copy `.env.example` to `.env.local` and fill values before starting dev.
+### Mobile App (apps/mobile/)
+
+```bash
+cd apps/mobile
+npx expo run:ios           # Build + run on iOS simulator
+npx expo start             # Start Metro bundler (Expo Go)
+npx tsc --noEmit           # TypeScript check (mobile-only)
+npx expo install <pkg>     # Install SDK-compatible packages
+eas build --platform ios   # Production build via EAS
+```
+
+### Shared Package (packages/shared/)
+
+```bash
+cd packages/shared
+npx tsc --noEmit                                    # TypeScript check
+npx vitest run src/quizzes/__tests__/scoring.test.ts # Run scoring tests
+```
+
+Node 20.19+ required (pinned in `.nvmrc`). Web tests live in `src/__tests__/`, shared tests in `packages/shared/src/**/__tests__/`. Copy `.env.example` to `.env.local` and fill values before starting dev.
 
 ## Conventions
 
@@ -198,6 +233,47 @@ The `useQuizContribution` hook converts events to 12-sector weights using `event
 Six clusters in `src/lib/fusion-ring/clusters.ts`: naturkind (4 quizzes), mentalist (3), stratege (4), mystiker (4), kinky (4, premium), partner_match (4). The `ConversationAnalysisQuiz` in PartnerMatch is AI-powered — it calls `/api/analyze/conversation` server-side to extract markers from pasted dialogue.
 
 `QuizOverlay` is the master router — maps quiz IDs to lazy-loaded components via `QUIZ_MAP`. **Currently orphaned** (not mounted). To activate: mount with `useQuizContribution(completedModuleIds)` as `onComplete`, hydrate `completedModuleIds` from Supabase `contribution_events` on mount.
+
+### Shared Package (`@bazodiac/shared`)
+
+`packages/shared/` contains code shared between web and mobile:
+
+| Path | Purpose |
+|------|---------|
+| `src/fusion-ring/signal.ts` | `computeFusionSignal()` — 12-sector weighted blend of western/bazi/wuxing/quiz vectors with opposition smoothing |
+| `src/fusion-ring/constants.ts` | Sector definitions, opposition pairs, weight factors |
+| `src/quizzes/schema.ts` | Unified `QuizDefinition` type covering all 3 scoring models (multi-dimension, categorical, profile-driven) |
+| `src/quizzes/scoring.ts` | `scoreQuiz()` — universal scoring engine that handles any `QuizDefinition` |
+| `src/quizzes/definitions/` | All 22 quiz definitions extracted as TypeScript objects (+ ConversationAnalysis) |
+| `src/experience/` | `BootstrapResponse` and related types for the Experience API |
+| `src/transit/` | Transit state types shared between server and clients |
+| `src/i18n/` | Shared i18n strings |
+
+### Mobile App (`apps/mobile/`)
+
+**Expo 53 + React Native 0.79** iOS app. Tab-based navigation via `@react-navigation`. Auth via Supabase, data persistence via Supabase + AsyncStorage caching.
+
+**Navigation** (`src/navigation/RootNavigator.tsx`):
+- Tabs: Dashboard, Signatur (FuRing), WuXing, Wissen
+- Stack routes: Article, Voice (Levi), Quiz, Profile
+
+**Key screens:**
+- `DashboardScreen` — cosmic profile summary, space weather, AI interpretation
+- `FuRingScreen` — Signatur visualization using `useBootstrapSignatur()` hook (Experience API bootstrap → soulprint sectors + profile summary + harmony index). Renders 12 zodiac sector bars, profile card, signature seed
+- `QuizScreen` — FlatList of all 23 quizzes rendered via `QuizRenderer` component from JSON `QuizDefinition`s. Completion fires `queueContributionEvent()` to offline queue
+- `VoiceScreen` — ElevenLabs agent via WebView (native SDK integration planned)
+
+**Key mobile-specific modules:**
+- `src/lib/experience.ts` — `fetchBootstrap()` client for Experience API
+- `src/hooks/useBootstrapSignatur.ts` — Fetches soulprint via Experience API, caches in AsyncStorage
+- `src/hooks/useDailyHoroscope.ts` — Daily horoscope fetch + cache
+- `src/lib/offlineQueue.ts` — AsyncStorage-based contribution queue with auto-flush
+- `src/lib/device.ts` — Device identity via SecureStore
+- `src/components/QuizRenderer.tsx` — Universal quiz renderer driven by `QuizDefinition` from shared package
+- `src/components/SignaturCanvas.tsx` — Native 3D particle ring via expo-gl + three.js (6k ring + 800 corona particles, custom GLSL shaders, pan/pinch gesture orbit). **Currently not mounted** — FuRingScreen uses the 2D bootstrap view instead
+- `src/theme.ts` — COLORS constant (bg, card, border, gold, text, textDim)
+
+**App config:** `app.json` — bundle ID `space.bazodiac.mobile`, deep linking via `bazodiac://` scheme, EAS project ID `3dc5ff64-329b-4fcf-bb89-34eb0132cfec`.
 
 ### `features/plan/` Directory
 
