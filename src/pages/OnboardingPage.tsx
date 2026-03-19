@@ -37,8 +37,8 @@ export default function OnboardingPage({
   }, [hasCompleteProfile, navigate]);
 
   useEffect(() => {
-    if (onboardingPhase === 'done') navigate('/', { replace: true });
-  }, [onboardingPhase, navigate]);
+    if (onboardingPhase === 'done' && hasCompleteProfile) navigate('/', { replace: true });
+  }, [onboardingPhase, hasCompleteProfile, navigate]);
 
   return (
     <motion.div
