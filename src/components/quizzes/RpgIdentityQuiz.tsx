@@ -59,20 +59,6 @@ function calculateResult(finalScores: Scores) {
 // SUB-COMPONENTS
 // ═══════════════════════════════════════════════════════════════
 
-function CloseButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="absolute top-4 right-4 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 transition-colors"
-      aria-label="Schlie\u00dfen"
-    >
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-        <path d="M18 6L6 18M6 6l12 12" />
-      </svg>
-    </button>
-  );
-}
-
 function ProgressBar({ current, total }: { current: number; total: number }) {
   const pct = ((current + 1) / total) * 100;
   return (
@@ -328,7 +314,7 @@ function ResultScreen({
         {/* Compatibility */}
         <div className="bg-[#041726]/40 rounded-xl p-4">
           <div className="flex justify-between items-center text-sm mb-2 pb-2 border-b border-white/10">
-            <span className="text-white/50">Verb&uuml;ndete</span>
+            <span className="text-white/50">Verbündete</span>
             <span className="font-medium text-[#8FB8A8]">
               {profile.compatibility.allies.map(id => (profileNames as Record<string, string>)[id] || id).join(' \u2022 ')}
             </span>
@@ -341,6 +327,13 @@ function ResultScreen({
             </span>
           </div>
         </div>
+      </div>
+
+      {/* Cluster Info Box */}
+      <div className="w-full max-w-sm mt-5 p-4 rounded-xl bg-[#D4AF37]/10 border border-[#D4AF37]/20">
+        <p className="text-xs text-[#D4AF37] leading-relaxed text-center">
+          <span className="font-semibold">Hinweis:</span> Deine Ergebnisse fließen nach Abschluss des gesamten Quiz-Clusters in deine Signatur ein.
+        </p>
       </div>
 
       {/* Actions */}
@@ -371,6 +364,8 @@ function ResultScreen({
 // ═══════════════════════════════════════════════════════════════
 
 export default function RpgIdentityQuiz({ onComplete, onClose }: RpgIdentityQuizProps) {
+  // Explicit displayName for React.lazy to show correct name in dev tools/errors
+  (RpgIdentityQuiz as any).displayName = 'RpgIdentityQuiz';
   const [screen, setScreen] = useState<Screen>('intro');
   const [questionIdx, setQuestionIdx] = useState(0);
   const [scores, setScores] = useState<Scores>({ d1: 0, d2: 0, d3: 0 });
@@ -417,8 +412,6 @@ export default function RpgIdentityQuiz({ onComplete, onClose }: RpgIdentityQuiz
 
   return (
     <div className="relative w-full h-full min-h-[500px] flex flex-col">
-      <CloseButton onClick={onClose} />
-
       <AnimatePresence mode="wait">
         {screen === 'intro' && <IntroScreen key="intro" onStart={handleStart} />}
 
