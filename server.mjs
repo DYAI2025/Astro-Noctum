@@ -2073,7 +2073,7 @@ app.get("/api/geometry/verify", async (req, res) => {
     const params = new URLSearchParams({
       format: "json",
       COMMAND: String(body1),
-      CENTER: "500@399",
+      CENTER: String(body2),
       EPHEM_TYPE: "OBSERVER",
       START_TIME: String(date),
       STOP_TIME: String(date),
