@@ -1,11 +1,13 @@
-import { lazy, Suspense } from 'react';
-import { Routes, Route, Link } from 'react-router-dom';
+import { lazy, Suspense, type ReactNode } from 'react';
+import { Routes, Route, Link, Navigate } from 'react-router-dom';
+import type { OnboardingPageProps } from './pages/OnboardingPage';
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const FuRingPage = lazy(() => import('./pages/FuRingPage'));
 const WuXingPage = lazy(() => import('./pages/WuXingPage'));
 const WissenPage = lazy(() => import('./pages/WissenPage'));
 const ArtikelPage = lazy(() => import('./pages/ArtikelPage'));
+const OnboardingPage = lazy(() => import('./pages/OnboardingPage'));
 
 function PageLoader() {
   return (
@@ -27,16 +29,28 @@ function NotFound() {
   );
 }
 
-export function AppRoutes() {
+type AppRoutesProps = {
+  hasCompleteProfile: boolean;
+  onboardingProps: OnboardingPageProps;
+};
+
+export function AppRoutes({ hasCompleteProfile, onboardingProps }: AppRoutesProps) {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        <Route path="/" element={<DashboardPage />} />
+        <Route
+          path="/"
+          element={hasCompleteProfile ? <DashboardPage /> : <Navigate to="/onboarding" replace />}
+        />
         <Route path="/signatur" element={<FuRingPage />} />
         <Route path="/fu-ring" element={<FuRingPage />} />
         <Route path="/wu-xing" element={<WuXingPage />} />
         <Route path="/wissen" element={<WissenPage />} />
         <Route path="/wissen/:slug" element={<ArtikelPage />} />
+        <Route
+          path="/onboarding"
+          element={hasCompleteProfile ? <Navigate to="/" replace /> : <OnboardingPage {...onboardingProps} />}
+        />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>

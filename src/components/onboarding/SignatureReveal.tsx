@@ -1,12 +1,13 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { FusionRingWebsiteCanvas } from '../fusion-ring-website/FusionRingWebsiteCanvas';
 import FusionRingCanvasV2 from '../fusion-ring-website/FusionRingCanvasV2';
-import { soulprintToNatalWeights, quizSectorsToQuizWeights } from '../fusion-ring-website/signatur-bridge';
+import { deriveWeightsFromApiData, soulprintToNatalWeights, quizSectorsToQuizWeights } from '../fusion-ring-website/signatur-bridge';
 import { signatureDelta } from '../../services/experience';
 import { trackEvent } from '../../lib/analytics';
 import { isFeatureEnabled } from '../../lib/feature-flags';
 import type { BootstrapResponse, SignatureDeltaResponse } from '../../lib/schemas/experience';
+import type { ApiData } from '../../types/bafe';
 
 // ── Quiz options (German UI) ─────────────────────────────────────────
 
@@ -21,17 +22,25 @@ const QUIZ_OPTIONS = [
 
 interface Props {
   bootstrapData: BootstrapResponse;
+  fallbackApiData?: ApiData | null;
   onComplete: (deltaData: SignatureDeltaResponse | null) => void;
 }
 
 // ── Component ────────────────────────────────────────────────────────
 
-export function SignatureReveal({ bootstrapData, onComplete }: Props) {
+export function SignatureReveal({ bootstrapData, fallbackApiData, onComplete }: Props) {
   const { profile, soulprint_sectors, signature_blueprint } = bootstrapData;
 
   const [activeSectors, setActiveSectors] = useState<number[]>(soulprint_sectors);
   const useV2 = isFeatureEnabled('signature_engine_v2');
-  const [natalWeights] = useState(() => soulprintToNatalWeights(soulprint_sectors));
+  const natalWeights = useMemo(() => {
+    const sectors = Array.isArray(soulprint_sectors) && soulprint_sectors.length === 12
+      ? soulprint_sectors
+      : Array(12).fill(0.5);
+    const isNeutral = sectors.every((v) => Math.abs(v - 0.5) < 1e-6);
+    if (!isNeutral) return soulprintToNatalWeights(sectors);
+    return deriveWeightsFromApiData(fallbackApiData);
+  }, [soulprint_sectors, fallbackApiData]);
   const [quizWeights, setQuizWeights] = useState<Record<string, number> | undefined>();
   const [selectedKeyword, setSelectedKeyword] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);

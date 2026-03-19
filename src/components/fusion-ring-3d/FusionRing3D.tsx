@@ -125,11 +125,13 @@ export const FusionRing3D = ({
         )}
       </div>
 
-      <div className="grid gap-2 border-t border-white/10 bg-black/30 px-4 py-3 text-xs text-white/75 md:grid-cols-3 md:px-5">
-        <p>{resolutionText}</p>
-        <p>{`Kp: ${kpIndex.toFixed(1)}`}</p>
-        <p className="truncate">{eventDescription}</p>
-      </div>
+      {!!import.meta.env.DEV && (
+        <div className="grid gap-2 border-t border-white/10 bg-black/30 px-4 py-3 text-xs text-white/75 md:grid-cols-3 md:px-5">
+          <p>{resolutionText}</p>
+          <p>{`Kp: ${kpIndex.toFixed(1)}`}</p>
+          <p className="truncate">{eventDescription}</p>
+        </div>
+      )}
 
       {prefersReducedMotion && (
         <p className="border-t border-white/10 bg-black/40 px-4 py-2 text-xs text-white/70">
