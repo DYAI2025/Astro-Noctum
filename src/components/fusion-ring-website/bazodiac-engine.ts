@@ -61,13 +61,13 @@ export interface PlanetDef {
 }
 
 export const PLANETS: PlanetDef[] = [
-  { id: 'Sun',     hz: 126.22, color: [1.0,  0.69, 0.19], hexColor: '#FFB030', zodiacDeg: 120, sign: 'Leo' },
-  { id: 'Moon',    hz: 210.42, color: [0.72, 0.63, 0.94], hexColor: '#B8A0F0', zodiacDeg: 90,  sign: 'Cancer' },
-  { id: 'Mercury', hz: 141.27, color: [0.31, 0.91, 0.94], hexColor: '#50E8F0', zodiacDeg: 60,  sign: 'Gemini' },
-  { id: 'Venus',   hz: 221.23, color: [1.0,  0.50, 0.75], hexColor: '#FF80C0', zodiacDeg: 30,  sign: 'Taurus' },
-  { id: 'Mars',    hz: 144.72, color: [1.0,  0.20, 0.20], hexColor: '#FF3333', zodiacDeg: 0,   sign: 'Aries' },
-  { id: 'Jupiter', hz: 183.58, color: [1.0,  0.84, 0.0],  hexColor: '#FFD700', zodiacDeg: 240, sign: 'Sagittarius' },
-  { id: 'Saturn',  hz: 147.85, color: [0.44, 0.56, 0.69], hexColor: '#7090B0', zodiacDeg: 270, sign: 'Capricorn' },
+  { id: 'Sun',     hz: 126.22, color: [1.0,  0.72, 0.12], hexColor: '#FFB81F', zodiacDeg: 120, sign: 'Leo' },
+  { id: 'Moon',    hz: 210.42, color: [0.68, 0.55, 1.0 ], hexColor: '#AD8CFF', zodiacDeg: 90,  sign: 'Cancer' },
+  { id: 'Mercury', hz: 141.27, color: [0.20, 0.95, 1.0 ], hexColor: '#33F2FF', zodiacDeg: 60,  sign: 'Gemini' },
+  { id: 'Venus',   hz: 221.23, color: [1.0,  0.40, 0.72], hexColor: '#FF66B8', zodiacDeg: 30,  sign: 'Taurus' },
+  { id: 'Mars',    hz: 144.72, color: [1.0,  0.15, 0.12], hexColor: '#FF261F', zodiacDeg: 0,   sign: 'Aries' },
+  { id: 'Jupiter', hz: 183.58, color: [1.0,  0.88, 0.0 ], hexColor: '#FFE000', zodiacDeg: 240, sign: 'Sagittarius' },
+  { id: 'Saturn',  hz: 147.85, color: [0.38, 0.52, 0.72], hexColor: '#6185B8', zodiacDeg: 270, sign: 'Capricorn' },
 ];
 
 export const PLANET_MAP = new Map(PLANETS.map(p => [p.id, p]));
@@ -171,7 +171,7 @@ export function computeSpiroParams(hz: number, harmLock = true): SpiroParams {
   const rBase = R / n;
   const r = harmLock ? rBase : rBase * (1 + (hash01(seed, 2) - 0.5) * 0.3);
   // More dramatic pen distance for pronounced curves
-  const d = lerp(0.4, 1.2, hash01(seed, 3));
+  const d = lerp(0.25, 1.5, hash01(seed, 3));
   const turns = harmLock ? Math.max(n, lcm(n, 3)) : 10 + Math.floor(t * 14);
 
   return { kind, R, r, d, n, turns, harmLock };

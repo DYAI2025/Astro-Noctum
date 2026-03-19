@@ -7,6 +7,9 @@ vi.mock('@/src/contexts/LanguageContext', () => ({
 vi.mock('@/src/components/UpgradeButton', () => ({
   UpgradeButton: ({ label }: { label?: string }) => <button>{label ?? 'Upgrade'}</button>,
 }));
+vi.mock('@/src/hooks/usePremium', () => ({
+  usePremium: () => ({ isPremium: false, loading: false }),
+}));
 
 describe('PremiumUpgradeModal', () => {
   it('exports a component', async () => {

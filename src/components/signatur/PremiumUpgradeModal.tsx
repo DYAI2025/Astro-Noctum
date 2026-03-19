@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import { X, Lock } from 'lucide-react';
 import { UpgradeButton } from '@/src/components/UpgradeButton';
 import { useLanguage } from '@/src/contexts/LanguageContext';
+import { usePremium } from '@/src/hooks/usePremium';
 
 interface PremiumUpgradeModalProps {
   clusterName: string;
@@ -12,6 +13,11 @@ interface PremiumUpgradeModalProps {
 export function PremiumUpgradeModal({ clusterName, onClose }: PremiumUpgradeModalProps) {
   const { lang } = useLanguage();
   const dialogRef = useRef<HTMLDivElement>(null);
+  const { isPremium } = usePremium();
+
+  useEffect(() => {
+    if (isPremium) onClose();
+  }, [isPremium, onClose]);
 
   useEffect(() => {
     const prev = document.body.style.overflow;

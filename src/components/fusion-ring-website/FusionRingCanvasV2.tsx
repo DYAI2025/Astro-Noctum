@@ -130,7 +130,7 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
       renderer.setSize(width, height);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.8;
+      renderer.toneMappingExposure = 1.5;
       renderer.setClearColor(0x08080e);
       canvasRef.current?.appendChild?.(renderer.domElement);
       
@@ -143,9 +143,9 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
         
         bloomPass = new UnrealBloomPass(
           new THREE.Vector2(width, height),
-          0.8,   // strength
-          0.4,   // radius
-          0.85   // threshold
+          0.55,  // strength
+          0.35,  // radius
+          0.92   // threshold
         );
         composer.addPass(bloomPass);
 
@@ -795,7 +795,7 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
           effectLight1.intensity = 0;
           effectLight2.intensity = 0;
           effectIntensityMultiplier = 1.0;
-          renderer.toneMappingExposure = 1.8;
+          renderer.toneMappingExposure = 1.5;
           return;
         }
 
@@ -869,7 +869,7 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
             effectLight1.intensity = intensity * 8;
             effectLight2.color.set(0xff8060);
             effectLight2.intensity = intensity * 5;
-            renderer.toneMappingExposure = 1.8 + intensity * 1.5;
+            renderer.toneMappingExposure = 1.5 + intensity * 1.5;
             const shake = intensity * 0.025;
             ringGroup.position.x = Math.sin(t * 35) * shake;
             ringGroup.position.z = Math.cos(t * 40) * shake;
@@ -886,7 +886,7 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
             effectLight1.intensity = intensity * 8;
             effectLight2.color.set(0xff8040);
             effectLight2.intensity = intensity * 4;
-            renderer.toneMappingExposure = 1.8 + intensity * 1.2;
+            renderer.toneMappingExposure = 1.5 + intensity * 1.2;
             const shake = intensity * 0.02;
             ringGroup.position.x = Math.sin(t * 30) * shake;
             ringGroup.position.z = Math.cos(t * 35) * shake;
@@ -903,7 +903,7 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
             effectLight1.intensity = intensity * 5;
             effectLight2.color.set(0x6040ff);
             effectLight2.intensity = intensity * 3;
-            renderer.toneMappingExposure = 1.8 - intensity * 0.3;
+            renderer.toneMappingExposure = 1.5 - intensity * 0.3;
             const vib = intensity * 0.01;
             ringGroup.position.x = Math.sin(t * 20) * vib;
             ringGroup.position.z = Math.cos(t * 23) * vib;
@@ -924,7 +924,7 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
         // Emergence-driven bloom and material intensity
         if (bloomPass && currentSignature) {
           const emergenceVal = currentSignature.emergence.emergence;
-          bloomPass.strength = lerp(0.6, 1.4, emergenceVal);
+          bloomPass.strength = lerp(0.4, 0.9, emergenceVal);
         }
 
         // Return-to-home
@@ -950,7 +950,7 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
           ringGroup.position.y = Math.sin(t * 0.3) * 0.03;
           ringGroup.position.x = 0;
           ringGroup.position.z = 0;
-          renderer.toneMappingExposure = 1.8;
+          renderer.toneMappingExposure = 1.5;
           coreLight.intensity = 2.0;
         }
 
