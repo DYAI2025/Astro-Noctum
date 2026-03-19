@@ -13,7 +13,7 @@ import QuizOverlay from '@/src/components/QuizOverlay';
 import type { ContributionEvent } from '@/src/lib/lme/types';
 
 export default function SignaturQuizzesPage() {
-  const { t, lang } = useLanguage();
+  const { lang } = useLanguage();
   const { isPremium } = usePremium();
   const { completedModuleIds, addModule } = useCompletedModules();
   const suggestedModule = useQuizSuggestion(completedModuleIds);
