@@ -2095,12 +2095,14 @@ app.get("/api/geometry/verify", async (req, res) => {
     if (!jplRes.ok) throw new Error(`JPL returned ${jplRes.status}`);
     const jplData = await jplRes.json();
 
+    const raw = typeof jplData.result === "string" ? jplData.result.substring(0, 2000) : null;
+
     const payload = {
       body1,
       body2,
       date,
-      raw: typeof jplData.result === "string" ? jplData.result.substring(0, 2000) : null,
-      verified: true,
+      raw,
+      verified: raw !== null,
       source: "JPL Horizons",
     };
 
