@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { motion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 
 interface ClusterPipelineProps {
   clusterId: string;
@@ -10,6 +10,7 @@ interface ClusterPipelineProps {
 const STORAGE_PREFIX = 'bazodiac_pipeline_shown_';
 
 export function ClusterPipeline({ clusterId, clusterColor, isComplete }: ClusterPipelineProps) {
+  const prefersReducedMotion = useReducedMotion();
   const [showAnimation, setShowAnimation] = useState(false);
   const [showStaticLine, setShowStaticLine] = useState(false);
   const storageKey = `${STORAGE_PREFIX}${clusterId}`;
@@ -23,17 +24,21 @@ export function ClusterPipeline({ clusterId, clusterColor, isComplete }: Cluster
       return;
     }
 
-    // First time seeing this cluster complete — animate
-    setShowAnimation(true);
     localStorage.setItem(storageKey, 'true');
 
+    if (prefersReducedMotion) {
+      setShowStaticLine(true);
+      return;
+    }
+
+    setShowAnimation(true);
     const timer = setTimeout(() => {
       setShowAnimation(false);
       setShowStaticLine(true);
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [isComplete, storageKey]);
+  }, [isComplete, storageKey, prefersReducedMotion]);
 
   if (!isComplete) return null;
 
