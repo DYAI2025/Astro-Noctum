@@ -32,29 +32,57 @@ vi.mock("three", () => {
       position: { set: vi.fn() }, lookAt: vi.fn(),
       aspect: 1, updateProjectionMatrix: vi.fn(),
     })),
-    SphereGeometry: vi.fn(), BufferGeometry: vi.fn().mockImplementation(() => ({
+    SphereGeometry: vi.fn(function SphereGeometry(this: any) { this.dispose = vi.fn(); }),
+    BufferGeometry: vi.fn().mockImplementation(() => ({
       setAttribute: vi.fn().mockReturnThis(),
       setFromPoints: vi.fn().mockReturnThis(),
     })),
-    Float32BufferAttribute: vi.fn(), MeshBasicMaterial: vi.fn().mockImplementation(() => ({
-      color: { set: vi.fn() }, opacity: 1, needsUpdate: false,
-    })),
+    Float32BufferAttribute: vi.fn(),
+    MeshBasicMaterial: vi.fn(function MeshBasicMaterial(this: any) {
+      this.color = { set: vi.fn() }; this.opacity = 1; this.needsUpdate = false; this.dispose = vi.fn();
+    }),
+    MeshStandardMaterial: vi.fn(function MeshStandardMaterial(this: any, params: any = {}) {
+      this.color = { set: vi.fn() }; this.opacity = 1; this.needsUpdate = false; this.dispose = vi.fn();
+      this.emissive = { set: vi.fn() }; this.emissiveIntensity = params.emissiveIntensity ?? 0;
+    }),
+    MeshPhysicalMaterial: vi.fn(function MeshPhysicalMaterial(this: any) {
+      this.color = { set: vi.fn() }; this.opacity = 1; this.needsUpdate = false; this.dispose = vi.fn();
+      this.emissive = { set: vi.fn() }; this.emissiveIntensity = 0;
+    }),
     LineBasicMaterial: vi.fn().mockImplementation(() => ({
       color: { set: vi.fn() }, opacity: 1,
     })),
     PointsMaterial: vi.fn(), ShaderMaterial: vi.fn(),
-    RingGeometry: vi.fn(), Mesh: vi.fn().mockImplementation(() => ({
-      position: { set: vi.fn(), copy: vi.fn() },
-      rotation: { x: 0 }, castShadow: false, add: vi.fn(),
-      userData: {}, material: { color: { set: vi.fn() }, opacity: 1 },
-    })),
-    Points: vi.fn(), Line: vi.fn().mockImplementation(() => ({
-      userData: {}, material: { color: { set: vi.fn() }, opacity: 1 },
-    })),
-    Group: vi.fn().mockImplementation(() => ({
-      add: vi.fn(), visible: false, children: [],
-    })),
-    PointLight: vi.fn(), AmbientLight: vi.fn(), HemisphereLight: vi.fn(),
+    TorusGeometry: vi.fn(function TorusGeometry(this: any) { this.dispose = vi.fn(); }),
+    IcosahedronGeometry: vi.fn(function IcosahedronGeometry(this: any) { this.dispose = vi.fn(); }),
+    RingGeometry: vi.fn(function RingGeometry(this: any) { this.dispose = vi.fn(); }),
+    Mesh: vi.fn(function Mesh(this: any) {
+      this.position = { set: vi.fn(), copy: vi.fn(), x: 0, y: 0, z: 0 };
+      this.rotation = { x: 0, y: 0, z: 0 };
+      this.scale = { x: 1, y: 1, z: 1, setScalar(s: number) { this.x = s; this.y = s; this.z = s; } };
+      this.castShadow = false;
+      this.add = vi.fn();
+      this.userData = {};
+      this.material = { color: { set: vi.fn() }, opacity: 1 };
+    }),
+    Points: vi.fn(), Line: vi.fn(function Line(this: any) {
+      this.userData = {};
+      this.material = { color: { set: vi.fn() }, opacity: 1 };
+    }),
+    Group: vi.fn(function Group(this: any) {
+      this.add = vi.fn();
+      this.visible = true;
+      this.children = [];
+      this.scale = { x: 1, y: 1, z: 1, set(x: number, y: number, z: number) { this.x = x; this.y = y; this.z = z; }, setScalar(s: number) { this.x = s; this.y = s; this.z = s; } };
+      this.rotation = { x: 0, y: 0, z: 0 };
+      this.position = { x: 0, y: 0, z: 0, set(x: number, y: number, z: number) { this.x = x; this.y = y; this.z = z; }, copy: vi.fn() };
+      this.userData = {};
+    }),
+    PointLight: vi.fn(function PointLight(this: any) {
+      this.position = { set: vi.fn(), x: 0, y: 0, z: 0 };
+      this.intensity = 1;
+    }),
+    AmbientLight: vi.fn(), HemisphereLight: vi.fn(),
     Clock: vi.fn().mockImplementation(() => ({ getDelta: vi.fn().mockReturnValue(0.016) })),
     Vector3,
     Color,
@@ -64,6 +92,7 @@ vi.mock("three", () => {
     AdditiveBlending: 2,
     BackSide: 1,
     DoubleSide: 2,
+    ACESFilmicToneMapping: 3,
   };
 });
 
