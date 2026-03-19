@@ -26,6 +26,10 @@ export default function App() {
   const [siteVisible, setSiteVisible] = useState(false);
   const [bootstrapData, setBootstrapData] = useState<BootstrapResponse | null>(null);
   const [onboardingPhase, setOnboardingPhase] = useState<'form' | 'signature' | 'done'>('form');
+  // Tracks whether the user has submitted the birth form this session.
+  // Returning users never set this — it distinguishes "new user mid-onboarding"
+  // from "returning user with existing profile".
+  const [hasStartedOnboarding, setHasStartedOnboarding] = useState(false);
 
   const ambiente = useAmbientePlayer();
 
@@ -63,9 +67,12 @@ export default function App() {
 
   // ── Onboarding submit: coordinate BAFE flow with bootstrap ──────────
   const handleOnboardingSubmit = async (formData: { date: string; tz: string; lon: number; lat: number }) => {
+    setHasStartedOnboarding(true);
+
     // If the signature onboarding feature is disabled, keep the existing
     // behavior: immediately start the BAFE flow and return.
     if (!isFeatureEnabled('signature_onboarding_v1')) {
+      setOnboardingPhase('done'); // Skip straight to dashboard
       handleSubmit(formData);
       return;
     }
@@ -165,7 +172,11 @@ export default function App() {
   }
 
   // ── Determine what to show ────────────────────────────────────────────
-  const hasCompleteProfile = profileState === "found" && Boolean(apiData) && Boolean(interpretation);
+  const profileDataReady = profileState === "found" && Boolean(apiData) && Boolean(interpretation);
+  // Returning users (never submitted birth form this session) go straight to
+  // the dashboard. New users mid-onboarding must complete the signature reveal
+  // phase first — even if BAFE already finished in the background.
+  const hasCompleteProfile = profileDataReady && (!hasStartedOnboarding || onboardingPhase === 'done');
 
   // Authenticated app with routing
   return (

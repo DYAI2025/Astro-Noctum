@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 
@@ -32,12 +32,34 @@ export default function OnboardingPage({
 }: Props) {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (hasCompleteProfile) navigate('/', { replace: true });
-  }, [hasCompleteProfile, navigate]);
+  // Track whether the user has submitted the birth form in this session.
+  // This distinguishes "new user mid-onboarding" from "returning user who
+  // landed on /onboarding by accident". Once set, it stays true for the
+  // lifetime of the page — no race condition with BAFE completion.
+  const hasSubmittedRef = useRef(false);
+  if (onboardingPhase !== 'form') {
+    // Phase advanced past 'form' → user must have submitted
+    hasSubmittedRef.current = true;
+  }
 
   useEffect(() => {
-    if (onboardingPhase === 'done' && hasCompleteProfile) navigate('/', { replace: true });
+    // Case 1: Onboarding flow completed → go to dashboard
+    if (onboardingPhase === 'done') {
+      navigate('/', { replace: true });
+      return;
+    }
+
+    // Case 2: Returning user with existing profile who never submitted
+    // the birth form (e.g. typed /onboarding manually) → redirect home
+    if (hasCompleteProfile && !hasSubmittedRef.current) {
+      navigate('/', { replace: true });
+      return;
+    }
+
+    // Case 3: User IS mid-onboarding (submitted birth form, bootstrap
+    // running or showing SignatureReveal). BAFE may have already set
+    // hasCompleteProfile=true — INTENTIONALLY IGNORED here. The user
+    // must complete the signature phase before being redirected.
   }, [onboardingPhase, hasCompleteProfile, navigate]);
 
   return (
@@ -67,4 +89,3 @@ export default function OnboardingPage({
     </motion.div>
   );
 }
-
