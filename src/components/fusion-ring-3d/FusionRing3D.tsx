@@ -66,6 +66,7 @@ export const FusionRing3D = ({
   isInteractive = false,
   labels,
   quizWeights,
+  effectTrigger,
 }: FusionRing3DProps) => {
   const prefersReducedMotion = useReducedMotion();
   const { signalData, events, resolution, loading, error } = useFusionSignal(userId);
@@ -113,6 +114,7 @@ export const FusionRing3D = ({
           <FusionRingCanvasV2
             natalWeights={v2NatalWeights}
             quizWeights={quizWeights}
+            effectTrigger={effectTrigger}
             showUI={isInteractive}
             className="h-full w-full"
           />
