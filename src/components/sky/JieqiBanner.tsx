@@ -34,19 +34,19 @@ export function JieqiBanner({ weather }: JieqiBannerProps) {
 
   if (loading || !jieqi) return null;
 
-  const isBazodicMoment =
+  const isBazodiacMoment =
     jieqi.isTransitionWindow &&
     (weather.kpIndex >= 5 || weather.events.some(e => e.type === 'cme_arrival'));
 
   return (
     <div className={`
       rounded-xl border p-5 transition-all duration-500
-      ${isBazodicMoment
+      ${isBazodiacMoment
         ? 'border-gold/60 bg-gradient-to-r from-gold/10 via-obsidian to-gold/10 shadow-[0_0_30px_rgba(212,175,55,0.15)]'
         : 'border-white/10 bg-white/[0.03]'
       }
     `}>
-      {isBazodicMoment && (
+      {isBazodiacMoment && (
         <div className="text-xs font-bold text-gold uppercase tracking-widest mb-2 animate-pulse">
           Bazodiac-Moment
         </div>
