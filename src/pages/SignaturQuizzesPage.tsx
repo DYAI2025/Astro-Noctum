@@ -8,6 +8,7 @@ import { useQuizSuggestion } from '@/src/hooks/useQuizSuggestion';
 import { usePremium } from '@/src/hooks/usePremium';
 import { useQuizContribution } from '@/src/hooks/useQuizContribution';
 import { ClusterSidebar } from '@/src/components/signatur/ClusterSidebar';
+import { PremiumUpgradeModal } from '@/src/components/signatur/PremiumUpgradeModal';
 import QuizOverlay from '@/src/components/QuizOverlay';
 import type { ContributionEvent } from '@/src/lib/lme/types';
 
@@ -18,6 +19,7 @@ export default function SignaturQuizzesPage() {
   const suggestedModule = useQuizSuggestion(completedModuleIds);
   const quizContribution = useQuizContribution(completedModuleIds);
   const [activeQuiz, setActiveQuiz] = useState<string | null>(null);
+  const [premiumCluster, setPremiumCluster] = useState<string | null>(null);
 
   const handleQuizComplete = useCallback((event: ContributionEvent) => {
     quizContribution(event);
@@ -56,6 +58,7 @@ export default function SignaturQuizzesPage() {
           isPremium={isPremium}
           lang={lang}
           suggestedModule={suggestedModule}
+          onPremiumClick={setPremiumCluster}
         />
       </section>
 
@@ -64,6 +67,13 @@ export default function SignaturQuizzesPage() {
         onComplete={handleQuizComplete}
         onClose={() => setActiveQuiz(null)}
       />
+
+      {premiumCluster && (
+        <PremiumUpgradeModal
+          clusterName={premiumCluster}
+          onClose={() => setPremiumCluster(null)}
+        />
+      )}
     </div>
   );
 }

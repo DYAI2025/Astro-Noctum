@@ -142,7 +142,7 @@ function ClusterPanel({
                       quizDone
                         ? 'border opacity-60'
                         : needsPremium
-                        ? 'cursor-not-allowed border border-white/5 bg-white/[0.02] opacity-30'
+                        ? 'cursor-pointer border border-white/5 bg-white/[0.02] opacity-50 hover:opacity-70'
                         : 'cursor-pointer border border-white/5 bg-white/[0.04] hover:bg-white/[0.08]'
                     }`}
                     style={
@@ -197,7 +197,7 @@ export function ClusterSidebar({
   return (
     <nav
       aria-label={lang === 'de' ? 'Quiz-Cluster' : 'Quiz clusters'}
-      className="flex w-64 shrink-0 flex-col gap-2 overflow-y-auto pr-1"
+      className="flex w-56 shrink-0 flex-col gap-2 overflow-y-auto pr-1"
     >
       {CLUSTER_REGISTRY.map(cluster => (
         <ClusterPanel
@@ -205,6 +205,7 @@ export function ClusterSidebar({
           cluster={cluster}
           completedModuleIds={completedModuleIds}
           onStartQuiz={onStartQuiz}
+          onPremiumClick={onPremiumClick}
           isPremium={isPremium}
           lang={lang}
           suggestedModule={suggestedModule}

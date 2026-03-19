@@ -10,6 +10,7 @@ import { useCompletedModules } from '@/src/hooks/useCompletedModules';
 import { useQuizSuggestion } from '@/src/hooks/useQuizSuggestion';
 import { usePremium } from '@/src/hooks/usePremium';
 import { ClusterSidebar } from '@/src/components/signatur/ClusterSidebar';
+import { PremiumUpgradeModal } from '@/src/components/signatur/PremiumUpgradeModal';
 import { ClusterPipeline } from '@/src/components/signatur/ClusterPipeline';
 import {
   CLUSTER_REGISTRY,
@@ -31,6 +32,8 @@ export default function FuRingPage() {
   const [activeQuiz, setActiveQuiz] = useState<string | null>(null);
   const [justCompletedCluster, setJustCompletedCluster] = useState<string | null>(null);
   const [liveQuizWeights, setLiveQuizWeights] = useState<Record<string, number> | undefined>();
+  const [premiumCluster, setPremiumCluster] = useState<string | null>(null);
+  const [ringEffect, setRingEffect] = useState<{ type: string; color?: string; timestamp: number } | null>(null);
 
   const handleQuizComplete = useCallback((event: ContributionEvent) => {
     quizContribution(event);
@@ -44,6 +47,7 @@ export default function FuRingPage() {
         const updated = new Set([...completedModuleIds, moduleId]);
         if (isClusterComplete(cluster, updated)) {
           setJustCompletedCluster(cluster.id);
+          setRingEffect({ type: 'burst', color: cluster.color, timestamp: Date.now() });
         }
       }
 
@@ -97,19 +101,22 @@ export default function FuRingPage() {
           {lang === 'de' ? 'Quiz-Cluster entdecken' : 'Discover Quiz Clusters'}
         </Link>
 
-        {/* Main content: Sidebar + Ring */}
+        {/* Main content: Sidebar + Pipeline Bridge + Ring */}
         <div className="flex gap-6">
-          {/* Cluster Sidebar — hidden on mobile, shown on md+ */}
-          <div className="hidden md:block">
+          {/* Cluster Sidebar — hidden on mobile */}
+          <div className="hidden shrink-0 md:block">
             <ClusterSidebar
               completedModuleIds={completedModuleIds}
               onStartQuiz={setActiveQuiz}
               isPremium={isPremium}
               lang={lang}
               suggestedModule={suggestedModule}
+              onPremiumClick={setPremiumCluster}
             />
+          </div>
 
-            {/* Pipeline animations for completed clusters */}
+          {/* Pipeline bridge — between sidebar and ring, desktop only */}
+          <div className="hidden w-12 shrink-0 flex-col justify-center gap-1 md:flex">
             {CLUSTER_REGISTRY.map(cluster => (
               <ClusterPipeline
                 key={cluster.id}
@@ -128,6 +135,7 @@ export default function FuRingPage() {
             <FusionRing3D
               userId={userId}
               quizWeights={liveQuizWeights}
+              effectTrigger={ringEffect}
               labels={{
                 regionLabel: t('furing3d.a11y.regionLabel'),
                 loading: t('furing3d.loading'),
@@ -176,6 +184,13 @@ export default function FuRingPage() {
         onComplete={handleQuizComplete}
         onClose={() => setActiveQuiz(null)}
       />
+
+      {premiumCluster && (
+        <PremiumUpgradeModal
+          clusterName={premiumCluster}
+          onClose={() => setPremiumCluster(null)}
+        />
+      )}
     </div>
   );
 }
