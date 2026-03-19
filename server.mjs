@@ -748,7 +748,7 @@ function mapFufireEvent(ev, generatedAt) {
 // ── /api/transit-state/:userId ───────────────────────────────────────
 // POSTs to FuFirE /transit/state with soulprint + quiz sectors,
 // falls back to profile-derived synthetic state on any error.
-app.get("/api/transit-state/:userId", async (req, res) => {
+app.get("/api/transit-state/:userId", requireUserAuth, async (req, res) => {
   const userId = String(req.params.userId || "").trim();
   if (!userId) return res.status(400).json({ error: "Missing userId" });
 
