@@ -97,6 +97,11 @@ export default function App() {
           harmony_index: 0.5,
         },
         soulprint_sectors: Array(12).fill(0.5),
+        narratives: {
+          core_summary: 'Loading core pattern...',
+          context_summary: 'Establishing generational context...',
+          integration_summary: 'Synchronizing signatur...',
+        },
         signature_blueprint: { seed: `fallback:${Date.now()}` },
         meta: { engine_version: 'fallback' },
       });

@@ -116,7 +116,7 @@ FusionRing3D → baseSignals[12] → soulprintToNatalWeights() → natalWeights{
        (V1 fallback: baseSignals → soulProfile prop → FusionRingWebsiteCanvas → soulNoise())
 ```
 
-**Important**: `QuizOverlay` is defined but currently not mounted in any page component. To activate the quiz→ring pipeline, mount it with `useQuizContribution` as the `onComplete` handler. The caller must hydrate `completedModuleIds` from Supabase `contribution_events` on mount for the cluster gate to work correctly.
+**Important**: The quiz→ring pipeline is live on `/signatur` (FuRingPage). `ClusterSidebar` triggers quiz selection, `QuizOverlay` renders the quiz, `useQuizContribution` handles completion → cluster gate → `/api/contribute` POST.
 
 ### Key Modules
 
@@ -142,7 +142,7 @@ FusionRing3D → baseSignals[12] → soulprintToNatalWeights() → natalWeights{
 | `src/hooks/usePremium.ts` | Reads `profiles.is_premium` from Supabase; re-fetches on tab focus (for Stripe redirect return) |
 | `src/components/PremiumGate.tsx` | Wrapper that locks content behind premium; triggers Stripe checkout via `/api/checkout` |
 | `src/data/articles.ts` | SEO article content (6 articles, full German text, TypeScript) |
-| `src/components/QuizOverlay.tsx` | Modal overlay that hosts the quiz system. **Currently orphaned** — defined but not mounted in any page. Needs to be imported and rendered with `useQuizContribution` as `onComplete` |
+| `src/components/QuizOverlay.tsx` | Modal overlay that hosts the quiz system. Mounted on FuRingPage with `useQuizContribution` as `onComplete` handler. Controlled by `activeQuiz` state from `ClusterSidebar` |
 | `src/lib/lme/types.ts` | Lifecycle Mapping Engine event types — `ContributionEvent`, `Marker`, `TraitScore`, `Tag`. Typed contract between quizzes and the Fusion Ring; quizzes emit `ContributionEvent`s, `useFusionRing` consumes them |
 | `src/components/quizzes/` | 22 quiz components (14 regular + 4 Kinky + 4 PartnerMatch); results feed into Fusion Ring via `src/lib/fusion-ring/quiz-to-event.ts` |
 | `src/components/quizzes/Kinky/` | Kinky quiz series (multi-part, premium) |
@@ -232,7 +232,7 @@ The `useQuizContribution` hook converts events to 12-sector weights using `event
 
 Six clusters in `src/lib/fusion-ring/clusters.ts`: naturkind (4 quizzes), mentalist (3), stratege (4), mystiker (4), kinky (4, premium), partner_match (4). The `ConversationAnalysisQuiz` in PartnerMatch is AI-powered — it calls `/api/analyze/conversation` server-side to extract markers from pasted dialogue.
 
-`QuizOverlay` is the master router — maps quiz IDs to lazy-loaded components via `QUIZ_MAP`. **Currently orphaned** (not mounted). To activate: mount with `useQuizContribution(completedModuleIds)` as `onComplete`, hydrate `completedModuleIds` from Supabase `contribution_events` on mount.
+`QuizOverlay` is the master router — maps quiz IDs to lazy-loaded components via `QUIZ_MAP`. Mounted on FuRingPage, controlled by `activeQuiz` state.
 
 ### Shared Package (`@bazodiac/shared`)
 

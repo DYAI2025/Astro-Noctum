@@ -31,10 +31,17 @@ const MetaInfoSchema = z.object({
 
 const Sectors12 = z.array(z.number()).length(12);
 
+const NarrativesSchema = z.object({
+  core_summary: z.string(),
+  context_summary: z.string(),
+  integration_summary: z.string(),
+});
+
 // ── Bootstrap ───────────────────────────────────────────────────────
 export const BootstrapResponseSchema = z.object({
   profile: ProfileSummarySchema,
   soulprint_sectors: Sectors12,
+  narratives: NarrativesSchema,
   signature_blueprint: SignatureBlueprintSchema,
   meta: MetaInfoSchema,
 });
@@ -43,6 +50,7 @@ export type BootstrapResponse = z.infer<typeof BootstrapResponseSchema>;
 // ── Signature Delta ─────────────────────────────────────────────────
 export const SignatureDeltaResponseSchema = z.object({
   quiz_sectors: Sectors12,
+  narratives: NarrativesSchema,
   signature_delta: z.object({
     curvature: z.number(),
     contrast: z.number(),

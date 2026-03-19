@@ -7,6 +7,9 @@ global.fetch = mockFetch;
 // Mock Supabase
 vi.mock('../lib/supabase', () => ({
   supabase: {
+    auth: {
+      getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
+    },
     from: vi.fn(() => ({
       select: vi.fn(() => ({
         eq: vi.fn(() => ({
@@ -48,7 +51,7 @@ describe('Experience API Client', () => {
 
     expect(mockFetch).toHaveBeenCalledWith('/api/experience/bootstrap', expect.objectContaining({
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: expect.any(Headers),
     }));
     expect(result.profile.sun_sign).toBe('Loewe');
     expect(result.soulprint_sectors).toHaveLength(12);
