@@ -80,6 +80,8 @@ export function createLeviArtifact(): LeviArtifactGroup {
 
     if (group.speaking > 0) {
       sphere.scale.setScalar(1 + Math.sin(elapsed * 6) * 0.02 * group.speaking);
+    } else {
+      sphere.scale.setScalar(1);
     }
   };
 
