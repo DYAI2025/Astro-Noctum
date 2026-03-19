@@ -167,14 +167,15 @@ export function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    gap: 14,
+    gap: 16,
+    paddingBottom: 32,
   },
   card: {
     backgroundColor: "#0f1823",
-    borderColor: "#243447",
+    borderColor: "#1a2636",
     borderWidth: 1,
-    borderRadius: 14,
-    padding: 14,
+    borderRadius: 16,
+    padding: 16,
     gap: 8,
   },
   kicker: {
@@ -194,7 +195,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   meta: {
-    color: "#95a6be",
+    color: "#8fa0bc",
     fontSize: 13,
   },
   body: {
@@ -273,7 +274,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   wuxingName: {
-    color: '#95a6be',
+    color: '#8fa0bc',
     fontSize: 12,
     width: 48,
   },
@@ -289,7 +290,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   wuxingPct: {
-    color: '#95a6be',
+    color: '#8fa0bc',
     fontSize: 11,
     width: 32,
     textAlign: 'right',
