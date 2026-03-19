@@ -69,9 +69,9 @@ export function FlareTimeline() {
       )}
 
       {/* WSA-ENLIL arrival window */}
-      {timeline.enlilWindow && (
+      {timeline.enlilWindow?.startAt && (
         <div className="text-xs text-white/30 border-t border-white/5 pt-2">
-          CME-Ankunftsfenster: {new Date(timeline.enlilWindow.startAt!).toLocaleDateString('de-DE')}
+          CME-Ankunftsfenster: {new Date(timeline.enlilWindow.startAt).toLocaleDateString('de-DE')}
           {timeline.enlilWindow.endAt && ` — ${new Date(timeline.enlilWindow.endAt).toLocaleDateString('de-DE')}`}
         </div>
       )}
