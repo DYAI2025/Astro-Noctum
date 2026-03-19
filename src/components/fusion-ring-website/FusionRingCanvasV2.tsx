@@ -70,6 +70,7 @@ export interface FusionRingCanvasProps {
   isMini?: boolean;
   showUI?: boolean;
   revealProgress?: number; // 0..1, used for onboarding reveal
+  effectTrigger?: { type: string; color?: string; timestamp: number } | null;
   className?: string;
 }
 
@@ -1282,6 +1283,7 @@ export default function FusionRingCanvas({
   isMini = false,
   showUI = false,
   revealProgress = 1.0,
+  effectTrigger,
   className,
 }: FusionRingCanvasProps) {
   const [mounted, setMounted] = useState(false);
@@ -1365,6 +1367,17 @@ export default function FusionRingCanvas({
       effectTimeoutRef.current = null;
     }, duration * 1000);
   }, []);
+
+  // External effect trigger via prop
+  const lastTriggerRef = useRef<number>(0);
+  useEffect(() => {
+    if (!effectTrigger || effectTrigger.timestamp === lastTriggerRef.current) return;
+    lastTriggerRef.current = effectTrigger.timestamp;
+    triggerEffect(effectTrigger.type as EffectType, {
+      intensity: 0.9,
+      duration: 3.5,
+    });
+  }, [effectTrigger, triggerEffect]);
 
   // --- Input Controller ---
   const inputControllerRef = useRef<FusionRingInputController | null>(null);

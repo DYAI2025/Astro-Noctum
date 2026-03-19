@@ -31,6 +31,7 @@ type FusionRing3DProps = {
   onSpikeClick?: (sector: number) => void;
   labels: FusionRing3DLabels;
   quizWeights?: Record<string, number>;
+  effectTrigger?: { type: string; color?: string; timestamp: number } | null;
 };
 
 type QueuedEffect = { id: string; type: RingEffectType };

@@ -88,6 +88,15 @@ export default function FuRingPage() {
           </p>
         </div>
 
+        {/* Mobile CTA — visible only on small screens */}
+        <Link
+          to="/signatur/quizzes"
+          className="flex items-center justify-center gap-2 rounded-2xl border border-[#D4AF37]/30 bg-[#D4AF37]/10 px-4 py-3 text-sm text-[#D4AF37] transition hover:bg-[#D4AF37]/20 md:hidden"
+        >
+          <Sparkles className="h-4 w-4" />
+          {lang === 'de' ? 'Quiz-Cluster entdecken' : 'Discover Quiz Clusters'}
+        </Link>
+
         {/* Main content: Sidebar + Ring */}
         <div className="flex gap-6">
           {/* Cluster Sidebar — hidden on mobile, shown on md+ */}

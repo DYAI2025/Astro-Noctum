@@ -4,6 +4,7 @@ import type { OnboardingPageProps } from './pages/OnboardingPage';
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const FuRingPage = lazy(() => import('./pages/FuRingPage'));
+const SignaturQuizzesPage = lazy(() => import('./pages/SignaturQuizzesPage'));
 const WuXingPage = lazy(() => import('./pages/WuXingPage'));
 const WissenPage = lazy(() => import('./pages/WissenPage'));
 const ArtikelPage = lazy(() => import('./pages/ArtikelPage'));
@@ -44,6 +45,7 @@ export function AppRoutes({ hasCompleteProfile, onboardingProps }: AppRoutesProp
         />
         <Route path="/signatur" element={<FuRingPage />} />
         <Route path="/fu-ring" element={<FuRingPage />} />
+        <Route path="/signatur/quizzes" element={<SignaturQuizzesPage />} />
         <Route path="/wu-xing" element={<WuXingPage />} />
         <Route path="/wissen" element={<WissenPage />} />
         <Route path="/wissen/:slug" element={<ArtikelPage />} />

@@ -12,6 +12,7 @@ import { MODULE_TO_QUIZ_ID, QUIZ_NAMES } from '@/src/lib/fusion-ring/quiz-maps';
 interface ClusterSidebarProps {
   completedModuleIds: Set<string>;
   onStartQuiz: (quizId: string) => void;
+  onPremiumClick?: (clusterName: string) => void;
   isPremium: boolean;
   lang: 'de' | 'en';
   suggestedModule: string | null;
@@ -21,6 +22,7 @@ function ClusterPanel({
   cluster,
   completedModuleIds,
   onStartQuiz,
+  onPremiumClick,
   isPremium,
   lang,
   suggestedModule,
@@ -28,6 +30,7 @@ function ClusterPanel({
   cluster: ClusterDef;
   completedModuleIds: Set<string>;
   onStartQuiz: (quizId: string) => void;
+  onPremiumClick?: (clusterName: string) => void;
   isPremium: boolean;
   lang: 'de' | 'en';
   suggestedModule: string | null;
@@ -127,8 +130,14 @@ function ClusterPanel({
                   <button
                     key={moduleId}
                     type="button"
-                    disabled={quizDone || needsPremium}
-                    onClick={() => quizId && onStartQuiz(quizId)}
+                    disabled={quizDone}
+                    onClick={() => {
+                      if (needsPremium && onPremiumClick) {
+                        onPremiumClick(cluster.name);
+                      } else if (quizId) {
+                        onStartQuiz(quizId);
+                      }
+                    }}
                     className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition-all ${
                       quizDone
                         ? 'border opacity-60'
@@ -180,6 +189,7 @@ function ClusterPanel({
 export function ClusterSidebar({
   completedModuleIds,
   onStartQuiz,
+  onPremiumClick,
   isPremium,
   lang,
   suggestedModule,
