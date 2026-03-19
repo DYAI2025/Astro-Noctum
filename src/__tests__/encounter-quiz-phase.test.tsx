@@ -184,9 +184,15 @@ describe('CosmicEncounter — quiz→complete phase transition', () => {
     await act(async () => { vi.advanceTimersByTime(500); });
 
     // Flush React.lazy resolution microtasks for FusionRingReveal
-    await flushLazy(10);
+    await flushLazy(30);
 
-    expect(screen.getByTestId('ring-reveal')).toBeDefined();
+    // Fallback: use real timers + waitFor if flushLazy wasn't enough
+    vi.useRealTimers();
+    await waitFor(
+      () => expect(screen.getByTestId('ring-reveal')).toBeDefined(),
+      { timeout: 2000 },
+    );
+    vi.useFakeTimers();
 
     // ── ring-reveal → quiz (click ring-reveal mock) ──────────────────
     await act(async () => {

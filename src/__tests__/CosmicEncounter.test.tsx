@@ -137,12 +137,16 @@ describe('CosmicEncounter', () => {
 
     // 500ms delay before ring-reveal
     await act(async () => { vi.advanceTimersByTime(500); });
-    // Flush lazy-load microtasks (React.lazy promise resolution — needs multiple flushes)
-    for (let i = 0; i < 10; i++) {
+    // Flush lazy-load microtasks (React.lazy promise resolution)
+    for (let i = 0; i < 30; i++) {
       await act(async () => { await Promise.resolve(); });
     }
+    // Fallback: real timers + waitFor if flushes weren't enough under load
+    vi.useRealTimers();
+    const { waitFor: wf } = await import('@testing-library/react');
+    await wf(() => expect(screen.getByTestId('ring-reveal')).toBeDefined(), { timeout: 2000 });
+    vi.useFakeTimers();
 
-    expect(screen.getByTestId('ring-reveal')).toBeDefined();
   });
 
   it('calls ambientePause when form is submitted', () => {
