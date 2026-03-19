@@ -871,8 +871,28 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
     if (bodyStr.length > 10000) {
       return res.status(413).json({ error: 'payload_too_large' });
     }
-    
-    const { birth, target_date, locale } = req.body;
+
+    const { birth, target_date, locale } = req.body || {};
+    if (!birth || typeof birth !== 'object') {
+      return res.status(400).json({
+        error: 'invalid_birth',
+        message: 'Missing or invalid birth data in request body.'
+      });
+    }
+    const { date, time, lat, lon, tz } = birth;
+    if (
+      typeof date !== 'string' ||
+      typeof time !== 'string' ||
+      typeof lat !== 'number' ||
+      typeof lon !== 'number' ||
+      typeof tz !== 'string'
+    ) {
+      return res.status(400).json({
+        error: 'invalid_birth',
+        message: 'Birth data must include date, time, lat, lon, and tz with correct types.'
+      });
+    }
+
     const lang = locale?.startsWith('en') ? 'en' : 'de';
     const targetDate = target_date || new Date().toISOString().slice(0, 10);
     const cacheKeyD = `daily:${userId}:${targetDate}:${lang}`;
