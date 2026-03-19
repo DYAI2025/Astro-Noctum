@@ -1466,32 +1466,20 @@ async function fetchKpFromDONKI() {
 }
 
 // ── /api/jieqi/current ──────────────────────────────────────────────
-const JIEQI_TERMS = [
-  { index: 0, name: 'Li Chun', nameDE: 'Fruehlingsbeginn', longitude: 315, approxDate: '02-04' },
-  { index: 1, name: 'Yu Shui', nameDE: 'Regenwasser', longitude: 330, approxDate: '02-19' },
-  { index: 2, name: 'Jing Zhe', nameDE: 'Erwachen der Insekten', longitude: 345, approxDate: '03-06' },
-  { index: 3, name: 'Chun Fen', nameDE: 'Fruehlings-Tagundnachtgleiche', longitude: 0, approxDate: '03-21' },
-  { index: 4, name: 'Qing Ming', nameDE: 'Lichte Klarheit', longitude: 15, approxDate: '04-05' },
-  { index: 5, name: 'Gu Yu', nameDE: 'Getreideregen', longitude: 30, approxDate: '04-20' },
-  { index: 6, name: 'Li Xia', nameDE: 'Sommerbeginn', longitude: 45, approxDate: '05-06' },
-  { index: 7, name: 'Xiao Man', nameDE: 'Kleine Fuelle', longitude: 60, approxDate: '05-21' },
-  { index: 8, name: 'Mang Zhong', nameDE: 'Kornreife', longitude: 75, approxDate: '06-06' },
-  { index: 9, name: 'Xia Zhi', nameDE: 'Sommersonnenwende', longitude: 90, approxDate: '06-21' },
-  { index: 10, name: 'Xiao Shu', nameDE: 'Kleine Hitze', longitude: 105, approxDate: '07-07' },
-  { index: 11, name: 'Da Shu', nameDE: 'Grosse Hitze', longitude: 120, approxDate: '07-23' },
-  { index: 12, name: 'Li Qiu', nameDE: 'Herbstbeginn', longitude: 135, approxDate: '08-07' },
-  { index: 13, name: 'Chu Shu', nameDE: 'Ende der Hitze', longitude: 150, approxDate: '08-23' },
-  { index: 14, name: 'Bai Lu', nameDE: 'Weisser Tau', longitude: 165, approxDate: '09-08' },
-  { index: 15, name: 'Qiu Fen', nameDE: 'Herbst-Tagundnachtgleiche', longitude: 180, approxDate: '09-23' },
-  { index: 16, name: 'Han Lu', nameDE: 'Kalter Tau', longitude: 195, approxDate: '10-08' },
-  { index: 17, name: 'Shuang Jiang', nameDE: 'Frostabstieg', longitude: 210, approxDate: '10-23' },
-  { index: 18, name: 'Li Dong', nameDE: 'Winterbeginn', longitude: 225, approxDate: '11-07' },
-  { index: 19, name: 'Xiao Xue', nameDE: 'Kleiner Schnee', longitude: 240, approxDate: '11-22' },
-  { index: 20, name: 'Da Xue', nameDE: 'Grosser Schnee', longitude: 255, approxDate: '12-07' },
-  { index: 21, name: 'Dong Zhi', nameDE: 'Wintersonnenwende', longitude: 270, approxDate: '12-22' },
-  { index: 22, name: 'Xiao Han', nameDE: 'Kleine Kaelte', longitude: 285, approxDate: '01-06' },
-  { index: 23, name: 'Da Han', nameDE: 'Grosse Kaelte', longitude: 300, approxDate: '01-20' },
-];
+// Load Jieqi terms from a shared canonical JSON file to avoid duplication
+const JIEQI_TERMS_JSON_PATH = path.join(__dirname, "src", "lib", "jieqi", "jieqi-terms.json");
+
+/** @type {Array<{ index: number; name: string; nameDE: string; longitude: number; approxDate: string }>} */
+let JIEQI_TERMS = [];
+
+try {
+  const jieqiJsonContent = fs.readFileSync(JIEQI_TERMS_JSON_PATH, "utf8");
+  JIEQI_TERMS = JSON.parse(jieqiJsonContent);
+} catch (error) {
+  console.error("Failed to load Jieqi terms from JSON file:", error);
+  // Fallback to an empty array to avoid crashing the server; callers should handle empty data.
+  JIEQI_TERMS = [];
+}
 
 function computeJieqiServer() {
   const now = new Date();
