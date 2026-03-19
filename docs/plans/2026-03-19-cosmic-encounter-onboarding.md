@@ -3613,4 +3613,3 @@ All existing tests plus ~45 new tests should pass.
 - `src/components/fusion-ring-website/signatur-bridge.ts`
 - `src/services/experience.ts`
 - `server.mjs`
-- Any quiz components
