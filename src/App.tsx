@@ -25,7 +25,10 @@ export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [siteVisible, setSiteVisible] = useState(false);
   const [bootstrapData, setBootstrapData] = useState<BootstrapResponse | null>(null);
-  const [onboardingPhase, setOnboardingPhase] = useState<'form' | 'signature' | 'done'>('form');
+  const [onboardingPhase, setOnboardingPhase] = useState<'form' | 'encounter' | 'signature' | 'done'>(() => {
+    if (isFeatureEnabled('cosmic_encounter_v1')) return 'encounter';
+    return 'form';
+  });
   // Tracks whether the user has submitted the birth form this session.
   // Returning users never set this — it distinguishes "new user mid-onboarding"
   // from "returning user with existing profile".
@@ -124,6 +127,10 @@ export default function App() {
     setOnboardingPhase('done');
   };
 
+  const handleEncounterComplete = (_delta: SignatureDeltaResponse | null) => {
+    setOnboardingPhase('done');
+  };
+
   // ═══════════════════════════════════════════════════════════════════════
   // RENDER
   // ═══════════════════════════════════════════════════════════════════════
@@ -218,6 +225,9 @@ export default function App() {
               error,
               onSubmitBirth: handleOnboardingSubmit,
               onSignatureComplete: handleSignatureComplete,
+              onEncounterComplete: handleEncounterComplete,
+              ambientePause: ambiente.pause,
+              ambienteResume: ambiente.resume,
             }}
           />
         </AppLayoutProvider>

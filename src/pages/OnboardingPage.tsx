@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 
@@ -7,15 +7,24 @@ import { SignatureReveal } from '@/src/components/onboarding/SignatureReveal';
 import type { BootstrapResponse, SignatureDeltaResponse } from '@/src/lib/schemas/experience';
 import type { ApiData } from '@/src/types/bafe';
 
+const CosmicEncounter = lazy(() =>
+  import('@/src/components/onboarding/CosmicEncounter').then((m) => ({
+    default: m.CosmicEncounter,
+  }))
+);
+
 type Props = {
   hasCompleteProfile: boolean;
-  onboardingPhase: 'form' | 'signature' | 'done';
+  onboardingPhase: 'form' | 'encounter' | 'signature' | 'done';
   bootstrapData: BootstrapResponse | null;
   apiData: ApiData | null;
   isLoading: boolean;
   error: string | null;
   onSubmitBirth: (formData: { date: string; tz: string; lon: number; lat: number }) => void | Promise<void>;
   onSignatureComplete: (delta: SignatureDeltaResponse | null) => void;
+  onEncounterComplete?: (delta: SignatureDeltaResponse | null) => void;
+  ambientePause?: () => void;
+  ambienteResume?: () => void;
 };
 
 export type OnboardingPageProps = Props;
@@ -29,6 +38,9 @@ export default function OnboardingPage({
   error,
   onSubmitBirth,
   onSignatureComplete,
+  onEncounterComplete,
+  ambientePause,
+  ambienteResume,
 }: Props) {
   const navigate = useNavigate();
 
@@ -61,6 +73,21 @@ export default function OnboardingPage({
     // hasCompleteProfile=true — INTENTIONALLY IGNORED here. The user
     // must complete the signature phase before being redirected.
   }, [onboardingPhase, hasCompleteProfile, navigate]);
+
+  if (onboardingPhase === 'encounter') {
+    return (
+      <Suspense fallback={<div className="fixed inset-0 bg-[#010409]" />}>
+        <CosmicEncounter
+          onSubmitBirth={onSubmitBirth}
+          bootstrapData={bootstrapData}
+          isLoading={isLoading}
+          onComplete={onEncounterComplete ?? onSignatureComplete}
+          ambientePause={ambientePause}
+          ambienteResume={ambienteResume}
+        />
+      </Suspense>
+    );
+  }
 
   return (
     <motion.div
