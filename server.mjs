@@ -2061,6 +2061,129 @@ app.get("/api/aurora", async (_req, res) => {
   return res.json(payload);
 });
 
+// ── /api/geometry/verify ────────────────────────────────────────────
+// JPL Horizons proxy for verified geometry events. 1h cache per query.
+const geometryVerifyCache = new Map();
+const GEOMETRY_CACHE_TTL_MS = 60 * 60 * 1000;
+
+app.get("/api/geometry/verify", async (req, res) => {
+  const { body1, body2, date } = req.query;
+  if (!body1 || !body2 || !date) {
+    return res.status(400).json({ error: "body1, body2, date query params required" });
+  }
+
+  const cacheKey = `${body1}-${body2}-${date}`;
+  const cached = geometryVerifyCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < GEOMETRY_CACHE_TTL_MS) {
+    return res.json(cached.payload);
+  }
+
+  try {
+    const jplBase = process.env.JPL_HORIZONS_BASE_URL || "https://ssd.jpl.nasa.gov/api/horizons.api";
+    const params = new URLSearchParams({
+      format: "json",
+      COMMAND: String(body1),
+      CENTER: "500@399",
+      EPHEM_TYPE: "OBSERVER",
+      START_TIME: String(date),
+      STOP_TIME: String(date),
+      STEP_SIZE: "1d",
+      QUANTITIES: "1,20",
+    });
+
+    const jplRes = await fetch(`${jplBase}?${params}`, { signal: AbortSignal.timeout(15000) });
+    if (!jplRes.ok) throw new Error(`JPL returned ${jplRes.status}`);
+    const jplData = await jplRes.json();
+
+    const payload = {
+      body1,
+      body2,
+      date,
+      raw: typeof jplData.result === "string" ? jplData.result.substring(0, 2000) : null,
+      verified: true,
+      source: "JPL Horizons",
+    };
+
+    geometryVerifyCache.set(cacheKey, { timestamp: Date.now(), payload });
+
+    // Evict old entries if cache grows
+    if (geometryVerifyCache.size > 100) {
+      const oldest = [...geometryVerifyCache.entries()].sort((a, b) => a[1].timestamp - b[1].timestamp);
+      geometryVerifyCache.delete(oldest[0][0]);
+    }
+
+    return res.json(payload);
+  } catch (err) {
+    console.error("[geometry/verify] JPL Horizons error:", err?.message);
+    return res.status(502).json({ error: "JPL Horizons unavailable" });
+  }
+});
+
+// ── /api/neo/upcoming ───────────────────────────────────────────────
+let neoCache = null;
+const NEO_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+
+app.get("/api/neo/upcoming", async (_req, res) => {
+  res.set("Cache-Control", "public, max-age=21600");
+
+  const now = Date.now();
+  if (neoCache && now - neoCache.timestamp < NEO_CACHE_TTL_MS) {
+    return res.json(neoCache.payload);
+  }
+
+  try {
+    const apiKey = process.env.NASA_API_KEY || "DEMO_KEY";
+    const today = new Date().toISOString().slice(0, 10);
+    const endDate = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
+
+    const neoRes = await fetch(
+      `https://api.nasa.gov/neo/rest/v1/feed?start_date=${today}&end_date=${endDate}&api_key=${apiKey}`,
+      { signal: AbortSignal.timeout(15000) }
+    );
+    if (!neoRes.ok) throw new Error(`NeoWs returned ${neoRes.status}`);
+
+    const neoData = await neoRes.json();
+    const objects = [];
+    const EARTH_RADIUS_KM = 6371;
+
+    for (const [, dayObjects] of Object.entries(neoData.near_earth_objects || {})) {
+      for (const neo of dayObjects) {
+        const approach = neo.close_approach_data?.[0];
+        if (!approach) continue;
+
+        const distKm = parseFloat(approach.miss_distance?.kilometers || "0");
+        objects.push({
+          designation: neo.neo_reference_id || neo.id,
+          name: neo.name || null,
+          closeApproachDate: approach.close_approach_date_full || approach.close_approach_date,
+          distanceKm: distKm,
+          distanceEarthRadii: Math.round((distKm / EARTH_RADIUS_KM) * 10) / 10,
+          velocityKmS: Math.round(parseFloat(approach.relative_velocity?.kilometers_per_second || "0") * 10) / 10,
+          estimatedDiameterM: Math.round(
+            (parseFloat(neo.estimated_diameter?.meters?.estimated_diameter_min || "0") +
+             parseFloat(neo.estimated_diameter?.meters?.estimated_diameter_max || "0")) / 2
+          ),
+          isPotentiallyHazardous: neo.is_potentially_hazardous_asteroid || false,
+        });
+      }
+    }
+
+    objects.sort((a, b) => a.distanceKm - b.distanceKm);
+
+    const payload = {
+      objects: objects.slice(0, 5),
+      fetchedAt: new Date().toISOString(),
+    };
+
+    neoCache = { timestamp: now, payload };
+    return res.json(payload);
+  } catch (err) {
+    console.error("[neo] fetch error:", err?.message);
+    if (neoCache?.payload) return res.json(neoCache.payload);
+    return res.status(502).json({ error: "NEO data unavailable" });
+  }
+});
+
 // ── /api/mobile/bootstrap ───────────────────────────────────────────
 // Mobile clients use this endpoint to bootstrap minimum-version gating,
 // feature flags, and external integration settings.

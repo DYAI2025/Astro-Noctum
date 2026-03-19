@@ -2,6 +2,8 @@ import { useSpaceWeather } from '@/src/hooks/useSpaceWeather';
 import { JieqiBanner } from '@/src/components/sky/JieqiBanner';
 import { FlareTimeline } from '@/src/components/sky/FlareTimeline';
 import { AuroraLayer } from '@/src/components/sky/AuroraLayer';
+import { EpochMoodLayer } from '@/src/components/sky/EpochMoodLayer';
+import { NeoRibbon } from '@/src/components/sky/NeoRibbon';
 import { isFeatureEnabled } from '@/src/lib/feature-flags';
 
 export default function SkyPage() {
@@ -18,6 +20,8 @@ export default function SkyPage() {
         {isFeatureEnabled('sky_jieqi_banner') && <JieqiBanner weather={weather} />}
         {isFeatureEnabled('sky_flare_timeline') && <FlareTimeline />}
         {isFeatureEnabled('sky_aurora_layer') && <AuroraLayer />}
+        {isFeatureEnabled('sky_epoch_mood') && <EpochMoodLayer weather={weather} />}
+        {isFeatureEnabled('sky_neo_ribbon') && <NeoRibbon />}
         {/* Components will be mounted here by subsequent tasks */}
       </main>
     </div>
