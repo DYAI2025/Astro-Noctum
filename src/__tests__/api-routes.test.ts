@@ -32,7 +32,9 @@ describe('server api routes', () => {
       }),
     } as Response);
 
-    const response = await request(app).get('/api/transit-state/user-1');
+    const response = await request(app)
+      .get('/api/transit-state/user-1')
+      .set('Authorization', 'Bearer test-token');
 
     expect(response.status).toBe(200);
     expect(response.headers['cache-control']).toBe('no-store');

@@ -1,64 +1,141 @@
-import { useEffect, useState } from 'react';
-import { z } from 'zod';
+import { useEffect, useRef, useState } from 'react';
+import {
+  SpaceWeatherExtendedSchema,
+  type SpaceWeatherExtended,
+} from '@/src/lib/schemas/space-weather';
+import {
+  computeSolarPressureScore,
+  computeRingModulation,
+  kpToVisualIntensity,
+} from '@/src/lib/space-weather/solar-pressure';
 
-const SpaceWeatherSchema = z.object({
-  kp_index: z.coerce.number().min(0).max(9),
-  fetched_at: z.string().optional(),
-  source: z.string().optional(),
-});
-
-type SpaceWeatherState = {
+export interface SpaceWeatherState {
   kpIndex: number;
+  solarPressure: number;
+  ringModulation: number;
+  intensityBoost: number;
+  triggerEffect: boolean;
+  gScale: string;
+  xrayFlux: number;
+  xrayClass: string;
+  protonFlux: number;
+  f107: number;
+  solarCyclePhase: string;
+  events: SpaceWeatherExtended['events'];
+  alerts: string[];
   lastUpdate: Date | null;
   loading: boolean;
   error: Error | null;
+}
+
+const INITIAL_STATE: SpaceWeatherState = {
+  kpIndex: 0,
+  solarPressure: 0,
+  ringModulation: 1.0,
+  intensityBoost: 0,
+  triggerEffect: false,
+  gScale: 'G0',
+  xrayFlux: 0,
+  xrayClass: 'A',
+  protonFlux: 0,
+  f107: 0,
+  solarCyclePhase: 'ascending',
+  events: [],
+  alerts: [],
+  lastUpdate: null,
+  loading: true,
+  error: null,
 };
 
+const POLL_INTERVAL_MS = 5 * 60 * 1000;
+
 export const useSpaceWeather = (): SpaceWeatherState => {
-  const [kpIndex, setKpIndex] = useState<number>(0);
-  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [state, setState] = useState<SpaceWeatherState>(INITIAL_STATE);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
-    let mounted = true;
+    mountedRef.current = true;
 
-    const fetchKpIndex = async () => {
+    const fetchExtended = async () => {
       try {
-        const response = await fetch('/api/space-weather', { cache: 'no-store' });
+        const response = await fetch('/api/space-weather/extended', {
+          cache: 'no-store',
+        });
         if (!response.ok) {
-          throw new Error(`Space weather fetch failed (${response.status})`);
+          throw new Error(
+            `Space weather fetch failed (${response.status})`,
+          );
         }
 
         const raw = await response.json();
-        const data = SpaceWeatherSchema.parse(raw);
-        const kp = data.kp_index;
+        const data = SpaceWeatherExtendedSchema.parse(raw);
 
-        if (!mounted) return;
+        if (!mountedRef.current) return;
 
-        setKpIndex(Math.max(0, Math.min(9, Number.isFinite(kp) ? kp : 0)));
-        setLastUpdate(data.fetched_at ? new Date(data.fetched_at) : new Date());
-        setError(null);
+        const kp = Math.max(0, Math.min(9, data.current.kp));
+        const xrayFlux = data.current.xrayFlux;
+        const protonFlux = data.current.protonFlux;
+
+        const solarPressure = computeSolarPressureScore(
+          kp,
+          xrayFlux,
+          protonFlux,
+        );
+
+        const maxEventWeight = data.events.length > 0
+          ? Math.max(...data.events.map((e) => e.signature_weight))
+          : 0;
+
+        const ringModulation = computeRingModulation(
+          solarPressure,
+          maxEventWeight,
+        );
+
+        const visual = kpToVisualIntensity(kp);
+
+        setState({
+          kpIndex: kp,
+          solarPressure,
+          ringModulation,
+          intensityBoost: visual.intensityBoost,
+          triggerEffect: visual.triggerEffect,
+          gScale: visual.gScale,
+          xrayFlux,
+          xrayClass: data.current.xrayClass,
+          protonFlux,
+          f107: data.epoch.f107,
+          solarCyclePhase: data.epoch.solarCyclePhase,
+          events: data.events,
+          alerts: data.alerts,
+          lastUpdate: new Date(data.meta.fetchedAt),
+          loading: false,
+          error: null,
+        });
       } catch (err) {
-        if (!mounted) return;
-        setKpIndex(0);
-        setError(err instanceof Error ? err : new Error('Unknown space-weather error'));
-      } finally {
-        if (mounted) setLoading(false);
+        if (!mountedRef.current) return;
+        const error =
+          err instanceof Error
+            ? err
+            : new Error('Unknown space-weather error');
+        setState((prev) => ({
+          ...prev,
+          loading: false,
+          error,
+        }));
       }
     };
 
-    void fetchKpIndex();
+    void fetchExtended();
 
     const interval = window.setInterval(() => {
-      void fetchKpIndex();
-    }, 5 * 60 * 1000);
+      void fetchExtended();
+    }, POLL_INTERVAL_MS);
 
     return () => {
-      mounted = false;
+      mountedRef.current = false;
       window.clearInterval(interval);
     };
   }, []);
 
-  return { kpIndex, lastUpdate, loading, error };
+  return state;
 };

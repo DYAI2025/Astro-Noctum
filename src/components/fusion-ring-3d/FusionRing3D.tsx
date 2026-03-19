@@ -32,6 +32,7 @@ type FusionRing3DProps = {
   labels: FusionRing3DLabels;
   quizWeights?: Record<string, number>;
   effectTrigger?: { type: string; color?: string; timestamp: number } | null;
+  solarModulation?: number;
 };
 
 type QueuedEffect = { id: string; type: RingEffectType };
@@ -67,6 +68,7 @@ export const FusionRing3D = ({
   labels,
   quizWeights,
   effectTrigger,
+  solarModulation,
 }: FusionRing3DProps) => {
   const prefersReducedMotion = useReducedMotion();
   const { signalData, events, resolution, loading, error } = useFusionSignal(userId);
@@ -115,6 +117,7 @@ export const FusionRing3D = ({
             natalWeights={v2NatalWeights}
             quizWeights={quizWeights}
             effectTrigger={effectTrigger}
+            solarModulation={solarModulation}
             showUI={isInteractive}
             className="h-full w-full"
           />

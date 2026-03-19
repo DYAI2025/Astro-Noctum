@@ -6,11 +6,21 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+function mockExtendedResponse(kp = 4.2) {
+  return {
+    current: { kp, kpForecast3h: [], xrayFlux: 1e-6, xrayClass: 'C', protonFlux: 0.5 },
+    events: [],
+    alerts: [],
+    epoch: { sunspotNumber: 120, f107: 145, solarCyclePhase: 'ascending' },
+    meta: { fetchedAt: new Date().toISOString(), noaaVersion: 'v1', cacheTtlSeconds: 300 },
+  };
+}
+
 describe('useSpaceWeather', () => {
   it('parses kp_index from endpoint', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: true,
-      json: async () => ({ kp_index: 4.2, fetched_at: new Date().toISOString() }),
+      json: async () => mockExtendedResponse(4.2),
     } as Response);
 
     const { result } = renderHook(() => useSpaceWeather());
@@ -21,6 +31,8 @@ describe('useSpaceWeather', () => {
 
     expect(result.current.kpIndex).toBe(4.2);
     expect(result.current.error).toBeNull();
+    expect(result.current.solarPressure).toBeGreaterThan(0);
+    expect(result.current.ringModulation).toBeGreaterThanOrEqual(1.0);
   });
 
   it('falls back to kp=0 on fetch failure', async () => {

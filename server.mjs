@@ -1519,6 +1519,320 @@ app.get("/api/space-weather", async (_req, res) => {
   return res.json(payload);
 });
 
+// ── /api/space-weather/extended ─────────────────────────────────────
+// Extended space weather: NOAA real-time + NASA DONKI events → contribution schema
+let extendedWeatherCache = null;
+const EXTENDED_CACHE_TTL_MS = 5 * 60 * 1000;
+
+function classifyXray(flux) {
+  if (flux >= 1e-4) return "X";
+  if (flux >= 1e-5) return "M";
+  if (flux >= 1e-6) return "C";
+  if (flux >= 1e-7) return "B";
+  return "A";
+}
+
+function estimateSolarCyclePhase(f107) {
+  if (f107 >= 200) return "maximum";
+  if (f107 >= 150) return "ascending";
+  if (f107 >= 100) return "descending";
+  return "minimum";
+}
+
+app.get("/api/space-weather/extended", async (_req, res) => {
+  res.set("Cache-Control", "public, max-age=300");
+
+  const now = Date.now();
+  if (extendedWeatherCache && now - extendedWeatherCache.timestamp < EXTENDED_CACHE_TTL_MS) {
+    return res.json(extendedWeatherCache.payload);
+  }
+
+  // ── 1. Kp index (reuse existing helpers) ──
+  let kpValue = 0;
+  let kpSource = "fallback";
+  try {
+    const kpResult = await fetchKpFromNOAA();
+    kpValue = kpResult.kp_index;
+    kpSource = "NOAA";
+  } catch (noaaErr) {
+    console.warn("[space-weather/extended] NOAA Kp failed:", noaaErr?.message);
+    try {
+      const kpResult = await fetchKpFromDONKI();
+      kpValue = kpResult.kp_index;
+      kpSource = "DONKI";
+    } catch (donkiErr) {
+      console.warn("[space-weather/extended] DONKI Kp also failed:", donkiErr?.message);
+    }
+  }
+
+  // ── 2. NOAA supplementary data (X-ray, Proton, F10.7) ──
+  let xrayFlux = 0;
+  let xrayClass = "A";
+  let protonFlux = 0;
+  let f107 = 0;
+  let sunspotNumber = 0;
+
+  const noaaFetches = [
+    { name: "xray", url: "https://services.swpc.noaa.gov/json/goes_xray_flux.json" },
+    { name: "proton", url: "https://services.swpc.noaa.gov/json/goes_proton_flux.json" },
+    { name: "f107", url: "https://services.swpc.noaa.gov/json/f107_cm_flux.json" },
+  ];
+
+  const noaaResults = await Promise.allSettled(
+    noaaFetches.map(async ({ name, url }) => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+      try {
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeout);
+        if (!response.ok) throw new Error(`${name}: HTTP ${response.status}`);
+        const data = await response.json();
+        return { name, data };
+      } catch (err) {
+        clearTimeout(timeout);
+        throw new Error(`${name}: ${err?.message}`);
+      }
+    }),
+  );
+
+  for (const result of noaaResults) {
+    if (result.status !== "fulfilled") {
+      console.warn("[space-weather/extended] NOAA fetch failed:", result.reason?.message);
+      continue;
+    }
+    const { name, data } = result.value;
+    try {
+      if (name === "xray" && Array.isArray(data) && data.length > 0) {
+        const last = data[data.length - 1];
+        xrayFlux = Number.parseFloat(String(last?.flux ?? last?.observed_flux ?? 0)) || 0;
+        xrayClass = classifyXray(xrayFlux);
+      } else if (name === "proton" && Array.isArray(data) && data.length > 0) {
+        const last = data[data.length - 1];
+        protonFlux = Number.parseFloat(String(last?.flux ?? last?.observed_flux ?? 0)) || 0;
+      } else if (name === "f107" && Array.isArray(data) && data.length > 0) {
+        const last = data[data.length - 1];
+        f107 = Number.parseFloat(String(last?.flux ?? last?.observed_flux ?? 0)) || 0;
+      }
+    } catch (parseErr) {
+      console.warn(`[space-weather/extended] parse ${name}:`, parseErr?.message);
+    }
+  }
+
+  // ── 3. NASA DONKI extended events (CME, SEP, HSS, notifications) ──
+  const apiKey = process.env.NASA_API_KEY || "DEMO_KEY";
+  const endDate = new Date();
+  const startDate = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const startStr = startDate.toISOString().slice(0, 10);
+  const endStr = endDate.toISOString().slice(0, 10);
+
+  const donkiFetches = [
+    { name: "cme", url: `https://api.nasa.gov/DONKI/CMEAnalysis?startDate=${startStr}&endDate=${endStr}&mostAccurateOnly=true&api_key=${apiKey}` },
+    { name: "sep", url: `https://api.nasa.gov/DONKI/SEP?startDate=${startStr}&endDate=${endStr}&api_key=${apiKey}` },
+    { name: "hss", url: `https://api.nasa.gov/DONKI/HSS?startDate=${startStr}&endDate=${endStr}&api_key=${apiKey}` },
+    { name: "notifications", url: `https://api.nasa.gov/DONKI/notifications?startDate=${startStr}&endDate=${endStr}&type=all&api_key=${apiKey}` },
+  ];
+
+  const donkiResults = await Promise.allSettled(
+    donkiFetches.map(async ({ name, url }) => {
+      try {
+        const response = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+        if (!response.ok) throw new Error(`${name}: HTTP ${response.status}`);
+        const data = await response.json();
+        return { name, data };
+      } catch (err) {
+        throw new Error(`${name}: ${err?.message}`);
+      }
+    }),
+  );
+
+  const events = [];
+  const alerts = [];
+  const nowISO = new Date().toISOString();
+
+  for (const result of donkiResults) {
+    if (result.status !== "fulfilled") {
+      console.warn("[space-weather/extended] DONKI fetch failed:", result.reason?.message);
+      continue;
+    }
+    const { name, data } = result.value;
+    try {
+      if (name === "cme" && Array.isArray(data)) {
+        // Filter earthbound CMEs
+        for (const cme of data) {
+          const enlilList = cme?.cmeAnalyses?.flatMap((a) => a?.enlilList ?? []) ?? [];
+          const earthTargeted = enlilList.some((e) => e?.isEarthTargeted);
+          if (!earthTargeted) continue;
+
+          const speed = Number.parseFloat(String(cme?.speed ?? 0)) || 0;
+          let severity = "G1";
+          let weight = 0.15;
+          if (speed >= 1500) { severity = "G5"; weight = 0.5; }
+          else if (speed >= 1000) { severity = "G3"; weight = 0.35; }
+          else if (speed >= 700) { severity = "G2"; weight = 0.25; }
+
+          const startedAt = cme?.startTime || cme?.time21_5 || nowISO;
+          // CME effects last ~48h
+          const expiresAt = new Date(new Date(startedAt).getTime() + 48 * 60 * 60 * 1000).toISOString();
+
+          events.push({
+            schema: "sp.contribution.v1",
+            event_id: `cme:${cme?.activityID || Date.now()}`,
+            type: "cme_arrival",
+            severity,
+            signature_weight: Math.min(0.5, weight),
+            source_event_id: cme?.activityID,
+            started_at: startedAt,
+            expires_at: expiresAt,
+            description: `Earthbound CME, speed ${speed} km/s`,
+          });
+        }
+      } else if (name === "sep" && Array.isArray(data)) {
+        for (const sep of data) {
+          const startedAt = sep?.eventTime || nowISO;
+          const expiresAt = new Date(new Date(startedAt).getTime() + 24 * 60 * 60 * 1000).toISOString();
+          events.push({
+            schema: "sp.contribution.v1",
+            event_id: `sep:${sep?.sepID || Date.now()}`,
+            type: "sep",
+            severity: "S1",
+            signature_weight: 0.15,
+            started_at: startedAt,
+            expires_at: expiresAt,
+            description: sep?.instruments?.join(", ") || "Solar Energetic Particle event",
+          });
+        }
+      } else if (name === "hss" && Array.isArray(data)) {
+        for (const hss of data) {
+          const startedAt = hss?.eventTime || nowISO;
+          const expiresAt = new Date(new Date(startedAt).getTime() + 24 * 60 * 60 * 1000).toISOString();
+          events.push({
+            schema: "sp.contribution.v1",
+            event_id: `hss:${hss?.hssID || Date.now()}`,
+            type: "hss",
+            severity: "G1",
+            signature_weight: 0.1,
+            started_at: startedAt,
+            expires_at: expiresAt,
+            description: hss?.instruments?.join(", ") || "High Speed Stream",
+          });
+        }
+      } else if (name === "notifications" && Array.isArray(data)) {
+        const filtered = data
+          .filter((n) => {
+            const type = (n?.messageType || "").toLowerCase();
+            return type.includes("warning") || type.includes("watch");
+          })
+          .slice(-5);
+        for (const n of filtered) {
+          const body = (n?.messageBody || n?.messageURL || "").slice(0, 200);
+          if (body) alerts.push(body);
+        }
+      }
+    } catch (parseErr) {
+      console.warn(`[space-weather/extended] parse ${name}:`, parseErr?.message);
+    }
+  }
+
+  // Filter events: only active (expires_at > now)
+  const activeEvents = events.filter((e) => e.expires_at > nowISO);
+
+  const payload = {
+    current: {
+      kp: kpValue,
+      kpForecast3h: [],
+      xrayFlux,
+      xrayClass,
+      protonFlux,
+    },
+    events: activeEvents,
+    alerts,
+    epoch: {
+      sunspotNumber,
+      f107,
+      solarCyclePhase: estimateSolarCyclePhase(f107),
+    },
+    meta: {
+      fetchedAt: new Date().toISOString(),
+      noaaVersion: "v1",
+      cacheTtlSeconds: Math.round(EXTENDED_CACHE_TTL_MS / 1000),
+    },
+  };
+
+  extendedWeatherCache = { timestamp: now, payload };
+  console.log(`[space-weather/extended] Kp=${kpValue} (${kpSource}), xray=${xrayClass}, events=${activeEvents.length}, f107=${f107}`);
+  return res.json(payload);
+});
+
+// ── POST /api/contribution/space-weather ────────────────────────────
+// Accepts a space-weather event and converts it to 12-sector contribution
+// weights, then upserts into contribution_events for the authenticated user.
+app.post("/api/contribution/space-weather", express.json(), async (req, res) => {
+  if (!supabaseServer) {
+    return res.status(503).json({ error: "Supabase not configured" });
+  }
+
+  // --- auth ---
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Missing authorization token" });
+  }
+  const token = authHeader.replace("Bearer ", "");
+  const { data: { user }, error: authErr } = await supabaseServer.auth.getUser(token);
+  if (authErr || !user) {
+    return res.status(401).json({ error: "Invalid or expired token" });
+  }
+
+  // --- body validation ---
+  const { event_id, type, severity, signature_weight, started_at, expires_at } = req.body;
+
+  if (!event_id || typeof event_id !== "string" || event_id.trim() === "") {
+    return res.status(400).json({ error: "event_id must be a non-empty string" });
+  }
+  if (typeof signature_weight !== "number" || signature_weight < 0 || signature_weight > 0.5) {
+    return res.status(400).json({ error: "signature_weight must be a number in [0, 0.5]" });
+  }
+  if (!expires_at) {
+    return res.status(400).json({ error: "expires_at is required" });
+  }
+
+  // --- convert to 12-sector weights ---
+  // Fire signs (Aries=0, Leo=4, Sagittarius=8) get a 1.2× boost
+  const fireIndices = new Set([0, 4, 8]);
+  const baseWeight = signature_weight;
+  const sectorWeights = Array.from({ length: 12 }, (_, i) =>
+    fireIndices.has(i) ? baseWeight * 1.2 : baseWeight
+  );
+
+  // --- upsert ---
+  const moduleId = "space-weather:" + event_id;
+  const { error: insertErr } = await supabaseServer
+    .from("contribution_events")
+    .upsert(
+      {
+        user_id: user.id,
+        event_id: `sw:${event_id}:${user.id}`,
+        module_id: moduleId,
+        occurred_at: started_at || new Date().toISOString(),
+        payload: {
+          sector_weights: sectorWeights,
+          confidence: Math.min(1, baseWeight * 2),
+          type: type || "space_weather",
+          severity: severity || "G0",
+          expires_at,
+        },
+      },
+      { onConflict: "user_id,module_id" }
+    );
+
+  if (insertErr) {
+    console.error("[contribution/space-weather] upsert failed:", insertErr.message);
+    return res.status(500).json({ error: "Failed to persist contribution", detail: insertErr.message });
+  }
+
+  console.log(`[contribution/space-weather] upserted module_id=${moduleId} for user=${user.id}`);
+  return res.status(201).json({ ok: true, module_id: moduleId });
+});
+
 // ── /api/mobile/bootstrap ───────────────────────────────────────────
 // Mobile clients use this endpoint to bootstrap minimum-version gating,
 // feature flags, and external integration settings.

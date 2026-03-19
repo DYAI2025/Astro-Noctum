@@ -6,6 +6,7 @@ describe('Experience API Schemas', () => {
     const data = {
       profile: { sun_sign: 'Loewe', moon_sign: 'Waage', ascendant_sign: 'Jungfrau', day_master: 'Xin', harmony_index: 0.78 },
       soulprint_sectors: [0.08, 0.02, 0.07, 0.10, 0.14, 0.12, 0.09, 0.05, 0.11, 0.10, 0.07, 0.05],
+      narratives: { core_summary: 'Core', context_summary: 'Context', integration_summary: 'Integration' },
       signature_blueprint: { seed: 'sig_v1_test', visual: { symmetry: 0.76, curvature: 0.43, angularity: 0.58, density: 0.61, contrast: 0.47, orbit_count: 3 }, elements: { Holz: 0.22, Feuer: 0.28, Erde: 0.19, Metall: 0.16, Wasser: 0.15 } },
       meta: { engine_version: '1.0.0' }
     };
@@ -25,6 +26,7 @@ describe('Experience API Schemas', () => {
   it('validates signature delta response', () => {
     const data = {
       quiz_sectors: Array(12).fill(0.083),
+      narratives: { core_summary: 'Core', context_summary: 'Context', integration_summary: 'Integration' },
       signature_delta: { curvature: 0.08, contrast: 0.11, density: -0.04 },
       signature_blueprint: { seed: 'sig_v1_test', visual: { symmetry: 0.76, curvature: 0.51, angularity: 0.58, density: 0.57, contrast: 0.58, orbit_count: 3 } },
     };

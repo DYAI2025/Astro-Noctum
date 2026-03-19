@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/src/contexts/LanguageContext';
@@ -9,6 +9,7 @@ import { useQuizContribution } from '@/src/hooks/useQuizContribution';
 import { useCompletedModules } from '@/src/hooks/useCompletedModules';
 import { useQuizSuggestion } from '@/src/hooks/useQuizSuggestion';
 import { usePremium } from '@/src/hooks/usePremium';
+import { useSpaceWeather } from '@/src/hooks/useSpaceWeather';
 import { ClusterSidebar } from '@/src/components/signatur/ClusterSidebar';
 import { PremiumUpgradeModal } from '@/src/components/signatur/PremiumUpgradeModal';
 import { ClusterPipeline } from '@/src/components/signatur/ClusterPipeline';
@@ -28,6 +29,7 @@ export default function FuRingPage() {
   const { completedModuleIds, addModule } = useCompletedModules();
   const suggestedModule = useQuizSuggestion(completedModuleIds);
   const quizContribution = useQuizContribution(completedModuleIds);
+  const spaceWeather = useSpaceWeather();
 
   const [activeQuiz, setActiveQuiz] = useState<string | null>(null);
   const [justCompletedCluster, setJustCompletedCluster] = useState<string | null>(null);
@@ -60,6 +62,17 @@ export default function FuRingPage() {
     }
     setActiveQuiz(null);
   }, [quizContribution, completedModuleIds, addModule]);
+
+  // Auto-trigger ring effect during severe space weather storms (G3+)
+  useEffect(() => {
+    if (spaceWeather.triggerEffect && spaceWeather.kpIndex >= 7) {
+      setRingEffect({
+        type: 'korona_eruption',
+        color: spaceWeather.kpIndex >= 9 ? '#ef4444' : '#f97316',
+        timestamp: Date.now(),
+      });
+    }
+  }, [spaceWeather.triggerEffect, spaceWeather.kpIndex]);
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-[#020509] text-white">
@@ -136,6 +149,7 @@ export default function FuRingPage() {
               userId={userId}
               quizWeights={liveQuizWeights}
               effectTrigger={ringEffect}
+              solarModulation={spaceWeather.ringModulation}
               labels={{
                 regionLabel: t('furing3d.a11y.regionLabel'),
                 loading: t('furing3d.loading'),
