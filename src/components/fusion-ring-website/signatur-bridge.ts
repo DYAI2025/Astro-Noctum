@@ -25,6 +25,32 @@ export function soulprintToNatalWeights(sectors: number[]): Record<string, numbe
   return weights;
 }
 
+/**
+ * Fallback: Derive natal weights from Western/BaZi API data when
+ * no soulprint_sectors are available (pre-bootstrap users).
+ */
+const ZODIAC_RULER: Record<string, string> = {
+  Aries: 'Mars', Taurus: 'Venus', Gemini: 'Mercury',
+  Cancer: 'Moon', Leo: 'Sun', Virgo: 'Mercury',
+  Libra: 'Venus', Scorpio: 'Mars', Sagittarius: 'Jupiter',
+  Capricorn: 'Saturn', Aquarius: 'Saturn', Pisces: 'Jupiter',
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function deriveWeightsFromApiData(apiData: any): Record<string, number> {
+  const base: Record<string, number> = {
+    Sun: 0.7, Moon: 0.5, Mercury: 0.4,
+    Venus: 0.4, Mars: 0.5, Jupiter: 0.5, Saturn: 0.4,
+  };
+  const sunSign = apiData?.western?.zodiac_sign || apiData?.western?.sun_sign || apiData?.sun_sign;
+  const moonSign = apiData?.western?.moon_sign || apiData?.moon_sign;
+  const sunRuler = sunSign ? ZODIAC_RULER[sunSign] : undefined;
+  if (sunRuler && base[sunRuler] !== undefined) base[sunRuler] = Math.min(base[sunRuler]! + 0.2, 1);
+  const moonRuler = moonSign ? ZODIAC_RULER[moonSign] : undefined;
+  if (moonRuler && base[moonRuler] !== undefined) base[moonRuler] = Math.min(base[moonRuler]! + 0.15, 1);
+  return base;
+}
+
 export function quizSectorsToQuizWeights(sectors: number[]): Record<string, number> {
   const fallback = sectors.length
     ? sectors.reduce((s, v) => s + v, 0) / sectors.length

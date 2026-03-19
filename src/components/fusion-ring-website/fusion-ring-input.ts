@@ -25,6 +25,11 @@ import {
   FusionRingProfile,
   DeformationStamp,
   DeformationType,
+  SedimentEventType,
+  TransitSediment,
+  calculateDepositStrength,
+  applySedimentDeposit,
+  createEmptySedimentationState,
 } from './fusion-ring-profile';
 
 // ──────────────────────────────────────────
@@ -191,6 +196,9 @@ export class FusionRingInputController {
    * Ingest a TRANSIT_STATE_v1 JSON.
    * Parses events into effect triggers and starts the queue.
    * Also updates sector energy/deformation overlays.
+   * 
+   * SEDIMENTATION: Each transit event with priority ≤ 2 creates a permanent
+   * deposit on the ring shape (Term S in the shape formula).
    */
   ingestTransitState(state: TransitStateV1) {
     const parsed = parseTransitState(state);
@@ -198,12 +206,119 @@ export class FusionRingInputController {
     this.state.transitSectorEnergy = parsed.sectorEnergy;
     this.state.transitSectorDeformation = parsed.sectorDeformation;
 
+    // ─── SEDIMENTATION: Accumulate permanent deposits ───
+    // Process explicit transit events and deposit sediment
+    if (state.events) {
+      for (const event of state.events) {
+        // Only high-priority events (>= 40) create sediment
+        if (event.priority < 40) continue;
+        
+        // Map event type to sediment event type
+        const sedimentType = this.mapToSedimentEventType(event.type);
+        if (!sedimentType) continue;
+        
+        // Calculate impact: transit_intensity × sector_deformation at sector
+        const transitIntensity = state.transit_contribution?.transit_intensity ?? 0.5;
+        const ringSectors = state.ring?.sectors ?? new Array(12).fill(1);
+        const sectorStrength = ringSectors[event.sector] ?? 1.0;
+        const impact = transitIntensity * Math.abs(sectorStrength);
+        
+        // Calculate deposit strength and accumulate
+        this.accumulateSediment(sedimentType, event.sector, impact, event.priority, event.trigger_planet);
+      }
+    }
+
     // Start effect queue
     this.state.effectQueue = parsed.effectQueue;
     this.state.queueIndex = 0;
     this.state.queueStartTime = Date.now();
 
     this.processQueue();
+  }
+
+  /**
+   * Maps transit event types to sediment event types.
+   * Only certain event types create permanent sedimentation.
+   */
+  private mapToSedimentEventType(eventType: string): SedimentEventType | null {
+    const mapping: Record<string, SedimentEventType> = {
+      'resonance_jump': 'resonance_jump',
+      'dominance_shift': 'dominance_shift',
+      'moon_event': 'moon_event',
+    };
+    return mapping[eventType] ?? null;
+  }
+
+  /**
+   * Accumulates a sediment deposit from a transit event.
+   * This creates a PERMANENT modification to the ring shape (Term S).
+   * 
+   * deposit_strength = event_weight × impact × decay_factor × SEDIMENTATION_RATE
+   */
+  accumulateSediment(
+    eventType: SedimentEventType,
+    sector: number,
+    impact: number,
+    priority: number,
+    triggerPlanet: string
+  ): void {
+    // Initialize sedimentation if missing
+    if (!this.profile.sedimentation) {
+      this.profile.sedimentation = createEmptySedimentationState();
+    }
+    
+    // Calculate deposit strength
+    const depositStrength = calculateDepositStrength(eventType, impact, priority);
+    
+    // Skip tiny deposits
+    if (depositStrength < 0.0001) return;
+    
+    // Apply deposit to sectors with Gaussian distribution
+    applySedimentDeposit(
+      this.profile.sedimentation.sectors,
+      sector,
+      depositStrength
+    );
+    
+    // Record in history
+    const sediment: TransitSediment = {
+      eventDate: new Date().toISOString().split('T')[0],
+      eventType,
+      sector,
+      triggerPlanet,
+      depositStrength,
+      spread: 0.52, // Default ~30°
+    };
+    this.profile.sedimentation.history.push(sediment);
+    this.profile.sedimentation.updatedAt = Date.now();
+    
+    // Trim history if it gets too long (keep last 500 entries)
+    if (this.profile.sedimentation.history.length > 500) {
+      this.profile.sedimentation.history = this.profile.sedimentation.history.slice(-500);
+    }
+    
+    // Notify profile change
+    if (this.onProfileUpdate) this.onProfileUpdate(this.profile);
+  }
+
+  /**
+   * Manually add a sediment deposit (for testing/debugging).
+   */
+  addManualSediment(
+    sector: number,
+    eventType: SedimentEventType = 'resonance_jump',
+    impact: number = 0.5,
+    priority: number = 1,
+    triggerPlanet: string = 'jupiter'
+  ): void {
+    this.accumulateSediment(eventType, sector, impact, priority, triggerPlanet);
+  }
+
+  /**
+   * Get current sedimentation state.
+   */
+  getSedimentationState() {
+    return this.profile.sedimentation ?? createEmptySedimentationState();
   }
 
   /**

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import type * as THREE_TYPES from 'three';
 import { createFusionAudio, type FusionAudioEngine } from './fusion-ring-audio';
 import {
@@ -27,6 +27,7 @@ import { FusionRingInputController } from './fusion-ring-input';
 import { createDemoTransitState, type TransitStateV1 } from './fusion-ring-transit';
 import {
   createDemoProfile,
+  createEmptySedimentationState,
   type FusionRingProfile,
 } from './fusion-ring-profile';
 import type { QuizClusterResult } from './fusion-ring-input';
@@ -94,8 +95,6 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
   isMini?: boolean;
 }) {
   const canvasRef = useRef<HTMLDivElement>(null);
-  const revealRef = useRef(revealProgress);
-  useEffect(() => { revealRef.current = revealProgress; }, [revealProgress]);
 
   useEffect(() => {
     if (!canvasRef?.current) return;
@@ -114,10 +113,10 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
       } catch(e) { console.warn('THREE postprocessing missing, running without bloom'); }
 
       // === CORE OBJECTS ===
-      const scene = new THREE.Scene();
       const container = canvasRef.current;
       const width = container?.clientWidth || window.innerWidth;
       const height = container?.clientHeight || window.innerHeight;
+      const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
       const geometry = new THREE.BufferGeometry();
 
@@ -133,19 +132,19 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
       renderer.toneMappingExposure = 1.8;
       renderer.setClearColor(0x08080e);
       canvasRef.current?.appendChild?.(renderer.domElement);
-
+      
       let composer: any;
       let bloomPass: any;
       if (EffectComposer) {
         composer = new EffectComposer(renderer);
         const renderPass = new RenderPass(scene, camera);
         composer.addPass(renderPass);
-
+        
         bloomPass = new UnrealBloomPass(
           new THREE.Vector2(width, height),
-          0.35,  // strength (reduced for subtlety)
+          0.8,   // strength
           0.4,   // radius
-          0.9    // threshold (higher = only brightest particles bloom)
+          0.85   // threshold
         );
         composer.addPass(bloomPass);
 
@@ -214,7 +213,7 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
 
       let particleCount = 0;
       let currentSignature: BazodiacSignature | null = null;
-
+      
       // Displacement system for effects
       const displacementTarget = new Float32Array(MAX_PARTICLES * 3);
       const displacementCurrent = new Float32Array(MAX_PARTICLES * 3);
@@ -228,10 +227,10 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
       geometry.setAttribute('alpha', new THREE.BufferAttribute(alphas, 1));
       geometry.setAttribute('layer', new THREE.BufferAttribute(layers, 1));
       geometry.setAttribute('phase', new THREE.BufferAttribute(phases, 1));
-
+      
       const particleUniforms = {
         uTime: { value: 0 },
-        uReveal: { value: revealRef.current }
+        uReveal: { value: revealProgress }
       };
 
       // Custom shader material for particles
@@ -244,18 +243,18 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
           attribute float alpha;
           attribute vec3 color;
           attribute float layer;
-
+          
           varying vec3 vColor;
           varying float vAlpha;
           varying float vLayer;
-
+          
           void main() {
             vColor = color;
             vLayer = layer;
-
+            
             float finalSize = size;
             float finalAlpha = alpha;
-
+            
             vec3 pos = position;
 
             // Reveal Animation: start at center, expand out
@@ -273,9 +272,9 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
             if (layer == 6.0) {
               finalAlpha = min(1.0, finalAlpha * 1.3);
             }
-
+            
             vAlpha = finalAlpha;
-
+            
             vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
             gl_PointSize = finalSize * (600.0 / -mvPosition.z);
             gl_PointSize = clamp(gl_PointSize, 0.5, 80.0);
@@ -290,18 +289,18 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
             vec2 pt = gl_PointCoord - vec2(0.5);
             float dist = length(pt);
             if (dist > 0.5) discard;
-
+            
             // Dual-Core Glow with HDR Kern
             float core = 1.0 - smoothstep(0.0, 0.12, dist);
             float halo = 1.0 - smoothstep(0.0, 0.5, dist);
             halo = pow(halo, 2.5);
-
+            
             float glow = core * 0.7 + halo * 0.5;
-
+            
             // HDR Boost for centerjump
             float boost = (vLayer == 5.0) ? 2.5 : 1.5;
             vec3 col = vColor * (1.0 + core * boost);
-
+            
             gl_FragColor = vec4(col, vAlpha * glow);
           }
         `,
@@ -316,13 +315,33 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
       // === ZODIAC RING SPRITES ===
       const zodiacSprites: THREE_TYPES.Sprite[] = [];
       function createZodiacRing() {
-        // Remove old
-        zodiacSprites.forEach(s => {
-          ringGroup.remove(s);
-          if (s.material instanceof THREE.SpriteMaterial) {
-            s.material.map?.dispose();
-            s.material.dispose();
+        // Remove old and dispose materials/textures to avoid leaks
+        zodiacSprites.forEach(sprite => {
+          // Dispose sprite material(s) and their maps
+          const material = sprite.material as
+            | THREE_TYPES.Material
+            | THREE_TYPES.Material[]
+            | undefined;
+
+          const disposeMaterial = (mat: THREE_TYPES.Material | undefined) => {
+            if (!mat) return;
+            const anyMat = mat as THREE_TYPES.Material & {
+              map?: THREE_TYPES.Texture | null;
+            };
+            if (anyMat.map) {
+              anyMat.map.dispose();
+              anyMat.map = null;
+            }
+            mat.dispose();
+          };
+
+          if (Array.isArray(material)) {
+            material.forEach(m => disposeMaterial(m));
+          } else {
+            disposeMaterial(material);
           }
+
+          ringGroup.remove(sprite);
         });
         zodiacSprites.length = 0;
 
@@ -448,15 +467,15 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
 
         for (let i = 0; i < particleCount; i++) {
           const p = pts[i]!;
-
+          
           let sizeScale = 0.04;
           let alphaScale = 1.0;
           let yOffset = 0;
 
           switch (p.layer) {
             case 'glow':
-              sizeScale = 0.07;
-              alphaScale = 0.25;
+              sizeScale = 0.12;
+              alphaScale = 0.6;
               yOffset = (hash01(p.phase, 42) - 0.5) * 0.4;
               break;
             case 'curve':
@@ -498,11 +517,11 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
           basePositions[i * 3] = p.x;
           basePositions[i * 3 + 1] = yOffset;
           basePositions[i * 3 + 2] = -p.y;
-
+          
           colors[i * 3] = p.color[0];
           colors[i * 3 + 1] = p.color[1];
           colors[i * 3 + 2] = p.color[2];
-
+          
           sizes[i] = p.r * sizeScale;
           alphas[i] = Math.min(1.0, p.alpha * alphaScale);
           phases[i] = p.phase;
@@ -543,7 +562,7 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
 
       rebuildFromState();
 
-      // Instance-scoped bridge for external rebuild
+      // Window bridge for external rebuild
       (window as any).__fusionRingRebuild = rebuildFromState;
 
       // ========================================
@@ -628,18 +647,16 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
 
       const onResize = () => {
         if (disposed) return;
-        const rect = el.getBoundingClientRect();
-        const width = rect.width || window.innerWidth;
-        const height = rect.height || window.innerHeight;
-
-        renderer.setSize(width, height);
-        if (height > 0) {
-          camera.aspect = width / height;
-          camera.updateProjectionMatrix();
-        }
+        const c = canvasRef.current;
+        const w = c?.clientWidth || window.innerWidth;
+        const h = c?.clientHeight || window.innerHeight;
+        if (h <= 0) return;
+        renderer.setSize(w, h);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
 
         if (composer) {
-          composer.setSize(width, height);
+          composer.setSize(w, h);
         }
       };
       window.addEventListener('resize', onResize);
@@ -906,7 +923,7 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
         // Emergence-driven bloom and material intensity
         if (bloomPass && currentSignature) {
           const emergenceVal = currentSignature.emergence.emergence;
-          bloomPass.strength = lerp(0.25, 0.55, emergenceVal);
+          bloomPass.strength = lerp(0.6, 1.4, emergenceVal);
         }
 
         // Return-to-home
@@ -1008,17 +1025,17 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
         processEffect(t, dt);
         effectLight1.intensity *= effectIntensityMultiplier;
         effectLight2.intensity *= effectIntensityMultiplier;
-
+        
         particleUniforms.uTime.value = t;
-        particleUniforms.uReveal.value = revealRef.current;
+        particleUniforms.uReveal.value = revealProgress;
         bgMat.uniforms.uTime.value = t;
 
         if (composer) {
           if (bloomPass) {
             // Dynamic bloom pulse based on signature emergence or just time
             const intensityBase = currentSignature?.emergence.emergence || 0.5;
-            bloomPass.strength = 0.35 + Math.sin(t * 0.5) * 0.15 * intensityBase;
-            bloomPass.threshold = 0.85 + Math.sin(t * 0.3) * 0.05;
+            bloomPass.strength = 1.2 + Math.sin(t * 0.5) * 0.3 * intensityBase;
+            bloomPass.threshold = 0.2 + Math.sin(t * 0.3) * 0.1;
           }
           composer.render();
         } else {
@@ -1039,23 +1056,6 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
         window.removeEventListener('touchmove', onTouchMove);
         window.removeEventListener('touchend', onTouchEnd);
         window.removeEventListener('resize', onResize);
-        delete (window as any).__fusionRingRebuild;
-        zodiacSprites.forEach(s => {
-          if (s.material instanceof THREE.SpriteMaterial) {
-            s.material.map?.dispose();
-            s.material.dispose();
-          }
-        });
-        geometry.dispose();
-        particleMat.dispose();
-        dustGeo.dispose();
-        dustMat.dispose();
-        bgGeo.dispose();
-        bgMat.dispose();
-        if (composer) {
-          composer.renderTarget1?.dispose();
-          composer.renderTarget2?.dispose();
-        }
         renderer.dispose();
         if (canvasRef.current?.contains?.(renderer.domElement)) {
           canvasRef.current.removeChild(renderer.domElement);
@@ -1065,19 +1065,9 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
 
     const cleanup = initScene();
     return () => { cleanup?.then?.((fn) => fn?.()); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return (
-    <div
-      ref={canvasRef}
-      style={{
-        width: '100%',
-        height: '100%',
-        pointerEvents: isMini ? 'none' : 'auto',
-      }}
-    />
-  );
+  return <div ref={canvasRef} style={{ width: '100%', height: '100%' }} />;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1137,12 +1127,12 @@ function BazodiacConfigPanel({ bazState, onUpdate, version }: {
   const weights = computeWeights(bazState.natal, bazState.quiz);
 
   const QUIZ_LABELS: Record<QuizDimension, string> = {
-    empathy: '\u{1F497} Empathie',
-    logic: '\u{1F9E0} Logik',
-    creativity: '\u{1F3A8} Kreativit\u00e4t',
-    discipline: '\u2694 Disziplin',
-    intuition: '\u{1F52E} Intuition',
-    assertion: '\u{1F525} Durchsetzung',
+    empathy: '💗 Empathie',
+    logic: '🧠 Logik',
+    creativity: '🎨 Kreativit\u00e4t',
+    discipline: '⚔ Disziplin',
+    intuition: '🔮 Intuition',
+    assertion: '🔥 Durchsetzung',
   };
 
   const exportJSON = () => {
@@ -1151,7 +1141,7 @@ function BazodiacConfigPanel({ bazState, onUpdate, version }: {
       quiz: Object.fromEntries(bazState.quiz),
     };
     navigator.clipboard?.writeText(JSON.stringify(obj, null, 2));
-    setJsonError('\u2713 Copied to clipboard');
+    setJsonError('✓ Copied to clipboard');
     setTimeout(() => setJsonError(''), 2000);
   };
 
@@ -1188,7 +1178,7 @@ function BazodiacConfigPanel({ bazState, onUpdate, version }: {
       {/* PLANETS TAB */}
       {tab === 'planets' && (
         <div>
-          <div style={labelStyle}>Natal-Gewichte (0\u20131)</div>
+          <div style={labelStyle}>Natal-Gewichte (0–1)</div>
           {PLANETS.map(planet => {
             const w = bazState.natal.get(planet.id) ?? 0.5;
             const finalW = weights.weights.get(planet.id) ?? 0;
@@ -1206,7 +1196,7 @@ function BazodiacConfigPanel({ bazState, onUpdate, version }: {
                   {w.toFixed(2)}
                 </span>
                 <span style={{ width: '40px', textAlign: 'right', fontSize: '7px', color: 'rgba(180,190,210,0.4)' }}>
-                  \u2192{finalW.toFixed(2)}
+                  →{finalW.toFixed(2)}
                 </span>
                 <span style={{ width: '55px', textAlign: 'right', fontSize: '7px', color: tier === 3 ? planet.hexColor : 'rgba(120,130,150,0.5)' }}>
                   T{tier} {tierLabel}
@@ -1220,8 +1210,8 @@ function BazodiacConfigPanel({ bazState, onUpdate, version }: {
             <div style={labelStyle}>Gewichtete Signatur</div>
             <div style={{ fontSize: '8px', color: 'rgba(180,190,210,0.6)', lineHeight: 1.6 }}>
               Dominant: <span style={{ color: weights.dominant.hexColor }}>{weights.dominant.id}</span>
-              {' \u00b7 '}Emergence: {weights.ranked.filter(r => r.weight >= 0.75).length} Fraktal-Planeten
-              {' \u00b7 '}kFolds: {Math.max(3, Math.round(computeSpiroParams(weights.dominant.hz).n))}
+              {' · '}Emergence: {weights.ranked.filter(r => r.weight >= 0.75).length} Fraktal-Planeten
+              {' · '}kFolds: {Math.max(3, Math.round(computeSpiroParams(weights.dominant.hz).n))}
             </div>
           </div>
         </div>
@@ -1230,7 +1220,7 @@ function BazodiacConfigPanel({ bazState, onUpdate, version }: {
       {/* QUIZ TAB */}
       {tab === 'quiz' && (
         <div>
-          <div style={labelStyle}>Quiz-Dimensionen (0\u20131, 0.5 = neutral)</div>
+          <div style={labelStyle}>Quiz-Dimensionen (0–1, 0.5 = neutral)</div>
           {QUIZ_DIMS.map(dim => {
             const val = bazState.quiz.get(dim) ?? 0.5;
             return (
@@ -1258,7 +1248,7 @@ function BazodiacConfigPanel({ bazState, onUpdate, version }: {
         <div>
           <div style={labelStyle}>Profil exportieren</div>
           <button onClick={exportJSON} style={{ ...tabBtnStyle(false), marginBottom: '8px', border: '1px solid rgba(220,160,20,0.3)', width: '100%' }}>
-            {'\u{1F4CB}'} JSON IN CLIPBOARD KOPIEREN
+            📋 JSON IN CLIPBOARD KOPIEREN
           </button>
           <div style={labelStyle}>Profil importieren</div>
           <textarea
@@ -1275,7 +1265,7 @@ function BazodiacConfigPanel({ bazState, onUpdate, version }: {
           <button onClick={importJSON} style={{ ...tabBtnStyle(false), marginTop: '4px', border: '1px solid rgba(220,160,20,0.3)', width: '100%' }}>
             IMPORTIEREN
           </button>
-          {jsonError && <div style={{ marginTop: '4px', fontSize: '8px', color: jsonError.startsWith('\u2713') ? 'rgba(100,220,100,0.7)' : 'rgba(255,100,100,0.7)' }}>{jsonError}</div>}
+          {jsonError && <div style={{ marginTop: '4px', fontSize: '8px', color: jsonError.startsWith('✓') ? 'rgba(100,220,100,0.7)' : 'rgba(255,100,100,0.7)' }}>{jsonError}</div>}
         </div>
       )}
     </div>
@@ -1306,37 +1296,17 @@ export default function FusionRingCanvas({
 
   // Bazodiac state
   const bazStateRef = useRef<BazodiacState>({
-    natal: new Map(
-      natalWeights
-        ? natalWeights instanceof Map
-          ? Array.from(natalWeights.entries())
-          : Object.entries(natalWeights)
-        : Array.from(createTestPreset().natal.entries())
-    ),
-    quiz: new Map(
-      quizWeights
-        ? quizWeights instanceof Map
-          ? Array.from(quizWeights.entries())
-          : Object.entries(quizWeights)
-        : Array.from(createTestPreset().quiz.entries())
-    ) as any,
+    natal: new Map(Object.entries(natalWeights || createTestPreset().natal)),
+    quiz: new Map(Object.entries(quizWeights || createTestPreset().quiz) as any),
   });
 
   // Sync props to state ref
   useEffect(() => {
     if (natalWeights) {
-      bazStateRef.current.natal = new Map(
-        natalWeights instanceof Map
-          ? Array.from(natalWeights.entries())
-          : Object.entries(natalWeights)
-      );
+      bazStateRef.current.natal = new Map(Object.entries(natalWeights));
     }
     if (quizWeights) {
-      bazStateRef.current.quiz = new Map(
-        (quizWeights instanceof Map
-          ? Array.from(quizWeights.entries())
-          : Object.entries(quizWeights)) as any
-      );
+      bazStateRef.current.quiz = new Map(Object.entries(quizWeights) as any);
     }
     setBazVersion(v => v + 1);
     const rebuild = (window as any).__fusionRingRebuild;
@@ -1353,19 +1323,18 @@ export default function FusionRingCanvas({
     const rebuild = (window as any).__fusionRingRebuild;
     if (typeof rebuild === 'function') rebuild();
   }, []);
-  const effectTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     setMounted(true);
     setWebglSupported(isWebGLAvailable());
     audioRef.current = createFusionAudio();
     return () => {
+      audioRef.current?.dispose();
+      audioRef.current = null;
       if (effectTimeoutRef.current !== null) {
         clearTimeout(effectTimeoutRef.current);
         effectTimeoutRef.current = null;
       }
-      audioRef.current?.dispose();
-      audioRef.current = null;
     };
   }, []);
 
@@ -1374,6 +1343,8 @@ export default function FusionRingCanvas({
     if (audioEnabled) { audioRef.current.disable(); } else { audioRef.current.enable(); }
     setAudioEnabled((v) => !v);
   }, [audioEnabled]);
+
+  const effectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const triggerEffect = useCallback((
     type: EffectType,
@@ -1389,8 +1360,10 @@ export default function FusionRingCanvas({
     if (effectTimeoutRef.current !== null) {
       clearTimeout(effectTimeoutRef.current);
     }
-    const timeoutId = window.setTimeout(() => setActiveEffect(null), duration * 1000);
-    effectTimeoutRef.current = timeoutId;
+    effectTimeoutRef.current = setTimeout(() => {
+      setActiveEffect(null);
+      effectTimeoutRef.current = null;
+    }, duration * 1000);
   }, []);
 
   // --- Input Controller ---
@@ -1408,7 +1381,7 @@ export default function FusionRingCanvas({
         duration: trigger.duration,
         sector: trigger.sector,
       });
-      setTransitLog(prev => [...prev.slice(-9), `\u25b8 ${trigger.type} (I:${trigger.intensity.toFixed(2)}, S:${trigger.sector})`]);
+      setTransitLog(prev => [...prev.slice(-9), `▸ ${trigger.type} (I:${trigger.intensity.toFixed(2)}, S:${trigger.sector})`]);
     });
     inputControllerRef.current = controller;
     return () => { controller.destroy(); };
@@ -1419,9 +1392,9 @@ export default function FusionRingCanvas({
     try {
       const state = JSON.parse(json) as TransitStateV1;
       inputControllerRef.current?.ingestTransitState(state);
-      setTransitLog(prev => [...prev.slice(-9), `\u2713 Transit State ingested (${state.events?.length ?? 0} events)`]);
+      setTransitLog(prev => [...prev.slice(-9), `✓ Transit State ingested (${state.events?.length ?? 0} events)`]);
     } catch (e: unknown) {
-      setTransitLog(prev => [...prev.slice(-9), `\u2717 Parse error: ${e instanceof Error ? e.message : 'unknown'}`]);
+      setTransitLog(prev => [...prev.slice(-9), `✗ Parse error: ${e instanceof Error ? e.message : 'unknown'}`]);
     }
   }, []);
 
@@ -1429,21 +1402,21 @@ export default function FusionRingCanvas({
     try {
       const result = JSON.parse(json) as QuizClusterResult;
       inputControllerRef.current?.ingestQuizCluster(result);
-      setTransitLog(prev => [...prev.slice(-9), `\u2713 Quiz Cluster ingested (${result.facettes?.length ?? 0} facettes)`]);
+      setTransitLog(prev => [...prev.slice(-9), `✓ Quiz Cluster ingested (${result.facettes?.length ?? 0} facettes)`]);
     } catch (e: unknown) {
-      setTransitLog(prev => [...prev.slice(-9), `\u2717 Parse error: ${e instanceof Error ? e.message : 'unknown'}`]);
+      setTransitLog(prev => [...prev.slice(-9), `✗ Parse error: ${e instanceof Error ? e.message : 'unknown'}`]);
     }
   }, []);
 
   const loadDemoTransit = useCallback(() => {
     const demo = createDemoTransitState();
     inputControllerRef.current?.ingestTransitState(demo);
-    setTransitLog(prev => [...prev.slice(-9), `\u2713 Demo Transit loaded (${demo.events.length} events)`]);
+    setTransitLog(prev => [...prev.slice(-9), `✓ Demo Transit loaded (${demo.events.length} events)`]);
   }, []);
 
   if (!mounted) {
     return (
-      <div className="w-full h-full bg-black flex items-center justify-center">
+      <div className="w-screen h-screen bg-black flex items-center justify-center">
         <div className="w-32 h-32 rounded-full border border-cyan-900/30 animate-pulse" />
       </div>
     );
@@ -1451,7 +1424,7 @@ export default function FusionRingCanvas({
 
   if (!webglSupported) {
     return (
-      <div className="w-full h-full bg-black flex items-center justify-center">
+      <div className={`bg-black flex items-center justify-center ${className ?? ''}`}>
         <FallbackRing />
       </div>
     );
@@ -1464,12 +1437,15 @@ export default function FusionRingCanvas({
   ] as EffectType[];
 
   return (
-    <div className={className} style={{ width: '100%', height: '100%', background: '#08080e', position: 'relative', overflow: 'hidden' }}>
-      <ThreeScene
-        effectRef={effectRef}
-        audioRef={audioRef}
-        bazStateRef={bazStateRef}
-        revealProgress={revealProgress}
+    <div
+      className={className}
+      style={{ width: '100%', height: '100%', background: '#08080e', position: 'relative', overflow: 'hidden' }}
+    >
+      <ThreeScene 
+        effectRef={effectRef} 
+        audioRef={audioRef} 
+        bazStateRef={bazStateRef} 
+        revealProgress={revealProgress} 
         isMini={isMini}
       />
 
@@ -1569,7 +1545,7 @@ export default function FusionRingCanvas({
             textTransform: 'uppercase', fontWeight: 700,
             textShadow: `0 0 20px ${EFFECT_CONFIGS[activeEffect]!.borderColor}`,
           }}>
-            \u25c6 {EFFECT_CONFIGS[activeEffect]!.label} \u25c6
+            ◆ {EFFECT_CONFIGS[activeEffect]!.label} ◆
           </div>
           <div style={{
             fontFamily: '"SF Mono", "Fira Code", monospace',
@@ -1595,7 +1571,7 @@ export default function FusionRingCanvas({
           backdropFilter: 'blur(10px)', transition: 'all 0.3s ease',
         }}
       >
-        {showDataPanel ? '\u2715 CLOSE' : '\u25c8 DATA INPUT'}
+        {showDataPanel ? '✕ CLOSE' : '◈ DATA INPUT'}
       </button>
 
       {/* Config Panel Toggle */}
@@ -1612,7 +1588,7 @@ export default function FusionRingCanvas({
           backdropFilter: 'blur(10px)', transition: 'all 0.3s ease',
         }}
       >
-        {showConfigPanel ? '\u2715 CLOSE' : '\u2699 BAZODIAC'}
+        {showConfigPanel ? '✕ CLOSE' : '⚙ BAZODIAC'}
       </button>
 
       {/* Bazodiac Config Panel */}
@@ -1678,7 +1654,7 @@ export default function FusionRingCanvas({
           {/* Transit State JSON Input */}
           <div style={{ marginBottom: '16px' }}>
             <div style={{ fontSize: '9px', letterSpacing: '2px', color: 'rgba(255,184,42,0.7)', marginBottom: '8px', fontWeight: 700 }}>
-              CHANNEL A \u00b7 TRANSIT STATE
+              CHANNEL A · TRANSIT STATE
             </div>
             <textarea
               id="transit-json-input"
@@ -1712,7 +1688,7 @@ export default function FusionRingCanvas({
           {/* Quiz Cluster JSON Input */}
           <div style={{ marginBottom: '16px' }}>
             <div style={{ fontSize: '9px', letterSpacing: '2px', color: 'rgba(42,255,90,0.7)', marginBottom: '8px', fontWeight: 700 }}>
-              CHANNEL B \u00b7 QUIZ CLUSTER
+              CHANNEL B · QUIZ CLUSTER
             </div>
             <textarea
               id="quiz-json-input"
