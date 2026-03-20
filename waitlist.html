@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bazodiac — Coming Soon</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #000000;
+      color: #ffffff;
+      font-family: 'Cormorant Garamond', serif;
+      overflow: hidden;
+      height: 100vh;
+    }
+    #particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .container {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 4rem;
+      font-weight: 300;
+      letter-spacing: 0.5em;
+      margin-bottom: 2rem;
+      background: linear-gradient(135deg, #D4AF37, #F0D060);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .countdown {
+      font-size: 1.5rem;
+      font-weight: 400;
+      letter-spacing: 0.3em;
+      margin-bottom: 3rem;
+      color: #888;
+    }
+    .countdown span {
+      color: #D4AF37;
+      font-weight: 600;
+    }
+    .teaser {
+      max-width: 600px;
+      font-size: 1.1rem;
+      line-height: 1.8;
+      color: #aaa;
+      margin-bottom: 3rem;
+    }
+    .teaser strong {
+      color: #D4AF37;
+    }
+    .waitlist-form {
+      display: flex;
+      gap: 1rem;
+      max-width: 500px;
+      width: 100%;
+    }
+    .waitlist-form input {
+      flex: 1;
+      padding: 1rem 1.5rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(212,175,55,0.3);
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.3s;
+    }
+    .waitlist-form input:focus {
+      border-color: #D4AF37;
+      background: rgba(255,255,255,0.08);
+    }
+    .waitlist-form button {
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, #D4AF37, #F0D060);
+      border: none;
+      color: #000;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .waitlist-form button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(212,175,55,0.3);
+    }
+    .features {
+      display: flex;
+      gap: 3rem;
+      margin-top: 4rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .feature {
+      text-align: center;
+    }
+    .feature-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    .feature-text {
+      font-size: 0.9rem;
+      color: #666;
+      letter-spacing: 0.1em;
+    }
+    @media (max-width: 768px) {
+      h1 { font-size: 2.5rem; }
+      .countdown { font-size: 1.2rem; }
+      .waitlist-form { flex-direction: column; }
+      .features { gap: 2rem; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="particles"></canvas>
+  
+  <div class="container">
+    <h1>BAZODIAC</h1>
+    
+    <div class="countdown">
+      T-MINUS <span id="days">30</span> DAYS
+    </div>
+    
+    <div class="teaser">
+      <p>
+        Etwas Kosmisches entsteht. Die Fusion aus <strong>westlicher Astrologie</strong>, 
+        <strong>chinesischem BaZi</strong> und <strong>WuXing Fünf-Elemente-Lehre</strong>.
+      </p>
+      <p style="margin-top: 1rem;">
+        Deine Signatur wartet darauf, entdeckt zu werden.
+      </p>
+    </div>
+    
+    <form class="waitlist-form" onsubmit="event.preventDefault(); alert('Danke! Du wirst als Erste*r benachrichtigt.');">
+      <input type="email" placeholder="Deine E-Mail-Adresse" required>
+      <button type="submit">JOIN WAITLIST</button>
+    </form>
+    
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">♈</div>
+        <div class="feature-text">WESTERN</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">八字</div>
+        <div class="feature-text">BAZI</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">五行</div>
+        <div class="feature-text">WUXING</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Particle System
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const particles = [];
+    const particleCount = 100;
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.vx = (Math.random() - 0.5) * 0.5;
+        this.vy = (Math.random() - 0.5) * 0.5;
+        this.size = Math.random() * 2;
+        this.color = `rgba(212, 175, 55, ${Math.random() * 0.5})`;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+      }
+      draw() {
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push(new Particle());
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    // Countdown
+    const targetDate = new Date();
+    targetDate.setDate(targetDate.getDate() + 30);
+    
+    function updateCountdown() {
+      const now = new Date();
+      const diff = targetDate - now;
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      document.getElementById('days').textContent = days;
+    }
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    // Resize
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+  </script>
+</body>
+</html>
+
+<!-- Added by Qwen: Accessibility & Polish -->
+<style>
+  /* Smooth scroll */
+  html { scroll-behavior: smooth; }
+  
+  /* Focus visible for accessibility */
+  input:focus-visible, button:focus-visible {
+    outline: 2px solid #D4AF37;
+    outline-offset: 2px;
+  }
+  
+  /* Reduced motion for accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.01ms !important; }
+  }
+  
+  /* Gold glow effect on hover */
+  .feature:hover .feature-icon {
+    text-shadow: 0 0 20px rgba(212,175,55,0.8);
+    transition: text-shadow 0.3s ease;
+  }
+</style>
+
+<!-- Audio (optional, muted by default) -->
+<audio id="ambient" loop>
+  <source src="data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAADhAC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7////////////////////////////////////////////////////////////AAAAAExhdmM1OC42NQAAAAAAAAAAAAAAACQCgAAAAAAAAA==">
+</audio>
+<script>
+  // Toggle audio with 'm' key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'm') {
+      const audio = document.getElementById('ambient');
+      audio.muted = !audio.muted;
+      console.log('Audio:', audio.muted ? 'muted' : 'unmuted');
+    }
+  });
+</script>
