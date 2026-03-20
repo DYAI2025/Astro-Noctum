@@ -759,7 +759,7 @@ export function DashboardAstroSection({
               );
 
               return tooltipContent ? (
-                <Tooltip key={houseKey} content={tooltipContent} wide>
+                <Tooltip key={houseKey} content={tooltipContent} wide dark={planetariumMode}>
                   <div className="morning-card p-4 sm:p-5 overflow-hidden cursor-help">
                     {cardContent}
                   </div>

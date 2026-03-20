@@ -17,3 +17,4 @@ export const NeoResponseSchema = z.object({
 });
 
 export type NeoObject = z.infer<typeof NeoObjectSchema>;
+export type NeoResponse = z.infer<typeof NeoResponseSchema>;

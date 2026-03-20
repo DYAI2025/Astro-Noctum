@@ -40,9 +40,10 @@ function dateToJD(date: Date): number {
 export function computeJieqiState(date: Date = new Date()): JieqiState {
   const lambda = solarLongitude(date);
 
+  // Normalize to Li Chun (315°) = 0 so terms sort monotonically
+  const normLambda = (lambda - 315 + 360) % 360;
   let currentIdx = 0;
   for (let i = 0; i < JIEQI_TERMS.length; i++) {
-    const normLambda = (lambda - 315 + 360) % 360;
     const normTerm = (JIEQI_TERMS[i].longitude - 315 + 360) % 360;
     if (normLambda >= normTerm) {
       currentIdx = i;

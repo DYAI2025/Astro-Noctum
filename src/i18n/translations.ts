@@ -10,6 +10,10 @@ export type DeepStringRecord = { [key: string]: string | DeepStringRecord };
 const translationsEn: DeepStringRecord = {
   nav: {
     atlas: "Atlas",
+    signatur: "Signatur",
+    sky: "Sky",
+    levi: "Levi",
+    faq: "FAQ",
     signOut: "Sign out",
     langToggle: "DE",
     pauseAudioTitle: "Pause ambient music",
@@ -188,6 +192,10 @@ const translationsEn: DeepStringRecord = {
 const translationsDe: DeepStringRecord = {
   nav: {
     atlas: "Atlas",
+    signatur: "Signatur",
+    sky: "Sky",
+    levi: "Levi",
+    faq: "FAQ",
     signOut: "Abmelden",
     langToggle: "EN",
     pauseAudioTitle: "Ambient-Musik pausieren",

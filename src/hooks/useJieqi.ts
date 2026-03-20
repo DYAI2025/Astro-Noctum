@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import type { JieqiState } from '@/src/lib/jieqi/types';
+import { JieqiStateSchema } from '@/src/lib/schemas/jieqi';
 
 export function useJieqi() {
   const [state, setState] = useState<JieqiState | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -13,13 +15,17 @@ export function useJieqi() {
       try {
         const res = await fetch('/api/jieqi/current');
         if (!res.ok) throw new Error(`Jieqi fetch failed: ${res.status}`);
-        const data = await res.json() as JieqiState;
+        const parsed = JieqiStateSchema.parse(await res.json());
         if (mountedRef.current) {
-          setState(data);
+          setState(parsed);
+          setError(null);
           setLoading(false);
         }
-      } catch {
-        if (mountedRef.current) setLoading(false);
+      } catch (err) {
+        if (mountedRef.current) {
+          setError(err instanceof Error ? err : new Error('Jieqi fetch error'));
+          setLoading(false);
+        }
       }
     };
 
@@ -28,5 +34,5 @@ export function useJieqi() {
     return () => { mountedRef.current = false; clearInterval(interval); };
   }, []);
 
-  return { jieqi: state, loading };
+  return { jieqi: state, loading, error };
 }
