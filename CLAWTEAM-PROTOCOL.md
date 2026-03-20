@@ -59,11 +59,11 @@ nuggets remember progress "TASK-XXX" "BLOCKED:$(date -Iseconds):REASON:Waiting f
 ## Board-Status anzeigen
 
 ```bash
-# Board anzeigen
-npx tsx ~/Active/Claude-Workspace/nuggets/src/pm/board-cli.ts show
+# Board anzeigen (aus dem nuggets-Repo-Root ausführen)
+npx tsx ./src/pm/board-cli.ts show
 
 # Nächste Task holen
-npx tsx ~/Active/Claude-Workspace/nuggets/src/pm/board-cli.ts next
+npx tsx ./src/pm/board-cli.ts next
 ```
 
 ## Ticket-Manager (automatisiert)
