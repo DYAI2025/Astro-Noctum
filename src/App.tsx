@@ -288,7 +288,23 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
             {t("nav.atlas")}
           </Link>
           <Link to="/signatur" className={`transition-colors ${location.pathname === "/signatur" ? "text-gold-deep" : "text-ink/60 hover:text-gold-deep"}`}>
-            Signatur
+            {t("nav.signatur")}
+          </Link>
+          <a href="https://sky.bazodiac.space" target="_blank" rel="noopener noreferrer" className={`transition-colors ${location.pathname === "/" ? "text-gold-deep" : "text-ink/60 hover:text-gold-deep"}`}>
+            {t("nav.sky")}
+          </a>
+          <a href="#" onClick={(e) => {
+            e.preventDefault();
+            if (location.pathname !== "/") {
+              window.location.href = "/";
+            } else {
+              document.querySelector('[data-levi-widget]')?.scrollIntoView({ behavior: 'smooth' });
+            }
+          }} className={`transition-colors ${location.pathname === "/" ? "text-gold-deep" : "text-ink/60 hover:text-gold-deep"}`}>
+            {t("nav.levi")}
+          </a>
+          <Link to="/wissen/faq-bazi-wuxing" className={`transition-colors ${location.pathname.startsWith("/wissen") ? "text-gold-deep" : "text-ink/60 hover:text-gold-deep"}`}>
+            {t("nav.faq")}
           </Link>
         </nav>
 
@@ -405,40 +421,22 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
 
         <Link to="/signatur" className={`flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-gold/50 rounded ${location.pathname === "/signatur" ? "text-gold-deep" : "text-ink/40"}`}>
           <CircleDot className="w-5 h-5" aria-hidden="true" />
-          <span className="text-[8px] uppercase tracking-tighter">Signatur</span>
+          <span className="text-[8px] uppercase tracking-tighter">{t("nav.signatur")}</span>
         </Link>
 
-        <button
-          onClick={togglePlanetarium}
-          aria-pressed={planetariumMode ? "true" : "false"}
-          aria-label="Planetarium"
-          className={planetariumMode ? "text-gold" : "text-ink/40"}
-        >
+        <a href="https://sky.bazodiac.space" target="_blank" rel="noopener noreferrer" className={`flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-gold/50 rounded ${location.pathname === "/signatur" ? "text-gold-deep" : "text-ink/40"}`}>
           <Telescope className="w-5 h-5" aria-hidden="true" />
-        </button>
+          <span className="text-[8px] uppercase tracking-tighter">{t("nav.sky")}</span>
+        </a>
 
-        <div className="flex flex-col items-center gap-1">
-          <button
-            onClick={ambiente.toggle}
-            aria-label={ambiente.playing ? t("nav.pauseAudioTitle") : t("nav.playAudioTitle")}
-            className="text-ink/40 hover:text-gold-deep transition-colors"
-          >
-            {ambiente.playing && ambiente.volume > 0 ? (
-              <Volume2 className="w-5 h-5 text-gold-deep" aria-hidden="true" />
-            ) : (
-              <VolumeX className="w-5 h-5" aria-hidden="true" />
-            )}
-          </button>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={ambiente.volume}
-            onChange={(e) => ambiente.setVolume(parseFloat(e.target.value))}
-            className="w-10 h-1 bg-gold-deep/20 rounded-full appearance-none cursor-pointer accent-[#8B6914]"
-          />
-        </div>
+        <Link to="/wissen/faq-bazi-wuxing" className={`flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-gold/50 rounded ${location.pathname.startsWith("/wissen") ? "text-gold-deep" : "text-ink/40"}`}>
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+            <path d="M12 17h.01" />
+          </svg>
+          <span className="text-[8px] uppercase tracking-tighter">{t("nav.faq")}</span>
+        </Link>
       </nav>
       )}
     </motion.div>
