@@ -74,7 +74,7 @@ Der Ticket-Manager läuft im Hintergrund und verarbeitet alle 30 Sekunden:
 2. Bewegt Tasks zu richtigen Board-Spalten
 3. Bereinigt alte progress-Einträge
 
-**Status:** Läuft als Hintergrundprozess (PID: 88006, 88008)
+**Status:** Läuft als Hintergrundprozess (Prüfung z.B. via `ps aux | grep board-cli` oder entsprechendem Service-Command)
 
 ---
 
