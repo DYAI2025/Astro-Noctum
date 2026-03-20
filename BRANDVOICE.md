@@ -95,7 +95,7 @@ Wenn Bazodiac eine Person wäre: Ein Astrophysiker, der nachts Tarot legt. Jeman
 |-------|-------------------|
 | Sprache | Deutsch (Primär), Englisch (Sekundär). Nie gemischt im selben Text. |
 | Ansprache | Du. Immer. Nie Sie. Nie ihr (außer in Partnerschafts-Kontext an das Paar). |
-| Kontraktionen | Ja, natürlich. "Das ist" → "Das ist", aber auch "Das bringt's" wenn der Ton es trägt. |
+| Kontraktionen | Ja, natürlich. "Ich habe" → "Ich hab", aber auch "Das bringt's", wenn der Ton es trägt. |
 | Zahlen | Grad-Angaben immer numerisch mit Symbol: 17° Waage. Andere Zahlen: ausschreiben bis neun, ab 10 numerisch. |
 | Datumsformat | 19. März 2026. Nie 19/03/2026. Nie March 19. |
 | Zeitformat | 07:42 Uhr. 24-Stunden. Nie AM/PM. |
