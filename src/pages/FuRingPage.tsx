@@ -60,7 +60,9 @@ export default function FuRingPage() {
         setLiveQuizWeights(quizSectorsToQuizWeights(normalized));
       }
     }
-    setActiveQuiz(null);
+    // Do NOT close the overlay here — the quiz still shows its ResultScreen
+    // as a reward/motivation step. The user closes it via the overlay's
+    // close button, backdrop click, or Escape key.
   }, [quizContribution, completedModuleIds, addModule]);
 
   // Auto-trigger ring effect during severe space weather storms (G3+)
