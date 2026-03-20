@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-[#05070a] text-[#f0ead6] selection:bg-[#D4AF37]/30">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bazodiac | Three Ancient Systems. One Cosmic Signature.</title>
+    <meta name="description" content="The first app to fuse Western Astrology, Chinese BaZi, and Wu-Xing Five Elements into one computed personality signature. Waitlist open.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://bazodiac.space">
+    <meta property="og:title" content="Bazodiac — Three Ancient Systems. One Cosmic Signature.">
+    <meta property="og:description" content="Western Astrology × Chinese BaZi × Wu-Xing — fused into a signature no single system can compute.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://bazodiac.space">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Bazodiac — Computed, Not Guessed">
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"WebApplication","name":"Bazodiac","url":"https://bazodiac.space","applicationCategory":"LifestyleApplication","operatingSystem":"Web","description":"Fusion Astrology: Western + BaZi + Wu-Xing → one computed signature."}
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Sora:wght@100;300;400;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --obsidian: #05070a;
+            --gold: #D4AF37;
+            --gold-light: #f0d060;
+            --gold-deep: #8B6914;
+            --cyan: #00f5ff;
+            --ash: #1A1C1E;
+            --copper: #B87333;
+            --emerald: #10B981;
+            --dawn: #f0ead6;
+            --glass-bg: rgba(5, 7, 10, 0.75);
+        }
+
+        body { background: var(--obsidian); color: var(--dawn); font-family: 'Sora', sans-serif; }
+        .fd { font-family: 'Cormorant Garamond', serif; }
+        .fm { font-family: 'JetBrains Mono', monospace; }
+
+        /* Noise */
+        body::after { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E"); pointer-events: none; z-index: 9999; }
+
+        /* Glass panel — from ritual space */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(212, 175, 55, 0.06);
+        }
+
+        /* Ritual input — gold accent instead of emerald */
+        .ritual-input {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+            font-size: 1.15rem;
+            padding: 0.6rem 0.25rem;
+            transition: all 0.5s ease;
+            color: var(--dawn);
+            width: 100%;
+            text-align: center;
+            outline: none;
+            font-family: 'Sora', sans-serif;
+            font-weight: 300;
+        }
+        .ritual-input:focus {
+            border-bottom-color: var(--gold);
+            text-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
+        }
+        .ritual-input::placeholder { color: rgba(240, 234, 214, 0.15); }
+
+        /* Phase transitions */
+        .phase { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 1s ease, transform 1s ease; }
+        .phase.active { opacity: 1; pointer-events: all; }
+
+        /* Insight card entry — slow sacred animation */
+        .card-entry { opacity: 0; transform: translateY(15px); transition: opacity 1.8s ease-in-out, transform 1.8s ease-in-out; }
+        .card-entry.visible { opacity: 1; transform: translateY(0); }
+
+        /* Orbital ring animations */
+        @keyframes ritual-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .ritual-spin { animation: ritual-spin 4s linear infinite; }
+        .ritual-spin-slow { animation: ritual-spin 25s linear infinite; }
+        .orb-glow { filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.2)); }
+
+        /* Buttons */
+        .btn-ritual {
+            padding: 14px 40px;
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            background: transparent;
+            color: var(--dawn);
+            font-size: 9px;
+            letter-spacing: 0.5em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.5s;
+            font-family: 'Sora', sans-serif;
+        }
+        .btn-ritual:hover { background: rgba(212, 175, 55, 0.08); border-color: var(--gold); color: var(--gold); }
+
+        .btn-gold {
+            padding: 14px 40px;
+            background: var(--gold);
+            color: var(--obsidian);
+            border: none;
+            font-family: 'Sora', sans-serif;
+            font-weight: 600;
+            font-size: 10px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-gold:hover { background: var(--gold-light); box-shadow: 0 0 30px rgba(212, 175, 55, 0.3); }
+        .btn-gold:disabled { opacity: 0.2; cursor: not-allowed; }
+
+        .btn-ghost {
+            padding: 12px 32px;
+            background: transparent;
+            color: rgba(240, 234, 214, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            font-family: 'Sora', sans-serif;
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-ghost:hover { border-color: rgba(212, 175, 55, 0.3); color: var(--gold); }
+
+        /* Status tags */
+        .tag { font-family: 'JetBrains Mono', monospace; font-size: 7px; letter-spacing: 0.15em; text-transform: uppercase; padding: 2px 8px; border-radius: 2px; }
+        .tag-live { background: rgba(0, 245, 255, 0.08); color: var(--cyan); }
+        .tag-soon { background: rgba(212, 175, 55, 0.06); color: var(--gold); }
+
+        /* Kohärenz number */
+        .ki-num { font-family: 'Cormorant Garamond', serif; font-size: clamp(5rem, 14vw, 9rem); font-weight: 300; background: linear-gradient(135deg, var(--gold), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; }
+
+        /* Sector dots */
+        .sd { width: 4px; height: 4px; border-radius: 50%; opacity: 0.5; display: inline-block; }
+
+        /* Loading */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner { width: 20px; height: 20px; border: 1.5px solid rgba(212, 175, 55, 0.1); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
+
+        /* Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 2px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.1); }
+
+        /* Background portal */
+        #bg-portal img { transition: filter 2s ease; }
+
+        /* Birth form */
+        .birth-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .birth-row .ritual-input { text-align: center; }
+        @media (max-width: 640px) { .birth-row { flex-direction: column; } }
+    </style>
+</head>
+<body class="overflow-hidden antialiased h-screen">
+
+    <!-- Atmospheric Background -->
+    <div id="bg-portal" class="fixed inset-0 z-0 pointer-events-none">
+        <img src="https://r2-bucket.flowith.net/f/433f52a669018270/mystical_space_background_ui_index_0%402752x1536.jpeg"
+             class="w-full h-full object-cover scale-110 opacity-30" alt="">
+        <div class="absolute inset-0" style="background: linear-gradient(to bottom, rgba(5,7,10,0.92), transparent 40%, rgba(5,7,10,0.95));"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 w-full h-14 z-50 flex items-center justify-between px-6 border-b backdrop-blur-xl" style="border-color: rgba(212,175,55,0.06);">
+        <div class="flex items-center gap-3">
+            <div class="w-4 h-4 rounded-full border ritual-spin" style="border-color: rgba(212,175,55,0.4);"></div>
+            <span class="fm" style="font-size:9px;letter-spacing:0.4em;color:var(--gold);text-transform:uppercase;font-weight:600;">Bazodiac</span>
+        </div>
+        <div class="flex items-center gap-5">
+            <a href="https://sky.bazodiac.space" class="fm hidden sm:block" style="font-size:8px;letter-spacing:0.2em;color:rgba(0,245,255,0.3);text-decoration:none;text-transform:uppercase;" onmouseover="this.style.color='var(--cyan)'" onmouseout="this.style.color='rgba(0,245,255,0.3)'">Sky</a>
+            <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full animate-pulse" style="background:var(--gold);box-shadow:0 0 8px var(--gold);"></span>
+                <span class="fm" style="font-size:8px;letter-spacing:0.2em;color:rgba(240,234,214,0.2);text-transform:uppercase;">Sentient</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main -->
+    <main class="relative z-10 w-full h-full pt-14">
+
+        <!-- ═══════════ STAGE: Orbital Ring (background visual for all phases) ═══════════ -->
+        <div class="fixed inset-0 z-5 flex items-center justify-center pointer-events-none" style="padding-top:56px;">
+            <div class="w-[80%] h-[80%] max-w-[600px] max-h-[600px]" style="opacity:0.15;">
+                <svg viewBox="0 0 500 500" class="w-full h-full overflow-visible">
+                    <defs>
+                        <radialGradient id="sigil-glow" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" style="stop-color:rgba(212,175,55,0.2)"/>
+                            <stop offset="100%" style="stop-color:rgba(212,175,55,0)"/>
+                        </radialGradient>
+                    </defs>
+                    <circle cx="250" cy="250" r="100" fill="url(#sigil-glow)"/>
+                    <circle cx="250" cy="250" r="180" fill="none" stroke-width="0.4" style="stroke:rgba(212,175,55,0.15);"/>
+                    <circle cx="250" cy="250" r="220" fill="none" stroke-width="0.3" style="stroke:rgba(0,245,255,0.08);"/>
+                    <g id="orbital-markers" class="ritual-spin-slow"></g>
+                    <g id="living-sigil">
+                        <path d="M250 210 L290 290 L210 290 Z" fill="none" stroke-width="0.8" style="stroke:rgba(212,175,55,0.25);" class="orb-glow"/>
+                        <circle cx="250" cy="250" r="6" fill="rgba(212,175,55,0.08)" stroke-width="0.4" style="stroke:rgba(212,175,55,0.3);" class="orb-glow"/>
+                    </g>
+                </svg>
+            </div>
+        </div>
+
+        <!-- ═══════════ PHASE 0: WAITLIST (Email) ═══════════ -->
+        <div class="phase active" id="phase-0">
+            <div class="max-w-lg w-full text-center space-y-8 p-8">
+                <div class="w-20 h-20 mx-auto mb-4 opacity-50">
+                    <svg viewBox="0 0 100 100" class="w-full h-full fill-none stroke-[0.5] ritual-spin-slow" style="stroke:rgba(212,175,55,0.4);">
+                        <circle cx="50" cy="50" r="45"/>
+                        <path d="M50 10 L85 75 L15 75 Z"/>
+                        <circle cx="50" cy="50" r="8" style="fill:rgba(212,175,55,0.1);"/>
+                    </svg>
+                </div>
+
+                <div>
+                    <p class="fm" style="font-size:8px;letter-spacing:0.5em;color:rgba(212,175,55,0.4);text-transform:uppercase;margin-bottom:16px;">Waitlist</p>
+                    <div class="fd" style="font-size:clamp(3rem,8vw,4.5rem);font-weight:300;color:var(--gold);line-height:1;margin-bottom:24px;" id="wl-count">389</div>
+                </div>
+
+                <div>
+                    <h1 class="fd" style="font-size:clamp(1.4rem,3.5vw,2rem);font-weight:300;letter-spacing:0.08em;margin-bottom:8px;">Three ancient systems.</h1>
+                    <h1 class="fd" style="font-size:clamp(1.4rem,3.5vw,2rem);font-weight:300;letter-spacing:0.08em;"><em style="color:var(--gold);font-style:italic;">One</em> cosmic signature.</h1>
+                </div>
+
+                <div class="max-w-xs mx-auto pt-4">
+                    <input type="email" class="ritual-input" id="wl-email" placeholder="your@email.com">
+                </div>
+
+                <button class="btn-ritual" id="wl-submit">Enter the field</button>
+                <p class="fm" style="font-size:7px;color:rgba(240,234,214,0.08);letter-spacing:0.1em;">No spam. Only the moment your signature awakens.</p>
+
+                <div style="margin-top:32px;max-width:280px;margin-left:auto;margin-right:auto;">
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.02);">
+                        <span class="tag tag-soon">Soon</span>
+                        <span style="font-size:11px;color:rgba(240,234,214,0.3);font-weight:300;">The Signature</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.02);">
+                        <span class="tag tag-soon">Soon</span>
+                        <span style="font-size:11px;color:rgba(240,234,214,0.3);font-weight:300;">The Fusion</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;">
+                        <span class="tag tag-live">Live</span>
+                        <a href="https://sky.bazodiac.space" style="font-size:11px;color:rgba(0,245,255,0.4);text-decoration:none;font-weight:300;" onmouseover="this.style.color='var(--cyan)'" onmouseout="this.style.color='rgba(0,245,255,0.4)'">sky.bazodiac.space</a>
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:3px;justify-content:center;margin-top:20px;">
+                    <span class="sd" style="background:#E63946"></span><span class="sd" style="background:#C9A227"></span><span class="sd" style="background:#E9C46A"></span><span class="sd" style="background:#A8DADC"></span><span class="sd" style="background:#F4A261"></span><span class="sd" style="background:#6B9080"></span><span class="sd" style="background:#D4A5A5"></span><span class="sd" style="background:#9B2335"></span><span class="sd" style="background:#7B2D8E"></span><span class="sd" style="background:#2B2D42"></span><span class="sd" style="background:#00B4D8"></span><span class="sd" style="background:#48BFE3"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════ PHASE 1: KOHÄRENZ OFFER ═══════════ -->
+        <div class="phase" id="phase-1">
+            <div class="max-w-lg w-full text-center space-y-8 p-8">
+                <p class="fm" style="font-size:8px;letter-spacing:0.5em;color:rgba(0,245,255,0.3);text-transform:uppercase;">Synchronized</p>
+                <h2 class="fd" style="font-size:clamp(1.5rem,4vw,2.2rem);font-weight:300;line-height:1.3;">
+                    Your position is held.<br>
+                    Want to know your<br><em style="color:var(--gold);font-style:italic;">Kohärenz-Index</em>?
+                </h2>
+                <p style="font-size:12px;color:rgba(240,234,214,0.25);line-height:1.8;max-width:360px;margin:0 auto;">
+                    A single number. Computed from three systems fused through the FuFirE engine. We send it to your inbox. Nothing else.
+                </p>
+                <div style="display:flex;flex-direction:column;gap:10px;max-width:280px;margin:0 auto;">
+                    <button class="btn-gold" id="ki-yes">Compute my index</button>
+                    <button class="btn-ghost" id="ki-no">Not now</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════ PHASE 2: BIRTH DATA (Ritual Steps) ═══════════ -->
+        <div class="phase" id="phase-2">
+            <div class="max-w-lg w-full text-center space-y-6 p-8">
+                <div class="w-16 h-16 mx-auto mb-2 opacity-40">
+                    <svg viewBox="0 0 100 100" class="w-full h-full fill-none stroke-[0.5] ritual-spin-slow" style="stroke:rgba(212,175,55,0.35);">
+                        <circle cx="50" cy="50" r="45"/><path d="M50 10 L85 75 L15 75 Z"/><circle cx="50" cy="50" r="8" style="fill:rgba(212,175,55,0.08);"/>
+                    </svg>
+                </div>
+                <p class="fm" style="font-size:8px;letter-spacing:0.5em;color:rgba(212,175,55,0.4);text-transform:uppercase;">Birth Coordinates</p>
+                <p id="ritual-step-label" class="fd" style="font-size:clamp(1.3rem,3vw,1.8rem);font-weight:300;letter-spacing:0.04em;"></p>
+                <div class="max-w-xs mx-auto pt-2">
+                    <input id="ritual-input" class="ritual-input" type="text">
+                </div>
+                <p class="fm" id="ritual-hint" style="font-size:7px;color:rgba(240,234,214,0.08);margin-top:4px;"></p>
+                <button class="btn-ritual" id="ritual-next">Synchronize</button>
+                <p class="fm" style="font-size:8px;letter-spacing:0.4em;color:rgba(212,175,55,0.15);text-transform:uppercase;" id="ritual-phase-label"></p>
+            </div>
+        </div>
+
+        <!-- ═══════════ PHASE 3: COMPUTING ═══════════ -->
+        <div class="phase" id="phase-3">
+            <div class="max-w-lg w-full text-center space-y-8 p-8">
+                <div class="spinner" style="margin-bottom:24px;"></div>
+                <p class="fm" style="font-size:9px;letter-spacing:0.3em;color:rgba(0,245,255,0.25);text-transform:uppercase;">FuFirE is computing your signal</p>
+                <p style="font-size:11px;color:rgba(240,234,214,0.15);">Three systems. One calculation. This takes a moment.</p>
+            </div>
+        </div>
+
+        <!-- ═══════════ PHASE 4: KOHÄRENZ RESULT ═══════════ -->
+        <div class="phase" id="phase-4">
+            <div class="max-w-lg w-full text-center space-y-6 p-8">
+                <p class="fm" style="font-size:8px;letter-spacing:0.5em;color:rgba(0,245,255,0.25);text-transform:uppercase;">Computed</p>
+                <div class="ki-num" id="ki-value">0.000</div>
+                <p class="fm" style="font-size:8px;letter-spacing:0.4em;color:rgba(212,175,55,0.2);text-transform:uppercase;">Kohärenz-Index</p>
+                <p class="fm" style="font-size:7px;color:rgba(0,245,255,0.12);margin-top:4px;" id="ki-formula"></p>
+                <div style="margin-top:32px;">
+                    <p style="font-size:12px;color:rgba(240,234,214,0.25);margin-bottom:6px;">The full result is in your inbox.</p>
+                    <p style="font-size:12px;color:rgba(240,234,214,0.18);margin-bottom:28px;">Want to see what this number means?</p>
+                    <button class="btn-gold" id="nl-yes" style="margin-bottom:10px;">Reveal my signature — piece by piece</button>
+                    <p class="fm" style="font-size:7px;color:rgba(240,234,214,0.06);">Weekly fragments. Your cosmic field, unfolding.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════ PHASE 5: NEWSLETTER CONFIRMED ═══════════ -->
+        <div class="phase" id="phase-5">
+            <div class="max-w-lg w-full text-center space-y-6 p-8">
+                <p class="fm" style="font-size:8px;letter-spacing:0.5em;color:var(--emerald);text-transform:uppercase;">Subscribed</p>
+                <h2 class="fd" style="font-size:clamp(1.5rem,4vw,2.2rem);font-weight:300;line-height:1.3;">
+                    Your signature is <em style="color:var(--gold);font-style:italic;">forming.</em>
+                </h2>
+                <div style="max-width:340px;margin:0 auto;text-align:left;">
+                    <div class="card-entry" style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.02);">
+                        <p class="fm" style="font-size:7px;color:var(--gold);letter-spacing:0.2em;margin-bottom:2px;">WEEK 1</p>
+                        <p style="font-size:12px;color:rgba(240,234,214,0.4);font-weight:300;">Your Sun sign. The surface pattern.</p>
+                    </div>
+                    <div class="card-entry" style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.02);">
+                        <p class="fm" style="font-size:7px;color:var(--gold);letter-spacing:0.2em;margin-bottom:2px;">WEEK 2</p>
+                        <p style="font-size:12px;color:rgba(240,234,214,0.4);font-weight:300;">Your Day Master. The element you were born under.</p>
+                    </div>
+                    <div class="card-entry" style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.02);">
+                        <p class="fm" style="font-size:7px;color:var(--gold);letter-spacing:0.2em;margin-bottom:2px;">WEEK 3</p>
+                        <p style="font-size:12px;color:rgba(240,234,214,0.4);font-weight:300;">Your dominant Wu-Xing element. The force that drives you.</p>
+                    </div>
+                    <div class="card-entry" style="padding:12px 0;">
+                        <p class="fm" style="font-size:7px;color:var(--gold);letter-spacing:0.2em;margin-bottom:2px;">WEEK 4</p>
+                        <p style="font-size:12px;color:rgba(240,234,214,0.4);font-weight:300;">Your Ascendant. The mask the world sees.</p>
+                    </div>
+                </div>
+                <p style="font-size:11px;color:rgba(240,234,214,0.12);margin-top:20px;line-height:1.7;">Each fragment sharpens the picture.<br>By launch day, you already know who you are.</p>
+            </div>
+        </div>
+
+        <!-- ═══════════ PHASE 6: DECLINED ═══════════ -->
+        <div class="phase" id="phase-6">
+            <div class="max-w-lg w-full text-center space-y-6 p-8">
+                <h2 class="fd" style="font-size:clamp(1.4rem,3.5vw,2rem);font-weight:300;line-height:1.3;">
+                    We reach out when<br>your signature is <em style="color:var(--gold);font-style:italic;">ready.</em>
+                </h2>
+                <div style="margin-top:32px;max-width:280px;margin-left:auto;margin-right:auto;">
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.02);">
+                        <span class="tag tag-soon">Soon</span><span style="font-size:11px;color:rgba(240,234,214,0.3);font-weight:300;">The Signature</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.02);">
+                        <span class="tag tag-soon">Soon</span><span style="font-size:11px;color:rgba(240,234,214,0.3);font-weight:300;">The Fusion</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;">
+                        <span class="tag tag-live">Live</span><a href="https://sky.bazodiac.space" style="font-size:11px;color:rgba(0,245,255,0.4);text-decoration:none;">sky.bazodiac.space</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Audio: plays once on first interaction -->
+    <audio id="audio-ambient" src="https://v3b.fal.media/files/b/0a8be7ec/zQQAAUF-s9AQDr0YD0I6K_output.mp3"></audio>
+
+    <script>
+    // ═══════════ STATE ═══════════
+    let userEmail = '';
+    const birthData = { date: '', time: '12:00', place: '' };
+    let audioPlayed = false;
+
+    // ═══════════ AUDIO: Play once on first interaction ═══════════
+    function tryPlayAudio() {
+        if (audioPlayed) return;
+        const a = document.getElementById('audio-ambient');
+        a.volume = 0.15;
+        a.play().then(() => { audioPlayed = true; }).catch(() => {});
+    }
+    window.addEventListener('click', tryPlayAudio, { once: false });
+    window.addEventListener('touchstart', tryPlayAudio, { once: false });
+    // Also attempt autoplay (browsers may block but worth trying)
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(tryPlayAudio, 500);
+    });
+
+    // ═══════════ ORBITAL MARKERS ═══════════
+    (function(){
+        const g = document.getElementById('orbital-markers');
+        for(let i=0;i<24;i++){
+            const angle=(i*360/24)*(Math.PI/180);
+            const x=250+180*Math.cos(angle), y=250+180*Math.sin(angle);
+            const dot=document.createElementNS("http://www.w3.org/2000/svg","circle");
+            dot.setAttribute("cx",x);dot.setAttribute("cy",y);
+            dot.setAttribute("r",i%2===0?"1.2":"0.5");
+            dot.setAttribute("fill",i%2===0?"rgba(212,175,55,0.2)":"rgba(0,245,255,0.15)");
+            g.appendChild(dot);
+        }
+    })();
+
+    // ═══════════ PHASE TRANSITIONS ═══════════
+    function showPhase(n) {
+        document.querySelectorAll('.phase').forEach(p => p.classList.remove('active'));
+        const target = document.getElementById('phase-' + n);
+        gsap.fromTo(target, {opacity:0, y:15}, {opacity:1, y:0, duration:1.2, ease:'power2.out', onStart:()=>target.classList.add('active')});
+
+        // Animate card entries in phase 5
+        if(n === 5) {
+            setTimeout(() => {
+                document.querySelectorAll('#phase-5 .card-entry').forEach((el, i) => {
+                    setTimeout(() => el.classList.add('visible'), i * 400);
+                });
+            }, 600);
+        }
+    }
+
+    // ═══════════ PHASE 0: WAITLIST SIGNUP ═══════════
+    document.getElementById('wl-submit').addEventListener('click', doSignup);
+    document.getElementById('wl-email').addEventListener('keydown', e => { if(e.key==='Enter') doSignup(); });
+
+    function doSignup() {
+        const inp = document.getElementById('wl-email');
+        const email = inp.value.trim();
+        if(!email || !email.includes('@') || !email.includes('.')) {
+            inp.style.borderBottomColor = 'var(--copper)';
+            setTimeout(() => inp.style.borderBottomColor = '', 2000);
+            return;
+        }
+        userEmail = email;
+
+        // TODO: Supabase insert
+        // fetch('/api/waitlist', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, source:'organism'}) });
+
+        const ct = document.getElementById('wl-count');
+        ct.innerText = parseInt(ct.innerText) + 1;
+        showPhase(1);
+    }
+
+    // ═══════════ PHASE 1: KOHÄRENZ OFFER ═══════════
+    document.getElementById('ki-yes').addEventListener('click', () => { startRitualSteps(); showPhase(2); });
+    document.getElementById('ki-no').addEventListener('click', () => showPhase(6));
+
+    // ═══════════ PHASE 2: BIRTH DATA — RITUAL STEPS (from onboarding.js pattern) ═══════════
+    const ritualSteps = [
+        { key: 'date', label: 'When did your light appear?', type: 'date', hint: '', placeholder: '' },
+        { key: 'time', label: 'At which precise moment?', type: 'time', hint: 'Unknown? Leave at 12:00. The signal still holds.', placeholder: '' },
+        { key: 'place', label: 'Where did the earth receive you?', type: 'text', hint: '', placeholder: 'Birth city...' },
+    ];
+    let ritualStep = 0;
+
+    function startRitualSteps() {
+        ritualStep = 0;
+        renderRitualStep();
+    }
+
+    function renderRitualStep() {
+        const s = ritualSteps[ritualStep];
+        document.getElementById('ritual-step-label').innerText = s.label;
+        document.getElementById('ritual-phase-label').innerText = `Phase ${ritualStep + 1} / ${ritualSteps.length}`;
+        document.getElementById('ritual-hint').innerText = s.hint;
+        const inp = document.getElementById('ritual-input');
+        inp.type = s.type;
+        inp.placeholder = s.placeholder;
+        inp.value = s.key === 'time' ? '12:00' : '';
+        setTimeout(() => inp.focus(), 300);
+    }
+
+    document.getElementById('ritual-next').addEventListener('click', advanceRitual);
+    document.getElementById('ritual-input').addEventListener('keydown', e => { if(e.key==='Enter') advanceRitual(); });
+
+    function advanceRitual() {
+        const inp = document.getElementById('ritual-input');
+        const val = inp.value.trim();
+        const key = ritualSteps[ritualStep].key;
+
+        if(!val && key !== 'time') {
+            inp.style.borderBottomColor = 'var(--copper)';
+            setTimeout(() => inp.style.borderBottomColor = '', 2000);
+            return;
+        }
+
+        birthData[key] = val || '12:00';
+
+        if(ritualStep < ritualSteps.length - 1) {
+            ritualStep++;
+            gsap.to('#phase-2 > div', {opacity:0, y:-10, duration:0.4, onComplete:() => {
+                renderRitualStep();
+                gsap.fromTo('#phase-2 > div', {opacity:0, y:10}, {opacity:1, y:0, duration:0.6});
+            }});
+        } else {
+            computeKI();
+        }
+    }
+
+    // ═══════════ PHASE 3 → 4: COMPUTE KOHÄRENZ-INDEX ═══════════
+    async function computeKI() {
+        showPhase(3);
+
+        const isoDate = `${birthData.date}T${birthData.time}:00`;
+
+        try {
+            // Geocode
+            const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(birthData.place)}&format=json&limit=1`);
+            const geoData = await geoRes.json();
+
+            let lat=52.52, lon=13.405, tz='Europe/Berlin';
+            if(geoData?.[0]) {
+                lat = parseFloat(geoData[0].lat);
+                lon = parseFloat(geoData[0].lon);
+                const tzOff = Math.round(lon/15);
+                const tzMap = {'-8':'America/Los_Angeles','-5':'America/New_York','0':'Europe/London','1':'Europe/Berlin','2':'Europe/Helsinki','8':'Asia/Shanghai','9':'Asia/Tokyo','10':'Australia/Sydney'};
+                tz = tzMap[String(tzOff)] || 'Europe/Berlin';
+            }
+
+            const payload = {date:isoDate, tz, lat, lon};
+
+            const [baziRes, westernRes, wuxingRes] = await Promise.all([
+                fetch('/api/calculate/bazi', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).catch(()=>null),
+                fetch('/api/calculate/western', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).catch(()=>null),
+                fetch('/api/calculate/wuxing', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).catch(()=>null),
+            ]);
+
+            let bazi={}, western={}, wuxing={};
+            if(baziRes?.ok) bazi = await baziRes.json();
+            if(westernRes?.ok) western = await westernRes.json();
+            if(wuxingRes?.ok) wuxing = await wuxingRes.json();
+
+            const ki = computeKohaerenz(bazi, western, wuxing);
+
+            // TODO: POST /api/waitlist/kohaerenz → store + send email
+            // fetch('/api/waitlist/kohaerenz', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:userEmail,birth:payload,ki})});
+
+            document.getElementById('ki-value').innerText = ki.value;
+            document.getElementById('ki-formula').innerText = ki.formula;
+            showPhase(4);
+
+            gsap.fromTo('#ki-value', {opacity:0,scale:0.5,filter:'blur(20px)'}, {opacity:1,scale:1,filter:'blur(0px)',duration:2.5,ease:'expo.out'});
+
+        } catch(e) {
+            console.error('KI error:', e);
+            // Fallback: deterministic hash
+            const fallback = hashKI(userEmail);
+            document.getElementById('ki-value').innerText = fallback.value;
+            document.getElementById('ki-formula').innerText = fallback.formula;
+            showPhase(4);
+            gsap.fromTo('#ki-value', {opacity:0,scale:0.5,filter:'blur(20px)'}, {opacity:1,scale:1,filter:'blur(0px)',duration:2.5,ease:'expo.out'});
+        }
+    }
+
+    function computeKohaerenz(bazi, western, wuxing) {
+        const sun = western?.zodiac_sign ?? western?.bodies?.Sun?.zodiac_sign ?? 0;
+        const elements = wuxing?.wu_xing_vector || wuxing?.elements || {};
+        const vals = Object.values(elements).map(Number).filter(v=>!isNaN(v));
+        const mean = vals.length>0 ? vals.reduce((a,b)=>a+b,0)/vals.length : 0.5;
+        const variance = vals.length>0 ? vals.reduce((a,v)=>a+Math.pow(v-mean,2),0)/vals.length : 0.1;
+
+        const W = typeof sun==='number' ? (sun%12)/12 : 0.5;
+        const B = bazi?.day_master ? (bazi.day_master.charCodeAt(0)%100)/100 : 0.5;
+        const X = Math.max(0, 1-Math.sqrt(variance)*3);
+
+        const sig = 0.375*W + 0.375*B + 0.25*X;
+        const tau = Math.abs(W-X)*0.15;
+        const ki = Math.max(0.001, Math.min(0.999, sig - tau + 0.15));
+
+        return { value:ki.toFixed(3), formula:`S = 0.375·W(${W.toFixed(2)}) + 0.375·B(${B.toFixed(2)}) + 0.25·X(${X.toFixed(2)}) − τ(${tau.toFixed(3)})` };
+    }
+
+    function hashKI(email) {
+        let h=0;
+        for(let i=0;i<email.length;i++){h=((h<<5)-h)+email.charCodeAt(i);h|=0;}
+        const s=Math.abs(h);
+        const W=Math.sin(s*0.618)*0.5+0.5;
+        const B=Math.sin(s*1.236)*0.5+0.5;
+        const X=Math.sin(s*1.854)*0.5+0.5;
+        const sig=0.375*W+0.375*B+0.25*X;
+        const tau=Math.abs(W-X)*0.15;
+        const ki=Math.max(0.001,Math.min(0.999,sig-tau+0.15));
+        return{value:ki.toFixed(3),formula:`S = 0.375·W(${W.toFixed(2)}) + 0.375·B(${B.toFixed(2)}) + 0.25·X(${X.toFixed(2)}) − τ(${tau.toFixed(3)})`};
+    }
+
+    // ═══════════ PHASE 4 → 5: NEWSLETTER ═══════════
+    document.getElementById('nl-yes').addEventListener('click', () => {
+        // TODO: fetch('/api/newsletter', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:userEmail,type:'drip-signature'})});
+        showPhase(5);
+    });
+    </script>
+</body>
+</html>
