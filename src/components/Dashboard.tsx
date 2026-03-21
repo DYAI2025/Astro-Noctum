@@ -148,8 +148,17 @@ export function Dashboard({
 
   // Scroll-triggered tour: steps 1 and 2 only show when their section is visible
   const [scrollReached, setScrollReached] = useState<Set<number>>(new Set());
+  const planetariumSentinelRef = useRef<HTMLDivElement>(null);
   const astroSentinelRef = useRef<HTMLDivElement>(null);
   const leviSentinelRef = useRef<HTMLDivElement>(null);
+  const navHintsSentinelRef = useRef<HTMLDivElement>(null);
+
+  // Map tour steps to their anchor refs
+  const tourAnchorRef = tourStep === 0 ? planetariumSentinelRef
+    : tourStep === 1 ? astroSentinelRef
+    : tourStep === 2 ? leviSentinelRef
+    : tourStep === 3 ? navHintsSentinelRef
+    : undefined;
 
   // The tour overlay is only visible when the step is either 0/3 (immediate)
   // or when the scroll sentinel for steps 1/2 has been reached
@@ -270,6 +279,9 @@ export function Dashboard({
         <ArrowLeft className="w-4 h-4" /> {t("dashboard.startOver")}
       </button>
 
+      {/* ── Tour sentinel: step 0 anchors at the planetarium (top of dashboard) ── */}
+      <div ref={planetariumSentinelRef} className="h-px" aria-hidden="true" />
+
       {/* Issues banner */}
       {apiIssues.length > 0 && (
         <div className="mb-8 rounded-xl border border-amber-400/40 bg-amber-50 px-4 py-3 text-xs text-amber-800">
@@ -363,6 +375,9 @@ export function Dashboard({
       {/* ── Tour sentinel: step 2 triggers when Levi/interpretation area scrolls into view ── */}
       <div ref={leviSentinelRef} className="h-px" aria-hidden="true" />
 
+      {/* ── Tour sentinel: step 3 anchors at the navigation hints area ── */}
+      <div ref={navHintsSentinelRef} className="h-px" aria-hidden="true" />
+
       <div id="interpretation-section" />
 
       {/* ═══ GESAMTANALYSE — full-width below Houses ═══════════════ */}
@@ -404,6 +419,7 @@ export function Dashboard({
           birthCity={profileMeta.birthCity}
           onNext={tourNext}
           onSkip={tourSkip}
+          anchorRef={tourAnchorRef}
         />
       )}
     </motion.div>
