@@ -28,10 +28,7 @@ export function useQuizContribution(completedModuleIds: Set<string>) {
     if (cluster) {
       const updatedCompleted = new Set(completedModuleIds);
       updatedCompleted.add(moduleId);
-      if (!isClusterComplete(cluster, updatedCompleted)) {
-        console.log('[quiz] cluster incomplete, deferring contribution');
-        return;
-      }
+      if (!isClusterComplete(cluster, updatedCompleted)) return;
     }
 
     // Fire and forget — never blocks UI

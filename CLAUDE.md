@@ -131,7 +131,7 @@ FusionRing3D → baseSignals[12] → soulprintToNatalWeights() → natalWeights{
 | `src/components/BirthChartOrrery.tsx` | Three.js 3D solar system visualization with Keplerian orbital mechanics |
 | `src/lib/astronomy/` | Orbital calculations (Kepler solver, J2000 epoch), star catalog (150 stars), constellation data, planet orbital elements |
 | `src/lib/3d/materials.ts` | Custom GLSL shaders (sun corona, atmospheric Fresnel glow, Saturn rings with Cassini division) |
-| `server.mjs` | Production Express server: BAFE proxy with fallback chain, transit-state proxy (POST to FuFirE), `/api/contribute` endpoint, Supabase admin auth, ElevenLabs tool endpoints, Stripe checkout + webhook + customer portal |
+| `server.mjs` | Production Express server: BAFE proxy with fallback chain, Master Signal JS port (bootstrap/delta compute locally instead of FuFirE proxy), `/api/contribute` endpoint, `/api/space-weather/extended` (5-min cached NOAA+DONKI aggregation), `/api/contribution/space-weather` (POST), Supabase admin auth, ElevenLabs tool endpoints (V2 data: soulprint sectors + natal weights), Stripe checkout + webhook + customer portal |
 | `src/lib/fusion-ring/` | Fusion Ring engine — signal computation, BaZi/Western/Wu-Xing layers, transit math, canvas draw utilities |
 | `src/contexts/FusionRingContext.tsx` | React context providing Fusion Ring state to the whole app |
 | `src/hooks/useFusionRing.ts` | Hook that combines BAFE data + transit data into FusionRing signal |
@@ -153,7 +153,7 @@ FusionRing3D → baseSignals[12] → soulprintToNatalWeights() → natalWeights{
 | `src/components/fusion-ring-website/FusionRingCanvasV2.tsx` | V2 Three.js renderer (1699 lines) — consumes `natalWeights` (7 planets) + `quizWeights` (6 dimensions) props, renders 28K spirograph particles with bloom postprocessing. Has built-in config panel, audio integration, effect system. Replaces V1 when `signature_engine_v2` flag is enabled |
 | `src/components/fusion-ring-website/signatur-bridge.ts` | Adapter: `soulprintToNatalWeights()` converts 12-sector soulprint → 7 planet weights via zodiac affinity mapping (Sun→Leo, Moon→Cancer, etc.). `quizSectorsToQuizWeights()` converts 12-sector quiz data → 6 quiz dimensions |
 | `src/components/fusion-ring-website/FusionRingWebsiteCanvas.tsx` | V1 canvas-based Fusion Ring (kept as fallback). Accepts `soulProfile` prop (12 sectors) which is interpolated to 32 ring points and fed to `soulNoise()` via module-level `_activeSoulProfile`. Falls back to `DEFAULT_SOUL_PROFILE` when no prop provided |
-| `src/hooks/useSpaceWeather.ts` | Fetches NASA space-weather data (solar wind, Kp-index) and feeds it into the Fusion Ring signal |
+| `src/hooks/useSpaceWeather.ts` | Polls `/api/space-weather/extended` every 5 min, computes solar pressure score + ring modulation + visual intensity via Zod-validated response. Triggers ring effects during G3+ storms |
 | `src/hooks/useAmbientePlayer.ts` | Ambient audio playback control |
 | `src/contexts/PlanetariumContext.tsx` | Context for the 3D orrery/planetarium state |
 | `src/contexts/LanguageContext.tsx` | i18n context (German UI default) |
@@ -183,6 +183,32 @@ The Experience API is a high-level layer on FuFirE that orchestrates bootstrap, 
 **Feature flags:** Override in browser console via `localStorage.setItem('ff_signature_onboarding_v1', 'false')`. When off, the app falls through to the legacy BAFE-only flow. The V2 engine can be disabled via `localStorage.setItem('ff_signature_engine_v2', 'false')` — all three ring mount points (SignatureReveal, Dashboard, FuRingPage) instantly fall back to V1.
 
 **Server proxy:** `server.mjs` proxies all three Experience endpoints (`/api/experience/bootstrap`, `/api/experience/signature-delta`, `/api/experience/daily`) to FuFirE. The bootstrap and signature-delta routes are protected with `requireUserAuth`, while the daily route is currently unauthenticated. All three use 10KB payload limits, 10–20s timeouts, and return 502 on FuFirE failure.
+
+### Space Weather Pipeline
+
+Real-time solar weather data feeds into the Fusion Ring as a visual modulation layer. The pipeline fetches from NOAA SWPC (Kp, F10.7, X-ray, proton flux) and NASA DONKI (CME, SEP, HSS events), computes a solar pressure score, and modulates ring particle intensity/color.
+
+```
+NOAA SWPC (Kp, F10.7, Xray, Proton) ─┐
+                                        ├→ server.mjs /api/space-weather/extended (5-min cache)
+NASA DONKI (CME, SEP, HSS, Alerts) ───┘           ↓
+                                        useSpaceWeather() polls every 5 min
+                                                   ↓
+                                        computeSolarPressureScore() → ringModulation (1.0–1.5)
+                                                   ↓
+                                        FuRingPage → ring particle intensity + korona_eruption effects (G3+)
+```
+
+| Path | Purpose |
+|------|---------|
+| `src/lib/space-weather/types.ts` | Shared types: `KpReading`, `F107Reading`, `XrayFluxReading`, `ProtonFluxReading`, `SpaceWeatherSeverity` (G0–G5, S1–S5, R1–R5), `SpaceWeatherContribution` (schema `sp.contribution.v1` with mandatory `expires_at`) |
+| `src/lib/space-weather/noaa-adapter.ts` | Versioned NOAA SWPC JSON fetcher — `createNoaaAdapter()` factory returns composite adapter trying v2 keys first, falling back to v1 via `withFallback(primary, fallback, emptyValue)` pattern |
+| `src/lib/space-weather/donki-extended.ts` | NASA DONKI extended: earthbound CME detection (via `enlilList.isEarthTargeted`), SEP events, HSS events, Warning/Watch alerts. Parallel `Promise.allSettled` for all 4 endpoints |
+| `src/lib/space-weather/solar-pressure.ts` | `computeSolarPressureScore(kp, xrayFlux, protonFlux)` → 0–1 weighted blend. `computeRingModulation(solarPressure, maxEventWeight)` → 1.0 (calm) to 1.5 (extreme). `kpToVisualIntensity(kp)` → G-scale with `intensityBoost` and `triggerEffect` |
+| `src/lib/space-weather/geometry-gating.ts` | `isSignificantGeometryEvent()` — gating function that only emits contribution events when geometry (conjunction/opposition/equinox/solstice) coincides with solar disturbance (Kp >= 5, CME, or Jieqi transition) |
+| `src/lib/schemas/space-weather.ts` | Zod schemas: `SpaceWeatherContributionSchema`, `SpaceWeatherExtendedSchema` |
+
+**Rate limiting note**: NASA DEMO_KEY allows 30 req/hour. With 4 DONKI endpoints per call and 5-min server cache, sustained polling stays within limits. Set `NASA_API_KEY` env var for production.
 
 ### BAFE Response Mapping (Important Gotcha)
 
@@ -297,10 +323,21 @@ Python reference implementation of the GCB engine and master signal math. Not pa
 
 BaZi stem descriptions are defined in `src/lib/astro-data/heavenlyStems.ts` and follow a 5-part structure per context (dayMaster, monthStem, etc.): identity, daily life, gifts, shadow, growth — in both DE and EN. When adding or editing stem content, maintain this pattern.
 
+### Verification
+
+Per-task done-conditions:
+
+| Task type | Done when |
+|-----------|-----------|
+| Bug fix | `npm run test` passes, repro scenario no longer triggers |
+| New component | Test file exists in `src/__tests__/`, `npx vitest run src/__tests__/<name>.test.tsx` passes |
+| API change | `npx vitest run src/__tests__/api-routes.test.ts` passes, `npm run lint` clean |
+| Schema change | Zod schema test passes, existing tests still green |
+| Sprint feature | Full suite `npm run test` passes (586+ tests), code review completed |
+
 ### Known Issues
 
 - BAFE API cannot always be reached from local/CI environments (`ENETUNREACH`). The app is designed to degrade gracefully — failed endpoints return empty data and the Dashboard shows "—".
 - No contract tests against BAFE; schema changes require manual verification.
 - The README references a legacy `readings` table — the current Supabase schema uses `astro_profiles`, `birth_data`, `natal_charts` (see `supabase-schema.sql`).
 - Stripe is optional at runtime: `server.mjs` checks `process.env.STRIPE_SECRET_KEY` before initializing; checkout returns 503 if unconfigured.
-- Typo directory `src/componets/` exists but is empty — all components live in `src/components/`.

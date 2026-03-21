@@ -50,20 +50,6 @@ function calculateResult(collectedMarkers: Array<{ id: string; weight: number }>
 // SUB-COMPONENTS
 // ═══════════════════════════════════════════════════════════════
 
-function CloseButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="absolute top-4 right-4 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 transition-colors"
-      aria-label="Schlie\u00dfen"
-    >
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-        <path d="M18 6L6 18M6 6l12 12" />
-      </svg>
-    </button>
-  );
-}
-
 function ProgressBar({ current, total }: { current: number; total: number }) {
   const pct = ((current + 1) / total) * 100;
   return (
@@ -307,6 +293,13 @@ function ResultScreen({
         </div>
       </div>
 
+      {/* Cluster Info Box */}
+      <div className="w-full max-w-sm mt-5 p-4 rounded-xl bg-[#D4AF37]/10 border border-[#D4AF37]/20">
+        <p className="text-xs text-[#D4AF37] leading-relaxed text-center">
+          <span className="font-semibold">Hinweis:</span> Deine Ergebnisse fließen nach Abschluss des gesamten Quiz-Clusters in deine Signatur ein.
+        </p>
+      </div>
+
       {/* Actions */}
       <div className="flex gap-3 w-full max-w-sm mt-6">
         <button
@@ -381,8 +374,6 @@ export default function PartyQuiz({ onComplete, onClose }: PartyQuizProps) {
 
   return (
     <div className="relative w-full h-full min-h-[500px] flex flex-col">
-      <CloseButton onClick={onClose} />
-
       <AnimatePresence mode="wait">
         {screen === 'intro' && <IntroScreen key="intro" onStart={handleStart} />}
 

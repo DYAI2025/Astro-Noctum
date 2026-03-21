@@ -5,21 +5,17 @@ import { ArrowUp } from "lucide-react";
 import { BirthChartOrrery } from "../BirthChartOrrery";
 import { PremiumGate } from "../PremiumGate";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { WUXING_ELEMENTS, getWuxingByKey, getWuxingName } from "../../lib/astro-data/wuxing";
-import { getBranchByAnimal } from "../../lib/astro-data/earthlyBranches";
-import { getCoinAsset } from "../../lib/astro-data/coinAssets";
-import { getZodiacSign, getSignName } from "../../lib/astro-data/zodiacSigns";
+import { WUXING_ELEMENTS, getWuxingName } from "../../lib/astro-data/wuxing";
+import { getSignName } from "../../lib/astro-data/zodiacSigns";
 import { getConstellationForSign } from "../../lib/astro-data/constellationFromSign";
 import { usePlanetarium } from "../../contexts/PlanetariumContext";
 import { Tooltip } from "../Tooltip";
 import { BaZiFourPillars } from "../BaZiFourPillars";
 import { BaZiInterpretation } from "../BaZiInterpretation";
-import { getStemByCharacter } from "../../lib/astro-data/heavenlyStems";
-import { ExpandableText } from "../ExpandableText";
-import { getZodiacArt } from "../../lib/astro-data/zodiacAssets";
 import { getHouseInterpretation } from "../../lib/astro-data/houseInterpretations";
 import type { ApiData } from "../../types/bafe";
 import type { TileTexts, HouseTexts } from "../../types/interpretation";
+import { AstroAccordion } from "./AstroAccordion";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Static data
@@ -40,13 +36,6 @@ function signFromIndex(idx: number | undefined | null): string {
   if (idx == null || idx < 0 || idx > 11) return "";
   return ZODIAC_SIGNS_LIST[idx];
 }
-
-const PILLAR_KEYS: Record<string, { label: string; desc: string }> = {
-  year:  { label: "dashboard.pillars.year",  desc: "dashboard.pillars.yearDesc"  },
-  month: { label: "dashboard.pillars.month", desc: "dashboard.pillars.monthDesc" },
-  day:   { label: "dashboard.pillars.day",   desc: "dashboard.pillars.dayDesc"   },
-  hour:  { label: "dashboard.pillars.hour",  desc: "dashboard.pillars.hourDesc"  },
-};
 
 // ── Western Astrological Houses ───────────────────────────────────────────
 
@@ -110,14 +99,6 @@ function SectionDivider({ label, title }: { label: string; title: string }) {
   );
 }
 
-function Badge({ text }: { text: string }) {
-  return (
-    <span className="text-[8px] uppercase tracking-widest text-[#8B6914]/45 font-sans">
-      {text}
-    </span>
-  );
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Props
 // ─────────────────────────────────────────────────────────────────────────────
@@ -164,35 +145,7 @@ export function DashboardAstroSection({
   // ── Data extraction ────────────────────────────────────────────────
 
   const sunSign       = apiData.western?.zodiac_sign      || "";
-  const moonSign      = apiData.western?.moon_sign        || "";
-  const ascendantSign = apiData.western?.ascendant_sign   || "";
-  const zodiacAnimal  = apiData.bazi?.zodiac_sign         || "";
-  const dayMaster     = apiData.bazi?.day_master          || "\u2014";
-  const monthStem     = apiData.bazi?.pillars?.month?.stem || "\u2014";
-
-  const dayMasterStem = useMemo(() => getStemByCharacter(dayMaster), [dayMaster]);
-  const monthStemData = useMemo(() => getStemByCharacter(monthStem), [monthStem]);
   const dominantEl    = apiData.wuxing?.dominant_element  || "";
-  const yearElement   = apiData.bazi?.pillars?.year?.element || "";
-
-  // Localised sign names
-  const sunSignName  = getSignName(sunSign, lang);
-  const moonSignName = getSignName(moonSign, lang);
-  const ascSignName  = getSignName(ascendantSign, lang);
-
-  const sunEmoji  = WESTERN_EMOJIS[sunSign]       || "\u2728";
-  const moonEmoji = WESTERN_EMOJIS[moonSign]      || "\u2728";
-  const ascEmoji  = WESTERN_EMOJIS[ascendantSign] || "\u2728";
-
-  // Sign-specific descriptions
-  const sunSignData  = useMemo(() => getZodiacSign(sunSign), [sunSign]);
-  const moonSignData = useMemo(() => getZodiacSign(moonSign), [moonSign]);
-  const ascSignData  = useMemo(() => getZodiacSign(ascendantSign), [ascendantSign]);
-
-  const yearBranch     = useMemo(() => getBranchByAnimal(zodiacAnimal), [zodiacAnimal]);
-  const yearAnimalName = yearBranch ? yearBranch.animal[lang] : zodiacAnimal;
-  const dominantWuxing = useMemo(() => getWuxingByKey(dominantEl), [dominantEl]);
-  const yearCoinSrc    = useMemo(() => getCoinAsset(zodiacAnimal), [zodiacAnimal]);
 
   // WuXing element counts + percentage fix
   const wuxingCounts: Record<string, number> = useMemo(
@@ -303,304 +256,9 @@ export function DashboardAstroSection({
         </AnimatePresence>
       </motion.div>
 
-      {/* ═══ PRIMARY GRID: Western (left) | BaZi/WuXing (right) ═══════ */}
+      {/* ═══ ASTRO ACCORDION (Western + BaZi/WuXing) ═════════════════════ */}
       <motion.div className="mb-12" {...fadeIn(0.2)}>
-        <SectionDivider
-          label={t("dashboard.western.sectionLabel")}
-          title={t("dashboard.western.sectionTitle")}
-        />
-
-        {/* ── Western Signs ─────────────────────────────── */}
-        <div className="grid md:grid-cols-3 gap-5 mb-10">
-
-            {/* Sun Sign */}
-            <div className="morning-card p-5 sm:p-7 flex flex-col justify-between" data-special="true">
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-2xl leading-none select-none text-[#C8930A]">{sunEmoji}</span>
-                  <Badge text={t("dashboard.western.sunLabel")} />
-                </div>
-
-                <div className="flex items-start justify-between gap-4 mb-4">
-                  <div className="min-w-0">
-                    <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
-                      {sunSignName || "\u2014"}
-                    </h3>
-                    <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50">
-                      {t("dashboard.western.sunTitle")}
-                    </p>
-                  </div>
-                  {(() => { const art = getZodiacArt(sunSign); return art ? (
-                    <img src={art} alt={sunSignName} className="w-24 h-24 sm:w-28 sm:h-28 object-contain shrink-0 -mt-2" loading="lazy" />
-                  ) : null; })()}
-                </div>
-
-                <p className="text-xs text-[#1E2A3A]/55 leading-relaxed">
-                  {sunSignData
-                    ? sunSignData.sun[lang]
-                    : t("dashboard.western.sunDesc")}
-                </p>
-                <ExpandableText text={tileTexts?.sun} />
-              </div>
-              <div className="flex justify-between items-center border-t border-[#8B6914]/10 pt-4 mt-5">
-                <span className="text-2xl leading-none select-none text-[#C8930A]">{sunEmoji}</span>
-                {sunSignData && (
-                  <span className="text-[10px] text-[#1E2A3A]/35">
-                    {sunSignData.element[lang]} · {sunSignData.ruler[lang]}
-                  </span>
-                )}
-                <Badge text={t("dashboard.western.sunSignBadge")} />
-              </div>
-            </div>
-
-            {/* Moon Sign */}
-            <div className="morning-card p-5 sm:p-7 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-2xl leading-none select-none text-[#1A6BB5]">{moonEmoji}</span>
-                  <Badge text={t("dashboard.western.moonLabel")} />
-                </div>
-
-                <div className="flex items-start justify-between gap-4 mb-4">
-                  <div className="min-w-0">
-                    <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
-                      {moonSignName || "\u2014"}
-                    </h3>
-                    <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50">
-                      {t("dashboard.western.moonTitle")}
-                    </p>
-                  </div>
-                  {(() => { const art = getZodiacArt(moonSign); return art ? (
-                    <img src={art} alt={moonSignName} className="w-24 h-24 sm:w-28 sm:h-28 object-contain shrink-0 -mt-2" loading="lazy" />
-                  ) : null; })()}
-                </div>
-
-                <p className="text-xs text-[#1E2A3A]/55 leading-relaxed">
-                  {moonSignData
-                    ? moonSignData.moon[lang]
-                    : t("dashboard.western.moonDesc")}
-                </p>
-                <ExpandableText text={tileTexts?.moon} />
-              </div>
-              <div className="flex justify-between items-center border-t border-[#8B6914]/10 pt-4 mt-5">
-                <span className="text-2xl leading-none select-none text-[#1A6BB5]">{moonEmoji}</span>
-                {moonSignData && (
-                  <span className="text-[10px] text-[#1E2A3A]/35">
-                    {moonSignData.element[lang]} · {moonSignData.ruler[lang]}
-                  </span>
-                )}
-                <Badge text={t("dashboard.western.moonSignBadge")} />
-              </div>
-            </div>
-
-            {/* Ascendant */}
-            <div className="morning-card p-5 sm:p-7 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-2xl leading-none select-none text-[#3D8B37]">{ascEmoji}</span>
-                  <Badge text={t("dashboard.western.ascLabel")} />
-                </div>
-
-                <div className="flex items-start justify-between gap-4 mb-4">
-                  <div className="min-w-0">
-                    <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
-                      {ascSignName || "\u2014"}
-                    </h3>
-                    <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50">
-                      {t("dashboard.western.ascTitle")}
-                    </p>
-                  </div>
-                  {(() => { const art = getZodiacArt(ascendantSign); return art ? (
-                    <img src={art} alt={ascSignName} className="w-24 h-24 sm:w-28 sm:h-28 object-contain shrink-0 -mt-2" loading="lazy" />
-                  ) : null; })()}
-                </div>
-
-                <p className="text-xs text-[#1E2A3A]/55 leading-relaxed">
-                  {ascSignData
-                    ? ascSignData.asc[lang]
-                    : t("dashboard.western.ascDesc")}
-                </p>
-              </div>
-              <div className="flex justify-between items-center border-t border-[#8B6914]/10 pt-4 mt-5">
-                <span className="text-2xl leading-none select-none text-[#3D8B37]">{ascEmoji}</span>
-                {ascSignData && (
-                  <span className="text-[10px] text-[#1E2A3A]/35">
-                    {ascSignData.element[lang]} · {ascSignData.ruler[lang]}
-                  </span>
-                )}
-                <Badge text={t("dashboard.western.ascBadge")} />
-              </div>
-            </div>
-          </div>
-
-        <SectionDivider
-          label={t("dashboard.bazi.sectionLabel")}
-          title={t("dashboard.bazi.sectionTitle")}
-        />
-
-          {/* ── BaZi / WuXing ───────────────────────────── */}
-          <div className="grid md:grid-cols-4 gap-5 mb-10">
-
-            {/* Year Animal */}
-            <div className="morning-card p-5 sm:p-7 flex flex-col justify-between" data-special="true">
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-4xl font-serif leading-none select-none" style={{ color: yearBranch ? '#8B6914' : undefined }}>{yearBranch?.chinese || "\u2728"}</span>
-                  <Badge text={t("dashboard.bazi.zodiacLabel")} />
-                </div>
-                <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
-                  {yearAnimalName || "\u2014"}
-                </h3>
-                <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50 mb-4">
-                  {yearElement && yearBranch
-                    ? `${getWuxingName(yearElement, lang)}-${yearAnimalName} (${yearBranch.chinese})`
-                    : t("dashboard.bazi.yearAnimalTitle")}
-                </p>
-                {yearCoinSrc && (
-                  <div className="flex justify-center my-4">
-                    <img
-                      src={yearCoinSrc}
-                      alt={yearAnimalName}
-                      className="w-32 h-32 sm:w-40 sm:h-40 object-contain rounded-full"
-                      loading="lazy"
-                    />
-                  </div>
-                )}
-                {yearBranch && (
-                  <p className="text-xs text-[#1E2A3A]/55 leading-relaxed">
-                    {yearBranch.description[lang]}
-                  </p>
-                )}
-                <ExpandableText text={tileTexts?.yearAnimal} />
-              </div>
-              <div className="flex justify-between items-center border-t border-[#8B6914]/10 pt-4 mt-5">
-                <div className="flex items-center gap-2">
-                  {yearBranch && (
-                    <span className="font-serif text-xl text-[#8B6914]">{yearBranch.chinese}</span>
-                  )}
-                  {yearBranch && (
-                    <span className="text-[10px] text-[#1E2A3A]/35">
-                      {getWuxingName(yearBranch.element, lang)} · {yearBranch.pinyin}
-                    </span>
-                  )}
-                </div>
-                <Badge text={t("dashboard.bazi.yearAnimalBadge")} />
-              </div>
-            </div>
-
-            {/* Dominant WuXing Element */}
-            <div
-              className="morning-card p-5 sm:p-7 flex flex-col justify-between"
-              style={dominantWuxing ? {
-                borderLeftColor: dominantWuxing.color + "55",
-                borderLeftWidth: "3px",
-                borderLeftStyle: "solid",
-              } : undefined}
-            >
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-4xl font-serif leading-none select-none" style={{ color: dominantWuxing?.color }}>{dominantWuxing?.chinese || "\u2728"}</span>
-                  <Badge text={t("dashboard.bazi.essenceLabel")} />
-                </div>
-                <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
-                  {dominantWuxing ? dominantWuxing.name[lang] : (dominantEl || "\u2014")}
-                </h3>
-                <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50 mb-4">
-                  {t("dashboard.bazi.dominantElementTitle")}
-                </p>
-                {dominantWuxing && (
-                  <p className="text-xs text-[#1E2A3A]/55 leading-relaxed">
-                    {dominantWuxing.description[lang]}
-                  </p>
-                )}
-                <ExpandableText text={tileTexts?.dominantWuXing} />
-              </div>
-              <div className="flex justify-between items-center border-t border-[#8B6914]/10 pt-4 mt-5">
-                <div className="flex items-center gap-2">
-                  {dominantWuxing && (
-                    <span className="font-serif text-xl leading-none select-none" style={{ color: dominantWuxing.color }}>
-                      {dominantWuxing.chinese}
-                    </span>
-                  )}
-                  {dominantWuxing && (
-                    <span className="text-[10px] text-[#1E2A3A]/35">
-                      {dominantWuxing.pinyin} · {dominantWuxing.direction[lang]} · {dominantWuxing.season[lang]}
-                    </span>
-                  )}
-                </div>
-                <Badge text="WUXING" />
-              </div>
-            </div>
-
-            {/* Day Master */}
-            <div className="morning-card p-5 sm:p-7 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-4xl font-serif leading-none select-none text-[#D4AF37]">{dayMaster}</span>
-                  <Badge text={t("dashboard.bazi.vitalityLabel")} />
-                </div>
-                <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
-                  {dayMaster}{dayMasterStem ? ` ${dayMasterStem.pinyin}` : ""}
-                </h3>
-                <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50 mb-4">
-                  {dayMasterStem
-                    ? `${t("dashboard.bazi.dayMasterTitle")} \u2014 ${dayMasterStem.name[lang]}`
-                    : t("dashboard.bazi.dayMasterTitle")}
-                </p>
-                <p className="text-xs text-[#1E2A3A]/55 leading-relaxed">
-                  {dayMasterStem
-                    ? dayMasterStem.dayMaster[lang]
-                    : t("dashboard.bazi.dayMasterDesc")}
-                </p>
-                <ExpandableText text={tileTexts?.dayMaster} />
-              </div>
-              <div className="flex justify-between items-center border-t border-[#8B6914]/10 pt-4 mt-5">
-                <div className="flex items-center gap-2">
-                  <span className="font-serif text-xl text-[#8B6914]">{dayMaster}</span>
-                  {dayMasterStem && (
-                    <span className="text-[10px] text-[#1E2A3A]/35">
-                      {dayMasterStem.element} · {dayMasterStem.yinYang === "yang" ? "Yang" : "Yin"} · {dayMasterStem.pinyin}
-                    </span>
-                  )}
-                </div>
-                <Badge text={lang === "de" ? "TAGESMEISTER" : "DAY MASTER"} />
-              </div>
-            </div>
-
-            {/* Month Stem */}
-            <div className="morning-card p-5 sm:p-7 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-lg leading-none select-none text-[#8B6914]">{"\u6708"}</span>
-                  <Badge text={t("dashboard.bazi.monthStemBadge")} />
-                </div>
-                <h3 className="font-serif text-xl sm:text-2xl text-[#1E2A3A] leading-tight mb-0.5">
-                  {monthStem}{monthStemData ? ` ${monthStemData.pinyin}` : ""}
-                </h3>
-                <p className="text-[9px] uppercase tracking-[0.25em] text-[#8B6914]/50 mb-4">
-                  {monthStemData
-                    ? `${t("dashboard.bazi.monthStemTitle")} \u2014 ${monthStemData.name[lang]}`
-                    : t("dashboard.bazi.monthStemTitle")}
-                </p>
-                <p className="text-xs text-[#1E2A3A]/55 leading-relaxed">
-                  {monthStemData
-                    ? monthStemData.monthStem[lang]
-                    : t("dashboard.bazi.monthStemDesc")}
-                </p>
-              </div>
-              <div className="flex justify-between items-center border-t border-[#8B6914]/10 pt-4 mt-5">
-                <div className="flex items-center gap-2">
-                  <span className="font-serif text-xl text-[#8B6914]">{monthStem}</span>
-                  {monthStemData && (
-                    <span className="text-[10px] text-[#1E2A3A]/35">
-                      {monthStemData.element} · {monthStemData.yinYang === "yang" ? "Yang" : "Yin"} · {monthStemData.pinyin}
-                    </span>
-                  )}
-                </div>
-                <Badge text={lang === "de" ? "MONATSSTAMM" : "MONTH STEM"} />
-              </div>
-            </div>
-          </div>
+        <AstroAccordion apiData={apiData} tileTexts={tileTexts || {}} />
       </motion.div>
 
       {/* ═══ BAZI & WUXING DEEP SECTION ═══════════════════════════════ */}
@@ -759,7 +417,7 @@ export function DashboardAstroSection({
               );
 
               return tooltipContent ? (
-                <Tooltip key={houseKey} content={tooltipContent} wide>
+                <Tooltip key={houseKey} content={tooltipContent} wide dark={planetariumMode}>
                   <div className="morning-card p-4 sm:p-5 overflow-hidden cursor-help">
                     {cardContent}
                   </div>

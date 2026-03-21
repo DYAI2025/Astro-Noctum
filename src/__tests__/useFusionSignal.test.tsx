@@ -1,5 +1,11 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+
+// Mock authedFetch to avoid importing supabase (requires VITE_SUPABASE_* env vars)
+vi.mock('@/src/lib/authedFetch', () => ({
+  authedFetch: vi.fn((...args: Parameters<typeof fetch>) => fetch(...args)),
+}));
+
 import { useFusionSignal } from '@/src/hooks/useFusionSignal';
 
 const validTransitPayload = {

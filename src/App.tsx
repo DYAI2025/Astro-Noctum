@@ -25,7 +25,24 @@ export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [siteVisible, setSiteVisible] = useState(false);
   const [bootstrapData, setBootstrapData] = useState<BootstrapResponse | null>(null);
-  const [onboardingPhase, setOnboardingPhase] = useState<'form' | 'signature' | 'done'>('form');
+  const [onboardingPhase, setOnboardingPhase] = useState<'form' | 'encounter' | 'signature' | 'done'>(() => {
+    if (isFeatureEnabled('cosmic_encounter_v1')) return 'encounter';
+    return 'form';
+  });
+  // Tracks whether the user has submitted the birth form this session.
+  // Returning users never set this — it distinguishes "new user mid-onboarding"
+  // from "returning user with existing profile".
+  const [hasStartedOnboarding, setHasStartedOnboarding] = useState(false);
+
+  // Returning users (already logged in from prior session) skip Splash entirely
+  const isReturningUser = !authLoading && user !== null;
+
+  useEffect(() => {
+    if (isReturningUser) {
+      setShowSplash(false);
+      setSiteVisible(true);
+    }
+  }, [isReturningUser]);
 
   const ambiente = useAmbientePlayer();
 
@@ -63,9 +80,12 @@ export default function App() {
 
   // ── Onboarding submit: coordinate BAFE flow with bootstrap ──────────
   const handleOnboardingSubmit = async (formData: { date: string; tz: string; lon: number; lat: number }) => {
+    setHasStartedOnboarding(true);
+
     // If the signature onboarding feature is disabled, keep the existing
     // behavior: immediately start the BAFE flow and return.
     if (!isFeatureEnabled('signature_onboarding_v1')) {
+      setOnboardingPhase('done'); // Skip straight to dashboard
       handleSubmit(formData);
       return;
     }
@@ -84,7 +104,11 @@ export default function App() {
       };
       const data = await bootstrapExperience(birth);
       setBootstrapData(data);
-      setOnboardingPhase('signature');
+      // In encounter mode, CosmicEncounter handles its own phase transitions internally.
+      // Only transition to 'signature' for the legacy (non-encounter) flow.
+      if (onboardingPhase !== 'encounter') {
+        setOnboardingPhase('signature');
+      }
     } catch (err) {
       console.error('[onboarding] Bootstrap failed:', err);
       // Fallback: always show a reveal, even if Experience is down.
@@ -105,7 +129,9 @@ export default function App() {
         signature_blueprint: { seed: `fallback:${Date.now()}` },
         meta: { engine_version: 'fallback' },
       });
-      setOnboardingPhase('signature');
+      if (onboardingPhase !== 'encounter') {
+        setOnboardingPhase('signature');
+      }
     }
 
     // Start the existing BAFE flow after bootstrap has either succeeded
@@ -114,6 +140,10 @@ export default function App() {
   };
 
   const handleSignatureComplete = (_delta: SignatureDeltaResponse | null) => {
+    setOnboardingPhase('done');
+  };
+
+  const handleEncounterComplete = (_delta: SignatureDeltaResponse | null) => {
     setOnboardingPhase('done');
   };
 
@@ -165,7 +195,11 @@ export default function App() {
   }
 
   // ── Determine what to show ────────────────────────────────────────────
-  const hasCompleteProfile = profileState === "found" && Boolean(apiData) && Boolean(interpretation);
+  const profileDataReady = profileState === "found" && Boolean(apiData) && Boolean(interpretation);
+  // Returning users (never submitted birth form this session) go straight to
+  // the dashboard. New users mid-onboarding must complete the signature reveal
+  // phase first — even if BAFE already finished in the background.
+  const hasCompleteProfile = profileDataReady && (!hasStartedOnboarding || onboardingPhase === 'done');
 
   // Authenticated app with routing
   return (
@@ -207,6 +241,9 @@ export default function App() {
               error,
               onSubmitBirth: handleOnboardingSubmit,
               onSignatureComplete: handleSignatureComplete,
+              onEncounterComplete: handleEncounterComplete,
+              ambientePause: ambiente.pause,
+              ambienteResume: ambiente.resume,
             }}
           />
         </AppLayoutProvider>
@@ -261,7 +298,23 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
             {t("nav.atlas")}
           </Link>
           <Link to="/signatur" className={`transition-colors ${location.pathname === "/signatur" ? "text-gold-deep" : "text-ink/60 hover:text-gold-deep"}`}>
-            Signatur
+            {t("nav.signatur")}
+          </Link>
+          <a href="https://sky.bazodiac.space" target="_blank" rel="noopener noreferrer" className={`transition-colors ${location.pathname === "/" ? "text-gold-deep" : "text-ink/60 hover:text-gold-deep"}`}>
+            {t("nav.sky")}
+          </a>
+          <a href="#" onClick={(e) => {
+            e.preventDefault();
+            if (location.pathname !== "/") {
+              window.location.href = "/";
+            } else {
+              document.querySelector('[data-levi-widget]')?.scrollIntoView({ behavior: 'smooth' });
+            }
+          }} className={`transition-colors ${location.pathname === "/" ? "text-gold-deep" : "text-ink/60 hover:text-gold-deep"}`}>
+            {t("nav.levi")}
+          </a>
+          <Link to="/wissen/faq-bazi-wuxing" className={`transition-colors ${location.pathname.startsWith("/wissen") ? "text-gold-deep" : "text-ink/60 hover:text-gold-deep"}`}>
+            {t("nav.faq")}
           </Link>
         </nav>
 
@@ -378,40 +431,22 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
 
         <Link to="/signatur" className={`flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-gold/50 rounded ${location.pathname === "/signatur" ? "text-gold-deep" : "text-ink/40"}`}>
           <CircleDot className="w-5 h-5" aria-hidden="true" />
-          <span className="text-[8px] uppercase tracking-tighter">Signatur</span>
+          <span className="text-[8px] uppercase tracking-tighter">{t("nav.signatur")}</span>
         </Link>
 
-        <button
-          onClick={togglePlanetarium}
-          aria-pressed={planetariumMode ? "true" : "false"}
-          aria-label="Planetarium"
-          className={planetariumMode ? "text-gold" : "text-ink/40"}
-        >
+        <a href="https://sky.bazodiac.space" target="_blank" rel="noopener noreferrer" className={`flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-gold/50 rounded ${location.pathname === "/signatur" ? "text-gold-deep" : "text-ink/40"}`}>
           <Telescope className="w-5 h-5" aria-hidden="true" />
-        </button>
+          <span className="text-[8px] uppercase tracking-tighter">{t("nav.sky")}</span>
+        </a>
 
-        <div className="flex flex-col items-center gap-1">
-          <button
-            onClick={ambiente.toggle}
-            aria-label={ambiente.playing ? t("nav.pauseAudioTitle") : t("nav.playAudioTitle")}
-            className="text-ink/40 hover:text-gold-deep transition-colors"
-          >
-            {ambiente.playing && ambiente.volume > 0 ? (
-              <Volume2 className="w-5 h-5 text-gold-deep" aria-hidden="true" />
-            ) : (
-              <VolumeX className="w-5 h-5" aria-hidden="true" />
-            )}
-          </button>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={ambiente.volume}
-            onChange={(e) => ambiente.setVolume(parseFloat(e.target.value))}
-            className="w-10 h-1 bg-gold-deep/20 rounded-full appearance-none cursor-pointer accent-[#8B6914]"
-          />
-        </div>
+        <Link to="/wissen/faq-bazi-wuxing" className={`flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-gold/50 rounded ${location.pathname.startsWith("/wissen") ? "text-gold-deep" : "text-ink/40"}`}>
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+            <path d="M12 17h.01" />
+          </svg>
+          <span className="text-[8px] uppercase tracking-tighter">{t("nav.faq")}</span>
+        </Link>
       </nav>
       )}
     </motion.div>

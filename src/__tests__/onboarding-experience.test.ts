@@ -36,6 +36,7 @@ describe('Experience API Client', () => {
     const mockResponse = {
       profile: { sun_sign: 'Loewe', moon_sign: 'Waage', ascendant_sign: 'Jungfrau', day_master: 'Xin', harmony_index: 0.78 },
       soulprint_sectors: Array(12).fill(0.083),
+      narratives: { core_summary: 'Core', context_summary: 'Context', integration_summary: 'Integration' },
       signature_blueprint: { seed: 'sig_v1_test', visual: { symmetry: 0.5, curvature: 0.5, angularity: 0.5, density: 0.5, contrast: 0.5, orbit_count: 3 } },
       meta: { engine_version: '1.0.0' },
     };
@@ -71,6 +72,7 @@ describe('Experience API Client', () => {
     const { signatureDelta } = await import('../services/experience');
     const mockResponse = {
       quiz_sectors: Array(12).fill(0.083),
+      narratives: { core_summary: 'Core', context_summary: 'Context', integration_summary: 'Integration' },
       signature_delta: { curvature: 0.1, contrast: 0.05, density: -0.02 },
       signature_blueprint: { seed: 'sig_v1_new', visual: { symmetry: 0.5, curvature: 0.6, angularity: 0.5, density: 0.48, contrast: 0.55, orbit_count: 3 } },
     };

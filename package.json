@@ -59,6 +59,7 @@
     "@types/supertest": "^7.2.0",
     "@types/three": "^0.175.0",
     "@vitejs/plugin-react": "^5.0.4",
+    "@vitest/coverage-v8": "^4.0.18",
     "autoprefixer": "^10.4.21",
     "happy-dom": "^20.8.3",
     "storybook": "^8.6.14",
@@ -67,6 +68,7 @@
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0",
+    "@vitest/coverage-v8": "^4.0.18",
     "vitest": "^4.0.18"
   }
 }

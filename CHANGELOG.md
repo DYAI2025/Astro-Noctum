@@ -1,6 +1,33 @@
 # Changelog
 
-## [Unreleased] - 2026-03-14
+## [Unreleased] - 2026-03-21
+
+### Features
+- **First-Time Experience overhaul** — complete redesign of the new-user journey from landing to first dashboard interaction
+- **Splash redesign** — "BAZODIAC" in gold Cormorant Garamond + "TOUCH THE SURFACE" with starfield background, replacing multi-stage hero animation
+- **AuthGate restructure** — Login (top) and Register (bottom) on single page with language selector that persists to profiles
+- **SignatureReveal V2** — live V2 spirograph canvas morph (neutral -> personal) replaces static screenshot; device-gated fallback to V1
+- **Dashboard tour** — 4-step state machine (Geburtshimmel -> Zeichen -> Levi -> Navigation) with glass-card overlays, scroll-triggered transitions, and Supabase persistence (`profiles.tour_completed`)
+- **Accordion astro tiles** — 3 collapsible main tiles (Sonnenzeichen/BaZi/WuXing) with nested sub-tiles (Mond, Aszendent, Tagesmeister etc.), gold pulse animation on first reveal, "Fundament deiner Signatur" hint in every expanded section
+- **Signatur first-visit quiz** — mandatory quiz popup on first `/signatur` visit with ring burst effect, followed by explanation popup; persisted via `profiles.signatur_intro_seen`
+- **Returning users skip Splash** — logged-in users go directly to Dashboard, no Splash or video
+
+### Removed
+- **MiniSignature** ("Die Form") card — confusing label, non-functional click
+- **LeviOrb** card — non-functional click, replaced by tour step 2 Levi intro
+- **InfluenceGauges** — removed from Dashboard daily zones
+
+### Fixes
+- **Onboarding race condition** — BAFE completing before SignatureReveal could redirect users past onboarding; fixed with `hasStartedOnboarding` state gate
+- **Quiz ResultScreen not showing** — `handleQuizComplete` was closing overlay before result could render; now stays open until user closes
+- **Signatur nav link** — always active (gold), never grayed out
+
+### Database
+- **Supabase migration** — adds `tour_completed`, `signatur_intro_seen`, `language` columns to `profiles` table
+
+---
+
+## [Previous] - 2026-03-14
 
 ### Features
 - **Upgrade banner above fold** — non-premium users see a visible CTA between the header and Astro section; extracted reusable `UpgradeButton` component from `PremiumGate` (`af25283`)

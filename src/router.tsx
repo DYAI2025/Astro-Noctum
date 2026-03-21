@@ -9,6 +9,7 @@ const WuXingPage = lazy(() => import('./pages/WuXingPage'));
 const WissenPage = lazy(() => import('./pages/WissenPage'));
 const ArtikelPage = lazy(() => import('./pages/ArtikelPage'));
 const OnboardingPage = lazy(() => import('./pages/OnboardingPage'));
+const SkyPage = lazy(() => import('./pages/SkyPage'));
 
 function PageLoader() {
   return (
@@ -51,8 +52,18 @@ export function AppRoutes({ hasCompleteProfile, onboardingProps }: AppRoutesProp
         <Route path="/wissen/:slug" element={<ArtikelPage />} />
         <Route
           path="/onboarding"
-          element={hasCompleteProfile ? <Navigate to="/" replace /> : <OnboardingPage {...onboardingProps} />}
+          element={
+            // During active onboarding (phase !== 'form'), always render
+            // OnboardingPage — even if BAFE finished and hasCompleteProfile
+            // is true. OnboardingPage handles its own navigation via useEffect.
+            // Only redirect at router level for returning users who already
+            // completed everything (phase stayed 'form' but profile exists).
+            hasCompleteProfile && onboardingProps.onboardingPhase === 'form' && !onboardingProps.isLoading
+              ? <Navigate to="/" replace />
+              : <OnboardingPage {...onboardingProps} />
+          }
         />
+        <Route path="/sky" element={<SkyPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>

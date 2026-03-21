@@ -18,21 +18,51 @@ describe('server api routes', () => {
   it('proxies /api/transit-state/:userId', async () => {
     const app = await loadTestApp();
 
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
-      ok: true,
-      status: 200,
-      headers: new Headers({ 'content-type': 'application/json' }),
-      text: async () => JSON.stringify({
-        ring: { sectors: Array(12).fill(0.6) },
-        soulprint: { sectors: Array(12).fill(0.4) },
-        transit_contribution: { transit_intensity: 0.7 },
-        delta: { vs_30day_avg: { avg_sectors: Array(12).fill(0.35) } },
-        events: [],
-        resolution: 42,
-      }),
-    } as Response);
+    // Mock fetch: first call is Supabase auth (getUser), subsequent calls are the proxy
+    const transitPayload = {
+      ring: { sectors: Array(12).fill(0.6) },
+      soulprint: { sectors: Array(12).fill(0.4) },
+      transit_contribution: { transit_intensity: 0.7 },
+      delta: { vs_30day_avg: { avg_sectors: Array(12).fill(0.35) } },
+      events: [],
+      resolution: 42,
+    };
 
-    const response = await request(app).get('/api/transit-state/user-1');
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : (input as Request).url;
+
+      // Supabase GoTrue auth.getUser — expects GoTrue response with user object directly
+      if (url.includes('auth/v1/user')) {
+        return {
+          ok: true, status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ id: 'user-1', email: 'test@test.com', aud: 'authenticated' }),
+          text: async () => JSON.stringify({ id: 'user-1', email: 'test@test.com', aud: 'authenticated' }),
+        } as Response;
+      }
+
+      // Supabase REST API queries — return empty arrays/null
+      if (url.includes('rest/v1') || url.includes('supabase')) {
+        return {
+          ok: true, status: 200,
+          headers: new Headers({ 'content-type': 'application/json', 'content-range': '0-0/0' }),
+          json: async () => [],
+          text: async () => '[]',
+        } as Response;
+      }
+
+      // FuFirE proxy or any other call — return transit payload
+      return {
+        ok: true, status: 200,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        text: async () => JSON.stringify(transitPayload),
+        json: async () => transitPayload,
+      } as Response;
+    });
+
+    const response = await request(app)
+      .get('/api/transit-state/user-1')
+      .set('Authorization', 'Bearer test-token');
 
     expect(response.status).toBe(200);
     expect(response.headers['cache-control']).toBe('no-store');

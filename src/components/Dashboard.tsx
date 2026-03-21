@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   ArrowLeft, RefreshCw,
@@ -11,7 +11,6 @@ import { LegalFooter } from "./LegalFooter";
 import { UpgradeButton } from "./UpgradeButton";
 import { ManageSubscription } from "./ManageSubscription";
 import { DailyHoroscopeModal } from "./dashboard/DailyHoroscopeModal";
-import { soulprintToNatalWeights } from "./fusion-ring-website/signatur-bridge";
 import { useFirstRunDaily } from "../hooks/useFirstRunDaily";
 import { supabase } from "../lib/supabase";
 import type { ApiData } from "../types/bafe";
@@ -19,13 +18,13 @@ import type { TileTexts, HouseTexts } from "../types/interpretation";
 import { DashboardAstroSection } from "./dashboard/DashboardAstroSection";
 import { DashboardInterpretationSection } from "./dashboard/DashboardInterpretationSection";
 import { SectionErrorBoundary } from "./dashboard/SectionErrorBoundary";
+import { DashboardLeviSection } from "./dashboard/DashboardLeviSection";
 import { isFeatureEnabled } from "../lib/feature-flags";
 
 import BlueprintCard from "./dashboard/BlueprintCard";
-import MiniSignature from "./dashboard/MiniSignature";
-import LeviOrb from "./dashboard/LeviOrb";
-import InfluenceGauges from "./dashboard/InfluenceGauges";
-import { useFusionRingContext } from "../contexts/FusionRingContext";
+import { TourOverlay } from "./dashboard/TourOverlay";
+import { useDashboardTour } from "@/src/hooks/useDashboardTour";
+import { usePlanetarium } from "@/src/contexts/PlanetariumContext";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Static data
@@ -142,56 +141,90 @@ export function Dashboard({
   const { lang, t } = useLanguage();
   const { isPremium } = usePremium();
   const { user } = useAuth();
-  const { signal } = useFusionRingContext();
 
-  const influences = useMemo(() => {
-    if (!signal) return undefined;
-    const active = signal.sectors
-      .map((intensity, index) => ({ index, intensity }))
-      .sort((a, b) => b.intensity - a.intensity)
-      .slice(0, 4);
+  // ── Dashboard tour ────────────────────────────────────────────
+  const { tourStep, next: tourNext, skip: tourSkip } = useDashboardTour(userId);
+  const { setPlanetariumMode, planetariumMode } = usePlanetarium();
+  const [tourPrevPlanetariumMode, setTourPrevPlanetariumMode] = useState<boolean | null>(null);
 
-    const colors = [
-      "bg-linear-to-r from-red-500 to-orange-400",
-      "bg-linear-to-r from-cyan-400 to-blue-500",
-      "bg-linear-to-r from-purple-400 to-pink-400",
-      "bg-linear-to-r from-zinc-400 to-zinc-200"
-    ];
+  // Scroll-triggered tour: steps 1 and 2 only show when their section is visible
+  const [scrollReached, setScrollReached] = useState<Set<number>>(new Set());
+  const planetariumSentinelRef = useRef<HTMLDivElement>(null);
+  const astroSentinelRef = useRef<HTMLDivElement>(null);
+  const leviSentinelRef = useRef<HTMLDivElement>(null);
+  const navHintsSentinelRef = useRef<HTMLDivElement>(null);
 
-    const labelsDe = ["Antrieb", "Fokus", "Balance", "Tiefe", "Expansion", "Struktur", "Freiheit", "Intuition", "Wandel", "Verbindung", "Klarheit", "Ruhe"];
-    const labelsEn = ["Drive", "Focus", "Balance", "Depth", "Expansion", "Structure", "Freedom", "Intuition", "Shift", "Connection", "Clarity", "Calm"];
-    const textLabels = lang === 'de' ? labelsDe : labelsEn;
+  // Map tour steps to their anchor refs
+  const tourAnchorRef = tourStep === 0 ? planetariumSentinelRef
+    : tourStep === 1 ? astroSentinelRef
+    : tourStep === 2 ? leviSentinelRef
+    : tourStep === 3 ? navHintsSentinelRef
+    : undefined;
 
-    return active.map((sec, i) => ({
-      label: textLabels[sec.index % 12] + "-Feld",
-      value: sec.intensity,
-      color: colors[i] || colors[0]
-    }));
-  }, [signal, lang]);
+  // The tour overlay is only visible when the step is either 0/3 (immediate)
+  // or when the scroll sentinel for steps 1/2 has been reached
+  const isTourStepVisible = tourStep === 0 || tourStep === 3 || tourStep === 'done'
+    || (typeof tourStep === 'number' && scrollReached.has(tourStep));
 
-  // ── Data extraction (kept for ShareCard) ─────────────────────
-  const sunSign       = apiData.western?.zodiac_sign      || "";
-  const zodiacAnimal  = apiData.bazi?.zodiac_sign         || "";
-  const dominantEl    = apiData.wuxing?.dominant_element   || "";
+  useEffect(() => {
+    if (tourStep === 'done' || typeof tourStep !== 'number') return;
+    // Only observe for steps 1 and 2
+    if (tourStep !== 1 && tourStep !== 2) return;
 
-  // ── Fetch profile data for daily modal + signature widget ───────────
+    const sentinel = tourStep === 1 ? astroSentinelRef.current : leviSentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setScrollReached(prev => new Set(prev).add(tourStep));
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [tourStep]);
+
+  useEffect(() => {
+    if (tourStep === 0) {
+      setTourPrevPlanetariumMode((prev) => (prev === null ? planetariumMode ?? null : prev));
+      setPlanetariumMode(true);
+    } else if (tourPrevPlanetariumMode !== null) {
+      setPlanetariumMode(tourPrevPlanetariumMode);
+      setTourPrevPlanetariumMode(null);
+    }
+  }, [tourStep, planetariumMode, tourPrevPlanetariumMode, setPlanetariumMode]);
+
+  // ── Fetch profile data for daily modal + tour ──────────────────────
   const [profileMeta, setProfileMeta] = useState<{
     birthInput: { date: string; time: string; tz: string; lat: number; lon: number } | null;
     soulprintSectors: number[] | null;
     quizSectors: number[];
-  }>({ birthInput: null, soulprintSectors: null, quizSectors: EMPTY_SECTORS });
+    birthCity: string;
+  }>({ birthInput: null, soulprintSectors: null, quizSectors: EMPTY_SECTORS, birthCity: '' });
 
   useEffect(() => {
     if (!userId) return;
     let cancelled = false;
 
     (async () => {
-      const { data } = await supabase
-        .from('astro_profiles')
-        .select('birth_date, birth_time, iana_time_zone, birth_lat, birth_lng, soulprint_sectors')
-        .eq('user_id', userId)
-        .maybeSingle();
+      const [profileRes, birthRes] = await Promise.all([
+        supabase
+          .from('astro_profiles')
+          .select('birth_date, birth_time, iana_time_zone, birth_lat, birth_lng, soulprint_sectors')
+          .eq('user_id', userId)
+          .maybeSingle(),
+        supabase
+          .from('birth_data')
+          .select('place_label')
+          .eq('user_id', userId)
+          .maybeSingle(),
+      ]);
 
+      const data = profileRes.data;
       if (cancelled || !data) return;
 
       const birthInput = (data.birth_date && data.birth_lat != null && data.birth_lng != null)
@@ -208,7 +241,12 @@ export function Dashboard({
         ? data.soulprint_sectors as number[]
         : null;
 
-      setProfileMeta({ birthInput: birthInput, soulprintSectors: soulprint, quizSectors: EMPTY_SECTORS });
+      setProfileMeta({
+        birthInput,
+        soulprintSectors: soulprint,
+        quizSectors: EMPTY_SECTORS,
+        birthCity: birthRes.data?.place_label || '',
+      });
     })();
 
     return () => { cancelled = true; };
@@ -216,12 +254,6 @@ export function Dashboard({
 
   // ── Feature flags ──────────────────────────────────────────────────
   const dailyEnabled = isFeatureEnabled('daily_modal_v1');
-
-  // ── V2 Signatur weights (memoized to avoid new object every render) ──
-  const v2NatalWeights = useMemo(
-    () => profileMeta.soulprintSectors ? soulprintToNatalWeights(profileMeta.soulprintSectors) : undefined,
-    [profileMeta.soulprintSectors]
-  );
 
   // ── Daily horoscope modal ───────────────────────────────────────────
   const { dailyData, showModal, handleClose: handleDailyClose } = useFirstRunDaily(
@@ -248,6 +280,9 @@ export function Dashboard({
         <ArrowLeft className="w-4 h-4" /> {t("dashboard.startOver")}
       </button>
 
+      {/* ── Tour sentinel: step 0 anchors at the planetarium (top of dashboard) ── */}
+      <div ref={planetariumSentinelRef} className="h-px" aria-hidden="true" />
+
       {/* Issues banner */}
       {apiIssues.length > 0 && (
         <div className="mb-8 rounded-xl border border-amber-400/40 bg-amber-50 px-4 py-3 text-xs text-amber-800">
@@ -259,29 +294,6 @@ export function Dashboard({
           </ul>
         </div>
       )}
-
-      {/* ═══ DAILY ZONES (Signature, Levi, Gauges) ═══════════════════════ */}
-      <div className="mb-12 space-y-6 lg:space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-          <SectionErrorBoundary name="MiniSignature">
-             <MiniSignature
-               natalWeights={v2NatalWeights}
-               onExpand={() => {}}
-             />
-          </SectionErrorBoundary>
-          
-          <SectionErrorBoundary name="LeviOrb">
-             <LeviOrb
-               onActivate={onResumeAudio}
-               isListening={false}
-             />
-          </SectionErrorBoundary>
-        </div>
-
-        <SectionErrorBoundary name="InfluenceGauges">
-          <InfluenceGauges influences={influences} />
-        </SectionErrorBoundary>
-      </div>
 
       {/* ═══ PAGE HEADER ═══════════════════════════════════════════════ */}
       <motion.header
@@ -346,6 +358,9 @@ export function Dashboard({
         </motion.div>
       )}
 
+      {/* ── Tour sentinel: step 1 triggers when astro section scrolls into view ── */}
+      <div ref={astroSentinelRef} className="h-px" aria-hidden="true" />
+
       {/* ═══ ASTRO SECTION (Orrery + Western + BaZi/WuXing + Houses) ═══ */}
       <SectionErrorBoundary name="Astro">
         <DashboardAstroSection
@@ -357,6 +372,27 @@ export function Dashboard({
           houseTexts={houseTexts}
         />
       </SectionErrorBoundary>
+
+      {/* ── Tour sentinel: step 2 triggers when Levi/interpretation area scrolls into view ── */}
+      <div ref={leviSentinelRef} className="h-px" aria-hidden="true" />
+
+      {/* ═══ LEVI BAZI — Voice Agent Section ═══════════════════════════ */}
+      <motion.div className="mb-12 sm:mb-16" {...fadeIn(0.4)}>
+        <SectionErrorBoundary name="Levi">
+          <DashboardLeviSection
+            isPremium={isPremium}
+            userId={userId}
+            onStopAudio={onStopAudio}
+            onResumeAudio={onResumeAudio}
+            sunSign={apiData?.western?.zodiac_sign || ''}
+            zodiacAnimal={apiData?.bazi?.zodiac_sign || ''}
+            dominantEl={apiData?.wuxing?.dominant_element || ''}
+          />
+        </SectionErrorBoundary>
+      </motion.div>
+
+      {/* ── Tour sentinel: step 3 anchors at the navigation hints area ── */}
+      <div ref={navHintsSentinelRef} className="h-px" aria-hidden="true" />
 
       <div id="interpretation-section" />
 
@@ -390,6 +426,18 @@ export function Dashboard({
           <DailyHoroscopeModal data={dailyData} onClose={handleDailyClose} />
         )}
       </AnimatePresence>
+
+      {/* ═══ TOUR OVERLAY (scroll-gated for steps 1+2) ════════════════════ */}
+      {isTourStepVisible && (
+        <TourOverlay
+          step={tourStep}
+          birthDate={birthDate || ''}
+          birthCity={profileMeta.birthCity}
+          onNext={tourNext}
+          onSkip={tourSkip}
+          anchorRef={tourAnchorRef}
+        />
+      )}
     </motion.div>
   );
 }

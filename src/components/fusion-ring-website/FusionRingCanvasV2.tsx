@@ -71,6 +71,7 @@ export interface FusionRingCanvasProps {
   showUI?: boolean;
   revealProgress?: number; // 0..1, used for onboarding reveal
   effectTrigger?: { type: string; color?: string; timestamp: number } | null;
+  solarModulation?: number; // 1.0–1.5, multiplied into particle intensity
   className?: string;
 }
 
@@ -86,6 +87,7 @@ function hash(n: number): number {
 interface BazodiacState {
   natal: Map<string, number>;
   quiz: Map<QuizDimension, number>;
+  solarModulation: number;
 }
 
 function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, isMini = false }: {
@@ -925,6 +927,12 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
         if (bloomPass && currentSignature) {
           const emergenceVal = currentSignature.emergence.emergence;
           bloomPass.strength = lerp(0.4, 0.9, emergenceVal);
+
+          // Solar modulation — scale bloom strength by live space weather
+          const solarMod = bazStateRef.current?.solarModulation ?? 1.0;
+          if (solarMod > 1.0) {
+            bloomPass.strength = bloomPass.strength * solarMod;
+          }
         }
 
         // Return-to-home
@@ -952,6 +960,12 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
           ringGroup.position.z = 0;
           renderer.toneMappingExposure = 1.5;
           coreLight.intensity = 2.0;
+
+          // Subtle exposure pulse during solar storms (Kp > ~4)
+          if ((bazStateRef.current?.solarModulation ?? 1.0) > 1.05) {
+            const pulse = 1 + Math.sin(t * 2) * 0.03 * ((bazStateRef.current?.solarModulation ?? 1.0) - 1);
+            renderer.toneMappingExposure *= pulse;
+          }
         }
 
         dust.rotation.y = t * 0.003;
@@ -1114,7 +1128,7 @@ function BazodiacConfigPanel({ bazState, onUpdate, version }: {
   };
 
   const loadTestPreset = () => {
-    onUpdate(createTestPreset());
+    onUpdate({ ...createTestPreset(), solarModulation: 1.0 });
   };
 
   const loadFlat = () => {
@@ -1122,7 +1136,7 @@ function BazodiacConfigPanel({ bazState, onUpdate, version }: {
     PLANETS.forEach(p => natal.set(p.id, 0.5));
     const quiz = new Map<QuizDimension, number>();
     QUIZ_DIMS.forEach(d => quiz.set(d, 0.5));
-    onUpdate({ natal, quiz });
+    onUpdate({ natal, quiz, solarModulation: 1.0 });
   };
 
   const weights = computeWeights(bazState.natal, bazState.quiz);
@@ -1151,7 +1165,7 @@ function BazodiacConfigPanel({ bazState, onUpdate, version }: {
       const parsed = JSON.parse(jsonInput);
       const natal = new Map<string, number>(Object.entries(parsed.natal ?? {}));
       const quiz = new Map<QuizDimension, number>(Object.entries(parsed.quiz ?? {}) as [QuizDimension, number][]);
-      onUpdate({ natal, quiz });
+      onUpdate({ natal, quiz, solarModulation: 1.0 });
       setJsonError('');
       setJsonInput('');
     } catch (e: unknown) {
@@ -1284,6 +1298,7 @@ export default function FusionRingCanvas({
   showUI = false,
   revealProgress = 1.0,
   effectTrigger,
+  solarModulation = 1.0,
   className,
 }: FusionRingCanvasProps) {
   const [mounted, setMounted] = useState(false);
@@ -1300,6 +1315,7 @@ export default function FusionRingCanvas({
   const bazStateRef = useRef<BazodiacState>({
     natal: new Map(Object.entries(natalWeights || createTestPreset().natal)),
     quiz: new Map(Object.entries(quizWeights || createTestPreset().quiz) as any),
+    solarModulation,
   });
 
   // Sync props to state ref
@@ -1310,10 +1326,11 @@ export default function FusionRingCanvas({
     if (quizWeights) {
       bazStateRef.current.quiz = new Map(Object.entries(quizWeights) as any);
     }
+    bazStateRef.current.solarModulation = solarModulation;
     setBazVersion(v => v + 1);
     const rebuild = (window as any).__fusionRingRebuild;
     if (typeof rebuild === 'function') rebuild();
-  }, [natalWeights, quizWeights]);
+  }, [natalWeights, quizWeights, solarModulation]);
 
   // Legacy profile ref for InputController compatibility
   const profileRef = useRef<FusionRingProfile>(createDemoProfile());
