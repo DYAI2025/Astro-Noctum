@@ -18,6 +18,7 @@ import type { TileTexts, HouseTexts } from "../types/interpretation";
 import { DashboardAstroSection } from "./dashboard/DashboardAstroSection";
 import { DashboardInterpretationSection } from "./dashboard/DashboardInterpretationSection";
 import { SectionErrorBoundary } from "./dashboard/SectionErrorBoundary";
+import { DashboardLeviSection } from "./dashboard/DashboardLeviSection";
 import { isFeatureEnabled } from "../lib/feature-flags";
 
 import BlueprintCard from "./dashboard/BlueprintCard";
@@ -374,6 +375,21 @@ export function Dashboard({
 
       {/* ── Tour sentinel: step 2 triggers when Levi/interpretation area scrolls into view ── */}
       <div ref={leviSentinelRef} className="h-px" aria-hidden="true" />
+
+      {/* ═══ LEVI BAZI — Voice Agent Section ═══════════════════════════ */}
+      <motion.div className="mb-12 sm:mb-16" {...fadeIn(0.4)}>
+        <SectionErrorBoundary name="Levi">
+          <DashboardLeviSection
+            isPremium={isPremium}
+            userId={userId}
+            onStopAudio={onStopAudio}
+            onResumeAudio={onResumeAudio}
+            sunSign={apiData?.western?.zodiac_sign || ''}
+            zodiacAnimal={apiData?.bazi?.zodiac_sign || ''}
+            dominantEl={apiData?.wuxing?.dominant_element || ''}
+          />
+        </SectionErrorBoundary>
+      </motion.div>
 
       {/* ── Tour sentinel: step 3 anchors at the navigation hints area ── */}
       <div ref={navHintsSentinelRef} className="h-px" aria-hidden="true" />

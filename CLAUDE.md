@@ -323,6 +323,18 @@ Python reference implementation of the GCB engine and master signal math. Not pa
 
 BaZi stem descriptions are defined in `src/lib/astro-data/heavenlyStems.ts` and follow a 5-part structure per context (dayMaster, monthStem, etc.): identity, daily life, gifts, shadow, growth — in both DE and EN. When adding or editing stem content, maintain this pattern.
 
+### Verification
+
+Per-task done-conditions:
+
+| Task type | Done when |
+|-----------|-----------|
+| Bug fix | `npm run test` passes, repro scenario no longer triggers |
+| New component | Test file exists in `src/__tests__/`, `npx vitest run src/__tests__/<name>.test.tsx` passes |
+| API change | `npx vitest run src/__tests__/api-routes.test.ts` passes, `npm run lint` clean |
+| Schema change | Zod schema test passes, existing tests still green |
+| Sprint feature | Full suite `npm run test` passes (586+ tests), code review completed |
+
 ### Known Issues
 
 - BAFE API cannot always be reached from local/CI environments (`ENETUNREACH`). The app is designed to degrade gracefully — failed endpoints return empty data and the Dashboard shows "—".
