@@ -6,8 +6,8 @@ describe('cosmic_encounter_v1 feature flag', () => {
     localStorage.removeItem('ff_cosmic_encounter_v1');
   });
 
-  it('defaults to false', () => {
-    expect(isFeatureEnabled('cosmic_encounter_v1')).toBe(false);
+  it('defaults to true', () => {
+    expect(isFeatureEnabled('cosmic_encounter_v1')).toBe(true);
   });
 
   it('can be enabled via localStorage override', () => {

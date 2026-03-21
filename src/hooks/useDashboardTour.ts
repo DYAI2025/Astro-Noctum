@@ -11,6 +11,14 @@ export function useDashboardTour(userId: string | undefined) {
     if (!userId) return;
     let cancelled = false;
 
+    // Check localStorage fallback first
+    try {
+      if (localStorage.getItem('bazodiac_tour_completed') === 'true') {
+        setTourStep('done');
+        return;
+      }
+    } catch {}
+
     (async () => {
       const { data } = await supabase
         .from('profiles')
@@ -34,6 +42,7 @@ export function useDashboardTour(userId: string | undefined) {
           supabase.from('profiles').update({ tour_completed: true }).eq('id', userId)
             .then(({ error }) => { if (error) console.warn('[tour] persist failed:', error.message); });
         }
+        try { localStorage.setItem('bazodiac_tour_completed', 'true'); } catch {}
         return 'done';
       }
       return (prev + 1) as TourStep;
@@ -45,6 +54,7 @@ export function useDashboardTour(userId: string | undefined) {
       supabase.from('profiles').update({ tour_completed: true }).eq('id', userId)
         .then(({ error }) => { if (error) console.warn('[tour] persist failed:', error.message); });
     }
+    try { localStorage.setItem('bazodiac_tour_completed', 'true'); } catch {}
     setTourStep('done');
   }, [userId]);
 

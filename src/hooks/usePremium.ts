@@ -46,8 +46,8 @@ export function usePremium() {
         setIsPremium(payload.new.tier === 'premium');
       })
       .subscribe((status) => {
-        if (status === 'CHANNEL_ERROR') {
-          console.warn('Premium tier realtime subscription failed — using polling fallback');
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.warn('[premium] Realtime subscription failed, using poll fallback');
         }
       });
 

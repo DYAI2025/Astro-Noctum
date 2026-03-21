@@ -60,7 +60,9 @@ export function useAmbientePlayer() {
     const handleEnded = () => {
       trackIndexRef.current = (trackIndexRef.current + 1) % TRACKS.length;
       audio.src = TRACKS[trackIndexRef.current];
-      audio.play().catch(() => {});
+      audio.play().catch(() => {
+        console.info('[ambiente] Autoplay blocked by browser — user interaction required');
+      });
     };
 
     audio.addEventListener("ended", handleEnded);
@@ -152,7 +154,9 @@ export function useAmbientePlayer() {
     audio.volume = volume;
     audio.play()
       .then(() => setPlaying(true))
-      .catch(() => {});
+      .catch(() => {
+        console.info('[ambiente] Autoplay blocked by browser — user interaction required');
+      });
   }, [volume]);
 
   return { playing, volume, setVolume, start, toggle, pause, resume };

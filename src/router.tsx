@@ -1,5 +1,6 @@
 import { lazy, Suspense, type ReactNode } from 'react';
 import { Routes, Route, Link, Navigate } from 'react-router-dom';
+import { useLanguage } from './contexts/LanguageContext';
 import type { OnboardingPageProps } from './pages/OnboardingPage';
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
@@ -20,12 +21,15 @@ function PageLoader() {
 }
 
 function NotFound() {
+  const { lang } = useLanguage();
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4">
       <h1 className="font-serif text-2xl text-[#1E2A3A]">404</h1>
-      <p className="text-sm text-[#1E2A3A]/50">Diese Seite existiert nicht.</p>
+      <p className="text-sm text-[#1E2A3A]/50">
+        {lang === 'de' ? 'Diese Seite existiert nicht.' : 'This page does not exist.'}
+      </p>
       <Link to="/" className="text-sm text-[#8B6914] hover:underline">
-        Zum Dashboard &rarr;
+        {lang === 'de' ? 'Zum Dashboard' : 'Go to Dashboard'} &rarr;
       </Link>
     </div>
   );

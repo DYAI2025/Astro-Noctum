@@ -153,19 +153,16 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
 
         try {
           // Vignette pass — draws focus toward centre
-          // @ts-ignore
           const SP = await import('three/examples/jsm/postprocessing/ShaderPass.js');
           const vignetteShader = {
             uniforms: { tDiffuse: { value: null }, darkness: { value: 0.6 }, offset: { value: 1.2 } },
             vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
             fragmentShader: `uniform sampler2D tDiffuse; uniform float darkness; uniform float offset; varying vec2 vUv; void main() { vec4 texel = texture2D(tDiffuse, vUv); vec2 uv = (vUv - 0.5) * 2.0; float vig = clamp(offset - dot(uv, uv) * darkness, 0.0, 1.0); gl_FragColor = vec4(texel.rgb * vig, texel.a); }`,
           };
-          // @ts-ignore
           composer.addPass(new SP.ShaderPass(vignetteShader));
-          // @ts-ignore
           const OP = await import('three/examples/jsm/postprocessing/OutputPass.js');
           composer.addPass(new OP.OutputPass());
-        } catch(e) {}
+        } catch (e) { console.warn('[FusionRing] Postprocessing unavailable:', e); }
       }
 
       const clock = new THREE.Clock();

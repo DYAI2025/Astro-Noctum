@@ -192,7 +192,10 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
           aiResult.interpretation,
           aiResult.tiles || {},
           aiResult.houses || {},
-        ).catch((e) => console.warn("Persist after regenerate failed:", e));
+        ).catch((e) => {
+          console.warn("Persist after regenerate failed:", e);
+          setError(lang === 'de' ? 'Profil konnte nicht gespeichert werden.' : 'Profile could not be saved.');
+        });
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "";

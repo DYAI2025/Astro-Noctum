@@ -75,6 +75,6 @@
 - **GitHub Actions CI pipeline** with TypeScript type check, build verification, and bundle size tracking (`c2a3064`)
 - **`features/` excluded from tsc** — eliminates ~390 stale lint errors from spec/plan files; `npm run lint` now shows 0 errors
 
-### Known Issues (from code review)
-- `ClusterCard.tsx` still has one `repeat: Infinity` animation on partially-complete cards
-- 404 page is German-only (does not use language context)
+### Resolved Known Issues
+- `ClusterCard.tsx` infinity animation — confirmed fixed (no `repeat: Infinity` remaining)
+- 404 page i18n — now uses `useLanguage()` for DE/EN

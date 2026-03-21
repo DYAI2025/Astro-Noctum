@@ -14,7 +14,7 @@ const FLAGS = {
   sky_neo_ribbon: false,
   sky_epoch_mood: false,
   sky_jpl_proxy: false,
-  cosmic_encounter_v1: false,
+  cosmic_encounter_v1: true,
 } as const;
 
 type FlagName = keyof typeof FLAGS;

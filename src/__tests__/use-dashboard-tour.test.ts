@@ -28,6 +28,7 @@ function setupMock(tourCompleted: boolean) {
 describe('useDashboardTour', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.removeItem('bazodiac_tour_completed');
     setupMock(false);
   });
 
