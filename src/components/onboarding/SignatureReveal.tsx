@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { BootstrapResponse, SignatureDeltaResponse } from '@/src/lib/schemas/experience';
-import type { ApiData } from '@/src/types/bafe';
 import { isFeatureEnabled } from '@/src/lib/feature-flags';
 import { soulprintToNatalWeights } from '@/src/components/fusion-ring-website/signatur-bridge';
+import { useLanguage } from '@/src/contexts/LanguageContext';
 
 const FusionRingCanvasV2 = lazy(() => import('@/src/components/fusion-ring-website/FusionRingCanvasV2'));
 const FusionRingWebsiteCanvas = lazy(() => import('@/src/components/fusion-ring-website/FusionRingWebsiteCanvas').then(m => ({ default: m.FusionRingWebsiteCanvas })));
@@ -20,11 +20,11 @@ function canRunV2(): boolean {
 
 interface Props {
   bootstrapData: BootstrapResponse;
-  fallbackApiData?: ApiData | null;
   onComplete: (deltaData: SignatureDeltaResponse | null) => void;
 }
 
 export function SignatureReveal({ bootstrapData, onComplete }: Props) {
+  const { lang } = useLanguage();
   const [showButton, setShowButton] = useState(false);
   const [revealProgress, setRevealProgress] = useState(0);
 
@@ -71,7 +71,7 @@ export function SignatureReveal({ bootstrapData, onComplete }: Props) {
         animate={{ opacity: 1 }}
         transition={{ delay: 1, duration: 1.5 }}
       >
-        Deine Signatur entsteht...
+        {lang === 'de' ? 'Deine Signatur entsteht...' : 'Your signature is forming...'}
       </motion.p>
 
       {/* Continue button — appears after animation */}
@@ -83,7 +83,7 @@ export function SignatureReveal({ bootstrapData, onComplete }: Props) {
             className="mt-10 px-8 py-3 border border-[#D4AF37]/30 text-[#D4AF37] text-xs uppercase tracking-[0.3em] rounded-lg hover:bg-[#D4AF37]/10 transition-colors"
             onClick={() => onComplete(null)}
           >
-            Weiter
+            {lang === 'de' ? 'Weiter' : 'Continue'}
           </motion.button>
         )}
       </AnimatePresence>

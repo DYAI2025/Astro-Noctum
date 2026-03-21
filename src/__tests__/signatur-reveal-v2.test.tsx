@@ -4,6 +4,9 @@ import { vi, describe, it, expect } from 'vitest';
 vi.mock('@/src/lib/feature-flags', () => ({
   isFeatureEnabled: (flag: string) => flag === 'signature_engine_v2',
 }));
+vi.mock('@/src/contexts/LanguageContext', () => ({
+  useLanguage: () => ({ lang: 'de', t: (k: string) => k }),
+}));
 vi.mock('@/src/components/fusion-ring-website/signatur-bridge', () => ({
   soulprintToNatalWeights: () => ({ Sun: 0.5, Moon: 0.5 }),
   quizSectorsToQuizWeights: vi.fn(),

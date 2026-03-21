@@ -109,7 +109,6 @@ export default function OnboardingPage({
       {onboardingPhase === 'signature' && bootstrapData && (
         <SignatureReveal
           bootstrapData={bootstrapData}
-          fallbackApiData={apiData}
           onComplete={onSignatureComplete}
         />
       )}

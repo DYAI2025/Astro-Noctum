@@ -18,17 +18,17 @@ const STEP_CONTENT: Record<
     text: `Willkommen zum Himmel deiner Geburt am ${birthDate} in ${birthCity}`,
     buttons: <GoldButton onClick={onNext}>OK</GoldButton>,
   }),
-  1: (_props) => ({
+  1: ({ onNext }) => ({
     text: 'Schau dir deine Zeichen an. Klicke auf die Kacheln, um mehr darüber zu erfahren.',
-    buttons: <GoldButton onClick={_props.onNext}>OK</GoldButton>,
+    buttons: <GoldButton onClick={onNext}>OK</GoldButton>,
   }),
-  2: ({ onLeviStart, onSkip }) => ({
+  2: ({ onNext, onLeviStart }) => ({
     text: 'Das ist Levi, dein persönlicher kosmischer Berater.\n\nDeine erste Sitzung — 10 Minuten gratis.',
     buttons: (
       <div className="flex gap-3">
-        <GoldButton onClick={onLeviStart ?? onSkip}>JETZT SPRECHEN</GoldButton>
+        <GoldButton onClick={() => { onLeviStart?.(); onNext(); }}>JETZT SPRECHEN</GoldButton>
         <button
-          onClick={onSkip}
+          onClick={onNext}
           className="px-5 py-2.5 rounded-lg text-sm font-medium text-gold/60 border border-gold/20 hover:border-gold/40 transition-colors"
         >
           SPÄTER

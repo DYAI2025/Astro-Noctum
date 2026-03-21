@@ -149,24 +149,33 @@ export function Dashboard({
     if (tourStep === 0) setPlanetariumMode(true);
   }, [tourStep, setPlanetariumMode]);
 
-  // ── Fetch profile data for daily modal + signature widget ───────────
+  // ── Fetch profile data for daily modal + tour ──────────────────────
   const [profileMeta, setProfileMeta] = useState<{
     birthInput: { date: string; time: string; tz: string; lat: number; lon: number } | null;
     soulprintSectors: number[] | null;
     quizSectors: number[];
-  }>({ birthInput: null, soulprintSectors: null, quizSectors: EMPTY_SECTORS });
+    birthCity: string;
+  }>({ birthInput: null, soulprintSectors: null, quizSectors: EMPTY_SECTORS, birthCity: '' });
 
   useEffect(() => {
     if (!userId) return;
     let cancelled = false;
 
     (async () => {
-      const { data } = await supabase
-        .from('astro_profiles')
-        .select('birth_date, birth_time, iana_time_zone, birth_lat, birth_lng, soulprint_sectors')
-        .eq('user_id', userId)
-        .maybeSingle();
+      const [profileRes, birthRes] = await Promise.all([
+        supabase
+          .from('astro_profiles')
+          .select('birth_date, birth_time, iana_time_zone, birth_lat, birth_lng, soulprint_sectors')
+          .eq('user_id', userId)
+          .maybeSingle(),
+        supabase
+          .from('birth_data')
+          .select('place_label')
+          .eq('user_id', userId)
+          .maybeSingle(),
+      ]);
 
+      const data = profileRes.data;
       if (cancelled || !data) return;
 
       const birthInput = (data.birth_date && data.birth_lat != null && data.birth_lng != null)
@@ -183,7 +192,12 @@ export function Dashboard({
         ? data.soulprint_sectors as number[]
         : null;
 
-      setProfileMeta({ birthInput: birthInput, soulprintSectors: soulprint, quizSectors: EMPTY_SECTORS });
+      setProfileMeta({
+        birthInput,
+        soulprintSectors: soulprint,
+        quizSectors: EMPTY_SECTORS,
+        birthCity: birthRes.data?.place_label || '',
+      });
     })();
 
     return () => { cancelled = true; };
@@ -341,7 +355,7 @@ export function Dashboard({
       <TourOverlay
         step={tourStep}
         birthDate={birthDate || ''}
-        birthCity=""
+        birthCity={profileMeta.birthCity}
         onNext={tourNext}
         onSkip={tourSkip}
       />
