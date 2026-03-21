@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   ArrowLeft, RefreshCw,
@@ -11,7 +11,6 @@ import { LegalFooter } from "./LegalFooter";
 import { UpgradeButton } from "./UpgradeButton";
 import { ManageSubscription } from "./ManageSubscription";
 import { DailyHoroscopeModal } from "./dashboard/DailyHoroscopeModal";
-import { soulprintToNatalWeights } from "./fusion-ring-website/signatur-bridge";
 import { useFirstRunDaily } from "../hooks/useFirstRunDaily";
 import { supabase } from "../lib/supabase";
 import type { ApiData } from "../types/bafe";
@@ -22,10 +21,9 @@ import { SectionErrorBoundary } from "./dashboard/SectionErrorBoundary";
 import { isFeatureEnabled } from "../lib/feature-flags";
 
 import BlueprintCard from "./dashboard/BlueprintCard";
-import MiniSignature from "./dashboard/MiniSignature";
-import LeviOrb from "./dashboard/LeviOrb";
-import InfluenceGauges from "./dashboard/InfluenceGauges";
-import { useFusionRingContext } from "../contexts/FusionRingContext";
+import { TourOverlay } from "./dashboard/TourOverlay";
+import { useDashboardTour } from "@/src/hooks/useDashboardTour";
+import { usePlanetarium } from "@/src/contexts/PlanetariumContext";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Static data
@@ -142,37 +140,14 @@ export function Dashboard({
   const { lang, t } = useLanguage();
   const { isPremium } = usePremium();
   const { user } = useAuth();
-  const { signal } = useFusionRingContext();
 
-  const influences = useMemo(() => {
-    if (!signal) return undefined;
-    const active = signal.sectors
-      .map((intensity, index) => ({ index, intensity }))
-      .sort((a, b) => b.intensity - a.intensity)
-      .slice(0, 4);
+  // ── Dashboard tour ────────────────────────────────────────────
+  const { tourStep, next: tourNext, skip: tourSkip } = useDashboardTour(userId);
+  const { setPlanetariumMode } = usePlanetarium();
 
-    const colors = [
-      "bg-linear-to-r from-red-500 to-orange-400",
-      "bg-linear-to-r from-cyan-400 to-blue-500",
-      "bg-linear-to-r from-purple-400 to-pink-400",
-      "bg-linear-to-r from-zinc-400 to-zinc-200"
-    ];
-
-    const labelsDe = ["Antrieb", "Fokus", "Balance", "Tiefe", "Expansion", "Struktur", "Freiheit", "Intuition", "Wandel", "Verbindung", "Klarheit", "Ruhe"];
-    const labelsEn = ["Drive", "Focus", "Balance", "Depth", "Expansion", "Structure", "Freedom", "Intuition", "Shift", "Connection", "Clarity", "Calm"];
-    const textLabels = lang === 'de' ? labelsDe : labelsEn;
-
-    return active.map((sec, i) => ({
-      label: textLabels[sec.index % 12] + "-Feld",
-      value: sec.intensity,
-      color: colors[i] || colors[0]
-    }));
-  }, [signal, lang]);
-
-  // ── Data extraction (kept for ShareCard) ─────────────────────
-  const sunSign       = apiData.western?.zodiac_sign      || "";
-  const zodiacAnimal  = apiData.bazi?.zodiac_sign         || "";
-  const dominantEl    = apiData.wuxing?.dominant_element   || "";
+  useEffect(() => {
+    if (tourStep === 0) setPlanetariumMode(true);
+  }, [tourStep, setPlanetariumMode]);
 
   // ── Fetch profile data for daily modal + signature widget ───────────
   const [profileMeta, setProfileMeta] = useState<{
@@ -217,12 +192,6 @@ export function Dashboard({
   // ── Feature flags ──────────────────────────────────────────────────
   const dailyEnabled = isFeatureEnabled('daily_modal_v1');
 
-  // ── V2 Signatur weights (memoized to avoid new object every render) ──
-  const v2NatalWeights = useMemo(
-    () => profileMeta.soulprintSectors ? soulprintToNatalWeights(profileMeta.soulprintSectors) : undefined,
-    [profileMeta.soulprintSectors]
-  );
-
   // ── Daily horoscope modal ───────────────────────────────────────────
   const { dailyData, showModal, handleClose: handleDailyClose } = useFirstRunDaily(
     userId,
@@ -259,29 +228,6 @@ export function Dashboard({
           </ul>
         </div>
       )}
-
-      {/* ═══ DAILY ZONES (Signature, Levi, Gauges) ═══════════════════════ */}
-      <div className="mb-12 space-y-6 lg:space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-          <SectionErrorBoundary name="MiniSignature">
-             <MiniSignature
-               natalWeights={v2NatalWeights}
-               onExpand={() => {}}
-             />
-          </SectionErrorBoundary>
-          
-          <SectionErrorBoundary name="LeviOrb">
-             <LeviOrb
-               onActivate={onResumeAudio}
-               isListening={false}
-             />
-          </SectionErrorBoundary>
-        </div>
-
-        <SectionErrorBoundary name="InfluenceGauges">
-          <InfluenceGauges influences={influences} />
-        </SectionErrorBoundary>
-      </div>
 
       {/* ═══ PAGE HEADER ═══════════════════════════════════════════════ */}
       <motion.header
@@ -390,6 +336,15 @@ export function Dashboard({
           <DailyHoroscopeModal data={dailyData} onClose={handleDailyClose} />
         )}
       </AnimatePresence>
+
+      {/* ═══ TOUR OVERLAY ══════════════════════════════════════════════════ */}
+      <TourOverlay
+        step={tourStep}
+        birthDate={birthDate || ''}
+        birthCity=""
+        onNext={tourNext}
+        onSkip={tourSkip}
+      />
     </motion.div>
   );
 }
