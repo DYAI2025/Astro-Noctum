@@ -161,17 +161,17 @@ export function Dashboard({
     : tourStep === 3 ? navHintsSentinelRef
     : undefined;
 
-  // The tour overlay is only visible when the step is either 0/3 (immediate)
-  // or when the scroll sentinel for steps 1/2 has been reached
-  const isTourStepVisible = tourStep === 0 || tourStep === 3 || tourStep === 'done'
+  // The tour overlay is only visible when the step is either 0/2/3 (immediate)
+  // or when the scroll sentinel for step 1 has been reached
+  const isTourStepVisible = tourStep === 0 || tourStep === 2 || tourStep === 3 || tourStep === 'done'
     || (typeof tourStep === 'number' && scrollReached.has(tourStep));
 
   useEffect(() => {
     if (tourStep === 'done' || typeof tourStep !== 'number') return;
-    // Only observe for steps 1 and 2
-    if (tourStep !== 1 && tourStep !== 2) return;
+    // Only observe for step 1 (astro section scroll gate)
+    if (tourStep !== 1) return;
 
-    const sentinel = tourStep === 1 ? astroSentinelRef.current : leviSentinelRef.current;
+    const sentinel = astroSentinelRef.current;
     if (!sentinel) return;
 
     const observer = new IntersectionObserver(
@@ -427,7 +427,7 @@ export function Dashboard({
         )}
       </AnimatePresence>
 
-      {/* ═══ TOUR OVERLAY (scroll-gated for steps 1+2) ════════════════════ */}
+      {/* ═══ TOUR OVERLAY (scroll-gated for step 1 only) ════════════════════ */}
       {isTourStepVisible && (
         <TourOverlay
           step={tourStep}
