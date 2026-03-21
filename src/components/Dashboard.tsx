@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   ArrowLeft, RefreshCw,
@@ -146,13 +146,43 @@ export function Dashboard({
   const { setPlanetariumMode, planetariumMode } = usePlanetarium();
   const [tourPrevPlanetariumMode, setTourPrevPlanetariumMode] = useState<boolean | null>(null);
 
+  // Scroll-triggered tour: steps 1 and 2 only show when their section is visible
+  const [scrollReached, setScrollReached] = useState<Set<number>>(new Set());
+  const astroSentinelRef = useRef<HTMLDivElement>(null);
+  const leviSentinelRef = useRef<HTMLDivElement>(null);
+
+  // The tour overlay is only visible when the step is either 0/3 (immediate)
+  // or when the scroll sentinel for steps 1/2 has been reached
+  const isTourStepVisible = tourStep === 0 || tourStep === 3 || tourStep === 'done'
+    || (typeof tourStep === 'number' && scrollReached.has(tourStep));
+
+  useEffect(() => {
+    if (tourStep === 'done' || typeof tourStep !== 'number') return;
+    // Only observe for steps 1 and 2
+    if (tourStep !== 1 && tourStep !== 2) return;
+
+    const sentinel = tourStep === 1 ? astroSentinelRef.current : leviSentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setScrollReached(prev => new Set(prev).add(tourStep));
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [tourStep]);
+
   useEffect(() => {
     if (tourStep === 0) {
-      // Capture the previous value once, then force Planetarium Mode on for the tour step.
       setTourPrevPlanetariumMode((prev) => (prev === null ? planetariumMode ?? null : prev));
       setPlanetariumMode(true);
     } else if (tourPrevPlanetariumMode !== null) {
-      // Restore the user's previous Planetarium Mode preference when leaving step 0.
       setPlanetariumMode(tourPrevPlanetariumMode);
       setTourPrevPlanetariumMode(null);
     }
@@ -315,6 +345,9 @@ export function Dashboard({
         </motion.div>
       )}
 
+      {/* ── Tour sentinel: step 1 triggers when astro section scrolls into view ── */}
+      <div ref={astroSentinelRef} aria-hidden="true" />
+
       {/* ═══ ASTRO SECTION (Orrery + Western + BaZi/WuXing + Houses) ═══ */}
       <SectionErrorBoundary name="Astro">
         <DashboardAstroSection
@@ -326,6 +359,9 @@ export function Dashboard({
           houseTexts={houseTexts}
         />
       </SectionErrorBoundary>
+
+      {/* ── Tour sentinel: step 2 triggers when Levi/interpretation area scrolls into view ── */}
+      <div ref={leviSentinelRef} aria-hidden="true" />
 
       <div id="interpretation-section" />
 
@@ -360,14 +396,16 @@ export function Dashboard({
         )}
       </AnimatePresence>
 
-      {/* ═══ TOUR OVERLAY ══════════════════════════════════════════════════ */}
-      <TourOverlay
-        step={tourStep}
-        birthDate={birthDate || ''}
-        birthCity={profileMeta.birthCity}
-        onNext={tourNext}
-        onSkip={tourSkip}
-      />
+      {/* ═══ TOUR OVERLAY (scroll-gated for steps 1+2) ════════════════════ */}
+      {isTourStepVisible && (
+        <TourOverlay
+          step={tourStep}
+          birthDate={birthDate || ''}
+          birthCity={profileMeta.birthCity}
+          onNext={tourNext}
+          onSkip={tourSkip}
+        />
+      )}
     </motion.div>
   );
 }

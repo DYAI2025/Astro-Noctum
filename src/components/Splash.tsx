@@ -87,12 +87,11 @@ export function Splash({ onEnter, onLanguageSelect }: SplashProps) {
     if (phase !== "video" || videoFading) return;
 
     videoStallTimer.current = setTimeout(() => {
-      console.warn("Splash video stalled, forcing animation fallback");
-      setVideoFading(true);
+      console.warn("Splash video stalled, entering app");
       markSeen();
-      startAnimation();
+      onEnter();
     }, 4000);
-  }, [phase, videoFading, markSeen, startAnimation]);
+  }, [phase, videoFading, markSeen, onEnter]);
 
   useEffect(() => {
     if (phase !== "video" || videoFading) return;
@@ -113,24 +112,24 @@ export function Splash({ onEnter, onLanguageSelect }: SplashProps) {
     const remaining = video.duration - video.currentTime;
     if (remaining <= CROSSFADE_DURATION && remaining > 0) {
       setVideoFading(true);
-      startAnimation();
+      // Skip Fusion Firmaments animation — go directly to app
+      markSeen();
+      onEnter();
     }
-  }, [videoFading, startAnimation, resetVideoStallGuard]);
+  }, [videoFading, resetVideoStallGuard, markSeen, onEnter]);
 
   // Video ended
   const handleVideoEnded = useCallback(() => {
     markSeen();
-    setVideoFading(true);
-    startAnimation();
-  }, [markSeen, startAnimation]);
+    onEnter();
+  }, [markSeen, onEnter]);
 
   // Video error fallback
   const handleVideoError = useCallback(() => {
-    console.warn("Intro video failed to load, skipping to animation");
+    console.warn("Intro video failed to load, entering app");
     setVideoError(true);
-    setVideoFading(true);
-    startAnimation();
-  }, [startAnimation]);
+    onEnter();
+  }, [onEnter]);
 
   // Skip handler (repeat visitors)
   const handleSkip = useCallback(() => {
@@ -138,10 +137,9 @@ export function Splash({ onEnter, onLanguageSelect }: SplashProps) {
     if (video) {
       video.pause();
     }
-    setVideoFading(true);
     markSeen();
-    startAnimation();
-  }, [markSeen, startAnimation]);
+    onEnter();
+  }, [markSeen, onEnter]);
 
   // Gate click → choose language and start video with sound
   const handleGateClick = useCallback((lang: "de" | "en") => {
@@ -156,7 +154,7 @@ export function Splash({ onEnter, onLanguageSelect }: SplashProps) {
 
       const video = videoRef.current;
       if (!video || videoError) {
-        startAnimation();
+        onEnter();
         return;
       }
 
@@ -202,7 +200,7 @@ export function Splash({ onEnter, onLanguageSelect }: SplashProps) {
             className="absolute inset-0 z-50 bg-[#010409] cursor-pointer"
             onClick={() => {
               try { localStorage.setItem(HERO_SEEN_KEY, "true"); } catch {}
-              onEnter();
+              setPhase("gate");
             }}
           >
             {/* Background particles */}

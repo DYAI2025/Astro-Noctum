@@ -40,10 +40,14 @@ describe('Splash redesign', () => {
     expect(screen.getByText(/touch the surface/i)).toBeDefined();
   });
 
-  it('calls onEnter when tapped', () => {
+  it('transitions to gate phase when tapped (not directly to onEnter)', () => {
     const onEnter = vi.fn();
     render(<Splash onEnter={onEnter} />);
     fireEvent.click(screen.getByText('BAZODIAC'));
-    expect(onEnter).toHaveBeenCalledOnce();
+    // Hero tap now advances to gate phase (language selection), not directly to app
+    expect(onEnter).not.toHaveBeenCalled();
+    // Gate phase should now be visible with language buttons
+    expect(screen.getByText('German')).toBeDefined();
+    expect(screen.getByText('English')).toBeDefined();
   });
 });

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AstroAccordionTile } from './AstroAccordionTile';
 import { useLanguage } from '@/src/contexts/LanguageContext';
+import { getZodiacSign } from '@/src/lib/astro-data/zodiacSigns';
 import type { ApiData } from '@/src/types/bafe';
 import type { TileTexts } from '@/src/types/interpretation';
 
@@ -15,22 +16,31 @@ export function AstroAccordion({ apiData, tileTexts }: AstroAccordionProps) {
 
   const toggle = (id: string) => setOpenTile(prev => prev === id ? null : id);
 
+  // Look up full zodiac descriptions for the user's signs
+  const sunSignKey = apiData.western?.zodiac_sign || '';
+  const moonSignKey = apiData.western?.moon_sign || '';
+  const ascSignKey = apiData.western?.ascendant_sign || '';
+  const sunData = getZodiacSign(sunSignKey);
+  const moonData = getZodiacSign(moonSignKey);
+  const ascData = getZodiacSign(ascSignKey);
+
   const tiles = [
     {
       id: 'western',
       icon: '☀️',
       title: lang === 'de' ? 'Sonnenzeichen' : 'Sun Sign',
-      value: apiData.western?.zodiac_sign || '—',
-      description: tileTexts.sun || '',
+      value: sunData ? sunData.name[lang] : sunSignKey || '—',
+      description: sunData?.sun[lang] || tileTexts.sun || '',
       subTiles: [
         {
           label: lang === 'de' ? 'Mondzeichen' : 'Moon Sign',
-          value: apiData.western?.moon_sign || '—',
-          description: tileTexts.moon || '',
+          value: moonData ? moonData.name[lang] : moonSignKey || '—',
+          description: moonData?.moon[lang] || tileTexts.moon || '',
         },
         {
           label: lang === 'de' ? 'Aszendent' : 'Ascendant',
-          value: apiData.western?.ascendant_sign || '—',
+          value: ascData ? ascData.name[lang] : ascSignKey || '—',
+          description: ascData?.asc[lang] || '',
         },
       ],
     },
