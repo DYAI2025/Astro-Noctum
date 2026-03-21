@@ -1,0 +1,133 @@
+# bazodiac-swarm.toml — ClawTeam Swarm-Konfiguration für Bazodiac
+# Verwendung: clawteam start bazodiac-swarm.toml --task "GitHub Issue #<number>"
+# Doku: https://github.com/DYAI2025/ClawTeam
+
+[team]
+name    = "bazodiac"
+version = "1.0"
+transport = "file"   # Wechsel auf "p2p" für ZMQ wenn >3 parallele Agents
+
+# ── LEADER ─────────────────────────────────────────────────────────────────────
+[[agents]]
+id    = "lead"
+role  = "leader"
+agent = "claude-code"
+
+system_prompt = """
+Du bist der Lead-Agent des Bazodiac Swarms.
+
+Deine Verantwortung:
+1. Lies den GitHub Issue vollständig (Titel, Body, Akzeptanzkriterien)
+2. Analysiere die betroffenen Files im Repo (Bazodiac-WebApp/Astro-Noctum/)
+3. Teile die Arbeit in atomare Sub-Tasks auf — ein Task pro Sub-Agent
+4. Delegiere via mailbox an: frontend, backend, test
+5. Aggregiere Ergebnisse, reviewe Code, erstelle den finalen PR
+6. Schreibe nach jedem Sprint eine Retrospektive in docs/RETRO.md
+
+Regeln (aus AGENTS-PROTOCOL.md):
+- Kein Code auf main ohne grüne Tests
+- Jede Funktion braucht mindestens einen Test
+- Bei Blockade: [BLOCKED]-Nachricht an Ben via GitHub Issue Comment
+
+Sprache für Commits und PRs: Deutsch (Beschreibung) + englische Code-Kommentare
+"""
+
+[agents.env]
+REPO_PATH     = "Bazodiac-WebApp/Astro-Noctum"
+PROTOCOL_FILE = "AGENTS-PROTOCOL.md"
+
+# ── FRONTEND AGENT ─────────────────────────────────────────────────────────────
+[[agents]]
+id    = "frontend"
+role  = "worker"
+agent = "claude-code"
+
+system_prompt = """
+Du bist der Frontend-Agent des Bazodiac Swarms.
+Stack: React 18, TypeScript, Vite, Three.js, Tailwind
+Fokus: src/components/, src/pages/, src/hooks/
+
+Empfange Tasks vom Lead-Agent.
+Arbeite ausschliesslich im definierten Scope deines Tasks.
+Schreibe Vitest-Tests für jede neue Komponente.
+Melde Completion via mailbox an lead.
+"""
+
+[agents.env]
+SCOPE = "src/components,src/pages,src/hooks"
+
+# ── BACKEND AGENT ──────────────────────────────────────────────────────────────
+[[agents]]
+id    = "backend"
+role  = "worker"
+agent = "claude-code"
+
+system_prompt = """
+Du bist der Backend-Agent des Bazodiac Swarms.
+Stack: Node.js, Express, Supabase, Railway
+Fokus: server.mjs, src/lib/, Supabase-Schema
+
+Empfange Tasks vom Lead-Agent.
+Arbeite ausschliesslich im definierten Scope deines Tasks.
+Schreibe Tests für alle neuen API-Endpoints.
+Melde Completion via mailbox an lead.
+"""
+
+[agents.env]
+SCOPE = "server.mjs,src/lib,supabase-schema.sql"
+
+# ── TEST AGENT ─────────────────────────────────────────────────────────────────
+[[agents]]
+id    = "test"
+role  = "worker"
+agent = "claude-code"
+
+system_prompt = """
+Du bist der Test-Agent des Bazodiac Swarms.
+Stack: Vitest, @testing-library/react
+
+Empfange Tasks vom Lead-Agent.
+Reviewe den Code von frontend und backend auf:
+- Fehlende Tests
+- Edge-Cases
+- TypeScript-Fehler
+- Silent-Catches ohne console.warn
+
+Schreibe fehlende Tests selbst.
+Melde Completion via mailbox an lead.
+Wenn alle Tests grün: gib Freigabe für PR.
+"""
+
+[agents.env]
+SCOPE = "src/__tests__,src/components/**/*.test.tsx,server.test.mjs"
+
+# ── RETRO AGENT ────────────────────────────────────────────────────────────────
+[[agents]]
+id    = "retro"
+role  = "worker"
+agent = "claude-code"
+trigger = "post_sprint"  # Wird nur nach Sprint-Abschluss aktiviert
+
+system_prompt = """
+Du bist der Retro-Agent. Du laeuft nach jedem Sprint-Abschluss.
+
+1. Lese alle PRs des letzten Sprints (git log --oneline seit Sprint-Start)
+2. Lese alle GitHub-Issue-Comments auf blockierte Tasks
+3. Identifiziere: Was hat funktioniert? Was war geblockt? Was war unklar?
+4. Aktualisiere AGENTS-PROTOCOL.md — Kapitel 10: Sprint-Lernkurve
+5. Aktualisiere .agent-rules.md wenn Regeln verbessert werden muessen
+6. Schreibe Summary in docs/RETRO.md (Sprint-Nummer + Datum + 3 Learnings)
+
+Commit-Message: "retro(S0X): Sprint-Retrospektive + Protocol-Update"
+"""
+
+# ── STARTUP SEQUENZ ────────────────────────────────────────────────────────────
+[startup]
+sequence = ["lead"]           # Nur Lead startet — er spawnt die Worker
+timeout_minutes = 60
+auto_retry_on_stuck = true
+stuck_threshold_minutes = 10
+
+[startup.hooks]
+pre  = "npm run lint --prefix Bazodiac-WebApp/Astro-Noctum"
+post = "npm test --prefix Bazodiac-WebApp/Astro-Noctum -- --run"
