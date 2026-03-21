@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   ArrowLeft, RefreshCw,
@@ -11,7 +11,6 @@ import { LegalFooter } from "./LegalFooter";
 import { UpgradeButton } from "./UpgradeButton";
 import { ManageSubscription } from "./ManageSubscription";
 import { DailyHoroscopeModal } from "./dashboard/DailyHoroscopeModal";
-import { soulprintToNatalWeights } from "./fusion-ring-website/signatur-bridge";
 import { useFirstRunDaily } from "../hooks/useFirstRunDaily";
 import { supabase } from "../lib/supabase";
 import type { ApiData } from "../types/bafe";
@@ -22,10 +21,9 @@ import { SectionErrorBoundary } from "./dashboard/SectionErrorBoundary";
 import { isFeatureEnabled } from "../lib/feature-flags";
 
 import BlueprintCard from "./dashboard/BlueprintCard";
-import MiniSignature from "./dashboard/MiniSignature";
-import LeviOrb from "./dashboard/LeviOrb";
-import InfluenceGauges from "./dashboard/InfluenceGauges";
-import { useFusionRingContext } from "../contexts/FusionRingContext";
+import { TourOverlay } from "./dashboard/TourOverlay";
+import { useDashboardTour } from "@/src/hooks/useDashboardTour";
+import { usePlanetarium } from "@/src/contexts/PlanetariumContext";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Static data
@@ -142,56 +140,51 @@ export function Dashboard({
   const { lang, t } = useLanguage();
   const { isPremium } = usePremium();
   const { user } = useAuth();
-  const { signal } = useFusionRingContext();
 
-  const influences = useMemo(() => {
-    if (!signal) return undefined;
-    const active = signal.sectors
-      .map((intensity, index) => ({ index, intensity }))
-      .sort((a, b) => b.intensity - a.intensity)
-      .slice(0, 4);
+  // ── Dashboard tour ────────────────────────────────────────────
+  const { tourStep, next: tourNext, skip: tourSkip } = useDashboardTour(userId);
+  const { setPlanetariumMode, planetariumMode } = usePlanetarium();
+  const [tourPrevPlanetariumMode, setTourPrevPlanetariumMode] = useState<boolean | null>(null);
 
-    const colors = [
-      "bg-linear-to-r from-red-500 to-orange-400",
-      "bg-linear-to-r from-cyan-400 to-blue-500",
-      "bg-linear-to-r from-purple-400 to-pink-400",
-      "bg-linear-to-r from-zinc-400 to-zinc-200"
-    ];
+  useEffect(() => {
+    if (tourStep === 0) {
+      // Capture the previous value once, then force Planetarium Mode on for the tour step.
+      setTourPrevPlanetariumMode((prev) => (prev === null ? planetariumMode ?? null : prev));
+      setPlanetariumMode(true);
+    } else if (tourPrevPlanetariumMode !== null) {
+      // Restore the user's previous Planetarium Mode preference when leaving step 0.
+      setPlanetariumMode(tourPrevPlanetariumMode);
+      setTourPrevPlanetariumMode(null);
+    }
+  }, [tourStep, planetariumMode, tourPrevPlanetariumMode, setPlanetariumMode]);
 
-    const labelsDe = ["Antrieb", "Fokus", "Balance", "Tiefe", "Expansion", "Struktur", "Freiheit", "Intuition", "Wandel", "Verbindung", "Klarheit", "Ruhe"];
-    const labelsEn = ["Drive", "Focus", "Balance", "Depth", "Expansion", "Structure", "Freedom", "Intuition", "Shift", "Connection", "Clarity", "Calm"];
-    const textLabels = lang === 'de' ? labelsDe : labelsEn;
-
-    return active.map((sec, i) => ({
-      label: textLabels[sec.index % 12] + "-Feld",
-      value: sec.intensity,
-      color: colors[i] || colors[0]
-    }));
-  }, [signal, lang]);
-
-  // ── Data extraction (kept for ShareCard) ─────────────────────
-  const sunSign       = apiData.western?.zodiac_sign      || "";
-  const zodiacAnimal  = apiData.bazi?.zodiac_sign         || "";
-  const dominantEl    = apiData.wuxing?.dominant_element   || "";
-
-  // ── Fetch profile data for daily modal + signature widget ───────────
+  // ── Fetch profile data for daily modal + tour ──────────────────────
   const [profileMeta, setProfileMeta] = useState<{
     birthInput: { date: string; time: string; tz: string; lat: number; lon: number } | null;
     soulprintSectors: number[] | null;
     quizSectors: number[];
-  }>({ birthInput: null, soulprintSectors: null, quizSectors: EMPTY_SECTORS });
+    birthCity: string;
+  }>({ birthInput: null, soulprintSectors: null, quizSectors: EMPTY_SECTORS, birthCity: '' });
 
   useEffect(() => {
     if (!userId) return;
     let cancelled = false;
 
     (async () => {
-      const { data } = await supabase
-        .from('astro_profiles')
-        .select('birth_date, birth_time, iana_time_zone, birth_lat, birth_lng, soulprint_sectors')
-        .eq('user_id', userId)
-        .maybeSingle();
+      const [profileRes, birthRes] = await Promise.all([
+        supabase
+          .from('astro_profiles')
+          .select('birth_date, birth_time, iana_time_zone, birth_lat, birth_lng, soulprint_sectors')
+          .eq('user_id', userId)
+          .maybeSingle(),
+        supabase
+          .from('birth_data')
+          .select('place_label')
+          .eq('user_id', userId)
+          .maybeSingle(),
+      ]);
 
+      const data = profileRes.data;
       if (cancelled || !data) return;
 
       const birthInput = (data.birth_date && data.birth_lat != null && data.birth_lng != null)
@@ -208,7 +201,12 @@ export function Dashboard({
         ? data.soulprint_sectors as number[]
         : null;
 
-      setProfileMeta({ birthInput: birthInput, soulprintSectors: soulprint, quizSectors: EMPTY_SECTORS });
+      setProfileMeta({
+        birthInput,
+        soulprintSectors: soulprint,
+        quizSectors: EMPTY_SECTORS,
+        birthCity: birthRes.data?.place_label || '',
+      });
     })();
 
     return () => { cancelled = true; };
@@ -216,12 +214,6 @@ export function Dashboard({
 
   // ── Feature flags ──────────────────────────────────────────────────
   const dailyEnabled = isFeatureEnabled('daily_modal_v1');
-
-  // ── V2 Signatur weights (memoized to avoid new object every render) ──
-  const v2NatalWeights = useMemo(
-    () => profileMeta.soulprintSectors ? soulprintToNatalWeights(profileMeta.soulprintSectors) : undefined,
-    [profileMeta.soulprintSectors]
-  );
 
   // ── Daily horoscope modal ───────────────────────────────────────────
   const { dailyData, showModal, handleClose: handleDailyClose } = useFirstRunDaily(
@@ -259,29 +251,6 @@ export function Dashboard({
           </ul>
         </div>
       )}
-
-      {/* ═══ DAILY ZONES (Signature, Levi, Gauges) ═══════════════════════ */}
-      <div className="mb-12 space-y-6 lg:space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-          <SectionErrorBoundary name="MiniSignature">
-             <MiniSignature
-               natalWeights={v2NatalWeights}
-               onExpand={() => {}}
-             />
-          </SectionErrorBoundary>
-          
-          <SectionErrorBoundary name="LeviOrb">
-             <LeviOrb
-               onActivate={onResumeAudio}
-               isListening={false}
-             />
-          </SectionErrorBoundary>
-        </div>
-
-        <SectionErrorBoundary name="InfluenceGauges">
-          <InfluenceGauges influences={influences} />
-        </SectionErrorBoundary>
-      </div>
 
       {/* ═══ PAGE HEADER ═══════════════════════════════════════════════ */}
       <motion.header
@@ -390,6 +359,15 @@ export function Dashboard({
           <DailyHoroscopeModal data={dailyData} onClose={handleDailyClose} />
         )}
       </AnimatePresence>
+
+      {/* ═══ TOUR OVERLAY ══════════════════════════════════════════════════ */}
+      <TourOverlay
+        step={tourStep}
+        birthDate={birthDate || ''}
+        birthCity={profileMeta.birthCity}
+        onNext={tourNext}
+        onSkip={tourSkip}
+      />
     </motion.div>
   );
 }

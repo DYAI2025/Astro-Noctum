@@ -34,6 +34,16 @@ export default function App() {
   // from "returning user with existing profile".
   const [hasStartedOnboarding, setHasStartedOnboarding] = useState(false);
 
+  // Returning users (already logged in from prior session) skip Splash entirely
+  const isReturningUser = !authLoading && user !== null;
+
+  useEffect(() => {
+    if (isReturningUser) {
+      setShowSplash(false);
+      setSiteVisible(true);
+    }
+  }, [isReturningUser]);
+
   const ambiente = useAmbientePlayer();
 
   const {
