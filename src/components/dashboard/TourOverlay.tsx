@@ -14,10 +14,16 @@ const STEP_CONTENT: Record<
   Exclude<TourStep, 'done'>,
   (props: TourOverlayProps) => { text: string; buttons: React.ReactNode }
 > = {
-  0: ({ birthDate, birthCity, onNext }) => ({
-    text: `Willkommen zum Himmel deiner Geburt am ${birthDate} in ${birthCity}`,
-    buttons: <GoldButton onClick={onNext}>OK</GoldButton>,
-  }),
+  0: ({ birthDate, birthCity, onNext }) => {
+    const trimmedBirthDate = birthDate?.trim();
+    const trimmedBirthCity = birthCity?.trim();
+    const datePart = trimmedBirthDate ? ` am ${trimmedBirthDate}` : '';
+    const cityPart = trimmedBirthCity ? ` in ${trimmedBirthCity}` : '';
+    return {
+      text: `Willkommen zum Himmel deiner Geburt${datePart}${cityPart}`,
+      buttons: <GoldButton onClick={onNext}>OK</GoldButton>,
+    };
+  },
   1: ({ onNext }) => ({
     text: 'Schau dir deine Zeichen an. Klicke auf die Kacheln, um mehr darüber zu erfahren.',
     buttons: <GoldButton onClick={onNext}>OK</GoldButton>,
