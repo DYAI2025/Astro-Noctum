@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   ArrowLeft, RefreshCw,
@@ -346,7 +346,7 @@ export function Dashboard({
       )}
 
       {/* ── Tour sentinel: step 1 triggers when astro section scrolls into view ── */}
-      <div ref={astroSentinelRef} aria-hidden="true" />
+      <div ref={astroSentinelRef} className="h-px" aria-hidden="true" />
 
       {/* ═══ ASTRO SECTION (Orrery + Western + BaZi/WuXing + Houses) ═══ */}
       <SectionErrorBoundary name="Astro">
@@ -361,7 +361,7 @@ export function Dashboard({
       </SectionErrorBoundary>
 
       {/* ── Tour sentinel: step 2 triggers when Levi/interpretation area scrolls into view ── */}
-      <div ref={leviSentinelRef} aria-hidden="true" />
+      <div ref={leviSentinelRef} className="h-px" aria-hidden="true" />
 
       <div id="interpretation-section" />
 

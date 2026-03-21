@@ -20,12 +20,11 @@ export function Splash({ onEnter, onLanguageSelect }: SplashProps) {
   // Phases: "hero" → "gate" → "video" → "animation"
   // "hero"  = marketing/value prop scroll page
   // "gate"  = language selection to unlock audio context
-  const [phase, setPhase] = useState<"hero" | "gate" | "video" | "animation">(() => {
+  const [phase, setPhase] = useState<"hero" | "gate" | "video">(() => {
     try {
       return localStorage.getItem(HERO_SEEN_KEY) === "true" ? "gate" : "hero";
     } catch { return "hero"; }
   });
-  const [stage, setStage] = useState(0); // CSS animation stages (0-4)
   const [videoFading, setVideoFading] = useState(false);
   const [canSkip, setCanSkip] = useState(false);
   const [videoError, setVideoError] = useState(false);
@@ -33,7 +32,6 @@ export function Splash({ onEnter, onLanguageSelect }: SplashProps) {
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const hasSeenIntro = useRef(false);
-  const animTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const videoStallTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Check if user has seen the intro before
@@ -51,7 +49,6 @@ export function Splash({ onEnter, onLanguageSelect }: SplashProps) {
   // Cleanup timers
   useEffect(() => {
     return () => {
-      animTimers.current.forEach(clearTimeout);
       if (videoStallTimer.current) clearTimeout(videoStallTimer.current);
     };
   }, []);
@@ -62,22 +59,6 @@ export function Splash({ onEnter, onLanguageSelect }: SplashProps) {
     } catch {
       // silent
     }
-  }, []);
-
-  // Start CSS animation sequence
-  const startAnimation = useCallback(() => {
-    setPhase((prev) => {
-      if (prev === "animation") return prev;
-      return "animation";
-    });
-
-    animTimers.current.forEach(clearTimeout);
-    animTimers.current = [
-      setTimeout(() => setStage(1), 300),
-      setTimeout(() => setStage(2), 1800),
-      setTimeout(() => setStage(3), 3800),
-      setTimeout(() => setStage(4), 5300),
-    ];
   }, []);
 
   // Stall guard: only fallback when video playback stops progressing.
@@ -163,10 +144,10 @@ export function Splash({ onEnter, onLanguageSelect }: SplashProps) {
       video.volume = 0.8;
       video.play().catch((err) => {
         console.warn("Video play failed after interaction:", err);
-        startAnimation();
+        onEnter();
       });
     });
-  }, [videoError, startAnimation, resetVideoStallGuard]);
+  }, [videoError, onEnter, resetVideoStallGuard]);
 
   return (
     <div className="fixed inset-0 z-[100] bg-obsidian flex flex-col items-center justify-center overflow-hidden">
@@ -277,114 +258,6 @@ export function Splash({ onEnter, onLanguageSelect }: SplashProps) {
         </motion.button>
       )}
 
-      {/* ── ENTER SCREEN — ephemeris scroll reveal after video ── */}
-      <div
-        className={`enter-screen absolute inset-0 z-20 transition-opacity duration-[3000ms] ${
-          phase === "animation" || videoFading ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
-      >
-        {/* Deep space gradient base */}
-        <div className="absolute inset-0 enter-bg" />
-
-        {/* Noise texture */}
-        <div className="absolute inset-0 enter-noise pointer-events-none" />
-
-        {/* Sparse twinkling starfield */}
-        <EnterStarfield active={stage >= 1} />
-
-        {/* Subtle gold particle canvas */}
-        <EnterParticles active={stage >= 1} />
-
-        {/* ── Central composition ── */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-
-          {/* ── Ephemeris Scroll ── */}
-          <div className="relative flex flex-col items-center">
-
-            {/* Subtitle above scroll */}
-            <motion.p
-              initial={{ opacity: 0, letterSpacing: "0.2em" }}
-              animate={stage >= 2 ? { opacity: 0.6, letterSpacing: "0.6em" } : {}}
-              transition={{ duration: 3 }}
-              className="font-sans text-[8px] md:text-[10px] uppercase text-[#d4af37]/50 mb-6 md:mb-8 z-10"
-            >
-              Fusion Firmaments
-            </motion.p>
-
-            {/* Scroll container with unroll animation */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={stage >= 1 ? { opacity: 1, scale: 1 } : {}}
-              transition={{ duration: 2.5, ease: "easeOut" }}
-            >
-              <div className={`enter-scroll-wrap enter-scroll-unroll ${stage >= 2 ? "unrolled" : ""}`}>
-                {/* Top scroll rod */}
-                <div className="enter-scroll-rod enter-scroll-rod--top" />
-
-                {/* Ephemeris image */}
-                <img
-                  src="/ephemeris-fused-firmament.png"
-                  alt="Fused Firmament Engine — celestial star chart"
-                  className="enter-ephemeris"
-                />
-
-                {/* Overlay for text readability */}
-                <div className="enter-scroll-overlay" />
-
-                {/* Bottom scroll rod */}
-                <div className="enter-scroll-rod enter-scroll-rod--bottom" />
-              </div>
-            </motion.div>
-
-            {/* Title below scroll */}
-            <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              animate={stage >= 3 ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
-              className="enter-title font-landing-display text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight mt-8 md:mt-12 mb-2 z-10"
-            >
-              Bazodiac
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={stage >= 3 ? { opacity: 1 } : {}}
-              transition={{ duration: 2, delay: 0.6 }}
-              className="font-serif text-xs md:text-sm tracking-[0.2em] md:tracking-[0.3em] text-[#d4af37]/40 z-10"
-            >
-              Coniunctio Caelorum
-            </motion.p>
-          </div>
-
-          {/* ── Enter button ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={stage >= 4 ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 1.5, ease: "easeOut" }}
-            className="absolute bottom-12 md:bottom-20 text-center z-10"
-          >
-            <button
-              onClick={onEnter}
-              className="enter-btn group relative px-14 py-5 border border-[#d4af37]/15 text-[#d4af37]/70 font-sans text-[10px] tracking-[0.5em] uppercase backdrop-blur-md transition-all duration-700 hover:border-[#d4af37]/35 hover:text-[#d4af37] cursor-pointer"
-            >
-              <span className="relative z-10">Enter</span>
-              <div className="absolute inset-0 bg-[#d4af37]/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-              <div className="absolute inset-0 enter-btn-glow opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-            </button>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={stage >= 4 ? { opacity: 1 } : {}}
-              transition={{ duration: 1, delay: 0.8 }}
-              className="mt-4 text-[8px] text-[#d4af37]/20 tracking-[0.4em] uppercase"
-            >
-              Awaken the cosmos
-            </motion.p>
-          </motion.div>
-        </div>
-
-        {/* Bottom gradient fade */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#020617] to-transparent pointer-events-none" />
-      </div>
     </div>
   );
 }
