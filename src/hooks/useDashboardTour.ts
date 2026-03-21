@@ -31,7 +31,8 @@ export function useDashboardTour(userId: string | undefined) {
       if (prev === 3) {
         // Persist completion
         if (userId) {
-          supabase.from('profiles').update({ tour_completed: true }).eq('id', userId);
+          supabase.from('profiles').update({ tour_completed: true }).eq('id', userId)
+            .then(({ error }) => { if (error) console.warn('[tour] persist failed:', error.message); });
         }
         return 'done';
       }
@@ -41,7 +42,8 @@ export function useDashboardTour(userId: string | undefined) {
 
   const skip = useCallback(() => {
     if (userId) {
-      supabase.from('profiles').update({ tour_completed: true }).eq('id', userId);
+      supabase.from('profiles').update({ tour_completed: true }).eq('id', userId)
+        .then(({ error }) => { if (error) console.warn('[tour] persist failed:', error.message); });
     }
     setTourStep('done');
   }, [userId]);

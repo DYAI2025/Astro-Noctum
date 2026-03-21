@@ -73,11 +73,11 @@ export function AstroAccordion({ apiData, tileTexts }: AstroAccordionProps) {
         },
         {
           label: lang === 'de' ? 'Sekundäres Element' : 'Secondary Element',
-          value: (apiData.wuxing as Record<string, unknown>)?.secondary_element as string || '—',
+          value: String(apiData.wuxing?.['secondary_element' as keyof typeof apiData.wuxing] ?? '—'),
         },
         {
           label: lang === 'de' ? 'Mangel-Element' : 'Deficient Element',
-          value: (apiData.wuxing as Record<string, unknown>)?.deficient_element as string || '—',
+          value: String(apiData.wuxing?.['deficient_element' as keyof typeof apiData.wuxing] ?? '—'),
         },
       ],
     },

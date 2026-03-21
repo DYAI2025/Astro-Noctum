@@ -15,15 +15,19 @@ export function SignaturIntroPopup({ onAnswer }: Props) {
   return (
     <div
       data-testid="intro-backdrop"
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm pointer-events-none"
+      onKeyDown={(e) => { if (e.key === 'Escape') e.preventDefault(); }}
     >
       <motion.div
-        className="mx-6 max-w-md w-full rounded-2xl border border-gold/15 bg-obsidian/95 p-8 shadow-2xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="signatur-intro-heading"
+        className="mx-6 max-w-md w-full rounded-2xl border border-gold/15 bg-obsidian/95 p-8 shadow-2xl pointer-events-auto"
         initial={{ opacity: 0, y: 20, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.3 }}
       >
-        <h2 className="font-serif text-lg text-ink/90 mb-6 text-center">
+        <h2 id="signatur-intro-heading" className="font-serif text-lg text-ink/90 mb-6 text-center">
           Was beschreibt dich am besten?
         </h2>
 

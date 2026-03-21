@@ -1,6 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react';
-
-export type TourStep = 0 | 1 | 2 | 3 | 'done';
+import type { TourStep } from '@/src/hooks/useDashboardTour';
 
 interface TourOverlayProps {
   step: TourStep;
