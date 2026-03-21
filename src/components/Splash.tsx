@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { LandingHero } from "./LandingHero";
 
 interface SplashProps {
   onEnter: () => void;
@@ -191,7 +190,7 @@ export function Splash({ onEnter, onLanguageSelect }: SplashProps) {
         </video>
       )}
 
-      {/* ── HERO: Landing Page ── */}
+      {/* ── HERO: Gold Cormorant Splash ── */}
       <AnimatePresence>
         {phase === "hero" && (
           <motion.div
@@ -200,14 +199,25 @@ export function Splash({ onEnter, onLanguageSelect }: SplashProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.8 }}
-            className="absolute inset-0 z-50 overflow-y-auto"
+            className="absolute inset-0 z-50 bg-[#010409] cursor-pointer"
+            onClick={() => {
+              try { localStorage.setItem(HERO_SEEN_KEY, "true"); } catch {}
+              onEnter();
+            }}
           >
-            <LandingHero
-              onContinue={() => {
-                try { localStorage.setItem(HERO_SEEN_KEY, "true"); } catch {}
-                setPhase("gate");
-              }}
-            />
+            {/* Background particles */}
+            <EnterStarfield active />
+            <EnterParticles active />
+
+            {/* Central typography */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <h1 className="font-serif text-gold text-5xl md:text-7xl tracking-[0.3em] uppercase">
+                BAZODIAC
+              </h1>
+              <p className="text-gold/50 text-[9px] tracking-[0.5em] uppercase mt-6">
+                TOUCH THE SURFACE
+              </p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
