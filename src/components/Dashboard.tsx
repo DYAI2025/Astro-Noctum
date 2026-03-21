@@ -143,11 +143,20 @@ export function Dashboard({
 
   // ── Dashboard tour ────────────────────────────────────────────
   const { tourStep, next: tourNext, skip: tourSkip } = useDashboardTour(userId);
-  const { setPlanetariumMode } = usePlanetarium();
+  const { setPlanetariumMode, planetariumMode } = usePlanetarium();
+  const [tourPrevPlanetariumMode, setTourPrevPlanetariumMode] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (tourStep === 0) setPlanetariumMode(true);
-  }, [tourStep, setPlanetariumMode]);
+    if (tourStep === 0) {
+      // Capture the previous value once, then force Planetarium Mode on for the tour step.
+      setTourPrevPlanetariumMode((prev) => (prev === null ? planetariumMode ?? null : prev));
+      setPlanetariumMode(true);
+    } else if (tourPrevPlanetariumMode !== null) {
+      // Restore the user's previous Planetarium Mode preference when leaving step 0.
+      setPlanetariumMode(tourPrevPlanetariumMode);
+      setTourPrevPlanetariumMode(null);
+    }
+  }, [tourStep, planetariumMode, tourPrevPlanetariumMode, setPlanetariumMode]);
 
   // ── Fetch profile data for daily modal + tour ──────────────────────
   const [profileMeta, setProfileMeta] = useState<{
