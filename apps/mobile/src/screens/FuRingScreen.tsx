@@ -72,28 +72,7 @@ export function FuRingScreen() {
     return () => { active = false; };
   }, [userId]);
 
-  const sectors = useMemo(() => {
-    if (!soulprintSectors) return null;
-    const max = Math.max(...soulprintSectors, 0.01);
-    return soulprintSectors.map((value, i) => ({
-      label: SECTOR_LABELS[i],
-      emoji: SECTOR_EMOJIS[i],
-      color: SECTOR_COLORS[i],
-      value,
-      pct: Math.round((value / max) * 100),
-    }));
-  }, [soulprintSectors]);
-
-  if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator color={COLORS.gold} size="large" />
-        <Text style={styles.loadingText}>Signatur wird geladen...</Text>
-      </View>
-    );
-  }
-
-  // Use bootstrap data if available, otherwise fallback to profile
+  // ALL hooks MUST be before any early return (React rules of hooks)
   const soulprintSectors = useMemo(() => {
     if (bootstrap?.soulprint_sectors) return bootstrap.soulprint_sectors;
     if (profile?.astro_json) return generateFallbackSectors(profile);
@@ -110,6 +89,29 @@ export function FuRingScreen() {
       harmony_index: 0.5,
     };
   }, [bootstrap, profile]);
+
+  const sectors = useMemo(() => {
+    if (!soulprintSectors) return null;
+    const max = Math.max(...soulprintSectors, 0.01);
+    return soulprintSectors.map((value, i) => ({
+      label: SECTOR_LABELS[i],
+      emoji: SECTOR_EMOJIS[i],
+      color: SECTOR_COLORS[i],
+      value,
+      pct: Math.round((value / max) * 100),
+    }));
+  }, [soulprintSectors]);
+
+  // ---- Early returns (after all hooks) ----
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator color={COLORS.gold} size="large" />
+        <Text style={styles.loadingText}>Signatur wird geladen...</Text>
+      </View>
+    );
+  }
 
   if (!soulprintSectors) {
     return (
