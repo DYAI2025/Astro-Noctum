@@ -1,0 +1,76 @@
+{
+  "_comment": "Diese Datei kommt nach ~/.clawteam/config.json auf deinem Mac.",
+  "_install": "cp docs/bazodiac-clawteam-config.json ~/.clawteam/config.json",
+
+  "default_team": "bazodiac",
+  "transport": "file",
+  "workspace": "auto",
+  "default_backend": "tmux",
+  "skip_permissions": true,
+  "timezone": "Europe/Berlin",
+
+  "profiles": {
+
+    "minimax-primary": {
+      "description": "MiniMax 2.5 — primary LLM for all Bazodiac agents",
+      "agent": "opencode",
+      "model": "MiniMax-Text-01",
+      "base_url": "https://api.minimax.chat/v1",
+      "api_key_env": "MINIMAX_API_KEY",
+      "api_key_target_env": "OPENAI_API_KEY",
+      "env": {
+        "OPENAI_BASE_URL": "https://api.minimax.chat/v1"
+      }
+    },
+
+    "openrouter-fallback": {
+      "description": "OpenRouter — fallback wenn MiniMax nicht erreichbar",
+      "agent": "opencode",
+      "model": "minimax/minimax-m1-extended",
+      "base_url": "https://openrouter.ai/api/v1",
+      "api_key_env": "OPENROUTER_API_KEY",
+      "api_key_target_env": "OPENAI_API_KEY",
+      "env": {
+        "OPENAI_BASE_URL": "https://openrouter.ai/api/v1",
+        "OR_SITE_URL": "https://bazodiac.com",
+        "OR_APP_NAME": "Bazodiac"
+      }
+    },
+
+    "openai-lastresort": {
+      "description": "OpenAI GPT-4o — letzter Ausweg wenn OpenRouter auch down",
+      "agent": "opencode",
+      "model": "gpt-4o",
+      "base_url": "https://api.openai.com/v1",
+      "api_key_env": "OPENAI_API_KEY",
+      "api_key_target_env": "OPENAI_API_KEY",
+      "env": {
+        "OPENAI_BASE_URL": "https://api.openai.com/v1"
+      }
+    }
+
+  },
+
+  "presets": {
+
+    "bazodiac-default": {
+      "description": "Standard-Preset fuer alle Bazodiac-Agents",
+      "auth_env": "MINIMAX_API_KEY",
+      "base_url": "https://api.minimax.chat/v1",
+      "env": {
+        "GITHUB_REPO": "DYAI2025/Astro-Noctum",
+        "AGENTS_PROTOCOL": "AGENTS-PROTOCOL.md",
+        "BACKLOG_FILE": "BACKLOG.md"
+      },
+      "client_overrides": {
+        "openrouter-fallback": {
+          "description": "OpenRouter override wenn MiniMax nicht antwortet",
+          "base_url": "https://openrouter.ai/api/v1",
+          "api_key_env": "OPENROUTER_API_KEY",
+          "api_key_target_env": "OPENAI_API_KEY"
+        }
+      }
+    }
+
+  }
+}

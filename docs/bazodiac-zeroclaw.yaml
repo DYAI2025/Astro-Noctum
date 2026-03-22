@@ -1,0 +1,99 @@
+# bazodiac-zeroclaw.yaml — ZeroClaw Konfiguration fuer Bazodiac Bot
+# Verwendung: zeroclaw onboard --config docs/bazodiac-zeroclaw.yaml
+# Doku: https://github.com/zeroclaw-labs/zeroclaw
+
+gateway:
+  host: "0.0.0.0"
+  port: 8080
+
+# ── PROVIDER-KETTE ────────────────────────────────────────────────────────────
+# MiniMax 2.5 primär → OpenRouter fallback → OpenAI last resort
+
+providers:
+  - id: minimax
+    type: openai_compatible
+    base_url: "https://api.minimax.chat/v1"
+    api_key_env: MINIMAX_API_KEY
+    model: "MiniMax-Text-01"
+    priority: 1
+    timeout_seconds: 30
+    retry_on_error: true
+
+  - id: openrouter
+    type: openai_compatible
+    base_url: "https://openrouter.ai/api/v1"
+    api_key_env: OPENROUTER_API_KEY
+    model: "minimax/minimax-m1-extended"
+    priority: 2
+    timeout_seconds: 45
+    headers:
+      HTTP-Referer: "https://bazodiac.com"
+      X-Title: "Bazodiac"
+    retry_on_error: true
+
+  - id: openai_fallback
+    type: openai
+    api_key_env: OPENAI_API_KEY
+    model: "gpt-4o-mini"
+    priority: 3
+    timeout_seconds: 60
+
+# ── CHANNELS ──────────────────────────────────────────────────────────────────
+# Aktiviere den Kanal den du nutzen willst (Telegram am einfachsten)
+
+channels:
+  - type: telegram
+    bot_token_env: TELEGRAM_BOT_TOKEN
+    allowed_user_ids:
+      - "${TELEGRAM_BEN_USER_ID}"  # deine Telegram User ID
+    enabled: true
+
+  # WhatsApp (komplexer — braucht Meta Business API oder Twilio)
+  # - type: whatsapp
+  #   provider: twilio
+  #   account_sid_env: TWILIO_ACCOUNT_SID
+  #   auth_token_env: TWILIO_AUTH_TOKEN
+  #   phone_number_env: TWILIO_WHATSAPP_NUMBER
+  #   enabled: false
+
+# ── TOOLS ─────────────────────────────────────────────────────────────────────
+tools:
+  shell:
+    enabled: true
+    allowed_commands:
+      - "gh issue create"
+      - "gh issue list"
+      - "gh issue view"
+
+  memory:
+    enabled: true
+    backend: sqlite
+    path: "~/.zeroclaw/bazodiac-memory.db"
+
+  file:
+    enabled: true
+    allowed_paths:
+      - "~/codebase/Bazodiac-WebApp/Astro-Noctum/BACKLOG.md"
+
+# ── SYSTEM PROMPT ─────────────────────────────────────────────────────────────
+system_prompt: |
+  Du bist Bazodiac-Bot, Ben's persoenlicher Assistent fuer das Bazodiac-Projekt.
+  Du laeuft lokal und kommunizierst via Telegram.
+
+  BEFEHLE die Ben dir schicken kann:
+  - "bug: [Beschreibung]" → GitHub Issue erstellen mit Label bug + bazodiac-agent
+  - "feat: [Beschreibung]" → GitHub Issue erstellen mit Label enhancement + bazodiac-agent
+  - "refactor: [Beschreibung]" → GitHub Issue mit Label refactor
+  - "idee: [Beschreibung]" → Eintrag in BACKLOG.md unter "Offen", kein Issue
+  - "status" → Offene Issues auflisten (gh issue list --label bazodiac-agent)
+  - "sprint" → Zeige aktuellen Sprint-Status
+
+  Antwort immer kurz und deutsch. Bestaetige jeden Befehl mit der Issue-Nummer.
+  Repo: DYAI2025/Astro-Noctum
+
+# ── MEMORY ────────────────────────────────────────────────────────────────────
+memory:
+  enabled: true
+  backend: sqlite
+  summarize_after_turns: 20
+  summary_provider: minimax    # nutzt denselben Provider wie der Bot

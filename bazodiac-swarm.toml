@@ -1,17 +1,23 @@
 # bazodiac-swarm.toml — ClawTeam Swarm-Konfiguration für Bazodiac
 # Verwendung: clawteam start bazodiac-swarm.toml --task "GitHub Issue #<number>"
+# Provider-Priorität: MiniMax 2.5 → OpenRouter → OpenAI
 # Doku: https://github.com/DYAI2025/ClawTeam
 
 [team]
-name    = "bazodiac"
-version = "1.0"
+name      = "bazodiac"
+version   = "1.0"
 transport = "file"   # Wechsel auf "p2p" für ZMQ wenn >3 parallele Agents
+
+# Provider-Profil: MiniMax 2.5 (primary)
+# Wird über ~/.clawteam/config.json geladen — siehe bazodiac-clawteam-config.json
+[team.profile]
+name = "minimax-primary"   # Referenziert das Profil aus der globalen Config
 
 # ── LEADER ─────────────────────────────────────────────────────────────────────
 [[agents]]
 id    = "lead"
 role  = "leader"
-agent = "claude-code"
+agent = "opencode"   # OpenAI-kompatibler Agent — funktioniert mit MiniMax
 
 system_prompt = """
 Du bist der Lead-Agent des Bazodiac Swarms.
@@ -29,18 +35,20 @@ Regeln (aus AGENTS-PROTOCOL.md):
 - Jede Funktion braucht mindestens einen Test
 - Bei Blockade: [BLOCKED]-Nachricht an Ben via GitHub Issue Comment
 
-Sprache für Commits und PRs: Deutsch (Beschreibung) + englische Code-Kommentare
+Sprache fuer Commits und PRs: Deutsch (Beschreibung) + englische Code-Kommentare
 """
 
 [agents.env]
-REPO_PATH     = "Bazodiac-WebApp/Astro-Noctum"
-PROTOCOL_FILE = "AGENTS-PROTOCOL.md"
+REPO_PATH         = "Bazodiac-WebApp/Astro-Noctum"
+PROTOCOL_FILE     = "AGENTS-PROTOCOL.md"
+OPENAI_BASE_URL   = "https://api.minimax.chat/v1"
+# OPENAI_API_KEY wird aus ~/.clawteam/config.json via api_key_env gesetzt
 
 # ── FRONTEND AGENT ─────────────────────────────────────────────────────────────
 [[agents]]
 id    = "frontend"
 role  = "worker"
-agent = "claude-code"
+agent = "opencode"
 
 system_prompt = """
 Du bist der Frontend-Agent des Bazodiac Swarms.
@@ -49,18 +57,19 @@ Fokus: src/components/, src/pages/, src/hooks/
 
 Empfange Tasks vom Lead-Agent.
 Arbeite ausschliesslich im definierten Scope deines Tasks.
-Schreibe Vitest-Tests für jede neue Komponente.
+Schreibe Vitest-Tests fuer jede neue Komponente.
 Melde Completion via mailbox an lead.
 """
 
 [agents.env]
-SCOPE = "src/components,src/pages,src/hooks"
+SCOPE           = "src/components,src/pages,src/hooks"
+OPENAI_BASE_URL = "https://api.minimax.chat/v1"
 
 # ── BACKEND AGENT ──────────────────────────────────────────────────────────────
 [[agents]]
 id    = "backend"
 role  = "worker"
-agent = "claude-code"
+agent = "opencode"
 
 system_prompt = """
 Du bist der Backend-Agent des Bazodiac Swarms.
@@ -69,18 +78,19 @@ Fokus: server.mjs, src/lib/, Supabase-Schema
 
 Empfange Tasks vom Lead-Agent.
 Arbeite ausschliesslich im definierten Scope deines Tasks.
-Schreibe Tests für alle neuen API-Endpoints.
+Schreibe Tests fuer alle neuen API-Endpoints.
 Melde Completion via mailbox an lead.
 """
 
 [agents.env]
-SCOPE = "server.mjs,src/lib,supabase-schema.sql"
+SCOPE           = "server.mjs,src/lib,supabase-schema.sql"
+OPENAI_BASE_URL = "https://api.minimax.chat/v1"
 
 # ── TEST AGENT ─────────────────────────────────────────────────────────────────
 [[agents]]
 id    = "test"
 role  = "worker"
-agent = "claude-code"
+agent = "opencode"
 
 system_prompt = """
 Du bist der Test-Agent des Bazodiac Swarms.
@@ -95,18 +105,19 @@ Reviewe den Code von frontend und backend auf:
 
 Schreibe fehlende Tests selbst.
 Melde Completion via mailbox an lead.
-Wenn alle Tests grün: gib Freigabe für PR.
+Wenn alle Tests gruen: gib Freigabe fuer PR.
 """
 
 [agents.env]
-SCOPE = "src/__tests__,src/components/**/*.test.tsx,server.test.mjs"
+SCOPE           = "src/__tests__,src/components/**/*.test.tsx,server.test.mjs"
+OPENAI_BASE_URL = "https://api.minimax.chat/v1"
 
 # ── RETRO AGENT ────────────────────────────────────────────────────────────────
 [[agents]]
-id    = "retro"
-role  = "worker"
-agent = "claude-code"
-trigger = "post_sprint"  # Wird nur nach Sprint-Abschluss aktiviert
+id      = "retro"
+role    = "worker"
+agent   = "opencode"
+trigger = "post_sprint"
 
 system_prompt = """
 Du bist der Retro-Agent. Du laeuft nach jedem Sprint-Abschluss.
@@ -114,18 +125,21 @@ Du bist der Retro-Agent. Du laeuft nach jedem Sprint-Abschluss.
 1. Lese alle PRs des letzten Sprints (git log --oneline seit Sprint-Start)
 2. Lese alle GitHub-Issue-Comments auf blockierte Tasks
 3. Identifiziere: Was hat funktioniert? Was war geblockt? Was war unklar?
-4. Aktualisiere AGENTS-PROTOCOL.md — Kapitel 10: Sprint-Lernkurve
+4. Aktualisiere AGENTS-PROTOCOL.md — Kapitel X.3 Sprint-Lernkurve
 5. Aktualisiere .agent-rules.md wenn Regeln verbessert werden muessen
 6. Schreibe Summary in docs/RETRO.md (Sprint-Nummer + Datum + 3 Learnings)
 
-Commit-Message: "retro(S0X): Sprint-Retrospektive + Protocol-Update"
+Commit-Message: retro(S0X): Sprint-Retrospektive + Protocol-Update
 """
+
+[agents.env]
+OPENAI_BASE_URL = "https://api.minimax.chat/v1"
 
 # ── STARTUP SEQUENZ ────────────────────────────────────────────────────────────
 [startup]
-sequence = ["lead"]           # Nur Lead startet — er spawnt die Worker
-timeout_minutes = 60
-auto_retry_on_stuck = true
+sequence               = ["lead"]
+timeout_minutes        = 60
+auto_retry_on_stuck    = true
 stuck_threshold_minutes = 10
 
 [startup.hooks]
