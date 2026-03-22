@@ -20,13 +20,19 @@ export function useDashboardTour(userId: string | undefined) {
     } catch {}
 
     (async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .select('tour_completed')
         .eq('id', userId)
         .maybeSingle();
 
       if (cancelled) return;
+      if (error) {
+        // On network/schema error, skip the tour to avoid blocking the UI
+        console.warn('[tour] fetch failed, skipping tour:', error.message);
+        setTourStep('done');
+        return;
+      }
       setTourStep(data?.tour_completed ? 'done' : 0);
     })();
 

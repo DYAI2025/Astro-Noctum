@@ -10,11 +10,17 @@ export function usePremium() {
   const fetchTier = useCallback(async () => {
     if (!user) { setIsPremium(false); setLoading(false); return; }
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('profiles')
       .select('tier')
       .eq('id', user.id)
       .single();
+    if (error) {
+      // On network failure, keep the last known state instead of resetting to false
+      console.warn('[premium] fetch failed, keeping last known state:', error.message);
+      setLoading(false);
+      return;
+    }
     setIsPremium(data?.tier === 'premium');
     setLoading(false);
   }, [user]);
