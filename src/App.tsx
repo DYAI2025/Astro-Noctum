@@ -16,9 +16,7 @@ import { bootstrapExperience } from "./services/experience";
 import { isFeatureEnabled } from "./lib/feature-flags";
 import type { BootstrapResponse, SignatureDeltaResponse } from "./lib/schemas/experience";
 import { Volume2, VolumeX, LogOut } from "lucide-react";
-import House from "./components/animated-icons/House";
-import Sparkles from "./components/animated-icons/Sparkles";
-import TelescopeIcon from "./components/animated-icons/Telescope";
+import { IconHouse as House, IconSparkles as Sparkles, IconTelescope as TelescopeIcon } from "./components/animated-icons";
 
 export default function App() {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -353,7 +351,7 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
                 : "text-ink/40 hover:text-gold-deep hover:bg-gold-deep/08 border border-transparent"
             }`}
           >
-            <Telescope className="w-4 h-4 shrink-0" />
+            <TelescopeIcon className="w-4 h-4 shrink-0" />
             <span className="hidden lg:inline">Planetarium</span>
           </button>
 
