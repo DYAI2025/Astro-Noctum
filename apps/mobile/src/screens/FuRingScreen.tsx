@@ -1,8 +1,14 @@
-import { useMemo } from 'react';
-import { ActivityIndicator, Animated, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Animated, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { QuizDefinition } from '@bazodiac/shared';
 import { useAppState } from '../contexts/AppStateContext';
 import { useBootstrapSignatur } from '../hooks/useBootstrapSignatur';
+import { useQuizOfTheDay } from '../hooks/useQuizOfTheDay';
+import QuizRenderer from '../components/QuizRenderer';
 import { COLORS } from '../theme';
+import SignaturRing from '../components/SignaturRing';
+import { useSpaceWeather } from '../hooks/useSpaceWeather';
 
 const SECTOR_LABELS = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
@@ -19,8 +25,32 @@ const SECTOR_COLORS = [
 ];
 
 export function FuRingScreen() {
-  const { profile } = useAppState();
+  const { profile, userId, tier } = useAppState();
   const { bootstrap, loading } = useBootstrapSignatur(profile);
+  const { kpIndex } = useSpaceWeather();
+  const [selectedSector, setSelectedSector] = useState<{ index: number; value: number } | null>(null);
+
+  // ---- Quiz des Tages state ----
+  const [completed, setCompleted] = useState<Record<string, boolean>>({});
+  const [activeQuiz, setActiveQuiz] = useState<QuizDefinition | null>(null);
+  const quizOfTheDay = useQuizOfTheDay(completed);
+
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      const raw = await AsyncStorage.getItem(`quiz_completed_${userId}`);
+      if (!active) return;
+      if (raw) {
+        try {
+          setCompleted(JSON.parse(raw) as Record<string, boolean>);
+        } catch {
+          setCompleted({});
+        }
+      }
+    };
+    void load();
+    return () => { active = false; };
+  }, [userId]);
 
   const sectors = useMemo(() => {
     if (!bootstrap?.soulprint_sectors) return null;
@@ -62,6 +92,22 @@ export function FuRingScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      {/* Signatur Ring Visualization */}
+      <View style={styles.ringContainer}>
+        <SignaturRing
+          sectors={bootstrap.soulprint_sectors}
+          harmonyIndex={harmony}
+          kpIndex={kpIndex}
+          size={280}
+          onSectorTap={(index, value) => setSelectedSector({ index, value })}
+        />
+        {selectedSector && (
+          <Text style={styles.sectorTooltip}>
+            {SECTOR_EMOJIS[selectedSector.index]} {SECTOR_LABELS[selectedSector.index]} — {selectedSector.value.toFixed(2)}
+          </Text>
+        )}
+      </View>
+
       {/* Profile summary */}
       <View style={styles.card}>
         <Text style={styles.kicker}>DEINE SIGNATUR</Text>
@@ -105,6 +151,43 @@ export function FuRingScreen() {
         <Text style={styles.kicker}>SIGNATUR-SEED</Text>
         <Text style={styles.seedText}>{seed}</Text>
       </View>
+
+      {/* Quiz des Tages */}
+      {quizOfTheDay && (
+        <Pressable
+          style={styles.quizCard}
+          onPress={() => setActiveQuiz(quizOfTheDay)}
+        >
+          <Text style={styles.quizKicker}>QUIZ DES TAGES</Text>
+          <View style={styles.quizRow}>
+            <Text style={styles.quizEmoji}>{quizOfTheDay.emoji}</Text>
+            <View style={styles.quizTextGroup}>
+              <Text style={styles.quizTitle}>{quizOfTheDay.titleDe}</Text>
+              <Text style={styles.quizSubtitle}>{quizOfTheDay.subtitleDe}</Text>
+            </View>
+          </View>
+          <View style={styles.quizCta}>
+            <Text style={styles.quizCtaText}>Starten</Text>
+          </View>
+        </Pressable>
+      )}
+
+      {/* Quiz Modal */}
+      <Modal visible={activeQuiz !== null} animationType="slide" presentationStyle="fullScreen">
+        {activeQuiz && (
+          <QuizRenderer
+            quiz={activeQuiz}
+            onComplete={(result) => {
+              const updated = { ...completed, [activeQuiz.id]: true };
+              setCompleted(updated);
+              AsyncStorage.setItem(`quiz_completed_${userId}`, JSON.stringify(updated));
+              setActiveQuiz(null);
+            }}
+            onClose={() => setActiveQuiz(null)}
+            isPremium={tier === 'premium'}
+          />
+        )}
+      </Modal>
     </ScrollView>
   );
 }
@@ -112,8 +195,19 @@ export function FuRingScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    gap: 14,
+    gap: 16,
     paddingBottom: 40,
+  },
+  ringContainer: {
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  sectorTooltip: {
+    color: COLORS.gold,
+    fontSize: 13,
+    fontWeight: '600',
+    marginTop: 8,
+    textAlign: 'center',
   },
   center: {
     flex: 1,
@@ -234,5 +328,52 @@ const styles = StyleSheet.create({
     fontFamily: undefined, // monospace would be ideal but RN default is fine
     letterSpacing: 0.5,
     opacity: 0.7,
+  },
+  quizCard: {
+    backgroundColor: COLORS.card,
+    borderColor: COLORS.borderGold,
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 16,
+    gap: 12,
+  },
+  quizKicker: {
+    color: COLORS.gold,
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 2,
+  },
+  quizRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  quizEmoji: {
+    fontSize: 32,
+  },
+  quizTextGroup: {
+    flex: 1,
+    gap: 2,
+  },
+  quizTitle: {
+    color: COLORS.text,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  quizSubtitle: {
+    color: COLORS.textDim,
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  quizCta: {
+    backgroundColor: COLORS.gold,
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  quizCtaText: {
+    color: COLORS.bg,
+    fontSize: 15,
+    fontWeight: '800',
   },
 });

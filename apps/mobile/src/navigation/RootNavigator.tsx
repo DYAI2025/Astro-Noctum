@@ -12,7 +12,7 @@ import { ArticleScreen } from "../screens/ArticleScreen";
 import { WissenScreen } from "../screens/WissenScreen";
 
 export type RootTabParamList = {
-  Home: undefined;
+  Signatur: undefined;
   Quizzes: undefined;
   Profil: undefined;
 };
@@ -20,7 +20,7 @@ export type RootTabParamList = {
 export type RootStackParamList = {
   Tabs: undefined;
   Voice: undefined;
-  Signatur: undefined;
+  Dashboard: undefined;
   Article: { slug: string };
   Quiz: undefined;
 };
@@ -47,12 +47,12 @@ function Tabs() {
       }}
     >
       <Tab.Screen
-        name="Home"
-        component={DashboardScreen}
+        name="Signatur"
+        component={FuRingScreen}
         options={{
-          title: "Home",
+          title: "Signatur",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" size={size} color={color} />
+            <Ionicons name="sparkles-outline" size={size} color={color} />
           ),
         }}
       />
@@ -62,7 +62,7 @@ function Tabs() {
         options={{
           title: "Quizzes",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="sparkles-outline" size={size} color={color} />
+            <Ionicons name="game-controller-outline" size={size} color={color} />
           ),
         }}
       />
@@ -86,13 +86,13 @@ const linking: LinkingOptions<RootStackParamList> = {
     screens: {
       Tabs: {
         screens: {
-          Home: "dashboard",
+          Signatur: "signatur",
           Quizzes: "quizzes",
           Profil: "profil",
         },
       },
       Voice: "levi",
-      Signatur: "signatur",
+      Dashboard: "dashboard",
       Article: "wissen/:slug",
       Quiz: "quiz",
     },
@@ -112,7 +112,7 @@ export function RootNavigator() {
       >
         <Stack.Screen name="Tabs" component={Tabs} options={{ headerShown: false }} />
         <Stack.Screen name="Voice" component={VoiceScreen} options={{ title: "Levi Voice" }} />
-        <Stack.Screen name="Signatur" component={FuRingScreen} options={{ title: "Signatur" }} />
+        <Stack.Screen name="Dashboard" component={DashboardScreen} options={{ title: "Dashboard" }} />
         <Stack.Screen name="Article" component={ArticleScreen} options={{ title: "Wissen" }} />
         <Stack.Screen name="Quiz" component={WissenScreen} options={{ title: "Wissen" }} />
       </Stack.Navigator>

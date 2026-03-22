@@ -141,8 +141,8 @@ export function DashboardScreen() {
         )}
       </View>
 
-      <Pressable style={styles.signaturButton} onPress={() => navigation.navigate("Signatur")}>
-        <Text style={styles.signaturText}>Signatur öffnen</Text>
+      <Pressable style={styles.signaturButton} onPress={() => navigation.getParent()?.navigate("Signatur")}>
+        <Text style={styles.signaturText}>Zur Signatur</Text>
       </Pressable>
 
       <View style={styles.actionRow}>
