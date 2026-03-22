@@ -55,7 +55,6 @@ export function DashboardLeviSection({
   }, []);
 
   const handleCallLevi = () => {
-    console.log('[Levi] Call button clicked, isPremium:', isPremium);
     onStopAudio();
     setLeviActive(true);
     setTimeout(() => leviSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
