@@ -8,6 +8,11 @@ export type Language = "en" | "de";
 export type DeepStringRecord = { [key: string]: string | DeepStringRecord };
 
 const translationsEn: DeepStringRecord = {
+  notFound: {
+    title: "404",
+    message: "This page does not exist.",
+    backLink: "Go to Dashboard",
+  },
   nav: {
     atlas: "Atlas",
     signatur: "Signatur",
@@ -190,6 +195,11 @@ const translationsEn: DeepStringRecord = {
 } as const;
 
 const translationsDe: DeepStringRecord = {
+  notFound: {
+    title: "404",
+    message: "Diese Seite existiert nicht.",
+    backLink: "Zum Dashboard",
+  },
   nav: {
     atlas: "Atlas",
     signatur: "Signatur",

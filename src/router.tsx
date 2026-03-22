@@ -21,15 +21,15 @@ function PageLoader() {
 }
 
 function NotFound() {
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4">
-      <h1 className="font-serif text-2xl text-[#1E2A3A]">404</h1>
+      <h1 className="font-serif text-2xl text-[#1E2A3A]">{t('notFound.title')}</h1>
       <p className="text-sm text-[#1E2A3A]/50">
-        {lang === 'de' ? 'Diese Seite existiert nicht.' : 'This page does not exist.'}
+        {t('notFound.message')}
       </p>
       <Link to="/" className="text-sm text-[#8B6914] hover:underline">
-        {lang === 'de' ? 'Zum Dashboard' : 'Go to Dashboard'} &rarr;
+        {t('notFound.backLink')} &rarr;
       </Link>
     </div>
   );
