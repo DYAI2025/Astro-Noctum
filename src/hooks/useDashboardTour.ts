@@ -58,10 +58,20 @@ export function useDashboardTour(userId: string | undefined) {
     setTourStep('done');
   }, [userId]);
 
+  const restart = useCallback(() => {
+    if (userId) {
+      supabase.from('profiles').update({ tour_completed: false }).eq('id', userId)
+        .then(({ error }) => { if (error) console.warn('[tour] restart persist failed:', error.message); });
+    }
+    try { localStorage.removeItem('bazodiac_tour_completed'); } catch {}
+    setTourStep(0);
+  }, [userId]);
+
   return {
     tourStep: tourStep ?? 'done', // treat loading as done to avoid flash
     isLoading: tourStep === null,
     next,
     skip,
+    restart,
   };
 }
