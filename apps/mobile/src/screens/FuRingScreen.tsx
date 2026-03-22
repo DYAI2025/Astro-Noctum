@@ -24,6 +24,26 @@ const SECTOR_COLORS = [
   '#8A8A8A', '#2E6BB5', '#D63B0F', '#C49A2A', '#8A8A8A', '#2E6BB5',
 ];
 
+// Generate fallback soulprint sectors from profile BAFE data
+function generateFallbackSectors(profile: any): number[] {
+  const wuxing = profile?.astro_json?.wuxing?.elements || {};
+  const elements = [
+    Number(wuxing.Wood || wuxing.Holz || 0),
+    Number(wuxing.Fire || wuxing.Feuer || 0),
+    Number(wuxing.Earth || wuxing.Erde || 0),
+    Number(wuxing.Metal || wuxing.Metall || 0),
+    Number(wuxing.Water || wuxing.Wasser || 0),
+  ];
+  const total = elements.reduce((s, v) => s + v, 0) || 1;
+  // Distribute 5 elements across 12 sectors (fire→aries/leo/sag, etc.)
+  const sectorMap = [1, 2, 2, 4, 1, 2, 3, 4, 1, 2, 3, 4]; // element index per sector
+  return sectorMap.map(elIdx => {
+    const base = elements[elIdx] / total;
+    const jitter = 0.05 * Math.sin(elIdx * 2.7); // slight variation
+    return Math.max(0.05, base + jitter);
+  });
+}
+
 export function FuRingScreen() {
   const { profile, userId, tier } = useAppState();
   const { bootstrap, loading } = useBootstrapSignatur(profile);
@@ -53,16 +73,16 @@ export function FuRingScreen() {
   }, [userId]);
 
   const sectors = useMemo(() => {
-    if (!bootstrap?.soulprint_sectors) return null;
-    const max = Math.max(...bootstrap.soulprint_sectors, 0.01);
-    return bootstrap.soulprint_sectors.map((value, i) => ({
+    if (!soulprintSectors) return null;
+    const max = Math.max(...soulprintSectors, 0.01);
+    return soulprintSectors.map((value, i) => ({
       label: SECTOR_LABELS[i],
       emoji: SECTOR_EMOJIS[i],
       color: SECTOR_COLORS[i],
       value,
       pct: Math.round((value / max) * 100),
     }));
-  }, [bootstrap]);
+  }, [soulprintSectors]);
 
   if (loading) {
     return (
@@ -73,21 +93,39 @@ export function FuRingScreen() {
     );
   }
 
-  if (!bootstrap || !sectors) {
+  // Use bootstrap data if available, otherwise fallback to profile
+  const soulprintSectors = useMemo(() => {
+    if (bootstrap?.soulprint_sectors) return bootstrap.soulprint_sectors;
+    if (profile?.astro_json) return generateFallbackSectors(profile);
+    return null;
+  }, [bootstrap, profile]);
+
+  const profileSummary = useMemo(() => {
+    if (bootstrap?.profile) return bootstrap.profile;
+    return {
+      sun_sign: profile?.sun_sign || '—',
+      moon_sign: profile?.moon_sign || '—',
+      ascendant_sign: profile?.asc_sign || '—',
+      day_master: profile?.astro_json?.bazi?.day_master || '—',
+      harmony_index: 0.5,
+    };
+  }, [bootstrap, profile]);
+
+  if (!soulprintSectors) {
     return (
       <View style={styles.center}>
         <Text style={styles.emoji}>{'\u2726'}</Text>
         <Text style={styles.title}>Signatur</Text>
         <Text style={styles.subtitle}>
-          Deine Signatur wird berechnet, sobald die Verbindung zum Server steht.
+          Erstelle zuerst dein kosmisches Profil.
         </Text>
       </View>
     );
   }
 
-  const bp = bootstrap.profile;
-  const seed = bootstrap.signature_blueprint?.seed || '\u2014';
-  const harmony = bootstrap.profile?.harmony_index ?? 0;
+  const bp = profileSummary;
+  const seed = bootstrap?.signature_blueprint?.seed || '—';
+  const harmony = bp.harmony_index ?? 0.5;
   const harmonyPct = Math.round(harmony * 100);
 
   return (
@@ -95,7 +133,7 @@ export function FuRingScreen() {
       {/* Signatur Ring Visualization */}
       <View style={styles.ringContainer}>
         <SignaturRing
-          sectors={bootstrap.soulprint_sectors}
+          sectors={soulprintSectors}
           harmonyIndex={harmony}
           kpIndex={kpIndex}
           size={280}
