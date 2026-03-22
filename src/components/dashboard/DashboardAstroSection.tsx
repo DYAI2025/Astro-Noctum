@@ -16,6 +16,7 @@ import { getHouseInterpretation } from "../../lib/astro-data/houseInterpretation
 import type { ApiData } from "../../types/bafe";
 import type { TileTexts, HouseTexts } from "../../types/interpretation";
 import { AstroAccordion } from "./AstroAccordion";
+import { ZodiacIcon, WuXingIcon } from "../animated-icons/CosmicSymbols";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Static data
@@ -313,9 +314,7 @@ export function DashboardAstroSection({
                     <Tooltip key={el.key} content={el.description[lang]} wide dark={planetariumMode}>
                       <div className="flex items-center gap-2 sm:gap-4 cursor-help group">
                         <div className="w-24 sm:w-28 md:w-36 shrink-0 flex items-center gap-2 sm:gap-2.5">
-                          <span className="text-2xl font-serif leading-none select-none" style={{ color: el.color }}>
-                            {el.chinese}
-                          </span>
+                          <WuXingIcon element={el.key} className="w-6 h-6" />
                           <div className="min-w-0">
                             <div className="text-xs font-medium text-[#1E2A3A] truncate">{el.name[lang]}</div>
                             <div className="text-[10px] text-[#1E2A3A]/35">{el.pinyin}</div>
@@ -379,7 +378,6 @@ export function DashboardAstroSection({
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {houseEntries.map(([houseKey, val]) => {
               const sign    = resolveSign(val);
-              const emoji   = WESTERN_EMOJIS[sign] || "";
               const num     = parseHouseNum(houseKey);
               const roman   = num !== null ? ROMAN[num] : houseKey;
               const meaning = num !== null ? HOUSE_MEANINGS[num] : null;
@@ -404,7 +402,7 @@ export function DashboardAstroSection({
                   </div>
 
                   <div className="font-serif text-base sm:text-lg text-[#1E2A3A] flex items-center gap-1.5 sm:gap-2 mb-2 min-w-0">
-                    <span className="text-[#8B6914]/80 shrink-0">{emoji}</span>
+                    <ZodiacIcon sign={sign} className="w-5 h-5 text-[#8B6914]/80 shrink-0 inline-block" />
                     <span className="truncate">{signDisplay}</span>
                   </div>
 
