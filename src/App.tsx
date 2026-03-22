@@ -15,7 +15,10 @@ import { AppRoutes } from "./router";
 import { bootstrapExperience } from "./services/experience";
 import { isFeatureEnabled } from "./lib/feature-flags";
 import type { BootstrapResponse, SignatureDeltaResponse } from "./lib/schemas/experience";
-import { Volume2, VolumeX, LogOut, LayoutGrid, Telescope, CircleDot } from "lucide-react";
+import { Volume2, VolumeX, LogOut } from "lucide-react";
+import House from "./components/animated-icons/House";
+import Sparkles from "./components/animated-icons/Sparkles";
+import TelescopeIcon from "./components/animated-icons/Telescope";
 
 export default function App() {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -425,17 +428,17 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
         </div>
 
         <Link to="/" className={`flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-gold/50 rounded ${location.pathname === "/" ? "text-gold-deep" : "text-ink/40"}`}>
-          <LayoutGrid className="w-5 h-5" aria-hidden="true" />
+          <House className="w-5 h-5" aria-hidden="true" />
           <span className="text-[8px] uppercase tracking-tighter">{t("nav.atlas")}</span>
         </Link>
 
         <Link to="/signatur" className={`flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-gold/50 rounded ${location.pathname === "/signatur" ? "text-gold-deep" : "text-ink/40"}`}>
-          <CircleDot className="w-5 h-5" aria-hidden="true" />
+          <Sparkles className="w-5 h-5" aria-hidden="true" />
           <span className="text-[8px] uppercase tracking-tighter">{t("nav.signatur")}</span>
         </Link>
 
         <a href="https://sky.bazodiac.space" target="_blank" rel="noopener noreferrer" className={`flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-gold/50 rounded ${location.pathname === "/signatur" ? "text-gold-deep" : "text-ink/40"}`}>
-          <Telescope className="w-5 h-5" aria-hidden="true" />
+          <TelescopeIcon className="w-5 h-5" aria-hidden="true" />
           <span className="text-[8px] uppercase tracking-tighter">{t("nav.sky")}</span>
         </a>
 
