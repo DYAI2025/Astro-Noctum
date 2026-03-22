@@ -314,7 +314,7 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
           }} className={`transition-colors ${location.pathname === "/" ? "text-gold-deep" : "text-ink/60 hover:text-gold-deep"}`}>
             {t("nav.levi")}
           </a>
-          <Link to="/wissen/faq-bazi-wuxing" className={`transition-colors ${location.pathname.startsWith("/wissen") ? "text-gold-deep" : "text-ink/60 hover:text-gold-deep"}`}>
+          <Link to="/faq" className={`transition-colors ${location.pathname === "/faq" ? "text-gold-deep" : "text-ink/60 hover:text-gold-deep"}`}>
             {t("nav.faq")}
           </Link>
         </nav>
@@ -440,7 +440,7 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
           <span className="text-[8px] uppercase tracking-tighter">{t("nav.sky")}</span>
         </a>
 
-        <Link to="/wissen/faq-bazi-wuxing" className={`flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-gold/50 rounded ${location.pathname.startsWith("/wissen") ? "text-gold-deep" : "text-ink/40"}`}>
+        <Link to="/faq" className={`flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-gold/50 rounded ${location.pathname === "/faq" ? "text-gold-deep" : "text-ink/40"}`}>
           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <circle cx="12" cy="12" r="10" />
             <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
