@@ -17,6 +17,7 @@ import type { ApiData } from "../../types/bafe";
 import type { TileTexts, HouseTexts } from "../../types/interpretation";
 import { AstroAccordion } from "./AstroAccordion";
 import { ZodiacIcon, WuXingIcon } from "../animated-icons/CosmicSymbols";
+import { IconOrbit, IconSun } from "../animated-icons";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Static data
@@ -91,11 +92,11 @@ function fadeIn(delay = 0) {
 
 // ── Section sub-components ────────────────────────────────────────────────
 
-function SectionDivider({ label, title }: { label: string; title: string }) {
+function SectionDivider({ label, title, icon }: { label: string; title: string; icon?: React.ReactNode }) {
   return (
     <div className="border-b border-[#8B6914]/15 pb-3 sm:pb-4 mb-6 sm:mb-8">
       <p className="text-[#8B6914]/55 text-[8px] uppercase tracking-[0.45em] mb-1">{label}</p>
-      <h2 className="font-serif text-xl sm:text-2xl text-[#1E2A3A]">{title}</h2>
+      <h2 className="font-serif text-xl sm:text-2xl text-[#1E2A3A]">{icon}{title}</h2>
     </div>
   );
 }
@@ -269,6 +270,7 @@ export function DashboardAstroSection({
           <SectionDivider
             label={lang === "de" ? "Chinesische Astrologie" : "Chinese Astrology"}
             title={lang === "de" ? "BaZi & WuXing \u2014 Vier S\u00e4ulen des Schicksals" : "BaZi & WuXing \u2014 Four Pillars of Destiny"}
+            icon={<IconOrbit className="w-5 h-5 text-[#8B6914] inline-block mr-2 align-middle" />}
           />
 
           {/* Block B: Four Pillars */}
@@ -303,7 +305,7 @@ export function DashboardAstroSection({
               {t("dashboard.wuxing.sectionDesc")}
             </p>
 
-            <div className="morning-card p-5 md:p-6 max-w-2xl">
+            <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-md p-5 md:p-6 max-w-2xl">
               <div className="space-y-4">
                 {WUXING_ELEMENTS.map((el) => {
                   const count = Number(wuxingCounts[el.key] ?? wuxingCounts[el.name.de] ?? 0);
@@ -370,6 +372,7 @@ export function DashboardAstroSection({
           <SectionDivider
             label={t("dashboard.western.sectionLabel")}
             title={t("dashboard.houses.sectionTitle")}
+            icon={<IconSun className="w-5 h-5 text-[#8B6914] inline-block mr-2 align-middle" />}
           />
           <p className="text-xs text-[#1E2A3A]/45 mb-6 leading-relaxed max-w-2xl">
             {t("dashboard.houses.sectionDesc")}
@@ -416,12 +419,12 @@ export function DashboardAstroSection({
 
               return tooltipContent ? (
                 <Tooltip key={houseKey} content={tooltipContent} wide dark={planetariumMode}>
-                  <div className="morning-card p-4 sm:p-5 overflow-hidden cursor-help">
+                  <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-sm hover:border-[#8B6914]/20 transition-all p-4 sm:p-5 overflow-hidden cursor-help">
                     {cardContent}
                   </div>
                 </Tooltip>
               ) : (
-                <div key={houseKey} className="morning-card p-4 sm:p-5 overflow-hidden">
+                <div key={houseKey} className="rounded-xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-sm hover:border-[#8B6914]/20 transition-all p-4 sm:p-5 overflow-hidden">
                   {cardContent}
                 </div>
               );

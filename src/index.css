@@ -118,18 +118,21 @@ body {
 
 /* Morning glass card */
 .morning-card {
-  background: rgba(255,255,255,0.72);
+  background: rgba(255, 255, 255, 0.65);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(165,195,225,0.28);
+  border: 1px solid rgba(139, 105, 20, 0.08);
   border-radius: 16px;
-  transition: all 0.5s cubic-bezier(0.16,1,0.3,1);
-  color: #1E2A3A;
+  transition: all 0.3s ease;
 }
+
 .morning-card:hover {
-  border-color: rgba(180,150,46,0.38);
-  background: rgba(255,255,255,0.82);
-  box-shadow: 0 8px 32px -8px rgba(0,30,80,0.10), 0 0 16px rgba(212,175,55,0.06);
+  border-color: rgba(139, 105, 20, 0.15);
+  box-shadow: 0 8px 32px rgba(139, 105, 20, 0.04), 0 0 0 1px rgba(139, 105, 20, 0.06);
+}
+
+.gold-glow {
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.08), 0 0 60px rgba(212, 175, 55, 0.04);
 }
 
 /* Fu-Ring card — flat, dark, no glass */
