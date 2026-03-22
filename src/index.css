@@ -116,19 +116,20 @@ body {
   .morning-bg { background-attachment: scroll; }
 }
 
-/* Morning glass card */
+/* Morning glass card — high contrast in light mode, performant blur */
 .morning-card {
-  background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(139, 105, 20, 0.08);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(30, 42, 58, 0.08);
   border-radius: 16px;
-  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(30, 42, 58, 0.04);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .morning-card:hover {
-  border-color: rgba(139, 105, 20, 0.15);
-  box-shadow: 0 8px 32px rgba(139, 105, 20, 0.04), 0 0 0 1px rgba(139, 105, 20, 0.06);
+  border-color: rgba(139, 105, 20, 0.18);
+  box-shadow: 0 4px 16px rgba(30, 42, 58, 0.06), 0 0 0 1px rgba(139, 105, 20, 0.08);
 }
 
 .gold-glow {

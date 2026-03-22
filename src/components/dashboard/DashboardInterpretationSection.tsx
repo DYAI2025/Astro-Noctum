@@ -39,7 +39,7 @@ export function DashboardInterpretationSection({
   `;
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-md p-5 sm:p-8 md:col-span-2 max-w-4xl mx-auto">
+    <div className="morning-card p-5 sm:p-8 md:col-span-2 max-w-4xl mx-auto">
       <div className="flex items-center gap-4 mb-5">
         <span className="h-[1px] w-10 bg-[#8B6914]/20" />
         <Badge variant="default">{t('dashboard.interpretation.sectionLabel')}</Badge>

@@ -305,7 +305,7 @@ export function DashboardAstroSection({
               {t("dashboard.wuxing.sectionDesc")}
             </p>
 
-            <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-md p-5 md:p-6 max-w-2xl">
+            <div className="morning-card p-5 md:p-6 max-w-2xl">
               <div className="space-y-4">
                 {WUXING_ELEMENTS.map((el) => {
                   const count = Number(wuxingCounts[el.key] ?? wuxingCounts[el.name.de] ?? 0);
@@ -419,12 +419,12 @@ export function DashboardAstroSection({
 
               return tooltipContent ? (
                 <Tooltip key={houseKey} content={tooltipContent} wide dark={planetariumMode}>
-                  <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-sm hover:border-[#8B6914]/20 transition-all p-4 sm:p-5 overflow-hidden cursor-help">
+                  <div className="morning-card hover:border-[#8B6914]/18 p-4 sm:p-5 overflow-hidden cursor-help">
                     {cardContent}
                   </div>
                 </Tooltip>
               ) : (
-                <div key={houseKey} className="rounded-xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-sm hover:border-[#8B6914]/20 transition-all p-4 sm:p-5 overflow-hidden">
+                <div key={houseKey} className="morning-card hover:border-[#8B6914]/18 p-4 sm:p-5 overflow-hidden">
                   {cardContent}
                 </div>
               );

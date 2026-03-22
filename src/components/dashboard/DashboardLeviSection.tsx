@@ -64,7 +64,7 @@ export function DashboardLeviSection({
   const handleHangUp = () => { setLeviActive(false); onResumeAudio(); };
 
   return (
-    <div ref={leviSectionRef} className="rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-md p-5 sm:p-7 flex flex-col gap-5 sm:gap-6 md:p-8 max-w-3xl mx-auto relative z-10" style={{ backdropFilter: 'none', WebkitBackdropFilter: 'none', overflow: 'visible' }}>
+    <div ref={leviSectionRef} className="morning-card p-5 sm:p-7 flex flex-col gap-5 sm:gap-6 md:p-8 max-w-3xl mx-auto relative z-10" style={{ overflow: 'visible' }}>
       {/* ── Status + Action row ─────────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-center gap-5 sm:gap-6">
         <div className="flex items-start gap-4 flex-1 min-w-0">
