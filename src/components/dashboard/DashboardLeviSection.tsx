@@ -55,6 +55,7 @@ export function DashboardLeviSection({
   }, []);
 
   const handleCallLevi = () => {
+    console.log('[Levi] Call button clicked, isPremium:', isPremium);
     onStopAudio();
     setLeviActive(true);
     setTimeout(() => leviSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
@@ -62,7 +63,7 @@ export function DashboardLeviSection({
   const handleHangUp = () => { setLeviActive(false); onResumeAudio(); };
 
   return (
-    <div ref={leviSectionRef} className="morning-card p-5 sm:p-7 md:p-8 max-w-3xl mx-auto" style={{ backdropFilter: 'none', WebkitBackdropFilter: 'none', overflow: 'visible' }}>
+    <div ref={leviSectionRef} className="morning-card p-5 sm:p-7 md:p-8 max-w-3xl mx-auto relative z-10" style={{ backdropFilter: 'none', WebkitBackdropFilter: 'none', overflow: 'visible' }}>
       {/* ── Status + Action row ─────────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-center gap-5 sm:gap-6">
         <div className="flex items-start gap-4 flex-1 min-w-0">
