@@ -45,9 +45,9 @@ Formatierung: eine Zeile reicht. Agenten fragen nach wenn nötig.
 | #139 | BUG | "Die Form" → Signatur + Kachel-Größen angleichen | Bug-Pass P5 | ✅ Done |
 | #140 | BUG | Doppeltes X im Quiz-Overlay | Bug-Pass P5 | ✅ Done |
 | #141 | BUG | Signatur (FusionRing) statisch — lebendige Dauerbewegung | Bug-Pass P5 | ✅ Done |
-| #120 | FEAT | GCB Builder heuristic_v1 | S04 | Blocked: FuFirE-Zugang |
-| #121 | FEAT | Quiz-Flow Master Signal | S04 | Ready |
-| #122 | FEAT | BAFE signature-delta | S04 | Ready |
+| #120 | FEAT | FuFirE API Contracts (S04-01) | S04 | ✅ Done |
+| #121 | FEAT | GCB Builder (S04-02) | S04 | ✅ Done |
+| #122 | FEAT | Master Signal Dimensionsraum (S04-03) | S04 | ✅ Done |
 | #133 | FEAT | Insignien-System | S04 | Ready |
 | #123 | FEAT | Stripe Checkout | S05 | Blocked: Testkey |
 | #124 | FEAT | Bloom Fine-Tuning | S05 | Blocked: Ben's Spec |
@@ -56,10 +56,10 @@ Formatierung: eine Zeile reicht. Agenten fragen nach wenn nötig.
 | #126 | BUG | NOAA Adapter v2 — DEADLINE 31.03.2026 | S06 | ✅ Done |
 | #127 | FEAT | DONKI Extended — CME, WSA-ENLIL, SEP, HSS | S06 | ✅ Done |
 | #128 | FEAT | Solar Pressure Score → Ring Modulation (×1.5) | S06 | ✅ Done |
-| #142 | FEAT | NOAA SWPC — X-ray, Proton, Forecast Endpoints | S06 | ✅ Done (in extended endpoint) |
+| #142 | FEAT | NOAA SWPC — X-ray, Proton, Forecast Endpoints | S06 | ✅ Done |
 | #143 | FEAT | GET /api/space-weather/extended (Aggregator) | S06 | ✅ Done |
-| #144 | FEAT | POST /api/contribution/space-weather | S06 | Ready |
-| #145 | FEAT | sky.bazodiac.space — Solar Pressure Widget | S06 | Ready |
+| #144 | FEAT | POST /api/contribution/space-weather | S06 | ✅ Done |
+| #145 | FEAT | sky.bazodiac.space — Solar Pressure Widget | S06 | ✅ Done |
 | #129 | FEAT | i18n Audit | S07 | Ready |
 | #130 | FEAT | Share-Flow Social | S07 | Ready |
 | #131 | FEAT | A/B Test Framework | S07 | Ready |
