@@ -1411,29 +1411,95 @@ app.post("/api/contribute", express.json(), async (req, res) => {
 });
 
 // ── /api/space-weather ───────────────────────────────────────────────
-// Primary source: NOAA SWPC (no API key required, highly reliable)
+// Primary source: NOAA SWPC — versioned adapter (v2 → v1 fallback)
+// Issue #126: NOAA format change on 31.03.2026 — adapter handles both formats
 // Fallback: NASA DONKI (requires NASA_API_KEY or uses DEMO_KEY with rate limits)
 
-async function fetchKpFromNOAA() {
-  // NOAA 1-minute Kp planetary index — returns array of {time_tag, kp, estimated, noaa_scale}
-  const url = "https://services.swpc.noaa.gov/json/planetary_k_index_1m.json";
+const NOAA_BASE = process.env.NOAA_SWPC_BASE_URL || "https://services.swpc.noaa.gov";
+
+/**
+ * Fetches a JSON endpoint with timeout guard.
+ */
+async function noaaFetch(url) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
-    const response = await fetch(url, { signal: controller.signal });
+    const res = await fetch(url, { signal: controller.signal });
     clearTimeout(timeout);
-    if (!response.ok) throw new Error(`NOAA responded with ${response.status}`);
-    const records = await response.json();
-    if (!Array.isArray(records) || records.length === 0) throw new Error("NOAA returned empty data");
-    // Get most recent non-estimated reading, or last entry as fallback
-    const real = records.filter((r) => !r.estimated).at(-1) ?? records.at(-1);
-    const kpRaw = real?.kp ?? real?.kp_index ?? 0;
-    const kp = Math.max(0, Math.min(9, Number.parseFloat(String(kpRaw)) || 0));
-    return { kp_index: kp, source: "NOAA" };
-  } catch (err) {
+    if (!res.ok) throw new Error(`NOAA fetch ${res.status}: ${url}`);
+    return await res.json();
+  } finally {
     clearTimeout(timeout);
-    throw err;
   }
+}
+
+/**
+ * Parse Kp from NOAA planetary_k_index_1m.json.
+ * Handles both v1 (kp_index, time_tag, estimated, noaa_scale)
+ * and v2 (kp_value, timestamp, is_estimated, g_scale) field names.
+ *
+ * @param {"v1"|"v2"} version - which field names to prefer
+ * @returns {{ kp: number, timestamp: string, estimated: boolean, noaaScale: string } | null}
+ */
+async function parseKpVersioned(version) {
+  const data = await noaaFetch(`${NOAA_BASE}/json/planetary_k_index_1m.json`);
+  if (!Array.isArray(data) || data.length === 0) return null;
+
+  for (let i = data.length - 1; i >= 0; i--) {
+    const row = data[i];
+    // v2 keys take precedence when version === "v2", else fall through to v1
+    const kp    = version === "v2" ? (row.kp_value    ?? row.kp_index)  : row.kp_index;
+    const ts    = version === "v2" ? (row.timestamp   ?? row.time_tag)  : row.time_tag;
+    const est   = version === "v2" ? (row.is_estimated ?? row.estimated) : row.estimated;
+    const scale = version === "v2" ? (row.g_scale     ?? row.noaa_scale) : row.noaa_scale;
+    const isEstimated = est === true || est === "true";
+    if (!isEstimated && kp != null) {
+      return { kp: Number(kp), timestamp: ts ?? new Date().toISOString(), estimated: false, noaaScale: scale ?? "G0" };
+    }
+  }
+  const last = data[data.length - 1];
+  const kp    = version === "v2" ? (last.kp_value    ?? last.kp_index  ?? 0) : (last.kp_index ?? 0);
+  const ts    = version === "v2" ? (last.timestamp   ?? last.time_tag)  : last.time_tag;
+  const scale = version === "v2" ? (last.g_scale     ?? last.noaa_scale) : last.noaa_scale;
+  return { kp: Number(kp), timestamp: ts ?? new Date().toISOString(), estimated: true, noaaScale: scale ?? "G0" };
+}
+
+/**
+ * NOAA Kp with v2 → v1 → throw fallback chain.
+ * Returns { kp_index, noaa_scale, timestamp, estimated, source, adapter_version }
+ */
+async function fetchKpFromNOAA() {
+  let reading = null;
+  let adapterVersion = "v2";
+
+  // Try v2 field names first (new format from 31.03.2026)
+  try {
+    reading = await parseKpVersioned("v2");
+  } catch (v2Err) {
+    console.warn("[space-weather] NOAA v2 parse failed, trying v1:", v2Err?.message);
+  }
+
+  // Fallback to v1 field names if v2 returned null or threw
+  if (!reading) {
+    try {
+      reading = await parseKpVersioned("v1");
+      adapterVersion = "v1";
+    } catch (v1Err) {
+      throw new Error(`NOAA v1 also failed: ${v1Err?.message}`);
+    }
+  }
+
+  if (!reading) throw new Error("NOAA returned empty data after v2+v1 parse");
+
+  const kp = Math.max(0, Math.min(9, reading.kp || 0));
+  return {
+    kp_index: kp,
+    noaa_scale: reading.noaaScale ?? "G0",
+    timestamp: reading.timestamp,
+    estimated: reading.estimated,
+    source: "NOAA",
+    adapter_version: adapterVersion,
+  };
 }
 
 async function fetchKpFromDONKI() {
@@ -1633,24 +1699,19 @@ app.get("/api/space-weather/extended", async (_req, res) => {
   let f107 = 0;
   let sunspotNumber = 0;
 
+  // Use NOAA_BASE so Railway env var overrides the live endpoint for testing/staging
   const noaaFetches = [
-    { name: "xray", url: "https://services.swpc.noaa.gov/json/goes_xray_flux.json" },
-    { name: "proton", url: "https://services.swpc.noaa.gov/json/goes_proton_flux.json" },
-    { name: "f107", url: "https://services.swpc.noaa.gov/json/f107_cm_flux.json" },
+    { name: "xray",   url: `${NOAA_BASE}/json/goes_xray_flux.json` },
+    { name: "proton", url: `${NOAA_BASE}/json/goes_proton_flux.json` },
+    { name: "f107",   url: `${NOAA_BASE}/json/f107_cm_flux.json` },
   ];
 
   const noaaResults = await Promise.allSettled(
     noaaFetches.map(async ({ name, url }) => {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
       try {
-        const response = await fetch(url, { signal: controller.signal });
-        clearTimeout(timeout);
-        if (!response.ok) throw new Error(`${name}: HTTP ${response.status}`);
-        const data = await response.json();
+        const data = await noaaFetch(url);
         return { name, data };
       } catch (err) {
-        clearTimeout(timeout);
         throw new Error(`${name}: ${err?.message}`);
       }
     }),
