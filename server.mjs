@@ -1740,7 +1740,35 @@ app.get("/api/space-weather/extended", async (_req, res) => {
     }
   }
 
-  // ── 3. NASA DONKI extended events (CME, SEP, HSS, notifications) ──
+  // ── 2b. NOAA Kp forecast (3h intervals, next ~3 days) ──
+  // Endpoint: noaa-planetary-k-index-forecast.json → [[time_tag, kp, observed_flag, noaa_scale], ...]
+  let kpForecast3h = [];
+  let noaaAdapterVersion = kpSource === "NOAA" ? "v2" : "v1"; // default; refined below
+  try {
+    const forecastRaw = await noaaFetch(`${NOAA_BASE}/products/noaa-planetary-k-index-forecast.json`);
+    if (Array.isArray(forecastRaw)) {
+      // Skip header row if present (first item is array of strings like ["time_tag","kp",...])
+      const rows = typeof forecastRaw[0]?.[0] === "string" && Number.isNaN(Number(forecastRaw[0]?.[1]))
+        ? forecastRaw.slice(1)
+        : forecastRaw;
+      const nowMs = Date.now();
+      kpForecast3h = rows
+        .filter((row) => {
+          const ts = new Date(row[0]).getTime();
+          return !Number.isNaN(ts) && ts > nowMs;
+        })
+        .slice(0, 24) // next 72h at 3h intervals
+        .map((row) => ({
+          timestamp: row[0],
+          kp: Math.max(0, Math.min(9, Number.parseFloat(String(row[1])) || 0)),
+          noaaScale: String(row[3] ?? "G0"),
+        }));
+    }
+  } catch (fcErr) {
+    console.warn("[space-weather/extended] Kp forecast fetch failed:", fcErr?.message);
+  }
+
+  // ── 3. NASA DONKI extended events (CME, WSA-ENLIL, SEP, HSS, notifications) ──
   const apiKey = process.env.NASA_API_KEY || "DEMO_KEY";
   const endDate = new Date();
   const startDate = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -1749,6 +1777,7 @@ app.get("/api/space-weather/extended", async (_req, res) => {
 
   const donkiFetches = [
     { name: "cme", url: `https://api.nasa.gov/DONKI/CMEAnalysis?startDate=${startStr}&endDate=${endStr}&mostAccurateOnly=true&api_key=${apiKey}` },
+    { name: "wsa", url: `https://api.nasa.gov/DONKI/WSAEnlilSimulations?startDate=${startStr}&endDate=${endStr}&api_key=${apiKey}` },
     { name: "sep", url: `https://api.nasa.gov/DONKI/SEP?startDate=${startStr}&endDate=${endStr}&api_key=${apiKey}` },
     { name: "hss", url: `https://api.nasa.gov/DONKI/HSS?startDate=${startStr}&endDate=${endStr}&api_key=${apiKey}` },
     { name: "notifications", url: `https://api.nasa.gov/DONKI/notifications?startDate=${startStr}&endDate=${endStr}&type=all&api_key=${apiKey}` },
@@ -1808,6 +1837,38 @@ app.get("/api/space-weather/extended", async (_req, res) => {
             description: `Earthbound CME, speed ${speed} km/s`,
           });
         }
+      } else if (name === "wsa" && Array.isArray(data)) {
+        // WSA-ENLIL solar wind simulations — earth-targeted arrivals
+        for (const sim of data) {
+          const impactList = Array.isArray(sim?.impactList) ? sim.impactList : [];
+          const earthImpact = impactList.find((imp) =>
+            (imp?.location || "").toLowerCase().includes("earth") ||
+            (imp?.isEarthTargeted === true),
+          );
+          if (!earthImpact && !sim?.isEarthTargeted) continue;
+
+          const arrivalTime = earthImpact?.arrivalTime || sim?.estimatedShockArrivalTime || nowISO;
+          const kp180 = Number.parseFloat(String(sim?.kp_180 ?? sim?.kp_90 ?? 0)) || 0;
+          let severity = "G1";
+          let weight = 0.1;
+          if (kp180 >= 8) { severity = "G4"; weight = 0.4; }
+          else if (kp180 >= 7) { severity = "G3"; weight = 0.3; }
+          else if (kp180 >= 6) { severity = "G2"; weight = 0.2; }
+          else if (kp180 >= 5) { severity = "G1"; weight = 0.15; }
+
+          const expiresAt = new Date(new Date(arrivalTime).getTime() + 36 * 60 * 60 * 1000).toISOString();
+          events.push({
+            schema: "sp.contribution.v1",
+            event_id: `wsa:${sim?.simulationID || arrivalTime}`,
+            type: "geomagnetic_storm",
+            severity,
+            signature_weight: Math.min(0.5, weight),
+            source_event_id: sim?.simulationID,
+            started_at: arrivalTime,
+            expires_at: expiresAt,
+            description: `WSA-ENLIL: solar wind arrival, Kp~${kp180}`,
+          });
+        }
       } else if (name === "sep" && Array.isArray(data)) {
         for (const sep of data) {
           const startedAt = sep?.eventTime || nowISO;
@@ -1861,7 +1922,7 @@ app.get("/api/space-weather/extended", async (_req, res) => {
   const payload = {
     current: {
       kp: kpValue,
-      kpForecast3h: [],
+      kpForecast3h,
       xrayFlux,
       xrayClass,
       protonFlux,
@@ -1875,7 +1936,7 @@ app.get("/api/space-weather/extended", async (_req, res) => {
     },
     meta: {
       fetchedAt: new Date().toISOString(),
-      noaaVersion: "v1",
+      noaaVersion: noaaAdapterVersion === "v2" ? "v2" : "v1",
       cacheTtlSeconds: Math.round(EXTENDED_CACHE_TTL_MS / 1000),
     },
   };
