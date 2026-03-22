@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Phone, PhoneOff, Lock } from "lucide-react";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
 
 interface DashboardLeviSectionProps {
   isPremium: boolean;
@@ -62,7 +64,7 @@ export function DashboardLeviSection({
   const handleHangUp = () => { setLeviActive(false); onResumeAudio(); };
 
   return (
-    <div ref={leviSectionRef} className="morning-card p-5 sm:p-7 md:p-8 max-w-3xl mx-auto relative z-10" style={{ backdropFilter: 'none', WebkitBackdropFilter: 'none', overflow: 'visible' }}>
+    <div ref={leviSectionRef} className="rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-md p-5 sm:p-7 flex flex-col gap-5 sm:gap-6 md:p-8 max-w-3xl mx-auto relative z-10" style={{ backdropFilter: 'none', WebkitBackdropFilter: 'none', overflow: 'visible' }}>
       {/* ── Status + Action row ─────────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-center gap-5 sm:gap-6">
         <div className="flex items-start gap-4 flex-1 min-w-0">
@@ -74,9 +76,9 @@ export function DashboardLeviSection({
             }`} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] uppercase tracking-[0.3em] text-[#8B6914] mb-1.5 font-semibold">
-              {leviActive ? t("dashboard.levi.active") : t("dashboard.levi.ready")}
-            </p>
+            <Badge variant={leviActive ? "success" : "default"}>
+              {leviActive ? t('dashboard.levi.active') : t('dashboard.levi.ready')}
+            </Badge>
             <p className="text-[11px] text-[#1E2A3A]/45 italic leading-relaxed">
               {leviActive ? t("dashboard.levi.activeDesc") : t("dashboard.levi.readyDesc")}
             </p>
@@ -84,26 +86,19 @@ export function DashboardLeviSection({
         </div>
 
         {isPremium ? (
-          <button
+          <Button
+            variant={leviActive ? "destructive" : "outline"}
+            className="w-full"
             onClick={leviActive ? handleHangUp : handleCallLevi}
-            className={`shrink-0 flex items-center justify-center gap-2 px-6 py-3 rounded-full text-[10px] uppercase tracking-[0.2em] font-semibold transition-all ${
-              leviActive
-                ? "bg-red-50 border border-red-300 text-red-600 hover:bg-red-100"
-                : "bg-[#8B6914]/10 border border-[#8B6914]/30 text-[#8B6914] hover:bg-[#8B6914]/[0.18]"
-            }`}
           >
             {leviActive
-              ? <><PhoneOff className="w-4 h-4" /> {t("dashboard.levi.hangUpBtn")}</>
-              : <><Phone className="w-4 h-4" /> {t("dashboard.levi.callBtn")}</>}
-          </button>
+              ? <><PhoneOff className="w-4 h-4" /> {t('dashboard.levi.hangUpBtn')}</>
+              : <><Phone className="w-4 h-4" /> {t('dashboard.levi.callBtn')}</>}
+          </Button>
         ) : (
-          <button
-            onClick={handleLeviUpgrade}
-            disabled={leviUpgrading}
-            className="shrink-0 flex items-center justify-center gap-2 px-6 py-3 rounded-full text-[10px] uppercase tracking-[0.2em] font-semibold bg-gold/10 border border-gold/30 text-gold hover:bg-gold/20 transition-all disabled:opacity-60 disabled:cursor-wait"
-          >
-            {leviUpgrading ? "..." : <><Lock className="w-4 h-4" /> {t("dashboard.premium.cta")}</>}
-          </button>
+          <Button variant="premium" className="w-full" onClick={handleLeviUpgrade} disabled={leviUpgrading}>
+            {leviUpgrading ? '...' : <><Lock className="w-4 h-4" /> {t('dashboard.premium.cta')}</>}
+          </Button>
         )}
       </div>
 

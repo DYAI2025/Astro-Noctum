@@ -21,6 +21,8 @@ import { SectionErrorBoundary } from "./dashboard/SectionErrorBoundary";
 import { DashboardLeviSection } from "./dashboard/DashboardLeviSection";
 import { isFeatureEnabled } from "../lib/feature-flags";
 
+import { Button } from "./ui/button";
+import { Card } from "./ui/card";
 import BlueprintCard from "./dashboard/BlueprintCard";
 import { TourOverlay } from "./dashboard/TourOverlay";
 import { useDashboardTour } from "@/src/hooks/useDashboardTour";
@@ -273,12 +275,9 @@ export function Dashboard({
       className="w-full max-w-6xl mx-auto px-4 md:px-6"
     >
       {/* Back */}
-      <button
-        onClick={onReset}
-        className="flex items-center gap-2 text-ink/40 hover:text-gold-deep transition-colors mb-10 text-[10px] uppercase tracking-[0.3em]"
-      >
+      <Button variant="ghost" size="sm" onClick={onReset} className="mb-10 text-[10px] uppercase tracking-[0.3em]">
         <ArrowLeft className="w-4 h-4" /> {t("dashboard.startOver")}
-      </button>
+      </Button>
 
       {/* ── Tour sentinel: step 0 anchors at the planetarium (top of dashboard) ── */}
       <div ref={planetariumSentinelRef} className="h-px" aria-hidden="true" />
@@ -309,14 +308,9 @@ export function Dashboard({
           <h1 className="font-serif text-3xl sm:text-[2.75rem] md:text-[3.5rem] leading-tight text-ink">
             {t("dashboard.title")}
           </h1>
-          <button
-            onClick={onRegenerate}
-            disabled={isLoading}
-            className="shrink-0 p-2.5 text-gold-deep/45 hover:text-gold-deep hover:bg-gold-deep/10 rounded-full transition-all disabled:opacity-40 disabled:cursor-not-allowed border border-gold-deep/20"
-            title="Regenerate"
-          >
+          <Button variant="outline" size="icon" onClick={onRegenerate} disabled={isLoading} title="Regenerate">
             <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
-          </button>
+          </Button>
         </div>
         
         <div className="mt-8 text-left">
@@ -332,8 +326,7 @@ export function Dashboard({
 
       {/* Upgrade Banner for free users */}
       {!isPremium && (
-        <motion.div
-          className="mb-8 w-full max-w-6xl rounded-2xl border border-gold/25 bg-linear-to-r from-[#D4AF37]/05 to-transparent p-5 flex items-center justify-between gap-4"
+        <Card variant="gold" className="mb-8 w-full max-w-6xl p-5 flex items-center justify-between gap-4"
           {...fadeIn(0.15)}
         >
           <div>
@@ -347,7 +340,7 @@ export function Dashboard({
             </p>
           </div>
           <UpgradeButton />
-        </motion.div>
+        </Card>
       )}
       {isPremium && (
         <motion.div
