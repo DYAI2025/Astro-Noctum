@@ -53,11 +53,11 @@ Formatierung: eine Zeile reicht. Agenten fragen nach wenn nötig.
 | #124 | FEAT | Bloom Fine-Tuning | S05 | Blocked: Ben's Spec |
 | #125 | FEAT | Performance Audit | S05 | Ready |
 | #135 | FEAT | Quiz-Cluster Abschluss Animation | S05 | Ready |
-| #126 | BUG | NOAA Adapter v2 — DEADLINE 31.03.2026 | S06 | **In Progress** |
-| #127 | FEAT | DONKI Extended — CME, WSA-ENLIL, SEP, HSS | S06 | Ready |
-| #128 | FEAT | Solar Pressure Score → Ring Modulation (×1.5) | S06 | Ready |
-| #142 | FEAT | NOAA SWPC — X-ray, Proton, Forecast Endpoints | S06 | Ready |
-| #143 | FEAT | GET /api/space-weather/extended (Aggregator) | S06 | Ready |
+| #126 | BUG | NOAA Adapter v2 — DEADLINE 31.03.2026 | S06 | ✅ Done |
+| #127 | FEAT | DONKI Extended — CME, WSA-ENLIL, SEP, HSS | S06 | ✅ Done |
+| #128 | FEAT | Solar Pressure Score → Ring Modulation (×1.5) | S06 | ✅ Done |
+| #142 | FEAT | NOAA SWPC — X-ray, Proton, Forecast Endpoints | S06 | ✅ Done (in extended endpoint) |
+| #143 | FEAT | GET /api/space-weather/extended (Aggregator) | S06 | ✅ Done |
 | #144 | FEAT | POST /api/contribution/space-weather | S06 | Ready |
 | #145 | FEAT | sky.bazodiac.space — Solar Pressure Widget | S06 | Ready |
 | #129 | FEAT | i18n Audit | S07 | Ready |
