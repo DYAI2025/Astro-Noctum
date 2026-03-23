@@ -1,7 +1,9 @@
 import { supabase } from '@/src/lib/supabase';
+import { postWithRetry } from '@/src/services/postWithRetry';
 
 /**
  * Fire-and-forget: persist quiz sector weights to Supabase via server proxy.
+ * Retries on 5xx / network errors (up to 2 retries with backoff).
  * Never throws — logs errors silently. Must not block user flow.
  */
 export async function contributeQuizResult(
@@ -16,7 +18,7 @@ export async function contributeQuizResult(
       return;
     }
 
-    const res = await fetch('/api/contribute', {
+    const res = await postWithRetry('/api/contribute', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -29,7 +31,7 @@ export async function contributeQuizResult(
       }),
     });
 
-    if (!res.ok) {
+    if (res && !res.ok) {
       const body = await res.text().catch(() => '');
       console.warn('[contribute] failed:', res.status, body);
     }

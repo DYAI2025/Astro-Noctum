@@ -172,8 +172,11 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
   }, [user, profileState, lang]);
 
   // ── Regenerate interpretation ────────────────────────────────────────
+  const regeneratingRef = useRef(false);
   const handleRegenerate = useCallback(async () => {
     if (!apiData || !user) return;
+    if (regeneratingRef.current) return;
+    regeneratingRef.current = true;
     setIsLoading(true);
     setError(null);
     try {
@@ -205,6 +208,7 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
       setError(msg || getAiErrorMessage(lang));
     } finally {
       setIsLoading(false);
+      regeneratingRef.current = false;
     }
   }, [apiData, lang, user, birthDateStr]);
 

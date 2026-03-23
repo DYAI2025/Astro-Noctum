@@ -42,6 +42,7 @@ interface BirthFormProps {
 
 export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
   const { t } = useLanguage();
+  const [submitting, setSubmitting] = useState(false);
   const [step, setStep] = useState(1);
   const [date, setDate] = useState("1990-01-01");
   const [time, setTime] = useState("12:00");
@@ -52,6 +53,7 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
   const [showMap, setShowMap] = useState(false);
   const [mapCenter, setMapCenter] = useState<{ lat: number; lon: number } | undefined>(undefined);
   const placesAvailable = useMemo(() => hasPlacesApiKey(), []);
+  const today = new Date().toISOString().split('T')[0];
 
   const autoDetectTimezone = useCallback(async (lat: number, lon: number) => {
     const detectedTz = await fetchTimezone(lat, lon);
@@ -71,6 +73,12 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
+
+    if (date > today) {
+      alert(t("form.futureDate"));
+      return;
+    }
 
     const [latStr, lonStr] = coordinates.split(",").map((s) => s.trim());
     const parsedLat = parseFloat(latStr);
@@ -91,6 +99,7 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
       return;
     }
 
+    setSubmitting(true);
     onSubmit({ date: `${date}T${time}:00`, tz, lat: parsedLat, lon: parsedLon });
   };
 
@@ -148,6 +157,7 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
                 <input
                   type="date"
                   required
+                  max={today}
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   className={inputCls}
@@ -331,7 +341,7 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
               </button>
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || submitting}
                 className="w-full md:w-auto px-12 py-4 border border-[#8B6914]/30 text-[#8B6914] text-[10px] uppercase tracking-[0.3em] hover:bg-[#8B6914]/08 transition-colors disabled:opacity-50 rounded"
               >
                 {t("form.submitBtn")}

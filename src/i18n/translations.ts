@@ -72,6 +72,7 @@ const translationsEn: DeepStringRecord = {
     coordTitle: "Enter coordinates as Latitude, Longitude (e.g. 52.399553, 13.061038)",
     invalidTz: "Invalid timezone. Please use an IANA timezone such as Europe/Berlin.",
     invalidDate: "Please enter a valid date.",
+    futureDate: "Please enter a birth date in the past.",
     noTime: "You have not entered a time. Use 12:00 as default?",
   },
   furing3d: {
@@ -190,6 +191,7 @@ const translationsEn: DeepStringRecord = {
       teaserHouses: "Discover all twelve astrological houses and their influence on your life.",
       teaserLevi: "Talk to Levi Bazi, your personal astrological voice agent.",
       cta: "Upgrade — 4,99 \u20AC",
+      checkoutError: "Checkout could not be started. Please try again later.",
     },
   },
 } as const;
@@ -259,6 +261,7 @@ const translationsDe: DeepStringRecord = {
     coordTitle: "Koordinaten als Breitengrad, Längengrad eingeben (z.B. 52.399553, 13.061038)",
     invalidTz: "Ungültige Zeitzone. Bitte nutze eine IANA-Zeitzone wie Europe/Berlin.",
     invalidDate: "Bitte gib ein gültiges Datum ein.",
+    futureDate: "Bitte ein Geburtsdatum in der Vergangenheit angeben.",
     noTime: "Du hast keine Uhrzeit angegeben. Sollen wir 12:00 Uhr als Standard verwenden?",
   },
   furing3d: {
@@ -377,6 +380,7 @@ const translationsDe: DeepStringRecord = {
       teaserHouses: "Entdecke alle zwölf astrologischen Häuser und ihren Einfluss auf dein Leben.",
       teaserLevi: "Sprich mit Levi Bazi, deinem persönlichen astrologischen Sprach-Agenten.",
       cta: "Upgrade — 4,99 \u20AC",
+      checkoutError: "Checkout konnte nicht gestartet werden. Bitte versuche es später erneut.",
     },
   },
 };

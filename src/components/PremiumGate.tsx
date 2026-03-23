@@ -18,7 +18,7 @@ export function PremiumGate({ children, teaser, ctaLabel }: Props) {
 
   return (
     <div className="relative">
-      <div className="blur-sm pointer-events-none select-none opacity-60">
+      <div className="blur-sm pointer-events-none select-none opacity-60" aria-hidden="true">
         {children}
       </div>
       <div className="absolute inset-0 flex flex-col items-center justify-center bg-obsidian/70 rounded-2xl backdrop-blur-sm">

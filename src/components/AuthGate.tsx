@@ -104,7 +104,7 @@ export function AuthGate() {
                 type="email"
                 required
                 value={loginEmail}
-                onChange={(e) => setLoginEmail(e.target.value)}
+                onChange={(e) => { setLoginEmail(e.target.value); if (error) setError(null); }}
                 className={inputCls}
                 placeholder={t("auth.emailPlaceholder")}
               />
@@ -116,7 +116,7 @@ export function AuthGate() {
                 required
                 minLength={6}
                 value={loginPassword}
-                onChange={(e) => setLoginPassword(e.target.value)}
+                onChange={(e) => { setLoginPassword(e.target.value); if (error) setError(null); }}
                 className={inputCls}
                 placeholder={t("auth.passwordPlaceholder")}
               />
@@ -154,7 +154,7 @@ export function AuthGate() {
                 type="email"
                 required
                 value={registerEmail}
-                onChange={(e) => setRegisterEmail(e.target.value)}
+                onChange={(e) => { setRegisterEmail(e.target.value); if (error) setError(null); }}
                 className={inputCls}
                 placeholder={t("auth.emailPlaceholder")}
               />
@@ -166,7 +166,7 @@ export function AuthGate() {
                 required
                 minLength={6}
                 value={registerPassword}
-                onChange={(e) => setRegisterPassword(e.target.value)}
+                onChange={(e) => { setRegisterPassword(e.target.value); if (error) setError(null); }}
                 className={inputCls}
                 placeholder={t("auth.passwordPlaceholder")}
               />
@@ -180,7 +180,7 @@ export function AuthGate() {
                 required
                 minLength={6}
                 value={registerConfirmPassword}
-                onChange={(e) => setRegisterConfirmPassword(e.target.value)}
+                onChange={(e) => { setRegisterConfirmPassword(e.target.value); if (error) setError(null); }}
                 className={inputCls}
                 placeholder={lang === "de" ? "Passwort wiederholen" : "Repeat password"}
               />

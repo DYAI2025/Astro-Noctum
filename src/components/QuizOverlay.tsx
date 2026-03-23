@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useRef, Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { ContributionEvent } from '@/src/lib/lme/types';
+import { useLanguage } from '@/src/contexts/LanguageContext';
 import { QuizErrorBoundary } from './QuizErrorBoundary';
 
 // --- Lazy-loaded quiz components ---
@@ -78,6 +79,7 @@ function QuizLoadingFallback() {
 
 // --- Component ---
 export default function QuizOverlay({ quizId, onComplete, onClose }: QuizOverlayProps) {
+  const { lang } = useLanguage();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   // Close on Escape key
@@ -103,6 +105,26 @@ export default function QuizOverlay({ quizId, onComplete, onClose }: QuizOverlay
   }, [quizId, handleKeyDown]);
 
   const QuizComponent = quizId ? QUIZ_MAP[quizId] ?? null : null;
+
+  // Fallback for unknown quiz IDs
+  if (quizId && !QuizComponent) {
+    const notFoundMsg = lang === 'en' ? 'Quiz not found.' : 'Quiz nicht gefunden.';
+    const closeMsg = lang === 'en' ? 'Close' : 'Schließen';
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-obsidian/80 backdrop-blur-sm">
+        <div className="bg-[#0D0F14] rounded-2xl p-8 max-w-sm text-center space-y-4">
+          <p className="text-gold/70">{notFoundMsg}</p>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg border border-gold/20 px-4 py-2 text-sm text-gold transition-colors hover:bg-gold/10"
+          >
+            {closeMsg}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <AnimatePresence>
@@ -154,7 +176,7 @@ export default function QuizOverlay({ quizId, onComplete, onClose }: QuizOverlay
             </button>
 
             {/* Quiz content */}
-            <QuizErrorBoundary onClose={onClose}>
+            <QuizErrorBoundary onClose={onClose} lang={lang}>
               <Suspense fallback={<QuizLoadingFallback />}>
                 <QuizComponent onComplete={onComplete} onClose={onClose} />
               </Suspense>
