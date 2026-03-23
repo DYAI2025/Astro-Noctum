@@ -1,8 +1,8 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowUp } from "lucide-react";
-import { BirthChartOrrery } from "../BirthChartOrrery";
+const BirthChartOrrery = lazy(() => import("../BirthChartOrrery").then(m => ({ default: m.BirthChartOrrery })));
 import { PremiumGate } from "../PremiumGate";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { WUXING_ELEMENTS, getWuxingName } from "../../lib/astro-data/wuxing";
@@ -221,12 +221,14 @@ export function DashboardAstroSection({
     <>
       {/* ═══ 3D ORRERY ════════════════════════════════════════════════ */}
       <motion.div className="mb-14 -mx-4 md:-mx-6" {...fadeIn(0.1)}>
-        <BirthChartOrrery
-          birthDate={orreryDate}
-          planetariumMode={planetariumMode}
-          birthConstellation={birthConstellationKey}
-          autoPlay={showBirthSkyWelcome}
-        />
+        <Suspense fallback={<div className="w-full aspect-square bg-[#0A0A14] rounded-2xl animate-pulse" />}>
+          <BirthChartOrrery
+            birthDate={orreryDate}
+            planetariumMode={planetariumMode}
+            birthConstellation={birthConstellationKey}
+            autoPlay={showBirthSkyWelcome}
+          />
+        </Suspense>
 
         {/* Birth Sky Welcome Banner */}
         <AnimatePresence>

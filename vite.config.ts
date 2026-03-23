@@ -54,5 +54,19 @@ export default defineConfig(({mode}) => {
         },
       },
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+            'vendor-three': ['three'],
+            'vendor-motion': ['motion'],
+            'vendor-supabase': ['@supabase/supabase-js'],
+            'vendor-zod': ['zod'],
+            'vendor-icons': ['lucide-react'],
+          },
+        },
+      },
+    },
   };
 });

@@ -149,7 +149,7 @@ export function Dashboard({
   const { setPlanetariumMode, planetariumMode } = usePlanetarium();
   const [tourPrevPlanetariumMode, setTourPrevPlanetariumMode] = useState<boolean | null>(null);
 
-  // Scroll-triggered tour: steps 1 and 2 only show when their section is visible
+  // Scroll-triggered tour: step 1 only shows when astro section is visible
   const [scrollReached, setScrollReached] = useState<Set<number>>(new Set());
   const planetariumSentinelRef = useRef<HTMLDivElement>(null);
   const astroSentinelRef = useRef<HTMLDivElement>(null);
@@ -159,18 +159,13 @@ export function Dashboard({
   // Map tour steps to their anchor refs
   const tourAnchorRef = tourStep === 0 ? planetariumSentinelRef
     : tourStep === 1 ? astroSentinelRef
-    : tourStep === 2 ? leviSentinelRef
-    : tourStep === 3 ? navHintsSentinelRef
     : undefined;
 
-  // The tour overlay is only visible when the step is either 0/2/3 (immediate)
-  // or when the scroll sentinel for step 1 has been reached
-  const isTourStepVisible = tourStep === 0 || tourStep === 2 || tourStep === 3 || tourStep === 'done'
-    || (typeof tourStep === 'number' && scrollReached.has(tourStep));
+  // Step 0 is immediate; step 1 waits for scroll
+  const isTourStepVisible = tourStep === 0 || tourStep === 'done'
+    || (tourStep === 1 && scrollReached.has(1));
 
   useEffect(() => {
-    if (tourStep === 'done' || typeof tourStep !== 'number') return;
-    // Only observe for step 1 (astro section scroll gate)
     if (tourStep !== 1) return;
 
     const sentinel = astroSentinelRef.current;
@@ -179,7 +174,7 @@ export function Dashboard({
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setScrollReached(prev => new Set(prev).add(tourStep));
+          setScrollReached(prev => new Set(prev).add(1));
           observer.disconnect();
         }
       },
@@ -317,7 +312,7 @@ export function Dashboard({
           <SectionErrorBoundary name="BlueprintCard">
             <BlueprintCard
               title={lang === 'de' ? "Kosmischer Blueprint" : "Cosmic Blueprint"}
-              content={interpretation.split('\n\n')[0] || ""} 
+              content={interpretation.split('\n\n').find(p => p.trim() && !p.startsWith('#')) || (lang === 'de' ? 'Dein kosmischer Blueprint wird geladen…' : 'Loading your cosmic blueprint…')}
               onCtaClick={() => document.getElementById("interpretation-section")?.scrollIntoView({ behavior: "smooth" })}
             />
           </SectionErrorBoundary>

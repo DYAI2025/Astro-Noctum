@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import ReactMarkdown from 'react-markdown';
+import { useMemo, lazy, Suspense } from 'react';
+const ReactMarkdown = lazy(() => import('react-markdown'));
 import { PremiumGate } from '../PremiumGate';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { Badge } from "../ui/badge";
@@ -63,13 +63,17 @@ export function DashboardInterpretationSection({
       ) : (
         <>
           <div className={proseClasses}>
-            <ReactMarkdown>{isPremium ? interpretation : freeInterpretation}</ReactMarkdown>
+            <Suspense fallback={<div className="animate-pulse space-y-3"><div className="h-4 bg-white/5 rounded w-3/4" /><div className="h-4 bg-white/5 rounded w-1/2" /><div className="h-4 bg-white/5 rounded w-2/3" /></div>}>
+              <ReactMarkdown>{isPremium ? interpretation : freeInterpretation}</ReactMarkdown>
+            </Suspense>
           </div>
 
           {!isPremium && hasPremiumInterpretation && (
             <PremiumGate teaser={t('dashboard.premium.teaserInterpretation')}>
               <div className={`${proseClasses} mt-4`}>
-                <ReactMarkdown>{interpretationParagraphs.slice(2).join('\n\n')}</ReactMarkdown>
+                <Suspense fallback={<div className="animate-pulse space-y-3"><div className="h-4 bg-white/5 rounded w-3/4" /><div className="h-4 bg-white/5 rounded w-1/2" /><div className="h-4 bg-white/5 rounded w-2/3" /></div>}>
+                  <ReactMarkdown>{interpretationParagraphs.slice(2).join('\n\n')}</ReactMarkdown>
+                </Suspense>
               </div>
             </PremiumGate>
           )}

@@ -4,6 +4,7 @@ import fs from "node:fs";
 import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
+import compression from "compression";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { GoogleGenAI } from "@google/genai";
@@ -2899,8 +2900,33 @@ app.post("/api/interpret", express.json({ limit: "50kb" }), async (req, res) => 
   }
 });
 
+// ── Compression ────────────────────────────────────────────────────
+app.use(compression({
+  level: 6,
+  threshold: 1024,
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) return false;
+    return compression.filter(req, res);
+  },
+}));
+
 // ── Static files ────────────────────────────────────────────────────
-app.use(express.static(distPath, { index: "index.html" }));
+// Hashed assets (JS/CSS in /assets/) — immutable, cache 1 year
+app.use("/assets", express.static(path.join(distPath, "assets"), {
+  maxAge: "1y",
+  immutable: true,
+}));
+
+// Other static files (HTML, media, icons) — short cache, revalidate
+app.use(express.static(distPath, {
+  index: "index.html",
+  maxAge: "1h",
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith(".html")) {
+      res.setHeader("Cache-Control", "no-cache");
+    }
+  },
+}));
 
 app.get("/fu-ring", (_req, res) => {
   const html = fs.readFileSync(path.join(distPath, "index.html"), "utf8");
