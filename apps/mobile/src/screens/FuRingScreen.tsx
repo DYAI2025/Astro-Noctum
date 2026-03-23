@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Animated, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { QuizDefinition } from '@bazodiac/shared';
 import { useAppState } from '../contexts/AppStateContext';
@@ -7,8 +7,21 @@ import { useBootstrapSignatur } from '../hooks/useBootstrapSignatur';
 import { useQuizOfTheDay } from '../hooks/useQuizOfTheDay';
 import QuizRenderer from '../components/QuizRenderer';
 import { COLORS } from '../theme';
-import SignaturRing from '../components/SignaturRing';
+import SignaturEngine from '../components/SignaturEngine';
 import { useSpaceWeather } from '../hooks/useSpaceWeather';
+
+// Convert 12-sector soulprint to 7-planet natal weights
+function soulprintToNatal(sectors: number[]): Map<string, number> {
+  const map = new Map<string, number>();
+  map.set('Sun', sectors[4] ?? 0.5);      // Leo
+  map.set('Moon', sectors[3] ?? 0.5);     // Cancer
+  map.set('Mercury', sectors[2] ?? 0.5);  // Gemini
+  map.set('Venus', sectors[1] ?? 0.5);    // Taurus
+  map.set('Mars', sectors[0] ?? 0.5);     // Aries
+  map.set('Jupiter', sectors[8] ?? 0.5);  // Sagittarius
+  map.set('Saturn', sectors[9] ?? 0.5);   // Capricorn
+  return map;
+}
 
 const SECTOR_LABELS = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
@@ -48,7 +61,6 @@ export function FuRingScreen() {
   const { profile, userId, tier } = useAppState();
   const { bootstrap, loading } = useBootstrapSignatur(profile);
   const { kpIndex } = useSpaceWeather();
-  const [selectedSector, setSelectedSector] = useState<{ index: number; value: number } | null>(null);
 
   // ---- Quiz des Tages state ----
   const [completed, setCompleted] = useState<Record<string, boolean>>({});
@@ -132,20 +144,13 @@ export function FuRingScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Signatur Ring Visualization */}
-      <View style={styles.ringContainer}>
-        <SignaturRing
-          sectors={soulprintSectors}
-          harmonyIndex={harmony}
+      {/* Signatur Engine Visualization */}
+      <View style={styles.engineContainer}>
+        <SignaturEngine
+          natalWeights={soulprintToNatal(soulprintSectors)}
           kpIndex={kpIndex}
-          size={280}
-          onSectorTap={(index, value) => setSelectedSector({ index, value })}
+          size={300}
         />
-        {selectedSector && (
-          <Text style={styles.sectorTooltip}>
-            {SECTOR_EMOJIS[selectedSector.index]} {SECTOR_LABELS[selectedSector.index]} — {selectedSector.value.toFixed(2)}
-          </Text>
-        )}
       </View>
 
       {/* Profile summary */}
@@ -238,16 +243,9 @@ const styles = StyleSheet.create({
     gap: 16,
     paddingBottom: 40,
   },
-  ringContainer: {
+  engineContainer: {
     alignItems: 'center',
-    paddingVertical: 8,
-  },
-  sectorTooltip: {
-    color: COLORS.gold,
-    fontSize: 13,
-    fontWeight: '600',
-    marginTop: 8,
-    textAlign: 'center',
+    marginVertical: 8,
   },
   center: {
     flex: 1,
