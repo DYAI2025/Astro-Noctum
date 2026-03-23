@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/src/lib/supabase';
 
-export type TourStep = 0 | 1 | 2 | 3 | 'done';
+export type TourStep = 0 | 1 | 'done';
 
 export function useDashboardTour(userId: string | undefined) {
   const [tourStep, setTourStep] = useState<TourStep | null>(null); // null = loading
@@ -42,7 +42,7 @@ export function useDashboardTour(userId: string | undefined) {
   const next = useCallback(() => {
     setTourStep((prev) => {
       if (prev === null || prev === 'done') return prev;
-      if (prev === 3) {
+      if (prev === 1) {
         // Persist completion
         if (userId) {
           supabase.from('profiles').update({ tour_completed: true }).eq('id', userId)

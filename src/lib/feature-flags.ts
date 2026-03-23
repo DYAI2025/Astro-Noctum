@@ -19,7 +19,12 @@ const FLAGS = {
 
 type FlagName = keyof typeof FLAGS;
 
+/** Flags that are hard-disabled — localStorage cannot override these. */
+const LOCKED_OFF: readonly FlagName[] = ['cosmic_encounter_v1'];
+
 export function isFeatureEnabled(flag: FlagName): boolean {
+  // Hard-disabled flags ignore localStorage overrides entirely
+  if (LOCKED_OFF.includes(flag)) return false;
   if (typeof window === 'undefined') return FLAGS[flag];
   const override = localStorage.getItem(`ff_${flag}`);
   if (override !== null) return override === 'true';
