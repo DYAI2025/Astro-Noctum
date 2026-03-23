@@ -6,6 +6,86 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Bazodiac (Astro-Noctum) — a fusion astrology web + mobile app combining Western astrology, Chinese BaZi, and Wu-Xing (Five Elements). Users enter birth data, get chart calculations from the external BAFE API, AI-generated interpretations via Gemini, and can talk to "Levi Bazi" (an ElevenLabs voice agent). The UI is German-language, dark luxury aesthetic (obsidian/gold palette).
 
+---
+
+## SDLC Scaffold
+
+This repository uses the [ai-scrum-scaffold](../../../Scrum_Master/ai-scrum-scaffold) overlay for structured, AI-first development. All project knowledge — goals, requirements, decisions, tasks — lives alongside the source code.
+
+### Skills
+
+| Skill | Phase | Purpose |
+|-------|-------|---------|
+| `/SDLC-elicit` | Objectives | Define goals, requirements, assumptions, constraints |
+| `/SDLC-design` | Design | Draft/update architecture, data model, API design |
+| `/SDLC-decompose` | Design → Code | Identify components, create steering directories |
+| `/SDLC-implementation-plan` | Code | Generate phased task backlog in `3-code/tasks.md` |
+| `/SDLC-execute-next-task` | Code | Execute the next pending task |
+| `/SDLC-fix` | Code | Bug fixes or ad-hoc changes with context gathering |
+| `/SDLC-status` | Cross-phase | Project dashboard |
+
+Existing `.claude/commands/` (bug-report, sprint, dev-brief, etc.) remain and complement the SDLC skills.
+
+### Phase Structure
+
+| Phase | Directory | Instructions |
+|-------|-----------|-------------|
+| Objectives | [`1-objectives/`](1-objectives/) | [`CLAUDE.objectives.md`](1-objectives/CLAUDE.objectives.md) |
+| Design | [`2-design/`](2-design/) | [`CLAUDE.design.md`](2-design/CLAUDE.design.md) |
+| Code | [`3-code/`](3-code/) | [`CLAUDE.code.md`](3-code/CLAUDE.code.md) |
+| Deploy | [`4-deploy/`](4-deploy/) | [`CLAUDE.deploy.md`](4-deploy/CLAUDE.deploy.md) |
+
+When working in a phase, read its `CLAUDE.<phase>.md` — it extends (not overrides) this file.
+
+### Artifacts
+
+All artifact IDs use `PREFIX-kebab-name` (e.g., `GOAL-fusion-astrology`, `REQ-F-natal-chart`, `DEC-supabase-backend`). No numeric sequences.
+
+| Prefix | Artifact | Location |
+|--------|----------|----------|
+| `GOAL` | Goals | `1-objectives/goals/` |
+| `REQ-CLASS` | Requirements | `1-objectives/requirements/` |
+| `ASM` | Assumptions | `1-objectives/assumptions/` |
+| `CON` | Constraints | `1-objectives/constraints/` |
+| `DEC` | Decisions | `2-design/decisions/` |
+| `TASK` | Tasks | `3-code/tasks.md` |
+
+### Decisions
+
+Decisions live in `2-design/decisions/`. Two files per decision: `DEC-*.md` (enforcement — read during tasks) and `DEC-*.history.md` (audit trail — read only when evaluating changes). See [`PROCEDURES.md`](2-design/decisions/PROCEDURES.md).
+
+### Graduated Safeguards
+
+| Tier | When | Agent behavior |
+|------|------|----------------|
+| **Always ask** | Conflict resolution, design gaps, decision deprecation | Stop, present options, wait for approval |
+| **Ask first time** | Naming conventions, error handling patterns | Ask once, record decision, apply consistently |
+| **Decide and record** | Routine choices within established patterns | Decide autonomously, record in artifact |
+
+### Phase Gates (advisory)
+
+| Transition | Preconditions |
+|------------|---------------|
+| Objectives → Design | At least one Goal Approved; at least one Requirement Approved |
+| Design → Code | Design documents drafted; components identified |
+
+### Tooling Roles
+
+| Tool | Role |
+|------|------|
+| Scaffold (in-repo) | Source of truth for goals, requirements, decisions, tasks |
+| [Miro](https://miro.com/app/board/uXjVGuainfM=/) | Brainstorming only — not a source of truth |
+| GitHub Issues | Bug reports and CI failures |
+
+### Cross-Skill Artifact Procedures
+
+Any modification to phase artifacts must follow the authoritative skill for that phase:
+- **Objectives** (`1-objectives/`): [`.claude/skills/SDLC-elicit/SKILL.md`](.claude/skills/SDLC-elicit/SKILL.md)
+- **Design** (`2-design/`): [`.claude/skills/SDLC-design/SKILL.md`](.claude/skills/SDLC-design/SKILL.md)
+- **Tasks** (`3-code/tasks.md`): [`.claude/skills/SDLC-implementation-plan/SKILL.md`](.claude/skills/SDLC-implementation-plan/SKILL.md)
+
+---
+
 ## Monorepo Structure
 
 ```
