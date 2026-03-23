@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bazodiac — Datenflussmodell</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #0a0a1a;
+    color: #e0e0e0;
+    overflow-x: hidden;
+  }
+  .header {
+    text-align: center;
+    padding: 32px 20px 16px;
+    background: linear-gradient(180deg, #12122a 0%, #0a0a1a 100%);
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #7c6cf0, #50c8ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 6px;
+  }
+  .header p {
+    color: #888;
+    font-size: 13px;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .legend {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 12px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #999;
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  /* SVG Canvas */
+  .canvas-container {
+    width: 100%;
+    overflow-x: auto;
+    padding: 0 20px 40px;
+  }
+  svg {
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* Node styles */
+  .node-group { cursor: pointer; }
+  .node-group:hover .node-box { filter: brightness(1.3); }
+  .node-group:hover .node-label { fill: #fff; }
+
+  .node-box {
+    rx: 8;
+    ry: 8;
+    transition: filter 0.2s;
+  }
+  .node-label {
+    font-size: 11px;
+    font-weight: 600;
+    fill: #ddd;
+    text-anchor: middle;
+    dominant-baseline: central;
+    pointer-events: none;
+  }
+  .node-sublabel {
+    font-size: 9px;
+    fill: #888;
+    text-anchor: middle;
+    dominant-baseline: central;
+    pointer-events: none;
+  }
+  .section-label {
+    font-size: 13px;
+    font-weight: 700;
+    fill: #555;
+    text-anchor: middle;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  /* Flow lines */
+  .flow-line {
+    fill: none;
+    stroke-width: 1.5;
+    opacity: 0.35;
+    transition: opacity 0.2s, stroke-width 0.2s;
+  }
+  .flow-line.highlight {
+    opacity: 0.85;
+    stroke-width: 2.5;
+  }
+  .flow-line.dim {
+    opacity: 0.08;
+  }
+
+  /* Weight labels on flows */
+  .weight-label {
+    font-size: 9px;
+    fill: #666;
+    text-anchor: middle;
+    pointer-events: none;
+  }
+
+  /* Tooltip */
+  .tooltip {
+    position: fixed;
+    background: #1a1a2e;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 12px;
+    max-width: 320px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 100;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .tooltip.visible { opacity: 1; }
+  .tooltip h3 {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #fff;
+  }
+  .tooltip .detail {
+    color: #aaa;
+    line-height: 1.5;
+  }
+  .tooltip .formula {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #7c6cf0;
+    background: #12122a;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-top: 6px;
+    display: block;
+  }
+
+  /* Info panel */
+  .info-panel {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .info-card {
+    background: #12122a;
+    border: 1px solid #222;
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .info-card h3 {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .info-card p {
+    font-size: 11px;
+    color: #888;
+    line-height: 1.6;
+  }
+  .info-card code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #7c6cf0;
+    background: #0a0a1a;
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+  @media (max-width: 700px) {
+    .info-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Bazodiac Datenflussmodell</h1>
+  <p>Jede Verbindung zeigt exakt, welche Daten von welcher Quelle durch welche Engine in welches Output fliessen. Hover auf Knoten um Details zu sehen.</p>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#50c8ff"></div>Input-Quellen</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#7c6cf0"></div>Berechnungs-Engines</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ff6b9d"></div>Zwischen-Produkte</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#50e890"></div>Outputs (User sieht)</div>
+</div>
+
+<div class="canvas-container">
+  <svg id="flowSvg" width="1200" height="1050"></svg>
+</div>
+
+<div class="tooltip" id="tooltip">
+  <h3 id="ttTitle"></h3>
+  <div class="detail" id="ttDetail"></div>
+</div>
+
+<div class="info-panel">
+  <div class="info-grid" id="infoGrid"></div>
+</div>
+
+<script>
+const svg = document.getElementById('flowSvg');
+const tooltip = document.getElementById('tooltip');
+const NS = 'http://www.w3.org/2000/svg';
+
+// ─── COLOR PALETTE ───
+const C = {
+  input:   '#50c8ff',
+  engine:  '#7c6cf0',
+  middle:  '#ff6b9d',
+  output:  '#50e890',
+  inputBg:  '#0d2a3a',
+  engineBg: '#1a1535',
+  middleBg: '#2a1525',
+  outputBg: '#0d2a1a',
+};
+
+// ─── NODE DATA ───
+// x, y, w, h, color, bgColor, label, sublabel, detail
+const nodes = {
+  // ── INPUTS (Column 0, x=60) ──
+  birth:    { x:60, y:80, w:150, h:50, c:C.input, bg:C.inputBg, label:'Geburtsdaten', sub:'Datum, Zeit, Ort', detail:'Geburtstag, Uhrzeit, Geburtsort. Die einzige statische Eingabe — alles andere ist dynamisch oder abgeleitet.' },
+  quiz_v:   { x:60, y:180, w:150, h:50, c:C.input, bg:C.inputBg, label:'Vertiefungs-Quiz', sub:'Tageshoroskop-Follow-up', detail:'Nach dem Tageshoroskop: 2-3 Alltagsfragen, die den aktuellen Zustand der Bazodiacs messen. Scores gehen gleichgewichtet in die Signatur.' },
+  quiz_e:   { x:60, y:280, w:150, h:50, c:C.input, bg:C.inputBg, label:'Entertainment-Quiz', sub:'"Welcher Superheld bist du?"', detail:'Fun-Quizzes zum Teilen. Scores fliessen GENAUSO in die Signatur wie Vertiefungs-Quizzes. Zusätzlich: Skin-Karten als Sammelobjekte.' },
+  transit:  { x:60, y:400, w:150, h:50, c:C.input, bg:C.inputBg, label:'Transite', sub:'Aktuelle Planetenpositionen', detail:'Ephemeridendaten: Wo stehen Planeten heute? Welche Aspekte bilden sie zu den Geburtsplaneten? Welches Bazodiac-Feld wird dadurch aktiviert?' },
+  cosmic:   { x:60, y:500, w:150, h:50, c:C.input, bg:C.inputBg, label:'Kosmische Ereignisse', sub:'Vollmond, Rückläufer, Finsternisse', detail:'Übergeordnete Events die ALLE User betreffen: Vollmond in Zeichen X, Merkur rückläufig, Sonnenwende. Modulieren Tageshoroskop-Intensität.' },
+
+  // ── CALCULATION ENGINES (Column 1, x=340) ──
+  west_calc:  { x:340, y:60, w:160, h:50, c:C.engine, bg:C.engineBg, label:'Western Engine', sub:'Sonne, Mond, AC, Planeten, Häuser', detail:'Berechnet aus Geburtsdaten: 12 Sternzeichen-Positionen, Aszendent, Planetenpositionen in Zeichen+Häusern, Aspekte zwischen Planeten.' },
+  east_calc:  { x:340, y:150, w:160, h:50, c:C.engine, bg:C.engineBg, label:'Bazi Engine', sub:'4 Säulen + Wu Xing', detail:'Berechnet aus Geburtsdaten: Tagesmeister, Stundensäule, Monatssäule, Jahressäule, dominantes Wu-Xing-Element (Holz/Feuer/Erde/Metall/Wasser).' },
+  fusion:     { x:340, y:270, w:160, h:60, c:C.engine, bg:C.engineBg, label:'FUSION ENGINE', sub:'West × Ost → Bazodiac Prior', detail:'DER Kern: Verschmilzt Western + Bazi zu 12 Bazodiac-Gewichtungen.\n\nDrei Fusionsebenen:\n• Sonne × Tagesmeister (40%)\n• Mond × Stundensäule (35%)\n• AC × Jahressäule (25%)\n+ Wu Xing Modifikator (±25%)' },
+  quiz_score: { x:340, y:400, w:160, h:50, c:C.engine, bg:C.engineBg, label:'Quiz-Scoring Engine', sub:'Alle Quizzes → Bazodiac States', detail:'Jede Antwort scored MEHRERE Bazodiacs gleichzeitig mit state_signal (toward_light / toward_balance / toward_shadow). Running weighted average mit 0.95 recency decay.' },
+  transit_eng:{ x:340, y:510, w:160, h:50, c:C.engine, bg:C.engineBg, label:'Transit Engine', sub:'Transit × Geburtschart', detail:'Aspekte zwischen aktuellen Planeten und Geburtspositionen. Bestimmt: Welches Bazodiac wird HEUTE besonders aktiviert? In welchem Kontext? Conjunction=amplify, Square=stress, Trine=harmonize.' },
+
+  // ── INTERMEDIATE PRODUCTS (Column 2, x=620) ──
+  signs_west: { x:620, y:40, w:150, h:44, c:C.middle, bg:C.middleBg, label:'Sternzeichen-Profil', sub:'Sonne, Mond, AC, Häuser', detail:'12 Planetenpositionen, Aszendent, 12 Häuserbesetzungen, alle Aspekte. Basis für westliche Deutung und Fusion.' },
+  signs_east: { x:620, y:110, w:150, h:44, c:C.middle, bg:C.middleBg, label:'Bazi-Profil', sub:'4 Säulen + dominantes Element', detail:'Tagesmeister, Stunden-/Monats-/Jahressäule mit Tierstämmen und Erdenzweigen. Dominantes Wu Xing Element bestimmt Grundcharakter.' },
+  baz_prior:  { x:620, y:195, w:150, h:44, c:C.middle, bg:C.middleBg, label:'Bazodiac Prior', sub:'12 Gewichtungen (statisch)', detail:'Aus Fusion: 12 Bazodiac-Felder mit Ausgangsgewichtung (0.0-1.0). Beispiel: ruler=0.35, warrior=0.22, lover=0.18... Das ist der astrologische Fingerabdruck.' },
+  kohaerenz:  { x:620, y:265, w:150, h:44, c:C.middle, bg:C.middleBg, label:'Kohärenzindex', sub:'Harmonie der 3 Ebenen', detail:'0.0-1.0. Misst ob Kern/Emotion/Aussen harmonieren.\n• Hoch (0.7+): Balance-Tendenz\n• Mittel: Produktive Spannung\n• Niedrig (<0.4): Schatten-Risiko + hohes Entwicklungspotenzial' },
+  baz_state:  { x:620, y:345, w:150, h:44, c:C.middle, bg:C.middleBg, label:'Bazodiac States', sub:'12 × Licht/Balance/Schatten', detail:'Aus Quiz-Scoring: Aktueller Zustand jedes Bazodiac-Feldes. Dynamisch — ändert sich mit jeder neuen Quiz-Antwort.' },
+  mismatch:   { x:620, y:415, w:150, h:44, c:C.middle, bg:C.middleBg, label:'Mismatch Index', sub:'Prior vs. Quiz-Evidenz', detail:'abs(fusion_prior - quiz_evidence) pro Bazodiac. Hoher Mismatch = da passiert gerade etwas Spannendes. DAS ist das neue Ergebnis, nicht eine erneute Typ-Zuweisung.' },
+  skins:      { x:620, y:485, w:150, h:44, c:C.middle, bg:C.middleBg, label:'Skin-Karten', sub:'Gesammelte Quiz-Ergebnisse', detail:'Jedes Entertainment-Quiz-Ergebnis wird als sammelbare Karte unter dem jeweiligen Bazodiac aufgehängt. Zeus unter Souverän, Thor unter Kämpfer etc.' },
+  transit_hit:{ x:620, y:555, w:150, h:44, c:C.middle, bg:C.middleBg, label:'Tages-Aktivierung', sub:'Welches Bazodiac heute brennt', detail:'Transit Engine bestimmt: Welches Bazodiac-Feld wird durch heutige Transite besonders angesprochen? In welchem Kontext (Liebe, Arbeit, Konflikt...)? Conjunction, Square, Opposition als Trigger.' },
+
+  // ── OUTPUTS (Column 3, x=890) ──
+  planetarium:{ x:890, y:30, w:155, h:46, c:C.output, bg:C.outputBg, label:'Planetarium', sub:'3D Himmelskarte', detail:'Visuelle Darstellung der Planetenpositionen. Western-Zeichen + Bazi-Overlay. Zeigt den kosmischen Kontext.' },
+  dash_stern: { x:890, y:100, w:155, h:46, c:C.output, bg:C.outputBg, label:'Dashboard: Sternzeichen', sub:'Sonne, Mond, AC', detail:'Westliche Kernzeichen im Profil-Dashboard. Sonne = Wer du bist, Mond = Wie du fühlst, AC = Wie du wirkst.' },
+  dash_bazi:  { x:890, y:170, w:155, h:46, c:C.output, bg:C.outputBg, label:'Dashboard: Bazi & Wu Xing', sub:'Säulen + Element', detail:'Östliche Bazi-Säulen und dominantes Wu-Xing-Element im Dashboard. Tagesmeister prominent, Element als Farbgeber.' },
+  tageshor:   { x:890, y:260, w:155, h:54, c:C.output, bg:C.outputBg, label:'Tageshoroskop', sub:'Personalisiert + Transit-basiert', detail:'DAS tägliche Produkt. Fusioniert:\n• Bazodiac Prior (wer du bist)\n• Bazodiac State (wo du gerade stehst)\n• Tages-Aktivierung (was der Transit triggert)\n• Kosmische Events (Vollmond etc.)\n→ Personalisiertes Narrativ + Vertiefungsfragen' },
+  blueprint:  { x:890, y:350, w:155, h:46, c:C.output, bg:C.outputBg, label:'Blueprint', sub:'Persönlichkeitsbericht', detail:'Statischer Tiefenbericht basierend auf Bazodiac Prior + Kohärenzindex. Zeigt die 12 Felder mit Gewichtungen, Licht/Schatten-Potenzial, Wachstumspfade.' },
+  signatur:   { x:890, y:430, w:155, h:54, c:C.output, bg:C.outputBg, label:'Signatur', sub:'Lebendes Gesamtprofil', detail:'Die SIGNATUR ist das Herzstück: 60% Fusion Prior + 40% Quiz Evidence = finales Bazodiac-Profil. Dynamisch — wächst mit jeder Interaktion. Das "Bilderfeld" / multidimensionale Raum.' },
+  levi:       { x:890, y:520, w:155, h:46, c:C.output, bg:C.outputBg, label:'Levi (Partnership)', sub:'Signatur × Signatur Matching', detail:'Vergleicht zwei Signaturen:\n• Resonanz (Bedürfnis-Ähnlichkeit)\n• Chemie (Komplementärspannung)\n• Stabilität (Konflikttauglichkeit)\n• Entwicklungsdruck (Schattentrigger)' },
+  bazodiacs:  { x:890, y:600, w:155, h:54, c:C.output, bg:C.outputBg, label:'Bazodiacs (12 Karten)', sub:'Profil-Kartenreihe + Skins', detail:'12 Bazodiac-Karten aufgereiht. Größe proportional zur Gewichtung. Jede Karte zeigt: Label, aktuellen State, Kohärenz-Beitrag. Darunter: gesammelte Skin-Trophäen aus Entertainment-Quizzes.' },
+};
+
+// ─── FLOW CONNECTIONS ───
+// [from, to, color, weight_label, dash]
+const flows = [
+  // Geburtsdaten → Engines
+  ['birth', 'west_calc', C.input, '', false],
+  ['birth', 'east_calc', C.input, '', false],
+
+  // Quiz → Scoring
+  ['quiz_v', 'quiz_score', C.input, '', false],
+  ['quiz_e', 'quiz_score', C.input, '', false],
+  ['quiz_e', 'skins', '#ff6b9d', 'Skins', true],
+
+  // Transit + Cosmic → Transit Engine
+  ['transit', 'transit_eng', C.input, '', false],
+  ['cosmic', 'transit_eng', C.input, '', false],
+
+  // Western Engine → Products
+  ['west_calc', 'signs_west', C.engine, '', false],
+  ['west_calc', 'fusion', C.engine, 'West-Teil', false],
+
+  // Bazi Engine → Products
+  ['east_calc', 'signs_east', C.engine, '', false],
+  ['east_calc', 'fusion', C.engine, 'Ost-Teil', false],
+
+  // Fusion → Intermediate Products
+  ['fusion', 'baz_prior', C.engine, '', false],
+  ['fusion', 'kohaerenz', C.engine, '', false],
+
+  // Quiz Scoring → States + Mismatch
+  ['quiz_score', 'baz_state', C.engine, '', false],
+
+  // Prior + State → Mismatch
+  ['baz_prior', 'mismatch', '#ff6b9d', '', true],
+  ['baz_state', 'mismatch', '#ff6b9d', '', true],
+
+  // Transit Engine → Tages-Aktivierung
+  ['transit_eng', 'transit_hit', C.engine, '', false],
+
+  // Geburtschart → Transit Engine (Natal-Basis)
+  ['signs_west', 'transit_eng', '#ff6b9d', 'Natal', true],
+
+  // ── To OUTPUTS ──
+  // Planetarium
+  ['signs_west', 'planetarium', C.middle, '', false],
+  ['signs_east', 'planetarium', C.middle, '', false],
+
+  // Dashboard Sternzeichen
+  ['signs_west', 'dash_stern', C.middle, '', false],
+
+  // Dashboard Bazi
+  ['signs_east', 'dash_bazi', C.middle, '', false],
+
+  // Tageshoroskop (complex — multiple inputs)
+  ['baz_prior', 'tageshor', '#ff6b9d', '60%', false],
+  ['baz_state', 'tageshor', '#ff6b9d', '40%', false],
+  ['transit_hit', 'tageshor', C.middle, 'Trigger', false],
+  ['cosmic', 'tageshor', C.input, 'Events', true],
+
+  // Blueprint
+  ['baz_prior', 'blueprint', '#ff6b9d', '', false],
+  ['kohaerenz', 'blueprint', '#ff6b9d', '', false],
+
+  // Signatur (THE central product)
+  ['baz_prior', 'signatur', '#ff6b9d', '60%', false],
+  ['baz_state', 'signatur', '#ff6b9d', '40%', false],
+  ['mismatch', 'signatur', '#ff6b9d', '', true],
+
+  // Levi
+  ['signatur', 'levi', C.output, 'User A × User B', false],
+
+  // Bazodiacs Card View
+  ['baz_prior', 'bazodiacs', '#ff6b9d', '', false],
+  ['baz_state', 'bazodiacs', '#ff6b9d', '', false],
+  ['skins', 'bazodiacs', '#ff6b9d', '', false],
+  ['kohaerenz', 'bazodiacs', '#ff6b9d', '', true],
+];
+
+// ─── RENDER FUNCTIONS ───
+
+function createNode(id, n) {
+  const g = document.createElementNS(NS, 'g');
+  g.setAttribute('class', 'node-group');
+  g.setAttribute('data-id', id);
+
+  const rect = document.createElementNS(NS, 'rect');
+  rect.setAttribute('x', n.x);
+  rect.setAttribute('y', n.y);
+  rect.setAttribute('width', n.w);
+  rect.setAttribute('height', n.h);
+  rect.setAttribute('fill', n.bg);
+  rect.setAttribute('stroke', n.c);
+  rect.setAttribute('stroke-width', '1.5');
+  rect.setAttribute('class', 'node-box');
+  g.appendChild(rect);
+
+  const text = document.createElementNS(NS, 'text');
+  text.setAttribute('x', n.x + n.w / 2);
+  text.setAttribute('y', n.y + (n.sub ? n.h / 2 - 7 : n.h / 2));
+  text.setAttribute('class', 'node-label');
+  text.textContent = n.label;
+  g.appendChild(text);
+
+  if (n.sub) {
+    const sub = document.createElementNS(NS, 'text');
+    sub.setAttribute('x', n.x + n.w / 2);
+    sub.setAttribute('y', n.y + n.h / 2 + 9);
+    sub.setAttribute('class', 'node-sublabel');
+    sub.textContent = n.sub;
+    g.appendChild(sub);
+  }
+
+  return g;
+}
+
+function getPort(nodeId, side) {
+  const n = nodes[nodeId];
+  if (side === 'right') return { x: n.x + n.w, y: n.y + n.h / 2 };
+  if (side === 'left') return { x: n.x, y: n.y + n.h / 2 };
+  return { x: n.x + n.w / 2, y: n.y + n.h / 2 };
+}
+
+function createFlow(fromId, toId, color, weightLabel, dashed) {
+  const from = getPort(fromId, 'right');
+  const to = getPort(toId, 'left');
+
+  const midX = (from.x + to.x) / 2;
+
+  const path = document.createElementNS(NS, 'path');
+  const d = `M${from.x},${from.y} C${midX},${from.y} ${midX},${to.y} ${to.x},${to.y}`;
+  path.setAttribute('d', d);
+  path.setAttribute('class', 'flow-line');
+  path.setAttribute('stroke', color);
+  path.setAttribute('data-from', fromId);
+  path.setAttribute('data-to', toId);
+  if (dashed) path.setAttribute('stroke-dasharray', '4,3');
+
+  const g = document.createElementNS(NS, 'g');
+  g.appendChild(path);
+
+  if (weightLabel) {
+    const lx = midX;
+    const ly = (from.y + to.y) / 2 - 8;
+    const text = document.createElementNS(NS, 'text');
+    text.setAttribute('x', lx);
+    text.setAttribute('y', ly);
+    text.setAttribute('class', 'weight-label');
+    text.textContent = weightLabel;
+    g.appendChild(text);
+  }
+
+  return g;
+}
+
+// ─── Section labels ───
+function addSectionLabel(text, x, y) {
+  const el = document.createElementNS(NS, 'text');
+  el.setAttribute('x', x);
+  el.setAttribute('y', y);
+  el.setAttribute('class', 'section-label');
+  el.textContent = text;
+  svg.appendChild(el);
+}
+
+addSectionLabel('INPUTS', 135, 30);
+addSectionLabel('ENGINES', 420, 30);
+addSectionLabel('ZWISCHEN', 695, 15);
+addSectionLabel('OUTPUTS', 967, 15);
+
+// ─── Render flows first (behind nodes) ───
+const flowGroup = document.createElementNS(NS, 'g');
+flowGroup.setAttribute('id', 'flowGroup');
+flows.forEach(([from, to, color, wl, dash]) => {
+  flowGroup.appendChild(createFlow(from, to, color, wl, dash));
+});
+svg.appendChild(flowGroup);
+
+// ─── Render nodes ───
+const nodeGroup = document.createElementNS(NS, 'g');
+nodeGroup.setAttribute('id', 'nodeGroup');
+Object.entries(nodes).forEach(([id, n]) => {
+  nodeGroup.appendChild(createNode(id, n));
+});
+svg.appendChild(nodeGroup);
+
+// ─── INTERACTIVITY ───
+
+function getConnectedIds(nodeId) {
+  const connected = new Set([nodeId]);
+  flows.forEach(([from, to]) => {
+    if (from === nodeId) connected.add(to);
+    if (to === nodeId) connected.add(from);
+  });
+  return connected;
+}
+
+document.querySelectorAll('.node-group').forEach(g => {
+  g.addEventListener('mouseenter', (e) => {
+    const id = g.getAttribute('data-id');
+    const n = nodes[id];
+    const connected = getConnectedIds(id);
+
+    // Highlight connected flows
+    document.querySelectorAll('.flow-line').forEach(f => {
+      const from = f.getAttribute('data-from');
+      const to = f.getAttribute('data-to');
+      if (from === id || to === id) {
+        f.classList.add('highlight');
+        f.classList.remove('dim');
+      } else {
+        f.classList.add('dim');
+        f.classList.remove('highlight');
+      }
+    });
+
+    // Dim unconnected nodes
+    document.querySelectorAll('.node-group').forEach(ng => {
+      const nid = ng.getAttribute('data-id');
+      if (!connected.has(nid)) {
+        ng.style.opacity = '0.25';
+      }
+    });
+
+    // Show tooltip
+    const detail = n.detail.replace(/\n/g, '<br>').replace(/•/g, '&bull;');
+    document.getElementById('ttTitle').textContent = n.label;
+    document.getElementById('ttDetail').innerHTML = detail;
+
+    const rect = g.getBoundingClientRect();
+    tooltip.style.left = (rect.right + 12) + 'px';
+    tooltip.style.top = (rect.top - 10) + 'px';
+
+    // Keep tooltip on screen
+    const ttRect = tooltip.getBoundingClientRect();
+    if (ttRect.right > window.innerWidth - 20) {
+      tooltip.style.left = (rect.left - ttRect.width - 12) + 'px';
+    }
+    if (ttRect.bottom > window.innerHeight - 20) {
+      tooltip.style.top = (window.innerHeight - ttRect.height - 20) + 'px';
+    }
+
+    tooltip.classList.add('visible');
+  });
+
+  g.addEventListener('mouseleave', () => {
+    document.querySelectorAll('.flow-line').forEach(f => {
+      f.classList.remove('highlight', 'dim');
+    });
+    document.querySelectorAll('.node-group').forEach(ng => {
+      ng.style.opacity = '1';
+    });
+    tooltip.classList.remove('visible');
+  });
+});
+
+// ─── KEY FORMULAS INFO PANEL ───
+const infoData = [
+  {
+    title: 'Fusion-Formel (statisch)',
+    html: 'Bazodiac Prior = <code>core(40%) + emotion(35%) + outer(25%)</code><br><br>Kern: Sonnenzeichen × Tagesmeister<br>Emotion: Mondzeichen × Stundensäule<br>Aussen: Aszendent × Jahressäule<br>+ Wu Xing Modifikator <code>±25%</code>'
+  },
+  {
+    title: 'Signatur-Formel (dynamisch)',
+    html: 'Signatur = <code>0.60 × fusion_prior + 0.40 × quiz_evidence</code><br><br>Quiz-Evidence = Running weighted average aller Quizantworten mit <code>recency_decay = 0.95</code>. Minimum 5 Antworten, Konfidenz ab 15.'
+  },
+  {
+    title: 'Kohärenzindex',
+    html: '<code>1.0 - avg_distance(kern, emotion, aussen)</code><br><br>Hoch (0.7-1.0) = Balance-Tendenz<br>Mittel (0.4-0.7) = Produktive Spannung<br>Niedrig (0.0-0.4) = Schatten-Risiko + Entwicklungsdruck'
+  },
+  {
+    title: 'Mismatch Index',
+    html: '<code>abs(fusion_prior - quiz_evidence)</code> pro Bazodiac<br><br>Hoher Mismatch = Bewegung. Das ist das spannendste Signal: Wo weicht dein gelebtes Verhalten von deinem astrologischen Fingerabdruck ab?'
+  },
+  {
+    title: 'Tageshoroskop-Pipeline',
+    html: '<code>Transit × Natal</code> → Tages-Aktivierung<br>+ Kosmische Events → Intensitäts-Modulator<br>+ Bazodiac Prior + State → Personalisierung<br><br>Ergebnis: Narrativ + Vertiefungsfragen für Quiz-Loop'
+  },
+  {
+    title: 'Levi (Partnership Matching)',
+    html: 'Vergleicht <code>Signatur_A × Signatur_B</code>:<br><br>Resonanz = similarity(need_vectors)<br>Chemie = complementarity(need_vectors)<br>Stabilität = <code>0.65×resonanz + 0.35×(1-shadow)</code><br>Entwicklungsdruck = <code>shadow × (0.5 + resonanz/2)</code>'
+  },
+];
+
+const grid = document.getElementById('infoGrid');
+infoData.forEach(d => {
+  const card = document.createElement('div');
+  card.className = 'info-card';
+  card.innerHTML = `<h3 style="color:${C.engine}">${d.title}</h3><p>${d.html}</p>`;
+  grid.appendChild(card);
+});
+</script>
+</body>
+</html>

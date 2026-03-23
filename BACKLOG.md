@@ -28,6 +28,9 @@ Formatierung: eine Zeile reicht. Agenten fragen nach wenn nötig.
 - IDEA: Tages-Signatur als Widget für iOS Lock Screen (später, erstmal Konzept)
 - FRAGE: Soll die Bloom-Intensität von der Solar-Aktivität abhängen? Wäre visuell sehr stark
 
+> **📋 Detaillierte Sprint-Planung: [FEATURE_SPRINTS.md](FEATURE_SPRINTS.md)**
+> **📊 Datenflussmodell: [docs/bazodiac-dataflow.html](docs/bazodiac-dataflow.html)**
+
 ---
 
 ## In Bearbeitung (→ GitHub Issue existiert)
@@ -65,6 +68,42 @@ Formatierung: eine Zeile reicht. Agenten fragen nach wenn nötig.
 | #131 | FEAT | A/B Test Framework | S07 | Ready |
 | #134 | BUG | Quiz i18n — English Translation | S07 | Ready |
 | #136 | FEAT | Design Re-Work Sonnenzeichen/Tier/Wuxing | — | Blocked: Ben's Spec |
+| — | FEAT | Bazodiac-Engine: JSON-Schema ✅ + FusionEngine Service (West×Ost→12 Gewichtungen) | S08 | ✅ Schema done, Code S08-02 |
+| — | FEAT | Bazodiac-Engine: Fusion(West×Ost)→Bazodiac Prior (ersetzt Planet→Archetyp) | S08 | Ready → S08-02/03 |
+| — | FEAT | Bazodiac-Engine: Aspekt-Modifikatoren (Transit→Zustandsverschiebung) | S09 | Ready → S09-03 |
+| — | FEAT | Bazodiac-Engine: Quiz-Scoring → Bazodiac States (Running Average, decay 0.95) | S08 | Ready → S08-05 |
+| — | FEAT | Bazodiac-Engine: 4-Score Matching (Resonanz, Chemie, Stabilität, Entwicklungsdruck) | S12 | Ready → S12-01 |
+| — | FEAT | Bazodiac-Engine: Intro/Extro als Ausdrucksmodifikator (nicht als Typ) | S09 | Ready |
+| — | FEAT | Bazodiac-Engine: 7 Need-Vektor Berechnung aus Bazodiac-Gewichtungen | S12 | Ready → S12-02 |
+| — | FEAT | Bazodiac-Engine: Shadow-Activation Matching zwischen Partnern | S12 | Ready → S12-03 |
+| — | FRAGE | ~~Archetypen: 12 Basis vs. 16 Basis?~~ → **ENTSCHIEDEN: 12 Bazodiacs × 3 Zustände** | S08 | ✅ Entschieden |
+| — | FRAGE | ~~Archetypen: Mythic Skins — griechisch only oder kulturübergreifend?~~ → **ENTSCHIEDEN: 4+ Skin-Sets (Griechisch, Chinesisch, Superhelden, Systems Poetry)** | S09 | ✅ Entschieden |
+| — | FEAT | Partnership: DB-Schema (`partnerships`, `synastrie_cache`, `composite_cache`) + Migrations | S08 | Ready |
+| — | FEAT | Partnership: Invite-Flow (`/api/partnership/invite` + `/accept/:token`) (R-01) | S08 | Ready |
+| — | FEAT | Partnership: Synastrie-Engine `synastrie.compute()` — Interaspekte, Haus-Overlays, Dominant Themes (R-02) | S08 | Ready |
+| — | FEAT | Partnership: Synastrie-API `POST /api/partnership/synastrie` + Auth + Caching (R-03) | S08 | Ready |
+| — | FEAT | Partnership: Contribution Event Schema `partnership.synastrie.v1` (R-06) | S08 | Ready |
+| — | FRAGE | OQ-1: Häusersystem — Placidus (wie FuFirE) oder Koch? | S08 | Blocked: Ben's Entscheidung |
+| — | FRAGE | OQ-2: Consent-Modell — Synastrie ohne Partner-Account (manuelle Geburtsdaten)? | S08 | Blocked: Ben's Entscheidung |
+| — | FRAGE | OQ-5: Orb-Toleranzen Interaspekte (±5° eng vs. ±8° weit) | S08 | Blocked: Ben's Entscheidung |
+| — | FRAGE | OQ-6: Nebenaspekte (Quincunx 150°, Halbsextil 30°) oder nur 5 Hauptaspekte? | S08 | Blocked: Ben's Entscheidung |
+| — | FEAT | Partnership: Dual-Ring-Visualisierung — 2 Signaturen überlagert in FusionRingCanvasV2 (R-04) | S09 | Ready |
+| — | FEAT | Partnership: Interaspekt-Linien (Trigon=blau, Quadrat=rot, Konjunktion=gold) + Touch-Detail (R-04) | S09 | Ready |
+| — | FEAT | Partnership: Haus-Overlay-Sektoren im äußeren Ring (R-04) | S09 | Ready |
+| — | FEAT | Partnership: Narrativ-Engine Synastrie — Top-5 Interaspekte + Haus-Overlay Texte, Jung-Psychologie (R-05) | S09 | Ready |
+| — | FEAT | Partnership: Free/Premium-Split — Top-3 Free, Full Synastrie Premium (R-05) | S09 | Ready |
+| — | FRAGE | OQ-3: Narrative — feste Templates oder Gemini-generiert pro Paar? | S09 | Blocked: Ben's Entscheidung |
+| — | FEAT | Partnership: Komposit-Engine `komposit.compute()` — Halbsummen, Beziehungs-Sonne/Mond/AC (R-07) | S10 | Ready |
+| — | FEAT | Partnership: Komposit-API `POST /api/partnership/komposit` + Premium-Gate (R-07) | S10 | Ready |
+| — | FEAT | Partnership: Kombin-Engine (Davison-Chart) — zeitl./räuml. Mittelpunkt, Radix via FuFirE (R-08) | S10 | Ready |
+| — | FEAT | Partnership: Kombin-API `POST /api/partnership/kombin` + Premium-Gate (R-08) | S10 | Ready |
+| — | FEAT | Partnership: 7. Haus Tiefenanalyse — Projektion, Schatten, Integrationspfad (R-09) | S10 | Ready |
+| — | FEAT | Partnership: Achse 2/8 — Geben/Nehmen-Balance, Ressourcen-Dynamik (R-09) | S10 | Ready |
+| — | FEAT | Partnership: Transit-Overlay 7./8. Haus — pulsierende Markierungen im Dual-Ring (R-10) | S11 | Ready |
+| — | FEAT | Partnership: Transit-Narrative pro Phase + Push-Notification (opt-in) (R-10) | S11 | Ready |
+| — | FEAT | Partnership: Premium-Gate Integration Stripe — Komposit/Kombin/Transite hinter Paywall | S11 | Ready |
+| — | FEAT | Partnership: Erfolgsmetriken-Tracking — Invite-Rate, Accept-Rate, Premium-Uplift | S11 | Ready |
+| — | FRAGE | OQ-4: Synastrie als 4. Signal neben N/Q/G oder komplett getrennt? | S10 | Blocked: Ben's Entscheidung |
 
 ---
 

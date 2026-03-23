@@ -1,0 +1,273 @@
+{
+  "version": "0.2.0",
+  "product": "Bazodiac",
+  "summary": "Archetypen entstehen aus der FUSION von West × Ost, nicht aus einem System allein",
+
+  "principles": [
+    "Archetypen = Produkt der Fusion, nicht einzelner Planeten",
+    "Drei Fusionsebenen: Kern (Sonne×Tagesmeister), Emotion (Mond×Stundensäule), Aussen (AC×Jahressäule)",
+    "Wu Xing = Übergreifender Modifikator auf alle drei Ebenen",
+    "Kohärenzindex = Balance-Messung zwischen den drei Ebenen",
+    "Alle Quizze gleich gewichtet — kein Unterschied zwischen Vertiefung und Entertainment",
+    "Licht/Schatten wird durch Alltagsfragen gemessen, nie direkt abgefragt"
+  ],
+
+  "fusion_layers": {
+    "core_identity": {
+      "west": "sun_sign",
+      "east": "day_master",
+      "description": "Wer du im Kern bist. Sonnenzeichen × Tagesmeister erzeugt den dominanten Archetyp-Mix.",
+      "weight": 0.40
+    },
+    "emotional_inner": {
+      "west": "moon_sign",
+      "east": "hour_pillar",
+      "description": "Wie du fühlst und was du brauchst. Mondzeichen × Stundensäule erzeugt den emotionalen Archetyp-Mix.",
+      "weight": 0.35
+    },
+    "outer_presentation": {
+      "west": "ascendant",
+      "east": "year_pillar",
+      "description": "Wie die Welt dich sieht. Aszendent × Jahressäule erzeugt den sozialen Archetyp-Mix.",
+      "weight": 0.25
+    }
+  },
+
+  "fusion_formula": {
+    "archetype_profile": "weighted_sum(core_identity.archetypes * 0.40 + emotional_inner.archetypes * 0.35 + outer_presentation.archetypes * 0.25)",
+    "state_assessment": "quiz_evidence_aggregate (all quizzes equal weight)",
+    "coherence_index": "harmony(core_identity, emotional_inner, outer_presentation)",
+    "mismatch_index": "abs(fusion_prior - quiz_evidence) per archetype"
+  },
+
+  "west_sign_activations": {
+    "Aries":       { "primary": "warrior",      "secondary": "rebel",       "tertiary": "ruler" },
+    "Taurus":      { "primary": "guardian",      "secondary": "lover",       "tertiary": "creator" },
+    "Gemini":      { "primary": "trickster",     "secondary": "sage",        "tertiary": "seeker" },
+    "Cancer":      { "primary": "caregiver",     "secondary": "guardian",    "tertiary": "mystic" },
+    "Leo":         { "primary": "ruler",         "secondary": "creator",     "tertiary": "warrior" },
+    "Virgo":       { "primary": "sage",          "secondary": "guardian",    "tertiary": "caregiver" },
+    "Libra":       { "primary": "lover",         "secondary": "sage",        "tertiary": "trickster" },
+    "Scorpio":     { "primary": "transformer",   "secondary": "warrior",     "tertiary": "mystic" },
+    "Sagittarius": { "primary": "seeker",        "secondary": "sage",        "tertiary": "rebel" },
+    "Capricorn":   { "primary": "ruler",         "secondary": "guardian",    "tertiary": "sage" },
+    "Aquarius":    { "primary": "rebel",         "secondary": "trickster",   "tertiary": "seeker" },
+    "Pisces":      { "primary": "mystic",        "secondary": "lover",       "tertiary": "caregiver" }
+  },
+
+  "east_animal_activations": {
+    "rat":     { "primary": "trickster",     "secondary": "sage",        "traits": "Cleverness, Anpassung, Ressourceninstinkt" },
+    "ox":      { "primary": "guardian",      "secondary": "ruler",       "traits": "Ausdauer, Disziplin, stille Stärke" },
+    "tiger":   { "primary": "warrior",       "secondary": "rebel",       "traits": "Mut, Impulsivität, Dominanz" },
+    "rabbit":  { "primary": "lover",         "secondary": "caregiver",   "traits": "Diplomatie, Feingefühl, Harmonie" },
+    "dragon":  { "primary": "ruler",         "secondary": "creator",     "traits": "Charisma, Vision, Anspruch" },
+    "snake":   { "primary": "transformer",   "secondary": "sage",        "traits": "Tiefe, Intuition, verborgene Macht" },
+    "horse":   { "primary": "seeker",        "secondary": "warrior",     "traits": "Freiheitsdrang, Energie, Unabhängigkeit" },
+    "goat":    { "primary": "creator",       "secondary": "mystic",      "traits": "Kreativität, Sensibilität, Innerlichkeit" },
+    "monkey":  { "primary": "trickster",     "secondary": "creator",     "traits": "Einfallsreichtum, Spieltrieb, Cleverness" },
+    "rooster": { "primary": "sage",          "secondary": "guardian",    "traits": "Präzision, Ordnung, Ehrlichkeit" },
+    "dog":     { "primary": "caregiver",     "secondary": "guardian",    "traits": "Loyalität, Schutz, Pflichtgefühl" },
+    "pig":     { "primary": "lover",         "secondary": "caregiver",   "traits": "Großzügigkeit, Genuss, Warmherzigkeit" }
+  },
+
+  "wu_xing_modifiers": {
+    "description": "Das dominante Wu-Xing-Element modifiziert ALLE Archetypen-Gewichtungen",
+    "elements": {
+      "wood": {
+        "label": "Holz",
+        "amplifies": ["seeker", "creator", "rebel"],
+        "dampens": ["guardian", "ruler"],
+        "quality": "Wachstum, Expansion, Vision, Aufbruch",
+        "shadow_tendency": "Ungeduld, Überexpansion, Wurzellosigkeit"
+      },
+      "fire": {
+        "label": "Feuer",
+        "amplifies": ["warrior", "rebel", "transformer"],
+        "dampens": ["mystic", "guardian"],
+        "quality": "Leidenschaft, Sichtbarkeit, Transformation, Intensität",
+        "shadow_tendency": "Burn-out, Aggression, Verzehrung"
+      },
+      "earth": {
+        "label": "Erde",
+        "amplifies": ["guardian", "caregiver", "sage"],
+        "dampens": ["trickster", "rebel"],
+        "quality": "Stabilität, Fürsorge, Erdung, Verlässlichkeit",
+        "shadow_tendency": "Starre, Schwere, Überverantwortung"
+      },
+      "metal": {
+        "label": "Metall",
+        "amplifies": ["ruler", "sage", "warrior"],
+        "dampens": ["lover", "trickster"],
+        "quality": "Klarheit, Struktur, Präzision, Grenzen",
+        "shadow_tendency": "Rigidität, Kälte, Perfektionismus"
+      },
+      "water": {
+        "label": "Wasser",
+        "amplifies": ["mystic", "lover", "transformer"],
+        "dampens": ["warrior", "ruler"],
+        "quality": "Tiefe, Intuition, Fluss, Anpassung",
+        "shadow_tendency": "Formlosigkeit, Angst, Dissoziation"
+      }
+    },
+    "modifier_strength": 0.15,
+    "formula": "For each archetype: if amplified → weight * 1.25, if dampened → weight * 0.75"
+  },
+
+  "fusion_examples": [
+    {
+      "label": "Löwe × Affe",
+      "fusion_layer": "core_identity",
+      "west_activation": { "primary": "ruler", "secondary": "creator" },
+      "east_activation": { "primary": "trickster", "secondary": "creator" },
+      "fusion_result": {
+        "dominant": ["ruler", "creator", "trickster"],
+        "narrative": "Charismatischer Anführer mit spielerischer Intelligenz. Herrscht nicht durch Härte, sondern durch Charme und Einfallsreichtum. Schatten: Manipulation hinter der Bühne.",
+        "tension": "Ruler will Ordnung, Trickster will Freiheit — innere Spannung zwischen Kontrolle und Spiel"
+      }
+    },
+    {
+      "label": "Löwe × Büffel",
+      "fusion_layer": "core_identity",
+      "west_activation": { "primary": "ruler", "secondary": "creator" },
+      "east_activation": { "primary": "guardian", "secondary": "ruler" },
+      "fusion_result": {
+        "dominant": ["ruler", "guardian", "creator"],
+        "narrative": "Souveräner Beschützer. Autoritär, aber verlässlich. Baut Strukturen, die halten. Schatten: Rigidität, Angst vor Kontrollverlust.",
+        "tension": "Ruler und Guardian verstärken sich — hohe Kohärenz, aber Risiko der Verhärtung"
+      }
+    },
+    {
+      "label": "Krebs-Mond × Schlange-Stunde",
+      "fusion_layer": "emotional_inner",
+      "west_activation": { "primary": "caregiver", "secondary": "guardian" },
+      "east_activation": { "primary": "transformer", "secondary": "sage" },
+      "fusion_result": {
+        "dominant": ["caregiver", "transformer", "guardian"],
+        "narrative": "Fürsorge mit Tiefgang. Spürt die verborgenen Wunden anderer. Schatten: Kontrolliert durch Wissen über Schwächen.",
+        "tension": "Caregiver will schützen, Transformer will Wahrheit erzwingen — Spannung zwischen Sanftheit und Radikalität"
+      }
+    },
+    {
+      "label": "Krebs-Mond × Hase-Stunde",
+      "fusion_layer": "emotional_inner",
+      "west_activation": { "primary": "caregiver", "secondary": "guardian" },
+      "east_activation": { "primary": "lover", "secondary": "caregiver" },
+      "fusion_result": {
+        "dominant": ["caregiver", "lover", "guardian"],
+        "narrative": "Tiefe Wärme und Harmoniestreben. Emotionaler Anker für andere. Schatten: Verschmelzungstendenz, verliert sich in Beziehungen.",
+        "tension": "Caregiver und Lover verstärken sich — hohe emotionale Tiefe, aber Grenzlosigkeitsrisiko"
+      }
+    },
+    {
+      "label": "Skorpion-Sonne × Tiger-Tag (Feuer dominant)",
+      "fusion_layer": "core_identity",
+      "west_activation": { "primary": "transformer", "secondary": "warrior" },
+      "east_activation": { "primary": "warrior", "secondary": "rebel" },
+      "wu_xing": "fire",
+      "fusion_result": {
+        "dominant": ["warrior", "transformer", "rebel"],
+        "narrative": "Kompromisslose Intensität. Kämpft nicht um zu gewinnen, sondern um zu transformieren. Feuer-Element verstärkt Krieger + Rebell zusätzlich. Schatten: Zerstörung als Selbstzweck.",
+        "wu_xing_effect": "Feuer amplifiziert warrior, rebel, transformer — alle drei bereits dominant. Extrem fokussiertes Profil."
+      }
+    }
+  ],
+
+  "coherence_index": {
+    "description": "Misst die innere Harmonie zwischen den drei Fusionsebenen",
+    "formula": "1.0 - average_distance(core_archetype_vector, emotional_archetype_vector, outer_archetype_vector)",
+    "interpretation": {
+      "high_0.7_to_1.0": {
+        "label": "Hohe Kohärenz",
+        "meaning": "Die drei Ebenen harmonieren. Wer du bist, wie du fühlst und wie du wirkst, stimmen überein.",
+        "state_tendency": "balance",
+        "risk": "Kann in Selbstzufriedenheit kippen — wenig innerer Entwicklungsdruck"
+      },
+      "medium_0.4_to_0.7": {
+        "label": "Mittlere Kohärenz",
+        "meaning": "Produktive Spannung. Innere Widersprüche treiben Wachstum an.",
+        "state_tendency": "dynamic — wechselt zwischen light und shadow je nach Kontext",
+        "risk": "Kann sich zerrissen fühlen, aber hat das größte Entwicklungspotenzial"
+      },
+      "low_0.0_to_0.4": {
+        "label": "Niedrige Kohärenz",
+        "meaning": "Starke innere Spannung. Wer du bist, wie du fühlst und wie du wirkst, widersprechen sich.",
+        "state_tendency": "shadow_risk",
+        "risk": "Hoher Entwicklungsdruck, aber auch Gefahr von Dissoziation oder Selbstentfremdung"
+      }
+    }
+  },
+
+  "quiz_scoring": {
+    "description": "Alle Quizze fließen gleich gewichtet in die Archetypen-Zustandsmessung ein",
+    "principle": "Kein Quiz ist wichtiger als ein anderes. Entertainment-Quiz scored genauso wie Vertiefungs-Quiz.",
+    "measurement_approach": "Alltagsfragen statt direkte Schatten-Fragen",
+    "examples": {
+      "direct_bad": "Bist du heute mehr Licht oder Schatten?",
+      "indirect_good": [
+        "Dein Chef kritisiert deine Arbeit vor dem Team. Was machst du?",
+        "Dein Partner vergisst euren Jahrestag. Dein erster Gedanke?",
+        "Du hast 2 Stunden unerwartet frei. Was tust du spontan?"
+      ]
+    },
+    "scoring_per_answer": {
+      "maps_to": ["archetype_id", "state_signal", "context", "need_axis_shift"],
+      "state_signal_values": ["toward_light", "toward_balance", "toward_shadow"],
+      "note": "Jede Antwort scored MEHRERE Archetypen gleichzeitig mit unterschiedlicher Stärke"
+    },
+    "aggregation": {
+      "formula": "running_weighted_average(all_quiz_answers, recency_decay=0.95)",
+      "recency_note": "Neuere Antworten wiegen minimal stärker (0.95 decay), aber alle zählen",
+      "minimum_answers_for_state": 5,
+      "confidence_threshold": 15
+    }
+  },
+
+  "aspect_modifiers": {
+    "description": "Westliche Aspekte zwischen Planeten modifizieren weiterhin die Zustandstendenz",
+    "note": "Diese wirken ZUSÄTZLICH zur Fusion, nicht als Hauptquelle",
+    "aspects": {
+      "conjunction":  { "effect": "amplify",    "state_shift": "intensifies_current" },
+      "trine":        { "effect": "harmonize",  "state_shift": "toward_light_balance" },
+      "sextile":      { "effect": "enable",     "state_shift": "toward_balance" },
+      "square":       { "effect": "stress",     "state_shift": "toward_shadow" },
+      "opposition":   { "effect": "polarize",   "state_shift": "light_shadow_split" },
+      "quincunx":     { "effect": "misfit",     "state_shift": "instability" }
+    }
+  },
+
+  "house_context_mapping": {
+    "description": "Häuser bestimmen den Lebenskontext, in dem Archetypen aktiv sind — aber erzeugen sie NICHT",
+    "mapping": {
+      "1": "identity",
+      "2": "security",
+      "3": "communication",
+      "4": "family",
+      "5": "romance_creativity",
+      "6": "work_service",
+      "7": "partnership",
+      "8": "sex_power_transformation",
+      "9": "meaning_belief",
+      "10": "status_public_role",
+      "11": "belonging_collective",
+      "12": "shadow_solitude_spirit"
+    }
+  },
+
+  "card_collection": {
+    "description": "Entertainment-Quiz-Ergebnisse werden als sammelbare Karten unter den jeweiligen Archetypen aufgereiht",
+    "structure": {
+      "archetype_card": {
+        "archetype_id": "warrior",
+        "current_weight": 0.28,
+        "current_state": "balance",
+        "coherence_contribution": 0.72,
+        "collected_skins": [
+          { "quiz_id": "greek_gods", "skin": "Ares", "collected_at": "2026-03-15" },
+          { "quiz_id": "superheroes", "skin": "Thor", "collected_at": "2026-03-18" },
+          { "quiz_id": "celebrities", "skin": "The Rock", "collected_at": "2026-03-21" }
+        ]
+      }
+    },
+    "display": "12 Karten aufgereiht. Größe/Leuchtkraft proportional zur Gewichtung. Gesammelte Skins als Trophäen unter jeder Karte. Top 3 prominent, Rest kleiner."
+  }
+}

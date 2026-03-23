@@ -1,0 +1,105 @@
+{
+  "concept": "Ein Bazodiac ist kein Archetyp. Es ist das Wesen, das aus der Fusion von Bazi und Zodiac entsteht. Die Namen müssen nach Bazodiac schmecken, nicht nach Jung.",
+
+  "naming_directions": {
+
+    "A_systems_poetry": {
+      "philosophy": "Moderne Systemsprache trifft auf poetische Tiefe. Klingt wie Rollen in einem lebendigen Organismus. Teilbar, merkbar, kein Fantasy-Kitsch.",
+      "names": {
+        "ruler":       { "bazodiac_name": "The Architect",       "tagline": "Baut Ordnung aus Chaos" },
+        "warrior":     { "bazodiac_name": "The Catalyst",        "tagline": "Erzwingt Bewegung" },
+        "lover":       { "bazodiac_name": "The Resonator",       "tagline": "Schwingt mit allem mit" },
+        "caregiver":   { "bazodiac_name": "The Anchor",          "tagline": "Hält, was andere loslassen" },
+        "sage":        { "bazodiac_name": "The Lens",            "tagline": "Sieht das Muster im Rauschen" },
+        "trickster":   { "bazodiac_name": "The Glitch",          "tagline": "Bricht die Routine" },
+        "seeker":      { "bazodiac_name": "The Drift",           "tagline": "Folgt dem Signal hinter dem Horizont" },
+        "creator":     { "bazodiac_name": "The Forge",           "tagline": "Formt das Rohe zu etwas Neuem" },
+        "rebel":       { "bazodiac_name": "The Disruptor",       "tagline": "Zerreißt was nicht mehr trägt" },
+        "mystic":      { "bazodiac_name": "The Void",            "tagline": "Findet im Nichts das Ganze" },
+        "guardian":    { "bazodiac_name": "The Sentinel",        "tagline": "Wacht über das, was zählt" },
+        "transformer": { "bazodiac_name": "The Crucible",        "tagline": "Verbrennt was war, gebiert was kommt" }
+      }
+    },
+
+    "B_eastern_fusion": {
+      "philosophy": "Chinesische Mythengestalten und Konzepte, fusioniert mit universeller Lesbarkeit. Fühlt sich an wie eine eigene Kosmologie. Stärker visuell, stärker narrativ.",
+      "names": {
+        "ruler":       { "bazodiac_name": "Jade Throne",         "tagline": "Die Ordnung hinter allen Dingen", "eastern_root": "玉座 Yùzuò — Jade als Zeichen kaiserlicher Macht" },
+        "warrior":     { "bazodiac_name": "Iron Gate",           "tagline": "Die Grenze, die nicht weicht", "eastern_root": "铁门 Tiěmén — Tor das Schwache und Starke trennt" },
+        "lover":       { "bazodiac_name": "Silk Thread",         "tagline": "Die unsichtbare Verbindung", "eastern_root": "红线 Hóngxiàn — der rote Faden des Schicksals" },
+        "caregiver":   { "bazodiac_name": "Jade Root",           "tagline": "Die Wurzel die alles nährt", "eastern_root": "根 Gēn — Wurzel, Fundament, Ursprung" },
+        "sage":        { "bazodiac_name": "Pearl Eye",           "tagline": "Sieht was andere übersehen", "eastern_root": "明珠 Míngzhū — leuchtende Perle der Erkenntnis" },
+        "trickster":   { "bazodiac_name": "Fox Lantern",         "tagline": "Leuchtet wo keiner hinschaut", "eastern_root": "狐灯 Húdēng — Fuchsgeist, der Wanderer täuscht und führt" },
+        "seeker":      { "bazodiac_name": "Cloud Walker",        "tagline": "Geht wo keine Straße ist", "eastern_root": "云游 Yúnyóu — wolkenwandernd, Daoisten auf Pilgerreise" },
+        "creator":     { "bazodiac_name": "Ember Hand",          "tagline": "Formt Feuer zu Form", "eastern_root": "炉火 Lúhuǒ — die Glut der Schmiede, kontrolliertes Feuer" },
+        "rebel":       { "bazodiac_name": "Thunder Voice",       "tagline": "Spricht was niemand sagen will", "eastern_root": "雷声 Léishēng — Donner als Stimme des Himmels gegen Ungerechtigkeit" },
+        "mystic":      { "bazodiac_name": "Mist Keeper",         "tagline": "Bewahrt was zwischen den Welten liegt", "eastern_root": "雾 Wù — Nebel, die Schwelle zwischen sichtbar und unsichtbar" },
+        "guardian":    { "bazodiac_name": "Stone Gate",          "tagline": "Steht wenn alles fällt", "eastern_root": "石门 Shímén — Steintor, bewacht Tempel und Gräber" },
+        "transformer": { "bazodiac_name": "Phoenix Ash",         "tagline": "Stirbt um neu zu werden", "eastern_root": "凤灰 Fènghuī — Fenghuang, stirbt im Feuer, kehrt zurück" }
+      }
+    },
+
+    "C_hybrid_minimal": {
+      "philosophy": "Ein Wort. Klar. Modern. Kein Kontext nötig. Funktioniert als Hashtag, als Kartenname, als Identity. Mischet östliche Konzepte mit westlicher Kürze.",
+      "names": {
+        "ruler":       { "bazodiac_name": "Apex",       "tagline": "Der Gipfel" },
+        "warrior":     { "bazodiac_name": "Edge",       "tagline": "Die Klinge" },
+        "lover":       { "bazodiac_name": "Pulse",      "tagline": "Der Herzschlag" },
+        "caregiver":   { "bazodiac_name": "Haven",      "tagline": "Der sichere Hafen" },
+        "sage":        { "bazodiac_name": "Prism",      "tagline": "Das Prisma" },
+        "trickster":   { "bazodiac_name": "Flux",       "tagline": "Der Wandel" },
+        "seeker":      { "bazodiac_name": "Drift",      "tagline": "Die Strömung" },
+        "creator":     { "bazodiac_name": "Forge",      "tagline": "Die Schmiede" },
+        "rebel":       { "bazodiac_name": "Spark",      "tagline": "Der Funke" },
+        "mystic":      { "bazodiac_name": "Abyss",      "tagline": "Der Abgrund" },
+        "guardian":    { "bazodiac_name": "Root",       "tagline": "Die Wurzel" },
+        "transformer": { "bazodiac_name": "Crucible",   "tagline": "Der Schmelztiegel" }
+      }
+    }
+  },
+
+  "skin_collections": {
+    "description": "Unabhängig vom Bazodiac-Namen sammelt der User Skins aus verschiedenen Quiz-Welten",
+    "examples_for_warrior_aka_catalyst_or_edge": {
+      "greek_gods":    "Ares",
+      "chinese_myths": "Guan Yu (关羽)",
+      "superheroes":   "Thor",
+      "celebrities":   "The Rock",
+      "ai_roles":      "Friction Designer",
+      "animals":       "Wolf",
+      "elements":      "Blitz",
+      "tarot":         "The Tower"
+    },
+    "examples_for_sage_aka_lens_or_prism": {
+      "greek_gods":    "Athena",
+      "chinese_myths": "Zhuge Liang (诸葛亮)",
+      "superheroes":   "Doctor Strange",
+      "celebrities":   "Marie Curie",
+      "ai_roles":      "Pattern Architect",
+      "animals":       "Eule",
+      "elements":      "Kristall",
+      "tarot":         "The Hermit"
+    },
+    "examples_for_trickster_aka_glitch_or_flux": {
+      "greek_gods":    "Hermes",
+      "chinese_myths": "Sun Wukong (孙悟空)",
+      "superheroes":   "Loki",
+      "celebrities":   "Banksy",
+      "ai_roles":      "Prompt Hacker",
+      "animals":       "Fuchs",
+      "elements":      "Quecksilber",
+      "tarot":         "The Fool"
+    }
+  },
+
+  "recommendation": {
+    "preferred": "A_systems_poetry ODER Mix aus A+C",
+    "reasoning": [
+      "B (Eastern Fusion) ist narrativ stark, aber riskiert Cultural Appropriation Diskussion und ist schwerer international shareable",
+      "C (Minimal) ist clean, aber teilweise zu generisch — Edge, Pulse, Root klingen nach Fitness-Tracker Features",
+      "A (Systems Poetry) trifft den Sweet Spot: modern genug für Gen Z, deep genug für die Psychologie-Crowd, kein Jung-Echo",
+      "Mix-Option: Nimm die starken aus A (Architect, Catalyst, Glitch, Void, Crucible) und ersetze die schwächeren mit C-Varianten (Pulse statt Resonator, Forge statt Forge)",
+      "Die Skin-Collections lösen das Naming-Problem endgültig: der User sieht primär seinen Skin (Sun Wukong, Athena, Loki), das Bazodiac ist die Kategorie dahinter"
+    ]
+  }
+}
