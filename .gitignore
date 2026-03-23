@@ -10,7 +10,12 @@ __pycache__/
 !.env.example
 
 # Claude internal files
-.claude/
+.claude/*
+!.claude/commands/
+!.claude/commands/*.md
+!.claude/skills/
+!.claude/skills/*/
+!.claude/skills/*/*.md
 .mcp.json
 
 # Worktrees
