@@ -205,7 +205,7 @@ export default function SignaturEngine({
       const renderer = new Renderer({ gl });
       renderer.setSize(gl.drawingBufferWidth, gl.drawingBufferHeight);
       renderer.setPixelRatio(1);
-      renderer.setClearColor(0x000000, 0); // transparent
+      renderer.setClearColor(0x060b12, 1); // dark Bazodiac background, fully opaque
 
       // ----- Scene & Camera -----
       const scene = new Scene();
@@ -356,11 +356,17 @@ export default function SignaturEngine({
           let bx = basePositions[idx]!;
           let by = basePositions[idx + 1]!;
 
-          // Drift: slowly accumulate velocity
+          // Drift: slowly accumulate velocity, but wrap around to prevent escape
           bx += p.vx * kpDriftFactor;
           by += p.vy * kpDriftFactor;
 
-          // Update base (drift is cumulative)
+          // Wrap particles that drift too far — keeps them in the visible scene
+          const maxDrift = 3.5;
+          if (bx > maxDrift) bx -= maxDrift * 2;
+          if (bx < -maxDrift) bx += maxDrift * 2;
+          if (by > maxDrift) by -= maxDrift * 2;
+          if (by < -maxDrift) by += maxDrift * 2;
+
           basePositions[idx] = bx;
           basePositions[idx + 1] = by;
 
@@ -418,10 +424,15 @@ export default function SignaturEngine({
           aliveCount++;
         }
 
-        // Remove dead particles
-        burstParticlesRef.current = bursts.filter(
-          (bp) => bp.alpha >= 0.01 && bp.age < bp.lifetime,
-        );
+        // Remove dead particles in-place (avoid creating new arrays every frame)
+        let writeIdx = 0;
+        for (let i = 0; i < bursts.length; i++) {
+          const bp = bursts[i]!;
+          if (bp.alpha >= 0.01 && bp.age < bp.lifetime) {
+            bursts[writeIdx++] = bp;
+          }
+        }
+        bursts.length = writeIdx;
 
         burstGeometry.setDrawRange(0, aliveCount);
         burstGeometry.attributes.position!.needsUpdate = true;
@@ -486,7 +497,7 @@ export default function SignaturEngine({
   // -----------------------------------------------------------------------
 
   return (
-    <View {...panResponder.panHandlers} style={{ width: size, height: size }}>
+    <View {...panResponder.panHandlers} style={{ width: size, height: size, backgroundColor: '#060b12', borderRadius: 16, overflow: 'hidden' }}>
       <GLView
         style={{ width: size, height: size }}
         onContextCreate={onContextCreate}
