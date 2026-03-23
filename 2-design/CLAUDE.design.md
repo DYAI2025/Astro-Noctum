@@ -19,7 +19,9 @@ This phase defines **how** we're building the system. Focus on architecture, dat
 
 | File | Title | Trigger |
 |------|-------|---------|
-<!-- Add rows as decisions are recorded. File column: [DEC-kebab-name](decisions/DEC-kebab-name.md) -->
+| [DEC-supabase-backend](decisions/DEC-supabase-backend.md) | Supabase as sole backend data layer | When designing data storage, auth flows, or new tables |
+| [DEC-swiss-ephemeris](decisions/DEC-swiss-ephemeris.md) | Swiss Ephemeris via BAFE for all astrological calculations | When designing any feature that needs astrological data |
+| [DEC-wuxing-ui-mapping](decisions/DEC-wuxing-ui-mapping.md) | Wu-Xing elements drive UI physics via centralized mapping | When designing any visualization using element data or colors |
 
 ---
 

@@ -13,7 +13,8 @@ Express.js API routes, Stripe payment webhooks, Supabase client, Gemini AI narra
 
 | File | Title | Trigger |
 |------|-------|---------|
-<!-- Add rows as decisions are recorded. File column: [DEC-kebab-name](../../2-design/decisions/DEC-kebab-name.md) -->
+| [DEC-supabase-backend](../../2-design/decisions/DEC-supabase-backend.md) | Supabase as sole backend data layer | When writing data access or auth code |
+| [DEC-swiss-ephemeris](../../2-design/decisions/DEC-swiss-ephemeris.md) | Swiss Ephemeris via BAFE | When adding or modifying BAFE proxy routes |
 
 ## Addressed Requirements
 
