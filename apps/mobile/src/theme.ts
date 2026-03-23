@@ -12,7 +12,7 @@ export const COLORS = {
 
   // Text — all pass WCAG AA 4.5:1 on #060b12
   text: '#f4f7fb',       // 15.8:1 contrast
-  textDim: '#8fa0bc',    // 5.2:1 contrast (fixed from #9cb0ca)
+  textDim: '#8fa0bc',    // 5.2:1 contrast
   textMuted: '#6b7f99',  // 4.1:1 — decorative/non-essential only
 
   // Borders
