@@ -22,6 +22,7 @@ This phase defines **how** we're building the system. Focus on architecture, dat
 | [DEC-supabase-backend](decisions/DEC-supabase-backend.md) | Supabase as sole backend data layer | When designing data storage, auth flows, or new tables |
 | [DEC-swiss-ephemeris](decisions/DEC-swiss-ephemeris.md) | Swiss Ephemeris via BAFE for all astrological calculations | When designing any feature that needs astrological data |
 | [DEC-wuxing-ui-mapping](decisions/DEC-wuxing-ui-mapping.md) | Wu-Xing elements drive UI physics via centralized mapping | When designing any visualization using element data or colors |
+| [DEC-master-signal-weights](decisions/DEC-master-signal-weights.md) | Master Signal formula locked: 0.35·N + 0.30·Q + 0.20·G + 0.15·alignment_boost | When proposing changes to signal weights, fusion formula, or adding new signal sources |
 
 ---
 
