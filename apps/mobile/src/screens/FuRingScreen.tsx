@@ -7,7 +7,7 @@ import { useBootstrapSignatur } from '../hooks/useBootstrapSignatur';
 import { useQuizOfTheDay } from '../hooks/useQuizOfTheDay';
 import QuizRenderer from '../components/QuizRenderer';
 import { COLORS } from '../theme';
-import SignaturEngine from '../components/SignaturEngine';
+import SignaturVisual from '../components/SignaturVisual';
 import { useSpaceWeather } from '../hooks/useSpaceWeather';
 
 // Convert soulprint sectors OR WuXing elements to 7-planet natal weights
@@ -172,10 +172,10 @@ export function FuRingScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Signatur Engine Visualization */}
+      {/* Signatur Visualization */}
       <View style={styles.engineContainer}>
-        <SignaturEngine
-          natalWeights={profileToNatalWeights(profile, soulprintSectors)}
+        <SignaturVisual
+          weights={Array.from(profileToNatalWeights(profile, soulprintSectors).values())}
           kpIndex={kpIndex}
           size={300}
         />
