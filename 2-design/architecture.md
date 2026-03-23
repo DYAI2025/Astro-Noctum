@@ -227,5 +227,5 @@ Individuation thresholds: >= 0.60 strongly individual, >= 0.30 distinctly person
 - [`DEC-supabase-backend`](decisions/DEC-supabase-backend.md) — Supabase as auth and persistence layer
 - [`DEC-swiss-ephemeris`](decisions/DEC-swiss-ephemeris.md) — Swiss Ephemeris pinned, no Moshier fallback
 - [`DEC-wuxing-ui-mapping`](decisions/DEC-wuxing-ui-mapping.md) — Wu-Xing element-to-UI mapping conventions
-- `TRUENORTH.md` — Three-layer autopoietic model and five governing laws
+- [`archive/TRUENORTH.md`](../archive/TRUENORTH.md) — Three-layer autopoietic model and five governing laws
 - `bazodiac_engine/ARCHITECTURE.md` — Signal engine internals and projection modules
