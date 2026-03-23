@@ -1,0 +1,21 @@
+Sprint,Task-ID,Feature / Aufgabe,Status,Priorität,Abhängigkeit / Blocker,Aufwand (Tage)
+Sprint 08,8.1,DB-Schema: partnerships + synastrie_cache + composite_cache + Migrations,OPEN,P1 — Kritisch,Blockiert Sprint 08 komplett. Grundlage für alle Partnership-APIs.,1
+Sprint 08,8.2,"Invite-Flow: /api/partnership/invite + /accept/:token (R-01)",OPEN,P1 — Kritisch,"Supabase Auth ✅. OQ-2 (Consent-Modell) muss vorher geklärt sein.",2
+Sprint 08,8.3,"Synastrie-Engine synastrie.compute() — Interaspekte, Haus-Overlays, Dominant Themes (R-02)",OPEN,P1 — Kritisch,"Benötigt 8.1 + FuFirE API (S04 ✅). OQ-1 (Häusersystem), OQ-5 (Orbs), OQ-6 (Nebenaspekte) müssen geklärt sein.",3
+Sprint 08,8.4,Synastrie-API POST /api/partnership/synastrie + Auth + Caching (R-03),OPEN,P2 — Hoch,"Benötigt 8.1 + 8.3.",2
+Sprint 08,8.5,Contribution Event Schema partnership.synastrie.v1 (R-06),OPEN,P2 — Hoch,"Benötigt 8.3. signature_weight: 0.0 (FuFirE-Integrität).",1
+Sprint 09,9.1,"Dual-Ring-Visualisierung — 2 Signaturen überlagert in FusionRingCanvasV2 (R-04)",OPEN,P1 — Kritisch,"Benötigt 8.3 + FusionRingCanvasV2 (S01/02 ✅). 60fps Mobile.",3
+Sprint 09,9.2,"Interaspekt-Linien: Trigon=blau, Quadrat=rot, Konjunktion=gold + Touch-Detail-Drawer (R-04)",OPEN,P2 — Hoch,"Benötigt 9.1.",2
+Sprint 09,9.3,Haus-Overlay-Sektoren im äußeren Ring (R-04),OPEN,P2 — Hoch,"Benötigt 9.1.",1
+Sprint 09,9.4,"Narrativ-Engine Synastrie — Top-5 Interaspekte + Haus-Overlay Texte, Jung-Psychologie (R-05)",OPEN,P1 — Kritisch,"Benötigt 8.3 + Gemini ✅. OQ-3 (Templates vs. Gemini) klären.",3
+Sprint 09,9.5,Free/Premium-Split — Top-3 Free / Full Synastrie Premium (R-05),OPEN,P2 — Hoch,"Benötigt 9.4. Paywall-Logik.",1
+Sprint 10,10.1,"Komposit-Engine komposit.compute() — Halbsummen, Beziehungs-Sonne/Mond/AC (R-07)",OPEN,P2 — Hoch,"Benötigt 8.3 abgeschlossen. OQ-4 (4. Signal?) klären.",2
+Sprint 10,10.2,Komposit-API POST /api/partnership/komposit + Premium-Gate (R-07),OPEN,P2 — Hoch,"Benötigt 10.1.",1
+Sprint 10,10.3,"Kombin-Engine Davison-Chart — zeitl./räuml. Mittelpunkt, Radix via FuFirE (R-08)",OPEN,P2 — Hoch,"Benötigt 8.3. FuFirE-Kern für Radix-Berechnung.",2
+Sprint 10,10.4,Kombin-API POST /api/partnership/kombin + Premium-Gate (R-08),OPEN,P2 — Hoch,"Benötigt 10.3.",1
+Sprint 10,10.5,"7. Haus Tiefenanalyse — Projektion, Schatten, Integrationspfad (R-09)",OPEN,P2 — Hoch,"Benötigt 8.3. Deszendent-Zeichen + Planeten im 7. Haus.",2
+Sprint 10,10.6,Achse 2/8 — Geben/Nehmen-Balance / Ressourcen-Dynamik (R-09),OPEN,P3 — Mittel,"Benötigt 8.3.",1
+Sprint 11,11.1,"Transit-Overlay 7./8. Haus — pulsierende Markierungen im Dual-Ring (R-10)",OPEN,P2 — Hoch,"Benötigt 9.1 (Dual-Ring) + 10.5.",2
+Sprint 11,11.2,"Transit-Narrative pro Phase + Push-Notification opt-in (R-10)",OPEN,P2 — Hoch,"Benötigt 11.1.",2
+Sprint 11,11.3,Premium-Gate Stripe — Komposit/Kombin/Transite hinter Paywall,OPEN,P1 — Kritisch,"Benötigt #123 (Stripe Checkout) entblockt + 10.2 + 10.4.",1
+Sprint 11,11.4,"Erfolgsmetriken-Tracking — Invite-Rate, Accept-Rate, Premium-Uplift, D30-Retention",OPEN,P3 — Mittel,"Benötigt 8.2 + 9.5. Analytics-Setup.",1
