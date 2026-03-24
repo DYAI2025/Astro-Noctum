@@ -91,6 +91,7 @@ interface BazodiacState {
   natal: Map<string, number>;
   quiz: Map<QuizDimension, number>;
   solarModulation: number;
+  dissonanceModulation?: import('../../lib/fusion-ring/dissonance-visual').VisualModulation | null;
 }
 
 function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, isMini = false }: {
@@ -937,6 +938,12 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
           if (solarMod > 1.0) {
             bloomPass.strength = bloomPass.strength * solarMod;
           }
+
+          // Dissonance complexity modulation — fractalBoost lifts bloom
+          const dMod = bazStateRef.current?.dissonanceModulation;
+          if (dMod && dMod.fractalBoost > 0) {
+            bloomPass.strength = bloomPass.strength * (1 + dMod.fractalBoost * 0.4);
+          }
         }
 
         // Return-to-home
@@ -999,6 +1006,19 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
               // Curve, bridge, centerjump, zodiac: gentle default
               yBreath = Math.sin(t * 0.4 + phases[i]!) * 0.005;
             }
+            // Dissonance texture modulation — add vibration on top of base yBreath
+            const dMod2 = bazStateRef.current?.dissonanceModulation;
+            if (dMod2 && dMod2.vibrationAmplitude > 0) {
+              const amp = dMod2.vibrationAmplitude * 0.025;
+              const flicker = dMod2.flickerRate > 0 ? dMod2.flickerRate : 1;
+              if (dMod2.vibrationStyle === 'angular') {
+                const frac = (t * flicker + phases[i]!) % 1.0;
+                yBreath += amp * (2 * frac - 1);
+              } else if (dMod2.vibrationStyle === 'organic') {
+                yBreath += amp * Math.sin(t * flicker * Math.PI * 2 + phases[i]!);
+              }
+            }
+
             displacementTarget[i * 3 + 1] = yBreath;
             displacementTarget[i * 3 + 2] = dirZ * wave;
           }
@@ -1332,10 +1352,11 @@ export default function FusionRingCanvas({
       bazStateRef.current.quiz = new Map(Object.entries(quizWeights) as any);
     }
     bazStateRef.current.solarModulation = solarModulation;
+    bazStateRef.current.dissonanceModulation = dissonanceModulation;
     setBazVersion(v => v + 1);
     const rebuild = (window as any).__fusionRingRebuild;
     if (typeof rebuild === 'function') rebuild();
-  }, [natalWeights, quizWeights, solarModulation]);
+  }, [natalWeights, quizWeights, solarModulation, dissonanceModulation]);
 
   // Legacy profile ref for InputController compatibility
   const profileRef = useRef<FusionRingProfile>(createDemoProfile());
