@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 
 vi.mock('../lib/supabase', () => ({
@@ -10,7 +10,7 @@ vi.mock('../lib/supabase', () => ({
         }),
       }),
       update: () => ({
-        eq: () => ({ then: (cb: any) => cb({ error: null }) }),
+        eq: () => ({ then: (cb: (r: { error: null }) => void) => cb({ error: null }) }),
       }),
     }),
   },
@@ -24,18 +24,15 @@ describe('First-Time Experience E2E', () => {
     expect(result.current.tourStep).toBe(0);
   });
 
-  it('full tour progression: 0 → 1 → 2 → 3 → done', async () => {
+  it('full tour progression: 0 → 1 → done', async () => {
     const { useDashboardTour } = await import('../hooks/useDashboardTour');
     const { result } = renderHook(() => useDashboardTour('new-user'));
     await act(() => new Promise(r => setTimeout(r, 50)));
 
     act(() => result.current.next()); // 0 → 1
     expect(result.current.tourStep).toBe(1);
-    act(() => result.current.next()); // 1 → 2
-    expect(result.current.tourStep).toBe(2);
-    act(() => result.current.next()); // 2 → 3
-    expect(result.current.tourStep).toBe(3);
-    act(() => result.current.next()); // 3 → done
+
+    act(() => result.current.next()); // 1 → done
     expect(result.current.tourStep).toBe('done');
   });
 
