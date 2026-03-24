@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { ContributionEvent } from '@/src/lib/lme/types';
 import { personalityToEvent } from '@/src/lib/fusion-ring/quiz-to-event';
+import { SharePopup } from '@/src/components/SharePopup';
 
 // ═══════════════════════════════════════════════════════════════
 // TYPES
@@ -328,6 +329,7 @@ export default function PersonalityQuiz({ onComplete, onClose }: PersonalityQuiz
   const [finalScores, setFinalScores] = useState<QuizScores | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
+  const [showShare, setShowShare] = useState(false);
 
   const totalQuestions = QUESTIONS.length;
 
@@ -386,16 +388,6 @@ export default function PersonalityQuiz({ onComplete, onClose }: PersonalityQuiz
       setCurrentQ((prev) => prev - 1);
     }
   }, [currentQ]);
-
-  // ── Restart ────────────────────────────────────────────────
-  const restart = useCallback(() => {
-    setScreen('intro');
-    setCurrentQ(0);
-    setAnswers({});
-    setFinalScores(null);
-    setProfile(null);
-    setDirection(1);
-  }, []);
 
   // ── Progress ───────────────────────────────────────────────
   const progressPct = Math.round((currentQ / totalQuestions) * 100);
@@ -740,11 +732,12 @@ export default function PersonalityQuiz({ onComplete, onClose }: PersonalityQuiz
           <div className="border-t border-white/10 bg-[#041726]/60 px-6 py-5">
             <div className="flex gap-3">
               <button
-                onClick={restart}
+                onClick={() => setShowShare(true)}
                 className="rounded-xl border border-[#D4AF37]/30 px-5 py-3 text-sm font-medium
-                           text-white/50 transition-all hover:border-[#D4AF37] hover:text-[#D4AF37]"
+                           text-white/50 transition-all hover:border-[#D4AF37] hover:text-[#D4AF37] flex items-center gap-2"
               >
-                &#8634; Neu
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                Teilen
               </button>
               <button
                 onClick={onClose}
@@ -756,6 +749,13 @@ export default function PersonalityQuiz({ onComplete, onClose }: PersonalityQuiz
               </button>
             </div>
           </div>
+          {showShare && (
+            <SharePopup
+              quizTitle="Persönlichkeit"
+              resultTitle={profile?.title ?? ''}
+              onClose={() => setShowShare(false)}
+            />
+          )}
         </div>
       </motion.div>
     );

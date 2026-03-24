@@ -31,7 +31,7 @@ type FusionRing3DProps = {
   onSpikeClick?: (sector: number) => void;
   labels: FusionRing3DLabels;
   quizWeights?: Record<string, number>;
-  effectTrigger?: { type: string; color?: string; timestamp: number } | null;
+  effectTrigger?: { type: string; color?: string; timestamp: number; intensity?: number } | null;
   solarModulation?: number;
 };
 

@@ -35,7 +35,7 @@ export default function FuRingPage() {
   const [justCompletedCluster, setJustCompletedCluster] = useState<string | null>(null);
   const [liveQuizWeights, setLiveQuizWeights] = useState<Record<string, number> | undefined>();
   const [premiumCluster, setPremiumCluster] = useState<string | null>(null);
-  const [ringEffect, setRingEffect] = useState<{ type: string; color?: string; timestamp: number } | null>(null);
+  const [ringEffect, setRingEffect] = useState<{ type: string; color?: string; timestamp: number; intensity?: number } | null>(null);
 
   const handleQuizComplete = useCallback((event: ContributionEvent) => {
     quizContribution(event);
@@ -49,7 +49,7 @@ export default function FuRingPage() {
         const updated = new Set([...completedModuleIds, moduleId]);
         if (isClusterComplete(cluster, updated)) {
           setJustCompletedCluster(cluster.id);
-          setRingEffect({ type: 'burst', color: cluster.color, timestamp: Date.now() });
+          setRingEffect({ type: 'burst', color: cluster.color, timestamp: Date.now(), intensity: cluster.significance });
         }
       }
 
@@ -141,6 +141,7 @@ export default function FuRingPage() {
                   isClusterComplete(cluster, completedModuleIds) ||
                   justCompletedCluster === cluster.id
                 }
+                significance={cluster.significance}
               />
             ))}
           </div>

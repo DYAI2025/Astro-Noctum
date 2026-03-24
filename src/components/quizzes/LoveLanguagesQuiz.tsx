@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { loveLangToEvent } from '@/src/lib/fusion-ring/quiz-to-event';
 import type { ContributionEvent } from '@/src/lib/lme/types';
+import { SharePopup } from '@/src/components/SharePopup';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -320,6 +321,7 @@ function LoveLanguagesQuiz({ onComplete, onClose }: LoveLanguagesQuizProps) {
   });
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [resultProfile, setResultProfile] = useState<QuizProfile | null>(null);
+  const [showShare, setShowShare] = useState(false);
   const completedRef = useRef(false);
 
   const totalQuestions = QUESTIONS.length;
@@ -370,14 +372,6 @@ function LoveLanguagesQuiz({ onComplete, onClose }: LoveLanguagesQuizProps) {
     },
     [isTransitioning, scores, questionIndex, totalQuestions],
   );
-
-  const handleRestart = useCallback(() => {
-    setQuestionIndex(0);
-    setScores({ touch: 0, words: 0, time: 0, gifts: 0, service: 0 });
-    setResultProfile(null);
-    completedRef.current = false;
-    setScreen('intro');
-  }, []);
 
   // -----------------------------------------------------------------------
   // Renders
@@ -617,10 +611,11 @@ function LoveLanguagesQuiz({ onComplete, onClose }: LoveLanguagesQuizProps) {
         {/* Actions */}
         <div className="mb-4 flex gap-3">
           <button
-            onClick={handleRestart}
-            className="flex-1 rounded-xl border-2 border-white/10 py-3.5 text-sm font-medium text-white/70 transition hover:border-[#D4AF37]/30 hover:text-white"
+            onClick={() => setShowShare(true)}
+            className="flex-1 rounded-xl border-2 border-white/10 py-3.5 text-sm font-medium text-white/70 transition hover:border-[#D4AF37]/30 hover:text-white flex items-center justify-center gap-2"
           >
-            Nochmal
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            Teilen
           </button>
           <button
             onClick={onClose}
@@ -629,6 +624,13 @@ function LoveLanguagesQuiz({ onComplete, onClose }: LoveLanguagesQuizProps) {
             Fertig
           </button>
         </div>
+        {showShare && (
+          <SharePopup
+            quizTitle="Liebessprachen"
+            resultTitle={resultProfile?.title ?? ''}
+            onClose={() => setShowShare(false)}
+          />
+        )}
 
         <p className="text-center text-[11px] leading-relaxed text-white/30">
           Dieser Test dient der spielerischen Selbstreflexion und stellt{' '}

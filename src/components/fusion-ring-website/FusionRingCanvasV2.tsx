@@ -51,6 +51,7 @@ interface EffectState {
   duration: number;
   intensity: number;
   sector: number;
+  clusterColorHex?: string;
 }
 
 const EFFECT_CONFIGS: Record<string, { label: string; sublabel: string; color: string; borderColor: string }> = {
@@ -70,7 +71,7 @@ export interface FusionRingCanvasProps {
   isMini?: boolean;
   showUI?: boolean;
   revealProgress?: number; // 0..1, used for onboarding reveal
-  effectTrigger?: { type: string; color?: string; timestamp: number } | null;
+  effectTrigger?: { type: string; color?: string; timestamp: number; intensity?: number } | null;
   solarModulation?: number; // 1.0–1.5, multiplied into particle intensity
   className?: string;
 }
@@ -875,18 +876,22 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
             break;
           }
           case 'burst': {
-            const attack = Math.min(1, progress / 0.15);
-            const decay = progress > 0.4 ? Math.max(0, 1 - (progress - 0.4) / 0.6) : 1;
-            const intensity = attack * decay * eff.intensity;
+            const attack = Math.min(1, progress / 0.12);
+            const decay = progress > 0.35 ? Math.max(0, 1 - (progress - 0.35) / 0.65) : 1;
+            // Secondary resonance oscillation after initial burst
+            const resonancePhase = progress > 0.25 ? (progress - 0.25) / 0.75 : 0;
+            const resonanceWave = resonancePhase > 0 ? Math.sin(resonancePhase * Math.PI * (3 + eff.intensity * 4)) * (1 - resonancePhase) : 0;
+            const intensity = (attack * decay + resonanceWave * 0.3) * eff.intensity;
             displaceRadial(t, intensity * 0.8, true);
-            const burstCol = new THREE.Color(0xffc83a);
-            injectColor(-1, burstCol, intensity * 0.4);
-            effectLight1.color.set(0xffc83a);
-            effectLight1.intensity = intensity * 8;
+            // Use cluster color if available, fallback to gold
+            const burstCol = eff.clusterColorHex ? new THREE.Color(eff.clusterColorHex) : new THREE.Color(0xffc83a);
+            injectColor(-1, burstCol, intensity * 0.5);
+            effectLight1.color.copy(burstCol);
+            effectLight1.intensity = intensity * (5 + eff.intensity * 5);
             effectLight2.color.set(0xff8040);
-            effectLight2.intensity = intensity * 4;
-            renderer.toneMappingExposure = 1.5 + intensity * 1.2;
-            const shake = intensity * 0.02;
+            effectLight2.intensity = intensity * (3 + eff.intensity * 3);
+            renderer.toneMappingExposure = 1.5 + intensity * (0.8 + eff.intensity * 0.8);
+            const shake = intensity * (0.01 + eff.intensity * 0.015);
             ringGroup.position.x = Math.sin(t * 30) * shake;
             ringGroup.position.z = Math.cos(t * 35) * shake;
             break;
@@ -1387,10 +1392,15 @@ export default function FusionRingCanvas({
   useEffect(() => {
     if (!effectTrigger || effectTrigger.timestamp === lastTriggerRef.current) return;
     lastTriggerRef.current = effectTrigger.timestamp;
+    const sig = effectTrigger.intensity ?? 0.7;
     triggerEffect(effectTrigger.type as EffectType, {
-      intensity: 0.9,
-      duration: 3.5,
+      intensity: 0.5 + sig * 0.5,    // 0.5–1.0 range scaled by significance
+      duration: 2.0 + sig * 3.0,     // 2s–5s range — longer sustain for higher significance
     });
+    // Inject cluster color into the effect state for tinted burst
+    if (effectTrigger.color && effectRef.current) {
+      effectRef.current.clusterColorHex = effectTrigger.color;
+    }
   }, [effectTrigger, triggerEffect]);
 
   // --- Input Controller ---

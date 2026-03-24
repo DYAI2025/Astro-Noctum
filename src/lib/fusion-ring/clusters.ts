@@ -4,6 +4,8 @@ export interface ClusterDef {
   icon: string;
   color: string;
   quizModuleIds: string[];
+  /** 0-1 significance weight — drives resonance intensity on completion */
+  significance: number;
 }
 
 export const CLUSTER_REGISTRY: ClusterDef[] = [
@@ -12,6 +14,7 @@ export const CLUSTER_REGISTRY: ClusterDef[] = [
     name: 'Naturkind',
     icon: '\u{1F33F}',
     color: '#2D5A4C',
+    significance: 0.7,
     quizModuleIds: [
       'quiz.aura_colors.v1',
       'quiz.krafttier.v1',
@@ -24,6 +27,7 @@ export const CLUSTER_REGISTRY: ClusterDef[] = [
     name: 'Mentalist',
     icon: '\u{1F52E}',
     color: '#4A0E4E',
+    significance: 0.8,
     quizModuleIds: [
       'quiz.love_languages.v1',
       'quiz.charme.v1',
@@ -35,6 +39,7 @@ export const CLUSTER_REGISTRY: ClusterDef[] = [
     name: 'Stratege',
     icon: '\u265F\uFE0F',
     color: '#1A3A5C',
+    significance: 0.75,
     quizModuleIds: [
       'quiz.personality.v1',
       'quiz.career_dna.v2',
@@ -47,6 +52,7 @@ export const CLUSTER_REGISTRY: ClusterDef[] = [
     name: 'Mystiker',
     icon: '\u{1F300}',
     color: '#5C1A4A',
+    significance: 0.85,
     quizModuleIds: [
       'quiz.destiny.v1',
       'quiz.rpg_identity.v1',
@@ -59,6 +65,7 @@ export const CLUSTER_REGISTRY: ClusterDef[] = [
     name: 'Kinky',
     icon: '\u{1F525}',
     color: '#8B1A1A',
+    significance: 0.9,
     quizModuleIds: [
       'quiz.kinky_01.v1',
       'quiz.kinky_02.v1',
@@ -71,6 +78,7 @@ export const CLUSTER_REGISTRY: ClusterDef[] = [
     name: 'Partner Match',
     icon: '\u{1F49E}',
     color: '#9B3A6A',
+    significance: 1.0,
     quizModuleIds: [
       'quiz.partner_match_01.v1',
       'quiz.partner_match_02.v1',

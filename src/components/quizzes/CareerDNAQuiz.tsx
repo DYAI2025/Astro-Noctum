@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { ContributionEvent } from '@/src/lib/lme/types';
+import { SharePopup } from '@/src/components/SharePopup';
 import { careerDnaToEvent } from '@/src/lib/fusion-ring/quiz-to-event';
 import { questions, profiles, quizMeta } from './careerdna/data';
 import { SPINNER_OUTER, SPINNER_INNER } from './quiz-transitions';
@@ -235,13 +236,12 @@ function LoadingScreen() {
 
 function ResultScreen({
   profile,
-  onRestart,
   onClose,
 }: {
   profile: Profile;
-  onRestart: () => void;
   onClose: () => void;
 }) {
+  const [showShare, setShowShare] = useState(false);
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -318,10 +318,11 @@ function ResultScreen({
       {/* Actions */}
       <div className="flex gap-3 w-full max-w-sm mt-6">
         <button
-          onClick={onRestart}
-          className="flex-1 bg-transparent border border-[#D4AF37]/30 text-white/60 text-sm py-3 rounded-xl hover:border-[#D4AF37] hover:text-white transition-colors"
+          onClick={() => setShowShare(true)}
+          className="flex-1 bg-transparent border border-[#D4AF37]/30 text-white/60 text-sm py-3 rounded-xl hover:border-[#D4AF37] hover:text-white transition-colors flex items-center justify-center gap-2"
         >
-          Nochmal
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          Teilen
         </button>
         <button
           onClick={onClose}
@@ -330,6 +331,13 @@ function ResultScreen({
           Fertig
         </button>
       </div>
+      {showShare && (
+        <SharePopup
+          quizTitle="Karriere-DNA"
+          resultTitle={profile.title}
+          onClose={() => setShowShare(false)}
+        />
+      )}
 
       <p className="text-[11px] text-white/30 text-center mt-6 max-w-sm">
         {quizMeta.disclaimer}
@@ -408,7 +416,7 @@ export default function CareerDNAQuiz({ onComplete, onClose }: CareerDNAQuizProp
         {screen === 'loading' && <LoadingScreen key="loading" />}
 
         {screen === 'result' && resultProfile && (
-          <ResultScreen key="result" profile={resultProfile} onRestart={handleStart} onClose={onClose} />
+          <ResultScreen key="result" profile={resultProfile} onClose={onClose} />
         )}
       </AnimatePresence>
     </div>
