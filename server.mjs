@@ -2869,13 +2869,22 @@ app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async
       const periodEnd = invoice.lines?.data?.[0]?.period?.end
         ? new Date(invoice.lines.data[0].period.end * 1000).toISOString()
         : null;
-      if (periodEnd) {
+      // Normalize customer to an ID string in case Stripe sends an expanded object
+      const customerId =
+        typeof invoice.customer === "string"
+          ? invoice.customer
+          : invoice.customer?.id;
+      if (!customerId) {
+        console.error("[Stripe] invoice.payment_succeeded: missing customer ID on invoice", {
+          invoiceId: invoice.id,
+        });
+      } else if (periodEnd) {
         const { error } = await supabaseServer
           .from("profiles")
           .update({ tier: "premium", subscription_end: periodEnd })
-          .eq("stripe_customer_id", invoice.customer);
+          .eq("stripe_customer_id", customerId);
         if (error) console.error("[Stripe] invoice.payment_succeeded update failed:", error);
-        else console.log(`[Stripe] Renewal confirmed for customer ${invoice.customer}, end=${periodEnd}`);
+        else console.log(`[Stripe] Renewal confirmed for customer ${customerId}, end=${periodEnd}`);
       }
     }
 
