@@ -2792,23 +2792,92 @@ app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
+  // ── Event: checkout completed → subscription created ──────────────────
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
     const userId = session.metadata?.userId;
-
     if (userId && supabaseServer) {
       const { error } = await supabaseServer
         .from("profiles")
         .update({
           tier: "premium",
           stripe_customer_id: session.customer,
-          stripe_payment_id: session.payment_intent,
+          stripe_subscription_id: session.subscription,
         })
         .eq("id", userId);
-
-      if (error) console.error("[Stripe] Profile update failed:", error);
-      else console.log(`[Stripe] User ${userId} upgraded to premium`);
+      if (error) console.error("[Stripe] checkout.session.completed profile update failed:", error);
+      else console.log(`[Stripe] User ${userId} upgraded to premium (sub: ${session.subscription})`);
     }
+
+  // ── Event: subscription updated (renewal, plan change, cancel scheduled) ─
+  } else if (event.type === "customer.subscription.updated") {
+    const sub = event.data.object;
+    const userId = sub.metadata?.userId;
+    if (!userId || !supabaseServer) return res.json({ received: true });
+
+    const isActive = sub.status === "active" || sub.status === "trialing";
+    const periodEnd = sub.current_period_end
+      ? new Date(sub.current_period_end * 1000).toISOString()
+      : null;
+
+    const { error } = await supabaseServer
+      .from("profiles")
+      .update({
+        tier: isActive ? "premium" : "free",
+        stripe_subscription_id: sub.id,
+        subscription_end: periodEnd,
+      })
+      .eq("stripe_customer_id", sub.customer);
+
+    if (error) console.error("[Stripe] subscription.updated profile update failed:", error);
+    else console.log(`[Stripe] Subscription ${sub.id} updated — status=${sub.status}, periodEnd=${periodEnd}`);
+
+  // ── Event: subscription deleted (hard cancel, billing failure after retries) ─
+  } else if (event.type === "customer.subscription.deleted") {
+    const sub = event.data.object;
+    // sub.current_period_end is still set — grant access until that date
+    const periodEnd = sub.current_period_end
+      ? new Date(sub.current_period_end * 1000).toISOString()
+      : null;
+
+    const now = new Date();
+    const stillInGrace = periodEnd && new Date(periodEnd) > now;
+
+    const { error } = await supabaseServer
+      .from("profiles")
+      .update({
+        tier: stillInGrace ? "premium" : "free",
+        subscription_end: periodEnd,
+      })
+      .eq("stripe_customer_id", sub.customer);
+
+    if (error) console.error("[Stripe] subscription.deleted profile update failed:", error);
+    else console.log(`[Stripe] Subscription deleted — grace until ${periodEnd}, tier=${stillInGrace ? "premium" : "free"}`);
+
+  // ── Event: invoice payment succeeded (renewal confirmed) ──────────────
+  } else if (event.type === "invoice.payment_succeeded") {
+    const invoice = event.data.object;
+    if (invoice.billing_reason === "subscription_cycle" && supabaseServer) {
+      const periodEnd = invoice.lines?.data?.[0]?.period?.end
+        ? new Date(invoice.lines.data[0].period.end * 1000).toISOString()
+        : null;
+      if (periodEnd) {
+        const { error } = await supabaseServer
+          .from("profiles")
+          .update({ tier: "premium", subscription_end: periodEnd })
+          .eq("stripe_customer_id", invoice.customer);
+        if (error) console.error("[Stripe] invoice.payment_succeeded update failed:", error);
+        else console.log(`[Stripe] Renewal confirmed for customer ${invoice.customer}, end=${periodEnd}`);
+      }
+    }
+
+  // ── Event: invoice payment failed (hard failure) ───────────────────────
+  } else if (event.type === "invoice.payment_failed") {
+    const invoice = event.data.object;
+    console.warn(`[Stripe] Payment failed for customer ${invoice.customer}, invoice ${invoice.id}`);
+    // Stripe handles retry logic. We do NOT immediately downgrade — Stripe will fire
+    // subscription.updated with status=past_due, then subscription.deleted if all retries fail.
+
   } else if (event.type === "checkout.session.expired") {
     const session = event.data.object;
     console.log(`[Stripe] Checkout expired for session ${session.id}`);
