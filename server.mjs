@@ -2851,17 +2851,27 @@ app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async
     const now = new Date();
     const stillInGrace = periodEnd && new Date(periodEnd) > now;
 
-    const { error } = await supabaseServer
-      .from("profiles")
-      .update({
-        tier: stillInGrace ? "premium" : "free",
-        subscription_end: periodEnd,
-      })
-      .eq("stripe_customer_id", sub.customer);
+    const customerId =
+      typeof sub.customer === "string"
+        ? sub.customer
+        : sub.customer && typeof sub.customer === "object"
+          ? sub.customer.id
+          : null;
 
-    if (error) console.error("[Stripe] subscription.deleted profile update failed:", error);
-    else console.log(`[Stripe] Subscription deleted — grace until ${periodEnd}, tier=${stillInGrace ? "premium" : "free"}`);
+    if (!customerId) {
+      console.error("[Stripe] subscription.deleted missing customer id on subscription object");
+    } else {
+      const { error } = await supabaseServer
+        .from("profiles")
+        .update({
+          tier: stillInGrace ? "premium" : "free",
+          subscription_end: periodEnd,
+        })
+        .eq("stripe_customer_id", customerId);
 
+      if (error) console.error("[Stripe] subscription.deleted profile update failed:", error);
+      else console.log(`[Stripe] Subscription deleted — grace until ${periodEnd}, tier=${stillInGrace ? "premium" : "free"}`);
+    }
   // ── Event: invoice payment succeeded (renewal confirmed) ──────────────
   } else if (event.type === "invoice.payment_succeeded") {
     const invoice = event.data.object;
