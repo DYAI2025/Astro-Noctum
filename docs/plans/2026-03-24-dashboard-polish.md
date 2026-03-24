@@ -1,684 +1,606 @@
-# Dashboard Polish Implementation Plan
+# Dashboard Polish & Navigation — Implementation Plan
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Remove ghost UI, fix i18n violations, extend Wu-Xing detail page, fix Levi layer, enhance Planetarium, and create 3 navigation proposals — making the Dashboard production-ready.
+**Goal:** Make the Dashboard production-ready: remove all unspecified UI elements, fix German copy, fix Wu-Xing icon tooltip, improve Levi layout, enhance Planetarium, and build 3 navigation variants for Ben's review.
 
-**Architecture:** Purely additive/removable changes within the existing React 19 SPA. No new libraries. All UI text goes through existing `useLanguage()` / `translations.ts` pipeline. PremiumGate wraps extended content. WuXingPage extends existing page component.
+**Architecture:** Primarily surgical edits to existing components. No new libraries. All visual changes must respect `CON-dark-luxury-aesthetic` (obsidian/gold palette) and `CON-german-ui` (all UI text in German). WuXingPage is extended in-place. Navigation variants are standalone React components.
 
-**Tech Stack:** React 19, Vite, Tailwind CSS v4, TypeScript, Vitest, Three.js (for Planetarium), Supabase
+**Tech Stack:** React 19, TypeScript, Tailwind CSS v4, Three.js (Planetarium), motion/react, existing i18n via `useLanguage()` + `src/i18n/translations.ts`.
 
----
-
-## Pre-flight Checks
-
-Before starting any task:
-```bash
-npm run lint      # Must be clean — do NOT add new TS errors
-npm run test      # Know which tests are already failing (baseline)
-```
+**Pre-flight note:** Ghost UI tests in `src/__tests__/dashboard-ghost-ui.test.tsx` already pass — the listed ghost elements are not in the DOM. The plan verifies them first and fixes only what is actually broken.
 
 ---
 
-## Work Package 1 — Ghost UI Cleanup
+## Work Package 1: Ghost UI Cleanup + Verification
 
-**Sprint tasks:** S-DP-01, S-DP-02, S-DP-03, S-DP-04
-
-### Task 1: Remove "Tour wiederholen" from Dashboard menu
+### Task 1: Verify Ghost UI State and Fix KI-Synthese Label
 
 **Files:**
-- Modify: `src/components/Dashboard.tsx` (around line 351)
+- Verify: `src/__tests__/dashboard-ghost-ui.test.tsx`
+- Modify if needed: `src/components/dashboard/DashboardInterpretationSection.tsx`
 
-**Step 1: Find the element**
+**Step 1: Run existing ghost UI tests**
 
-Search for the menu button:
-```bash
-grep -n "Tour wiederholen\|Zahlung verwalten\|Neustarten\|KI-Synthese" src/components/Dashboard.tsx
-```
-Expected: "Tour wiederholen" at line ~351.
-
-**Step 2: Read the surrounding context**
-
-Read `src/components/Dashboard.tsx` lines 340–370 to understand the menu structure.
-
-**Step 3: Write the failing test**
-
-File: `src/__tests__/dashboard-ghost-ui.test.tsx`
-
-```tsx
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
-
-// Mock heavy dependencies
-vi.mock('../components/BirthChartOrrery', () => ({ default: () => null }));
-vi.mock('../components/fusion-ring-website/FusionRingCanvasV2', () => ({ default: () => null }));
-// Add any other expensive mocks needed
-
-import Dashboard from '../components/Dashboard';
-
-const MINIMAL_PROPS = { /* minimal valid props */ };
-
-describe('Dashboard ghost UI', () => {
-  it('does not render "Tour wiederholen" button', () => {
-    render(<Dashboard {...MINIMAL_PROPS} />);
-    expect(screen.queryByText(/Tour wiederholen/i)).toBeNull();
-  });
-
-  it('does not render "Zahlung verwalten" button', () => {
-    render(<Dashboard {...MINIMAL_PROPS} />);
-    expect(screen.queryByText(/Zahlung verwalten/i)).toBeNull();
-  });
-
-  it('does not render "Neustarten" button', () => {
-    render(<Dashboard {...MINIMAL_PROPS} />);
-    expect(screen.queryByText(/Neustarten/i)).toBeNull();
-  });
-
-  it('does not render "KI-Synthese" heading', () => {
-    render(<Dashboard {...MINIMAL_PROPS} />);
-    expect(screen.queryByText(/KI-Synthese/i)).toBeNull();
-  });
-});
-```
-
-**Step 4: Run to confirm they fail**
 ```bash
 npx vitest run src/__tests__/dashboard-ghost-ui.test.tsx
 ```
-Expected: 4 failures (elements are currently present).
 
-**Step 5: Remove ghost UI elements from Dashboard.tsx**
+Expected: 4/4 PASS. If all pass, S-DP-01 through S-DP-03 are already clean.
 
-In `src/components/Dashboard.tsx`:
-- Find and delete the JSX element rendering "Tour wiederholen" (line ~351)
-- "Zahlung verwalten" is in `src/components/ManageSubscription.tsx` line 41 — leave it there; it belongs in the subscription management flow, NOT on the main Dashboard menu. Remove only the menu item in Dashboard that links to it, if one exists.
-- Search the whole file for "Neustarten" — delete that button/element if found
-- "KI-Synthese" label is in `src/i18n/translations.ts` line ~363. Search Dashboard.tsx for where this translation key is used (look for `t('sectionLabel')` or similar) and remove that section heading from the JSX.
+**Step 2: Audit for KI-Synthese visible heading (S-DP-04)**
 
-**Step 6: Run tests**
 ```bash
-npx vitest run src/__tests__/dashboard-ghost-ui.test.tsx
+grep -n "sectionLabel\|KI-Synthese" src/components/dashboard/DashboardInterpretationSection.tsx
 ```
-Expected: 4 tests pass.
 
-**Step 7: Lint**
+If a JSX element renders `t('dashboard.interpretation.sectionLabel')` visibly (as a badge, chip, or heading), remove that element.
+
+**Step 3: Run lint**
+
 ```bash
 npm run lint
 ```
-Expected: No new errors.
 
-**Step 8: Commit**
+**Step 4: Run ghost UI tests again**
+
 ```bash
-git add src/components/Dashboard.tsx src/__tests__/dashboard-ghost-ui.test.tsx
-git commit -m "fix(dashboard): remove ghost UI — Tour wiederholen, Neustarten, KI-Synthese"
+npx vitest run src/__tests__/dashboard-ghost-ui.test.tsx
+```
+
+Expected: 4/4 PASS.
+
+**Step 5: Commit (only if changes were made)**
+
+```bash
+git add src/components/dashboard/DashboardInterpretationSection.tsx
+git commit -m "fix(dashboard): remove KI-Synthese section label badge (ghost UI)"
 ```
 
 ---
 
-## Work Package 2 — i18n & Copy Fixes
+## Work Package 2: i18n & Copy Fixes
 
-**Sprint tasks:** S-DP-05, S-DP-06
-
-### Task 2: Fix BlueprintCard.tsx — add i18n support
+### Task 2: Fix Mixed DE/EN in interpretation.sectionTitle
 
 **Files:**
-- Modify: `src/components/dashboard/BlueprintCard.tsx`
 - Modify: `src/i18n/translations.ts`
+- Verify: `src/__tests__/blueprint-card-i18n.test.tsx`
 
-**Step 1: Read the current file**
+**Step 1: Write the failing test**
 
-Read `src/components/dashboard/BlueprintCard.tsx` in full. Read `src/i18n/translations.ts` lines 350–400 (around the KI-Synthese entry) to understand the translations structure.
+Open `src/__tests__/blueprint-card-i18n.test.tsx`. Read the file, then add this test if not already present:
 
-**Step 2: Write the failing test**
-
-File: `src/__tests__/blueprint-card-i18n.test.tsx`
-
-```tsx
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
-import { BlueprintCard } from '../components/dashboard/BlueprintCard';
-
-describe('BlueprintCard i18n', () => {
-  it('renders German title by default', () => {
-    render(<BlueprintCard lang="de" />);
-    // Should show "Kosmischer Blueprint" or similar DE text, NOT "Your Bazaar Blueprint"
-    expect(screen.queryByText(/Your Bazaar Blueprint/i)).toBeNull();
-    expect(screen.getByText(/Blueprint/i)).toBeTruthy();
-  });
-
-  it('renders no hardcoded English strings', () => {
-    render(<BlueprintCard lang="de" />);
-    expect(screen.queryByText(/Westlich/)).not.toBeNull(); // exists in DE already
-    // Ensure "Eastern" in English doesn't appear
-    expect(screen.queryByText(/^Eastern$/)).toBeNull();
-  });
+```typescript
+it('DE interpretation sectionTitle contains no English words', () => {
+  // translations_de is the DE branch of translations
+  // import { translations } from '../../i18n/translations';
+  // const de = translations.de.dashboard.interpretation.sectionTitle;
+  expect(de).not.toMatch(/cosmic/i);
 });
 ```
 
-**Step 3: Run to confirm current state**
+**Step 2: Run to verify it fails**
+
 ```bash
 npx vitest run src/__tests__/blueprint-card-i18n.test.tsx
 ```
 
-**Step 4: Add i18n to BlueprintCard**
+Expected: FAIL — "Dein Cosmic Blueprint" contains English "Cosmic".
 
-In `src/components/dashboard/BlueprintCard.tsx`:
-- Import and use `useLanguage()` hook: `import { useLanguage } from '../../contexts/LanguageContext';`
-- Replace hardcoded default prop strings with values from `translations.ts`
-- In `src/i18n/translations.ts`, add entries under `de` and `en` for:
-  ```
-  blueprint: {
-    title: "Kosmischer Blueprint",  // DE
-    cta: "ganzen Blueprint lesen →",  // DE
-    western: "Westlich",
-    eastern: "Östlich"
-  }
-  ```
-  And English equivalents.
-- In BlueprintCard, use `t('blueprint.title')` etc.
+**Step 3: Fix translations.ts**
 
-**Step 5: Run tests**
+In `src/i18n/translations.ts`, find the DE `interpretation` block (around line 369):
+
+Change:
+```typescript
+interpretation: {
+  sectionLabel: "KI-Synthese",
+  sectionTitle: "Dein Cosmic Blueprint",
+},
+```
+
+To:
+```typescript
+interpretation: {
+  sectionLabel: "KI-Auswertung",
+  sectionTitle: "Dein Kosmischer Blueprint",
+},
+```
+
+**Step 4: Run test to verify it passes**
+
 ```bash
 npx vitest run src/__tests__/blueprint-card-i18n.test.tsx
 ```
+
 Expected: PASS.
 
-**Step 6: Commit**
+**Step 5: Check BlueprintCard.tsx for hardcoded English copy**
+
 ```bash
-git add src/components/dashboard/BlueprintCard.tsx src/i18n/translations.ts src/__tests__/blueprint-card-i18n.test.tsx
-git commit -m "fix(i18n): add useLanguage to BlueprintCard, eliminate hardcoded strings (S-DP-05, S-DP-06)"
+grep -n '"Cosmic\|"Your Bazaar\|"Your Cosmic' src/components/dashboard/BlueprintCard.tsx
+```
+
+If any hardcoded EN strings are found, route them through `t()` calls.
+
+**Step 6: Commit**
+
+```bash
+git add src/i18n/translations.ts src/components/dashboard/BlueprintCard.tsx
+git commit -m "fix(i18n): replace mixed-language Cosmic Blueprint title with German copy"
 ```
 
 ---
 
-## Work Package 3 — Wu-Xing Fix + Detail Page
+## Work Package 3: Wu-Xing Fixes
 
-**Sprint tasks:** S-DP-07, S-DP-08, S-DP-09, S-DP-10
+### Task 3: Fix Metal Icon Tooltip (shows "diamond" instead of "Metall")
 
-### Task 3: Fix Wu-Xing Metal icon bug
+**Background:** `CosmicSymbols.tsx` maps `Metal → IconMetal` which is `Diamond.jsx`. That SVG has `<title>diamond</title>`, causing the browser to show "diamond" as tooltip on hover. Sprint reports "Wind" — may have been a previous regression. Current fix: add a German `aria-label` via a wrapper so hover shows the correct label.
 
 **Files:**
-- Investigate: `src/lib/astro-data/wuxing.ts`
-- Possibly modify: component rendering the icons (grep required)
+- Modify: `src/components/animated-icons/CosmicSymbols.tsx`
+- Test: `src/__tests__/wuxing.test.ts`
 
-**Step 1: Find where Wind/Metal bug appears**
-```bash
-grep -rn "Wind\|wind\|Metal\|metal" src/lib/astro-data/wuxing.ts
-grep -rn "⚙\|🌬\|wind" src/components/ src/lib/
-```
+**Step 1: Write the failing test**
 
-The emoji ⚙️ is already assigned to Metal in `wuxing.ts` line ~85. The bug is likely in a component that uses Lucide icons or a different icon map — not the data file.
+Open `src/__tests__/wuxing.test.ts`. Read it, then add at the end of the file:
 
-**Step 2: Search for icon mapping objects**
-```bash
-grep -rn "Metal\|metal" src/components/ --include="*.tsx" --include="*.ts" | grep -i "icon\|Icon"
-```
+```typescript
+import { render } from '@testing-library/react';
+import { WuXingIcon } from '../components/animated-icons/CosmicSymbols';
 
-Find the component with the wrong mapping. It likely has:
-```ts
-const ELEMENT_ICONS = { Wood: ..., Fire: ..., Earth: ..., Metal: WindIcon, Water: ... }
-// Should be:
-const ELEMENT_ICONS = { Wood: ..., Fire: ..., Earth: ..., Metal: SwordIcon, Water: ... }
-```
+describe('WuXingIcon accessibility', () => {
+  it('Metal renders with aria-label "Metall"', () => {
+    const { container } = render(<WuXingIcon element="Metal" />);
+    const svg = container.querySelector('svg');
+    expect(svg?.getAttribute('aria-label')).toBe('Metall');
+  });
 
-**Step 3: Write the failing test**
-
-File: `src/__tests__/wuxing-icons.test.tsx`
-
-```tsx
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
-// Import the component that shows Wu-Xing icons
-
-describe('Wu-Xing element icons', () => {
-  it('Metal element shows correct label, not Wind', () => {
-    render(<WuXingComponent elements={mockElements} lang="de" />);
-    const metalNodes = screen.getAllByTestId('element-Metal');
-    metalNodes.forEach(node => {
-      expect(node).not.toHaveTextContent('Wind');
-      expect(node).toHaveTextContent('Metall');
-    });
+  it('Water renders with aria-label "Wasser"', () => {
+    const { container } = render(<WuXingIcon element="Water" />);
+    const svg = container.querySelector('svg');
+    expect(svg?.getAttribute('aria-label')).toBe('Wasser');
   });
 });
 ```
 
-**Step 4: Fix the icon mapping**
+**Step 2: Run test to verify it fails**
 
-In the file identified in Step 2, correct the Metal entry to a Metal-appropriate icon (⚙️ emoji or a Lucide icon like `Sword`, `Gem`, or `Wrench`).
-
-**Step 5: Run test**
 ```bash
-npx vitest run src/__tests__/wuxing-icons.test.tsx
-```
-Expected: PASS.
-
-**Step 6: Commit**
-```bash
-git add <changed files> src/__tests__/wuxing-icons.test.tsx
-git commit -m "fix(wuxing): correct Metal element icon mapping (was showing Wind)"
+npx vitest run src/__tests__/wuxing.test.ts
 ```
 
----
+Expected: FAIL — svg has aria-label "diamond", not "Metall".
 
-### Task 4: Extend WuXingPage with premium detail content
+**Step 3: Modify CosmicSymbols.tsx**
 
-**Files:**
-- Modify: `src/pages/WuXingPage.tsx`
-- Modify: `src/components/PremiumGate.tsx` (verify import path)
-- Modify: `src/components/Dashboard.tsx` (remove houses section)
+Read `src/components/animated-icons/CosmicSymbols.tsx` first, then add a label map and pass it to the Icon:
 
-**Step 1: Read WuXingPage.tsx in full**
+```typescript
+const ELEMENT_LABEL: Record<string, string> = {
+  Wood: 'Holz', Fire: 'Feuer', Earth: 'Erde', Metal: 'Metall', Water: 'Wasser',
+  Holz: 'Holz', Feuer: 'Feuer', Erde: 'Erde', Metall: 'Metall', Wasser: 'Wasser',
+};
 
-Read `/Users/benjaminpoersch/Projects/codebase/Bazodiac-WebApp/Astro-Noctum/src/pages/WuXingPage.tsx`.
-
-**Step 2: Read Dashboard.tsx — find houses section**
-```bash
-grep -n "house\|House\|Häuser\|houseTexts" src/components/Dashboard.tsx
-```
-Note the exact lines of the houses JSX block.
-
-**Step 3: Write a failing test for WuXingPage structure**
-
-File: `src/__tests__/wuxing-page.test.tsx`
-
-```tsx
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
-// Mock router, contexts as needed
-
-describe('WuXingPage', () => {
-  it('renders Wu-Xing detail page without crashing', () => {
-    render(<WuXingPage {...mockProps} />);
-    expect(screen.getByRole('main')).toBeTruthy();
-  });
-
-  it('shows PremiumGate for extended analysis section', () => {
-    render(<WuXingPage {...mockPropsFreeTier} />);
-    // Free user should see upgrade prompt
-    expect(screen.getByTestId('premium-gate')).toBeTruthy();
-  });
-
-  it('shows extended analysis for premium user', () => {
-    render(<WuXingPage {...mockPropsPremium} />);
-    expect(screen.getByTestId('extended-analysis')).toBeTruthy();
-  });
-});
-```
-
-**Step 4: Implement extended WuXingPage sections**
-
-In `src/pages/WuXingPage.tsx`, add below the existing Wu-Xing pentagon/wheel:
-
-```tsx
-{/* Extended Analysis — Premium gated */}
-<PremiumGate userId={userId} isPremium={isPremium}>
-  <div data-testid="extended-analysis">
-    {/* Element balance bar chart */}
-    <section className="glass-card p-6">
-      <h2 className="font-serif text-gold text-xl mb-4">Elementbalance</h2>
-      <ElementBalanceChart elements={wuxingData.elements} />
-    </section>
-
-    {/* Western houses — moved from Dashboard */}
-    <section className="glass-card p-6 mt-4">
-      <h2 className="font-serif text-gold text-xl mb-4">Häuser-Analyse</h2>
-      <HousesSection houseTexts={houseTexts} />
-    </section>
-  </div>
-</PremiumGate>
-```
-
-Keep it simple — use `<table>` or `<dl>` for the houses, no new chart library. For ElementBalanceChart, use CSS-width bars:
-```tsx
-function ElementBalanceChart({ elements }: { elements: Record<string, number> }) {
-  const total = Object.values(elements).reduce((a, b) => a + b, 0);
+export function WuXingIcon({ element, className = 'w-6 h-6', showColor = true }: ElementIconProps) {
+  const entry = ELEMENT_ICON_MAP[element];
+  if (!entry) return <IconStar className={className} />;
+  const { icon: Icon, color } = entry;
+  const label = ELEMENT_LABEL[element] ?? element;
   return (
-    <div className="space-y-2">
-      {Object.entries(elements).map(([el, count]) => (
-        <div key={el} className="flex items-center gap-3">
-          <span className="w-16 font-serif text-sm text-gold-deep/70">{el}</span>
-          <div className="flex-1 bg-obsidian rounded">
-            <div
-              className="h-2 rounded bg-gold"
-              style={{ width: `${(count / total) * 100}%` }}
-            />
-          </div>
-          <span className="text-xs text-gold-deep/50">{count}</span>
-        </div>
-      ))}
-    </div>
+    <Icon
+      className={className}
+      style={showColor ? { color } : undefined}
+      aria-label={label}
+      role="img"
+    />
   );
 }
 ```
 
-**Step 5: Remove houses from Dashboard.tsx**
+**Step 4: Run test to verify it passes**
 
-In `src/components/Dashboard.tsx`, delete the houses JSX block identified in Step 2. Remove unused `houseTexts` prop if no other section uses it.
-
-**Step 6: Run tests**
 ```bash
-npx vitest run src/__tests__/wuxing-page.test.tsx
-npm run lint
+npx vitest run src/__tests__/wuxing.test.ts
 ```
 
-**Step 7: Commit**
+Expected: All tests PASS.
+
+**Step 5: Commit**
+
 ```bash
-git add src/pages/WuXingPage.tsx src/components/Dashboard.tsx src/__tests__/wuxing-page.test.tsx
-git commit -m "feat(wuxing): extend detail page with PremiumGated analysis + move houses from Dashboard (S-DP-08 to S-DP-10)"
+git add src/components/animated-icons/CosmicSymbols.tsx src/__tests__/wuxing.test.ts
+git commit -m "fix(wuxing): add German aria-label to WuXingIcon — Metal no longer shows 'diamond' on hover"
 ```
 
 ---
 
-## Work Package 4 — Levi Layer Redesign
+### Task 4: Extend WuXingPage with PremiumGate + Receive Western Houses
 
-**Sprint tasks:** S-DP-11, S-DP-12, S-DP-13
+**Files:**
+- Modify: `src/pages/WuXingPage.tsx`
+- Modify: `src/components/dashboard/DashboardAstroSection.tsx`
+- Verify: `src/__tests__/wuxing-page-detail.test.tsx`
 
-### Task 5: Fix Levi section styling and position
+**Step 1: Run existing WuXing page tests**
+
+```bash
+npx vitest run src/__tests__/wuxing-page-detail.test.tsx
+```
+
+Note all passing tests — your changes must not break them.
+
+**Step 2: Locate Western Houses in DashboardAstroSection**
+
+```bash
+grep -n "houses\|Houses\|Häuser\|western.*house\|house.*western" src/components/dashboard/DashboardAstroSection.tsx -i | head -20
+```
+
+Identify the JSX section. Note what data props it receives.
+
+**Step 3: Extract Western Houses to WuXingPage**
+
+In `src/pages/WuXingPage.tsx`, after the existing pentagon/balance content, add:
+
+```tsx
+import { PremiumGate } from '../components/PremiumGate';
+
+// Inside WuXingPage component, after the ElementBalanceChart section:
+<PremiumGate feature="wu-xing-extended">
+  <section className="mt-10 space-y-6" data-testid="wuxing-extended">
+    <h2 className="font-serif text-2xl text-white/80">
+      {lang === 'de' ? 'Westliche Häuser' : 'Western Houses'}
+    </h2>
+    {/* Houses content here — copy from DashboardAstroSection */}
+  </section>
+</PremiumGate>
+```
+
+WuXingPage already gets `apiData` via `useAppLayout()`. Check: `const { apiData } = useAppLayout();` — `apiData.western.houses` has the houses data.
+
+**Step 4: Remove Western Houses from DashboardAstroSection**
+
+In `src/components/dashboard/DashboardAstroSection.tsx`, find the Western Houses JSX block. Delete it. Add a comment:
+
+```tsx
+{/* Western Houses moved to WuXingPage — see src/pages/WuXingPage.tsx */}
+```
+
+**Step 5: Run tests + lint**
+
+```bash
+npx vitest run src/__tests__/wuxing-page-detail.test.tsx
+npm run lint
+```
+
+Expected: All tests pass (premium gate tests should still pass since PremiumGate is already tested).
+
+**Step 6: Commit**
+
+```bash
+git add src/pages/WuXingPage.tsx src/components/dashboard/DashboardAstroSection.tsx
+git commit -m "feat(wuxing): add extended detail page with PremiumGate; move Western Houses from Dashboard"
+```
+
+---
+
+## Work Package 4: Levi Layer Fixes
+
+### Task 5: Fix Levi Section Text Colors and Alignment
+
+**Background:** `DashboardLeviSection` uses `text-[#1E2A3A]/60` which is dark navy — fine on a light `morning-card` background, but the Dashboard itself is dark. The `morning-card` CSS class controls the card background. Check if the card is light or dark, and fix text visibility accordingly.
 
 **Files:**
 - Modify: `src/components/dashboard/DashboardLeviSection.tsx`
-- Possibly: `src/components/dashboard/LeviOrb.tsx`
-- Modify: `src/components/Dashboard.tsx` (section order)
+- Verify: `src/__tests__/levi-section.test.tsx`
 
-**Step 1: Read the files**
+**Step 1: Run existing Levi tests**
 
-Read `src/components/dashboard/DashboardLeviSection.tsx` in full.
-```bash
-find src/components/dashboard -name "LeviOrb*"
-```
-If it exists, read `LeviOrb.tsx` too.
-
-**Step 2: Write failing tests**
-
-File: `src/__tests__/levi-section.test.tsx`
-
-```tsx
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
-import { DashboardLeviSection } from '../components/dashboard/DashboardLeviSection';
-
-const BASE_PROPS = {
-  isPremium: false,
-  userId: 'test-user',
-  onStopAudio: vi.fn(),
-  onResumeAudio: vi.fn(),
-  sunSign: 'Aries',
-  zodiacAnimal: 'Dragon',
-  dominantEl: 'Fire',
-};
-
-describe('DashboardLeviSection', () => {
-  it('renders exactly one CTA button', () => {
-    render(<DashboardLeviSection {...BASE_PROPS} />);
-    const buttons = screen.getAllByRole('button');
-    // Should be 1 CTA, not 2
-    expect(buttons.length).toBe(1);
-  });
-
-  it('CTA button text contains "Levi"', () => {
-    render(<DashboardLeviSection {...BASE_PROPS} />);
-    expect(screen.getByRole('button', { name: /Levi/i })).toBeTruthy();
-  });
-
-  it('does not render italic text', () => {
-    const { container } = render(<DashboardLeviSection {...BASE_PROPS} />);
-    const italicEls = container.querySelectorAll('i, .italic');
-    expect(italicEls.length).toBe(0);
-  });
-});
-```
-
-**Step 3: Run to see failures**
 ```bash
 npx vitest run src/__tests__/levi-section.test.tsx
 ```
 
-**Step 4: Fix DashboardLeviSection.tsx**
+Note all passing tests.
 
-Find and fix:
-- Any `italic` or `font-style: italic` styling — remove it
-- Any offset causing misalignment (look for negative margins, `translate-x`, or absolute positioning that's off)
-- Font size — ensure body text is at least `text-base` (16px), heading `text-lg` minimum
-- Duplicate buttons — find the "Levi Bazzi bereit" button and delete it. Keep only one CTA
+**Step 2: Audit morning-card background color**
 
-Pattern to search:
 ```bash
-grep -n "italic\|Levi Bazzi bereit\|font-size\|translate" src/components/dashboard/DashboardLeviSection.tsx
+grep -n "morning-card" src/index.css
 ```
 
-**Step 5: Fix Dashboard.tsx section order (S-DP-13)**
+If `morning-card` has a light background (e.g., `background: white` or `background: #f0f0f0`), the dark text color is correct. If it has a dark/transparent background, the text is invisible.
 
-In `src/components/Dashboard.tsx`:
-- Read the JSX structure to find where `<DashboardLeviSection />` currently renders (~line 380)
-- Move it to render AFTER the Big Three cards + Fusion Ring section, BEFORE the detail sections (Blueprint, houses, etc.)
+**Step 3: Fix text color if needed**
 
-The correct order should be:
-1. Header / "Dein Bazodiac"
-2. Big Three (Sun, Moon, Rising)
-3. Fusion Ring / Signatur
-4. **Levi Section** ← move here
-5. Blueprint Card
-6. Wu-Xing summary
-7. (Houses → now on WuXingPage)
+In `src/components/dashboard/DashboardLeviSection.tsx`, line 82:
 
-**Step 6: Run tests**
+```tsx
+// If morning-card is dark background, change:
+// FROM:
+<p className="text-base text-[#1E2A3A]/60 leading-relaxed mt-1">
+// TO:
+<p className="text-base text-white/55 leading-relaxed mt-1">
+```
+
+Also ensure `Badge` variant text is readable. The Badge shows "Levi Bazi Bereit" — verify it's visible with its current variant.
+
+**Step 4: Verify no duplicate button**
+
+In the current code, the premium state shows `callBtn`/`hangUpBtn`, and non-premium shows the upgrade button. These are exclusive (`isPremium ? A : B`). Confirm no duplicate by reading the component.
+
+**Step 5: Run tests + lint**
+
 ```bash
 npx vitest run src/__tests__/levi-section.test.tsx
 npm run lint
 ```
 
-**Step 7: Commit**
+**Step 6: Commit**
+
 ```bash
-git add src/components/dashboard/DashboardLeviSection.tsx src/components/Dashboard.tsx src/__tests__/levi-section.test.tsx
-git commit -m "fix(levi): fix text alignment/size/italic, remove duplicate button, move section higher (S-DP-11 to S-DP-13)"
+git add src/components/dashboard/DashboardLeviSection.tsx
+git commit -m "fix(levi): fix text color for dark background aesthetic"
 ```
 
 ---
 
-## Work Package 5 — Planetarium Enhancement
+### Task 6: Reorder Dashboard — Confirm Levi Position
 
-**Sprint tasks:** S-DP-14, S-DP-15, S-DP-16, S-DP-17
+**Files:**
+- Verify/Modify: `src/components/Dashboard.tsx`
 
-### Task 6: Enhance Planetarium with current positions + labels
+**Step 1: Confirm current layout order**
+
+Read `src/components/Dashboard.tsx` lines 340–410. Current order is:
+1. Astro Section (Orrery + Western + BaZi/WuXing)
+2. **Levi Section** ← currently here
+3. Blueprint Card
+4. Interpretation Section
+
+The sprint wants Levi "above Blueprint, above lower sections" — which it already is. Verify this visually by reading the JSX order.
+
+**Step 2: If Levi is already correctly positioned, skip to Task 7**
+
+Only make changes if Levi is incorrectly below Blueprint or Interpretation.
+
+**Step 3: If reorder is needed**
+
+Cut the `<SectionErrorBoundary name="Levi">` block and paste it immediately after the Astro Section's closing `</SectionErrorBoundary>`.
+
+**Step 4: Run full tests**
+
+```bash
+npm run test
+```
+
+Expected: No regressions.
+
+**Step 5: Commit only if changed**
+
+```bash
+git add src/components/Dashboard.tsx
+git commit -m "fix(dashboard): move Levi section before Blueprint Card in layout order"
+```
+
+---
+
+## Work Package 5: Planetarium Enhancement
+
+### Task 7: Increase Date/Time Display and Add Constellation Description
 
 **Files:**
 - Modify: `src/components/BirthChartOrrery.tsx`
-- Possibly: `src/contexts/PlanetariumContext.tsx`
 
-**Step 1: Read BirthChartOrrery.tsx**
+**Step 1: Find existing date/time display**
 
-Read the full file to understand how planets are positioned and labeled.
-
-**Step 2: Check astronomy-engine availability**
 ```bash
-grep -n "astronomy-engine\|astronomyEngine" package.json src/components/BirthChartOrrery.tsx
+grep -n "date\|time\|birthDate\|birth_date\|text-xs\|text-sm\|formatDate\|font" src/components/BirthChartOrrery.tsx | head -30
 ```
 
-**Step 3: Write failing tests for new features**
+Identify the HTML overlay or Three.js text that shows the birth date/time.
 
-File: `src/__tests__/birth-chart-orrery.test.tsx` (update or create)
+**Step 2: Increase font size to minimum 18px**
+
+If HTML overlay: change from `text-xs` or `text-sm` to `text-lg` or `text-xl`:
 
 ```tsx
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+// FROM:
+<span className="text-xs text-white/40">
 
-// Mock Three.js to avoid WebGL requirement
-vi.mock('three', () => ({ /* minimal mock */ }));
-
-describe('BirthChartOrrery', () => {
-  it('renders a birth date description label', () => {
-    render(<BirthChartOrrery birthDate="1980-11-24" {...otherProps} />);
-    expect(screen.getByText(/Planetenposition am/i)).toBeTruthy();
-    expect(screen.getByText(/24. November 1980/i)).toBeTruthy();
-  });
-});
+// TO:
+<span className="text-xl font-serif text-white/70 tracking-wide">
 ```
 
-**Step 4: Implement S-DP-14 — Larger date/time display**
+If Three.js canvas text: find `font:` string in the canvas context and increase:
 
-In `BirthChartOrrery.tsx`, find where the date/time is rendered as HTML (not Three.js). Change the Tailwind class from whatever it currently is to at least `text-lg` (18px).
+```typescript
+// FROM: ctx.font = '12px Sora, sans-serif';
+// TO:
+ctx.font = '20px Sora, sans-serif';
+```
 
-If the date is rendered as a Three.js `TextGeometry` or CSS2DObject, increase the font size parameter.
+**Step 3: Add constellation description label at bottom**
 
-**Step 5: Implement S-DP-16 — Birth date description label**
-
-Add a positioned HTML overlay at the bottom of the Planetarium:
+Find the outer container div of the orrery (should be `position: relative`). Add below the Three.js canvas:
 
 ```tsx
-{/* Description label — added below the Three.js canvas */}
-<div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded bg-obsidian/80 backdrop-blur-sm border border-gold/20">
-  <p className="font-serif text-gold-deep text-sm">
-    Planetenposition am {formatGermanDate(birthDate)}
-  </p>
-</div>
+{birthData && (
+  <div className="absolute bottom-4 left-0 right-0 flex justify-center pointer-events-none z-10">
+    <div className="px-5 py-2 bg-black/60 backdrop-blur-sm rounded-full">
+      <p className="text-sm font-serif text-[#D4AF37]/80 tracking-wide text-center">
+        Planetenposition am{' '}
+        <span className="text-white/90">
+          {new Date(birthData.date).toLocaleDateString('de-DE', {
+            day: 'numeric', month: 'long', year: 'numeric',
+          })}
+        </span>
+      </p>
+    </div>
+  </div>
+)}
 ```
 
-Where `formatGermanDate` converts `"1980-11-24"` → `"24. November 1980"` (same function pattern as TourOverlay):
+**Step 4: Run lint**
 
-```ts
-function formatGermanDate(raw: string): string {
-  const months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
-  try {
-    const [y, m, d] = raw.split('T')[0].split('-').map(Number);
-    if (!y || !m || !d) return raw;
-    return `${d}. ${months[m - 1]} ${y}`;
-  } catch { return raw; }
-}
-```
-
-**Step 6: Implement S-DP-15 — Current planet positions**
-
-This is the most complex item. Strategy:
-- Use `astronomy-engine` (already a dependency) to compute planet positions for `new Date()` (today)
-- Add them as a second layer with a different color/opacity (e.g., gold-tinted for birth, blue-tinted for current)
-- Add a small HTML legend overlay showing "🟡 Geburt  🔵 Heute"
-
-Minimal approach — add a `showCurrentPositions?: boolean` prop (default `true`). When `true`, compute today's planet angles and render them as lighter/dimmer planet meshes alongside the birth chart ones.
-
-```ts
-// Compute current positions
-const currentPlanetAngles = PLANETS.map(planet => ({
-  name: planet.name,
-  angle: computeCurrentAngle(planet), // using astronomy-engine
-  opacity: 0.4,
-  color: 0x4488ff, // blue-ish tint
-}));
-```
-
-If astronomy-engine integration would take > 2h, simplify: just show a static note "Aktuelle Positionen: coming soon" in the legend — do NOT block the other enhancements.
-
-**Step 7: Run tests**
 ```bash
-npx vitest run src/__tests__/birth-chart-orrery.test.tsx
 npm run lint
 ```
 
-**Step 8: Commit**
+Expected: Clean.
+
+**Step 5: Commit**
+
 ```bash
-git add src/components/BirthChartOrrery.tsx src/__tests__/birth-chart-orrery.test.tsx
-git commit -m "feat(planetarium): larger date display, birth date description label, current planet positions (S-DP-14 to S-DP-16)"
+git add src/components/BirthChartOrrery.tsx
+git commit -m "feat(planetarium): increase date/time font size, add constellation description label"
 ```
 
 ---
 
-## Work Package 6 — Navigation & Header
+### Task 8: Show Current Planet Positions Alongside Birth Positions
 
-**Sprint tasks:** S-DP-18, S-DP-19
+**Files:**
+- Modify: `src/components/BirthChartOrrery.tsx`
+- Modify: `src/contexts/PlanetariumContext.tsx`
 
-**⚠️ Decision required from Ben before S-DP-19:** Confirm "Dein Bazodiac" as the heading text (or suggest alternative). Ask via a comment in code or directly.
+**Step 1: Check how existing planetary positions are computed**
 
-### Task 7: Build 3 navigation menu variants (A/B/C)
+```bash
+grep -n "import\|astronomy\|orbital\|planets\|computePos\|getPosition" src/components/BirthChartOrrery.tsx | head -20
+ls src/lib/astronomy/
+```
+
+Understand the position-computation API already in the codebase (likely in `src/lib/astronomy/`).
+
+**Step 2: Add currentDate state to PlanetariumContext**
+
+In `src/contexts/PlanetariumContext.tsx`, add:
+
+```typescript
+const [currentDate] = useState<Date>(() => new Date());
+// Expose via context value
+```
+
+**Step 3: Compute current positions in BirthChartOrrery**
+
+After birth planet meshes are created, add a second pass with `currentDate`:
+
+```typescript
+// Import the same position computer used for birth chart
+import { computePlanetPosition } from '../lib/astronomy/';
+
+// After scene setup:
+const currentPlanets = PLANET_NAMES.map(name => {
+  const pos = computePlanetPosition(name, currentDate);
+  return { name, pos };
+});
+
+currentPlanets.forEach(({ name, pos }) => {
+  const mesh = new THREE.Mesh(
+    new THREE.SphereGeometry(0.03),
+    new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      opacity: 0.4,
+      transparent: true,
+    })
+  );
+  mesh.position.set(pos.x, pos.y, pos.z);
+  mesh.userData.label = `${name} (heute)`;
+  scene.add(mesh);
+});
+```
+
+**Step 4: Add a visual legend**
+
+In the HTML overlay, add a small legend:
+
+```tsx
+<div className="absolute top-4 right-4 flex flex-col gap-1 pointer-events-none">
+  <div className="flex items-center gap-2 text-xs text-white/50">
+    <div className="w-2 h-2 rounded-full bg-[#D4AF37]" />
+    <span>Geburt</span>
+  </div>
+  <div className="flex items-center gap-2 text-xs text-white/50">
+    <div className="w-2 h-2 rounded-full bg-white/40 border border-white/60" />
+    <span>Heute</span>
+  </div>
+</div>
+```
+
+**Step 5: Run lint + tests**
+
+```bash
+npm run lint
+npx vitest run src/__tests__/PlanetariumContext.test.tsx
+```
+
+**Step 6: Commit**
+
+```bash
+git add src/components/BirthChartOrrery.tsx src/contexts/PlanetariumContext.tsx
+git commit -m "feat(planetarium): overlay current planet positions on birth chart with visual legend"
+```
+
+---
+
+## Work Package 6: Navigation Variants
+
+### Task 9: Build 3 Navigation Variants for Ben's A/B/C Decision
 
 **Files:**
 - Create: `src/components/navigation/NavVariantA.tsx`
 - Create: `src/components/navigation/NavVariantB.tsx`
 - Create: `src/components/navigation/NavVariantC.tsx`
-- Create: `src/components/navigation/index.ts` (re-exports all three)
+- Create: `src/__tests__/navigation-variants.test.tsx`
 
-**Step 1: Plan the 3 variants conceptually**
+All three must use German route labels, `react-router-dom` NavLink, dark luxury aesthetic (obsidian/gold), Tailwind v4 only.
 
-All three must:
-- Cover all routes: `/` (Dashboard), `/signatur`, `/wu-xing`, `/wissen`
-- Have hover-triggered submenus for nested content
-- Use Tailwind CSS v4, dark luxury aesthetic (`bg-obsidian`, `text-gold`, `border-gold/20`, `font-serif`)
-- Be fully working React components, not mockups
-- Use `Link` from `react-router-dom` for navigation
+---
 
-Three distinct approaches:
-- **A: Left sidebar** — fixed vertical rail with icon + label + hover popout submenus
-- **B: Top bar** — horizontal menu across the top with dropdown submenus on hover
-- **C: Floating orbital menu** — radial floating button that expands to show options in a ring
-
-**Step 2: Write a smoke test for each**
-
-File: `src/__tests__/navigation-variants.test.tsx`
-
-```tsx
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import { describe, it, expect } from 'vitest';
-import { NavVariantA } from '../components/navigation/NavVariantA';
-import { NavVariantB } from '../components/navigation/NavVariantB';
-import { NavVariantC } from '../components/navigation/NavVariantC';
-
-const allRoutes = ['Dashboard', 'Signatur', 'Wu-Xing', 'Wissen'];
-
-[NavVariantA, NavVariantB, NavVariantC].forEach((Nav, i) => {
-  describe(`NavVariant${['A','B','C'][i]}`, () => {
-    it('renders all main navigation items', () => {
-      render(<MemoryRouter><Nav /></MemoryRouter>);
-      allRoutes.forEach(route => {
-        expect(screen.getByText(new RegExp(route, 'i'))).toBeTruthy();
-      });
-    });
-  });
-});
-```
-
-**Step 3: Implement Variant A (Left Sidebar)**
+**Step 1: Create NavVariantA (Vertical Sidebar with hover submenus)**
 
 ```tsx
 // src/components/navigation/NavVariantA.tsx
-import { Link, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { NavLink } from 'react-router-dom';
+import { LayoutDashboard, Orbit, Flame, BookOpen } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { label: 'Dashboard', path: '/', sub: ['Planetarium', 'Blueprint', 'Levi'] },
-  { label: 'Signatur', path: '/signatur', sub: ['Quizzes', 'Energie-Cluster'] },
-  { label: 'Wu-Xing', path: '/wu-xing', sub: ['Häuser-Analyse', 'Elementbalance'] },
-  { label: 'Wissen', path: '/wissen', sub: ['Artikel'] },
-];
+  { to: '/', icon: LayoutDashboard, label: 'Dashboard', sub: [] },
+  { to: '/signatur', icon: Orbit, label: 'Signatur', sub: ['Quiz-Cluster', 'Ringe'] },
+  { to: '/wu-xing', icon: Flame, label: 'Wu-Xing', sub: ['5 Elemente', 'Häuser'] },
+  { to: '/wissen', icon: BookOpen, label: 'Wissen', sub: ['Artikel', 'Glossar'] },
+] as const;
 
 export function NavVariantA() {
-  const { pathname } = useLocation();
-  const [hovered, setHovered] = useState<string | null>(null);
-
   return (
-    <nav className="fixed left-0 top-0 h-full w-16 hover:w-56 transition-all duration-300 bg-obsidian border-r border-gold/10 z-50 flex flex-col py-8 gap-2 overflow-hidden group">
-      {NAV_ITEMS.map(item => (
-        <div
-          key={item.path}
-          className="relative"
-          onMouseEnter={() => setHovered(item.path)}
-          onMouseLeave={() => setHovered(null)}
-        >
-          <Link
-            to={item.path}
-            className={`flex items-center gap-3 px-4 py-3 font-serif text-sm transition-colors ${
-              pathname === item.path ? 'text-gold' : 'text-gold-deep/60 hover:text-gold'
-            }`}
+    <nav className="fixed left-0 top-0 h-screen w-56 bg-[#00050A] border-r border-[#D4AF37]/10 flex flex-col gap-1 pt-8 px-3 z-50">
+      <div className="mb-8 px-3">
+        <span className="font-serif text-xl text-[#D4AF37]">Bazodiac</span>
+      </div>
+      {NAV_ITEMS.map(({ to, icon: Icon, label, sub }) => (
+        <div key={to} className="group relative">
+          <NavLink
+            to={to}
+            end={to === '/'}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                isActive
+                  ? 'bg-[#D4AF37]/10 text-[#D4AF37]'
+                  : 'text-white/50 hover:text-white/80 hover:bg-white/5'
+              }`
+            }
           >
-            <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full border border-gold/30 text-xs">
-              {item.label[0]}
-            </span>
-            <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-              {item.label}
-            </span>
-          </Link>
-          {hovered === item.path && item.sub.length > 0 && (
-            <div className="absolute left-56 top-0 ml-1 bg-obsidian border border-gold/20 rounded-lg shadow-xl p-3 min-w-40">
-              {item.sub.map(s => (
-                <p key={s} className="font-serif text-xs text-gold-deep/70 py-1 hover:text-gold cursor-pointer">{s}</p>
+            <Icon className="w-4 h-4 shrink-0" />
+            <span className="font-medium tracking-wide">{label}</span>
+          </NavLink>
+          {sub.length > 0 && (
+            <div className="hidden group-hover:flex flex-col absolute left-full top-0 ml-2 w-40 bg-[#0A0D10] border border-[#D4AF37]/15 rounded-lg py-1 shadow-xl z-50">
+              {sub.map(s => (
+                <div key={s} className="px-4 py-2 text-xs text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors">
+                  {s}
+                </div>
               ))}
             </div>
           )}
@@ -689,179 +611,317 @@ export function NavVariantA() {
 }
 ```
 
-**Step 4: Implement Variant B (Top Bar)**
-
-```tsx
-// src/components/navigation/NavVariantB.tsx — horizontal top bar
-// Similar structure but horizontal, dropdown on hover
-```
-
-(Implement analogously — horizontal flex, `absolute top-full` dropdown.)
-
-**Step 5: Implement Variant C (Floating Orbital)**
-
-```tsx
-// src/components/navigation/NavVariantC.tsx — radial expand
-// Fixed bottom-right circle that expands into orbital menu
-```
-
-(Implement with CSS transform for each item spreading out in a circle when open.)
-
-**Step 6: Run tests**
-```bash
-npx vitest run src/__tests__/navigation-variants.test.tsx
-npm run lint
-```
-
-**Step 7: Commit and ask Ben to choose**
-```bash
-git add src/components/navigation/ src/__tests__/navigation-variants.test.tsx
-git commit -m "feat(nav): 3 navigation variants A (sidebar) / B (topbar) / C (orbital) — awaiting Ben's choice (S-DP-18)"
-```
-
-Then surface the choice to Ben:
-> "Navigation variants committed. Which approach do you want? **A** (left sidebar), **B** (top bar), or **C** (floating orbital)?"
-
 ---
 
-### Task 8: Redesign Dashboard header
-
-**⚠️ Wait for Ben's heading confirmation before implementing.**
-
-**Files:**
-- Create (or modify): `src/components/Header.tsx`
-- Modify: `src/components/Dashboard.tsx`
-
-**Step 1: Read Dashboard.tsx header section**
-
-Search for the current heading:
-```bash
-grep -n "Dein Bazodiac\|dein-bazodiac\|heading\|Header" src/components/Dashboard.tsx | head -20
-```
-
-**Step 2: Write failing test**
+**Step 2: Create NavVariantB (Top Bar with dropdown menus)**
 
 ```tsx
-// src/__tests__/dashboard-header.test.tsx
-it('renders a distinct header zone with "Dein Bazodiac"', () => {
-  render(<Dashboard {...mockProps} />);
-  const heading = screen.getByRole('heading', { name: /Dein Bazodiac/i });
-  expect(heading.tagName).toMatch(/H[12]/);
-  // Should be large — at least text-3xl (30px)
-  expect(heading.className).toMatch(/text-[34]/);
-});
-```
+// src/components/navigation/NavVariantB.tsx
+import { useState } from 'react';
+import { NavLink } from 'react-router-dom';
 
-**Step 3: Create header component**
+const NAV_ITEMS = [
+  { to: '/', label: 'Dashboard', sub: [] },
+  { to: '/signatur', label: 'Signatur', sub: ['Quiz-Cluster', 'Ringe anzeigen'] },
+  { to: '/wu-xing', label: 'Wu-Xing', sub: ['5 Elemente', 'Westliche Häuser'] },
+  { to: '/wissen', label: 'Wissen', sub: ['Alle Artikel', 'Glossar'] },
+] as const;
 
-```tsx
-// src/components/Header.tsx
-interface HeaderProps {
-  username?: string;
-}
+export function NavVariantB() {
+  const [open, setOpen] = useState<string | null>(null);
 
-export function Header({ username }: HeaderProps) {
   return (
-    <header className="w-full py-8 px-6 border-b border-gold/10 bg-obsidian/60 backdrop-blur-sm">
-      <div className="max-w-5xl mx-auto">
-        <h1 className="font-serif text-4xl md:text-5xl text-gold tracking-wide">
-          Dein Bazodiac
-        </h1>
-        {username && (
-          <p className="font-sans text-sm text-gold-deep/50 mt-1">
-            {username}
-          </p>
-        )}
-      </div>
-    </header>
+    <nav className="fixed top-0 left-0 right-0 h-14 bg-[#00050A]/95 backdrop-blur-sm border-b border-[#D4AF37]/10 flex items-center px-8 gap-8 z-50">
+      <span className="font-serif text-lg text-[#D4AF37] mr-6">Bazodiac</span>
+      {NAV_ITEMS.map(({ to, label, sub }) => (
+        <div
+          key={to}
+          className="relative"
+          onMouseEnter={() => sub.length > 0 && setOpen(to)}
+          onMouseLeave={() => setOpen(null)}
+        >
+          <NavLink
+            to={to}
+            end={to === '/'}
+            className={({ isActive }) =>
+              `text-sm font-medium tracking-widest uppercase transition-colors ${
+                isActive ? 'text-[#D4AF37]' : 'text-white/50 hover:text-white/80'
+              }`
+            }
+          >
+            {label}
+          </NavLink>
+          {sub.length > 0 && open === to && (
+            <div className="absolute top-full left-0 mt-2 w-44 bg-[#0A0D10] border border-[#D4AF37]/15 rounded-lg py-1 shadow-xl">
+              {sub.map(s => (
+                <div key={s} className="px-4 py-2 text-xs text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors">
+                  {s}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </nav>
   );
 }
 ```
 
-**Step 4: Use Header in Dashboard.tsx**
+---
 
-Replace the existing heading element with `<Header username={...} />` at the top of the Dashboard JSX.
+**Step 3: Create NavVariantC (Icon Rail with hover detail panels)**
 
-**Step 5: Run and commit**
-```bash
-npx vitest run src/__tests__/dashboard-header.test.tsx
-npm run lint
-git add src/components/Header.tsx src/components/Dashboard.tsx src/__tests__/dashboard-header.test.tsx
-git commit -m "feat(header): new standalone Header component, prominent Dein Bazodiac heading (S-DP-19)"
+```tsx
+// src/components/navigation/NavVariantC.tsx
+import { NavLink } from 'react-router-dom';
+import { LayoutDashboard, Orbit, Flame, BookOpen } from 'lucide-react';
+
+const NAV_ITEMS = [
+  {
+    to: '/', icon: LayoutDashboard, label: 'Dashboard',
+    panel: { title: 'Dashboard', items: ['Dein Chart', 'Planetarium', 'Elemente'] },
+  },
+  {
+    to: '/signatur', icon: Orbit, label: 'Signatur',
+    panel: { title: 'Signatur', items: ['Frequenz-Ring', 'Quiz-Cluster', 'Dissonanz'] },
+  },
+  {
+    to: '/wu-xing', icon: Flame, label: 'Wu-Xing',
+    panel: { title: 'Wu-Xing', items: ['5 Elemente', 'Zyklen', 'Häuser'] },
+  },
+  {
+    to: '/wissen', icon: BookOpen, label: 'Wissen',
+    panel: { title: 'Wissen', items: ['Artikel', 'Horoskop-Guide', 'Glossar'] },
+  },
+] as const;
+
+export function NavVariantC() {
+  return (
+    <nav className="fixed left-0 top-0 h-screen w-16 bg-[#00050A] border-r border-[#D4AF37]/10 flex flex-col items-center gap-2 pt-6 z-50">
+      <div className="mb-6">
+        <span className="font-serif text-[#D4AF37] text-lg">B</span>
+      </div>
+      {NAV_ITEMS.map(({ to, icon: Icon, label, panel }) => (
+        <div key={to} className="group relative">
+          <NavLink
+            to={to}
+            end={to === '/'}
+            className={({ isActive }) =>
+              `flex items-center justify-center w-10 h-10 rounded-xl transition-colors ${
+                isActive
+                  ? 'bg-[#D4AF37]/15 text-[#D4AF37]'
+                  : 'text-white/35 hover:text-white/70 hover:bg-white/5'
+              }`
+            }
+            title={label}
+          >
+            <Icon className="w-5 h-5" />
+          </NavLink>
+          <div className="hidden group-hover:flex flex-col absolute left-full top-0 ml-3 w-44 bg-[#0A0D10] border border-[#D4AF37]/15 rounded-xl p-3 shadow-2xl z-50">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-[#D4AF37]/60 mb-2">{panel.title}</p>
+            {panel.items.map(item => (
+              <div key={item} className="text-left text-sm text-white/55 hover:text-white/90 py-1.5 px-2 rounded-lg hover:bg-white/5 transition-colors">
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </nav>
+  );
+}
 ```
 
 ---
 
-## Work Package 7 — Silent Failures (Stretch Only)
+**Step 4: Write tests for all three variants**
 
-**Sprint tasks:** S-DP-20, S-DP-21, S-DP-22 — only tackle after WP 1-6 complete.
+```typescript
+// src/__tests__/navigation-variants.test.tsx
+import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { NavVariantA } from '../components/navigation/NavVariantA';
+import { NavVariantB } from '../components/navigation/NavVariantB';
+import { NavVariantC } from '../components/navigation/NavVariantC';
 
-### Task 9: Add error logging to silent catch blocks
+function wrap(Component: React.ComponentType) {
+  return render(<MemoryRouter><Component /></MemoryRouter>);
+}
+
+const ROUTES = ['Dashboard', 'Signatur', 'Wu-Xing', 'Wissen'];
+
+describe('NavVariantA', () => {
+  it('renders all 4 route labels', () => {
+    wrap(NavVariantA);
+    ROUTES.forEach(r => expect(screen.getByText(r)).toBeTruthy());
+  });
+  it('renders Bazodiac brand name', () => {
+    wrap(NavVariantA);
+    expect(screen.getByText('Bazodiac')).toBeTruthy();
+  });
+});
+
+describe('NavVariantB', () => {
+  it('renders all 4 route labels', () => {
+    wrap(NavVariantB);
+    ROUTES.forEach(r => expect(screen.getByText(r)).toBeTruthy());
+  });
+});
+
+describe('NavVariantC', () => {
+  it('renders 4 nav links', () => {
+    wrap(NavVariantC);
+    const links = screen.getAllByRole('link');
+    expect(links.length).toBeGreaterThanOrEqual(4);
+  });
+});
+```
+
+**Step 5: Run tests**
+
+```bash
+npx vitest run src/__tests__/navigation-variants.test.tsx
+```
+
+Expected: All PASS.
+
+**Step 6: Commit**
+
+```bash
+git add src/components/navigation/ src/__tests__/navigation-variants.test.tsx
+git commit -m "feat(navigation): add 3 variant proposals (A=sidebar, B=topbar, C=icon-rail) for Ben's A/B/C choice"
+```
+
+**⚠️ PAUSE — Ben must choose A/B/C before Task 10 (header redesign) is implemented.**
+
+---
+
+## Work Package 6b: Header Redesign (after Ben's nav choice)
+
+### Task 10: Redesign Dashboard Header
+
+**Files:**
+- Modify: `src/components/Dashboard.tsx`
+- Verify: `src/i18n/translations.ts` — `dashboard.title` key
+
+**Step 1: Verify heading copy in translations.ts**
+
+```bash
+grep -n '"dashboard.title"\|dashboard.*title\|Dein Bazodiac\|Personaliac' src/i18n/translations.ts
+```
+
+If `dashboard.title` DE value contains any legacy term (not "Dein Bazodiac"), fix it now.
+
+**Step 2: Enlarge heading in Dashboard.tsx**
+
+Find the `<h1>` element in the header section (~line 295). Change:
+
+```tsx
+// FROM:
+<h1 className="font-serif text-4xl leading-tight text-white">
+
+// TO:
+<h1 className="font-serif text-5xl sm:text-6xl leading-tight text-white">
+```
+
+Also add a decorative element to create a distinct header zone:
+
+```tsx
+<motion.header
+  className="relative mb-10 pb-8 border-b border-[#D4AF37]/15"
+  ...
+>
+  {/* Gold accent line above heading */}
+  <div className="w-8 h-px bg-[#D4AF37]/40 mb-4" />
+  <p className="text-[#D4AF37]/45 text-[9px] uppercase tracking-[0.6em] mb-3">
+    {t("dashboard.welcome")}
+  </p>
+  <h1 className="font-serif text-5xl sm:text-6xl leading-tight text-white">
+    {t("dashboard.title")}
+  </h1>
+  ...
+</motion.header>
+```
+
+**Step 3: Run lint + full tests**
+
+```bash
+npm run lint
+npm run test
+```
+
+**Step 4: Commit**
+
+```bash
+git add src/components/Dashboard.tsx
+git commit -m "feat(header): enlarge dashboard heading, add visual accent to header zone"
+```
+
+---
+
+## Work Package 7: Silent Failures (Stretch — only after WP1–6 complete)
+
+### Task 11: Add Error Logging for Silent catch Blocks
 
 **Files:**
 - Modify: `src/components/fusion-ring-website/FusionRingCanvasV2.tsx`
 - Modify: `src/hooks/usePremium.ts`
-- Modify: Tour-related components (search for `tour_completed`)
 
-**Step 1: Find silent failures**
+**Step 1: Find empty catch blocks**
+
 ```bash
-grep -n "catch {}\|catch (e) {}" src/components/fusion-ring-website/FusionRingCanvasV2.tsx src/hooks/usePremium.ts
-grep -rn "tour_completed" src/
+grep -n "catch.*{}" src/components/fusion-ring-website/FusionRingCanvasV2.tsx src/hooks/usePremium.ts
 ```
 
-**Step 2: For each silent catch, add logging**
+**Step 2: Replace empty catches**
 
-Pattern:
-```ts
-// Before:
+For each `catch {}` found:
+
+```typescript
+// FROM:
 } catch {}
 
-// After:
+// TO:
 } catch (e) {
-  console.error('[FusionRingCanvasV2] post-processing error:', e);
+  console.error('[ComponentName] Error:', e);
+}
+```
+
+For usePremium realtime fallback:
+
+```typescript
+} catch (e) {
+  console.warn('[usePremium] realtime subscription failed, falling back to polling:', e);
 }
 ```
 
 **Step 3: Commit**
+
 ```bash
 git add src/components/fusion-ring-website/FusionRingCanvasV2.tsx src/hooks/usePremium.ts
-git commit -m "fix: surface silent failures in FusionRingCanvasV2, usePremium, tour_completed (S-DP-20 to S-DP-22)"
+git commit -m "fix(errors): replace silent catch blocks with console.error/warn"
 ```
 
 ---
 
-## Final Verification
+## Definition of Done
 
 ```bash
-npm run lint          # Must be clean
-npm run test          # No new failures
+npm run test   # No new failures (pre-existing: cosmic-encounter-flag x2, first-time-experience-e2e x1)
+npm run lint   # Clean
 ```
 
-Manually verify in browser (clear localStorage first):
-```js
-localStorage.removeItem('bazodiac_tour_completed');
-```
-- [ ] Ghost UI items gone from Dashboard top menu
-- [ ] No English placeholder text in Blueprint section
-- [ ] Wu-Xing Metal icon is correct (not Wind)
-- [ ] WuXingPage shows extended content for premium / PremiumGate for free
-- [ ] Dashboard no longer shows houses section
-- [ ] Levi section: no italic, one button, correct position in layout
-- [ ] Planetarium shows birth date label at bottom
-- [ ] Navigation variants A/B/C visible at chosen route
+| Check | Command | Expected |
+|-------|---------|----------|
+| Ghost UI | `npx vitest run src/__tests__/dashboard-ghost-ui.test.tsx` | 4/4 PASS |
+| i18n | `npx vitest run src/__tests__/blueprint-card-i18n.test.tsx` | PASS |
+| Wu-Xing icons | `npx vitest run src/__tests__/wuxing.test.ts` | PASS |
+| Navigation | `npx vitest run src/__tests__/navigation-variants.test.tsx` | PASS |
+| Full suite | `npm run test` | No new failures |
 
----
+## Decisions Required During Sprint
 
-## Decisions Needed (ask Ben before proceeding)
-
-| # | Question | Format | Before Task |
-|---|----------|--------|-------------|
-| 1 | Confirm "Dein Bazodiac" heading text? | Confirm or suggest | Task 8 |
-| 2 | Pick navigation variant | A / B / C | After Task 7 |
-| 3 | Cosmic Blueprint: separate page or stay on Dashboard? | A (separate) / B (stay) | Task 2 |
-| 4 | Date picker in Planetarium: build or defer? | A (build) / B (defer) | Task 6 |
-
----
-
-*Plan created: 2026-03-24 — Sprint S-DASH-POLISH*
-*Source: Sprints/sprint-dashboard-polish/SPRINT.md*
+| Decision | Task | Format |
+|----------|------|--------|
+| Navigation variant | After Task 9 | A/B/C |
+| "Dein Bazodiac" heading confirm | Before Task 10 | Confirm or suggest |
