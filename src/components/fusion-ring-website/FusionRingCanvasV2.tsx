@@ -94,12 +94,13 @@ interface BazodiacState {
   dissonanceModulation?: import('../../lib/fusion-ring/dissonance-visual').VisualModulation | null;
 }
 
-function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, isMini = false }: {
+function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, isMini = false, onPostProcessDegraded }: {
   effectRef: React.MutableRefObject<EffectState | null>;
   audioRef: React.MutableRefObject<FusionAudioEngine | null>;
   bazStateRef: React.MutableRefObject<BazodiacState>;
   revealProgress?: number;
   isMini?: boolean;
+  onPostProcessDegraded?: () => void;
 }) {
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -166,7 +167,10 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
           composer.addPass(new SP.ShaderPass(vignetteShader));
           const OP = await import('three/examples/jsm/postprocessing/OutputPass.js');
           composer.addPass(new OP.OutputPass());
-        } catch (e) { console.warn('[FusionRing] Postprocessing unavailable:', e); }
+        } catch (e) {
+          console.error('[FusionRing] Postprocessing unavailable:', e);
+          onPostProcessDegraded?.();
+        }
       }
 
       const clock = new THREE.Clock();
@@ -1328,6 +1332,7 @@ export default function FusionRingCanvas({
 }: FusionRingCanvasProps) {
   const [mounted, setMounted] = useState(false);
   const [webglSupported, setWebglSupported] = useState(true);
+  const [postProcessDegraded, setPostProcessDegraded] = useState(false);
   const [activeEffect, setActiveEffect] = useState<EffectType>(null);
   const effectRef = useRef<EffectState | null>(null);
   const audioRef = useRef<FusionAudioEngine | null>(null);
@@ -1502,13 +1507,28 @@ export default function FusionRingCanvas({
       className={className}
       style={{ width: '100%', height: '100%', background: '#08080e', position: 'relative', overflow: 'hidden' }}
     >
-      <ThreeScene 
-        effectRef={effectRef} 
-        audioRef={audioRef} 
-        bazStateRef={bazStateRef} 
-        revealProgress={revealProgress} 
+      <ThreeScene
+        effectRef={effectRef}
+        audioRef={audioRef}
+        bazStateRef={bazStateRef}
+        revealProgress={revealProgress}
         isMini={isMini}
+        onPostProcessDegraded={() => setPostProcessDegraded(true)}
       />
+
+      {postProcessDegraded && (
+        <div
+          aria-label="Reduzierter Rendermodus aktiv"
+          title="Bloom/Vignette konnten nicht geladen werden"
+          style={{
+            position: 'absolute', bottom: 8, left: 8,
+            fontSize: '9px', color: 'rgba(255,200,100,0.6)',
+            letterSpacing: '0.1em', pointerEvents: 'none',
+          }}
+        >
+          REDUZIERTER MODUS
+        </div>
+      )}
 
       {showUI && (
         <>
