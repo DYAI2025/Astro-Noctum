@@ -16,7 +16,8 @@ export { default as ZodiacPisces } from './ZodiacPisces';
 export { default as IconLeaf } from './Leaf';          // Wood / Holz
 export { default as IconFlame } from './Flame';        // Fire / Feuer
 export { default as IconMountain } from './Mountain';  // Earth / Erde
-export { default as IconWind } from './Wind';          // Metal / Metall (Wind = Metall-Energie)
+export { default as IconWind } from './Wind';
+export { default as IconMetal } from './Diamond';      // Metal / Metall (Diamond = Edelstein, Metall-Energie)
 export { default as IconDroplet } from './Droplet';    // Water / Wasser
 
 // ── BaZi Animal Icons ────────────────────────────────────────────────

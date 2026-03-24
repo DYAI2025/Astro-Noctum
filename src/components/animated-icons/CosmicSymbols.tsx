@@ -3,7 +3,7 @@ import {
   ZodiacAries, ZodiacTaurus, ZodiacGemini, ZodiacCancer,
   ZodiacLeo, ZodiacVirgo, ZodiacLibra, ZodiacScorpio,
   ZodiacSagittarius, ZodiacCapricorn, ZodiacAquarius, ZodiacPisces,
-  IconLeaf, IconFlame, IconMountain, IconWind, IconDroplet,
+  IconLeaf, IconFlame, IconMountain, IconMetal, IconDroplet,
   IconStar,
 } from './index';
 
@@ -43,13 +43,13 @@ const ELEMENT_ICON_MAP: Record<string, { icon: IconComponent; color: string }> =
   Wood:   { icon: IconLeaf,     color: '#3D8B37' },
   Fire:   { icon: IconFlame,    color: '#D63B0F' },
   Earth:  { icon: IconMountain, color: '#C49A2A' },
-  Metal:  { icon: IconWind,     color: '#8A8A8A' },
+  Metal:  { icon: IconMetal,    color: '#8A8A8A' },
   Water:  { icon: IconDroplet,  color: '#2E6BB5' },
   // German aliases
   Holz:   { icon: IconLeaf,     color: '#3D8B37' },
   Feuer:  { icon: IconFlame,    color: '#D63B0F' },
   Erde:   { icon: IconMountain, color: '#C49A2A' },
-  Metall: { icon: IconWind,     color: '#8A8A8A' },
+  Metall: { icon: IconMetal,    color: '#8A8A8A' },
   Wasser: { icon: IconDroplet,  color: '#2E6BB5' },
 };
 
