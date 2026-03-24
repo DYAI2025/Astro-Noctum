@@ -14,7 +14,7 @@ import { DailyHoroscopeModal } from "./dashboard/DailyHoroscopeModal";
 import { useFirstRunDaily } from "../hooks/useFirstRunDaily";
 import { supabase } from "../lib/supabase";
 import type { ApiData } from "../types/bafe";
-import type { TileTexts, HouseTexts } from "../types/interpretation";
+import type { TileTexts } from "../types/interpretation";
 import { DashboardAstroSection } from "./dashboard/DashboardAstroSection";
 import { DashboardInterpretationSection } from "./dashboard/DashboardInterpretationSection";
 import { SectionErrorBoundary } from "./dashboard/SectionErrorBoundary";
@@ -118,7 +118,6 @@ interface DashboardProps {
   onResumeAudio: () => void;
   isFirstReading?: boolean;
   tileTexts?: TileTexts;
-  houseTexts?: HouseTexts;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -138,7 +137,6 @@ export function Dashboard({
   onResumeAudio,
   isFirstReading = false,
   tileTexts,
-  houseTexts,
 }: DashboardProps) {
   const { lang, t } = useLanguage();
   const { isPremium } = usePremium();
@@ -348,7 +346,6 @@ export function Dashboard({
           isPremium={isPremium}
           isFirstReading={isFirstReading}
           tileTexts={tileTexts}
-          houseTexts={houseTexts}
         />
       </SectionErrorBoundary>
 
