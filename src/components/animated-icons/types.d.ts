@@ -1,10 +1,11 @@
 // Ambient type declarations for all animated-icon JSX modules.
-// Each exports a forwardRef React component that accepts standard SVG/HTML props.
+// IMPORTANT: No top-level import/export here — keeping this as a global ambient script
+// so that 'declare module' relative paths resolve correctly. Use inline import() for types.
 
-import type { ForwardRefExoticComponent, SVGProps, RefAttributes } from 'react';
-
-type AnimatedIconComponent = ForwardRefExoticComponent<
-  SVGProps<SVGSVGElement> & { className?: string } & RefAttributes<SVGSVGElement>
+type AnimatedIconComponent = import('react').ForwardRefExoticComponent<
+  import('react').SVGProps<SVGSVGElement> &
+  { className?: string } &
+  import('react').RefAttributes<SVGSVGElement>
 >;
 
 // Zodiac
