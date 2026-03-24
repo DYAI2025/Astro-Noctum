@@ -83,4 +83,30 @@ describe('useDashboardTour', () => {
     expect(result.current.tourStep).toBe('done');
     expect(result.current.isLoading).toBe(true);
   });
+
+  it('exposes persistError when Supabase write fails', async () => {
+    mockFrom.mockReturnValue({
+      select: () => ({
+        eq: () => ({
+          maybeSingle: () =>
+            Promise.resolve({ data: { tour_completed: false }, error: null }),
+        }),
+      }),
+      update: () => ({
+        eq: () => Promise.resolve({ error: { message: 'DB write failed' } }),
+      }),
+    });
+
+    const { result } = renderHook(() => useDashboardTour('user-123'));
+    await act(() => new Promise((r) => setTimeout(r, 50)));
+
+    // Step 0 → 1
+    act(() => result.current.next());
+    // Step 1 → done (triggers write)
+    await act(async () => { result.current.next(); });
+
+    expect(result.current.tourStep).toBe('done');
+    expect(result.current.persistError).not.toBeNull();
+    expect(result.current.persistError).toContain('DB write failed');
+  });
 });

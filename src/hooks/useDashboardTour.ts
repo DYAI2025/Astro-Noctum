@@ -5,6 +5,7 @@ export type TourStep = 0 | 1 | 'done';
 
 export function useDashboardTour(userId: string | undefined) {
   const [tourStep, setTourStep] = useState<TourStep | null>(null); // null = loading
+  const [persistError, setPersistError] = useState<string | null>(null);
 
   // Fetch tour_completed from profiles
   useEffect(() => {
@@ -46,7 +47,12 @@ export function useDashboardTour(userId: string | undefined) {
         // Persist completion
         if (userId) {
           supabase.from('profiles').update({ tour_completed: true }).eq('id', userId)
-            .then(({ error }) => { if (error) console.warn('[tour] persist failed:', error.message); });
+            .then(({ error }) => {
+              if (error) {
+                console.warn('[tour] persist failed:', error.message);
+                setPersistError(error.message);
+              }
+            });
         }
         try { localStorage.setItem('bazodiac_tour_completed', 'true'); } catch {}
         return 'done';
@@ -58,7 +64,12 @@ export function useDashboardTour(userId: string | undefined) {
   const skip = useCallback(() => {
     if (userId) {
       supabase.from('profiles').update({ tour_completed: true }).eq('id', userId)
-        .then(({ error }) => { if (error) console.warn('[tour] persist failed:', error.message); });
+        .then(({ error }) => {
+          if (error) {
+            console.warn('[tour] persist failed:', error.message);
+            setPersistError(error.message);
+          }
+        });
     }
     try { localStorage.setItem('bazodiac_tour_completed', 'true'); } catch {}
     setTourStep('done');
@@ -76,6 +87,7 @@ export function useDashboardTour(userId: string | undefined) {
   return {
     tourStep: tourStep ?? 'done', // treat loading as done to avoid flash
     isLoading: tourStep === null,
+    persistError,
     next,
     skip,
     restart,
