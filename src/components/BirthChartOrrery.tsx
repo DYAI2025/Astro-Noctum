@@ -892,6 +892,47 @@ export function BirthChartOrrery({
   // ── Derived display ────────────────────────────────────────────────────────
   const locale  = lang === 'de' ? 'de-DE' : 'en-GB';
   const dateStr = birthDate.toLocaleDateString(locale, { day: '2-digit', month: 'long', year: 'numeric' });
+  const todayStr = new Date().toLocaleDateString(locale, { day: '2-digit', month: 'long', year: 'numeric' });
+
+  // ── Current planet zodiac signs (computed from orbital mechanics) ───────────
+  const ZODIAC_NAMES_DE = [
+    'Widder', 'Stier', 'Zwillinge', 'Krebs', 'Löwe', 'Jungfrau',
+    'Waage', 'Skorpion', 'Schütze', 'Steinbock', 'Wassermann', 'Fische',
+  ];
+
+  /** Returns ecliptic longitude (0–360°) for a planet at daysSince J2000. */
+  function getEclipticLongitude(planet: (typeof PLANETS)[keyof typeof PLANETS], days: number): number {
+    const n = (2 * Math.PI) / planet.period;
+    const M = ((planet.M0 * Math.PI / 180) + n * days) % (2 * Math.PI);
+    const e = planet.e;
+    // Solve Kepler
+    let E = M;
+    for (let i = 0; i < 50; i++) {
+      const dE = (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+      E -= dE;
+      if (Math.abs(dE) < 1e-8) break;
+    }
+    const nu = 2 * Math.atan2(
+      Math.sqrt(1 + e) * Math.sin(E / 2),
+      Math.sqrt(1 - e) * Math.cos(E / 2),
+    );
+    // Ecliptic longitude = argument of perihelion + true anomaly + longitude of ascending node
+    const lon = ((planet.w + (nu * 180 / Math.PI) + planet.omega) % 360 + 360) % 360;
+    return lon;
+  }
+
+  const todayDays = daysSinceJ2000(new Date());
+  const currentPlanetSigns = useMemo(() => {
+    return Object.entries(PLANETS)
+      .filter(([key]) => key !== 'earth')
+      .map(([key, planet]) => {
+        const lon = getEclipticLongitude(planet, todayDays);
+        const signIndex = Math.floor(lon / 30) % 12;
+        return { key, symbol: planet.symbol, name: planet.name, sign: ZODIAC_NAMES_DE[signIndex] };
+      });
+  // todayDays is stable per render — recomputed only when component mounts
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Static fallback when WebGL fails (no crash, just a placeholder)
   if (renderFailed) {
@@ -919,9 +960,15 @@ export function BirthChartOrrery({
             : (lang === 'de' ? '☉ SONNENSYSTEM' : '☉ SOLAR SYSTEM')
           }
         </p>
-        <p className="text-[10px] text-white/35">
+        {/* S-DP-14: enlarged date/time display */}
+        <p className="text-xl font-semibold text-[#D4AF37]">
           {t('dashboard.orrery.datePrefix')} {dateStr}
         </p>
+        {planetariumMode && (
+          <p className="text-sm text-[#7EC8E3]/80 mt-0.5">
+            {lang === 'de' ? 'Heute: ' : 'Today: '}{todayStr}
+          </p>
+        )}
       </div>
 
       {/* Play/Pause */}
@@ -935,28 +982,69 @@ export function BirthChartOrrery({
         }
       </button>
 
-      {/* Planet legend (orrery mode) */}
+      {/* Planet legend + date label (orrery / Solar System mode) — S-DP-17 */}
       {!planetariumMode && (
-        <div className="absolute bottom-4 left-5 z-10 flex flex-wrap gap-3 pointer-events-none">
-          {Object.entries(PLANETS)
-            .filter(([key]) => key !== 'earth')
-            .map(([key, planet]) => (
-              <span key={key} className="flex items-center gap-1.5 text-[9px] text-white/40">
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: planet.color, boxShadow: `0 0 4px ${planet.color}40` }} />
-                {planet.name}
-              </span>
-            ))}
+        <div className="absolute bottom-0 left-0 right-0 z-10 pointer-events-none bg-black/40 backdrop-blur-sm px-5 py-2">
+          {/* S-DP-16/17: date label for solar system view */}
+          <p className="text-base text-white font-medium mb-1">
+            {lang === 'de'
+              ? `Planetenposition am ${dateStr}`
+              : `Planetary positions on ${dateStr}`}
+          </p>
+          <div className="flex flex-wrap gap-3">
+            {Object.entries(PLANETS)
+              .filter(([key]) => key !== 'earth')
+              .map(([key, planet]) => (
+                <span key={key} className="flex items-center gap-1.5 text-[9px] text-white/40">
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: planet.color, boxShadow: `0 0 4px ${planet.color}40` }} />
+                  {planet.name}
+                </span>
+              ))}
+          </div>
         </div>
       )}
 
-      {/* Planetarium hint */}
+      {/* Planetarium bottom: S-DP-15 current positions + S-DP-16 constellation label */}
       {planetariumMode && (
-        <div className="absolute bottom-4 left-5 right-5 z-10 pointer-events-none text-center">
-          <p className="text-[9px] text-white/25 tracking-widest uppercase font-mono">
-            {lang === 'de'
-              ? 'ZIEHEN ZUM UMSCHAUEN · MAUSZEIGER ÜBER OBJEKTE FÜR INFO'
-              : 'DRAG TO LOOK AROUND · HOVER OBJECTS FOR INFO'}
-          </p>
+        <div className="absolute bottom-0 left-0 right-0 z-10 pointer-events-none">
+          {/* S-DP-16: constellation description banner */}
+          <div className="bg-black/50 backdrop-blur-sm px-5 py-2.5">
+            <p className="text-base text-white font-medium">
+              {lang === 'de'
+                ? `Planetenposition am ${dateStr}`
+                : `Planetary positions on ${dateStr}`}
+            </p>
+            {birthConstellation && (
+              <p className="text-sm text-[#D4AF37]/90">
+                {lang === 'de' ? `Geburts-Sternbild: ${birthConstellation}` : `Birth constellation: ${birthConstellation}`}
+              </p>
+            )}
+
+            {/* S-DP-15: current planet positions */}
+            <div className="mt-2 border-t border-white/10 pt-2">
+              <p className="text-xs text-[#7EC8E3]/70 mb-1.5 uppercase tracking-widest">
+                {lang === 'de' ? 'Aktuelle Planetenposition: heute' : 'Current planet positions: today'}
+              </p>
+              <div className="flex flex-wrap gap-x-4 gap-y-1">
+                {currentPlanetSigns.map(({ key, symbol, name, sign }) => (
+                  <span key={key} className="flex items-center gap-1 text-xs">
+                    <span className="text-[#7EC8E3]">{symbol}</span>
+                    <span className="text-white/60">{name}</span>
+                    <span className="text-[#7EC8E3]/80">in {sign}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Navigation hint */}
+          <div className="bg-black/30 px-5 py-1">
+            <p className="text-[9px] text-white/25 tracking-widest uppercase font-mono text-center">
+              {lang === 'de'
+                ? 'ZIEHEN ZUM UMSCHAUEN · MAUSZEIGER ÜBER OBJEKTE FÜR INFO'
+                : 'DRAG TO LOOK AROUND · HOVER OBJECTS FOR INFO'}
+            </p>
+          </div>
         </div>
       )}
 
