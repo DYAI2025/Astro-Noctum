@@ -2680,9 +2680,15 @@ app.post("/api/checkout", express.json(), async (req, res) => {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [{ price: stripePriceId, quantity: 1 }],
-      mode: "payment",
+      mode: "subscription",
       success_url: successUrl,
       cancel_url: cancelUrl,
+      subscription_data: {
+        metadata: {
+          userId,
+          platform,
+        },
+      },
       metadata: {
         userId,
         platform,
