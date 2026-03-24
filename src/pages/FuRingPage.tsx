@@ -12,6 +12,7 @@ import { usePremium } from '@/src/hooks/usePremium';
 import { useSpaceWeather } from '@/src/hooks/useSpaceWeather';
 import { useFusionSignal } from '@/src/hooks/useFusionSignal';
 import { useDissonance } from '@/src/hooks/useDissonance';
+import { upsertDissonanceState } from '@/src/services/supabase';
 import { ClusterSidebar } from '@/src/components/signatur/ClusterSidebar';
 import { PremiumUpgradeModal } from '@/src/components/signatur/PremiumUpgradeModal';
 import { ClusterPipeline } from '@/src/components/signatur/ClusterPipeline';
@@ -58,7 +59,7 @@ export default function FuRingPage() {
     [apiData?.wuxing?.elements],
   );
 
-  const { modulation: dissonanceModulation } = useDissonance({
+  const { modulation: dissonanceModulation, dissonance } = useDissonance({
     natalWeights: natalPlanetWeights,
     currentWeights: currentPlanetWeights,
     previousWeights: null,
@@ -88,11 +89,22 @@ export default function FuRingPage() {
         setLiveQuizWeights(quizSectorsToQuizWeights(normalized));
         setLiveQuizSectors(normalized);
       }
+
+      // Persist dissonance snapshot — fire and forget
+      if (userId && natalPlanetWeights && dissonance) {
+        void upsertDissonanceState(
+          userId,
+          natalPlanetWeights,
+          null,
+          dissonance,
+          completedModuleIds.size + 1,
+        );
+      }
     }
     // Do NOT close the overlay here — the quiz still shows its ResultScreen
     // as a reward/motivation step. The user closes it via the overlay's
     // close button, backdrop click, or Escape key.
-  }, [quizContribution, completedModuleIds, addModule]);
+  }, [quizContribution, completedModuleIds, addModule, userId, natalPlanetWeights, dissonance]);
 
   // Auto-trigger ring effect during severe space weather storms (G3+)
   useEffect(() => {
