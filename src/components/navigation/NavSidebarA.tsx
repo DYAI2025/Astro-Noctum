@@ -220,7 +220,7 @@ export function NavSidebarA() {
                         "min-w-[180px] rounded-xl",
                         "border border-[#D4AF37]/15 bg-[#00050A]/95 backdrop-blur",
                         "py-1 shadow-xl shadow-black/50",
-                        "animate-in fade-in slide-in-from-left-2 duration-150",
+                        "opacity-100 translate-x-0 transition-[opacity,transform] duration-150",
                       ].join(" ")}
                       role="menu"
                     >
@@ -273,7 +273,7 @@ export function NavSidebarA() {
                 "min-w-[200px] border-r border-[#D4AF37]/10",
                 "bg-[#00050A]/85 backdrop-blur",
                 "transition-[opacity,transform] duration-200",
-                "animate-in fade-in slide-in-from-left-2",
+                "opacity-100 translate-x-0 transition-[opacity,transform] duration-200",
               ].join(" ")}
               role="menu"
               aria-label={`${item.label} Untermenü`}

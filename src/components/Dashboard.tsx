@@ -111,7 +111,6 @@ interface DashboardProps {
   userId: string;
   birthDate: string | null;
   onReset: () => void;
-  onRegenerate: () => void;
   isLoading: boolean;
   apiIssues: { endpoint: string; message: string }[];
   onStopAudio: () => void;
@@ -130,7 +129,6 @@ export function Dashboard({
   userId,
   birthDate,
   onReset,
-  onRegenerate,
   isLoading,
   apiIssues,
   onStopAudio,

@@ -50,6 +50,30 @@ Object.entries(CONSTELLATION_LINES).forEach(([con, pairs]) =>
   )
 );
 
+// ─── Zodiac helpers (module-scope — no re-creation per render) ────────────────
+const ZODIAC_NAMES_DE = [
+  'Widder', 'Stier', 'Zwillinge', 'Krebs', 'Löwe', 'Jungfrau',
+  'Waage', 'Skorpion', 'Schütze', 'Steinbock', 'Wassermann', 'Fische',
+] as const;
+
+/** Returns ecliptic longitude (0–360°) for a planet at daysSince J2000. */
+function getEclipticLongitude(planet: (typeof PLANETS)[keyof typeof PLANETS], days: number): number {
+  const n = (2 * Math.PI) / planet.period;
+  const M = ((planet.M0 * Math.PI / 180) + n * days) % (2 * Math.PI);
+  const e = planet.e;
+  let E = M;
+  for (let i = 0; i < 50; i++) {
+    const dE = (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+    E -= dE;
+    if (Math.abs(dE) < 1e-8) break;
+  }
+  const nu = 2 * Math.atan2(
+    Math.sqrt(1 + e) * Math.sin(E / 2),
+    Math.sqrt(1 - e) * Math.cos(E / 2),
+  );
+  return ((planet.w + (nu * 180 / Math.PI) + planet.omega) % 360 + 360) % 360;
+}
+
 // ─── Konstanten ───────────────────────────────────────────────────────────────
 const PLAN_RADIUS      = 160;
 const PLAN_CAM_Y       = 1.7;
@@ -895,32 +919,6 @@ export function BirthChartOrrery({
   const todayStr = new Date().toLocaleDateString(locale, { day: '2-digit', month: 'long', year: 'numeric' });
 
   // ── Current planet zodiac signs (computed from orbital mechanics) ───────────
-  const ZODIAC_NAMES_DE = [
-    'Widder', 'Stier', 'Zwillinge', 'Krebs', 'Löwe', 'Jungfrau',
-    'Waage', 'Skorpion', 'Schütze', 'Steinbock', 'Wassermann', 'Fische',
-  ];
-
-  /** Returns ecliptic longitude (0–360°) for a planet at daysSince J2000. */
-  function getEclipticLongitude(planet: (typeof PLANETS)[keyof typeof PLANETS], days: number): number {
-    const n = (2 * Math.PI) / planet.period;
-    const M = ((planet.M0 * Math.PI / 180) + n * days) % (2 * Math.PI);
-    const e = planet.e;
-    // Solve Kepler
-    let E = M;
-    for (let i = 0; i < 50; i++) {
-      const dE = (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
-      E -= dE;
-      if (Math.abs(dE) < 1e-8) break;
-    }
-    const nu = 2 * Math.atan2(
-      Math.sqrt(1 + e) * Math.sin(E / 2),
-      Math.sqrt(1 - e) * Math.cos(E / 2),
-    );
-    // Ecliptic longitude = argument of perihelion + true anomaly + longitude of ascending node
-    const lon = ((planet.w + (nu * 180 / Math.PI) + planet.omega) % 360 + 360) % 360;
-    return lon;
-  }
-
   const todayDays = daysSinceJ2000(new Date());
   const currentPlanetSigns = useMemo(() => {
     return Object.entries(PLANETS)

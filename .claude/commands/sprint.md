@@ -18,7 +18,10 @@ Execute a complete sprint from brief to PR.
 
 3. **Create feature branch** — `git checkout -b feature/sprint<NN>-<slug>` from latest main.
 
-4. **Execute plan via subagents** — Invoke `superpowers:executing-plans` with argument `1. subagent`. Follow the batching discipline: 3 tasks per batch, verify between batches.
+4. **Execute plan via subagents** — Choose mode based on sprint size:
+   - **≥3 work packages (preferred):** Invoke `orchestration:orchestration` with the SPRINT.md path. The orchestrator dispatches 2 parallel agents per WP batch, commits between batches, and runs code review autonomously.
+   - **1–2 work packages (simpler sprints):** Invoke `superpowers:executing-plans` with argument `1. subagent`. Batch 3 tasks at a time, verify between batches.
+   - Always verify between batches: `npm run test` + `npm run lint`
 
 5. **Verify** — Run `npm run test` (all must pass) and `npm run lint` (clean).
 
