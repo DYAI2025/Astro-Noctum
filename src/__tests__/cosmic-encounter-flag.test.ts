@@ -6,16 +6,17 @@ describe('cosmic_encounter_v1 feature flag', () => {
     localStorage.removeItem('ff_cosmic_encounter_v1');
   });
 
-  it('defaults to true', () => {
-    expect(isFeatureEnabled('cosmic_encounter_v1')).toBe(true);
+  it('is locked off by default (not yet released)', () => {
+    expect(isFeatureEnabled('cosmic_encounter_v1')).toBe(false);
   });
 
-  it('can be enabled via localStorage override', () => {
+  it('cannot be enabled via localStorage — flag is locked off', () => {
     localStorage.setItem('ff_cosmic_encounter_v1', 'true');
-    expect(isFeatureEnabled('cosmic_encounter_v1')).toBe(true);
+    // LOCKED_OFF flags ignore localStorage overrides
+    expect(isFeatureEnabled('cosmic_encounter_v1')).toBe(false);
   });
 
-  it('can be explicitly disabled via localStorage', () => {
+  it('can be explicitly disabled via localStorage (redundant but valid)', () => {
     localStorage.setItem('ff_cosmic_encounter_v1', 'false');
     expect(isFeatureEnabled('cosmic_encounter_v1')).toBe(false);
   });
