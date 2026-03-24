@@ -37,9 +37,21 @@ export function usePremium() {
     return () => document.removeEventListener('visibilitychange', onVisibility);
   }, [fetchTier]);
 
-  // Realtime subscription for instant update (best-effort)
+  // Realtime subscription for instant update; falls back to 30s polling on failure
   useEffect(() => {
     if (!user) return;
+
+    let pollInterval: ReturnType<typeof setInterval> | null = null;
+
+    const startPolling = () => {
+      if (pollInterval) return;
+      console.warn('[premium] Realtime failed — starting 30s poll fallback');
+      pollInterval = setInterval(fetchTier, 30_000);
+    };
+
+    const stopPolling = () => {
+      if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+    };
 
     const channel = supabase
       .channel('profile-tier')
@@ -50,15 +62,21 @@ export function usePremium() {
         filter: `id=eq.${user.id}`,
       }, (payload) => {
         setIsPremium(payload.new.tier === 'premium');
+        stopPolling();
       })
       .subscribe((status) => {
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          console.warn('[premium] Realtime subscription failed, using poll fallback');
+          startPolling();
+        } else if (status === 'SUBSCRIBED') {
+          stopPolling();
         }
       });
 
-    return () => { supabase.removeChannel(channel); };
-  }, [user]);
+    return () => {
+      stopPolling();
+      supabase.removeChannel(channel);
+    };
+  }, [user, fetchTier]);
 
   return { isPremium, loading };
 }
