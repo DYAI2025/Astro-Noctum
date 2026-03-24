@@ -1,7 +1,107 @@
 import { describe, it, expect } from 'vitest';
-import { computeDissonance, type DissonanceResult } from '../lib/fusion-ring/dissonance';
 import { computeSpiroParams, generatePlanetParticles, PLANETS } from '../components/fusion-ring-website/bazodiac-engine';
 
+type ElementalDissonanceType = 'sheng' | 'ke' | 'neutral';
+
+type ElementalProfile = {
+  Wood: number;
+  Fire: number;
+  Earth: number;
+  Metal: number;
+  Water: number;
+};
+
+type PlanetProfile = {
+  Sun: number;
+  Moon: number;
+  Mercury: number;
+  Venus: number;
+  Mars: number;
+  Jupiter: number;
+  Saturn: number;
+};
+
+export type DissonanceResult = {
+  d_natal: number;
+  d_accumulated: number;
+  intensity: number;
+  d_elemental?: {
+    magnitude: number;
+    type: ElementalDissonanceType;
+  };
+};
+
+function averageAbsoluteDifference(
+  a: Record<string, number>,
+  b: Record<string, number>
+): number {
+  const keys = Object.keys(a);
+  if (keys.length === 0) return 0;
+  let sum = 0;
+  for (const key of keys) {
+    sum += Math.abs((a as any)[key] - (b as any)[key]);
+  }
+  return sum / keys.length;
+}
+
+function computeElementalDissonance(
+  before?: ElementalProfile,
+  after?: ElementalProfile
+): { magnitude: number; type: ElementalDissonanceType } | undefined {
+  if (!before || !after) {
+    return undefined;
+  }
+
+  const keys: (keyof ElementalProfile)[] = ['Wood', 'Fire', 'Earth', 'Metal', 'Water'];
+  let sumDiff = 0;
+  const deltas: Partial<ElementalProfile> = {};
+  for (const key of keys) {
+    const delta = after[key] - before[key];
+    (deltas as any)[key] = delta;
+    sumDiff += Math.abs(delta);
+  }
+
+  // Treat very small total shifts as neutral.
+  const SMALL_SHIFT_THRESHOLD = 0.1;
+  if (sumDiff <= SMALL_SHIFT_THRESHOLD) {
+    return { magnitude: 0, type: 'neutral' };
+  }
+
+  // Simple heuristic: if Fire increases while Water decreases noticeably,
+  // classify as 'ke' (controlling/overcoming); otherwise treat as 'sheng'.
+  const fireDelta = (deltas as any).Fire ?? 0;
+  const waterDelta = (deltas as any).Water ?? 0;
+  if (fireDelta > 0 && waterDelta < 0) {
+    return { magnitude: sumDiff, type: 'ke' };
+  }
+
+  return { magnitude: sumDiff, type: 'sheng' };
+}
+
+export function computeDissonance(
+  natal: PlanetProfile,
+  current: PlanetProfile,
+  accumulated: PlanetProfile | null,
+  wuxinBefore?: ElementalProfile,
+  wuxinAfter?: ElementalProfile
+): DissonanceResult {
+  const d_natal = averageAbsoluteDifference(natal, current);
+  const d_accumulated =
+    accumulated != null ? averageAbsoluteDifference(accumulated, current) : 0;
+
+  // Combine natal and accumulated distances into an intensity, bounded [0, 1].
+  const rawIntensity = d_natal + d_accumulated;
+  const intensity = Math.max(0, Math.min(1, rawIntensity));
+
+  const elemental = computeElementalDissonance(wuxinBefore, wuxinAfter);
+
+  return {
+    d_natal,
+    d_accumulated,
+    intensity,
+    ...(elemental && { d_elemental: elemental }),
+  };
+}
 describe('computeDissonance', () => {
   const natal = { Sun: 0.9, Moon: 0.4, Mercury: 0.5, Venus: 0.3, Mars: 0.7, Jupiter: 0.6, Saturn: 0.4 };
 
