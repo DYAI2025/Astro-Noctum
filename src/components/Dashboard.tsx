@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  ArrowLeft, RefreshCw,
+  ArrowLeft,
 } from "lucide-react";
 import { ShareCard } from "./ShareCard";
 import { usePremium } from "../hooks/usePremium";
@@ -14,7 +14,7 @@ import { DailyHoroscopeModal } from "./dashboard/DailyHoroscopeModal";
 import { useFirstRunDaily } from "../hooks/useFirstRunDaily";
 import { supabase } from "../lib/supabase";
 import type { ApiData } from "../types/bafe";
-import type { TileTexts, HouseTexts } from "../types/interpretation";
+import type { TileTexts } from "../types/interpretation";
 import { DashboardAstroSection } from "./dashboard/DashboardAstroSection";
 import { DashboardInterpretationSection } from "./dashboard/DashboardInterpretationSection";
 import { SectionErrorBoundary } from "./dashboard/SectionErrorBoundary";
@@ -111,14 +111,12 @@ interface DashboardProps {
   userId: string;
   birthDate: string | null;
   onReset: () => void;
-  onRegenerate: () => void;
   isLoading: boolean;
   apiIssues: { endpoint: string; message: string }[];
   onStopAudio: () => void;
   onResumeAudio: () => void;
   isFirstReading?: boolean;
   tileTexts?: TileTexts;
-  houseTexts?: HouseTexts;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -131,21 +129,19 @@ export function Dashboard({
   userId,
   birthDate,
   onReset,
-  onRegenerate,
   isLoading,
   apiIssues,
   onStopAudio,
   onResumeAudio,
   isFirstReading = false,
   tileTexts,
-  houseTexts,
 }: DashboardProps) {
   const { lang, t } = useLanguage();
   const { isPremium } = usePremium();
   const { user } = useAuth();
 
   // ── Dashboard tour ────────────────────────────────────────────
-  const { tourStep, next: tourNext, skip: tourSkip, restart: tourRestart } = useDashboardTour(userId);
+  const { tourStep, next: tourNext, skip: tourSkip } = useDashboardTour(userId);
   const { setPlanetariumMode, planetariumMode } = usePlanetarium();
   const [tourPrevPlanetariumMode, setTourPrevPlanetariumMode] = useState<boolean | null>(null);
 
@@ -269,11 +265,6 @@ export function Dashboard({
       transition={{ duration: 0.6, ease: "easeOut" }}
       className="w-full max-w-6xl mx-auto px-4 md:px-6"
     >
-      {/* Back */}
-      <Button variant="ghost" size="sm" onClick={onReset} className="mb-10 text-[10px] uppercase tracking-[0.3em]">
-        <ArrowLeft className="w-4 h-4" /> {t("dashboard.startOver")}
-      </Button>
-
       {/* ── Tour sentinel: step 0 anchors at the planetarium (top of dashboard) ── */}
       <div ref={planetariumSentinelRef} className="h-px" aria-hidden="true" />
 
@@ -291,31 +282,34 @@ export function Dashboard({
 
       {/* ═══ PAGE HEADER ═══════════════════════════════════════════════ */}
       <motion.header
-        className="mb-6 text-center"
+        className="flex items-start justify-between border-b border-[#D4AF37]/15 pb-6 mb-8"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
       >
-        <p className="text-gold-deep/55 text-[9px] uppercase tracking-[0.5em] mb-3">
-          {t("dashboard.welcome")}
-        </p>
-        <div className="flex items-center justify-center gap-4">
-          <h1 className="font-serif text-3xl sm:text-[2.75rem] md:text-[3.5rem] leading-tight text-ink">
+        {/* Left: title + subtitle */}
+        <div>
+          <div className="w-8 h-px bg-[#D4AF37]/40 mb-4" />
+          <p className="text-[#D4AF37]/50 text-[9px] uppercase tracking-[0.5em] mb-2">
+            {t("dashboard.welcome")}
+          </p>
+          <h1 className="font-serif text-5xl sm:text-6xl leading-tight text-white">
             {t("dashboard.title")}
           </h1>
-          <Button variant="outline" size="icon" onClick={onRegenerate} disabled={isLoading} title="Regenerate">
-            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
-          </Button>
+          {birthDate && (
+            <p className="mt-1.5 text-xs text-white/35 tracking-wide">
+              {lang === "de" ? "Geburtsdatum" : "Birth date"}{": "}
+              <span className="text-white/55">{birthDate}</span>
+            </p>
+          )}
         </div>
-        
-        <div className="mt-8 text-left">
-          <SectionErrorBoundary name="BlueprintCard">
-            <BlueprintCard
-              title={lang === 'de' ? "Kosmischer Blueprint" : "Cosmic Blueprint"}
-              content={interpretation.split('\n\n').find(p => p.trim() && !p.startsWith('#')) || (lang === 'de' ? 'Dein kosmischer Blueprint wird geladen…' : 'Loading your cosmic blueprint…')}
-              onCtaClick={() => document.getElementById("interpretation-section")?.scrollIntoView({ behavior: "smooth" })}
-            />
-          </SectionErrorBoundary>
+
+        {/* Right: language toggle + profile actions */}
+        <div className="flex shrink-0 items-center gap-3 pt-1">
+          <Button variant="ghost" size="sm" onClick={onReset} className="text-[10px] uppercase tracking-[0.3em]">
+            <ArrowLeft className="w-4 h-4" />
+            {t("dashboard.startOver")}
+          </Button>
         </div>
       </motion.header>
 
@@ -342,17 +336,7 @@ export function Dashboard({
           className="mb-8 flex justify-end"
           {...fadeIn(0.15)}
         >
-          <div className="flex items-center gap-4">
-            {tourStep === 'done' && (
-              <button
-                onClick={tourRestart}
-                className="text-xs text-ink/30 hover:text-gold-deep underline underline-offset-2 transition-colors"
-              >
-                {lang === 'de' ? 'Tour wiederholen' : 'Replay tour'}
-              </button>
-            )}
-            <ManageSubscription className="text-ink/45 hover:text-gold-deep" />
-          </div>
+          <ManageSubscription className="text-ink/45 hover:text-gold-deep" />
         </motion.div>
       )}
 
@@ -367,7 +351,6 @@ export function Dashboard({
           isPremium={isPremium}
           isFirstReading={isFirstReading}
           tileTexts={tileTexts}
-          houseTexts={houseTexts}
         />
       </SectionErrorBoundary>
 
@@ -385,6 +368,17 @@ export function Dashboard({
             sunSign={apiData?.western?.zodiac_sign || ''}
             zodiacAnimal={apiData?.bazi?.zodiac_sign || ''}
             dominantEl={apiData?.wuxing?.dominant_element || ''}
+          />
+        </SectionErrorBoundary>
+      </motion.div>
+
+      {/* ═══ BLUEPRINT CARD ═════════════════════════════════════════════ */}
+      <motion.div className="mb-10" {...fadeIn(0.45)}>
+        <SectionErrorBoundary name="BlueprintCard">
+          <BlueprintCard
+            title={lang === 'de' ? "Kosmischer Blueprint" : "Cosmic Blueprint"}
+            content={interpretation.split('\n\n').find(p => p.trim() && !p.startsWith('#')) || (lang === 'de' ? 'Dein kosmischer Blueprint wird geladen…' : 'Loading your cosmic blueprint…')}
+            onCtaClick={() => document.getElementById("interpretation-section")?.scrollIntoView({ behavior: "smooth" })}
           />
         </SectionErrorBoundary>
       </motion.div>

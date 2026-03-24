@@ -3,7 +3,7 @@ import {
   ZodiacAries, ZodiacTaurus, ZodiacGemini, ZodiacCancer,
   ZodiacLeo, ZodiacVirgo, ZodiacLibra, ZodiacScorpio,
   ZodiacSagittarius, ZodiacCapricorn, ZodiacAquarius, ZodiacPisces,
-  IconLeaf, IconFlame, IconMountain, IconWind, IconDroplet,
+  IconLeaf, IconFlame, IconMountain, IconMetal, IconDroplet,
   IconStar,
 } from './index';
 
@@ -43,14 +43,20 @@ const ELEMENT_ICON_MAP: Record<string, { icon: IconComponent; color: string }> =
   Wood:   { icon: IconLeaf,     color: '#3D8B37' },
   Fire:   { icon: IconFlame,    color: '#D63B0F' },
   Earth:  { icon: IconMountain, color: '#C49A2A' },
-  Metal:  { icon: IconWind,     color: '#8A8A8A' },
+  Metal:  { icon: IconMetal,    color: '#8A8A8A' },
   Water:  { icon: IconDroplet,  color: '#2E6BB5' },
   // German aliases
   Holz:   { icon: IconLeaf,     color: '#3D8B37' },
   Feuer:  { icon: IconFlame,    color: '#D63B0F' },
   Erde:   { icon: IconMountain, color: '#C49A2A' },
-  Metall: { icon: IconWind,     color: '#8A8A8A' },
+  Metall: { icon: IconMetal,    color: '#8A8A8A' },
   Wasser: { icon: IconDroplet,  color: '#2E6BB5' },
+};
+
+// German name for each element key (English or German input → German label)
+const ELEMENT_LABEL: Record<string, string> = {
+  Wood: 'Holz', Fire: 'Feuer', Earth: 'Erde', Metal: 'Metall', Water: 'Wasser',
+  Holz: 'Holz', Feuer: 'Feuer', Erde: 'Erde', Metall: 'Metall', Wasser: 'Wasser',
 };
 
 interface ElementIconProps {
@@ -63,7 +69,15 @@ export function WuXingIcon({ element, className = 'w-6 h-6', showColor = true }:
   const entry = ELEMENT_ICON_MAP[element];
   if (!entry) return <IconStar className={className} />;
   const { icon: Icon, color } = entry;
-  return <Icon className={className} style={showColor ? { color } : undefined} />;
+  const label = ELEMENT_LABEL[element] ?? element;
+  return (
+    <Icon
+      className={className}
+      style={showColor ? { color } : undefined}
+      aria-label={label}
+      role="img"
+    />
+  );
 }
 
 // ── BaZi Animal → Chinese Character (SVG text) ──────────────────────

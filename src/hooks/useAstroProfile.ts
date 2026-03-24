@@ -10,7 +10,7 @@ import {
 } from "../services/supabase";
 import type { ApiData } from "../types/bafe";
 import { parseAstroProfileJson } from "../types/bafe";
-import type { TileTexts, HouseTexts } from "../types/interpretation";
+import type { TileTexts } from "../types/interpretation";
 import { trackEvent } from "../lib/analytics";
 
 function getCalcErrorMessage(lang: string): string {
@@ -40,7 +40,6 @@ export interface AstroProfileResult {
   apiIssues: ApiIssue[];
   interpretation: string | null;
   tileTexts: TileTexts;
-  houseTexts: HouseTexts;
   birthDateStr: string | null;
   isFirstReading: boolean;
   isLoading: boolean;
@@ -56,7 +55,6 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
   const [apiIssues, setApiIssues] = useState<ApiIssue[]>([]);
   const [interpretation, setInterpretation] = useState<string | null>(null);
   const [tileTexts, setTileTexts] = useState<TileTexts>({});
-  const [houseTexts, setHouseTexts] = useState<HouseTexts>({});
   const [birthDateStr, setBirthDateStr] = useState<string | null>(null);
   const [isFirstReading, setIsFirstReading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -71,7 +69,6 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
       setApiData(null);
       setInterpretation(null);
       setTileTexts({});
-      setHouseTexts({});
       setBirthDateStr(null);
       setApiIssues([]);
       setError(null);
@@ -92,7 +89,7 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
             setProfileState("not-found");
             return;
           }
-          const { apiData: restoredData, interpretation: storedInterpretation, tiles: storedTiles, houses: storedHouses } = parsed;
+          const { apiData: restoredData, interpretation: storedInterpretation, tiles: storedTiles } = parsed;
           setApiData(restoredData);
 
           if (!storedInterpretation) {
@@ -100,7 +97,6 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
               const aiResult = await generateInterpretation(restoredData, lang);
               setInterpretation(aiResult.interpretation);
               setTileTexts(aiResult.tiles || {});
-              setHouseTexts(aiResult.houses || {});
             } catch {
               setInterpretation(
                 lang === "de"
@@ -110,7 +106,6 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
             }
           } else {
             setTileTexts(storedTiles as TileTexts);
-            setHouseTexts(storedHouses as HouseTexts);
             setInterpretation(storedInterpretation);
           }
 
@@ -147,12 +142,11 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
       const aiResult = await generateInterpretation(results, lang);
       setInterpretation(aiResult.interpretation);
       setTileTexts(aiResult.tiles || {});
-      setHouseTexts(aiResult.houses || {});
       trackEvent("reading_completed");
 
       try {
         await Promise.all([
-          upsertAstroProfile(user.id, data, results, aiResult.interpretation, aiResult.tiles || {}, aiResult.houses || {}),
+          upsertAstroProfile(user.id, data, results, aiResult.interpretation, aiResult.tiles || {}),
           insertBirthData(user.id, data),
           insertNatalChart(user.id, results),
         ]);
@@ -183,7 +177,6 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
       const aiResult = await generateInterpretation(apiData, lang);
       setInterpretation(aiResult.interpretation);
       setTileTexts(aiResult.tiles || {});
-      setHouseTexts(aiResult.houses || {});
 
       // Persist updated interpretation back to Supabase
       if (birthDateStr) {
@@ -194,7 +187,6 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
           apiData,
           aiResult.interpretation,
           aiResult.tiles || {},
-          aiResult.houses || {},
         ).catch((e) => {
           console.warn("Persist after regenerate failed:", e);
           const msg = lang === 'de' ? 'Profil konnte nicht gespeichert werden.' : 'Profile could not be saved.';
@@ -228,7 +220,6 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
     setApiData(null);
     setInterpretation(null);
     setTileTexts({});
-    setHouseTexts({});
     setError(null);
     setApiIssues([]);
   }, [profileState]);
@@ -239,7 +230,6 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
     apiIssues,
     interpretation,
     tileTexts,
-    houseTexts,
     birthDateStr,
     isFirstReading,
     isLoading,

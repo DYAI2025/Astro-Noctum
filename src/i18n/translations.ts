@@ -174,6 +174,12 @@ const translationsEn: DeepStringRecord = {
       sectionLabel: "AI Synthesis",
       sectionTitle: "Your Cosmic Blueprint",
     },
+    blueprint: {
+      title: "Cosmic Blueprint",
+      cta: "Read full Blueprint →",
+      western: "Western",
+      eastern: "Eastern",
+    },
     levi: {
       ready: "Levi Bazi — Ready",
       active: "Levi Bazi — In Conversation",
@@ -360,8 +366,14 @@ const translationsDe: DeepStringRecord = {
       sectionDesc: "Die zwölf Häuser beschreiben die verschiedenen Lebensbereiche, in denen sich deine Planetenenergien ausdrücken.",
     },
     interpretation: {
-      sectionLabel: "KI-Synthese",
-      sectionTitle: "Dein Cosmic Blueprint",
+      sectionLabel: "KI-Auswertung",
+      sectionTitle: "Dein Kosmischer Blueprint",
+    },
+    blueprint: {
+      title: "Kosmischer Blueprint",
+      cta: "ganzen Blueprint lesen →",
+      western: "Westlich",
+      eastern: "Östlich",
     },
     levi: {
       ready: "Levi Bazi Bereit",
