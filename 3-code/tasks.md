@@ -22,7 +22,7 @@
 | ID | Task | Component | Req | Status | Notes |
 |----|------|-----------|-----|--------|-------|
 | TASK-fufire-experience-api | Wire `/experience/bootstrap` + `/experience/signature-delta` in `server.mjs`; replace direct BAFE calls in bootstrap flow | api-server | REQ-F-cosmic-encounter-onboarding | Pending | FuFirE live at bafe-production.up.railway.app; see docs/API_EXPERIENCE.md |
-| TASK-stripe-checkout-endpoint | Implement `/api/create-checkout-session` (or `/api/checkout`) in `server.mjs` — endpoint currently missing | api-server | — | Pending | `STRIPE_SECRET_KEY` set; `STRIPE_WEBHOOK_SECRET` missing |
+| TASK-stripe-checkout-endpoint | `/api/create-checkout-session` (`/api/checkout`) implemented in `server.mjs`; confirm behavior and add tests/docs | api-server | — | In Review | Blocked on `STRIPE_WEBHOOK_SECRET` + `/api/webhook` config (see `TASK-stripe-webhook-secret`) |
 | TASK-stripe-webhook-secret | Configure `STRIPE_WEBHOOK_SECRET` env var on Railway; verify `/api/webhook` signature validation | api-server | — | Pending | Blocker for Stripe webhook fulfillment |
 | TASK-dashboard-layout-redesign | Redesign Dashboard layout: Big Three (Sun/Moon/Ascendant) prominent top; Wu-Xing + Houses moved to detail page | frontend | — | Pending | Design-first task; needs wireframe before implementation |
 | TASK-levi-auto-summary | Auto-summarize user profile after 3 Levi sessions | api-server | — | Pending | FEAT from backlog |
