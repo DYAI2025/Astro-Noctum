@@ -53,6 +53,12 @@ const ELEMENT_ICON_MAP: Record<string, { icon: IconComponent; color: string }> =
   Wasser: { icon: IconDroplet,  color: '#2E6BB5' },
 };
 
+// German name for each element key (English or German input → German label)
+const ELEMENT_LABEL: Record<string, string> = {
+  Wood: 'Holz', Fire: 'Feuer', Earth: 'Erde', Metal: 'Metall', Water: 'Wasser',
+  Holz: 'Holz', Feuer: 'Feuer', Erde: 'Erde', Metall: 'Metall', Wasser: 'Wasser',
+};
+
 interface ElementIconProps {
   element: string;
   className?: string;
@@ -63,7 +69,15 @@ export function WuXingIcon({ element, className = 'w-6 h-6', showColor = true }:
   const entry = ELEMENT_ICON_MAP[element];
   if (!entry) return <IconStar className={className} />;
   const { icon: Icon, color } = entry;
-  return <Icon className={className} style={showColor ? { color } : undefined} />;
+  const label = ELEMENT_LABEL[element] ?? element;
+  return (
+    <Icon
+      className={className}
+      style={showColor ? { color } : undefined}
+      aria-label={label}
+      role="img"
+    />
+  );
 }
 
 // ── BaZi Animal → Chinese Character (SVG text) ──────────────────────
