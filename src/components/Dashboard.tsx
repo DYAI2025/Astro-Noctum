@@ -289,10 +289,11 @@ export function Dashboard({
       >
         {/* Left: title + subtitle */}
         <div>
+          <div className="w-8 h-px bg-[#D4AF37]/40 mb-4" />
           <p className="text-[#D4AF37]/50 text-[9px] uppercase tracking-[0.5em] mb-2">
             {t("dashboard.welcome")}
           </p>
-          <h1 className="font-serif text-4xl leading-tight text-white">
+          <h1 className="font-serif text-5xl sm:text-6xl leading-tight text-white">
             {t("dashboard.title")}
           </h1>
           {birthDate && (
