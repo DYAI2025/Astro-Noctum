@@ -1,5 +1,38 @@
 # Changelog
 
+## [Unreleased] - 2026-03-24
+
+### Features
+- **Dissonance model** — three-layer dissonance engine (`d_natal`, `d_accumulated`, `d_elemental`) quantifies how far a user's current signal has drifted from their natal baseline; Wu-Xing Sheng/Ke cycle classification for elemental tension
+- **Dissonance visual modulation** — dissonance intensity drives V2 spirograph: geometry skew, fractal depth, particle vibration, color temperature shift (Ke = crystalline/cool, Sheng = organic/warm)
+- **Dissonance morph transitions** — smooth lerp between modulation states with style-aware easing (angular for Ke, S-curve for Sheng); duration 800ms–2500ms based on intensity
+- **DissonanceValues panel** — premium-only toggle panel on Signatur page showing d_natal / d_accumulated / d_elemental / Gesamtintensität as gold gauge bars
+- **Dissonance persistence** — `upsertDissonanceState` / `fetchDissonanceState` in Supabase; Supabase migration `20260324_dissonance_state.sql` adds `natal_weights`, `accumulated_weights`, `dissonance_snapshot`, `quiz_count` columns to `astro_profiles`
+- **Planetarium enhancements** — birth date in `text-xl font-serif` gold; today's date below in cyan; current live planet positions shown alongside birth positions (color-differentiated); "Planetenposition am [date]" bottom banner in both Planetarium and Solar System views
+- **Navigation Variant A** — left sidebar, 64px collapsed / 240px expanded on hover, dark glass styling, hover submenus (tooltip flyout when collapsed, full-height panel when expanded), gold active-route highlight, animated icons, ARIA-labelled
+- **Dashboard header redesign** — distinct header zone with `border-b border-gold/15`; "Dein Bazodiac" in `font-serif text-5xl/6xl`; eyebrow label; birth date subtitle; motion entrance animation
+- **WuXing detail page** — extended analysis section behind `PremiumGate`: element balance bar chart, dominant element insights, balance assessment (strong/weak), Western Houses grid
+- **Cluster resonance animation** — `ClusterPipeline` now accepts `significance` (0–1) from cluster data; scales particle sizes, glow spread, burst intensity, and adds comet trail for significance > 0.8
+- **Share button** — `SharePopup` component on Signatur page replaces quiz restart button; Web Share API with clipboard fallback
+- **Stripe subscriptions** — checkout mode switched from `payment` to `subscription`; lifecycle webhook handlers for `customer.subscription.updated/deleted` and `invoice.payment_failed`; `stripe_subscription_id` and `subscription_end` columns added to `profiles`
+- **Silent failure fixes (BUG-04/05/06)** — FusionRingCanvasV2 shows "REDUZIERTER MODUS" badge when postprocessing fails; `usePremium` falls back to 30s polling when Realtime subscription drops; `useDashboardTour` exposes `persistError` to callers
+
+### Fixes
+- **Ghost UI removal** — "Tour wiederholen", "Zahlung verwalten", "Neustarten", "KI-Synthese" removed from Dashboard menu/header (S-DP-01–04)
+- **BlueprintCard i18n** — replaced hardcoded EN/DE mix with `useLanguage()` / `translations.ts`; "Westlich" / "Östlich" labels now follow language toggle (S-DP-05–06)
+- **Wu-Xing Metal icon** — `WuXingIcon` Metal entry now uses correct icon and German aria-label; tooltip no longer shows "diamond" (S-DP-07)
+- **Levi section** — text size `text-base` (was `text-[11px] italic`); duplicate "Levi Bazzi bereit" button removed; section reordered above detail sections (S-DP-11–13)
+- **Western houses removed from Dashboard** — moved to WuXingPage detail section (S-DP-10); orphaned `houseInterpretations` pipeline and `HouseTexts` type removed
+- **AnimatedIcon TypeScript** — all icon exports cast to `AnimatedIcon` (`ForwardRefExoticComponent<SVGProps<SVGSVGElement>>`) in barrel index; `types.d.ts` adds `Diamond` declaration
+
+### Code Quality
+- `ZODIAC_NAMES_DE` and `getEclipticLongitude` hoisted to module scope in `BirthChartOrrery.tsx` (were re-created on every render)
+- `onRegenerate` dead prop removed from `Dashboard` (button was removed in header redesign)
+- `animate-in` plugin classes replaced with native Tailwind v4 `transition-[opacity,transform]` utilities in `NavSidebarA`
+- 31 new tests added (ghost UI, WuXing, Levi, navigation variants, BlueprintCard i18n, share popup, dissonance morph, cluster completion, postprocessing degraded)
+
+---
+
 ## [Unreleased] - 2026-03-21
 
 ### Features
