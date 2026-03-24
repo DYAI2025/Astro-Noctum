@@ -191,7 +191,7 @@ export function FuRingScreen() {
           Tagesmeister: {bp.day_master}
         </Text>
         <View style={styles.harmonyRow}>
-          <Text style={styles.harmonyLabel}>Harmonie-Index</Text>
+          <Text style={styles.harmonyLabel}>Kohärenz-Index</Text>
           <View style={styles.harmonyTrack}>
             <View style={[styles.harmonyFill, { width: `${harmonyPct}%` }]} />
           </View>

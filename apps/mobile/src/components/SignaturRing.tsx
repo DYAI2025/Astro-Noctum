@@ -5,7 +5,7 @@
  * radially. No Skia or react-native-svg dependency required.
  *
  * Each sector is a colored bar radiating outward from center, with length
- * proportional to the sector value. The center shows the harmony index
+ * proportional to the sector value. The center shows the Kohärenz-Index
  * as a gold-ringed percentage. Transit modulation (kpIndex) adds a
  * pulsing scale animation.
  */
@@ -69,7 +69,7 @@ const GLYPH_OFFSET = 10; // extra pixels past bar tip for glyph placement
 export interface SignaturRingProps {
   /** 12 soulprint sector values (typically 0-1 range) */
   sectors: number[];
-  /** Overall harmony index, 0-1 */
+  /** Overall Kohärenz-Index, 0-1 */
   harmonyIndex: number;
   /** Kp geomagnetic index, 0-9. Drives transit pulse animation */
   kpIndex?: number;
@@ -274,7 +274,7 @@ export default function SignaturRing({
       {/* Sector bars */}
       {renderSectors()}
 
-      {/* Center circle with harmony index */}
+      {/* Center circle with Kohärenz-Index */}
       <View
         style={[
           styles.centerCircle,

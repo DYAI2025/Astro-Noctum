@@ -200,7 +200,7 @@ res.json({
   dominant_planet: findDominantPlanet(natalWeights),          // "Mars"
   weakest_planet: findWeakestPlanet(natalWeights),            // "Saturn"
   emergence_target: findEmergenceTarget(natalWeights),        // "Venus" (Mustersprung-Ziel)
-  harmony_index: data.harmony_index || null,                  // 0-1 aus Bootstrap
+  harmony_index: data.harmony_index || null,                  // Kohärenz-Index 0-1 aus Bootstrap
   signature_engine: 'v2',                                     // Kennzeichnung
 });
 ```

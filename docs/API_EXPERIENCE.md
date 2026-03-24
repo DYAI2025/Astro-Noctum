@@ -98,7 +98,7 @@ The proxy adds a 10-20s timeout per endpoint, a 10KB payload size limit, and ret
 | `profile.moon_sign` | `string` | Moon sign name (localized). |
 | `profile.ascendant_sign` | `string` | Ascendant sign name (localized). |
 | `profile.day_master` | `string` | BaZi Day Master Heavenly Stem (e.g. `Jia`, `Yi`, `Geng`). |
-| `profile.harmony_index` | `float` | Calibrated harmony index `[0, 1]`. Derived from the Fusion analysis wu-xing balance. |
+| `profile.harmony_index` | `float` | Calibrated Kohärenz-Index `[0, 1]`. Derived from the Fusion analysis wu-xing balance. |
 | `soulprint_sectors` | `float[12]` | Normalized 12-sector natal vector. Each value `[0, 1]`, sums to ~1. Sectors map to zodiac signs (0=Aries..11=Pisces). Weighted by Sun (1.0), Moon (0.8), Ascendant (0.6), personal planets (0.4 each), and Wu-Xing element affinities (0.5 weight). |
 | `signature_blueprint.seed` | `string` | Deterministic hash seed (`sig_v1_` prefix + SHA-256 fragment). Same input always produces the same seed. |
 | `signature_blueprint.visual.symmetry` | `float` | Ring symmetry `[0, 1]`. Derived from sector variance (lower variance = higher symmetry). |
@@ -106,7 +106,7 @@ The proxy adds a 10-20s timeout per endpoint, a 10KB payload size limit, and ret
 | `signature_blueprint.visual.angularity` | `float` | Ring angularity `[0, 1]`. Sum of Metall + Feuer element weights. |
 | `signature_blueprint.visual.density` | `float` | Ring density `[0, 1]`. Ratio of top-3 sector values to total. |
 | `signature_blueprint.visual.contrast` | `float` | Ring contrast `[0, 1]`. Spread between max and min sector values. |
-| `signature_blueprint.visual.orbit_count` | `int` | Number of ring orbits `[1, 7]`. Derived from harmony index. |
+| `signature_blueprint.visual.orbit_count` | `int` | Number of ring orbits `[1, 7]`. Derived from Kohärenz-Index. |
 | `signature_blueprint.elements` | `object` | Wu-Xing element weights (averaged from Western and BaZi systems). |
 | `meta.engine_version` | `string` | FuFirE engine version. |
 | `meta.generated_at` | `string` | ISO 8601 UTC timestamp. |
@@ -363,7 +363,7 @@ The proxy adds a 10-20s timeout per endpoint, a 10KB payload size limit, and ret
 | `moon_sign` | `string` | Localized moon sign name |
 | `ascendant_sign` | `string` | Localized ascendant sign name |
 | `day_master` | `string` | BaZi Day Master stem (Pinyin) |
-| `harmony_index` | `float [0,1]` | Calibrated harmony between Western and BaZi systems |
+| `harmony_index` | `float [0,1]` | Kohärenz-Index: calibrated coherence between Western and BaZi systems |
 
 ### VisualParams
 

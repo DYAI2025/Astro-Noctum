@@ -159,7 +159,7 @@ bootstrap(BirthInput)
     │   └── Returns: bodies (Sun, Moon, Mercury, Venus, Mars positions), ascendant
     │
     ├── compute_fusion_analysis(birth_utc, lat, lon, bazi_pillars, western_bodies, ascendant)
-    │   └── Returns: wu_xing_vectors, harmony_index, calibration
+    │   └── Returns: wu_xing_vectors, Kohärenz-Index, calibration
     │
     ├── compute_soulprint(sun_idx, moon_idx, asc_idx, personal_planets, wuxing_vector)
     │   └── Returns: float[12] normalized sector vector
@@ -171,7 +171,7 @@ bootstrap(BirthInput)
     │       - Wu-Xing element affinities += weight * 0.5
     │       - Normalize to sum = 1.0
     │
-    └── compute_signature_blueprint(soulprint, wuxing_vector, harmony_index)
+    └── compute_signature_blueprint(soulprint, wuxing_vector, kohärenz_index)
         └── Returns: seed (SHA-256 hash), visual params, elements
         └── All parameters are deterministic functions of input
 ```

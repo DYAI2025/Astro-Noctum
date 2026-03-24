@@ -419,7 +419,7 @@ Six clusters in `src/lib/fusion-ring/clusters.ts`: naturkind (4 quizzes), mental
 
 **Key screens:**
 - `DashboardScreen` — cosmic profile summary, space weather, AI interpretation
-- `FuRingScreen` — Signatur visualization using `useBootstrapSignatur()` hook (Experience API bootstrap → soulprint sectors + profile summary + harmony index). Renders 12 zodiac sector bars, profile card, signature seed
+- `FuRingScreen` — Signatur visualization using `useBootstrapSignatur()` hook (Experience API bootstrap → soulprint sectors + profile summary + Kohärenz-Index). Renders 12 zodiac sector bars, profile card, signature seed
 - `QuizScreen` — FlatList of all 23 quizzes rendered via `QuizRenderer` component from JSON `QuizDefinition`s. Completion fires `queueContributionEvent()` to offline queue
 - `VoiceScreen` — ElevenLabs agent via WebView (native SDK integration planned)
 

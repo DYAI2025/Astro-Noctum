@@ -206,7 +206,7 @@ User clicks [Berechnen]
 |------|----------|-------|--------|----------|
 | 1 | `compute_bazi()` | birth ISO + timezone + coordinates | Four Pillars, Day Master, solar year | ~50ms |
 | 2 | `compute_western_chart()` | birth UTC + lat/lon | Planet positions, house cusps, ascendant | ~30ms |
-| 3 | `compute_fusion_analysis()` | pillars + planets + ascendant | Wu-Xing vectors, harmony index | ~20ms |
+| 3 | `compute_fusion_analysis()` | pillars + planets + ascendant | Wu-Xing vectors, Kohärenz-Index | ~20ms |
 | 4 | `compute_soulprint()` | sun/moon/asc indices + planets + wuxing | 12-sector normalized vector | <1ms |
 | 5 | `compute_signature_blueprint()` | soulprint + wuxing + harmony | visual params (symmetry, curvature, etc.) | <1ms |
 

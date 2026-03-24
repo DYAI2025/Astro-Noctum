@@ -20,7 +20,7 @@
  * SIGNAL LAYER C: BaZi Deep Structure (from bazi calculation)
  *   - Day Master → fractal spine character (sharp/soft/angular)
  *   - 4 Pillars → brightness at 0°/90°/180°/270° axes
- *   - Harmony Index → coherence vs fragmentation
+ *   - Kohärenz-Index → coherence vs fragmentation
  *
  * Plus two overlay layers:
  *   QUIZ OVERLAY (permanent) — local thickness/color modifications
@@ -118,7 +118,7 @@ export interface BaZiData {
   dayMasterElement: HeavenlyStemElement;
   /** Four pillars: Year (0°), Month (90°), Day (180°), Hour (270°) */
   pillars: [BaZiPillar, BaZiPillar, BaZiPillar, BaZiPillar];
-  /** Harmony index: cosine similarity between Western and BaZi Wu Xing vectors (0–1) */
+  /** Kohärenz-Index: cosine similarity between Western and BaZi Wu Xing vectors (0–1) */
   harmonyIndex: number;
   /** BaZi-derived Wu Xing strengths (may differ from Western) */
   baziWuxingStrengths: number[];
