@@ -14,6 +14,7 @@ import { useFusionSignal } from '@/src/hooks/useFusionSignal';
 import { useDissonance } from '@/src/hooks/useDissonance';
 import { upsertDissonanceState } from '@/src/services/supabase';
 import { ClusterSidebar } from '@/src/components/signatur/ClusterSidebar';
+import { DissonanceValues } from '@/src/components/settings/DissonanceValues';
 import { PremiumUpgradeModal } from '@/src/components/signatur/PremiumUpgradeModal';
 import { ClusterPipeline } from '@/src/components/signatur/ClusterPipeline';
 import {
@@ -243,6 +244,13 @@ export default function FuRingPage() {
         onComplete={handleQuizComplete}
         onClose={() => setActiveQuiz(null)}
       />
+
+      {/* Premium: Dissonance values panel */}
+      {isPremium && dissonance && (
+        <section className="relative mx-auto w-full max-w-xs px-4 pb-8 md:px-10">
+          <DissonanceValues dissonance={dissonance} />
+        </section>
+      )}
 
       {premiumCluster && (
         <PremiumUpgradeModal
