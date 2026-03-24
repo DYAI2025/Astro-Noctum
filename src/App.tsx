@@ -53,7 +53,6 @@ export default function App() {
     apiIssues,
     interpretation,
     tileTexts,
-    houseTexts,
     birthDateStr,
     isFirstReading,
     isLoading,
@@ -209,7 +208,6 @@ export default function App() {
         <AppLayoutProvider value={{
           interpretation: interpretation!,
           tileTexts,
-          houseTexts,
           apiData,
           userId: user.id,
           birthDate: birthDateStr,

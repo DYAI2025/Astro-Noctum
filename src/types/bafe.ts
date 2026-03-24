@@ -103,6 +103,7 @@ export interface ApiData {
   wuxing?: MappedWuxing;
   fusion?: BafeFusionResponse;
   tst?: BafeTstResponse;
+  houses?: Record<string, string>;
 }
 
 // RFC 9457 Problem Details — BAFE will adopt this in C2

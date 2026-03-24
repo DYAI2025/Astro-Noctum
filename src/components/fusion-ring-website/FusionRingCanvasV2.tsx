@@ -51,6 +51,7 @@ interface EffectState {
   duration: number;
   intensity: number;
   sector: number;
+  clusterColorHex?: string;
 }
 
 const EFFECT_CONFIGS: Record<string, { label: string; sublabel: string; color: string; borderColor: string }> = {
@@ -70,9 +71,11 @@ export interface FusionRingCanvasProps {
   isMini?: boolean;
   showUI?: boolean;
   revealProgress?: number; // 0..1, used for onboarding reveal
-  effectTrigger?: { type: string; color?: string; timestamp: number } | null;
+  effectTrigger?: { type: string; color?: string; timestamp: number; intensity?: number } | null;
   solarModulation?: number; // 1.0–1.5, multiplied into particle intensity
   className?: string;
+  /** Optional dissonance visual modulation from useDissonance() */
+  dissonanceModulation?: import('../../lib/fusion-ring/dissonance-visual').VisualModulation | null;
 }
 
 // Simple hash for deterministic pseudo-random
@@ -88,6 +91,7 @@ interface BazodiacState {
   natal: Map<string, number>;
   quiz: Map<QuizDimension, number>;
   solarModulation: number;
+  dissonanceModulation?: import('../../lib/fusion-ring/dissonance-visual').VisualModulation | null;
 }
 
 function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, isMini = false }: {
@@ -875,18 +879,22 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
             break;
           }
           case 'burst': {
-            const attack = Math.min(1, progress / 0.15);
-            const decay = progress > 0.4 ? Math.max(0, 1 - (progress - 0.4) / 0.6) : 1;
-            const intensity = attack * decay * eff.intensity;
+            const attack = Math.min(1, progress / 0.12);
+            const decay = progress > 0.35 ? Math.max(0, 1 - (progress - 0.35) / 0.65) : 1;
+            // Secondary resonance oscillation after initial burst
+            const resonancePhase = progress > 0.25 ? (progress - 0.25) / 0.75 : 0;
+            const resonanceWave = resonancePhase > 0 ? Math.sin(resonancePhase * Math.PI * (3 + eff.intensity * 4)) * (1 - resonancePhase) : 0;
+            const intensity = (attack * decay + resonanceWave * 0.3) * eff.intensity;
             displaceRadial(t, intensity * 0.8, true);
-            const burstCol = new THREE.Color(0xffc83a);
-            injectColor(-1, burstCol, intensity * 0.4);
-            effectLight1.color.set(0xffc83a);
-            effectLight1.intensity = intensity * 8;
+            // Use cluster color if available, fallback to gold
+            const burstCol = eff.clusterColorHex ? new THREE.Color(eff.clusterColorHex) : new THREE.Color(0xffc83a);
+            injectColor(-1, burstCol, intensity * 0.5);
+            effectLight1.color.copy(burstCol);
+            effectLight1.intensity = intensity * (5 + eff.intensity * 5);
             effectLight2.color.set(0xff8040);
-            effectLight2.intensity = intensity * 4;
-            renderer.toneMappingExposure = 1.5 + intensity * 1.2;
-            const shake = intensity * 0.02;
+            effectLight2.intensity = intensity * (3 + eff.intensity * 3);
+            renderer.toneMappingExposure = 1.5 + intensity * (0.8 + eff.intensity * 0.8);
+            const shake = intensity * (0.01 + eff.intensity * 0.015);
             ringGroup.position.x = Math.sin(t * 30) * shake;
             ringGroup.position.z = Math.cos(t * 35) * shake;
             break;
@@ -929,6 +937,12 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
           const solarMod = bazStateRef.current?.solarModulation ?? 1.0;
           if (solarMod > 1.0) {
             bloomPass.strength = bloomPass.strength * solarMod;
+          }
+
+          // Dissonance complexity modulation — fractalBoost lifts bloom
+          const dMod = bazStateRef.current?.dissonanceModulation;
+          if (dMod && dMod.fractalBoost > 0) {
+            bloomPass.strength = bloomPass.strength * (1 + dMod.fractalBoost * 0.4);
           }
         }
 
@@ -992,6 +1006,19 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
               // Curve, bridge, centerjump, zodiac: gentle default
               yBreath = Math.sin(t * 0.4 + phases[i]!) * 0.005;
             }
+            // Dissonance texture modulation — add vibration on top of base yBreath
+            const dMod2 = bazStateRef.current?.dissonanceModulation;
+            if (dMod2 && dMod2.vibrationAmplitude > 0) {
+              const amp = dMod2.vibrationAmplitude * 0.025;
+              const flicker = dMod2.flickerRate > 0 ? dMod2.flickerRate : 1;
+              if (dMod2.vibrationStyle === 'angular') {
+                const frac = (t * flicker + phases[i]!) % 1.0;
+                yBreath += amp * (2 * frac - 1);
+              } else if (dMod2.vibrationStyle === 'organic') {
+                yBreath += amp * Math.sin(t * flicker * Math.PI * 2 + phases[i]!);
+              }
+            }
+
             displacementTarget[i * 3 + 1] = yBreath;
             displacementTarget[i * 3 + 2] = dirZ * wave;
           }
@@ -1297,6 +1324,7 @@ export default function FusionRingCanvas({
   effectTrigger,
   solarModulation = 1.0,
   className,
+  dissonanceModulation,
 }: FusionRingCanvasProps) {
   const [mounted, setMounted] = useState(false);
   const [webglSupported, setWebglSupported] = useState(true);
@@ -1324,10 +1352,11 @@ export default function FusionRingCanvas({
       bazStateRef.current.quiz = new Map(Object.entries(quizWeights) as any);
     }
     bazStateRef.current.solarModulation = solarModulation;
+    bazStateRef.current.dissonanceModulation = dissonanceModulation;
     setBazVersion(v => v + 1);
     const rebuild = (window as any).__fusionRingRebuild;
     if (typeof rebuild === 'function') rebuild();
-  }, [natalWeights, quizWeights, solarModulation]);
+  }, [natalWeights, quizWeights, solarModulation, dissonanceModulation]);
 
   // Legacy profile ref for InputController compatibility
   const profileRef = useRef<FusionRingProfile>(createDemoProfile());
@@ -1387,10 +1416,15 @@ export default function FusionRingCanvas({
   useEffect(() => {
     if (!effectTrigger || effectTrigger.timestamp === lastTriggerRef.current) return;
     lastTriggerRef.current = effectTrigger.timestamp;
+    const sig = effectTrigger.intensity ?? 0.7;
     triggerEffect(effectTrigger.type as EffectType, {
-      intensity: 0.9,
-      duration: 3.5,
+      intensity: 0.5 + sig * 0.5,    // 0.5–1.0 range scaled by significance
+      duration: 2.0 + sig * 3.0,     // 2s–5s range — longer sustain for higher significance
     });
+    // Inject cluster color into the effect state for tinted burst
+    if (effectTrigger.color && effectRef.current) {
+      effectRef.current.clusterColorHex = effectTrigger.color;
+    }
   }, [effectTrigger, triggerEffect]);
 
   // --- Input Controller ---

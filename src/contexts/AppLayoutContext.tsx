@@ -1,12 +1,11 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import type { ApiIssue } from '../services/api';
 import type { ApiData } from '../types/bafe';
-import type { TileTexts, HouseTexts } from '../types/interpretation';
+import type { TileTexts } from '../types/interpretation';
 
 export interface AppLayoutValue {
   interpretation: string;
   tileTexts: TileTexts;
-  houseTexts: HouseTexts;
   apiData: ApiData;
   userId: string;
   birthDate: string | null;

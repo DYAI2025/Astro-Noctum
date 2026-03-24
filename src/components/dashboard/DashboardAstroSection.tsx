@@ -6,18 +6,16 @@ const BirthChartOrrery = lazy(() => import("../BirthChartOrrery").then(m => ({ d
 import { PremiumGate } from "../PremiumGate";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { WUXING_ELEMENTS, getWuxingName } from "../../lib/astro-data/wuxing";
-import { getSignName } from "../../lib/astro-data/zodiacSigns";
 import { getConstellationForSign } from "../../lib/astro-data/constellationFromSign";
 import { usePlanetarium } from "../../contexts/PlanetariumContext";
 import { Tooltip } from "../Tooltip";
 import { BaZiFourPillars } from "../BaZiFourPillars";
 import { BaZiInterpretation } from "../BaZiInterpretation";
-import { getHouseInterpretation } from "../../lib/astro-data/houseInterpretations";
 import type { ApiData } from "../../types/bafe";
-import type { TileTexts, HouseTexts } from "../../types/interpretation";
+import type { TileTexts } from "../../types/interpretation";
 import { AstroAccordion } from "./AstroAccordion";
-import { ZodiacIcon, WuXingIcon } from "../animated-icons/CosmicSymbols";
-import { IconOrbit, IconSun } from "../animated-icons";
+import { WuXingIcon } from "../animated-icons/CosmicSymbols";
+import { IconOrbit } from "../animated-icons";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Static data
@@ -37,47 +35,6 @@ const ZODIAC_SIGNS_LIST = [
 function signFromIndex(idx: number | undefined | null): string {
   if (idx == null || idx < 0 || idx > 11) return "";
   return ZODIAC_SIGNS_LIST[idx];
-}
-
-// ── Western Astrological Houses ───────────────────────────────────────────
-
-const ROMAN = ["","I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"] as const;
-
-interface HouseMeaning {
-  name:    { en: string; de: string };
-  keyword: { en: string; de: string };
-}
-
-const HOUSE_MEANINGS: Record<number, HouseMeaning> = {
-  1:  { name: { en: "Self",           de: "Selbst"        }, keyword: { en: "Identity & Appearance",               de: "Identität & Erscheinung"                } },
-  2:  { name: { en: "Resources",      de: "Ressourcen"    }, keyword: { en: "Wealth, Possessions & Values",        de: "Besitz, Vermögen & Werte"               } },
-  3:  { name: { en: "Mind",           de: "Geist"         }, keyword: { en: "Communication, Siblings & Travel",    de: "Kommunikation, Geschwister & Reisen"    } },
-  4:  { name: { en: "Foundation",     de: "Fundament"     }, keyword: { en: "Home, Family & Roots",                de: "Heim, Familie & Wurzeln"                } },
-  5:  { name: { en: "Creativity",     de: "Kreativität"   }, keyword: { en: "Pleasure, Romance & Expression",      de: "Freude, Romantik & Ausdruck"            } },
-  6:  { name: { en: "Service",        de: "Dienst"        }, keyword: { en: "Health, Work & Daily Routine",        de: "Gesundheit, Arbeit & Alltag"            } },
-  7:  { name: { en: "Partnership",    de: "Partnerschaft" }, keyword: { en: "Relationships & Contracts",           de: "Beziehungen & Verträge"                 } },
-  8:  { name: { en: "Transformation", de: "Wandel"        }, keyword: { en: "Depth, Shared Power & Rebirth",       de: "Tiefe, gemeinsame Macht & Erneuerung"   } },
-  9:  { name: { en: "Expansion",      de: "Horizont"      }, keyword: { en: "Philosophy, Travel & Higher Learning",de: "Philosophie, Weite & höheres Lernen"    } },
-  10: { name: { en: "Career",         de: "Beruf"         }, keyword: { en: "Public Role, Status & Ambition",      de: "Öffentliche Rolle & Ambition"           } },
-  11: { name: { en: "Community",      de: "Gemeinschaft"  }, keyword: { en: "Friendships, Groups & Ideals",        de: "Freundschaften, Gruppen & Ziele"        } },
-  12: { name: { en: "Transcendence",  de: "Transzendenz"  }, keyword: { en: "Solitude, Karma & Hidden Matters",    de: "Einsamkeit, Karma & Verborgenes"        } },
-};
-
-function parseHouseNum(key: string): number | null {
-  const n = parseInt(key.replace(/[^0-9]/g, ""), 10);
-  return n >= 1 && n <= 12 ? n : null;
-}
-
-type HouseValue = string | { sign?: string; zodiac_sign?: number; sign_index?: number; index?: number };
-
-function resolveSign(val: HouseValue): string {
-  if (typeof val === "string") return val;
-  if (typeof val === "object" && val !== null) {
-    if (val.sign && typeof val.sign === "string") return val.sign;
-    const idx = val.zodiac_sign ?? val.sign_index ?? val.index;
-    if (typeof idx === "number") return signFromIndex(idx);
-  }
-  return "";
 }
 
 // ── Animation helper ──────────────────────────────────────────────────────
@@ -111,7 +68,6 @@ interface DashboardAstroSectionProps {
   isPremium: boolean;
   isFirstReading: boolean;
   tileTexts?: TileTexts;
-  houseTexts?: HouseTexts;
   leviSlot?: React.ReactNode;
 }
 
@@ -125,7 +81,6 @@ export function DashboardAstroSection({
   isPremium,
   isFirstReading,
   tileTexts,
-  houseTexts,
   leviSlot,
 }: DashboardAstroSectionProps) {
   const { lang, t } = useLanguage();
@@ -176,19 +131,6 @@ export function DashboardAstroSection({
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps — dev-only logging, no need to re-run on every dep change
   }, [wuxingCounts]);
-
-  // Houses
-  const houses: Record<string, HouseValue> = useMemo(
-    () => (apiData.western?.houses as Record<string, HouseValue>) || {},
-    [apiData.western],
-  );
-  const houseEntries = useMemo(
-    () =>
-      Object.entries(houses)
-        .filter(([, v]) => v != null)
-        .sort(([a], [b]) => (parseHouseNum(a) ?? 99) - (parseHouseNum(b) ?? 99)),
-    [houses],
-  );
 
   const orreryDate = useMemo(() => {
     if (!birthDate) return new Date();
@@ -367,74 +309,6 @@ export function DashboardAstroSection({
         </motion.div>
       )}
 
-      {/* ═══ WESTERN HOUSES — PREMIUM ════════════════════════════════ */}
-      {houseEntries.length > 0 && (
-        <PremiumGate teaser={t("dashboard.premium.teaserHouses")}>
-        <motion.div className="mb-10" {...fadeIn(0.4)}>
-          <SectionDivider
-            label={t("dashboard.western.sectionLabel")}
-            title={t("dashboard.houses.sectionTitle")}
-            icon={<IconSun className="w-5 h-5 text-[#8B6914] inline-block mr-2 align-middle" />}
-          />
-          <p className="text-xs text-[#1E2A3A]/45 mb-6 leading-relaxed max-w-2xl">
-            {t("dashboard.houses.sectionDesc")}
-          </p>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {houseEntries.map(([houseKey, val]) => {
-              const sign    = resolveSign(val);
-              const num     = parseHouseNum(houseKey);
-              const roman   = num !== null ? ROMAN[num] : houseKey;
-              const meaning = num !== null ? HOUSE_MEANINGS[num] : null;
-              const signDisplay = sign ? getSignName(sign, lang) : "\u2014";
-
-              const houseText = num !== null ? houseTexts?.[String(num)] : undefined;
-              const fallbackText = num !== null && sign ? getHouseInterpretation(num, sign, lang) : "";
-              const tooltipContent = houseText || fallbackText;
-              const previewText = tooltipContent.length > 90 ? tooltipContent.slice(0, 90) + "\u2026" : tooltipContent;
-
-              const cardContent = (
-                <>
-                  <div className="flex items-baseline gap-1.5 sm:gap-2 mb-2 sm:mb-3 min-w-0">
-                    <span className="font-serif text-base text-[#8B6914] font-medium leading-none shrink-0">
-                      {roman}
-                    </span>
-                    {meaning && (
-                      <span className="text-[9px] sm:text-[10px] text-[#1E2A3A]/45 tracking-wide truncate">
-                        {meaning.name[lang]}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="font-serif text-base sm:text-lg text-[#1E2A3A] flex items-center gap-1.5 sm:gap-2 mb-2 min-w-0">
-                    <ZodiacIcon sign={sign} className="w-5 h-5 text-[#8B6914]/80 shrink-0 inline-block" />
-                    <span className="truncate">{signDisplay}</span>
-                  </div>
-
-                  {previewText && (
-                    <p className="text-[9px] sm:text-[10px] text-[#1E2A3A]/40 leading-relaxed line-clamp-2">
-                      {previewText}
-                    </p>
-                  )}
-                </>
-              );
-
-              return tooltipContent ? (
-                <Tooltip key={houseKey} content={tooltipContent} wide dark={planetariumMode}>
-                  <div className="morning-card hover:border-[#8B6914]/18 p-4 sm:p-5 overflow-hidden cursor-help">
-                    {cardContent}
-                  </div>
-                </Tooltip>
-              ) : (
-                <div key={houseKey} className="morning-card hover:border-[#8B6914]/18 p-4 sm:p-5 overflow-hidden">
-                  {cardContent}
-                </div>
-              );
-            })}
-          </div>
-        </motion.div>
-        </PremiumGate>
-      )}
     </>
   );
 }

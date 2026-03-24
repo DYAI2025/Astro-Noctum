@@ -79,7 +79,7 @@ export function DashboardLeviSection({
             <Badge variant={leviActive ? "success" : "default"}>
               {leviActive ? t('dashboard.levi.active') : t('dashboard.levi.ready')}
             </Badge>
-            <p className="text-[11px] text-[#1E2A3A]/45 italic leading-relaxed">
+            <p className="text-base text-[#1E2A3A]/60 leading-relaxed mt-1">
               {leviActive ? t("dashboard.levi.activeDesc") : t("dashboard.levi.readyDesc")}
             </p>
           </div>

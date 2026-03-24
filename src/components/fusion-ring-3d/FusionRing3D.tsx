@@ -31,8 +31,9 @@ type FusionRing3DProps = {
   onSpikeClick?: (sector: number) => void;
   labels: FusionRing3DLabels;
   quizWeights?: Record<string, number>;
-  effectTrigger?: { type: string; color?: string; timestamp: number } | null;
+  effectTrigger?: { type: string; color?: string; timestamp: number; intensity?: number } | null;
   solarModulation?: number;
+  dissonanceModulation?: import('../../lib/fusion-ring/dissonance-visual').VisualModulation | null;
 };
 
 type QueuedEffect = { id: string; type: RingEffectType };
@@ -69,6 +70,7 @@ export const FusionRing3D = ({
   quizWeights,
   effectTrigger,
   solarModulation,
+  dissonanceModulation,
 }: FusionRing3DProps) => {
   const prefersReducedMotion = useReducedMotion();
   const { signalData, events, resolution, loading, error } = useFusionSignal(userId);
@@ -118,6 +120,7 @@ export const FusionRing3D = ({
             quizWeights={quizWeights}
             effectTrigger={effectTrigger}
             solarModulation={solarModulation}
+            dissonanceModulation={dissonanceModulation}
             showUI={isInteractive}
             className="h-full w-full"
           />

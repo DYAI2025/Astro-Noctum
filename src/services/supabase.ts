@@ -1,6 +1,7 @@
 import { supabase } from "../lib/supabase";
 import type { ApiData } from "../types/bafe";
-import type { TileTexts, HouseTexts } from "../types/interpretation";
+import type { TileTexts } from "../types/interpretation";
+import type { DissonanceResult } from "../lib/fusion-ring/dissonance";
 
 // ── Types ───────────────────────────────────────────────────────────
 
@@ -43,7 +44,6 @@ export async function upsertAstroProfile(
   bafeData: BafeData,
   interpretation: string,
   tiles: TileTexts = {},
-  houses: HouseTexts = {},
 ) {
   const sunSign = bafeData.western?.zodiac_sign || null;
   const moonSign = bafeData.western?.moon_sign || null;
@@ -72,7 +72,6 @@ export async function upsertAstroProfile(
         tst:     bafeData.tst,
         interpretation,
         tiles,
-        houses,
       },
       astro_computed_at: new Date().toISOString(),
     },
@@ -101,6 +100,57 @@ export async function insertBirthData(userId: string, birth: BirthInput) {
     console.error("insertBirthData error:", error);
     throw error;
   }
+}
+
+// ── Dissonance state (updated on each quiz completion) ───────────────
+
+export async function upsertDissonanceState(
+  userId: string,
+  natalWeights: Record<string, number>,
+  accumulatedWeights: Record<string, number> | null,
+  dissonanceSnapshot: DissonanceResult,
+  quizCount: number,
+): Promise<void> {
+  const { error } = await supabase
+    .from("astro_profiles")
+    .upsert(
+      {
+        user_id: userId,
+        natal_weights: natalWeights,
+        accumulated_weights: accumulatedWeights,
+        dissonance_snapshot: dissonanceSnapshot,
+        quiz_count: quizCount,
+      },
+      { onConflict: "user_id" },
+    );
+
+  if (error) {
+    console.error("upsertDissonanceState error:", error);
+  }
+}
+
+export async function fetchDissonanceState(userId: string): Promise<{
+  natal_weights: Record<string, number> | null;
+  accumulated_weights: Record<string, number> | null;
+  dissonance_snapshot: DissonanceResult | null;
+  quiz_count: number;
+} | null> {
+  const { data, error } = await supabase
+    .from("astro_profiles")
+    .select("natal_weights, accumulated_weights, dissonance_snapshot, quiz_count")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("fetchDissonanceState error:", error);
+    return null;
+  }
+  return data as {
+    natal_weights: Record<string, number> | null;
+    accumulated_weights: Record<string, number> | null;
+    dissonance_snapshot: DissonanceResult | null;
+    quiz_count: number;
+  } | null;
 }
 
 // ── Insert natal_charts (write-once per user) ───────────────────────
