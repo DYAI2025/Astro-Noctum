@@ -174,6 +174,12 @@ const translationsEn: DeepStringRecord = {
       sectionLabel: "AI Synthesis",
       sectionTitle: "Your Cosmic Blueprint",
     },
+    blueprint: {
+      title: "Cosmic Blueprint",
+      cta: "Read full Blueprint →",
+      western: "Western",
+      eastern: "Eastern",
+    },
     levi: {
       ready: "Levi Bazi — Ready",
       active: "Levi Bazi — In Conversation",
@@ -362,6 +368,12 @@ const translationsDe: DeepStringRecord = {
     interpretation: {
       sectionLabel: "KI-Synthese",
       sectionTitle: "Dein Cosmic Blueprint",
+    },
+    blueprint: {
+      title: "Kosmischer Blueprint",
+      cta: "ganzen Blueprint lesen →",
+      western: "Westlich",
+      eastern: "Östlich",
     },
     levi: {
       ready: "Levi Bazi Bereit",

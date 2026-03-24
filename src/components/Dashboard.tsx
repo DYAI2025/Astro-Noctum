@@ -145,7 +145,7 @@ export function Dashboard({
   const { user } = useAuth();
 
   // ── Dashboard tour ────────────────────────────────────────────
-  const { tourStep, next: tourNext, skip: tourSkip, restart: tourRestart } = useDashboardTour(userId);
+  const { tourStep, next: tourNext, skip: tourSkip } = useDashboardTour(userId);
   const { setPlanetariumMode, planetariumMode } = usePlanetarium();
   const [tourPrevPlanetariumMode, setTourPrevPlanetariumMode] = useState<boolean | null>(null);
 
@@ -342,17 +342,7 @@ export function Dashboard({
           className="mb-8 flex justify-end"
           {...fadeIn(0.15)}
         >
-          <div className="flex items-center gap-4">
-            {tourStep === 'done' && (
-              <button
-                onClick={tourRestart}
-                className="text-xs text-ink/30 hover:text-gold-deep underline underline-offset-2 transition-colors"
-              >
-                {lang === 'de' ? 'Tour wiederholen' : 'Replay tour'}
-              </button>
-            )}
-            <ManageSubscription className="text-ink/45 hover:text-gold-deep" />
-          </div>
+          <ManageSubscription className="text-ink/45 hover:text-gold-deep" />
         </motion.div>
       )}
 
