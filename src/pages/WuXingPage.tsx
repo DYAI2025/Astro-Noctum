@@ -314,6 +314,28 @@ export default function WuXingPage() {
                     })()}
                   </div>
                 </div>
+
+                {/* Western Houses */}
+                {Object.keys(apiData.houses ?? {}).length > 0 && (
+                  <div className="border-t border-gold/10 pt-8 mt-8" data-testid="western-houses-section">
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-gold/40 mb-6">
+                      {t('dashboard.houses.sectionTitle')}
+                    </p>
+                    <p className="text-xs font-serif italic text-gold/40 mb-6 leading-relaxed">
+                      {t('dashboard.houses.sectionDesc')}
+                    </p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                      {Object.entries(apiData.houses ?? {}).map(([houseNum, sign]) => (
+                        <div key={houseNum} className="glass-card p-3 text-center">
+                          <p className="text-[10px] uppercase tracking-widest text-gold/40 mb-1">
+                            {t('dashboard.houses.housePrefix')} {houseNum}
+                          </p>
+                          <p className="font-serif text-gold/80 text-sm">{sign as string}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </PremiumGate>
           </motion.section>

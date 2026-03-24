@@ -27,6 +27,12 @@ vi.mock('../contexts/AppLayoutContext', () => ({
         elements: { Wood: 3, Fire: 2, Earth: 1, Metal: 2, Water: 2 },
         dominant_element: 'Wood',
       },
+      houses: {
+        '1': 'Aries', '2': 'Taurus', '3': 'Gemini',
+        '4': 'Cancer', '5': 'Leo', '6': 'Virgo',
+        '7': 'Libra', '8': 'Scorpio', '9': 'Sagittarius',
+        '10': 'Capricorn', '11': 'Aquarius', '12': 'Pisces',
+      },
     },
   }),
 }));
@@ -84,5 +90,17 @@ describe('WuXingPage detail extensions', () => {
     // PremiumGate blurs children for non-premium but still mounts them in DOM
     renderPage();
     expect(screen.getByTestId('element-balance-chart')).toBeDefined();
+  });
+
+  it('renders Western Houses section inside PremiumGate when houses data is present', () => {
+    renderPage();
+    expect(screen.getByTestId('western-houses-section')).toBeDefined();
+  });
+
+  it('renders 12 house entries in the Western Houses section', () => {
+    renderPage();
+    // Houses data has 12 entries — each gets a glass-card cell
+    const houseSection = screen.getByTestId('western-houses-section');
+    expect(houseSection.querySelectorAll('.glass-card').length).toBe(12);
   });
 });
