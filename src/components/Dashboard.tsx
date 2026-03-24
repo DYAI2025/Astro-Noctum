@@ -308,15 +308,6 @@ export function Dashboard({
           </Button>
         </div>
         
-        <div className="mt-8 text-left">
-          <SectionErrorBoundary name="BlueprintCard">
-            <BlueprintCard
-              title={lang === 'de' ? "Kosmischer Blueprint" : "Cosmic Blueprint"}
-              content={interpretation.split('\n\n').find(p => p.trim() && !p.startsWith('#')) || (lang === 'de' ? 'Dein kosmischer Blueprint wird geladen…' : 'Loading your cosmic blueprint…')}
-              onCtaClick={() => document.getElementById("interpretation-section")?.scrollIntoView({ behavior: "smooth" })}
-            />
-          </SectionErrorBoundary>
-        </div>
       </motion.header>
 
       {/* Upgrade Banner for free users */}
@@ -375,6 +366,17 @@ export function Dashboard({
             sunSign={apiData?.western?.zodiac_sign || ''}
             zodiacAnimal={apiData?.bazi?.zodiac_sign || ''}
             dominantEl={apiData?.wuxing?.dominant_element || ''}
+          />
+        </SectionErrorBoundary>
+      </motion.div>
+
+      {/* ═══ BLUEPRINT CARD ═════════════════════════════════════════════ */}
+      <motion.div className="mb-10" {...fadeIn(0.45)}>
+        <SectionErrorBoundary name="BlueprintCard">
+          <BlueprintCard
+            title={lang === 'de' ? "Kosmischer Blueprint" : "Cosmic Blueprint"}
+            content={interpretation.split('\n\n').find(p => p.trim() && !p.startsWith('#')) || (lang === 'de' ? 'Dein kosmischer Blueprint wird geladen…' : 'Loading your cosmic blueprint…')}
+            onCtaClick={() => document.getElementById("interpretation-section")?.scrollIntoView({ behavior: "smooth" })}
           />
         </SectionErrorBoundary>
       </motion.div>
