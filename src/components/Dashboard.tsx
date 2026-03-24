@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  ArrowLeft, RefreshCw,
+  ArrowLeft,
 } from "lucide-react";
 import { ShareCard } from "./ShareCard";
 import { usePremium } from "../hooks/usePremium";
@@ -267,11 +267,6 @@ export function Dashboard({
       transition={{ duration: 0.6, ease: "easeOut" }}
       className="w-full max-w-6xl mx-auto px-4 md:px-6"
     >
-      {/* Back */}
-      <Button variant="ghost" size="sm" onClick={onReset} className="mb-10 text-[10px] uppercase tracking-[0.3em]">
-        <ArrowLeft className="w-4 h-4" /> {t("dashboard.startOver")}
-      </Button>
-
       {/* ── Tour sentinel: step 0 anchors at the planetarium (top of dashboard) ── */}
       <div ref={planetariumSentinelRef} className="h-px" aria-hidden="true" />
 
@@ -289,23 +284,34 @@ export function Dashboard({
 
       {/* ═══ PAGE HEADER ═══════════════════════════════════════════════ */}
       <motion.header
-        className="mb-6 text-center"
+        className="flex items-start justify-between border-b border-[#D4AF37]/15 pb-6 mb-8"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
       >
-        <p className="text-gold-deep/55 text-[9px] uppercase tracking-[0.5em] mb-3">
-          {t("dashboard.welcome")}
-        </p>
-        <div className="flex items-center justify-center gap-4">
-          <h1 className="font-serif text-3xl sm:text-[2.75rem] md:text-[3.5rem] leading-tight text-ink">
+        {/* Left: title + subtitle */}
+        <div>
+          <p className="text-[#D4AF37]/50 text-[9px] uppercase tracking-[0.5em] mb-2">
+            {t("dashboard.welcome")}
+          </p>
+          <h1 className="font-serif text-4xl leading-tight text-white">
             {t("dashboard.title")}
           </h1>
-          <Button variant="outline" size="icon" onClick={onRegenerate} disabled={isLoading} title="Regenerate">
-            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
+          {birthDate && (
+            <p className="mt-1.5 text-xs text-white/35 tracking-wide">
+              {lang === "de" ? "Geburtsdatum" : "Birth date"}{": "}
+              <span className="text-white/55">{birthDate}</span>
+            </p>
+          )}
+        </div>
+
+        {/* Right: language toggle + profile actions */}
+        <div className="flex shrink-0 items-center gap-3 pt-1">
+          <Button variant="ghost" size="sm" onClick={onReset} className="text-[10px] uppercase tracking-[0.3em]">
+            <ArrowLeft className="w-4 h-4" />
+            {t("dashboard.startOver")}
           </Button>
         </div>
-        
       </motion.header>
 
       {/* Upgrade Banner for free users */}
