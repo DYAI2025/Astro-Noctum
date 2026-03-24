@@ -2815,15 +2815,23 @@ app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async
     const userId = sub.metadata?.userId;
     if (!userId || !supabaseServer) return res.json({ received: true });
 
-    const isActive = sub.status === "active" || sub.status === "trialing";
     const periodEnd = sub.current_period_end
       ? new Date(sub.current_period_end * 1000).toISOString()
       : null;
 
+    const now = new Date();
+    const stillInGrace = periodEnd && new Date(periodEnd) > now;
+
+    // Treat past_due/unpaid as premium while still within the current period.
+    const isPremium =
+      sub.status === "active" ||
+      sub.status === "trialing" ||
+      ((sub.status === "past_due" || sub.status === "unpaid") && stillInGrace);
+
     const { error } = await supabaseServer
       .from("profiles")
       .update({
-        tier: isActive ? "premium" : "free",
+        tier: isPremium ? "premium" : "free",
         stripe_subscription_id: sub.id,
         subscription_end: periodEnd,
       })
