@@ -159,7 +159,7 @@ export interface SpiroParams {
   harmLock: boolean;
 }
 
-export function computeSpiroParams(hz: number, harmLock = true): SpiroParams {
+export function computeSpiroParams(hz: number, harmLock = true, modulation?: { geometrySkew?: number; penDistanceShift?: number }): SpiroParams {
   const t = logNormHz(hz);
   // Keep n in [3, 9] for clearly visible lobes — not too many petals
   const n = 3 + Math.floor(lerp(0, 6, t));
@@ -169,10 +169,17 @@ export function computeSpiroParams(hz: number, harmLock = true): SpiroParams {
   const R = 1.0;
   // Larger r ratio for bigger, more visible lobes
   const rBase = R / n;
-  const r = harmLock ? rBase : rBase * (1 + (hash01(seed, 2) - 0.5) * 0.3);
+  let r = harmLock ? rBase : rBase * (1 + (hash01(seed, 2) - 0.5) * 0.3);
   // More dramatic pen distance for pronounced curves
-  const d = lerp(0.25, 1.5, hash01(seed, 3));
+  let d = lerp(0.25, 1.5, hash01(seed, 3));
   const turns = harmLock ? Math.max(n, lcm(n, 3)) : 10 + Math.floor(t * 14);
+
+  // Apply dissonance modulation if present
+  if (modulation) {
+    d = d + (modulation.penDistanceShift ?? 0);
+    const skew = modulation.geometrySkew ?? 0;
+    r = r * (1 + skew * 0.15); // subtle — 15% max deviation
+  }
 
   return { kind, R, r, d, n, turns, harmLock };
 }
@@ -267,10 +274,11 @@ export function generatePlanetParticles(
   planet: PlanetDef,
   weight: number,
   maxR: number,
-  budgetMultiplier: number = 1.0
+  budgetMultiplier: number = 1.0,
+  modulation?: { geometrySkew?: number; penDistanceShift?: number },
 ): BazParticle[] {
   const tier = getTier(weight);
-  const sp = computeSpiroParams(planet.hz);
+  const sp = computeSpiroParams(planet.hz, true, modulation);
   const particles: BazParticle[] = [];
   const col = planet.color;
   const seed = Math.abs(planet.hz) + 0.12345;
