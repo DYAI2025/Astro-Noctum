@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import BlueprintCard from '../components/dashboard/BlueprintCard';
+import { translations } from '../i18n/translations';
 
 // Mock useLanguage to simulate lang="de" with real German translation values
 vi.mock('../contexts/LanguageContext', () => ({
@@ -49,5 +50,21 @@ describe('BlueprintCard i18n (lang=de)', () => {
     render(<BlueprintCard content="Test content" title="Custom Titel" />);
     expect(screen.getByText('Custom Titel')).toBeDefined();
     expect(screen.queryByText('Kosmischer Blueprint')).toBeNull();
+  });
+});
+
+describe('translations.ts DE interpretation copy', () => {
+  const de = translations.de.dashboard.interpretation;
+
+  it('sectionTitle contains no English "Cosmic"', () => {
+    expect(de.sectionTitle).not.toMatch(/cosmic/i);
+  });
+
+  it('sectionTitle is fully German', () => {
+    expect(de.sectionTitle).toMatch(/kosmisch/i);
+  });
+
+  it('sectionLabel is in German (not "AI Synthesis")', () => {
+    expect(de.sectionLabel).not.toMatch(/^AI /i);
   });
 });

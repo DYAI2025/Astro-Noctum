@@ -366,8 +366,8 @@ const translationsDe: DeepStringRecord = {
       sectionDesc: "Die zwölf Häuser beschreiben die verschiedenen Lebensbereiche, in denen sich deine Planetenenergien ausdrücken.",
     },
     interpretation: {
-      sectionLabel: "KI-Synthese",
-      sectionTitle: "Dein Cosmic Blueprint",
+      sectionLabel: "KI-Auswertung",
+      sectionTitle: "Dein Kosmischer Blueprint",
     },
     blueprint: {
       title: "Kosmischer Blueprint",
