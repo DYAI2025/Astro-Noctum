@@ -2,11 +2,12 @@
 import { describe, it, expect } from 'vitest';
 
 describe('Stripe checkout configuration', () => {
-  it('checkout route uses payment mode', async () => {
-    // Verify the server code has mode: "payment" (not "subscription")
+  it('checkout route uses subscription mode', async () => {
+    // Verify the server code has mode: "subscription" (recurring 4.99 EUR/month)
     const fs = await import('fs');
     const serverCode = fs.readFileSync('server.mjs', 'utf8');
-    expect(serverCode).toContain('mode: "payment"');
+    expect(serverCode).toContain('mode: "subscription"');
+    expect(serverCode).not.toContain('mode: "payment"');
   });
 
   it('webhook handles checkout.session.completed', async () => {
