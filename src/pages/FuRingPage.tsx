@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/src/contexts/LanguageContext';
@@ -10,6 +10,8 @@ import { useCompletedModules } from '@/src/hooks/useCompletedModules';
 import { useQuizSuggestion } from '@/src/hooks/useQuizSuggestion';
 import { usePremium } from '@/src/hooks/usePremium';
 import { useSpaceWeather } from '@/src/hooks/useSpaceWeather';
+import { useFusionSignal } from '@/src/hooks/useFusionSignal';
+import { useDissonance } from '@/src/hooks/useDissonance';
 import { ClusterSidebar } from '@/src/components/signatur/ClusterSidebar';
 import { PremiumUpgradeModal } from '@/src/components/signatur/PremiumUpgradeModal';
 import { ClusterPipeline } from '@/src/components/signatur/ClusterPipeline';
@@ -18,24 +20,50 @@ import {
   isClusterComplete,
   findClusterForModule,
 } from '@/src/lib/fusion-ring/clusters';
-import { quizSectorsToQuizWeights } from '@/src/components/fusion-ring-website/signatur-bridge';
+import { quizSectorsToQuizWeights, soulprintToNatalWeights } from '@/src/components/fusion-ring-website/signatur-bridge';
 import type { ContributionEvent } from '@/src/lib/lme/types';
 import { eventToSectorSignals } from '@/src/lib/fusion-ring/test-signal';
 
 export default function FuRingPage() {
   const { t, lang } = useLanguage();
-  const { userId } = useAppLayout();
+  const { userId, apiData } = useAppLayout();
   const { isPremium } = usePremium();
   const { completedModuleIds, addModule } = useCompletedModules();
   const suggestedModule = useQuizSuggestion(completedModuleIds);
   const quizContribution = useQuizContribution(completedModuleIds);
   const spaceWeather = useSpaceWeather();
+  const { signalData } = useFusionSignal(userId);
 
   const [activeQuiz, setActiveQuiz] = useState<string | null>(null);
   const [justCompletedCluster, setJustCompletedCluster] = useState<string | null>(null);
   const [liveQuizWeights, setLiveQuizWeights] = useState<Record<string, number> | undefined>();
+  const [liveQuizSectors, setLiveQuizSectors] = useState<number[] | null>(null);
   const [premiumCluster, setPremiumCluster] = useState<string | null>(null);
   const [ringEffect, setRingEffect] = useState<{ type: string; color?: string; timestamp: number; intensity?: number } | null>(null);
+
+  // Natal planet weights from birth chart soulprint
+  const natalPlanetWeights = useMemo(
+    () => signalData?.baseSignals ? soulprintToNatalWeights(signalData.baseSignals) : null,
+    [signalData?.baseSignals],
+  );
+
+  // Current planet weights derived from the latest quiz sectors
+  const currentPlanetWeights = useMemo(
+    () => liveQuizSectors ? soulprintToNatalWeights(liveQuizSectors) : null,
+    [liveQuizSectors],
+  );
+
+  const wuxinBalance = useMemo(
+    () => apiData?.wuxing?.elements ?? undefined,
+    [apiData?.wuxing?.elements],
+  );
+
+  const { modulation: dissonanceModulation } = useDissonance({
+    natalWeights: natalPlanetWeights,
+    currentWeights: currentPlanetWeights,
+    previousWeights: null,
+    wuxinBalance,
+  });
 
   const handleQuizComplete = useCallback((event: ContributionEvent) => {
     quizContribution(event);
@@ -58,6 +86,7 @@ export default function FuRingPage() {
       if (sectors && sectors.length === 12) {
         const normalized = sectors.map(s => (s + 1) / 2);
         setLiveQuizWeights(quizSectorsToQuizWeights(normalized));
+        setLiveQuizSectors(normalized);
       }
     }
     // Do NOT close the overlay here — the quiz still shows its ResultScreen
@@ -153,6 +182,7 @@ export default function FuRingPage() {
               quizWeights={liveQuizWeights}
               effectTrigger={ringEffect}
               solarModulation={spaceWeather.ringModulation}
+              dissonanceModulation={dissonanceModulation}
               labels={{
                 regionLabel: t('furing3d.a11y.regionLabel'),
                 loading: t('furing3d.loading'),

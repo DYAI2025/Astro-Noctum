@@ -74,6 +74,8 @@ export interface FusionRingCanvasProps {
   effectTrigger?: { type: string; color?: string; timestamp: number; intensity?: number } | null;
   solarModulation?: number; // 1.0–1.5, multiplied into particle intensity
   className?: string;
+  /** Optional dissonance visual modulation from useDissonance() */
+  dissonanceModulation?: import('../../lib/fusion-ring/dissonance-visual').VisualModulation | null;
 }
 
 // Simple hash for deterministic pseudo-random
@@ -1302,6 +1304,7 @@ export default function FusionRingCanvas({
   effectTrigger,
   solarModulation = 1.0,
   className,
+  dissonanceModulation,
 }: FusionRingCanvasProps) {
   const [mounted, setMounted] = useState(false);
   const [webglSupported, setWebglSupported] = useState(true);
