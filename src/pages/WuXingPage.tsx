@@ -27,7 +27,7 @@ const ELEMENT_COLORS: Record<string, string> = {
 };
 
 function ElementBalanceChart({ elements }: { elements: Record<string, number> }) {
-  const entries = Object.entries(elements).filter(([, v]) => Number(v) >= 0);
+  const entries = Object.entries(elements).filter(([, v]) => Number(v) > 0);
   const total = entries.reduce((sum, [, v]) => sum + Number(v), 0);
 
   return (

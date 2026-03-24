@@ -1,6 +1,6 @@
 import { supabase } from "../lib/supabase";
 import type { ApiData } from "../types/bafe";
-import type { TileTexts, HouseTexts } from "../types/interpretation";
+import type { TileTexts } from "../types/interpretation";
 
 // ── Types ───────────────────────────────────────────────────────────
 
@@ -43,7 +43,6 @@ export async function upsertAstroProfile(
   bafeData: BafeData,
   interpretation: string,
   tiles: TileTexts = {},
-  houses: HouseTexts = {},
 ) {
   const sunSign = bafeData.western?.zodiac_sign || null;
   const moonSign = bafeData.western?.moon_sign || null;
@@ -72,7 +71,6 @@ export async function upsertAstroProfile(
         tst:     bafeData.tst,
         interpretation,
         tiles,
-        houses,
       },
       astro_computed_at: new Date().toISOString(),
     },
