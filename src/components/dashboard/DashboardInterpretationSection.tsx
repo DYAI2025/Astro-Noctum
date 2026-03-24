@@ -2,7 +2,6 @@ import { useMemo, lazy, Suspense } from 'react';
 const ReactMarkdown = lazy(() => import('react-markdown'));
 import { PremiumGate } from '../PremiumGate';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { Badge } from "../ui/badge";
 
 interface DashboardInterpretationSectionProps {
   interpretation: string;
@@ -40,10 +39,6 @@ export function DashboardInterpretationSection({
 
   return (
     <div className="morning-card p-5 sm:p-8 md:col-span-2 max-w-4xl mx-auto">
-      <div className="flex items-center gap-4 mb-5">
-        <span className="h-[1px] w-10 bg-[#8B6914]/20" />
-        <Badge variant="default">{t('dashboard.interpretation.sectionLabel')}</Badge>
-      </div>
       <h3 className="font-serif text-2xl text-[#1E2A3A] mb-5">
         {t('dashboard.interpretation.sectionTitle')}
       </h3>

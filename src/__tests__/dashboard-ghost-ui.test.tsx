@@ -76,7 +76,6 @@ vi.mock('@/src/components/dashboard/DashboardAstroSection', () => ({
 vi.mock('@/src/components/dashboard/DashboardInterpretationSection', () => ({
   DashboardInterpretationSection: ({ interpretation }: { interpretation: string; isPremium: boolean }) => (
     <div data-testid="interpretation-section">
-      <span>KI-Synthese</span>
       <p>{interpretation}</p>
     </div>
   ),
@@ -155,15 +154,10 @@ describe('Dashboard ghost UI cleanup (S-DP-01 to S-DP-04)', () => {
     expect(screen.queryByText('Restart')).toBeNull();
   });
 
-  it('does NOT render the "KI-Synthese" badge directly inside Dashboard JSX', () => {
-    // Note: the DashboardInterpretationSection is mocked above to include a KI-Synthese span
-    // so this test checks that Dashboard itself does not independently render that heading.
-    // The mock for DashboardInterpretationSection renders KI-Synthese, so we only
-    // verify Dashboard's own JSX doesn't add a second occurrence via a Badge component.
+  it('does NOT render the "KI-Synthese" badge heading anywhere in the page', () => {
     render(<Dashboard {...baseProps} />);
-    // The KI-Synthese text comes only from the mocked child — not from Dashboard.tsx itself
-    const allOccurrences = screen.queryAllByText('KI-Synthese');
-    // Only one occurrence allowed: the one from the mocked DashboardInterpretationSection
-    expect(allOccurrences.length).toBeLessThanOrEqual(1);
+    expect(screen.queryByText('KI-Synthese')).toBeNull();
+    // Also check via translation key value
+    expect(screen.queryByText('dashboard.interpretation.sectionLabel')).toBeNull();
   });
 });
