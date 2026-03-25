@@ -376,8 +376,7 @@ export function Dashboard({
       <motion.div className="mb-10" {...fadeIn(0.45)}>
         <SectionErrorBoundary name="BlueprintCard">
           <BlueprintCard
-            title={lang === 'de' ? "Kosmischer Blueprint" : "Cosmic Blueprint"}
-            content={interpretation.split('\n\n').find(p => p.trim() && !p.startsWith('#')) || (lang === 'de' ? 'Dein kosmischer Blueprint wird geladen…' : 'Loading your cosmic blueprint…')}
+            content={interpretation.split('\n\n').find(p => p.trim() && !p.startsWith('#')) || t('dashboard.blueprint.loading')}
             onCtaClick={() => document.getElementById("interpretation-section")?.scrollIntoView({ behavior: "smooth" })}
           />
         </SectionErrorBoundary>
