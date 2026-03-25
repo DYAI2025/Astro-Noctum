@@ -24,6 +24,8 @@ import { isFeatureEnabled } from "../lib/feature-flags";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import BlueprintCard from "./dashboard/BlueprintCard";
+import MiniSignature from "./dashboard/MiniSignature";
+import { soulprintToNatalWeights } from "./fusion-ring-website/signatur-bridge";
 import InfluenceGauges from "./dashboard/InfluenceGauges";
 import { TourOverlay } from "./dashboard/TourOverlay";
 import { useDashboardTour } from "@/src/hooks/useDashboardTour";
@@ -354,6 +356,18 @@ export function Dashboard({
           tileTexts={tileTexts}
         />
       </SectionErrorBoundary>
+
+      {/* ═══ SIGNATUR V3 — Bipolar Trail Mini Preview ═══════════════════ */}
+      <motion.div className="mb-12 sm:mb-16" {...fadeIn(0.35)}>
+        <SectionErrorBoundary name="MiniSignature">
+          <MiniSignature
+            natalWeights={profileMeta.soulprintSectors ? soulprintToNatalWeights(profileMeta.soulprintSectors) : undefined}
+            quizWeights={profileMeta.quizSectors.length === 12 ? soulprintToNatalWeights(profileMeta.quizSectors) : undefined}
+            dayHarmonic={dayHarmonic}
+            onExpand={() => window.location.assign('/signatur')}
+          />
+        </SectionErrorBoundary>
+      </motion.div>
 
       {/* ── Tour sentinel: step 2 triggers when Levi/interpretation area scrolls into view ── */}
       <div ref={leviSentinelRef} className="h-px" aria-hidden="true" />
