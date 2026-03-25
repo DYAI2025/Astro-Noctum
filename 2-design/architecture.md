@@ -227,5 +227,7 @@ Individuation thresholds: >= 0.60 strongly individual, >= 0.30 distinctly person
 - [`DEC-supabase-backend`](decisions/DEC-supabase-backend.md) — Supabase as auth and persistence layer
 - [`DEC-swiss-ephemeris`](decisions/DEC-swiss-ephemeris.md) — Swiss Ephemeris pinned, no Moshier fallback
 - [`DEC-wuxing-ui-mapping`](decisions/DEC-wuxing-ui-mapping.md) — Wu-Xing element-to-UI mapping conventions
+- [`DEC-dissonance-model`](decisions/DEC-dissonance-model.md) — Three-layer dissonance model for signature modulation
+- [`DEC-signatur-v3-bipolar-trails`](decisions/DEC-signatur-v3-bipolar-trails.md) — Bipolar trail engine (V3 prototype, replacing particle spirograph)
 - [`archive/TRUENORTH.md`](../archive/TRUENORTH.md) — Three-layer autopoietic model and five governing laws
 - `bazodiac_engine/ARCHITECTURE.md` — Signal engine internals and projection modules
