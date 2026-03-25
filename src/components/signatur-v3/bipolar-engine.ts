@@ -78,7 +78,7 @@ export interface DissonanceState {
 
 /**
  * 6 Dimensions, each with 2 poles = 12 poles.
- * Placed at 30° intervals around the circle (like zodiac signs).
+ * Placed at 60° intervals around the circle (like every other zodiac sign).
  * Each dimension's poles are opposite (180° apart).
  *
  * Pole A sits at baseAngle, Pole B at baseAngle + π.
