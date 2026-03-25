@@ -72,6 +72,15 @@ export interface DissonanceState {
   elementalQuality: number;
 }
 
+export interface DayHarmonicState {
+  /** 0–1 — cosine similarity between Wu-Xing vectors (Western + BaZi) */
+  harmonyIndex: number;
+  /** pulse: H < 0.50 (calm, symmetric); trace: H >= 0.50 (crossing, something happens) */
+  mode: 'pulse' | 'trace';
+  /** |H - 0.45| / 0.55, normalized [0,1] — distance from random baseline */
+  intensity: number;
+}
+
 // ═══════════════════════════════════════
 //  DIMENSION DEFINITIONS
 // ═══════════════════════════════════════
@@ -250,6 +259,41 @@ export function computeDissonance(
 }
 
 // ═══════════════════════════════════════
+//  DAY HARMONIC
+// ═══════════════════════════════════════
+
+const HARMONY_RANDOM_BASELINE = 0.45;
+const HARMONY_RANGE = 0.55; // 1.0 - baseline
+
+/**
+ * Derive DayHarmonicState from the harmony_index returned by the Experience API.
+ */
+export function computeDayHarmonic(harmonyIndex: number): DayHarmonicState {
+  const h = clamp(harmonyIndex, 0, 1);
+  const mode: 'pulse' | 'trace' = h >= 0.50 ? 'trace' : 'pulse';
+  const intensity = clamp(Math.abs(h - HARMONY_RANDOM_BASELINE) / HARMONY_RANGE, 0, 1);
+  return { harmonyIndex: h, mode, intensity };
+}
+
+/**
+ * Return a modulated config based on the day's harmonic state.
+ * Pulse → higher trailPersistence (trails condense, calm).
+ * Trace → slightly lower trailPersistence (trails burn in, fade faster).
+ */
+export function modulateConfig(
+  base: SignaturV3Config,
+  dayHarmonic: DayHarmonicState,
+): SignaturV3Config {
+  let trailPersistence = base.trailPersistence;
+  if (dayHarmonic.mode === 'pulse') {
+    trailPersistence = clamp(base.trailPersistence + dayHarmonic.intensity * 0.12, 0, 0.99);
+  } else {
+    trailPersistence = clamp(base.trailPersistence - dayHarmonic.intensity * 0.06, 0, 0.99);
+  }
+  return { ...base, trailPersistence };
+}
+
+// ═══════════════════════════════════════
 //  MOVEMENT UPDATE (per frame)
 // ═══════════════════════════════════════
 
@@ -274,6 +318,7 @@ export function updatePoles(
   dissonance: DissonanceState,
   config: SignaturV3Config,
   time: number,
+  dayHarmonic?: DayHarmonicState,
 ): void {
   for (let i = 0; i < poles.length; i += 2) {
     const poleA = poles[i]!;
@@ -303,7 +348,16 @@ export function updatePoles(
 
     // === BLEND between consonant and dissonant ===
     // d=0 → pure symmetric, d=1 → pure lissajous
-    const blend = clamp(d * 2, 0, 1); // amplify small dissonances
+    let blend = clamp(d * 2, 0, 1); // amplify small dissonances
+
+    // Day-Trace: boost Lissajous crossing for top dimensions (high Hz = more active)
+    if (dayHarmonic?.mode === 'trace') {
+      const hzNorm = logNormHz(dim.hz);
+      // Only boost the "crossing" half of dimensions (Hz above median ≈ 0.5)
+      if (hzNorm >= 0.4) {
+        blend = clamp(blend + dayHarmonic.intensity * 0.6, 0, 1);
+      }
+    }
 
     poleA.x = lerp(symmetricAx, lissajousAx, blend);
     poleA.y = lerp(symmetricAy, lissajousAy, blend);
@@ -327,6 +381,19 @@ export function updatePoles(
       const perpB = poleB.theta + Math.PI / 2;
       poleB.x += Math.cos(perpB) * vib * -1; // opposite vibration
       poleB.y += Math.sin(perpB) * vib * -1;
+    }
+
+    // === DAY-TRACE: micro-vibration at crossing points ===
+    if (dayHarmonic?.mode === 'trace' && blend > 0.3) {
+      const vibAmp = dayHarmonic.intensity * config.maxR * 0.015;
+      const vibFreq = 6.0 + dayHarmonic.intensity * 8.0; // faster when more intense
+      const crossVib = Math.sin(time * vibFreq + dim.baseAngle * 2) * vibAmp;
+      const perpA = poleA.theta + Math.PI / 2;
+      poleA.x += Math.cos(perpA) * crossVib;
+      poleA.y += Math.sin(perpA) * crossVib;
+      const perpB = poleB.theta + Math.PI / 2;
+      poleB.x += Math.cos(perpB) * crossVib * -1;
+      poleB.y += Math.sin(perpB) * crossVib * -1;
     }
 
     // === RECORD TRAIL ===
