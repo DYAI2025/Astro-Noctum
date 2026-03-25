@@ -290,16 +290,16 @@ export function updatePoles(
     // Both poles trace circles/ellipses around center, 180° apart
     const symmetricAx = Math.cos(poleA.theta) * poleA.radius;
     const symmetricAy = Math.sin(poleA.theta) * poleA.radius;
-    const symmetricBx = Math.cos(poleB.theta + Math.PI) * poleB.radius;
-    const symmetricBy = Math.sin(poleB.theta + Math.PI) * poleB.radius;
+    const symmetricBx = Math.cos(poleB.theta) * poleB.radius;
+    const symmetricBy = Math.sin(poleB.theta) * poleB.radius;
 
     // === DISSONANT MODE (d → 1): Counter-directional through center ===
     // Lissajous pattern: poles cross through center with frequency ratios
     const freqRatio = 1 + hash01(dim.hz, 3) * 2; // 1-3 ratio for variety
     const lissajousAx = Math.cos(poleA.theta) * poleA.radius;
     const lissajousAy = Math.sin(poleA.theta * freqRatio) * poleA.radius;
-    const lissajousBx = Math.cos(poleB.theta + Math.PI) * poleB.radius;
-    const lissajousBy = Math.sin(poleB.theta * freqRatio + Math.PI) * poleB.radius;
+    const lissajousBx = Math.cos(poleB.theta) * poleB.radius;
+    const lissajousBy = Math.sin(poleB.theta * freqRatio) * poleB.radius;
 
     // === BLEND between consonant and dissonant ===
     // d=0 → pure symmetric, d=1 → pure lissajous
