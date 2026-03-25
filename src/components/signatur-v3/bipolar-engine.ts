@@ -328,10 +328,12 @@ export function updatePoles(
     // d=0 → pure symmetric, d=1 → pure lissajous
     let blend = clamp(d * 2, 0, 1); // amplify small dissonances
 
-    // Day-Trace: boost Lissajous crossing for top dimensions (high Hz = more active)
+    // Day-Trace: boost Lissajous blend for high-Hz dimensions (Moon ≈ 0.81, Jupiter ≈ 0.67).
+    // Threshold 0.4 selects exactly these 2 out of 6 — matching design doc "top 2 crossing dims".
+    // If adding new dimensions with Hz 140–150 range, re-verify this threshold holds.
     if (dayHarmonic?.mode === 'trace') {
       const hzNorm = logNormHz(dim.hz);
-      // Only boost the "crossing" half of dimensions (Hz above median ≈ 0.5)
+      // Boosts Moon (0.81) and Jupiter (0.67); skips Sun/Mercury/Mars/Saturn (≤ 0.38)
       if (hzNorm >= 0.4) {
         blend = clamp(blend + dayHarmonic.intensity * 0.6, 0, 1);
       }
