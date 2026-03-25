@@ -285,6 +285,12 @@ body {
     height: 460px; /* restore full height on tablet/desktop */
   }
 }
+/* Fullscreen: canvas fills the entire screen, shows more sky */
+:fullscreen .orrery-canvas-container,
+:-webkit-full-screen .orrery-canvas-container {
+  height: 100vh;
+  height: 100dvh; /* respects mobile browser chrome */
+}
 
 /* ── Typography ────────────────────────────────────────────────────────── */
 
@@ -941,5 +947,100 @@ h1, h2, h3 { letter-spacing: 0.1em; }
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(155, 58, 106, 0.5);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE — Full mobile-first overhaul
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Safe Areas (iPhone notch, Android gesture bar) ───────────────────── */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  /* Bottom nav needs safe-area padding for home indicator */
+  nav.fixed.bottom-0 {
+    padding-bottom: env(safe-area-inset-bottom);
+    height: calc(4rem + env(safe-area-inset-bottom));
+  }
+  /* Main content: clear the safe-area-aware bottom nav */
+  main {
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* ── Touch Targets — minimum 44×44px per WCAG ────────────────────────── */
+@media (pointer: coarse) {
+  /* Bottom nav items */
+  nav.fixed.bottom-0 a,
+  nav.fixed.bottom-0 button {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* Interactive cards */
+  .morning-card button,
+  .morning-card a {
+    min-height: 44px;
+  }
+  /* Lang toggle bigger touch targets */
+  .lang-toggle button {
+    padding: 8px 14px;
+    font-size: 10px;
+  }
+}
+
+/* ── Mobile Bottom Nav enhancements ──────────────────────────────────── */
+@media (max-width: 767px) {
+  /* Breathing room: don't let content hide behind fixed nav */
+  body {
+    min-height: 100dvh;
+  }
+  /* Responsive text sizes */
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.25rem; }
+  h3 { font-size: 1.1rem; }
+
+  /* Cards: tighter padding on small screens */
+  .morning-card {
+    padding: 1rem;
+    border-radius: 12px;
+  }
+
+  /* Stele cards: smaller on mobile */
+  .morning-stele {
+    padding: 1rem 0.75rem;
+  }
+
+  /* Chart grids: single column on very small screens */
+  .chart-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Small phones (<375px) — extra compact ───────────────────────────── */
+@media (max-width: 374px) {
+  .morning-card {
+    padding: 0.75rem;
+    border-radius: 10px;
+  }
+  nav.fixed.bottom-0 {
+    gap: 0;
+  }
+  nav.fixed.bottom-0 span {
+    font-size: 7px;
+  }
+}
+
+/* ── Prevent horizontal scroll everywhere ─────────────────────────────── */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+/* ── Mobile-optimised animations — reduce paint for battery ──────────── */
+@media (max-width: 767px) {
+  .breathing {
+    animation-duration: 3s; /* slower = fewer repaints */
+  }
 }
 

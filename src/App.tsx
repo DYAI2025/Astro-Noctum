@@ -11,8 +11,11 @@ import { trackEvent } from "./lib/analytics";
 import { usePlanetarium } from "./contexts/PlanetariumContext";
 import { FusionRingProvider } from "./contexts/FusionRingContext";
 import { AppLayoutProvider } from "./contexts/AppLayoutContext";
+import { LeviProvider, useLevi } from "./contexts/LeviContext";
+import { LeviFloatingWidget } from "./components/LeviFloatingWidget";
 import { AppRoutes } from "./router";
 import { bootstrapExperience } from "./services/experience";
+import { usePremium } from "./hooks/usePremium";
 import { isFeatureEnabled } from "./lib/feature-flags";
 import type { BootstrapResponse, SignatureDeltaResponse } from "./lib/schemas/experience";
 import { Volume2, VolumeX, LogOut } from "lucide-react";
@@ -201,9 +204,25 @@ export default function App() {
   // phase first — even if BAFE already finished in the background.
   const hasCompleteProfile = profileDataReady && (!hasStartedOnboarding || onboardingPhase === 'done');
 
+  // ── Levi upgrade handler (shared across all pages) ──────────────────
+  const handleLeviUpgrade = async () => {
+    try {
+      const res = await (await import("@/src/lib/authedFetch")).authedFetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const { url } = await res.json();
+      if (url) window.location.href = url;
+    } catch { /* ignore */ }
+  };
+
+  // Premium status from Supabase profiles table
+  const { isPremium } = usePremium();
+
   // Authenticated app with routing
   return (
     <BrowserRouter>
+      <LeviProvider onStopAudio={ambiente.pause} onResumeAudio={ambiente.resume}>
       <FusionRingProvider apiResults={apiData} userId={user.id}>
         <AppLayoutProvider value={{
           interpretation: interpretation!,
@@ -219,6 +238,17 @@ export default function App() {
           onResumeAudio: ambiente.resume,
           isFirstReading,
         }}>
+          {/* Levi Floating Widget — lives OUTSIDE the router, survives navigation */}
+          <LeviPremiumSync isPremium={isPremium} />
+          {hasCompleteProfile && (
+            <LeviFloatingWidget
+              userId={user.id}
+              sunSign={apiData?.western?.zodiac_sign || ''}
+              zodiacAnimal={apiData?.bazi?.zodiac_sign || ''}
+              dominantEl={apiData?.wuxing?.dominant_element || ''}
+              onUpgrade={handleLeviUpgrade}
+            />
+          )}
           <AppShell
             user={user}
             lang={lang}
@@ -247,7 +277,60 @@ export default function App() {
           />
         </AppLayoutProvider>
       </FusionRingProvider>
+      </LeviProvider>
     </BrowserRouter>
+  );
+}
+
+// Tiny helper to sync premium status into LeviContext
+function LeviPremiumSync({ isPremium }: { isPremium: boolean }) {
+  const { setIsPremium } = useLevi();
+  useEffect(() => { setIsPremium(isPremium); }, [isPremium, setIsPremium]);
+  return null;
+}
+
+// Nav link that opens the global Levi widget instead of scrolling to a section
+function LeviNavLink({ t }: { t: (key: string) => string }) {
+  const { active, setExpanded } = useLevi();
+  return (
+    <a
+      href="#"
+      onClick={(e) => {
+        e.preventDefault();
+        setExpanded(true);
+      }}
+      className={`transition-colors ${active ? 'text-emerald-500' : 'text-ink/60 hover:text-gold-deep'}`}
+    >
+      {t("nav.levi")}
+      {active && <span className="ml-1 inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />}
+    </a>
+  );
+}
+
+// Mobile bottom nav Levi button — shows active state with pulsing dot
+function MobileLeviNavButton() {
+  const { active, setExpanded } = useLevi();
+  return (
+    <button
+      onClick={() => setExpanded(true)}
+      className={`flex flex-col items-center justify-center gap-0.5 min-w-[48px] min-h-[48px] p-1 rounded-lg active:bg-gold-deep/10 transition-colors ${
+        active ? 'text-emerald-500' : 'text-ink/40'
+      }`}
+      aria-label="Levi"
+    >
+      <div className="relative">
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+          <line x1="12" y1="19" x2="12" y2="23" />
+          <line x1="8" y1="23" x2="16" y2="23" />
+        </svg>
+        {active && (
+          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+        )}
+      </div>
+      <span className="text-[9px] uppercase tracking-tight leading-none">Levi</span>
+    </button>
   );
 }
 
@@ -302,16 +385,7 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
           <a href="https://sky.bazodiac.space" target="_blank" rel="noopener noreferrer" className={`transition-colors ${location.pathname === "/" ? "text-gold-deep" : "text-ink/60 hover:text-gold-deep"}`}>
             {t("nav.sky")}
           </a>
-          <a href="#" onClick={(e) => {
-            e.preventDefault();
-            if (location.pathname !== "/") {
-              window.location.href = "/";
-            } else {
-              document.querySelector('[data-levi-widget]')?.scrollIntoView({ behavior: 'smooth' });
-            }
-          }} className={`transition-colors ${location.pathname === "/" ? "text-gold-deep" : "text-ink/60 hover:text-gold-deep"}`}>
-            {t("nav.levi")}
-          </a>
+          <LeviNavLink t={t} />
           <Link to="/faq" className={`transition-colors ${location.pathname === "/faq" ? "text-gold-deep" : "text-ink/60 hover:text-gold-deep"}`}>
             {t("nav.faq")}
           </Link>
@@ -403,8 +477,8 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
       <main
         className={
           isSignaturRoute
-            ? "flex-grow pt-6 md:pt-24 pb-24 md:pb-20 relative z-10 w-full"
-            : "flex-grow pt-6 md:pt-32 pb-24 md:pb-20 relative z-10 container mx-auto px-4 flex flex-col items-center justify-center"
+            ? "flex-grow pt-4 md:pt-24 pb-28 md:pb-20 relative z-10 w-full"
+            : "flex-grow pt-4 md:pt-32 pb-28 md:pb-20 relative z-10 container mx-auto px-3 sm:px-4 flex flex-col items-center justify-center"
         }
       >
         {error && (
@@ -415,36 +489,33 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
         <AppRoutes hasCompleteProfile={hasCompleteProfile} onboardingProps={onboardingProps} />
       </main>
 
-      {/* ── Bottom Nav (Mobile) ───────────────────────────────────────── */}
+      {/* ── Bottom Nav (Mobile) — larger touch targets, safe-area aware ── */}
       {!isOnboardingRoute && (
-      <nav className="md:hidden fixed bottom-0 w-full bg-white/70 backdrop-blur-xl border-t border-gold-deep/15 flex items-center justify-around z-50 h-16">
-        <div className="lang-toggle" role="group" aria-label="Sprache">
-          <button className={lang === "de" ? "active" : ""} onClick={() => setLang("de")} aria-pressed={lang === "de" ? "true" : "false"}>DE</button>
-          <button className={lang === "en" ? "active" : ""} onClick={() => setLang("en")} aria-pressed={lang === "en" ? "true" : "false"}>EN</button>
-        </div>
-
-        <Link to="/" className={`flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-gold/50 rounded ${location.pathname === "/" ? "text-gold-deep" : "text-ink/40"}`}>
+      <nav className="md:hidden fixed bottom-0 w-full bg-white/70 backdrop-blur-xl border-t border-gold-deep/15 flex items-center justify-around z-50 h-16 px-2">
+        <Link to="/" className={`flex flex-col items-center justify-center gap-0.5 min-w-[48px] min-h-[48px] p-1 rounded-lg active:bg-gold-deep/10 transition-colors ${location.pathname === "/" ? "text-gold-deep" : "text-ink/40"}`}>
           <House className="w-5 h-5" aria-hidden="true" />
-          <span className="text-[8px] uppercase tracking-tighter">{t("nav.atlas")}</span>
+          <span className="text-[9px] uppercase tracking-tight leading-none">{t("nav.atlas")}</span>
         </Link>
 
-        <Link to="/signatur" className={`flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-gold/50 rounded ${location.pathname === "/signatur" ? "text-gold-deep" : "text-ink/40"}`}>
+        <Link to="/signatur" className={`flex flex-col items-center justify-center gap-0.5 min-w-[48px] min-h-[48px] p-1 rounded-lg active:bg-gold-deep/10 transition-colors ${location.pathname === "/signatur" ? "text-gold-deep" : "text-ink/40"}`}>
           <Sparkles className="w-5 h-5" aria-hidden="true" />
-          <span className="text-[8px] uppercase tracking-tighter">{t("nav.signatur")}</span>
+          <span className="text-[9px] uppercase tracking-tight leading-none">{t("nav.signatur")}</span>
         </Link>
 
-        <a href="https://sky.bazodiac.space" target="_blank" rel="noopener noreferrer" className={`flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-gold/50 rounded ${location.pathname === "/signatur" ? "text-gold-deep" : "text-ink/40"}`}>
+        <a href="https://sky.bazodiac.space" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center gap-0.5 min-w-[48px] min-h-[48px] p-1 rounded-lg active:bg-gold-deep/10 transition-colors text-ink/40">
           <TelescopeIcon className="w-5 h-5" aria-hidden="true" />
-          <span className="text-[8px] uppercase tracking-tighter">{t("nav.sky")}</span>
+          <span className="text-[9px] uppercase tracking-tight leading-none">{t("nav.sky")}</span>
         </a>
 
-        <Link to="/faq" className={`flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-gold/50 rounded ${location.pathname === "/faq" ? "text-gold-deep" : "text-ink/40"}`}>
+        <MobileLeviNavButton />
+
+        <Link to="/faq" className={`flex flex-col items-center justify-center gap-0.5 min-w-[48px] min-h-[48px] p-1 rounded-lg active:bg-gold-deep/10 transition-colors ${location.pathname === "/faq" ? "text-gold-deep" : "text-ink/40"}`}>
           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <circle cx="12" cy="12" r="10" />
             <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
             <path d="M12 17h.01" />
           </svg>
-          <span className="text-[8px] uppercase tracking-tighter">{t("nav.faq")}</span>
+          <span className="text-[9px] uppercase tracking-tight leading-none">{t("nav.faq")}</span>
         </Link>
       </nav>
       )}

@@ -49,7 +49,7 @@ export function useDashboardTour(userId: string | undefined) {
           supabase.from('profiles').update({ tour_completed: true }).eq('id', userId)
             .then(({ error }) => {
               if (error) {
-                console.warn('[tour] persist failed:', error.message);
+                console.error('[tour] persist failed:', error.message);
                 setPersistError(error.message);
               }
             });

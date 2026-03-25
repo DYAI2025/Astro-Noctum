@@ -12,6 +12,10 @@
  * Die Form emergiert dort wo die meisten Spuren überlagern.
  */
 
+export type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
+export { computeDayHarmonic } from '../../lib/fusion-ring/day-harmonic';
+import type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
+
 // ═══════════════════════════════════════
 //  TYPES
 // ═══════════════════════════════════════
@@ -78,7 +82,7 @@ export interface DissonanceState {
 
 /**
  * 6 Dimensions, each with 2 poles = 12 poles.
- * Placed at 60° intervals around the circle (like every other zodiac sign).
+ * Placed at 30° intervals around the circle (like zodiac signs).
  * Each dimension's poles are opposite (180° apart).
  *
  * Pole A sits at baseAngle, Pole B at baseAngle + π.
@@ -249,6 +253,24 @@ export function computeDissonance(
   return { dimensional, dNatal, dAccumulated, elementalQuality };
 }
 
+/**
+ * Return a modulated config based on the day's harmonic state.
+ * Pulse → higher trailPersistence (trails condense, calm).
+ * Trace → slightly lower trailPersistence (trails burn in, fade faster).
+ */
+export function modulateConfig(
+  base: SignaturV3Config,
+  dayHarmonic: DayHarmonicState,
+): SignaturV3Config {
+  let trailPersistence = base.trailPersistence;
+  if (dayHarmonic.mode === 'pulse') {
+    trailPersistence = clamp(base.trailPersistence + dayHarmonic.intensity * 0.12, 0, 0.99);
+  } else {
+    trailPersistence = clamp(base.trailPersistence - dayHarmonic.intensity * 0.06, 0, 0.99);
+  }
+  return { ...base, trailPersistence };
+}
+
 // ═══════════════════════════════════════
 //  MOVEMENT UPDATE (per frame)
 // ═══════════════════════════════════════
@@ -274,6 +296,7 @@ export function updatePoles(
   dissonance: DissonanceState,
   config: SignaturV3Config,
   time: number,
+  dayHarmonic?: DayHarmonicState,
 ): void {
   for (let i = 0; i < poles.length; i += 2) {
     const poleA = poles[i]!;
@@ -290,20 +313,31 @@ export function updatePoles(
     // Both poles trace circles/ellipses around center, 180° apart
     const symmetricAx = Math.cos(poleA.theta) * poleA.radius;
     const symmetricAy = Math.sin(poleA.theta) * poleA.radius;
-    const symmetricBx = Math.cos(poleB.theta) * poleB.radius;
-    const symmetricBy = Math.sin(poleB.theta) * poleB.radius;
+    const symmetricBx = Math.cos(poleB.theta + Math.PI) * poleB.radius;
+    const symmetricBy = Math.sin(poleB.theta + Math.PI) * poleB.radius;
 
     // === DISSONANT MODE (d → 1): Counter-directional through center ===
     // Lissajous pattern: poles cross through center with frequency ratios
     const freqRatio = 1 + hash01(dim.hz, 3) * 2; // 1-3 ratio for variety
     const lissajousAx = Math.cos(poleA.theta) * poleA.radius;
     const lissajousAy = Math.sin(poleA.theta * freqRatio) * poleA.radius;
-    const lissajousBx = Math.cos(poleB.theta) * poleB.radius;
-    const lissajousBy = Math.sin(poleB.theta * freqRatio) * poleB.radius;
+    const lissajousBx = Math.cos(poleB.theta + Math.PI) * poleB.radius;
+    const lissajousBy = Math.sin(poleB.theta * freqRatio + Math.PI) * poleB.radius;
 
     // === BLEND between consonant and dissonant ===
     // d=0 → pure symmetric, d=1 → pure lissajous
-    const blend = clamp(d * 2, 0, 1); // amplify small dissonances
+    let blend = clamp(d * 2, 0, 1); // amplify small dissonances
+
+    // Day-Trace: boost Lissajous blend for high-Hz dimensions (Moon ≈ 0.81, Jupiter ≈ 0.67).
+    // Threshold 0.4 selects exactly these 2 out of 6 — matching design doc "top 2 crossing dims".
+    // If adding new dimensions with Hz 140–150 range, re-verify this threshold holds.
+    if (dayHarmonic?.mode === 'trace') {
+      const hzNorm = logNormHz(dim.hz);
+      // Boosts Moon (0.81) and Jupiter (0.67); skips Sun/Mercury/Mars/Saturn (≤ 0.38)
+      if (hzNorm >= 0.4) {
+        blend = clamp(blend + dayHarmonic.intensity * 0.6, 0, 1);
+      }
+    }
 
     poleA.x = lerp(symmetricAx, lissajousAx, blend);
     poleA.y = lerp(symmetricAy, lissajousAy, blend);
@@ -327,6 +361,19 @@ export function updatePoles(
       const perpB = poleB.theta + Math.PI / 2;
       poleB.x += Math.cos(perpB) * vib * -1; // opposite vibration
       poleB.y += Math.sin(perpB) * vib * -1;
+    }
+
+    // === DAY-TRACE: micro-vibration at crossing points ===
+    if (dayHarmonic?.mode === 'trace' && blend > 0.3) {
+      const vibAmp = dayHarmonic.intensity * config.maxR * 0.015;
+      const vibFreq = 6.0 + dayHarmonic.intensity * 8.0; // faster when more intense
+      const crossVib = Math.sin(time * vibFreq + dim.baseAngle * 2) * vibAmp;
+      const perpA = poleA.theta + Math.PI / 2;
+      poleA.x += Math.cos(perpA) * crossVib;
+      poleA.y += Math.sin(perpA) * crossVib;
+      const perpB = poleB.theta + Math.PI / 2;
+      poleB.x += Math.cos(perpB) * crossVib * -1;
+      poleB.y += Math.sin(perpB) * crossVib * -1;
     }
 
     // === RECORD TRAIL ===
@@ -374,25 +421,17 @@ export function computeDensityField(
   let maxDensity = 0;
 
   for (const pole of poles) {
-    const capacity = pole.trail.length / 2;
-    if (pole.trailLength === 0 || capacity === 0) {
-      continue;
-    }
-    // Oldest logical point in the ring buffer
-    const oldestIdx = (pole.trailHead - pole.trailLength + capacity) % capacity;
-
     for (let i = 0; i < pole.trailLength; i++) {
-      const readIdx = (oldestIdx + i) % capacity;
-      const x = pole.trail[readIdx * 2]!;
-      const y = pole.trail[readIdx * 2 + 1]!;
+      const x = pole.trail[i * 2]!;
+      const y = pole.trail[i * 2 + 1]!;
 
       // Map to grid coordinates
       const gx = Math.floor(x * scale + halfRes);
       const gy = Math.floor(y * scale + halfRes);
 
       if (gx >= 0 && gx < resolution && gy >= 0 && gy < resolution) {
-        // Newer trail points contribute more: age = 0 (newest) → max freshness
-        const age = pole.trailLength - 1 - i;
+        // Newer trail points contribute more
+        const age = (pole.trailHead - i + pole.trailLength) % pole.trailLength;
         const freshness = 1 - (age / pole.trailLength) * (1 - config.trailPersistence);
 
         const idx = gy * resolution + gx;

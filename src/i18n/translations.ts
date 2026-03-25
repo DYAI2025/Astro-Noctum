@@ -177,6 +177,7 @@ const translationsEn: DeepStringRecord = {
     blueprint: {
       title: "Cosmic Blueprint",
       cta: "Read full Blueprint →",
+      loading: "Loading your cosmic blueprint…",
       western: "Western",
       eastern: "Eastern",
     },
@@ -372,6 +373,7 @@ const translationsDe: DeepStringRecord = {
     blueprint: {
       title: "Kosmischer Blueprint",
       cta: "ganzen Blueprint lesen →",
+      loading: "Dein kosmischer Blueprint wird geladen…",
       western: "Westlich",
       eastern: "Östlich",
     },

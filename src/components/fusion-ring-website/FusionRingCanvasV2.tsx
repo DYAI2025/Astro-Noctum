@@ -118,7 +118,10 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
         EffectComposer = EC.EffectComposer;
         RenderPass = RP.RenderPass;
         UnrealBloomPass = UB.UnrealBloomPass;
-      } catch(e) { console.warn('THREE postprocessing missing, running without bloom'); }
+      } catch(e) {
+        console.error('[FusionRing] Postprocessing imports failed, running without bloom:', e);
+        onPostProcessDegraded?.();
+      }
 
       // === CORE OBJECTS ===
       const container = canvasRef.current;

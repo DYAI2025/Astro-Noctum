@@ -208,7 +208,7 @@ V3 kann alternativ die 6 Dimensionen direkt aus den 12 Sektoren ableiten (Assert
 
 ### Was V2 besser kann
 
-Detailreichtheit. 28K Partikel erzeugen eine visuelle Komplexität die V3 mit 12 Punkten nicht erreichen kann. Die Spirograph-Geometrie ist mathematisch tiefgründig (Cousto-Frequenzen → Lobenzahl → Fraktal-Tiers).
+Detailreichheit. 28K Partikel erzeugen eine visuelle Komplexität, die V3 mit 12 Punkten nicht erreichen kann. Die Spirograph-Geometrie ist mathematisch tiefgründig (Cousto-Frequenzen → Lobenzahl → Fraktal-Tiers).
 
 ### Was V3 besser kann
 

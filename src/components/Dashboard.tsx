@@ -10,7 +10,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { LegalFooter } from "./LegalFooter";
 import { UpgradeButton } from "./UpgradeButton";
 import { ManageSubscription } from "./ManageSubscription";
-import { DailyHoroscopeModal } from "./dashboard/DailyHoroscopeModal";
+import { DayModeModal } from "./dashboard/DayModeModal";
 import { useFirstRunDaily } from "../hooks/useFirstRunDaily";
 import { supabase } from "../lib/supabase";
 import type { ApiData } from "../types/bafe";
@@ -24,6 +24,7 @@ import { isFeatureEnabled } from "../lib/feature-flags";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import BlueprintCard from "./dashboard/BlueprintCard";
+import InfluenceGauges from "./dashboard/InfluenceGauges";
 import { TourOverlay } from "./dashboard/TourOverlay";
 import { useDashboardTour } from "@/src/hooks/useDashboardTour";
 import { usePlanetarium } from "@/src/contexts/PlanetariumContext";
@@ -249,7 +250,7 @@ export function Dashboard({
   const dailyEnabled = isFeatureEnabled('daily_modal_v1');
 
   // ── Daily horoscope modal ───────────────────────────────────────────
-  const { dailyData, showModal, handleClose: handleDailyClose } = useFirstRunDaily(
+  const { dailyData, dayHarmonic, showModal, handleClose: handleDailyClose } = useFirstRunDaily(
     userId,
     profileMeta.birthInput,
     profileMeta.soulprintSectors,
@@ -372,12 +373,18 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
+      {/* ═══ INFLUENCE GAUGES ═══════════════════════════════════════════ */}
+      <motion.div className="mb-10" {...fadeIn(0.42)}>
+        <SectionErrorBoundary name="InfluenceGauges">
+          <InfluenceGauges />
+        </SectionErrorBoundary>
+      </motion.div>
+
       {/* ═══ BLUEPRINT CARD ═════════════════════════════════════════════ */}
       <motion.div className="mb-10" {...fadeIn(0.45)}>
         <SectionErrorBoundary name="BlueprintCard">
           <BlueprintCard
-            title={lang === 'de' ? "Kosmischer Blueprint" : "Cosmic Blueprint"}
-            content={interpretation.split('\n\n').find(p => p.trim() && !p.startsWith('#')) || (lang === 'de' ? 'Dein kosmischer Blueprint wird geladen…' : 'Loading your cosmic blueprint…')}
+            content={interpretation.split('\n\n').find(p => p.trim() && !p.startsWith('#')) || t('dashboard.blueprint.loading')}
             onCtaClick={() => document.getElementById("interpretation-section")?.scrollIntoView({ behavior: "smooth" })}
           />
         </SectionErrorBoundary>
@@ -415,7 +422,7 @@ export function Dashboard({
       {/* ═══ DAILY HOROSCOPE MODAL ═══════════════════════════════════════ */}
       <AnimatePresence>
         {dailyEnabled && showModal && dailyData && (
-          <DailyHoroscopeModal data={dailyData} onClose={handleDailyClose} />
+          <DayModeModal data={dailyData} dayHarmonic={dayHarmonic} onClose={handleDailyClose} />
         )}
       </AnimatePresence>
 

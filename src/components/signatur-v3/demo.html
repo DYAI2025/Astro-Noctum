@@ -255,15 +255,15 @@ function update() {
     // Symmetric (consonant)
     const sAx = Math.cos(pA.theta) * pA.radius;
     const sAy = Math.sin(pA.theta) * pA.radius;
-    const sBx = Math.cos(pB.theta) * pB.radius;
-    const sBy = Math.sin(pB.theta) * pB.radius;
+    const sBx = Math.cos(pB.theta + Math.PI) * pB.radius;
+    const sBy = Math.sin(pB.theta + Math.PI) * pB.radius;
 
     // Lissajous (dissonant)
     const fRatio = 1 + hash01(dim.hz, 3) * 2;
     const lAx = Math.cos(pA.theta) * pA.radius;
     const lAy = Math.sin(pA.theta * fRatio) * pA.radius;
-    const lBx = Math.cos(pB.theta) * pB.radius;
-    const lBy = Math.sin(pB.theta * fRatio) * pB.radius;
+    const lBx = Math.cos(pB.theta + Math.PI) * pB.radius;
+    const lBy = Math.sin(pB.theta * fRatio + Math.PI) * pB.radius;
 
     const blend = clamp(d * 2, 0, 1);
     pA.x = lerp(sAx, lAx, blend);
@@ -491,8 +491,7 @@ function updateDissonanceDisplay() {
     bar.style.flex = '1';
     const fill = document.createElement('div');
     fill.className = 'dissonance-fill';
-    const normalized = Math.max(0, Math.min(1, d / 0.5));
-    fill.style.width = (normalized * 100) + '%';
+    fill.style.width = (d / 0.5 * 100) + '%';
     fill.style.background = `rgba(${dim.colorA[0]},${dim.colorA[1]},${dim.colorA[2]},0.7)`;
     bar.appendChild(fill);
     row.appendChild(bar);

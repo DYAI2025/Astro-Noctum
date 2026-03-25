@@ -108,6 +108,14 @@ export interface LLMEnrichmentInput {
   ring_context?: string;
   /** Language */
   lang: 'de' | 'en';
+  /**
+   * Day mode derived from FuFirE harmony_index.
+   * pulse: H < 0.50 — symmetric, calm day, atmospheric imagery.
+   * trace: H >= 0.50 — poles converge, something happens today, direct + charged.
+   */
+  day_mode?: 'pulse' | 'trace';
+  /** Normalized intensity [0,1] = |H - 0.45| / 0.55 */
+  day_intensity?: number;
 }
 
 export interface LLMEnrichmentOutput {

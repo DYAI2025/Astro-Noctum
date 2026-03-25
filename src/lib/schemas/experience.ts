@@ -83,6 +83,8 @@ const DailyFusionSchema = z.object({
   action: z.string(),
   pushworthy: z.boolean(),
   push_text: z.string().optional().nullable(),
+  harmony_index: z.number().min(0).max(1),
+  day_mode: z.enum(['pulse', 'trace']),
 });
 
 export const DailyResponseSchema = z.object({

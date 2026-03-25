@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { loveLangToEvent } from '@/src/lib/fusion-ring/quiz-to-event';
 import type { ContributionEvent } from '@/src/lib/lme/types';
 import { SharePopup } from '@/src/components/SharePopup';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -50,12 +51,20 @@ interface QuizProfile {
   nemesis: string;
 }
 
-const DIMENSION_LABELS: Record<LoveDimension, string> = {
+const DIMENSION_LABELS_DE: Record<LoveDimension, string> = {
   touch: 'Koerperliche Naehe',
   words: 'Worte der Anerkennung',
   time: 'Qualitaetszeit',
   gifts: 'Geschenke',
   service: 'Hilfsbereitschaft',
+};
+
+const DIMENSION_LABELS_EN: Record<LoveDimension, string> = {
+  touch: 'Physical Touch',
+  words: 'Words of Affirmation',
+  time: 'Quality Time',
+  gifts: 'Gifts',
+  service: 'Acts of Service',
 };
 
 // -- Questions ---------------------------------------------------------------
@@ -310,6 +319,7 @@ function determineProfile(scores: Record<LoveDimension, number>): QuizProfile {
 type Screen = 'intro' | 'quiz' | 'loading' | 'result';
 
 function LoveLanguagesQuiz({ onComplete, onClose }: LoveLanguagesQuizProps) {
+  const { lang } = useLanguage();
   const [screen, setScreen] = useState<Screen>('intro');
   const [questionIndex, setQuestionIndex] = useState(0);
   const [scores, setScores] = useState<Record<LoveDimension, number>>({
@@ -381,7 +391,7 @@ function LoveLanguagesQuiz({ onComplete, onClose }: LoveLanguagesQuizProps) {
     <button
       onClick={onClose}
       className="absolute top-4 right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-white/60 backdrop-blur transition hover:bg-white/10 hover:text-white"
-      aria-label="Schliessen"
+      aria-label={lang === 'de' ? 'Schliessen' : 'Close'}
     >
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <line x1="18" y1="6" x2="6" y2="18" />
@@ -415,8 +425,9 @@ function LoveLanguagesQuiz({ onComplete, onClose }: LoveLanguagesQuizProps) {
         Welche Sprache spricht dein Herz?
       </h1>
       <p className="mb-8 max-w-md text-white/60 leading-relaxed">
-        Jeder Mensch gibt und empfaengt Liebe auf eine eigene Art. Entdecke in 12 Fragen, welcher
-        Liebenden-Archetyp dein Wesen praegt.
+        {lang === 'de'
+          ? 'Jeder Mensch gibt und empfaengt Liebe auf eine eigene Art. Entdecke in 12 Fragen, welcher Liebenden-Archetyp dein Wesen praegt.'
+          : 'Everyone gives and receives love in their own way. Discover in 12 questions which love archetype shapes your nature.'}
       </p>
 
       <button
@@ -444,7 +455,7 @@ function LoveLanguagesQuiz({ onComplete, onClose }: LoveLanguagesQuizProps) {
         {/* Progress bar */}
         <div className="mb-8">
           <div className="mb-2 flex items-center justify-between text-xs text-white/50">
-            <span>Frage {questionIndex + 1} von {totalQuestions}</span>
+            <span>{lang === 'de' ? `Frage ${questionIndex + 1} von ${totalQuestions}` : `Question ${questionIndex + 1} of ${totalQuestions}`}</span>
             <span>{Math.round(progress)}%</span>
           </div>
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
@@ -560,7 +571,7 @@ function LoveLanguagesQuiz({ onComplete, onClose }: LoveLanguagesQuizProps) {
               return (
                 <div key={dim}>
                   <div className="mb-1.5 flex items-center justify-between text-xs">
-                    <span className="text-white/70">{DIMENSION_LABELS[dim]}</span>
+                    <span className="text-white/70">{(lang === 'de' ? DIMENSION_LABELS_DE : DIMENSION_LABELS_EN)[dim]}</span>
                     <span className="font-semibold text-[#D4AF37] font-serif">{pct}%</span>
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-white/10">
@@ -615,7 +626,7 @@ function LoveLanguagesQuiz({ onComplete, onClose }: LoveLanguagesQuizProps) {
             className="flex-1 rounded-xl border-2 border-white/10 py-3.5 text-sm font-medium text-white/70 transition hover:border-[#D4AF37]/30 hover:text-white flex items-center justify-center gap-2"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-            Teilen
+            {lang === 'de' ? 'Teilen' : 'Share'}
           </button>
           <button
             onClick={onClose}

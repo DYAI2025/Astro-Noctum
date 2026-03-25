@@ -16,10 +16,12 @@ import {
   type PoleState,
   type SignaturV3Config,
   type DissonanceState,
+  type DayHarmonicState,
   DIMENSIONS,
   initializePoles,
   computeDissonance,
   updatePoles,
+  modulateConfig,
 } from './bipolar-engine';
 
 // ═══════════════════════════════════════
@@ -31,6 +33,8 @@ export interface SignaturV3Props {
   natalWeights: Record<string, number>;
   /** 6 quiz dimension weights [0,1] keyed by dimension id */
   quizWeights: Record<string, number>;
+  /** Day harmonic state — modulates trail persistence and Lissajous blend */
+  dayHarmonic?: DayHarmonicState;
   /** Canvas CSS class */
   className?: string;
   /** Width override */
@@ -99,6 +103,9 @@ function drawPoleTrail(
       const readIdx = (pole.trailHead - pole.trailLength + i + config.maxTrailLength) % config.maxTrailLength;
       const x = centerX + pole.trail[readIdx * 2]!;
       const y = centerY + pole.trail[readIdx * 2 + 1]!;
+      const localAge = (pole.trailLength - i) / recentCount;
+      const alpha = (1 - localAge) * 0.6;
+
       if (i === pole.trailLength - recentCount) {
         ctx.moveTo(x, y);
       } else {
@@ -186,6 +193,7 @@ function drawDimensionAxis(
 export default function SignaturV3Canvas({
   natalWeights,
   quizWeights,
+  dayHarmonic,
   className,
   width = 500,
   height = 500,
@@ -194,7 +202,11 @@ export default function SignaturV3Canvas({
   const animRef = useRef<number>(0);
   const polesRef = useRef<PoleState[] | null>(null);
   const dissonanceRef = useRef<DissonanceState | null>(null);
+  const dayHarmonicRef = useRef<DayHarmonicState | undefined>(dayHarmonic);
   const timeRef = useRef(0);
+
+  // Keep ref in sync with prop (avoids restarting animation loop on each change)
+  dayHarmonicRef.current = dayHarmonic;
 
   const config = useMemo(() => ({
     ...DEFAULT_CONFIG,
@@ -245,8 +257,13 @@ export default function SignaturV3Canvas({
 
     timeRef.current += 0.016; // ~60fps
 
+    // Apply day-harmonic config modulation (trail persistence etc.)
+    const activeConfig = dayHarmonicRef.current
+      ? modulateConfig(config, dayHarmonicRef.current)
+      : config;
+
     // Update pole positions
-    updatePoles(poles, dissonance, config, timeRef.current);
+    updatePoles(poles, dissonance, activeConfig, timeRef.current, dayHarmonicRef.current);
 
     // === RENDER ===
 
@@ -265,7 +282,7 @@ export default function SignaturV3Canvas({
       const pole = poles[i]!;
       const dimIdx = Math.floor(i / 2);
       const dim = DIMENSIONS[dimIdx]!;
-      drawPoleTrail(ctx, pole, dim, config, cx, cy);
+      drawPoleTrail(ctx, pole, dim, activeConfig, cx, cy);
     }
 
     // Draw pole heads (the moving points)

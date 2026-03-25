@@ -1260,6 +1260,15 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
         signal: AbortSignal.timeout(20000),
       });
       const data = await resp.json();
+      // Ensure harmony_index + day_mode are always present
+      if (data?.fusion) {
+        if (data.fusion.harmony_index === undefined) {
+          data.fusion.harmony_index = 0.45;
+        }
+        if (data.fusion.day_mode === undefined) {
+          data.fusion.day_mode = data.fusion.harmony_index >= 0.50 ? 'trace' : 'pulse';
+        }
+      }
       return res.status(resp.status).json(data);
     }
 
@@ -1304,7 +1313,9 @@ Respond with STRICT JSON matching this EXACT structure (No markdown code blocks,
     "synthesis": "A deeper 2-3 sentence paragraph explaining the fusion.",
     "action": "One actionable advice",
     "pushworthy": true,
-    "push_text": "Short push notification string"
+    "push_text": "Short push notification string",
+    "harmony_index": 0.52,
+    "day_mode": "trace"
   },
   "meta": { "engine_version": "v1-gemini-daily" }
 }
@@ -1313,6 +1324,8 @@ RULES:
 - Language: ${lang === 'de' ? 'German' : 'English'}
 - The output MUST be valid parsing JSON.
 - DO NOT wrap the response in \`\`\`json ... \`\`\`. Start directly with {.
+- harmony_index: number between 0.0 and 1.0 — cosine similarity between Western and BaZi Wu-Xing vectors. 0.45 = random baseline. >= 0.50 = convergence day.
+- day_mode: if harmony_index >= 0.50 set "trace" (poles converge, something happens today), else "pulse" (symmetric, calm day).
 `;
 
     const model = geminiClient.models;
@@ -1346,7 +1359,17 @@ RULES:
     }
     
     const parsedData = JSON.parse(jsonStr);
-    
+
+    // Ensure harmony_index + day_mode are always present regardless of model output
+    if (parsedData?.fusion) {
+      if (parsedData.fusion.harmony_index === undefined) {
+        parsedData.fusion.harmony_index = 0.45; // random baseline = neutral
+      }
+      if (parsedData.fusion.day_mode === undefined) {
+        parsedData.fusion.day_mode = parsedData.fusion.harmony_index >= 0.50 ? 'trace' : 'pulse';
+      }
+    }
+
     horoscopeCache.set(cacheKeyD, { data: parsedData, timestamp: Date.now() });
 
     res.status(200).json(parsedData);

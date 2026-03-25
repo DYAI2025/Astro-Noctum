@@ -98,7 +98,7 @@ describe('Experience API Client', () => {
       date: '2026-03-16',
       western: { summary: 'W', themes: ['A'], caution: 'C', opportunity: 'O', evidence: {} },
       eastern: { summary: 'E', themes: ['B'], caution: 'C', opportunity: 'O', evidence: {} },
-      fusion: { summary: 'F', synthesis: 'S', action: 'A', pushworthy: false },
+      fusion: { summary: 'F', synthesis: 'S', action: 'A', pushworthy: false, harmony_index: 0.46, day_mode: 'pulse' },
       meta: { engine_version: '1.0.0' },
     };
     mockFetch.mockResolvedValueOnce({
@@ -156,7 +156,7 @@ describe('Zod Schema Validation', () => {
       date: '2026-03-16',
       western: { summary: 'W', themes: ['A'], caution: 'C', opportunity: 'O', evidence: {} },
       eastern: { summary: 'E', themes: ['B'], caution: 'C', opportunity: 'O', evidence: {} },
-      fusion: { summary: 'F', synthesis: 'S', action: 'A', pushworthy: false, push_text: null },
+      fusion: { summary: 'F', synthesis: 'S', action: 'A', pushworthy: false, push_text: null, harmony_index: 0.48, day_mode: 'pulse' },
       meta: { engine_version: '1.0.0' },
     };
     expect(DailyResponseSchema.safeParse(valid).success).toBe(true);
