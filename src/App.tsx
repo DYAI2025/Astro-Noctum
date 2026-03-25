@@ -65,6 +65,10 @@ export default function App() {
     handleReset,
   } = useAstroProfile(user, lang);
 
+  // Premium status from Supabase profiles table
+  // Must be called before any conditional returns (Rules of Hooks)
+  const { isPremium } = usePremium();
+
   // ── Handle ?upgrade=success redirect from Stripe ────────────────────
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -215,9 +219,6 @@ export default function App() {
       if (url) window.location.href = url;
     } catch { /* ignore */ }
   };
-
-  // Premium status from Supabase profiles table
-  const { isPremium } = usePremium();
 
   // Authenticated app with routing
   return (
