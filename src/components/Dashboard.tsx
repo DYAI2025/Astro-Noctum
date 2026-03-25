@@ -24,6 +24,7 @@ import { isFeatureEnabled } from "../lib/feature-flags";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import BlueprintCard from "./dashboard/BlueprintCard";
+import InfluenceGauges from "./dashboard/InfluenceGauges";
 import { TourOverlay } from "./dashboard/TourOverlay";
 import { useDashboardTour } from "@/src/hooks/useDashboardTour";
 import { usePlanetarium } from "@/src/contexts/PlanetariumContext";
@@ -372,12 +373,18 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
+      {/* ═══ INFLUENCE GAUGES ═══════════════════════════════════════════ */}
+      <motion.div className="mb-10" {...fadeIn(0.42)}>
+        <SectionErrorBoundary name="InfluenceGauges">
+          <InfluenceGauges />
+        </SectionErrorBoundary>
+      </motion.div>
+
       {/* ═══ BLUEPRINT CARD ═════════════════════════════════════════════ */}
       <motion.div className="mb-10" {...fadeIn(0.45)}>
         <SectionErrorBoundary name="BlueprintCard">
           <BlueprintCard
-            title={lang === 'de' ? "Kosmischer Blueprint" : "Cosmic Blueprint"}
-            content={interpretation.split('\n\n').find(p => p.trim() && !p.startsWith('#')) || (lang === 'de' ? 'Dein kosmischer Blueprint wird geladen…' : 'Loading your cosmic blueprint…')}
+            content={interpretation.split('\n\n').find(p => p.trim() && !p.startsWith('#')) || t('dashboard.blueprint.loading')}
             onCtaClick={() => document.getElementById("interpretation-section")?.scrollIntoView({ behavior: "smooth" })}
           />
         </SectionErrorBoundary>
