@@ -30,7 +30,7 @@ export function useDashboardTour(userId: string | undefined) {
       if (cancelled) return;
       if (error) {
         // On network/schema error, skip the tour to avoid blocking the UI
-        console.warn('[tour] fetch failed, skipping tour:', error.message);
+        console.error('[tour] fetch failed, skipping tour:', error.message);
         setTourStep('done');
         return;
       }
@@ -49,7 +49,7 @@ export function useDashboardTour(userId: string | undefined) {
           supabase.from('profiles').update({ tour_completed: true }).eq('id', userId)
             .then(({ error }) => {
               if (error) {
-                console.warn('[tour] persist failed:', error.message);
+                console.error('[tour] persist failed:', error.message);
                 setPersistError(error.message);
               }
             });
@@ -78,7 +78,7 @@ export function useDashboardTour(userId: string | undefined) {
   const restart = useCallback(() => {
     if (userId) {
       supabase.from('profiles').update({ tour_completed: false }).eq('id', userId)
-        .then(({ error }) => { if (error) console.warn('[tour] restart persist failed:', error.message); });
+        .then(({ error }) => { if (error) console.error('[tour] restart persist failed:', error.message); });
     }
     try { localStorage.removeItem('bazodiac_tour_completed'); } catch {}
     setTourStep(0);
