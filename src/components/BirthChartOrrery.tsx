@@ -386,7 +386,7 @@ export function BirthChartOrrery({
       const mesh = new THREE.Mesh(new THREE.SphereGeometry(planet.radius, 48, 48), mat);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
-      mesh.userData = { type: 'planet', key, name: planet.name, symbol: planet.symbol, color: planet.color };
+      mesh.userData = { type: 'planet', key, name: planet.name, planetName: planet.name, symbol: planet.symbol, color: planet.color };
       orreryGroup.add(mesh);
       planetMeshesRef.current[key] = mesh;
 
@@ -1150,7 +1150,11 @@ export function BirthChartOrrery({
       <div
         ref={containerRef}
         className="orrery-canvas-container"
-        style={{ cursor: planetariumMode ? 'crosshair' : 'grab' }}
+        style={{
+          cursor: hoveredObject && !planetariumMode
+            ? 'pointer'
+            : planetariumMode ? 'crosshair' : 'grab',
+        }}
       />
     </div>
   );
