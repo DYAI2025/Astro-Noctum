@@ -386,7 +386,7 @@ export function BirthChartOrrery({
       const mesh = new THREE.Mesh(new THREE.SphereGeometry(planet.radius, 48, 48), mat);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
-      mesh.userData = { type: 'planet', key, name: planet.name, symbol: planet.symbol, color: planet.color };
+      mesh.userData = { type: 'planet', key, name: planet.name, planetName: planet.name, symbol: planet.symbol, color: planet.color };
       orreryGroup.add(mesh);
       planetMeshesRef.current[key] = mesh;
 
@@ -1115,6 +1115,13 @@ export function BirthChartOrrery({
         </div>
       )}
 
+      {/* Planet name badge — top-left, orrery mode only */}
+      {hoveredObject && !planetariumMode && (
+        <div className="absolute top-4 left-4 rounded-xl border border-white/10 bg-black/60 backdrop-blur-md px-3 py-2 pointer-events-none z-10">
+          <p className="text-[#D4AF37] font-serif text-sm font-semibold">{hoveredObject.name}</p>
+        </div>
+      )}
+
       {/* Hover Tooltip */}
       {hoveredObject && (
         <div
@@ -1150,7 +1157,11 @@ export function BirthChartOrrery({
       <div
         ref={containerRef}
         className="orrery-canvas-container"
-        style={{ cursor: planetariumMode ? 'crosshair' : 'grab' }}
+        style={{
+          cursor: hoveredObject && !planetariumMode
+            ? 'pointer'
+            : planetariumMode ? 'crosshair' : 'grab',
+        }}
       />
     </div>
   );
