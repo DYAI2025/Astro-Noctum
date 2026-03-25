@@ -38,7 +38,7 @@ describe('Experience API Schemas', () => {
       date: '2026-03-16',
       western: { summary: 'test', themes: ['Ausdruck'], caution: 'test', opportunity: 'test', evidence: { transit_sectors: [4, 8], natal_focus: ['sun'] } },
       eastern: { summary: 'test', themes: ['Disziplin'], caution: 'test', opportunity: 'test', evidence: { day_master: 'Xin', daily_pillar: { stem: 'Bing', branch: 'Wu' }, relation_to_day_master: 'power' } },
-      fusion: { summary: 'test', synthesis: 'test', action: 'test', pushworthy: false },
+      fusion: { summary: 'test', synthesis: 'test', action: 'test', pushworthy: false, harmony_index: 0.52, day_mode: 'trace' },
       meta: { engine_version: '1.0.0', generated_at: '2026-03-16T06:00:00Z' }
     };
     expect(DailyResponseSchema.safeParse(data).success).toBe(true);
@@ -49,7 +49,7 @@ describe('Experience API Schemas', () => {
       date: '2026-03-16',
       western: { summary: 'test', themes: ['Ausdruck'], caution: 'test', opportunity: 'test', evidence: {} },
       eastern: { summary: 'test', themes: ['Disziplin'], caution: 'test', opportunity: 'test', evidence: {} },
-      fusion: { summary: 'test', synthesis: 'test', action: 'test', pushworthy: true, push_text: 'Push it' },
+      fusion: { summary: 'test', synthesis: 'test', action: 'test', pushworthy: true, push_text: 'Push it', harmony_index: 0.43, day_mode: 'pulse' },
       meta: { engine_version: '1.0.0' }
     };
     expect(DailyResponseSchema.safeParse(data).success).toBe(true);
