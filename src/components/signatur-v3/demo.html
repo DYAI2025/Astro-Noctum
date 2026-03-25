@@ -255,15 +255,15 @@ function update() {
     // Symmetric (consonant)
     const sAx = Math.cos(pA.theta) * pA.radius;
     const sAy = Math.sin(pA.theta) * pA.radius;
-    const sBx = Math.cos(pB.theta + Math.PI) * pB.radius;
-    const sBy = Math.sin(pB.theta + Math.PI) * pB.radius;
+    const sBx = Math.cos(pB.theta) * pB.radius;
+    const sBy = Math.sin(pB.theta) * pB.radius;
 
     // Lissajous (dissonant)
     const fRatio = 1 + hash01(dim.hz, 3) * 2;
     const lAx = Math.cos(pA.theta) * pA.radius;
     const lAy = Math.sin(pA.theta * fRatio) * pA.radius;
-    const lBx = Math.cos(pB.theta + Math.PI) * pB.radius;
-    const lBy = Math.sin(pB.theta * fRatio + Math.PI) * pB.radius;
+    const lBx = Math.cos(pB.theta) * pB.radius;
+    const lBy = Math.sin(pB.theta * fRatio) * pB.radius;
 
     const blend = clamp(d * 2, 0, 1);
     pA.x = lerp(sAx, lAx, blend);
