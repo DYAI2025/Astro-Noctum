@@ -10,7 +10,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { LegalFooter } from "./LegalFooter";
 import { UpgradeButton } from "./UpgradeButton";
 import { ManageSubscription } from "./ManageSubscription";
-import { DailyHoroscopeModal } from "./dashboard/DailyHoroscopeModal";
+import { DayModeModal } from "./dashboard/DayModeModal";
 import { useFirstRunDaily } from "../hooks/useFirstRunDaily";
 import { supabase } from "../lib/supabase";
 import type { ApiData } from "../types/bafe";
@@ -249,7 +249,7 @@ export function Dashboard({
   const dailyEnabled = isFeatureEnabled('daily_modal_v1');
 
   // ── Daily horoscope modal ───────────────────────────────────────────
-  const { dailyData, showModal, handleClose: handleDailyClose } = useFirstRunDaily(
+  const { dailyData, dayHarmonic, showModal, handleClose: handleDailyClose } = useFirstRunDaily(
     userId,
     profileMeta.birthInput,
     profileMeta.soulprintSectors,
@@ -415,7 +415,7 @@ export function Dashboard({
       {/* ═══ DAILY HOROSCOPE MODAL ═══════════════════════════════════════ */}
       <AnimatePresence>
         {dailyEnabled && showModal && dailyData && (
-          <DailyHoroscopeModal data={dailyData} onClose={handleDailyClose} />
+          <DayModeModal data={dailyData} dayHarmonic={dayHarmonic} onClose={handleDailyClose} />
         )}
       </AnimatePresence>
 

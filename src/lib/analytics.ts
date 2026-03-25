@@ -14,7 +14,9 @@ type EventName =
   | 'signature_delta_applied'
   | 'daily_modal_opened'
   | 'daily_modal_closed'
-  | 'daily_tab_changed';
+  | 'daily_tab_changed'
+  | 'day_mode_modal_opened'
+  | 'day_mode_modal_closed';
 
 export function trackEvent(event: EventName, params?: Record<string, string | number>) {
   if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
