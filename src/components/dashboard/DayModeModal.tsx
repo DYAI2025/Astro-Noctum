@@ -38,8 +38,10 @@ function ModeSnapshot({ mode, intensity }: { mode: 'pulse' | 'trace'; intensity:
     if (!ctx) return;
 
     const S = 120;
-    canvas.width = S;
-    canvas.height = S;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = S * dpr;
+    canvas.height = S * dpr;
+    ctx.scale(dpr, dpr);
     const cx = S / 2;
     const cy = S / 2;
     const r = S * 0.38;
@@ -133,18 +135,22 @@ export function DayModeModal({ data, dayHarmonic, onClose }: Props) {
     trackEvent('day_mode_modal_closed');
     onClose();
   };
+  const handleCloseRef = useRef(handleClose);
+  handleCloseRef.current = handleClose;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') handleClose();
+      if (e.key === 'Escape') handleCloseRef.current();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []); // correctly empty — ref is always current
 
-  const mode = dayHarmonic?.mode ?? data.fusion.day_mode ?? 'pulse';
-  const intensity = dayHarmonic?.intensity ?? 0;
+  // day_mode is required by Zod schema — always present
+  // Compute intensity from schema field when dayHarmonic prop not yet available
+  const mode = data.fusion.day_mode;
+  const intensity = dayHarmonic?.intensity ??
+    Math.abs((data.fusion.harmony_index - 0.45) / 0.55);
   const isTrace = mode === 'trace';
   const modeLabel = isTrace ? 'DAY-TRACE' : 'DAY-PULSE';
   const dateLabel = formatDate(data.date);
