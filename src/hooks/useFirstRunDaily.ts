@@ -1,7 +1,11 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { fetchDailyExperience } from '../services/experience';
 import type { DailyResponse } from '../lib/schemas/experience';
+import {
+  type DayHarmonicState,
+  computeDayHarmonic,
+} from '../components/signatur-v3/bipolar-engine';
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -15,6 +19,7 @@ interface BirthInput {
 
 interface UseFirstRunDailyResult {
   dailyData: DailyResponse | null;
+  dayHarmonic: DayHarmonicState | null;
   showModal: boolean;
   loading: boolean;
   handleClose: () => void;
@@ -134,5 +139,10 @@ export function useFirstRunDaily(
       });
   }, [userId]);
 
-  return { dailyData, showModal, loading, handleClose };
+  const dayHarmonic = useMemo<DayHarmonicState | null>(() => {
+    const h = dailyData?.fusion?.harmony_index;
+    return h !== undefined ? computeDayHarmonic(h) : null;
+  }, [dailyData]);
+
+  return { dailyData, dayHarmonic, showModal, loading, handleClose };
 }
