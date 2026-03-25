@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/src/contexts/LanguageContext';
@@ -42,6 +43,15 @@ export default function FuRingPage() {
   const [liveQuizSectors, setLiveQuizSectors] = useState<number[] | null>(null);
   const [premiumCluster, setPremiumCluster] = useState<string | null>(null);
   const [ringEffect, setRingEffect] = useState<{ type: string; color?: string; timestamp: number; intensity?: number } | null>(null);
+
+  // Auto-dismiss cluster completion overlay after 3s
+  const clusterDismissRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (justCompletedCluster) {
+      clusterDismissRef.current = setTimeout(() => setJustCompletedCluster(null), 3000);
+    }
+    return () => { if (clusterDismissRef.current) clearTimeout(clusterDismissRef.current); };
+  }, [justCompletedCluster]);
 
   // Natal planet weights from birth chart soulprint
   const natalPlanetWeights = useMemo(
@@ -244,6 +254,34 @@ export default function FuRingPage() {
         onComplete={handleQuizComplete}
         onClose={() => setActiveQuiz(null)}
       />
+
+      {/* Cluster completion celebration overlay */}
+      <AnimatePresence>
+        {justCompletedCluster && (() => {
+          const cluster = CLUSTER_REGISTRY.find(c => c.id === justCompletedCluster);
+          if (!cluster) return null;
+          return (
+            <motion.div
+              key="cluster-complete"
+              className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="rounded-2xl border border-[#D4AF37]/30 bg-black/80 backdrop-blur-xl px-8 py-6 text-center">
+                <p className="text-3xl mb-2">{cluster.icon}</p>
+                <p className="text-[#D4AF37] font-serif text-lg font-semibold">
+                  {cluster.name} {lang === 'de' ? 'abgeschlossen' : 'completed'}
+                </p>
+                <p className="text-white/50 text-sm mt-1">
+                  {lang === 'de' ? 'Deine Energie wurde aktualisiert' : 'Your energy has been updated'}
+                </p>
+              </div>
+            </motion.div>
+          );
+        })()}
+      </AnimatePresence>
 
       {/* Premium: Dissonance values panel */}
       {isPremium && dissonance && (
