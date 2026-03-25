@@ -1115,13 +1115,6 @@ export function BirthChartOrrery({
         </div>
       )}
 
-      {/* Planet name badge — top-left, orrery mode only */}
-      {hoveredObject && !planetariumMode && (
-        <div className="absolute top-4 left-4 rounded-xl border border-white/10 bg-black/60 backdrop-blur-md px-3 py-2 pointer-events-none z-10">
-          <p className="text-[#D4AF37] font-serif text-sm font-semibold">{hoveredObject.name}</p>
-        </div>
-      )}
-
       {/* Hover Tooltip */}
       {hoveredObject && (
         <div

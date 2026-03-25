@@ -17,7 +17,7 @@ export function usePremium() {
       .single();
     if (error) {
       // On network failure, keep the last known state instead of resetting to false
-      console.error('[premium] fetch failed, keeping last known state:', error.message);
+      console.warn('[premium] fetch failed, keeping last known state:', error.message);
       setLoading(false);
       return;
     }
@@ -45,7 +45,7 @@ export function usePremium() {
 
     const startPolling = () => {
       if (pollInterval) return;
-      console.error('[premium] Realtime failed — starting 30s poll fallback');
+      console.warn('[premium] Realtime failed — starting 30s poll fallback');
       pollInterval = setInterval(fetchTier, 30_000);
     };
 

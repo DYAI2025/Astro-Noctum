@@ -51,14 +51,6 @@ interface QuizProfile {
   nemesis: string;
 }
 
-const DIMENSION_LABELS: Record<LoveDimension, string> = {
-  touch: 'Koerperliche Naehe',
-  words: 'Worte der Anerkennung',
-  time: 'Qualitaetszeit',
-  gifts: 'Geschenke',
-  service: 'Hilfsbereitschaft',
-};
-
 const DIMENSION_LABELS_DE: Record<LoveDimension, string> = {
   touch: 'Koerperliche Naehe',
   words: 'Worte der Anerkennung',
