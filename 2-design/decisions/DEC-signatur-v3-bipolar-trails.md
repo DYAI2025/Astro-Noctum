@@ -46,7 +46,7 @@ Pole movement encodes dissonance state:
 
 **Consonant (quiz ≈ natal):** Both poles orbit symmetrically around center. Clean, circular paths. Trails overlap → form densifies, becomes "more itself."
 
-**Dissonant (quiz ≠ natal):** Poles move counter-directionally through center. Lissajous-like crossings. Trails diverge → form opens up, shows tension, new geometry integrates.
+**Dissonant (quiz ≠ natal):** Poles move counter-directionally through the center. Lissajous-like crossings. Trails diverge → form opens up, shows tension, new geometry integrates.
 
 The transition between modes is **continuous** — there is no switch, only a gradient from harmony to tension. This is achieved by blending between symmetric orbit and Lissajous patterns using the per-dimension dissonance value.
 
