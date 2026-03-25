@@ -12,6 +12,10 @@
  * Die Form emergiert dort wo die meisten Spuren überlagern.
  */
 
+export type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
+export { computeDayHarmonic } from '../../lib/fusion-ring/day-harmonic';
+import type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
+
 // ═══════════════════════════════════════
 //  TYPES
 // ═══════════════════════════════════════
@@ -70,15 +74,6 @@ export interface DissonanceState {
   dAccumulated: number;
   /** Elemental quality: -1 = Ke (crystalline), 0 = neutral, 1 = Sheng (organic) */
   elementalQuality: number;
-}
-
-export interface DayHarmonicState {
-  /** 0–1 — cosine similarity between Wu-Xing vectors (Western + BaZi) */
-  harmonyIndex: number;
-  /** pulse: H < 0.50 (calm, symmetric); trace: H >= 0.50 (crossing, something happens) */
-  mode: 'pulse' | 'trace';
-  /** |H - 0.45| / 0.55, normalized [0,1] — distance from random baseline */
-  intensity: number;
 }
 
 // ═══════════════════════════════════════
@@ -256,23 +251,6 @@ export function computeDissonance(
   const elementalQuality = 0;
 
   return { dimensional, dNatal, dAccumulated, elementalQuality };
-}
-
-// ═══════════════════════════════════════
-//  DAY HARMONIC
-// ═══════════════════════════════════════
-
-const HARMONY_RANDOM_BASELINE = 0.45;
-const HARMONY_RANGE = 0.55; // 1.0 - baseline
-
-/**
- * Derive DayHarmonicState from the harmony_index returned by the Experience API.
- */
-export function computeDayHarmonic(harmonyIndex: number): DayHarmonicState {
-  const h = clamp(harmonyIndex, 0, 1);
-  const mode: 'pulse' | 'trace' = h >= 0.50 ? 'trace' : 'pulse';
-  const intensity = clamp(Math.abs(h - HARMONY_RANDOM_BASELINE) / HARMONY_RANGE, 0, 1);
-  return { harmonyIndex: h, mode, intensity };
 }
 
 /**

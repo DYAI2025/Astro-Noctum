@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 import { trackEvent } from '../../lib/analytics';
 import type { DailyResponse } from '../../lib/schemas/experience';
-import type { DayHarmonicState } from '../signatur-v3/bipolar-engine';
+import type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
 
 // ── Types ────────────────────────────────────────────────────────────
 

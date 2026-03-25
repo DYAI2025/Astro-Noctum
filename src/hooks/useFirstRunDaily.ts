@@ -5,7 +5,7 @@ import type { DailyResponse } from '../lib/schemas/experience';
 import {
   type DayHarmonicState,
   computeDayHarmonic,
-} from '../components/signatur-v3/bipolar-engine';
+} from '../lib/fusion-ring/day-harmonic';
 
 // ── Types ────────────────────────────────────────────────────────────
 
