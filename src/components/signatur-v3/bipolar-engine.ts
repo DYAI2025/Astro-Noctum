@@ -374,17 +374,25 @@ export function computeDensityField(
   let maxDensity = 0;
 
   for (const pole of poles) {
+    const capacity = pole.trail.length / 2;
+    if (pole.trailLength === 0 || capacity === 0) {
+      continue;
+    }
+    // Oldest logical point in the ring buffer
+    const oldestIdx = (pole.trailHead - pole.trailLength + capacity) % capacity;
+
     for (let i = 0; i < pole.trailLength; i++) {
-      const x = pole.trail[i * 2]!;
-      const y = pole.trail[i * 2 + 1]!;
+      const readIdx = (oldestIdx + i) % capacity;
+      const x = pole.trail[readIdx * 2]!;
+      const y = pole.trail[readIdx * 2 + 1]!;
 
       // Map to grid coordinates
       const gx = Math.floor(x * scale + halfRes);
       const gy = Math.floor(y * scale + halfRes);
 
       if (gx >= 0 && gx < resolution && gy >= 0 && gy < resolution) {
-        // Newer trail points contribute more
-        const age = (pole.trailHead - i + pole.trailLength) % pole.trailLength;
+        // Newer trail points contribute more: age = 0 (newest) → max freshness
+        const age = pole.trailLength - 1 - i;
         const freshness = 1 - (age / pole.trailLength) * (1 - config.trailPersistence);
 
         const idx = gy * resolution + gx;
