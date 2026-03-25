@@ -1260,9 +1260,14 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
         signal: AbortSignal.timeout(20000),
       });
       const data = await resp.json();
-      // Inject day_mode if FuFirE provides harmony_index but omits day_mode
-      if (data?.fusion && data.fusion.harmony_index !== undefined && data.fusion.day_mode === undefined) {
-        data.fusion.day_mode = data.fusion.harmony_index >= 0.50 ? 'trace' : 'pulse';
+      // Ensure harmony_index + day_mode are always present
+      if (data?.fusion) {
+        if (data.fusion.harmony_index === undefined) {
+          data.fusion.harmony_index = 0.45;
+        }
+        if (data.fusion.day_mode === undefined) {
+          data.fusion.day_mode = data.fusion.harmony_index >= 0.50 ? 'trace' : 'pulse';
+        }
       }
       return res.status(resp.status).json(data);
     }
@@ -1355,9 +1360,14 @@ RULES:
     
     const parsedData = JSON.parse(jsonStr);
 
-    // Ensure day_mode is always present (server-side fallback computation)
-    if (parsedData?.fusion && parsedData.fusion.harmony_index !== undefined && parsedData.fusion.day_mode === undefined) {
-      parsedData.fusion.day_mode = parsedData.fusion.harmony_index >= 0.50 ? 'trace' : 'pulse';
+    // Ensure harmony_index + day_mode are always present regardless of model output
+    if (parsedData?.fusion) {
+      if (parsedData.fusion.harmony_index === undefined) {
+        parsedData.fusion.harmony_index = 0.45; // random baseline = neutral
+      }
+      if (parsedData.fusion.day_mode === undefined) {
+        parsedData.fusion.day_mode = parsedData.fusion.harmony_index >= 0.50 ? 'trace' : 'pulse';
+      }
     }
 
     horoscopeCache.set(cacheKeyD, { data: parsedData, timestamp: Date.now() });
