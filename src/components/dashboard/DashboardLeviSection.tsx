@@ -64,43 +64,40 @@ export function DashboardLeviSection({
   const handleHangUp = () => { setLeviActive(false); onResumeAudio(); };
 
   return (
-    <div ref={leviSectionRef} className="morning-card p-5 sm:p-7 flex flex-col gap-5 sm:gap-6 md:p-8 max-w-3xl mx-auto relative z-10" style={{ overflow: 'visible' }}>
-      {/* ── Status + Action row ─────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center gap-5 sm:gap-6">
-        <div className="flex items-start gap-4 flex-1 min-w-0">
-          <div className="relative mt-1.5 shrink-0">
-            <div className={`w-2 h-2 rounded-full breathing ${
-              leviActive
-                ? "bg-emerald-500 shadow-[0_0_10px_rgba(52,211,153,0.75)]"
-                : "bg-[#8B6914] shadow-[0_0_8px_rgba(139,105,20,0.55)]"
-            }`} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <Badge variant={leviActive ? "success" : "default"}>
-              {leviActive ? t('dashboard.levi.active') : t('dashboard.levi.ready')}
-            </Badge>
-            <p className="text-base text-[#1E2A3A]/60 leading-relaxed mt-1">
-              {leviActive ? t("dashboard.levi.activeDesc") : t("dashboard.levi.readyDesc")}
-            </p>
-          </div>
+    <div ref={leviSectionRef} className="morning-card p-5 flex flex-col items-center gap-4 max-w-xs mx-auto relative z-10 text-center" style={{ overflow: 'visible' }}>
+      {/* ── Badge (with inline status dot) + Description ───────── */}
+      <div className="flex flex-col items-center gap-1.5">
+        <div className="flex items-center gap-2">
+          <div className={`w-2 h-2 rounded-full shrink-0 breathing ${
+            leviActive
+              ? "bg-emerald-500 shadow-[0_0_10px_rgba(52,211,153,0.75)]"
+              : "bg-[#8B6914] shadow-[0_0_8px_rgba(139,105,20,0.55)]"
+          }`} />
+          <Badge variant={leviActive ? "success" : "default"}>
+            {leviActive ? t('dashboard.levi.active') : t('dashboard.levi.ready')}
+          </Badge>
         </div>
-
-        {isPremium ? (
-          <Button
-            variant={leviActive ? "destructive" : "outline"}
-            className="w-full"
-            onClick={leviActive ? handleHangUp : handleCallLevi}
-          >
-            {leviActive
-              ? <><PhoneOff className="w-4 h-4" /> {t('dashboard.levi.hangUpBtn')}</>
-              : <><Phone className="w-4 h-4" /> {t('dashboard.levi.callBtn')}</>}
-          </Button>
-        ) : (
-          <Button variant="premium" className="w-full" onClick={handleLeviUpgrade} disabled={leviUpgrading}>
-            {leviUpgrading ? '...' : <><Lock className="w-4 h-4" /> {t('dashboard.premium.cta')}</>}
-          </Button>
-        )}
+        <p className="text-sm text-[#1E2A3A]/60 leading-snug">
+          {leviActive ? t("dashboard.levi.activeDesc") : t("dashboard.levi.readyDesc")}
+        </p>
       </div>
+
+      {/* ── CTA Button ──────────────────────────────────────────── */}
+      {isPremium ? (
+        <Button
+          variant={leviActive ? "destructive" : "outline"}
+          className="w-full"
+          onClick={leviActive ? handleHangUp : handleCallLevi}
+        >
+          {leviActive
+            ? <><PhoneOff className="w-4 h-4" /> {t('dashboard.levi.hangUpBtn')}</>
+            : <><Phone className="w-4 h-4" /> {t('dashboard.levi.callBtn')}</>}
+        </Button>
+      ) : (
+        <Button variant="premium" className="w-full" onClick={handleLeviUpgrade} disabled={leviUpgrading}>
+          {leviUpgrading ? '...' : <><Lock className="w-4 h-4" /> {t('dashboard.premium.cta')}</>}
+        </Button>
+      )}
 
       {/* ── ElevenLabs widget (expands below when active) ────────── */}
       {isPremium && leviActive && (
