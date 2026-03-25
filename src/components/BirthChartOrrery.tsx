@@ -12,7 +12,7 @@ import { EffectComposer }  from 'three/examples/jsm/postprocessing/EffectCompose
 import { RenderPass }      from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass }      from 'three/examples/jsm/postprocessing/OutputPass.js';
-import { Play, Pause }     from 'lucide-react';
+import { Play, Pause, Maximize2, Minimize2 } from 'lucide-react';
 
 import {
   PLANETS, STARS, CITIES, CONSTELLATION_LINES, CONSTELLATION_NAMES,
@@ -213,6 +213,52 @@ export function BirthChartOrrery({
 
   // WebGL failure state — if Three.js init throws, show static fallback
   const [renderFailed, setRenderFailed] = useState(false);
+
+  // ── Fullscreen State ──────────────────────────────────────────────────
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const outerRef = useRef<HTMLDivElement>(null);
+
+  // Feature detection: Fullscreen API not available on iOS Safari for non-video elements
+  const supportsFullscreen = useMemo(() => {
+    if (typeof document === 'undefined') return false;
+    const d = document as unknown as Record<string, unknown>;
+    return !!(d.fullscreenEnabled || d.webkitFullscreenEnabled);
+  }, []);
+
+  // Sync with browser fullscreen events (Esc key, etc.) — multi-prefix for Safari
+  useEffect(() => {
+    const handler = () => {
+      const d = document as unknown as Record<string, unknown>;
+      const fs = !!(d.fullscreenElement || d.webkitFullscreenElement);
+      setIsFullscreen(fs);
+      // Adjust FOV: wider in fullscreen = see more sky
+      const cam = cameraRef.current as THREE.PerspectiveCamera | null;
+      if (cam) {
+        cam.fov = fs ? 90 : 60;
+        cam.updateProjectionMatrix();
+      }
+    };
+    const events = ['fullscreenchange', 'webkitfullscreenchange'];
+    events.forEach(e => document.addEventListener(e, handler));
+    return () => events.forEach(e => document.removeEventListener(e, handler));
+  }, []);
+
+  const toggleFullscreen = async () => {
+    try {
+      const d = document as unknown as Record<string, unknown>;
+      const fsEl = d.fullscreenElement || d.webkitFullscreenElement;
+      if (!fsEl && outerRef.current) {
+        const el = outerRef.current as HTMLDivElement & { webkitRequestFullscreen?: () => Promise<void> };
+        if (el.requestFullscreen) await el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
+      } else if (fsEl) {
+        const exitFn = document.exitFullscreen || (document as unknown as { webkitExitFullscreen?: () => Promise<void> }).webkitExitFullscreen;
+        if (exitFn) await exitFn.call(document);
+      }
+    } catch (err) {
+      console.warn('[BirthChartOrrery] Fullscreen toggle failed:', err);
+    }
+  };
 
   // Callback refs
   const setHoveredRef = useRef(setHoveredObject);
@@ -949,7 +995,12 @@ export function BirthChartOrrery({
   }
 
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden border border-[#8B6914]/15 bg-[#0a1628]/90 shadow-[0_4px_32px_rgba(0,20,60,0.15)]">
+    <div
+      ref={outerRef}
+      className={`relative w-full overflow-hidden border border-[#8B6914]/15 bg-[#0a1628]/90 shadow-[0_4px_32px_rgba(0,20,60,0.15)] ${
+        isFullscreen ? 'rounded-none' : 'rounded-2xl'
+      }`}
+    >
       {/* Top-left label */}
       <div className="absolute top-4 left-5 z-10 pointer-events-none">
         <p className="text-[#8B6914]/70 text-[8px] uppercase tracking-[0.4em] mb-1">
@@ -969,16 +1020,34 @@ export function BirthChartOrrery({
         )}
       </div>
 
-      {/* Play/Pause */}
-      <button
-        onClick={() => setIsPlaying(!isPlaying)}
-        className="absolute top-4 right-5 z-10 w-8 h-8 rounded-full border border-[#8B6914]/25 flex items-center justify-center hover:bg-[#8B6914]/15 hover:border-[#8B6914]/45 transition-all bg-black/40 backdrop-blur-sm"
-      >
-        {isPlaying
-          ? <Pause className="w-3 h-3 text-[#8B6914]/80" />
-          : <Play  className="w-3 h-3 text-[#8B6914]/80 ml-0.5" />
-        }
-      </button>
+      {/* Play/Pause + Fullscreen controls */}
+      <div className="absolute top-4 right-5 z-10 flex items-center gap-2">
+        {planetariumMode && supportsFullscreen && (
+          <button
+            onClick={toggleFullscreen}
+            className="w-8 h-8 rounded-full border border-[#8B6914]/25 flex items-center justify-center hover:bg-[#8B6914]/15 hover:border-[#8B6914]/45 transition-all bg-black/40 backdrop-blur-sm"
+            aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+            title={isFullscreen
+              ? (lang === 'de' ? 'Vollbild verlassen' : 'Exit fullscreen')
+              : (lang === 'de' ? 'Vollbild' : 'Fullscreen')
+            }
+          >
+            {isFullscreen
+              ? <Minimize2 className="w-3 h-3 text-[#8B6914]/80" />
+              : <Maximize2 className="w-3 h-3 text-[#8B6914]/80" />
+            }
+          </button>
+        )}
+        <button
+          onClick={() => setIsPlaying(!isPlaying)}
+          className="w-8 h-8 rounded-full border border-[#8B6914]/25 flex items-center justify-center hover:bg-[#8B6914]/15 hover:border-[#8B6914]/45 transition-all bg-black/40 backdrop-blur-sm"
+        >
+          {isPlaying
+            ? <Pause className="w-3 h-3 text-[#8B6914]/80" />
+            : <Play  className="w-3 h-3 text-[#8B6914]/80 ml-0.5" />
+          }
+        </button>
+      </div>
 
       {/* Planet legend + date label (orrery / Solar System mode) — S-DP-17 */}
       {!planetariumMode && (
