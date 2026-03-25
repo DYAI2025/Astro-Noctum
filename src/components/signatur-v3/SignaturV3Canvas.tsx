@@ -99,9 +99,6 @@ function drawPoleTrail(
       const readIdx = (pole.trailHead - pole.trailLength + i + config.maxTrailLength) % config.maxTrailLength;
       const x = centerX + pole.trail[readIdx * 2]!;
       const y = centerY + pole.trail[readIdx * 2 + 1]!;
-      const localAge = (pole.trailLength - i) / recentCount;
-      const alpha = (1 - localAge) * 0.6;
-
       if (i === pole.trailLength - recentCount) {
         ctx.moveTo(x, y);
       } else {
