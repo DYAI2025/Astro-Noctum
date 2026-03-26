@@ -402,14 +402,14 @@ export function Dashboard({
       </motion.div>
 
       {/* ═══ INFLUENCE GAUGES ═══════════════════════════════════════════ */}
-      <motion.div className="mb-10" {...fadeIn(0.42)}>
+      <motion.div className="mb-12 sm:mb-16" {...fadeIn(0.42)}>
         <SectionErrorBoundary name="InfluenceGauges">
           <InfluenceGauges />
         </SectionErrorBoundary>
       </motion.div>
 
       {/* ═══ BLUEPRINT CARD ═════════════════════════════════════════════ */}
-      <motion.div className="mb-10" {...fadeIn(0.45)}>
+      <motion.div className="mb-12 sm:mb-16" {...fadeIn(0.45)}>
         <SectionErrorBoundary name="BlueprintCard">
           <BlueprintCard
             content={interpretation.split('\n\n').find(p => p.trim() && !p.startsWith('#')) || t('dashboard.blueprint.loading')}

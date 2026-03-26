@@ -217,20 +217,6 @@ export function DashboardAstroSection({
             icon={<IconOrbit className="w-5 h-5 text-[#8B6914] inline-block mr-2 align-middle" />}
           />
 
-          {/* Block B: Four Pillars */}
-          {apiData.bazi?.pillars && (
-            <div className="mb-10">
-              <p className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/50 mb-4">
-                {lang === "de" ? "Die Vier S\u00e4ulen" : "The Four Pillars"}
-              </p>
-              <BaZiFourPillars
-                pillars={apiData.bazi.pillars}
-                lang={lang}
-                planetariumMode={planetariumMode}
-              />
-            </div>
-          )}
-
           {/* Block C: Element Balance */}
           <div className="mb-10">
             <div className="flex items-center justify-between mb-4">
@@ -289,6 +275,20 @@ export function DashboardAstroSection({
               </div>
             </div>
           </div>
+
+          {/* Block B: Four Pillars */}
+          {apiData.bazi?.pillars && (
+            <div className="mb-10">
+              <p className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/50 mb-4">
+                {lang === "de" ? "Die Vier S\u00e4ulen" : "The Four Pillars"}
+              </p>
+              <BaZiFourPillars
+                pillars={apiData.bazi.pillars}
+                lang={lang}
+                planetariumMode={planetariumMode}
+              />
+            </div>
+          )}
 
           {/* Block D: Interpretation */}
           <div className="morning-card p-6 md:p-8">
