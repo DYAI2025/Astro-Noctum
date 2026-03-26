@@ -10,7 +10,10 @@ interface GaugeProps {
 
 function Gauge({ label, value, color = "bg-white", tooltip }: GaugeProps) {
   const inner = (
-    <div className="space-y-3 group cursor-help">
+    <div
+      className={`space-y-3 group${tooltip ? " cursor-help" : ""}`}
+      tabIndex={tooltip ? 0 : undefined}
+    >
       <div className="flex justify-between items-end">
         <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em] group-hover:text-zinc-400 transition-colors">
           {label}
