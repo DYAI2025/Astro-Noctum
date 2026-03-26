@@ -21,6 +21,23 @@ export async function enrichWithLLM(
   // 2. Generate a more personal, Levi-style enriched version
   // 3. Include Zwischen-Raum references
   // 4. Respect wording guidelines (no imperatives, no diagnostics)
+  //
+  // Day-mode prompt differentiation (input.day_mode + input.day_intensity):
+  //
+  // PULSE (day_mode === 'pulse'):
+  //   - Tone: atmospheric, inviting, sensory, worldly imagery
+  //   - "Erde trägt heute. Rhythmus ist da — du kannst dich anlehnen."
+  //   - Resonance described through everyday scenes, not astrological facts
+  //   - Max 2–3 sentences. No explanation of why.
+  //
+  // TRACE (day_mode === 'trace'):
+  //   - Tone: direct, charged, concrete — something happens today
+  //   - "Dein detektivischer Skorpion bekommt heute was zu tun."
+  //   - No esoteric vocabulary. Name the quality, not the cause.
+  //   - If input.day_intensity > 0.7 AND space weather shows storm: one extra sentence.
+  //   - Max 2–3 sentences.
+  //
+  // Never use: "weil", "da heute", planet names, "die kosmischen Energien".
 
   return {
     headline: input.template_horoscope.headline,

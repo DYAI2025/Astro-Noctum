@@ -8,6 +8,7 @@ import type { MasterSignal } from '../lib/master-signal';
 interface FusionRingContextValue {
   signal: FusionRingSignal | null;
   masterSignal: MasterSignal | null;
+  events: ContributionEvent[];
   addQuizResult: (event: ContributionEvent) => void;
   completedModules: Set<string>;
 }
@@ -21,9 +22,9 @@ interface ProviderProps {
 }
 
 export function FusionRingProvider({ apiResults, userId, children }: ProviderProps) {
-  const { signal, masterSignal, addQuizResult, completedModules } = useFusionRing(apiResults, userId);
+  const { signal, masterSignal, events, addQuizResult, completedModules } = useFusionRing(apiResults, userId);
   return (
-    <FusionRingCtx.Provider value={{ signal, masterSignal, addQuizResult, completedModules }}>
+    <FusionRingCtx.Provider value={{ signal, masterSignal, events, addQuizResult, completedModules }}>
       {children}
     </FusionRingCtx.Provider>
   );

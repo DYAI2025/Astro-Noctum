@@ -14,6 +14,7 @@ import { BaZiInterpretation } from "../BaZiInterpretation";
 import type { ApiData } from "../../types/bafe";
 import type { TileTexts } from "../../types/interpretation";
 import { AstroAccordion } from "./AstroAccordion";
+import { DashboardHeroNav } from "./DashboardHeroNav";
 import { WuXingIcon } from "../animated-icons/CosmicSymbols";
 import { IconOrbit } from "../animated-icons";
 
@@ -161,7 +162,15 @@ export function DashboardAstroSection({
 
   return (
     <>
+      {/* ═══ HERO NAV — Three section tiles ══════════════════════════ */}
+      <DashboardHeroNav
+        sunSign={sunSign}
+        dominantElement={dominantEl}
+        zodiacAnimal={yearAnimal}
+      />
+
       {/* ═══ 3D ORRERY ════════════════════════════════════════════════ */}
+      <div id="section-western" />
       <motion.div className="mb-14 -mx-4 md:-mx-6" {...fadeIn(0.1)}>
         <Suspense fallback={<div className="w-full aspect-square bg-[#0A0A14] rounded-2xl animate-pulse" />}>
           <BirthChartOrrery
@@ -174,7 +183,7 @@ export function DashboardAstroSection({
 
         {/* Birth Sky Welcome Banner */}
         <AnimatePresence>
-          {showBirthSkyWelcome && (
+          {showBirthSkyWelcome && planetariumMode && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -208,6 +217,8 @@ export function DashboardAstroSection({
       </motion.div>
 
       {/* ═══ BAZI & WUXING DEEP SECTION ═══════════════════════════════ */}
+      <div id="section-bazi" />
+      <div id="section-wuxing" />
       <PremiumGate teaser={t("dashboard.premium.teaserPillars")}>
         <motion.div className="mb-12" {...fadeIn(0.3)}>
           {/* Block A: Header */}

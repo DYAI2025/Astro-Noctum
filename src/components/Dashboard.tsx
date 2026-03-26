@@ -10,7 +10,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { LegalFooter } from "./LegalFooter";
 import { UpgradeButton } from "./UpgradeButton";
 import { ManageSubscription } from "./ManageSubscription";
-import { DailyHoroscopeModal } from "./dashboard/DailyHoroscopeModal";
+import { DayModeModal } from "./dashboard/DayModeModal";
 import { useFirstRunDaily } from "../hooks/useFirstRunDaily";
 import { supabase } from "../lib/supabase";
 import type { ApiData } from "../types/bafe";
@@ -19,11 +19,17 @@ import { DashboardAstroSection } from "./dashboard/DashboardAstroSection";
 import { DashboardInterpretationSection } from "./dashboard/DashboardInterpretationSection";
 import { SectionErrorBoundary } from "./dashboard/SectionErrorBoundary";
 import { DashboardLeviSection } from "./dashboard/DashboardLeviSection";
+import { CosmicWeatherCard } from "./CosmicWeatherCard";
 import { isFeatureEnabled } from "../lib/feature-flags";
+import { useDailyHoroscope } from "../hooks/useDailyHoroscope";
+import { useFusionRingContext } from "../contexts/FusionRingContext";
 
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import BlueprintCard from "./dashboard/BlueprintCard";
+import MiniSignature from "./dashboard/MiniSignature";
+import { soulprintToNatalWeights } from "./fusion-ring-website/signatur-bridge";
+import InfluenceGauges from "./dashboard/InfluenceGauges";
 import { TourOverlay } from "./dashboard/TourOverlay";
 import { useDashboardTour } from "@/src/hooks/useDashboardTour";
 import { usePlanetarium } from "@/src/contexts/PlanetariumContext";
@@ -139,6 +145,14 @@ export function Dashboard({
   const { lang, t } = useLanguage();
   const { isPremium } = usePremium();
   const { user } = useAuth();
+  const { events: quizEvents } = useFusionRingContext();
+
+  // ── Parse birth year for horoscope ────────────────────────────
+  const birthYear = birthDate ? new Date(birthDate).getFullYear() : null;
+
+  // ── Daily horoscope (CosmicWeatherCard data) ─────────────────
+  const { horoscope, loading: horoscopeLoading, error: horoscopeError, refresh: horoscopeRefresh } =
+    useDailyHoroscope(userId, apiData, quizEvents, birthYear, lang);
 
   // ── Dashboard tour ────────────────────────────────────────────
   const { tourStep, next: tourNext, skip: tourSkip } = useDashboardTour(userId);
@@ -249,7 +263,7 @@ export function Dashboard({
   const dailyEnabled = isFeatureEnabled('daily_modal_v1');
 
   // ── Daily horoscope modal ───────────────────────────────────────────
-  const { dailyData, showModal, handleClose: handleDailyClose } = useFirstRunDaily(
+  const { dailyData, dayHarmonic, showModal, handleClose: handleDailyClose } = useFirstRunDaily(
     userId,
     profileMeta.birthInput,
     profileMeta.soulprintSectors,
@@ -306,12 +320,22 @@ export function Dashboard({
 
         {/* Right: language toggle + profile actions */}
         <div className="flex shrink-0 items-center gap-3 pt-1">
-          <Button variant="ghost" size="sm" onClick={onReset} className="text-[10px] uppercase tracking-[0.3em]">
-            <ArrowLeft className="w-4 h-4" />
-            {t("dashboard.startOver")}
-          </Button>
         </div>
       </motion.header>
+
+      {/* ═══ COSMIC WEATHER CARD (Daily Horoscope) ═══════════════════ */}
+      <motion.div className="mb-8" {...fadeIn(0.1)}>
+        <SectionErrorBoundary name="CosmicWeather">
+          <CosmicWeatherCard
+            horoscope={horoscope}
+            loading={horoscopeLoading}
+            error={horoscopeError}
+            onRefresh={horoscopeRefresh}
+            lang={lang}
+            isPremium={isPremium}
+          />
+        </SectionErrorBoundary>
+      </motion.div>
 
       {/* Upgrade Banner for free users */}
       {!isPremium && (
@@ -329,14 +353,7 @@ export function Dashboard({
           <UpgradeButton />
         </Card>
       )}
-      {isPremium && (
-        <motion.div
-          className="mb-8 flex justify-end"
-          {...fadeIn(0.15)}
-        >
-          <ManageSubscription className="text-ink/45 hover:text-gold-deep" />
-        </motion.div>
-      )}
+
 
       {/* ── Tour sentinel: step 1 triggers when astro section scrolls into view ── */}
       <div ref={astroSentinelRef} className="h-px" aria-hidden="true" />
@@ -351,6 +368,18 @@ export function Dashboard({
           tileTexts={tileTexts}
         />
       </SectionErrorBoundary>
+
+      {/* ═══ SIGNATUR V3 — Bipolar Trail Mini Preview ═══════════════════ */}
+      <motion.div className="mb-12 sm:mb-16" {...fadeIn(0.35)}>
+        <SectionErrorBoundary name="MiniSignature">
+          <MiniSignature
+            natalWeights={profileMeta.soulprintSectors ? soulprintToNatalWeights(profileMeta.soulprintSectors) : undefined}
+            quizWeights={profileMeta.quizSectors.length === 12 ? soulprintToNatalWeights(profileMeta.quizSectors) : undefined}
+            dayHarmonic={dayHarmonic}
+            onExpand={() => window.location.assign('/signatur')}
+          />
+        </SectionErrorBoundary>
+      </motion.div>
 
       {/* ── Tour sentinel: step 2 triggers when Levi/interpretation area scrolls into view ── */}
       <div ref={leviSentinelRef} className="h-px" aria-hidden="true" />
@@ -370,12 +399,18 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
+      {/* ═══ INFLUENCE GAUGES ═══════════════════════════════════════════ */}
+      <motion.div className="mb-10" {...fadeIn(0.42)}>
+        <SectionErrorBoundary name="InfluenceGauges">
+          <InfluenceGauges />
+        </SectionErrorBoundary>
+      </motion.div>
+
       {/* ═══ BLUEPRINT CARD ═════════════════════════════════════════════ */}
       <motion.div className="mb-10" {...fadeIn(0.45)}>
         <SectionErrorBoundary name="BlueprintCard">
           <BlueprintCard
-            title={t("dashboard.blueprint.title")}
-            content={interpretation.split('\n\n').find(p => p.trim() && !p.startsWith('#')) || t("dashboard.blueprint.loading")}
+            content={interpretation.split('\n\n').find(p => p.trim() && !p.startsWith('#')) || t('dashboard.blueprint.loading')}
             onCtaClick={() => document.getElementById("interpretation-section")?.scrollIntoView({ behavior: "smooth" })}
           />
         </SectionErrorBoundary>
@@ -413,7 +448,7 @@ export function Dashboard({
       {/* ═══ DAILY HOROSCOPE MODAL ═══════════════════════════════════════ */}
       <AnimatePresence>
         {dailyEnabled && showModal && dailyData && (
-          <DailyHoroscopeModal data={dailyData} onClose={handleDailyClose} />
+          <DayModeModal data={dailyData} dayHarmonic={dayHarmonic} onClose={handleDailyClose} />
         )}
       </AnimatePresence>
 

@@ -1,7 +1,11 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { fetchDailyExperience } from '../services/experience';
 import type { DailyResponse } from '../lib/schemas/experience';
+import {
+  type DayHarmonicState,
+  computeDayHarmonic,
+} from '../lib/fusion-ring/day-harmonic';
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -15,6 +19,7 @@ interface BirthInput {
 
 interface UseFirstRunDailyResult {
   dailyData: DailyResponse | null;
+  dayHarmonic: DayHarmonicState | null;
   showModal: boolean;
   loading: boolean;
   handleClose: () => void;
@@ -76,14 +81,15 @@ export function useFirstRunDaily(
         // 1. Check if user already dismissed the modal today
         const { data: profile } = await supabase
           .from('profiles')
-          .select('daily_modal_seen')
+          .select('daily_modal_seen_date')
           .eq('id', userId)
           .single();
 
         if (cancelled) return;
-        // First-run only: once user has seen the modal, they won't see it again.
-        // Future: change to daily_modal_seen_date for daily recurrence.
-        if (profile?.daily_modal_seen) return;
+        // Daily recurrence: show modal once per calendar day.
+        // daily_modal_seen_date stores the last date the user dismissed the modal.
+        const today = todayKey();
+        if (profile?.daily_modal_seen_date === today) return;
 
         // 2. Check localStorage cache
         const cached = getCachedDaily();
@@ -95,7 +101,6 @@ export function useFirstRunDaily(
 
         // 3. Fetch fresh daily experience
         setLoading(true);
-        const today = todayKey();
         const data = await fetchDailyExperience(
           birthData,
           soulprintSectors,
@@ -124,15 +129,21 @@ export function useFirstRunDaily(
   const handleClose = useCallback(() => {
     setShowModal(false);
 
-    // Mark as seen in profiles (fire-and-forget)
+    // Mark today's date as seen in profiles (fire-and-forget)
+    const today = todayKey();
     supabase
       .from('profiles')
-      .update({ daily_modal_seen: true })
+      .update({ daily_modal_seen_date: today })
       .eq('id', userId)
       .then(({ error }) => {
         if (error) console.warn('[useFirstRunDaily] Failed to mark seen:', error);
       });
   }, [userId]);
 
-  return { dailyData, showModal, loading, handleClose };
+  const dayHarmonic = useMemo<DayHarmonicState | null>(() => {
+    const h = dailyData?.fusion?.harmony_index;
+    return h !== undefined ? computeDayHarmonic(h) : null;
+  }, [dailyData]);
+
+  return { dailyData, dayHarmonic, showModal, loading, handleClose };
 }

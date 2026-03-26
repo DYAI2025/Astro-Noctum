@@ -9,6 +9,9 @@ export function AuthGate() {
   const { signIn, signUp } = useAuth();
   const { lang, setLang, t } = useLanguage(); // lang kept for <select> value
 
+  // ── View State ────────────────────────────────────────────────────────
+  const [view, setView] = useState<"login" | "register">("login");
+
   // ── Login fields ──────────────────────────────────────────────────────
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -87,6 +90,7 @@ export function AuthGate() {
         </div>
 
         {/* ── Login Section ──────────────────────────────────────────── */}
+        {view === "login" && (
         <section>
           <h2 className="font-serif text-2xl mb-4 text-center">
             {t('auth.signin')}
@@ -125,16 +129,28 @@ export function AuthGate() {
           </form>
         </section>
 
-        {/* ── Divider ────────────────────────────────────────────────── */}
-        <div className="flex items-center gap-4 my-10">
-          <div className="flex-1 h-px bg-gold/10" />
-          <span className="text-[10px] uppercase tracking-[0.3em] text-white/20">
-            {t('auth.or')}
-          </span>
-          <div className="flex-1 h-px bg-gold/10" />
-        </div>
+        )}
+
+        {/* ── Divider & CTA ──────────────────────────────────────────── */}
+        {view === "login" && (
+          <>
+            <div className="flex items-center gap-4 my-10">
+              <div className="flex-1 h-px bg-gold/10" />
+              <span className="text-[10px] uppercase tracking-[0.3em] text-white/20"></span>
+              <div className="flex-1 h-px bg-gold/10" />
+            </div>
+            
+            <button
+              onClick={() => { setView("register"); setError(null); }}
+              className="w-full py-3 border border-gold/20 text-gold text-[10px] uppercase tracking-[0.4em] hover:bg-gold/5 hover:border-gold/40 transition-all font-medium"
+            >
+              {lang === "de" ? "Jetzt registrieren" : "Register now"}
+            </button>
+          </>
+        )}
 
         {/* ── Register Section ───────────────────────────────────────── */}
+        {view === "register" && (
         <section>
           <h2 className="font-serif text-2xl font-bold mb-4 text-center">
             {t('auth.register')}
@@ -200,6 +216,20 @@ export function AuthGate() {
             </button>
           </form>
         </section>
+
+        )}
+
+        {/* ── Back to Login CTA ──────────────────────────────────────── */}
+        {view === "register" && (
+          <div className="mt-8 text-center">
+            <button
+              onClick={() => { setView("login"); setError(null); }}
+              className="text-white/40 text-xs hover:text-white transition-colors underline decoration-white/30 underline-offset-4"
+            >
+              {lang === "de" ? "Zurück zum Login" : "Back to login"}
+            </button>
+          </div>
+        )}
 
         {/* ── Error display ──────────────────────────────────────────── */}
         {error && (

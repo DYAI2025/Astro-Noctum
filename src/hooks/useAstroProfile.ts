@@ -100,8 +100,8 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
             } catch {
               setInterpretation(
                 lang === "de"
-                  ? "Dein kosmisches Profil wird geladen…"
-                  : "Loading your cosmic profile…"
+                  ? "Die KI-Synthese konnte nicht geladen werden. Bitte versuche es später erneut."
+                  : "The AI synthesis could not be loaded. Please try again later."
               );
             }
           } else {

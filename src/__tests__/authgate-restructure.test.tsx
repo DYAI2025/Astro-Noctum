@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { vi, describe, it, expect } from 'vitest';
 
 // Mock contexts
@@ -20,18 +20,27 @@ vi.mock('../contexts/LanguageContext', () => ({
 import { AuthGate } from '../components/AuthGate';
 
 describe('AuthGate restructure', () => {
-  it('shows login section above register section', () => {
+  it('toggles between login and register views', () => {
     render(<AuthGate />);
-    const allHeadings = screen.getAllByRole('heading');
-    const loginIdx = allHeadings.findIndex(h => /einloggen|login|auth\.signin/i.test(h.textContent || ''));
-    const registerIdx = allHeadings.findIndex(h => /registrieren|register|auth\.register/i.test(h.textContent || ''));
-    expect(loginIdx).toBeGreaterThanOrEqual(0);
-    expect(registerIdx).toBeGreaterThanOrEqual(0);
-    expect(loginIdx).toBeLessThan(registerIdx);
+    // By default, only login should be visible
+    expect(screen.queryByText(/registrieren|register/i, { selector: 'h2' })).toBeNull();
+    const loginHeading = screen.getByRole('heading', { level: 2 });
+    expect(loginHeading.textContent).toMatch(/einloggen|login/i);
+
+    // Click toggle button
+    const toggleBtn = screen.getByRole('button', { name: /jetzt registrieren/i });
+    fireEvent.click(toggleBtn);
+
+    // Now register should be visible
+    const registerHeading = screen.getByRole('heading', { level: 2 });
+    expect(registerHeading.textContent).toMatch(/registrieren|register/i);
   });
 
-  it('shows language selector in register section', () => {
+  it('shows language selector', () => {
     render(<AuthGate />);
+    // Switch to register view first
+    const toggleBtn = screen.getByRole('button', { name: /jetzt registrieren/i });
+    fireEvent.click(toggleBtn);
     expect(screen.getByLabelText(/sprache|language/i)).toBeDefined();
   });
 });
