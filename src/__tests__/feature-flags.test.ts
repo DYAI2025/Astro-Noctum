@@ -28,7 +28,7 @@ describe('validateCriticalFlags', () => {
     const { validateCriticalFlags } = await import('../lib/feature-flags');
     validateCriticalFlags();
     expect(console.warn).toHaveBeenCalledWith(
-      '[FeatureFlags] Critical flag disabled:',
+      '[FeatureFlags] Critical flag disabled via override:',
       'signature_onboarding_v1'
     );
   });
@@ -39,7 +39,7 @@ describe('validateCriticalFlags', () => {
     const { validateCriticalFlags } = await import('../lib/feature-flags');
     validateCriticalFlags();
     expect(console.warn).toHaveBeenCalledWith(
-      '[FeatureFlags] Critical flag disabled:',
+      '[FeatureFlags] Critical flag disabled via override:',
       'signature_engine_v2'
     );
   });

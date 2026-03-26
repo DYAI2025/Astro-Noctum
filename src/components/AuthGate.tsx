@@ -6,7 +6,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 const EMAIL_STORAGE_KEY = "bazodiac_email";
 
 export function AuthGate() {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, resetPassword } = useAuth();
   const { lang, setLang, t } = useLanguage(); // lang kept for <select> value
 
   // ── View State ────────────────────────────────────────────────────────

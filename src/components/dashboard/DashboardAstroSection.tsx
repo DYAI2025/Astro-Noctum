@@ -11,6 +11,7 @@ import { usePlanetarium } from "../../contexts/PlanetariumContext";
 import { Tooltip } from "../Tooltip";
 import { BaZiFourPillars } from "../BaZiFourPillars";
 import { BaZiInterpretation } from "../BaZiInterpretation";
+import { SkyModeToggle } from "./SkyModeToggle";
 import type { ApiData } from "../../types/bafe";
 import type { TileTexts } from "../../types/interpretation";
 import { AstroAccordion } from "./AstroAccordion";
