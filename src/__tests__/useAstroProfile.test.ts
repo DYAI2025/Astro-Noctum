@@ -3,6 +3,11 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { useAstroProfile } from '../hooks/useAstroProfile';
 import { parseAstroProfileJson } from '../types/bafe';
 
+vi.mock('../types/bafe', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../types/bafe')>();
+  return { ...actual, parseAstroProfileJson: vi.fn(actual.parseAstroProfileJson) };
+});
+
 // Mock all external services
 vi.mock('../services/api', () => ({
   calculateAll: vi.fn().mockResolvedValue({
@@ -26,6 +31,7 @@ vi.mock('../services/supabase', () => ({
   upsertAstroProfile: vi.fn().mockResolvedValue(undefined),
   insertBirthData: vi.fn().mockResolvedValue(undefined),
   insertNatalChart: vi.fn().mockResolvedValue(undefined),
+  deleteAstroProfile: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock('../lib/analytics', () => ({ trackEvent: vi.fn() }));
 
@@ -77,6 +83,31 @@ describe('useAstroProfile', () => {
       expect(result.current.interpretation).toBe('Test interpretation');
       expect(result.current.isFirstReading).toBe(true);
     });
+  });
+
+  it('deletes corrupted profile and transitions to not-found', async () => {
+    const corruptedUser = { id: 'user-corrupted' } as any;
+
+    const { fetchAstroProfile } = await import('../services/supabase');
+    const mockFetch = vi.mocked(fetchAstroProfile);
+    mockFetch.mockResolvedValueOnce({
+      user_id: 'user-corrupted',
+      astro_json: { corrupted: true, no_version: 'garbage' },
+      birth_date: null,
+      birth_time: null,
+    } as any);
+
+    const { deleteAstroProfile } = await import('../services/supabase');
+    const mockDelete = vi.mocked(deleteAstroProfile);
+
+    const mockParse = vi.mocked(parseAstroProfileJson);
+    mockParse.mockReturnValueOnce(null);
+
+    const { result } = renderHook(() => useAstroProfile(corruptedUser, 'de'));
+    await waitFor(() => {
+      expect(result.current.profileState).toBe('not-found');
+    });
+    expect(mockDelete).toHaveBeenCalledWith('user-corrupted');
   });
 
   it('re-generates interpretation when language changes after profile is loaded', async () => {

@@ -3,6 +3,12 @@ import { supabase } from '@/src/lib/supabase';
 
 export type TourStep = 0 | 1 | 'done';
 
+function safeStorage(op: () => void): void {
+  try { op(); } catch (err) {
+    console.warn('[Tour] localStorage unavailable:', err instanceof Error ? err.message : err);
+  }
+}
+
 export function useDashboardTour(userId: string | undefined) {
   const [tourStep, setTourStep] = useState<TourStep | null>(null); // null = loading
   const [persistError, setPersistError] = useState<string | null>(null);
@@ -13,12 +19,16 @@ export function useDashboardTour(userId: string | undefined) {
     let cancelled = false;
 
     // Check localStorage fallback first
-    try {
+    let tourDone = false;
+    safeStorage(() => {
       if (localStorage.getItem('bazodiac_tour_completed') === 'true') {
-        setTourStep('done');
-        return;
+        tourDone = true;
       }
-    } catch {}
+    });
+    if (tourDone) {
+      setTourStep('done');
+      return;
+    }
 
     (async () => {
       const { data, error } = await supabase
@@ -54,7 +64,7 @@ export function useDashboardTour(userId: string | undefined) {
               }
             });
         }
-        try { localStorage.setItem('bazodiac_tour_completed', 'true'); } catch {}
+        safeStorage(() => localStorage.setItem('bazodiac_tour_completed', 'true'));
         return 'done';
       }
       return (prev + 1) as TourStep;
@@ -71,7 +81,7 @@ export function useDashboardTour(userId: string | undefined) {
           }
         });
     }
-    try { localStorage.setItem('bazodiac_tour_completed', 'true'); } catch {}
+    safeStorage(() => localStorage.setItem('bazodiac_tour_completed', 'true'));
     setTourStep('done');
   }, [userId]);
 
@@ -80,7 +90,7 @@ export function useDashboardTour(userId: string | undefined) {
       supabase.from('profiles').update({ tour_completed: false }).eq('id', userId)
         .then(({ error }) => { if (error) console.warn('[tour] restart persist failed:', error.message); });
     }
-    try { localStorage.removeItem('bazodiac_tour_completed'); } catch {}
+    safeStorage(() => localStorage.removeItem('bazodiac_tour_completed'));
     setTourStep(0);
   }, [userId]);
 

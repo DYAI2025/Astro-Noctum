@@ -107,10 +107,13 @@ export function Splash({ onEnter, onLanguageSelect }: SplashProps) {
 
   // Video error fallback
   const handleVideoError = useCallback(() => {
-    console.warn("Intro video failed to load, entering app");
+    console.warn("Intro video failed to load — graceful fade");
     setVideoError(true);
-    onEnter();
-  }, [onEnter]);
+    setTimeout(() => {
+      markSeen();
+      onEnter();
+    }, 1200);
+  }, [onEnter, markSeen]);
 
   // Skip handler (repeat visitors)
   const handleSkip = useCallback(() => {
@@ -135,7 +138,10 @@ export function Splash({ onEnter, onLanguageSelect }: SplashProps) {
 
       const video = videoRef.current;
       if (!video || videoError) {
-        onEnter();
+        setTimeout(() => {
+          markSeen();
+          onEnter();
+        }, 1200);
         return;
       }
 
@@ -147,7 +153,7 @@ export function Splash({ onEnter, onLanguageSelect }: SplashProps) {
         onEnter();
       });
     });
-  }, [videoError, onEnter, resetVideoStallGuard]);
+  }, [videoError, onEnter, markSeen, resetVideoStallGuard]);
 
   return (
     <div className="fixed inset-0 z-[100] bg-obsidian flex flex-col items-center justify-center overflow-hidden">
@@ -244,6 +250,18 @@ export function Splash({ onEnter, onLanguageSelect }: SplashProps) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── VIDEO ERROR FALLBACK: shimmer entering animation ── */}
+      {videoError && phase === "video" && (
+        <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-obsidian">
+          <div className="animate-pulse">
+            <p className="font-serif text-gold/60 text-3xl md:text-5xl tracking-[0.3em] uppercase">
+              BAZODIAC
+            </p>
+            <div className="mt-4 mx-auto w-24 h-[1px] bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
+          </div>
+        </div>
+      )}
 
       {/* ── SKIP BUTTON (only on repeat visits, during video) ── */}
       {canSkip && phase === "video" && !videoFading && (

@@ -6,6 +6,7 @@ vi.mock('../contexts/AuthContext', () => ({
   useAuth: () => ({
     signIn: vi.fn(),
     signUp: vi.fn(),
+    resetPassword: vi.fn(),
     loading: false,
   }),
 }));
@@ -22,23 +23,21 @@ import { AuthGate } from '../components/AuthGate';
 describe('AuthGate restructure', () => {
   it('toggles between login and register views', () => {
     render(<AuthGate />);
-    // By default, only login should be visible
-    expect(screen.queryByText(/registrieren|register/i, { selector: 'h2' })).toBeNull();
+    // Default: login heading uses t('auth.signin')
     const loginHeading = screen.getByRole('heading', { level: 2 });
-    expect(loginHeading.textContent).toMatch(/einloggen|login/i);
+    expect(loginHeading.textContent).toMatch(/auth\.signin/i);
 
-    // Click toggle button
+    // Click toggle button (uses raw German text, not i18n key)
     const toggleBtn = screen.getByRole('button', { name: /jetzt registrieren/i });
     fireEvent.click(toggleBtn);
 
-    // Now register should be visible
+    // Now register heading uses t('auth.register')
     const registerHeading = screen.getByRole('heading', { level: 2 });
-    expect(registerHeading.textContent).toMatch(/registrieren|register/i);
+    expect(registerHeading.textContent).toMatch(/auth\.register/i);
   });
 
   it('shows language selector', () => {
     render(<AuthGate />);
-    // Switch to register view first
     const toggleBtn = screen.getByRole('button', { name: /jetzt registrieren/i });
     fireEvent.click(toggleBtn);
     expect(screen.getByLabelText(/sprache|language/i)).toBeDefined();

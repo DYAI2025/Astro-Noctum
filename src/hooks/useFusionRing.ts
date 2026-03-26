@@ -21,6 +21,7 @@ export function useFusionRing(
 ) {
   const [events, setEvents] = useState<ContributionEvent[]>([]);
   const [eventsLoaded, setEventsLoaded] = useState(false);
+  const [eventsError, setEventsError] = useState<string | null>(null);
 
   // Events aus Supabase laden (einmalig bei Mount)
   useEffect(() => {
@@ -30,8 +31,10 @@ export function useFusionRing(
         setEvents(loaded);
         setEventsLoaded(true);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('[FusionRing] Failed to load events:', err?.message || err);
         setEventsLoaded(true); // Unblock UI even on failure
+        setEventsError(err?.message || 'Ring-Events konnten nicht geladen werden');
       });
   }, [userId, eventsLoaded]);
 
@@ -119,5 +122,6 @@ export function useFusionRing(
     addQuizResult,
     completedModules,
     eventsLoaded,
+    eventsError,
   };
 }

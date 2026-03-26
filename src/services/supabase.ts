@@ -33,6 +33,14 @@ export async function fetchAstroProfile(userId: string) {
   return data;
 }
 
+export async function deleteAstroProfile(userId: string): Promise<void> {
+  const { error } = await supabase
+    .from("astro_profiles")
+    .delete()
+    .eq("user_id", userId);
+  if (error) console.error("deleteAstroProfile error:", error);
+}
+
 // ── Upsert astro_profiles ────────────────────────────────────────────
 // astro_profiles.user_id is PRIMARY KEY → one row per user.
 // On conflict (re-calculation / regeneration), UPDATE the existing row

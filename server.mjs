@@ -165,6 +165,24 @@ app.use((req, res, next) => {
   next();
 });
 
+// ── Global Body Parsing Middleware ───────────────────────────────────
+// Parse JSON/urlencoded bodies for all /api/* routes.
+// Exception: /api/webhook/stripe uses express.raw() for signature verification.
+app.use('/api/', (req, res, next) => {
+  // Skip Stripe webhook – it needs raw body
+  if (req.path.startsWith('/webhook/stripe')) {
+    return next();
+  }
+  express.json()(req, res, next);
+});
+
+app.use('/api/', (req, res, next) => {
+  if (req.path.startsWith('/webhook/stripe')) {
+    return next();
+  }
+  express.urlencoded({ extended: true })(req, res, next);
+});
+
 // ── Rate Limiting ────────────────────────────────────────────────────
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 min
@@ -428,7 +446,7 @@ async function requireUserAuth(req, res, next) {
 // ── /calculate/:endpoint  (bazi, western, fusion, wuxing, tst) ──────
 const CALC_ENDPOINTS = ["bazi", "western", "fusion", "wuxing", "tst"];
 
-app.post("/api/calculate/:endpoint", requireUserAuth, express.json(), (req, res) => {
+app.post("/api/calculate/:endpoint", requireUserAuth, (req, res) => {
   const { endpoint } = req.params;
   if (!CALC_ENDPOINTS.includes(endpoint)) {
     return res.status(400).json({ error: `Unknown endpoint: ${endpoint}` });
@@ -441,7 +459,7 @@ app.post("/api/calculate/:endpoint", requireUserAuth, express.json(), (req, res)
 });
 
 // ── /chart ──────────────────────────────────────────────────────────
-app.post("/api/chart", requireUserAuth, express.json(), (req, res) => {
+app.post("/api/chart", requireUserAuth, (req, res) => {
   proxyToBafeWithFallback(bafeFallbackUrls("/chart"), req, res);
 });
 
@@ -1137,7 +1155,7 @@ setInterval(() => {
  * 7. Return HTTP 200 JSON. Client (App.tsx) detects soulprint_saved=false or
  *    seed.startsWith('fallback:') and shows a non-blocking "Soulprint wird berechnet..." hint.
  */
-app.post('/api/experience/bootstrap', requireUserAuth, express.json(), async (req, res) => {
+app.post('/api/experience/bootstrap', requireUserAuth, async (req, res) => {
   try {
     const { birth } = req.body;
     if (!birth) return res.status(400).json({ error: 'Missing birth data' });
@@ -1228,7 +1246,7 @@ app.post('/api/experience/bootstrap', requireUserAuth, express.json(), async (re
   }
 });
 
-app.post('/api/experience/signature-delta', requireUserAuth, express.json(), async (req, res) => {
+app.post('/api/experience/signature-delta', requireUserAuth, async (req, res) => {
   try {
     const { quiz_answer, signature_blueprint } = req.body;
     if (!quiz_answer) return res.status(400).json({ error: "Missing quiz_answer" });
@@ -1465,7 +1483,7 @@ NEVER use in synthesis: "weil", "da heute", planet names (Mars, Venus etc.), "di
 // ── /api/contribute ──────────────────────────────────────────────────
 // Persists quiz sector weights to contribution_events table.
 // Authenticated via Supabase JWT. Upserts on (user_id, module_id).
-app.post("/api/contribute", express.json(), async (req, res) => {
+app.post("/api/contribute", async (req, res) => {
   if (!supabaseServer) {
     return res.status(503).json({ error: "Supabase not configured" });
   }
@@ -2136,7 +2154,7 @@ app.get("/api/space-weather/timeline", async (_req, res) => {
 // ── POST /api/contribution/space-weather ────────────────────────────
 // Accepts a space-weather event and converts it to 12-sector contribution
 // weights, then upserts into contribution_events for the authenticated user.
-app.post("/api/contribution/space-weather", express.json(), async (req, res) => {
+app.post("/api/contribution/space-weather", async (req, res) => {
   if (!supabaseServer) {
     return res.status(503).json({ error: "Supabase not configured" });
   }
@@ -2446,7 +2464,7 @@ app.get("/api/mobile/bootstrap", (_req, res) => {
 });
 
 // ── /api/webhook/chart ──────────────────────────────────────────────
-app.post("/api/webhook/chart", express.json(), (req, res) => {
+app.post("/api/webhook/chart", (req, res) => {
   proxyToBafeWithFallback(
     bafeFallbackUrls("/api/webhooks/chart"),
     req,
@@ -2517,6 +2535,14 @@ const supabaseServer =
         auth: { autoRefreshToken: false, persistSession: false },
       })
     : null;
+
+// ─── Stripe ENV validation ─────────────────────────────────
+const STRIPE_VARS = ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_PRICE_ID'];
+const missingStripe = STRIPE_VARS.filter(v => !process.env[v]);
+if (missingStripe.length > 0) {
+  console.warn('[STRIPE] Missing ENV vars:', missingStripe.join(', '));
+  console.warn('[STRIPE] Payment endpoints will return 503 until configured.');
+}
 
 // ── Stripe ───────────────────────────────────────────────────────────
 const stripe = process.env.STRIPE_SECRET_KEY
@@ -2678,7 +2704,7 @@ app.get("/api/profile/:userId", async (req, res) => {
 });
 
 // ── POST /api/agent/conversation — Save Levi conversation summary ───
-app.post("/api/agent/conversation", express.json(), async (req, res) => {
+app.post("/api/agent/conversation", async (req, res) => {
   // Verify bearer token
   const authHeader = req.headers.authorization || "";
   const token = authHeader.replace("Bearer ", "").trim();
@@ -2726,15 +2752,21 @@ async function verifySupabaseUser(req) {
 // ── Stripe: Create Checkout Session ──────────────────────────────────
 // Reuses existing Stripe customer if one exists in profiles.stripe_customer_id,
 // otherwise creates a new customer and saves the ID immediately.
-app.post("/api/checkout", express.json(), async (req, res) => {
+app.post("/api/checkout", async (req, res) => {
   if (!supabaseServer) return res.status(500).json({ error: "Database not configured" });
 
   // Verify the caller is the authenticated user
   const authedUser = await verifySupabaseUser(req);
   if (!authedUser) return res.status(401).json({ error: "Unauthorized" });
+  if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_PRICE_ID) {
+    console.error('[STRIPE] Checkout called without configured Stripe variables');
+    return res.status(503).json({
+      error: 'Payment system is being configured. Please try again later.',
+      code: 'STRIPE_NOT_CONFIGURED'
+    });
+  }
   if (!stripe) return res.status(503).json({ error: "Payment not configured" });
   const stripePriceId = process.env.STRIPE_PRICE_ID;
-  if (!stripePriceId) return res.status(503).json({ error: "Stripe price not configured" });
 
   const telemetry = extractClientTelemetry(req);
   const userId = authedUser.id;
@@ -2820,7 +2852,7 @@ app.post("/api/checkout", express.json(), async (req, res) => {
 });
 
 // ── Stripe: Customer Portal (manage billing) ──────────────────────────
-app.post("/api/customer-portal", express.json(), async (req, res) => {
+app.post("/api/customer-portal", async (req, res) => {
   if (!supabaseServer) return res.status(500).json({ error: "Database not configured" });
 
   const authedUser = await verifySupabaseUser(req);
@@ -2886,8 +2918,11 @@ app.post("/api/customer-portal", express.json(), async (req, res) => {
 // ── Stripe: Webhook (raw body required for signature verification) ───
 app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async (req, res) => {
   if (!stripe) return res.status(503).end();
+  if (!process.env.STRIPE_WEBHOOK_SECRET) {
+    console.error('[STRIPE] Webhook received but STRIPE_WEBHOOK_SECRET is not set!');
+    return res.status(503).json({ error: 'Webhook not configured' });
+  }
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  if (!webhookSecret) return res.status(503).json({ error: "Webhook not configured" });
 
   const sig = req.headers["stripe-signature"];
   if (typeof sig !== "string" || !sig) {
@@ -3024,7 +3059,7 @@ app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async
 });
 
 // ── Share URL ────────────────────────────────────────────────────────
-app.post("/api/share", express.json(), async (req, res) => {
+app.post("/api/share", async (req, res) => {
   const authedUser = await verifySupabaseUser(req);
   if (!authedUser) return res.status(401).json({ error: "Unauthorized" });
 
@@ -3069,7 +3104,12 @@ app.get("/share/:hash", async (_req, res) => {
 });
 
 // ── AI Interpretation proxy (Gemini key stays server-side) ───────────
-app.post("/api/interpret", express.json({ limit: "50kb" }), async (req, res) => {
+app.post("/api/interpret", async (req, res) => {
+  // Body already parsed by global middleware, but we need to enforce 50kb limit
+  const rawBody = JSON.stringify(req.body);
+  if (rawBody.length > 50000) {
+    return res.status(413).json({ error: "Payload too large (max 50kb)" });
+  }
   const { data, lang = "en" } = req.body || {};
   if (!data || typeof data !== "object") {
     return res.status(400).json({ error: "data is required" });
@@ -3157,7 +3197,7 @@ app.get("*", (_req, res) => {
 });
 
 // ── POST /api/analyze/conversation — Dialogue analysis with Gemini ──────
-app.post("/api/analyze/conversation", express.json(), async (req, res) => {
+app.post("/api/analyze/conversation", async (req, res) => {
   if (!geminiClient) {
     return res.status(503).json({ error: "Gemini API not configured" });
   }

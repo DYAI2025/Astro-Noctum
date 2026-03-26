@@ -60,8 +60,13 @@ export function useAmbientePlayer() {
     const handleEnded = () => {
       trackIndexRef.current = (trackIndexRef.current + 1) % TRACKS.length;
       audio.src = TRACKS[trackIndexRef.current];
-      audio.play().catch(() => {
-        console.info('[ambiente] Autoplay blocked by browser — user interaction required');
+      audio.play().catch((err) => {
+        const errorName = (err as any)?.name;
+        if (errorName === "NotAllowedError") {
+          console.info("[AmbientePlayer] Audio play blocked by autoplay policy:", err?.message || err);
+        } else {
+          console.warn("[AmbientePlayer] Audio play failed:", err?.message || err);
+        }
       });
     };
 
@@ -154,8 +159,8 @@ export function useAmbientePlayer() {
     audio.volume = volume;
     audio.play()
       .then(() => setPlaying(true))
-      .catch(() => {
-        console.info('[ambiente] Autoplay blocked by browser — user interaction required');
+      .catch((err) => {
+        console.warn('[AmbientePlayer] Resume play failed:', err?.message || err);
       });
   }, [volume]);
 
