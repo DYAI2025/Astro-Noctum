@@ -42,9 +42,13 @@ const CRITICAL_FLAGS: FlagName[] = [
  * Called at module initialization so the warning appears on every app boot.
  */
 export function validateCriticalFlags(): void {
+  // Only check overrides in a browser environment where localStorage exists
+  if (typeof window === 'undefined' || !window.localStorage) return;
+
   for (const flagName of CRITICAL_FLAGS) {
-    if (!isFeatureEnabled(flagName)) {
-      console.warn('[FeatureFlags] Critical flag disabled:', flagName);
+    const override = window.localStorage.getItem(`ff_${flagName}`);
+    if (override === 'false') {
+      console.warn('[FeatureFlags] Critical flag disabled via override:', flagName);
     }
   }
 }
