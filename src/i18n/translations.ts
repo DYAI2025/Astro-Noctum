@@ -118,12 +118,20 @@ const translationsEn: DeepStringRecord = {
       accessibilityText: "Reduced Motion, keyboard shortcuts, and screenreader updates are supported.",
     },
   },
+  expandable: {
+    readMore: 'Read more',
+    less: 'Less',
+  },
+  subscription: {
+    manageBilling: 'Manage billing',
+  },
   dashboard: {
     startOver: "Start Over",
     fallbackNote: "Some calculations could not be loaded live. Fallback data was partially used:",
     welcome: "Welcome to the Atlas",
     title: "Your Bazodiac",
     quote: "",
+    birthDate: "Birth date",
     western: {
       sectionLabel: "Western Astrology",
       sectionTitle: "Your Star Signs",
@@ -149,10 +157,17 @@ const translationsEn: DeepStringRecord = {
     birthSky: {
       message: "This is the sky above {place} on {date} at {time} — the moment you were born.",
       messageNoPlace: "This is the sky on {date} at {time} — the moment you were born.",
+      label: "Your Birth Sky",
     },
     bazi: {
       sectionLabel: "Chinese Astrology",
       sectionTitle: "BaZi & WuXing",
+      sectionTitleFull: "BaZi & WuXing \u2014 Four Pillars of Destiny",
+      fourPillarsShort: "The Four Pillars",
+      birthTimeNotProvided: "Birth time not provided",
+      strengths: "Strengths",
+      shadows: "Shadows",
+      tensionsTitle: "Tensions in Your Balance",
       vitalityLabel: "Vitality",
       dayMasterTitle: "Day Stem",
       dayMasterDesc: "The heavenly stem of your day of birth defines your elemental identity and personal energy (Rì Zhù 日主).",
@@ -170,6 +185,8 @@ const translationsEn: DeepStringRecord = {
       sectionTitle: "WuXing Balance 五行",
       sectionDesc: "The five elements permeate every pillar of your BaZi chart. Their balance shapes your innate strengths and the areas of life that call for conscious cultivation.",
       dominant: "Dominant",
+      generation: "Generation",
+      control: "Control",
     },
     pillars: {
       sectionTitle: "The Four Pillars (BaZi 八字)",
@@ -196,6 +213,7 @@ const translationsEn: DeepStringRecord = {
       cta: "Read full Blueprint →",
       western: "Western",
       eastern: "Eastern",
+      loading: "Loading your cosmic blueprint\u2026",
     },
     levi: {
       ready: "Levi Bazi — Ready",
@@ -215,6 +233,10 @@ const translationsEn: DeepStringRecord = {
       teaserLevi: "Talk to Levi Bazi, your personal astrological voice agent.",
       cta: "Upgrade — 4,99 \u20AC",
       checkoutError: "Checkout could not be started. Please try again later.",
+    },
+    upgradeCard: {
+      title: "Unlock your full cosmic profile",
+      subtitle: "Four Pillars, Houses analysis, Levi Bazi voice agent and more",
     },
   },
   tour: {
@@ -357,12 +379,20 @@ const translationsDe: DeepStringRecord = {
       accessibilityText: "Reduced Motion, Tastatur-Shortcuts und Screenreader-Updates werden unterstützt.",
     },
   },
+  expandable: {
+    readMore: 'Mehr erfahren',
+    less: 'Weniger',
+  },
+  subscription: {
+    manageBilling: 'Zahlung verwalten',
+  },
   dashboard: {
     startOver: "Neu starten",
     fallbackNote: "Einige Berechnungen konnten nicht live geladen werden. Es wurden teilweise Fallback-Daten genutzt:",
     welcome: "Willkommen im Atlas",
     title: "Dein Bazodiac",
     quote: "",
+    birthDate: "Geburtsdatum",
     western: {
       sectionLabel: "Westliche Astrologie",
       sectionTitle: "Deine Sternzeichen",
@@ -388,10 +418,17 @@ const translationsDe: DeepStringRecord = {
     birthSky: {
       message: "So sah der Himmel über {place} am {date} um {time} aus — dem Moment deiner Geburt.",
       messageNoPlace: "So sah der Himmel am {date} um {time} aus — dem Moment deiner Geburt.",
+      label: "Dein Geburtshimmel",
     },
     bazi: {
       sectionLabel: "Chinesische Astrologie",
       sectionTitle: "BaZi & WuXing",
+      sectionTitleFull: "BaZi & WuXing \u2014 Vier S\u00e4ulen des Schicksals",
+      fourPillarsShort: "Die Vier S\u00e4ulen",
+      birthTimeNotProvided: "Geburtszeit nicht angegeben",
+      strengths: "St\u00e4rken",
+      shadows: "Schatten",
+      tensionsTitle: "Spannungen in deiner Balance",
       vitalityLabel: "Vitalität",
       dayMasterTitle: "Tages-Stamm",
       dayMasterDesc: "Der Himmels­stamm deines Geburtstages definiert deine elementare Identität und persönliche Energie (Rì Zhù 日主).",
@@ -409,6 +446,8 @@ const translationsDe: DeepStringRecord = {
       sectionTitle: "WuXing Gleichgewicht 五行",
       sectionDesc: "Die fünf Elemente durchdringen jede Säule deines BaZi-Charts. Ihr Gleichgewicht prägt deine angeborenen Stärken und jene Lebensbereiche, die bewusste Pflege erfordern.",
       dominant: "Dominant",
+      generation: "Erzeugung",
+      control: "Kontrolle",
     },
     pillars: {
       sectionTitle: "Die Vier Säulen (BaZi 八字)",
@@ -435,6 +474,7 @@ const translationsDe: DeepStringRecord = {
       cta: "ganzen Blueprint lesen →",
       western: "Westlich",
       eastern: "Östlich",
+      loading: "Dein kosmischer Blueprint wird geladen\u2026",
     },
     levi: {
       ready: "Levi Bazi Bereit",
@@ -454,6 +494,10 @@ const translationsDe: DeepStringRecord = {
       teaserLevi: "Sprich mit Levi Bazi, deinem persönlichen astrologischen Sprach-Agenten.",
       cta: "Upgrade — 4,99 \u20AC",
       checkoutError: "Checkout konnte nicht gestartet werden. Bitte versuche es später erneut.",
+    },
+    upgradeCard: {
+      title: "Schalte dein volles kosmisches Profil frei",
+      subtitle: "Vier S\u00e4ulen, H\u00e4user-Analyse, Levi Bazi Sprachagent und mehr",
     },
   },
   tour: {

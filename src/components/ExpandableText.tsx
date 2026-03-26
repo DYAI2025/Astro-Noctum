@@ -8,7 +8,7 @@ interface ExpandableTextProps {
 
 export function ExpandableText({ text }: ExpandableTextProps) {
   const [open, setOpen] = useState(false);
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
 
   if (!text) return null;
 
@@ -18,9 +18,7 @@ export function ExpandableText({ text }: ExpandableTextProps) {
         onClick={() => setOpen(!open)}
         className="text-[10px] text-[#8B6914] uppercase tracking-[0.15em] hover:text-[#8B6914]/80 transition-colors"
       >
-        {open
-          ? (lang === "de" ? "Weniger" : "Less")
-          : (lang === "de" ? "Mehr erfahren" : "Read more")}
+        {open ? t("expandable.less") : t("expandable.readMore")}
       </button>
       <AnimatePresence initial={false}>
         {open && (

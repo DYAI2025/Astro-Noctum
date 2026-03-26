@@ -6,7 +6,7 @@ import { useLanguage } from "@/src/contexts/LanguageContext";
 /** Small link that opens the Stripe Customer Portal for premium users. */
 export function ManageSubscription({ className = "" }: { className?: string }) {
   const { isPremium, loading } = usePremium();
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
   const [redirecting, setRedirecting] = useState(false);
 
   if (loading || !isPremium) return null;
@@ -38,7 +38,7 @@ export function ManageSubscription({ className = "" }: { className?: string }) {
       disabled={redirecting}
       className={`text-xs text-white/40 hover:text-white/70 underline underline-offset-2 transition-colors disabled:opacity-40 disabled:cursor-wait ${className}`}
     >
-      {redirecting ? "..." : (lang === "de" ? "Zahlung verwalten" : "Manage billing")}
+      {redirecting ? "..." : t("subscription.manageBilling")}
     </button>
   );
 }
