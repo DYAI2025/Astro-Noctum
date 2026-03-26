@@ -8,6 +8,14 @@ export type Language = "en" | "de";
 export type DeepStringRecord = { [key: string]: string | DeepStringRecord };
 
 const translationsEn: DeepStringRecord = {
+  error: {
+    boundary: {
+      title: 'Something went wrong',
+      message: 'An unexpected error occurred. Please try again.',
+      retry: 'Try again',
+      reload: 'Go to homepage',
+    },
+  },
   notFound: {
     title: "404",
     message: "This page does not exist.",
@@ -203,6 +211,14 @@ const translationsEn: DeepStringRecord = {
 } as const;
 
 const translationsDe: DeepStringRecord = {
+  error: {
+    boundary: {
+      title: 'Etwas ist schiefgelaufen',
+      message: 'Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut.',
+      retry: 'Erneut versuchen',
+      reload: 'Zur Startseite',
+    },
+  },
   notFound: {
     title: "404",
     message: "Diese Seite existiert nicht.",

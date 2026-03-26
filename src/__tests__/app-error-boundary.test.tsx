@@ -12,8 +12,14 @@ function SafeComponent() {
 
 describe('AppErrorBoundary', () => {
   const originalError = console.error;
-  beforeEach(() => { console.error = vi.fn(); });
-  afterEach(() => { console.error = originalError; });
+  beforeEach(() => {
+    console.error = vi.fn();
+    localStorage.setItem('bazodiac_lang', 'de');
+  });
+  afterEach(() => {
+    console.error = originalError;
+    localStorage.removeItem('bazodiac_lang');
+  });
 
   it('renders children when no error', () => {
     render(
