@@ -217,6 +217,26 @@ const translationsEn: DeepStringRecord = {
       checkoutError: "Checkout could not be started. Please try again later.",
     },
   },
+  tour: {
+    next: 'Next',
+    step0WithCity: 'Welcome to the firmament of your birth.\n\nThis is how the starry sky looked on {date} above {city}, at the moment you came into the world.',
+    step0NoCity: 'Welcome to the firmament of your birth.\n\nThis is how the starry sky looked on {date}, at the moment you came into the world.',
+    step1: 'We are in the Chinese Year of the Fire Horse. You can find out which is your year animal and what it means in this section.\n\nLook around first.\nThen find Levi and talk to him.',
+    month: {
+      january: 'January',
+      february: 'February',
+      march: 'March',
+      april: 'April',
+      may: 'May',
+      june: 'June',
+      july: 'July',
+      august: 'August',
+      september: 'September',
+      october: 'October',
+      november: 'November',
+      december: 'December',
+    },
+  },
 } as const;
 
 const translationsDe: DeepStringRecord = {
@@ -427,6 +447,26 @@ const translationsDe: DeepStringRecord = {
       teaserLevi: "Sprich mit Levi Bazi, deinem persönlichen astrologischen Sprach-Agenten.",
       cta: "Upgrade — 4,99 \u20AC",
       checkoutError: "Checkout konnte nicht gestartet werden. Bitte versuche es später erneut.",
+    },
+  },
+  tour: {
+    next: 'Weiter',
+    step0WithCity: 'Willkommen zum Firmament Deiner Geburt.\n\nSo sah der Sternenhimmel am {date} über {city} aus, als Du das Licht dieser Welt erblickt hast.',
+    step0NoCity: 'Willkommen zum Firmament Deiner Geburt.\n\nSo sah der Sternenhimmel am {date} aus, als Du das Licht dieser Welt erblickt hast.',
+    step1: 'Wir befinden uns im chinesischen Jahr des Feuerpferdes. Welches Dein Jahrestier ist und was es bedeutet, findest du in diesem Abschnitt.\n\nSchau dich erstmal um.\nSuche danach Levi und sprich mit ihm.',
+    month: {
+      january: 'Januar',
+      february: 'Februar',
+      march: 'März',
+      april: 'April',
+      may: 'Mai',
+      june: 'Juni',
+      july: 'Juli',
+      august: 'August',
+      september: 'September',
+      october: 'Oktober',
+      november: 'November',
+      december: 'Dezember',
     },
   },
 };
