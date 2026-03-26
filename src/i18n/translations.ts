@@ -10,10 +10,10 @@ export type DeepStringRecord = { [key: string]: string | DeepStringRecord };
 const translationsEn: DeepStringRecord = {
   error: {
     boundary: {
-      title: 'Something went wrong',
-      message: 'An unexpected error occurred. Please try again.',
-      retry: 'Try again',
-      reload: 'Go to homepage',
+      title: "Something went wrong",
+      message: "An unexpected error occurred. Please try again.",
+      retry: "Try again",
+      reload: "Go to homepage",
     },
   },
   notFound: {
