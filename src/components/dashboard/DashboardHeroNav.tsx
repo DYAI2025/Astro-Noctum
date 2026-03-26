@@ -1,4 +1,5 @@
 // src/components/dashboard/DashboardHeroNav.tsx
+import type { ReactNode } from 'react';
 import { motion } from 'motion/react';
 import { useLanguage } from '../../contexts/LanguageContext';
 
@@ -54,8 +55,10 @@ interface TileConfig {
   anchor: string;
   labelDe: string;
   labelEn: string;
+  ariaLabelDe: string;
+  ariaLabelEn: string;
   value: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
 }
 
 export function DashboardHeroNav({ sunSign, dominantElement, zodiacAnimal }: DashboardHeroNavProps) {
@@ -67,6 +70,8 @@ export function DashboardHeroNav({ sunSign, dominantElement, zodiacAnimal }: Das
       anchor: '#section-western',
       labelDe: 'Sonnenzeichen',
       labelEn: 'Sun Sign',
+      ariaLabelDe: 'Zur Westlichen Astrologie springen',
+      ariaLabelEn: 'Jump to Western Astrology',
       value: sunSign || '—',
       icon: <SunIcon className="w-7 h-7" />,
     },
@@ -75,6 +80,8 @@ export function DashboardHeroNav({ sunSign, dominantElement, zodiacAnimal }: Das
       anchor: '#section-bazi',
       labelDe: 'BaZi',
       labelEn: 'BaZi',
+      ariaLabelDe: 'Zu BaZi springen',
+      ariaLabelEn: 'Jump to BaZi',
       value: zodiacAnimal || '—',
       icon: <PillarIcon className="w-7 h-7" />,
     },
@@ -83,6 +90,8 @@ export function DashboardHeroNav({ sunSign, dominantElement, zodiacAnimal }: Das
       anchor: '#section-wuxing',
       labelDe: 'Wu Xing',
       labelEn: 'Wu Xing',
+      ariaLabelDe: 'Zu Wu Xing springen',
+      ariaLabelEn: 'Jump to Wu Xing',
       value: dominantElement || '—',
       icon: <ElementsIcon className="w-7 h-7" />,
     },
@@ -99,6 +108,7 @@ export function DashboardHeroNav({ sunSign, dominantElement, zodiacAnimal }: Das
         <a
           key={tile.id}
           href={tile.anchor}
+          aria-label={lang === 'de' ? tile.ariaLabelDe : tile.ariaLabelEn}
           className={[
             'group relative flex flex-col items-center justify-center',
             'gap-3 py-8 px-6 rounded-2xl',
@@ -124,7 +134,7 @@ export function DashboardHeroNav({ sunSign, dominantElement, zodiacAnimal }: Das
           </p>
 
           {/* Arrow hint */}
-          <span className="text-[#D4AF37]/20 group-hover:text-[#D4AF37]/50 text-xs transition-colors duration-300">
+          <span aria-hidden="true" className="text-[#D4AF37]/20 group-hover:text-[#D4AF37]/50 text-xs transition-colors duration-300">
             ↓
           </span>
         </a>

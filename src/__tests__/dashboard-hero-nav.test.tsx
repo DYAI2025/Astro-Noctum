@@ -1,6 +1,6 @@
 // src/__tests__/dashboard-hero-nav.test.tsx
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { render, screen } from '@testing-library/react';
 import { DashboardHeroNav } from '../components/dashboard/DashboardHeroNav';
 
 // Mock framer motion
@@ -20,6 +20,10 @@ vi.mock('../contexts/LanguageContext', () => ({
 }));
 
 describe('DashboardHeroNav', () => {
+  afterEach(() => {
+    mockLang.lang = 'de';
+  });
+
   it('renders three tiles with correct labels in German', () => {
     render(<DashboardHeroNav sunSign="Leo" dominantElement="Holz" zodiacAnimal="Drache" />);
     expect(screen.getByText('Sonnenzeichen')).toBeInTheDocument();
@@ -48,7 +52,6 @@ describe('DashboardHeroNav', () => {
     render(<DashboardHeroNav sunSign="Leo" dominantElement="Wood" zodiacAnimal="Dragon" />);
     expect(screen.getByText('Sun Sign')).toBeInTheDocument();
     expect(screen.getByText('Wu Xing')).toBeInTheDocument(); // Wu Xing same in EN
-    mockLang.lang = 'de'; // reset
   });
 
   it('shows placeholder when values are missing', () => {
