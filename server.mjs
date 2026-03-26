@@ -9,6 +9,31 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { GoogleGenAI } from "@google/genai";
 
+// Exponential-backoff fetch helper used by the bootstrap endpoint.
+// Retries on network errors and 5xx responses only; 4xx is returned immediately.
+async function fetchWithRetry(url, options, maxRetries = 3, baseDelayMs = 2000) {
+  let lastError;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const res = await fetch(url, options);
+      if (res.ok || (res.status >= 400 && res.status < 500)) {
+        // 2xx–3xx: success; 4xx: client error, do not retry
+        return res;
+      }
+      // 5xx: server error — fall through to retry
+      lastError = new Error(`BAFE responded with ${res.status}`);
+    } catch (err) {
+      // Network error
+      lastError = err;
+    }
+    if (attempt < maxRetries) {
+      const delayMs = baseDelayMs * Math.pow(2, attempt); // 2s, 4s, 8s
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+  throw lastError;
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
@@ -1092,24 +1117,50 @@ setInterval(() => {
 }, 60 * 60 * 1000);
 
 // ── Experience API proxy ──────────────────────────────────────────
+/**
+ * Bootstrap endpoint — 7-step flow:
+ *
+ * 1. Validate auth: requireUserAuth middleware checks Supabase JWT, attaches req.userId.
+ * 2. Parse birth data: req.body must contain { date, time, lat, lon, tz }.
+ * 3. Fetch chart from BAFE: POST to /chart with 15s AbortSignal timeout.
+ *    Uses fetchWithRetry (max 3 attempts, exponential backoff: 2s → 4s → 8s).
+ *    4xx from BAFE is NOT retried (client error). Network errors and 5xx are retried.
+ *    If all retries fail: returns HTTP 502 to client.
+ * 4. Compute Master Signal: runs gcbBuilder + masterSignalBuilder on the BAFE chart.
+ *    Projects the result to 12 soulprint_sectors (Float array, values 0–1).
+ * 5. Persist soulprint: awaits Supabase astro_profiles.update({ soulprint_sectors }).
+ *    On success: sets soulprint_saved = true in response payload.
+ *    On failure: console.warn, sets soulprint_saved = false — still returns HTTP 200.
+ *    Recovery: transit-state endpoint derives soulprint from Wu-Xing data when DB row is absent.
+ * 6. Build response payload: { soulprint_sectors, soulprint_saved, profile_summary,
+ *    signature_blueprint, narratives }.
+ * 7. Return HTTP 200 JSON. Client (App.tsx) detects soulprint_saved=false or
+ *    seed.startsWith('fallback:') and shows a non-blocking "Soulprint wird berechnet..." hint.
+ */
 app.post('/api/experience/bootstrap', requireUserAuth, express.json(), async (req, res) => {
   try {
     const { birth } = req.body;
     if (!birth) return res.status(400).json({ error: 'Missing birth data' });
 
     // 1. Fetch Natal Chart from BAFE
-    const bafeRes = await fetch(`${BAFE_BASE_URL}/chart`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        birthDate: birth.date,
-        birthTime: birth.time,
-        lat: birth.lat,
-        lng: birth.lon,
-        timeZone: birth.tz
-      }),
-      signal: AbortSignal.timeout(15000)
-    });
+    const bafeRes = await fetchWithRetry(
+      `${BAFE_BASE_URL}/chart`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          birthDate: birth.date,
+          birthTime: birth.time,
+          lat: birth.lat,
+          lng: birth.lon,
+          timeZone: birth.tz
+        }),
+        // Reduced per-attempt timeout to keep total worst-case under typical client/proxy limits.
+        signal: AbortSignal.timeout(7000),
+      },
+      3,    // maxRetries
+      1000  // baseDelayMs (reduced to shorten overall backoff duration)
+    );
 
     if (!bafeRes.ok) {
         throw new Error(`BAFE responded with ${bafeRes.status}`);
@@ -1150,15 +1201,27 @@ app.post('/api/experience/bootstrap', requireUserAuth, express.json(), async (re
     };
 
     // 5. Save to Supabase
+    let soulprint_saved = false;
     if (supabaseServer) {
-        const { error: updateError } = await supabaseServer.from("astro_profiles").update({ 
-            soulprint_sectors: soulprintSectors 
-        }).eq("user_id", req.userId);
-        
-        if (updateError) console.warn("[bootstrap] failed to save soulprint_sectors:", updateError.message);
+      try {
+        const { data, error } = await supabaseServer
+          .from('astro_profiles')
+          .update({ soulprint_sectors: soulprintSectors })
+          .eq('user_id', req.userId)
+          .select('user_id');
+        if (error) {
+          console.warn('[bootstrap] soulprint save failed', error.message);
+        } else if (Array.isArray(data) && data.length > 0) {
+          soulprint_saved = true;
+        } else {
+          console.warn('[bootstrap] soulprint save affected 0 rows for user_id', req.userId);
+        }
+      } catch (err) {
+        console.warn('[bootstrap] soulprint save threw', err);
+      }
     }
 
-    res.status(200).json(responsePayload);
+    res.status(200).json({ ...responsePayload, soulprint_saved });
   } catch (err) {
     console.error('[experience/bootstrap] Error:', err.message);
     res.status(502).json({ error: 'experience_unavailable' });

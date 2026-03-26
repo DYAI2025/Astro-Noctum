@@ -34,7 +34,7 @@ describe('AuthGate error clearing', () => {
     const passwordInputs = screen.getAllByPlaceholderText('auth.passwordPlaceholder');
     const registerPassword = passwordInputs[0];
 
-    const confirmPassword = screen.getByPlaceholderText('Passwort wiederholen');
+    const confirmPassword = screen.getByPlaceholderText('auth.confirmPasswordPlaceholder');
 
     // Fill mismatched passwords
     fireEvent.change(registerPassword, { target: { value: 'password1' } });
@@ -47,7 +47,7 @@ describe('AuthGate error clearing', () => {
     fireEvent.change(registerEmail, { target: { value: 'test@example.com' } });
 
     // Submit the register form
-    const registerButton = screen.getByRole('button', { name: /konto erstellen/i });
+    const registerButton = screen.getByRole('button', { name: /konto erstellen|auth\.signUpBtn/i });
     fireEvent.click(registerButton);
 
     // Error should appear (password mismatch)
@@ -77,7 +77,7 @@ describe('AuthGate error clearing', () => {
     fireEvent.change(confirmPassword, { target: { value: 'password2' } });
 
     // Submit to trigger mismatch error
-    const registerButton = screen.getByRole('button', { name: /konto erstellen/i });
+    const registerButton = screen.getByRole('button', { name: /konto erstellen|auth\.signUpBtn/i });
     fireEvent.click(registerButton);
 
     expect(screen.getByText('auth.passwordMismatch')).toBeDefined();
@@ -105,7 +105,7 @@ describe('AuthGate error clearing', () => {
     fireEvent.change(registerPassword, { target: { value: 'password1' } });
     fireEvent.change(confirmPassword, { target: { value: 'password2' } });
 
-    const registerButton = screen.getByRole('button', { name: /konto erstellen/i });
+    const registerButton = screen.getByRole('button', { name: /konto erstellen|auth\.signUpBtn/i });
     fireEvent.click(registerButton);
 
     expect(screen.getByText('auth.passwordMismatch')).toBeDefined();

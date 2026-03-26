@@ -312,7 +312,7 @@ export function Dashboard({
           </h1>
           {birthDate && (
             <p className="mt-1.5 text-xs text-white/35 tracking-wide">
-              {lang === "de" ? "Geburtsdatum" : "Birth date"}{": "}
+              {t("dashboard.birthDate")}{": "}
               <span className="text-white/55">{birthDate}</span>
             </p>
           )}
@@ -344,12 +344,10 @@ export function Dashboard({
         >
           <div>
             <p className="text-sm font-medium text-ink">
-              {lang === 'de' ? 'Schalte dein volles kosmisches Profil frei' : 'Unlock your full cosmic profile'}
+              {t("dashboard.upgradeCard.title")}
             </p>
             <p className="text-xs text-ink/50 mt-1">
-              {lang === 'de'
-                ? 'Vier Säulen, Häuser-Analyse, Levi Bazi Sprachagent und mehr'
-                : 'Four Pillars, Houses analysis, Levi Bazi voice agent and more'}
+              {t("dashboard.upgradeCard.subtitle")}
             </p>
           </div>
           <UpgradeButton />

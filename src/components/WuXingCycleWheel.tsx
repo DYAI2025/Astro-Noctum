@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { motion } from "motion/react";
 import { WUXING_ELEMENTS } from "../lib/astro-data/wuxing";
 import { GENERATION_CYCLE, CONTROL_CYCLE } from "../lib/astro-data/wuxing-cycles";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface WuXingCycleWheelProps {
   balance?: Record<string, number>;
@@ -18,6 +19,7 @@ function circlePoint(index: number, radius: number, cx: number, cy: number): [nu
 }
 
 export function WuXingCycleWheel({ balance, lang, size = 240, planetariumMode }: WuXingCycleWheelProps) {
+  const { t } = useLanguage();
   const cx = size / 2;
   const cy = size / 2;
   const elemRadius = size * 0.36;
@@ -152,7 +154,7 @@ export function WuXingCycleWheel({ balance, lang, size = 240, planetariumMode }:
           className="text-[8px] uppercase tracking-widest"
           fill={planetariumMode ? "rgba(212,175,55,0.3)" : "rgba(139,105,20,0.25)"}
         >
-          {lang === "de" ? "Erzeugung" : "Generation"}
+          {t("dashboard.wuxing.generation")}
         </text>
         <text
           x={cx} y={cy + 6}
@@ -160,7 +162,7 @@ export function WuXingCycleWheel({ balance, lang, size = 240, planetariumMode }:
           className="text-[7px] uppercase tracking-widest"
           fill={controlColor}
         >
-          {lang === "de" ? "Kontrolle" : "Control"}
+          {t("dashboard.wuxing.control")}
         </text>
       </svg>
     </div>

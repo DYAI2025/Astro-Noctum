@@ -17,6 +17,7 @@ type Props = {
   hasCompleteProfile: boolean;
   onboardingPhase: 'form' | 'encounter' | 'signature' | 'done';
   bootstrapData: BootstrapResponse | null;
+  bootstrapFailed?: boolean;
   apiData: ApiData | null;
   isLoading: boolean;
   error: string | null;
@@ -34,6 +35,7 @@ export default function OnboardingPage({
   hasCompleteProfile,
   onboardingPhase,
   bootstrapData,
+  bootstrapFailed,
   apiData,
   isLoading,
   error,
@@ -124,6 +126,7 @@ export default function OnboardingPage({
         <SignatureReveal
           bootstrapData={bootstrapData}
           onComplete={onSignatureComplete}
+          bootstrapFailed={bootstrapFailed}
         />
       )}
 

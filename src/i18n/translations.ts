@@ -8,6 +8,14 @@ export type Language = "en" | "de";
 export type DeepStringRecord = { [key: string]: string | DeepStringRecord };
 
 const translationsEn: DeepStringRecord = {
+  error: {
+    boundary: {
+      title: "Something went wrong",
+      message: "An unexpected error occurred. Please try again.",
+      retry: "Try again",
+      reload: "Go to homepage",
+    },
+  },
   notFound: {
     title: "404",
     message: "This page does not exist.",
@@ -44,6 +52,15 @@ const translationsEn: DeepStringRecord = {
     switchToSignIn: "Already have an account?",
     loading: "Loading…",
     error: "An error occurred. Please try again.",
+    signin: "Login",
+    signinSubtitle: "Sign in to view your chart.",
+    register: "Register",
+    registerSubtitle: "Create an account to save your chart.",
+    confirmPasswordLabel: "Confirm password",
+    confirmPasswordPlaceholder: "Repeat password",
+    languageLabel: "Language",
+    or: "or",
+    passwordMismatch: "Passwords do not match.",
   },
   form: {
     step1Title: "When did your light reach Earth's atmosphere?",
@@ -101,12 +118,20 @@ const translationsEn: DeepStringRecord = {
       accessibilityText: "Reduced Motion, keyboard shortcuts, and screenreader updates are supported.",
     },
   },
+  expandable: {
+    readMore: 'Read more',
+    less: 'Less',
+  },
+  subscription: {
+    manageBilling: 'Manage billing',
+  },
   dashboard: {
     startOver: "Start Over",
     fallbackNote: "Some calculations could not be loaded live. Fallback data was partially used:",
     welcome: "Welcome to the Atlas",
     title: "Your Bazodiac",
     quote: "",
+    birthDate: "Birth date",
     western: {
       sectionLabel: "Western Astrology",
       sectionTitle: "Your Star Signs",
@@ -132,10 +157,17 @@ const translationsEn: DeepStringRecord = {
     birthSky: {
       message: "This is the sky above {place} on {date} at {time} — the moment you were born.",
       messageNoPlace: "This is the sky on {date} at {time} — the moment you were born.",
+      label: "Your Birth Sky",
     },
     bazi: {
       sectionLabel: "Chinese Astrology",
       sectionTitle: "BaZi & WuXing",
+      sectionTitleFull: "BaZi & WuXing \u2014 Four Pillars of Destiny",
+      fourPillarsShort: "The Four Pillars",
+      birthTimeNotProvided: "Birth time not provided",
+      strengths: "Strengths",
+      shadows: "Shadows",
+      tensionsTitle: "Tensions in Your Balance",
       vitalityLabel: "Vitality",
       dayMasterTitle: "Day Stem",
       dayMasterDesc: "The heavenly stem of your day of birth defines your elemental identity and personal energy (Rì Zhù 日主).",
@@ -153,6 +185,8 @@ const translationsEn: DeepStringRecord = {
       sectionTitle: "WuXing Balance 五行",
       sectionDesc: "The five elements permeate every pillar of your BaZi chart. Their balance shapes your innate strengths and the areas of life that call for conscious cultivation.",
       dominant: "Dominant",
+      generation: "Generation",
+      control: "Control",
     },
     pillars: {
       sectionTitle: "The Four Pillars (BaZi 八字)",
@@ -180,6 +214,7 @@ const translationsEn: DeepStringRecord = {
       loading: "Loading your cosmic blueprint…",
       western: "Western",
       eastern: "Eastern",
+      loading: "Loading your cosmic blueprint\u2026",
     },
     levi: {
       ready: "Levi Bazi — Ready",
@@ -200,10 +235,49 @@ const translationsEn: DeepStringRecord = {
       cta: "Upgrade — 4,99 \u20AC",
       checkoutError: "Checkout could not be started. Please try again later.",
     },
+    upgradeCard: {
+      title: "Unlock your full cosmic profile",
+      subtitle: "Four Pillars, Houses analysis, Levi Bazi voice agent and more",
+    },
+  },
+  tour: {
+    next: 'Next',
+    step0WithCity: 'Welcome to the firmament of your birth.\n\nThis is how the starry sky looked on {date} above {city}, at the moment you came into the world.',
+    step0NoCity: 'Welcome to the firmament of your birth.\n\nThis is how the starry sky looked on {date}, at the moment you came into the world.',
+    step1: 'We are in the Chinese Year of the Fire Horse. You can find out which is your year animal and what it means in this section.\n\nLook around first.\nThen find Levi and talk to him.',
+    month: {
+      january: 'January',
+      february: 'February',
+      march: 'March',
+      april: 'April',
+      may: 'May',
+      june: 'June',
+      july: 'July',
+      august: 'August',
+      september: 'September',
+      october: 'October',
+      november: 'November',
+      december: 'December',
+    },
+  },
+  legal: {
+    copyright: '© {year} Bazodiac',
+    impressum: 'Legal Notice',
+    privacy: 'Privacy',
+    terms: 'Terms',
+    closeAriaLabel: 'Close',
   },
 } as const;
 
 const translationsDe: DeepStringRecord = {
+  error: {
+    boundary: {
+      title: 'Etwas ist schiefgelaufen',
+      message: 'Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut.',
+      retry: 'Erneut versuchen',
+      reload: 'Zur Startseite',
+    },
+  },
   notFound: {
     title: "404",
     message: "Diese Seite existiert nicht.",
@@ -240,6 +314,15 @@ const translationsDe: DeepStringRecord = {
     switchToSignIn: "Bereits ein Konto?",
     loading: "Laden…",
     error: "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
+    signin: "Einloggen",
+    signinSubtitle: "Melde dich an, um dein Chart zu sehen.",
+    register: "Registrieren",
+    registerSubtitle: "Erstelle ein Konto, um dein Chart zu speichern.",
+    confirmPasswordLabel: "Passwort bestätigen",
+    confirmPasswordPlaceholder: "Passwort wiederholen",
+    languageLabel: "Sprache",
+    or: "oder",
+    passwordMismatch: "Passwörter stimmen nicht überein.",
   },
   form: {
     step1Title: "Wann hat dein Licht die Erdatmosphäre erreicht?",
@@ -297,12 +380,20 @@ const translationsDe: DeepStringRecord = {
       accessibilityText: "Reduced Motion, Tastatur-Shortcuts und Screenreader-Updates werden unterstützt.",
     },
   },
+  expandable: {
+    readMore: 'Mehr erfahren',
+    less: 'Weniger',
+  },
+  subscription: {
+    manageBilling: 'Zahlung verwalten',
+  },
   dashboard: {
     startOver: "Neu starten",
     fallbackNote: "Einige Berechnungen konnten nicht live geladen werden. Es wurden teilweise Fallback-Daten genutzt:",
     welcome: "Willkommen im Atlas",
     title: "Dein Bazodiac",
     quote: "",
+    birthDate: "Geburtsdatum",
     western: {
       sectionLabel: "Westliche Astrologie",
       sectionTitle: "Deine Sternzeichen",
@@ -328,10 +419,17 @@ const translationsDe: DeepStringRecord = {
     birthSky: {
       message: "So sah der Himmel über {place} am {date} um {time} aus — dem Moment deiner Geburt.",
       messageNoPlace: "So sah der Himmel am {date} um {time} aus — dem Moment deiner Geburt.",
+      label: "Dein Geburtshimmel",
     },
     bazi: {
       sectionLabel: "Chinesische Astrologie",
       sectionTitle: "BaZi & WuXing",
+      sectionTitleFull: "BaZi & WuXing \u2014 Vier S\u00e4ulen des Schicksals",
+      fourPillarsShort: "Die Vier S\u00e4ulen",
+      birthTimeNotProvided: "Geburtszeit nicht angegeben",
+      strengths: "St\u00e4rken",
+      shadows: "Schatten",
+      tensionsTitle: "Spannungen in deiner Balance",
       vitalityLabel: "Vitalität",
       dayMasterTitle: "Tages-Stamm",
       dayMasterDesc: "Der Himmels­stamm deines Geburtstages definiert deine elementare Identität und persönliche Energie (Rì Zhù 日主).",
@@ -349,6 +447,8 @@ const translationsDe: DeepStringRecord = {
       sectionTitle: "WuXing Gleichgewicht 五行",
       sectionDesc: "Die fünf Elemente durchdringen jede Säule deines BaZi-Charts. Ihr Gleichgewicht prägt deine angeborenen Stärken und jene Lebensbereiche, die bewusste Pflege erfordern.",
       dominant: "Dominant",
+      generation: "Erzeugung",
+      control: "Kontrolle",
     },
     pillars: {
       sectionTitle: "Die Vier Säulen (BaZi 八字)",
@@ -376,6 +476,7 @@ const translationsDe: DeepStringRecord = {
       loading: "Dein kosmischer Blueprint wird geladen…",
       western: "Westlich",
       eastern: "Östlich",
+      loading: "Dein kosmischer Blueprint wird geladen\u2026",
     },
     levi: {
       ready: "Levi Bazi Bereit",
@@ -396,6 +497,37 @@ const translationsDe: DeepStringRecord = {
       cta: "Upgrade — 4,99 \u20AC",
       checkoutError: "Checkout konnte nicht gestartet werden. Bitte versuche es später erneut.",
     },
+    upgradeCard: {
+      title: "Schalte dein volles kosmisches Profil frei",
+      subtitle: "Vier S\u00e4ulen, H\u00e4user-Analyse, Levi Bazi Sprachagent und mehr",
+    },
+  },
+  tour: {
+    next: 'Weiter',
+    step0WithCity: 'Willkommen zum Firmament Deiner Geburt.\n\nSo sah der Sternenhimmel am {date} über {city} aus, als Du das Licht dieser Welt erblickt hast.',
+    step0NoCity: 'Willkommen zum Firmament Deiner Geburt.\n\nSo sah der Sternenhimmel am {date} aus, als Du das Licht dieser Welt erblickt hast.',
+    step1: 'Wir befinden uns im chinesischen Jahr des Feuerpferdes. Welches Dein Jahrestier ist und was es bedeutet, findest du in diesem Abschnitt.\n\nSchau dich erstmal um.\nSuche danach Levi und sprich mit ihm.',
+    month: {
+      january: 'Januar',
+      february: 'Februar',
+      march: 'März',
+      april: 'April',
+      may: 'Mai',
+      june: 'Juni',
+      july: 'Juli',
+      august: 'August',
+      september: 'September',
+      october: 'Oktober',
+      november: 'November',
+      december: 'Dezember',
+    },
+  },
+  legal: {
+    copyright: '© {year} Bazodiac',
+    impressum: 'Impressum',
+    privacy: 'Datenschutz',
+    terms: 'AGB',
+    closeAriaLabel: 'Schließen',
   },
 };
 

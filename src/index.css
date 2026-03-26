@@ -920,6 +920,17 @@ h1, h2, h3 { letter-spacing: 0.1em; }
 .enter-scroll-rod--top { top: 0; border-radius: 3px 3px 0 0; }
 .enter-scroll-rod--bottom { bottom: 0; border-radius: 0 0 3px 3px; }
 
+/* ── ElevenLabs Widget — force to foreground ─────────────────────── */
+elevenlabs-convai,
+elevenlabs-convai * {
+  z-index: 99999 !important;
+}
+
+[data-levi-widget] {
+  position: relative;
+  z-index: 99999 !important;
+}
+
 /* ── Reduced Motion ──────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .landing-hero-root *, .landing-hero-root ::before, .landing-hero-root ::after,

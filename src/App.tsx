@@ -21,6 +21,14 @@ import type { BootstrapResponse, SignatureDeltaResponse } from "./lib/schemas/ex
 import { Volume2, VolumeX, LogOut } from "lucide-react";
 import { IconHouse as House, IconSparkles as Sparkles, IconTelescope as TelescopeIcon } from "./components/animated-icons";
 
+/**
+ * Returns true when the bootstrap response contains fallback/synthetic soulprint data.
+ * Used to show a non-blocking hint in SignatureReveal.
+ */
+export function isBootstrapFallback(seed: string): boolean {
+  return seed.startsWith('fallback:');
+}
+
 export default function App() {
   const { user, loading: authLoading, signOut } = useAuth();
   const { lang, setLang, t } = useLanguage();
@@ -33,6 +41,7 @@ export default function App() {
     if (isFeatureEnabled('cosmic_encounter_v1')) return 'encounter';
     return 'form';
   });
+  const [bootstrapFailed, setBootstrapFailed] = useState(false);
   // Tracks whether the user has submitted the birth form this session.
   // Returning users never set this — it distinguishes "new user mid-onboarding"
   // from "returning user with existing profile".
@@ -112,6 +121,9 @@ export default function App() {
       };
       const data = await bootstrapExperience(birth);
       setBootstrapData(data);
+      if (isBootstrapFallback(data.signature_blueprint?.seed ?? '')) {
+        setBootstrapFailed(true);
+      }
       // In encounter mode, CosmicEncounter handles its own phase transitions internally.
       // Only transition to 'signature' for the legacy (non-encounter) flow.
       if (onboardingPhase !== 'encounter') {
@@ -119,6 +131,7 @@ export default function App() {
       }
     } catch (err) {
       console.error('[onboarding] Bootstrap failed:', err);
+      setBootstrapFailed(true);
       // Fallback: always show a reveal, even if Experience is down.
       setBootstrapData({
         profile: {
@@ -267,6 +280,7 @@ export default function App() {
               hasCompleteProfile,
               onboardingPhase,
               bootstrapData,
+              bootstrapFailed,
               apiData,
               isLoading,
               error,
