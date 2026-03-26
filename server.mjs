@@ -1251,19 +1251,23 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
       }
     }
 
-    // L2: Check Supabase daily_horoscope_cache
+    // L2: Check Supabase daily_horoscope_cache (non-blocking — Supabase outage must not prevent generation)
     if (supabaseServer) {
-      const { data: dbCached } = await supabaseServer
-        .from('daily_horoscope_cache')
-        .select('payload_json')
-        .eq('user_id', userId)
-        .eq('local_date', targetDate)
-        .eq('engine_version', 'v1-gemini-daily')
-        .maybeSingle();
+      try {
+        const { data: dbCached } = await supabaseServer
+          .from('daily_horoscope_cache')
+          .select('payload_json')
+          .eq('user_id', userId)
+          .eq('local_date', targetDate)
+          .eq('engine_version', 'v1-gemini-daily')
+          .maybeSingle();
 
-      if (dbCached?.payload_json) {
-        horoscopeCache.set(cacheKeyD, { data: dbCached.payload_json, timestamp: Date.now() });
-        return res.json(dbCached.payload_json);
+        if (dbCached?.payload_json) {
+          horoscopeCache.set(cacheKeyD, { data: dbCached.payload_json, timestamp: Date.now() });
+          return res.json(dbCached.payload_json);
+        }
+      } catch (e) {
+        console.warn('[daily] L2 cache read failed, continuing to generation:', e.message);
       }
     }
 
