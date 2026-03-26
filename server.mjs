@@ -2696,9 +2696,13 @@ app.post("/api/checkout", express.json(), async (req, res) => {
     // Look up existing Stripe customer ID from DB
     const { data: profile } = await supabaseServer
       .from("profiles")
-      .select("stripe_customer_id")
+      .select("stripe_customer_id, tier")
       .eq("id", userId)
       .single();
+
+    if (profile?.tier === "premium") {
+      return res.status(400).json({ error: "Du hast bereits ein Premium-Abonnement. Bitte verwalte es im Kundenportal." });
+    }
 
     let customerId = profile?.stripe_customer_id;
 

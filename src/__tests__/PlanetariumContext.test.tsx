@@ -15,9 +15,9 @@ const wrapper = ({ children }: { children: ReactNode }) => (
 describe("PlanetariumContext — initial state", () => {
   beforeEach(() => localStorage.clear());
 
-  it("defaults to false when localStorage is empty", () => {
+  it("defaults to true when localStorage is empty", () => {
     const { result } = renderHook(() => usePlanetarium(), { wrapper });
-    expect(result.current.planetariumMode).toBe(false);
+    expect(result.current.planetariumMode).toBe(true);
   });
 
   it("reads persisted 'true' from localStorage on mount", () => {
@@ -42,49 +42,49 @@ describe("PlanetariumContext — initial state", () => {
 describe("PlanetariumContext — toggle", () => {
   beforeEach(() => localStorage.clear());
 
-  it("togglePlanetarium flips false → true", () => {
+  it("togglePlanetarium flips true → false", () => {
     const { result } = renderHook(() => usePlanetarium(), { wrapper });
-    act(() => result.current.togglePlanetarium());
-    expect(result.current.planetariumMode).toBe(true);
+    act(() => { result.current.togglePlanetarium(); });
+    expect(result.current.planetariumMode).toBe(false);
   });
 
-  it("togglePlanetarium flips true → false", () => {
-    localStorage.setItem(PLANETARIUM_STORAGE_KEY, "true");
+  it("togglePlanetarium flips false → true", () => {
+    localStorage.setItem(PLANETARIUM_STORAGE_KEY, "false");
     const { result } = renderHook(() => usePlanetarium(), { wrapper });
-    act(() => result.current.togglePlanetarium());
-    expect(result.current.planetariumMode).toBe(false);
+    act(() => { result.current.togglePlanetarium(); });
+    expect(result.current.planetariumMode).toBe(true);
   });
 
   it("double-toggle returns to original state", () => {
     const { result } = renderHook(() => usePlanetarium(), { wrapper });
-    act(() => result.current.togglePlanetarium());
-    act(() => result.current.togglePlanetarium());
-    expect(result.current.planetariumMode).toBe(false);
+    act(() => { result.current.togglePlanetarium(); });
+    act(() => { result.current.togglePlanetarium(); });
+    expect(result.current.planetariumMode).toBe(true);
   });
 });
 
 describe("PlanetariumContext — localStorage persistence", () => {
   beforeEach(() => localStorage.clear());
 
-  it("setPlanetariumMode(true) writes 'true' to localStorage", () => {
-    const { result } = renderHook(() => usePlanetarium(), { wrapper });
-    act(() => result.current.setPlanetariumMode(true));
-    expect(localStorage.getItem(PLANETARIUM_STORAGE_KEY)).toBe("true");
-  });
-
   it("setPlanetariumMode(false) writes 'false' to localStorage", () => {
     const { result } = renderHook(() => usePlanetarium(), { wrapper });
-    act(() => result.current.setPlanetariumMode(true));
-    act(() => result.current.setPlanetariumMode(false));
+    act(() => { result.current.setPlanetariumMode(false); });
     expect(localStorage.getItem(PLANETARIUM_STORAGE_KEY)).toBe("false");
+  });
+
+  it("setPlanetariumMode(true) writes 'true' to localStorage", () => {
+    const { result } = renderHook(() => usePlanetarium(), { wrapper });
+    act(() => { result.current.setPlanetariumMode(false); });
+    act(() => { result.current.setPlanetariumMode(true); });
+    expect(localStorage.getItem(PLANETARIUM_STORAGE_KEY)).toBe("true");
   });
 
   it("togglePlanetarium also updates localStorage", () => {
     const { result } = renderHook(() => usePlanetarium(), { wrapper });
-    act(() => result.current.togglePlanetarium());
-    expect(localStorage.getItem(PLANETARIUM_STORAGE_KEY)).toBe("true");
-    act(() => result.current.togglePlanetarium());
+    act(() => { result.current.togglePlanetarium(); });
     expect(localStorage.getItem(PLANETARIUM_STORAGE_KEY)).toBe("false");
+    act(() => { result.current.togglePlanetarium(); });
+    expect(localStorage.getItem(PLANETARIUM_STORAGE_KEY)).toBe("true");
   });
 });
 

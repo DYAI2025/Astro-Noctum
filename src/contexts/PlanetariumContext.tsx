@@ -38,7 +38,17 @@ export function PlanetariumProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const togglePlanetarium = () => setPlanetariumMode(!planetariumMode);
+  const togglePlanetarium = () => {
+    setPlanetariumModeRaw((prev) => {
+      const newValue = !prev;
+      try {
+        localStorage.setItem(PLANETARIUM_STORAGE_KEY, String(newValue));
+      } catch {
+        // ignore
+      }
+      return newValue;
+    });
+  };
 
   return (
     <PlanetariumContext.Provider value={{ planetariumMode, togglePlanetarium, setPlanetariumMode }}>
