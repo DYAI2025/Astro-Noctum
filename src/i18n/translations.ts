@@ -237,6 +237,13 @@ const translationsEn: DeepStringRecord = {
       december: 'December',
     },
   },
+  legal: {
+    copyright: '© {year} Bazodiac',
+    impressum: 'Legal Notice',
+    privacy: 'Privacy',
+    terms: 'Terms',
+    closeAriaLabel: 'Close',
+  },
 } as const;
 
 const translationsDe: DeepStringRecord = {
@@ -468,6 +475,13 @@ const translationsDe: DeepStringRecord = {
       november: 'November',
       december: 'Dezember',
     },
+  },
+  legal: {
+    copyright: '© {year} Bazodiac',
+    impressum: 'Impressum',
+    privacy: 'Datenschutz',
+    terms: 'AGB',
+    closeAriaLabel: 'Schließen',
   },
 };
 
