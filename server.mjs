@@ -1251,6 +1251,22 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
       }
     }
 
+    // L2: Check Supabase daily_horoscope_cache
+    if (supabaseServer) {
+      const { data: dbCached } = await supabaseServer
+        .from('daily_horoscope_cache')
+        .select('payload_json')
+        .eq('user_id', userId)
+        .eq('local_date', targetDate)
+        .eq('engine_version', 'v1-gemini-daily')
+        .maybeSingle();
+
+      if (dbCached?.payload_json) {
+        horoscopeCache.set(cacheKeyD, { data: dbCached.payload_json, timestamp: Date.now() });
+        return res.json(dbCached.payload_json);
+      }
+    }
+
     if (!geminiClient) {
       console.warn('[experience/daily] Gemini API key missing, falling back to proxy');
       const resp = await fetch(`${BAFE_BASE_URL}/experience/daily`, {
@@ -1268,6 +1284,19 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
         if (data.fusion.day_mode === undefined) {
           data.fusion.day_mode = data.fusion.harmony_index >= 0.50 ? 'trace' : 'pulse';
         }
+      }
+      if (resp.ok && supabaseServer) {
+        // Persist to L2 (fire-and-forget)
+        supabaseServer
+          .from('daily_horoscope_cache')
+          .upsert({
+            user_id: userId,
+            local_date: targetDate,
+            engine_version: 'v1-gemini-daily',
+            signature_version: 1,
+            payload_json: data,
+          }, { onConflict: 'user_id,local_date,engine_version,signature_version' })
+          .then(({ error }) => { if (error) console.warn('[daily] DB cache upsert failed:', error.message); });
       }
       return res.status(resp.status).json(data);
     }
@@ -1371,6 +1400,20 @@ RULES:
     }
 
     horoscopeCache.set(cacheKeyD, { data: parsedData, timestamp: Date.now() });
+
+    if (supabaseServer) {
+      // Persist to L2 (fire-and-forget)
+      supabaseServer
+        .from('daily_horoscope_cache')
+        .upsert({
+          user_id: userId,
+          local_date: targetDate,
+          engine_version: 'v1-gemini-daily',
+          signature_version: 1,
+          payload_json: parsedData,
+        }, { onConflict: 'user_id,local_date,engine_version,signature_version' })
+        .then(({ error }) => { if (error) console.warn('[daily] DB cache upsert failed:', error.message); });
+    }
 
     res.status(200).json(parsedData);
   } catch (err) {
