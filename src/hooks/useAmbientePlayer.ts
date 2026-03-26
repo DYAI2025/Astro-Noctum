@@ -61,7 +61,12 @@ export function useAmbientePlayer() {
       trackIndexRef.current = (trackIndexRef.current + 1) % TRACKS.length;
       audio.src = TRACKS[trackIndexRef.current];
       audio.play().catch((err) => {
-        console.warn('[AmbientePlayer] Audio play failed:', err?.message || err);
+        const errorName = (err as any)?.name;
+        if (errorName === "NotAllowedError") {
+          console.info("[AmbientePlayer] Audio play blocked by autoplay policy:", err?.message || err);
+        } else {
+          console.warn("[AmbientePlayer] Audio play failed:", err?.message || err);
+        }
       });
     };
 
