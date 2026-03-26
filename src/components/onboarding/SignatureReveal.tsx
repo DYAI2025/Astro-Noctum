@@ -21,9 +21,10 @@ function canRunV2(): boolean {
 interface Props {
   bootstrapData: BootstrapResponse;
   onComplete: (deltaData: SignatureDeltaResponse | null) => void;
+  bootstrapFailed?: boolean;
 }
 
-export function SignatureReveal({ bootstrapData, onComplete }: Props) {
+export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: Props) {
   const { lang } = useLanguage();
   const [showButton, setShowButton] = useState(false);
   const [revealProgress, setRevealProgress] = useState(0);
@@ -63,6 +64,15 @@ export function SignatureReveal({ bootstrapData, onComplete }: Props) {
           )}
         </Suspense>
       </div>
+
+      {/* Fallback hint — non-blocking, shown only when bootstrap used synthetic data */}
+      {bootstrapFailed && (
+        <p className="text-xs text-gold/60 text-center mt-2">
+          {lang === 'de'
+            ? 'Dein Soulprint wird berechnet...'
+            : 'Your Soulprint is being calculated...'}
+        </p>
+      )}
 
       {/* Title */}
       <motion.p
