@@ -14,6 +14,8 @@ import { BaZiInterpretation } from "../BaZiInterpretation";
 import type { ApiData } from "../../types/bafe";
 import type { TileTexts } from "../../types/interpretation";
 import { AstroAccordion } from "./AstroAccordion";
+import { DashboardHeroNav } from "./DashboardHeroNav";
+import { SkyModeToggle } from "./SkyModeToggle";
 import { WuXingIcon } from "../animated-icons/CosmicSymbols";
 import { IconOrbit } from "../animated-icons";
 
@@ -84,7 +86,7 @@ export function DashboardAstroSection({
   leviSlot,
 }: DashboardAstroSectionProps) {
   const { lang, t } = useLanguage();
-  const { planetariumMode, setPlanetariumMode } = usePlanetarium();
+  const { planetariumMode, setPlanetariumMode, skyMode } = usePlanetarium();
 
   // ── First-visit Birth Sky welcome ────────────────────────────────
   const [showBirthSkyWelcome, setShowBirthSkyWelcome] = useState(false);
@@ -161,7 +163,15 @@ export function DashboardAstroSection({
 
   return (
     <>
+      {/* ═══ HERO NAV — Three section tiles ══════════════════════════ */}
+      <DashboardHeroNav
+        sunSign={sunSign}
+        dominantElement={dominantEl}
+        zodiacAnimal={yearAnimal}
+      />
+
       {/* ═══ 3D ORRERY ════════════════════════════════════════════════ */}
+      <div id="section-western" />
       <motion.div className="mb-14 -mx-4 md:-mx-6" {...fadeIn(0.1)}>
         <Suspense fallback={<div className="w-full aspect-square bg-[#0A0A14] rounded-2xl animate-pulse" />}>
           <BirthChartOrrery
@@ -169,6 +179,7 @@ export function DashboardAstroSection({
             planetariumMode={planetariumMode}
             birthConstellation={birthConstellationKey}
             autoPlay={showBirthSkyWelcome}
+            currentSky={skyMode === 'current'}
           />
         </Suspense>
 
@@ -202,12 +213,21 @@ export function DashboardAstroSection({
         </AnimatePresence>
       </motion.div>
 
+      {/* ═══ SKY MODE TOGGLE ═══════════════════════════════════════════ */}
+      {planetariumMode && (
+        <motion.div className="mb-8 -mt-6" {...fadeIn(0.15)}>
+          <SkyModeToggle />
+        </motion.div>
+      )}
+
       {/* ═══ ASTRO ACCORDION (Western + BaZi/WuXing) ═════════════════════ */}
       <motion.div className="mb-12" {...fadeIn(0.2)}>
         <AstroAccordion apiData={apiData} tileTexts={tileTexts || {}} />
       </motion.div>
 
       {/* ═══ BAZI & WUXING DEEP SECTION ═══════════════════════════════ */}
+      <div id="section-bazi" />
+      <div id="section-wuxing" />
       <PremiumGate teaser={t("dashboard.premium.teaserPillars")}>
         <motion.div className="mb-12" {...fadeIn(0.3)}>
           {/* Block A: Header */}

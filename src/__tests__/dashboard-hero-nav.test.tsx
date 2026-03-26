@@ -1,0 +1,66 @@
+// src/__tests__/dashboard-hero-nav.test.tsx
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { DashboardHeroNav } from '../components/dashboard/DashboardHeroNav';
+
+// Mock framer motion
+vi.mock('motion/react', () => ({
+  motion: {
+    div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) =>
+      <div {...props}>{children}</div>,
+  },
+}));
+
+// Mock useLanguage
+vi.mock('../contexts/LanguageContext', () => ({
+  useLanguage: () => ({ lang: 'de' }),
+}));
+
+describe('DashboardHeroNav', () => {
+  it('renders three tiles with correct labels in German', () => {
+    render(<DashboardHeroNav sunSign="Leo" dominantElement="Holz" zodiacAnimal="Drache" />);
+    expect(screen.getByText('Sonnenzeichen')).toBeInTheDocument();
+    expect(screen.getByText('BaZi')).toBeInTheDocument();
+    expect(screen.getByText('Wu Xing')).toBeInTheDocument();
+  });
+
+  it('renders sign/animal/element values', () => {
+    render(<DashboardHeroNav sunSign="Leo" dominantElement="Holz" zodiacAnimal="Drache" />);
+    expect(screen.getByText('Leo')).toBeInTheDocument();
+    expect(screen.getByText('Drache')).toBeInTheDocument();
+    expect(screen.getByText('Holz')).toBeInTheDocument();
+  });
+
+  it('renders three anchor links with correct hrefs', () => {
+    render(<DashboardHeroNav sunSign="Leo" dominantElement="Holz" zodiacAnimal="Drache" />);
+    const links = screen.getAllByRole('link');
+    expect(links).toHaveLength(3);
+    expect(links[0]).toHaveAttribute('href', '#section-western');
+    expect(links[1]).toHaveAttribute('href', '#section-bazi');
+    expect(links[2]).toHaveAttribute('href', '#section-wuxing');
+  });
+
+  it('renders EN labels when lang is en', async () => {
+    vi.resetModules();
+    vi.doMock('../contexts/LanguageContext', () => ({
+      useLanguage: () => ({ lang: 'en' }),
+    }));
+    vi.doMock('motion/react', () => ({
+      motion: {
+        div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) =>
+          <div {...props}>{children}</div>,
+      },
+    }));
+    const { DashboardHeroNav: FreshComponent } = await import('../components/dashboard/DashboardHeroNav');
+    render(<FreshComponent sunSign="Leo" dominantElement="Wood" zodiacAnimal="Dragon" />);
+    expect(screen.getByText('Sun Sign')).toBeInTheDocument();
+    expect(screen.getByText('Wu Xing')).toBeInTheDocument(); // Wu Xing same in EN
+  });
+
+  it('shows placeholder when values are missing', () => {
+    render(<DashboardHeroNav sunSign="" dominantElement="" zodiacAnimal="" />);
+    // All three values show dash placeholder
+    const dashes = screen.getAllByText('—');
+    expect(dashes).toHaveLength(3);
+  });
+});

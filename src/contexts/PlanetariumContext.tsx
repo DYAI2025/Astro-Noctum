@@ -11,12 +11,16 @@ interface PlanetariumContextType {
   planetariumMode: boolean;
   togglePlanetarium: () => void;
   setPlanetariumMode: (value: boolean) => void;
+  skyMode: 'birth' | 'current';
+  setSkyMode: (mode: 'birth' | 'current') => void;
 }
 
 const PlanetariumContext = createContext<PlanetariumContextType>({
   planetariumMode: false,
   togglePlanetarium: () => {},
   setPlanetariumMode: () => {},
+  skyMode: 'birth',
+  setSkyMode: () => {},
 });
 
 export function PlanetariumProvider({ children }: { children: ReactNode }) {
@@ -38,6 +42,13 @@ export function PlanetariumProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const [skyMode, setSkyModeRaw] = useState<'birth' | 'current'>('birth');
+
+  function setSkyMode(mode: 'birth' | 'current') {
+    setSkyModeRaw(mode);
+    if (mode === 'current') setPlanetariumMode(true);
+  }
+
   const togglePlanetarium = () => {
     setPlanetariumModeRaw((prev) => {
       const newValue = !prev;
@@ -51,7 +62,7 @@ export function PlanetariumProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <PlanetariumContext.Provider value={{ planetariumMode, togglePlanetarium, setPlanetariumMode }}>
+    <PlanetariumContext.Provider value={{ planetariumMode, togglePlanetarium, setPlanetariumMode, skyMode, setSkyMode }}>
       {children}
     </PlanetariumContext.Provider>
   );

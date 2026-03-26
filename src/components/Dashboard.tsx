@@ -26,7 +26,7 @@ import { useFusionRingContext } from "../contexts/FusionRingContext";
 
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
-import BlueprintCard from "./dashboard/BlueprintCard";
+import { BlueprintReveal } from "./dashboard/BlueprintReveal";
 import MiniSignature from "./dashboard/MiniSignature";
 import { soulprintToNatalWeights } from "./fusion-ring-website/signatur-bridge";
 import InfluenceGauges from "./dashboard/InfluenceGauges";
@@ -408,10 +408,10 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
-      {/* ═══ BLUEPRINT CARD ═════════════════════════════════════════════ */}
+      {/* ═══ BLUEPRINT REVEAL ═══════════════════════════════════════════ */}
       <motion.div className="mb-12 sm:mb-16" {...fadeIn(0.45)}>
         <SectionErrorBoundary name="BlueprintCard">
-          <BlueprintCard
+          <BlueprintReveal
             content={interpretation.split('\n\n').find(p => p.trim() && !p.startsWith('#')) || t('dashboard.blueprint.loading')}
             onCtaClick={() => document.getElementById("interpretation-section")?.scrollIntoView({ behavior: "smooth" })}
           />
