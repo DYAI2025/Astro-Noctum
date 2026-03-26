@@ -10,7 +10,7 @@ export function AuthGate() {
   const { lang, setLang, t } = useLanguage(); // lang kept for <select> value
 
   // ── View State ────────────────────────────────────────────────────────
-  const [view, setView] = useState<"login" | "register">("login");
+  const [view, setView] = useState<"login" | "register" | "reset">("login");
 
   // ── Login fields ──────────────────────────────────────────────────────
   const [loginEmail, setLoginEmail] = useState("");
@@ -24,6 +24,7 @@ export function AuthGate() {
   // ── Shared state ──────────────────────────────────────────────────────
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   // Prefill login email from localStorage (returning visitors)
   useEffect(() => {
@@ -62,6 +63,16 @@ export function AuthGate() {
     if (err) { setError(err); return; }
     try { localStorage.setItem(EMAIL_STORAGE_KEY, registerEmail); } catch { /* silent */ }
     // With email confirmation disabled, signUp auto-signs-in via AuthContext.
+  };
+
+  const handleReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setBusy(true);
+    const err = await resetPassword(loginEmail);
+    setBusy(false);
+    if (err) { setError(err); return; }
+    setResetSent(true);
   };
 
   // ── Shared input style ────────────────────────────────────────────────
@@ -127,6 +138,14 @@ export function AuthGate() {
               {busy ? "…" : t('auth.signin')}
             </button>
           </form>
+
+          <button
+            type="button"
+            onClick={() => { setView("reset"); setError(null); setResetSent(false); }}
+            className="w-full text-center mt-4 text-white/30 text-[10px] hover:text-white/50 transition-colors"
+          >
+            {lang === "de" ? "Passwort vergessen?" : "Forgot password?"}
+          </button>
         </section>
 
         )}
@@ -221,6 +240,64 @@ export function AuthGate() {
 
         {/* ── Back to Login CTA ──────────────────────────────────────── */}
         {view === "register" && (
+          <div className="mt-8 text-center">
+            <button
+              onClick={() => { setView("login"); setError(null); }}
+              className="text-white/40 text-xs hover:text-white transition-colors underline decoration-white/30 underline-offset-4"
+            >
+              {lang === "de" ? "Zurück zum Login" : "Back to login"}
+            </button>
+          </div>
+        )}
+
+        {/* ── Reset Password Section ────────────────────────────────── */}
+        {view === "reset" && (
+        <section>
+          <h2 className="font-serif text-2xl mb-4 text-center">
+            {lang === "de" ? "Passwort zurücksetzen" : "Reset password"}
+          </h2>
+          {resetSent ? (
+            <div className="text-center space-y-4">
+              <p className="text-white/60 text-xs">
+                {lang === "de"
+                  ? "Wir haben dir eine E-Mail mit einem Link zum Zurücksetzen deines Passworts gesendet."
+                  : "We've sent you an email with a link to reset your password."}
+              </p>
+              <button
+                onClick={() => { setView("login"); setResetSent(false); setError(null); }}
+                className={btnCls}
+              >
+                {lang === "de" ? "Zurück zum Login" : "Back to login"}
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleReset} className="space-y-4">
+              <p className="text-white/40 text-xs text-center mb-4">
+                {lang === "de"
+                  ? "Gib deine E-Mail-Adresse ein und wir senden dir einen Link."
+                  : "Enter your email and we'll send you a reset link."}
+              </p>
+              <div>
+                <label className={labelCls}>{t("auth.emailLabel")}</label>
+                <input
+                  type="email"
+                  required
+                  value={loginEmail}
+                  onChange={(e) => { setLoginEmail(e.target.value); if (error) setError(null); }}
+                  className={inputCls}
+                  placeholder={t("auth.emailPlaceholder")}
+                />
+              </div>
+              <button type="submit" disabled={busy} className={btnCls}>
+                {busy ? "…" : lang === "de" ? "Link senden" : "Send link"}
+              </button>
+            </form>
+          )}
+        </section>
+        )}
+
+        {/* ── Reset Back to Login ──────────────────────────────────────── */}
+        {view === "reset" && !resetSent && (
           <div className="mt-8 text-center">
             <button
               onClick={() => { setView("login"); setError(null); }}

@@ -1,10 +1,11 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { motion } from "motion/react";
-import { ExternalLink, Info, MapPin, Map } from "lucide-react";
+import { Info, MapPin, Map } from "lucide-react";
 import { PlaceAutocomplete, hasPlacesApiKey } from "./PlaceAutocomplete";
 import { LocationMap } from "./LocationMap";
 import { fetchTimezone } from "../services/timezone";
 import { useLanguage } from "../contexts/LanguageContext";
+import { searchNominatim, type NominatimResult } from "../services/nominatim";
 
 /** Detect whether DST is active for a given date + IANA timezone. */
 function isDst(dateStr: string, tz: string): boolean | null {
@@ -52,6 +53,10 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
   const [placeName, setPlaceName] = useState("");
   const [showMap, setShowMap] = useState(false);
   const [mapCenter, setMapCenter] = useState<{ lat: number; lon: number } | undefined>(undefined);
+  const [locationQuery, setLocationQuery] = useState('');
+  const [locationResults, setLocationResults] = useState<NominatimResult[]>([]);
+  const [searchingLocation, setSearchingLocation] = useState(false);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const placesAvailable = useMemo(() => hasPlacesApiKey(), []);
   const today = new Date().toISOString().split('T')[0];
 
@@ -59,6 +64,29 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
     const detectedTz = await fetchTimezone(lat, lon);
     if (detectedTz) setTz(detectedTz);
   }, []);
+
+  const handleLocationSearch = useCallback((query: string) => {
+    setLocationQuery(query);
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    if (query.length < 3) { setLocationResults([]); return; }
+
+    searchTimeoutRef.current = setTimeout(async () => {
+      setSearchingLocation(true);
+      const results = await searchNominatim(query);
+      setLocationResults(results);
+      setSearchingLocation(false);
+    }, 500); // 500ms debounce to respect Nominatim rate limit
+  }, []);
+
+  const handleLocationSelect = useCallback((result: NominatimResult) => {
+    const lat = parseFloat(result.lat);
+    const lon = parseFloat(result.lon);
+    setCoordinates(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+    setPlaceName(result.display_name);
+    setLocationQuery(result.display_name);
+    setLocationResults([]);
+    autoDetectTimezone(lat, lon);
+  }, [autoDetectTimezone]);
 
   const dstInfo = useMemo(() => {
     if (!date) return null;
@@ -287,32 +315,63 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
                   />
                 </>
               ) : (
-                /* Fallback: manual coordinate input (no API key) */
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
+                /* Fallback: Nominatim search + collapsible manual coordinate input */
+                <>
+                  <div className="space-y-2">
                     <label className="text-[8px] uppercase tracking-widest text-[#1E2A3A]/50">
-                      {t("form.coordLabel")}
+                      {t("form.locationLabel") || "Geburtsort"}
                     </label>
-                    <a
-                      href="https://www.google.com/maps"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[8px] uppercase tracking-widest text-[#8B6914]/60 hover:text-[#8B6914] transition-colors flex items-center gap-1"
-                    >
-                      {t("form.findOnMaps")} <ExternalLink className="w-3 h-3" />
-                    </a>
+                    <div className="relative">
+                      <div className="relative">
+                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8B6914]/40" />
+                        <input
+                          type="text"
+                          value={locationQuery}
+                          onChange={(e) => handleLocationSearch(e.target.value)}
+                          placeholder={t("form.locationPlaceholder") || "Stadt oder Ort eingeben..."}
+                          className={`${inputCls} pl-10`}
+                        />
+                        {searchingLocation && (
+                          <div className="absolute right-4 top-1/2 -translate-y-1/2 w-3 h-3 border border-[#8B6914]/40 border-t-transparent rounded-full animate-spin" />
+                        )}
+                      </div>
+                      {locationResults.length > 0 && (
+                        <div className="absolute z-20 w-full mt-1 bg-white border border-[#8B6914]/15 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                          {locationResults.map((result, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() => handleLocationSelect(result)}
+                              className="w-full text-left px-4 py-3 text-sm text-[#1E2A3A] hover:bg-[#8B6914]/5 transition-colors border-b border-[#8B6914]/5 last:border-0"
+                            >
+                              {result.display_name}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    {placeName && (
+                      <p className="text-xs text-[#8B6914]/60 flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        {placeName}
+                      </p>
+                    )}
                   </div>
-                  <input
-                    type="text"
-                    required
-                    value={coordinates}
-                    onChange={(e) => setCoordinates(e.target.value)}
-                    className={inputCls}
-                    placeholder="52.399553, 13.061038"
-                    pattern="^-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$"
-                    title={t("form.coordTitle")}
-                  />
-                </div>
+                  <details className="text-xs text-[#1E2A3A]/40">
+                    <summary className="cursor-pointer hover:text-[#1E2A3A]/60 transition-colors">
+                      {t("form.manualCoords") || "Koordinaten manuell eingeben"}
+                    </summary>
+                    <div className="mt-2">
+                      <input
+                        type="text"
+                        value={coordinates}
+                        onChange={(e) => setCoordinates(e.target.value)}
+                        className={inputCls}
+                        placeholder="52.520000, 13.405000"
+                      />
+                    </div>
+                  </details>
+                </>
               )}
 
               {/* Timezone (auto-detected, still editable) */}

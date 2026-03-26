@@ -85,7 +85,7 @@ export function DashboardAstroSection({
   leviSlot,
 }: DashboardAstroSectionProps) {
   const { lang, t } = useLanguage();
-  const { planetariumMode, setPlanetariumMode } = usePlanetarium();
+  const { planetariumMode, setPlanetariumMode, skyMode } = usePlanetarium();
 
   // ── First-visit Birth Sky welcome ────────────────────────────────
   const [showBirthSkyWelcome, setShowBirthSkyWelcome] = useState(false);
@@ -178,6 +178,7 @@ export function DashboardAstroSection({
             planetariumMode={planetariumMode}
             birthConstellation={birthConstellationKey}
             autoPlay={showBirthSkyWelcome}
+            currentSky={skyMode === 'current'}
           />
         </Suspense>
 
@@ -210,6 +211,13 @@ export function DashboardAstroSection({
           )}
         </AnimatePresence>
       </motion.div>
+
+      {/* ═══ SKY MODE TOGGLE ═══════════════════════════════════════════ */}
+      {planetariumMode && (
+        <motion.div className="mb-8 -mt-6" {...fadeIn(0.15)}>
+          <SkyModeToggle />
+        </motion.div>
+      )}
 
       {/* ═══ ASTRO ACCORDION (Western + BaZi/WuXing) ═════════════════════ */}
       <motion.div className="mb-12" {...fadeIn(0.2)}>
@@ -300,6 +308,20 @@ export function DashboardAstroSection({
               </div>
             </div>
           </div>
+
+          {/* Block B: Four Pillars */}
+          {apiData.bazi?.pillars && (
+            <div className="mb-10">
+              <p className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/50 mb-4">
+                {lang === "de" ? "Die Vier S\u00e4ulen" : "The Four Pillars"}
+              </p>
+              <BaZiFourPillars
+                pillars={apiData.bazi.pillars}
+                lang={lang}
+                planetariumMode={planetariumMode}
+              />
+            </div>
+          )}
 
           {/* Block D: Interpretation */}
           <div className="morning-card p-6 md:p-8">

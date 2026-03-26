@@ -12,6 +12,7 @@ import type { ApiData } from "../types/bafe";
 import { parseAstroProfileJson } from "../types/bafe";
 import type { TileTexts } from "../types/interpretation";
 import { trackEvent } from "../lib/analytics";
+import { retryWithBackoff } from "../lib/retryWithBackoff";
 
 function getCalcErrorMessage(lang: string): string {
   if (lang === "en") {
@@ -44,6 +45,7 @@ export interface AstroProfileResult {
   isFirstReading: boolean;
   isLoading: boolean;
   error: string | null;
+  persistError: string | null;
   handleSubmit: (data: BirthData) => Promise<void>;
   handleRegenerate: () => Promise<void>;
   handleReset: () => void;
@@ -59,6 +61,7 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
   const [isFirstReading, setIsFirstReading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [persistError, setPersistError] = useState<string | null>(null);
 
   const profileFetchedForRef = useRef<string | null>(null);
 
@@ -145,13 +148,17 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
       trackEvent("reading_completed");
 
       try {
-        await Promise.all([
-          upsertAstroProfile(user.id, data, results, aiResult.interpretation, aiResult.tiles || {}),
-          insertBirthData(user.id, data),
-          insertNatalChart(user.id, results),
-        ]);
+        await retryWithBackoff(async () => {
+          await Promise.all([
+            upsertAstroProfile(user.id, data, results, aiResult.interpretation, aiResult.tiles || {}),
+            insertBirthData(user.id, data),
+            insertNatalChart(user.id, results),
+          ]);
+        }, { maxRetries: 3, baseDelay: 1000 });
+        setPersistError(null);
       } catch (persistErr) {
-        console.warn("Supabase persist failed:", persistErr);
+        console.error('[useAstroProfile] Persist failed after retries:', persistErr);
+        setPersistError('Deine Daten konnten nicht gespeichert werden. Bitte lade die Seite neu.');
       }
 
       setIsFirstReading(true);
@@ -234,6 +241,7 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
     isFirstReading,
     isLoading,
     error,
+    persistError,
     handleSubmit,
     handleRegenerate,
     handleReset,

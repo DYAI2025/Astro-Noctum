@@ -126,6 +126,8 @@ interface BirthChartOrreryProps {
   birthConstellation?: string;
   /** Auto-start time-lapse on mount (first visit experience) */
   autoPlay?: boolean;
+  /** When true, override simTime to "now" (current sky) instead of birth date */
+  currentSky?: boolean;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -137,6 +139,7 @@ export function BirthChartOrrery({
   planetariumMode = false,
   birthConstellation,
   autoPlay = false,
+  currentSky = false,
 }: BirthChartOrreryProps) {
   const { lang, t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -189,6 +192,7 @@ export function BirthChartOrrery({
   const nextShootingStarRef = useRef(6 + Math.random() * 8);
 
   // Animation loop refs
+  const currentSkyRef  = useRef(currentSky);
   const simTimeRef     = useRef(daysSinceJ2000(birthDate));
   const obsLatRef      = useRef(observerLat);
   const obsLonRef      = useRef(observerLon);
@@ -272,6 +276,7 @@ export function BirthChartOrrery({
   useEffect(() => { showConNRef.current   = showConstellationNames; },[showConstellationNames]);
   useEffect(() => { isPlayingRef.current  = isPlaying; },        [isPlaying]);
   useEffect(() => { speedRef.current      = speed; },            [speed]);
+  useEffect(() => { currentSkyRef.current = currentSky; },       [currentSky]);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // THREE.JS INIT
@@ -648,6 +653,11 @@ export function BirthChartOrrery({
       raf = requestAnimationFrame(animate);
       const dt = clock.getDelta();
       elapsedRef.current += dt;
+
+      // Current sky: override simTime with "now" (J2000 epoch days)
+      if (currentSkyRef.current) {
+        simTimeRef.current = daysSinceJ2000(new Date());
+      }
 
       updateMaterials(dt, sunMaterialRef.current ?? undefined);
 

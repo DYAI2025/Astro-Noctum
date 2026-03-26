@@ -121,13 +121,11 @@ export const FusionRing3D = ({
             effectTrigger={effectTrigger}
             solarModulation={solarModulation}
             dissonanceModulation={dissonanceModulation}
-            showUI={isInteractive}
             className="h-full w-full"
           />
         ) : (
           <FusionRingWebsiteCanvas
             queuedEffect={queuedEffect}
-            showEffectControls={isInteractive && !!import.meta.env.DEV}
             className="h-full w-full"
             soulProfile={signalData?.baseSignals ?? null}
           />
