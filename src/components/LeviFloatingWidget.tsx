@@ -46,7 +46,7 @@ export function LeviFloatingWidget({
   return (
     <div
       ref={widgetRef}
-      className="fixed z-[9998] transition-all duration-300 ease-out"
+      className="fixed z-[99999] transition-all duration-300 ease-out"
       style={{
         bottom: expanded ? '24px' : '80px', // above mobile nav when minimised
         right: expanded ? '16px' : '16px',
