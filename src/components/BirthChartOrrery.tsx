@@ -656,7 +656,7 @@ export function BirthChartOrrery({
 
       // Current sky: override simTime with "now" (J2000 epoch days)
       if (currentSkyRef.current) {
-        simTimeRef.current = (Date.now() / 86400000) - 10957.5;
+        simTimeRef.current = daysSinceJ2000(new Date());
       }
 
       updateMaterials(dt, sunMaterialRef.current ?? undefined);
