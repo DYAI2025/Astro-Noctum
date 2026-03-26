@@ -1137,7 +1137,7 @@ setInterval(() => {
  * 7. Return HTTP 200 JSON. Client (App.tsx) detects soulprint_saved=false or
  *    seed.startsWith('fallback:') and shows a non-blocking "Soulprint wird berechnet..." hint.
  */
-app.post('/api/experience/bootstrap', requireUserAuth, express.json(), async (req, res) => {
+app.post('/api/experience/bootstrap', express.json(), requireUserAuth, async (req, res) => {
   try {
     const { birth } = req.body;
     if (!birth) return res.status(400).json({ error: 'Missing birth data' });
@@ -1228,7 +1228,7 @@ app.post('/api/experience/bootstrap', requireUserAuth, express.json(), async (re
   }
 });
 
-app.post('/api/experience/signature-delta', requireUserAuth, express.json(), async (req, res) => {
+app.post('/api/experience/signature-delta', express.json(), requireUserAuth, async (req, res) => {
   try {
     const { quiz_answer, signature_blueprint } = req.body;
     if (!quiz_answer) return res.status(400).json({ error: "Missing quiz_answer" });
@@ -1274,7 +1274,7 @@ app.post('/api/experience/signature-delta', requireUserAuth, express.json(), asy
   }
 });
 
-app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
+app.post('/api/experience/daily', express.json(), requireUserAuth, async (req, res) => {
   try {
     const userId = req.userId;
     const bodyStr = JSON.stringify(req.body);
