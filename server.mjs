@@ -1117,6 +1117,26 @@ setInterval(() => {
 }, 60 * 60 * 1000);
 
 // ── Experience API proxy ──────────────────────────────────────────
+/**
+ * Bootstrap endpoint — 7-step flow:
+ *
+ * 1. Validate auth: requireUserAuth middleware checks Supabase JWT, attaches req.userId.
+ * 2. Parse birth data: req.body must contain { date, time, lat, lon, tz }.
+ * 3. Fetch chart from BAFE: POST to /chart with 15s AbortSignal timeout.
+ *    Uses fetchWithRetry (max 3 attempts, exponential backoff: 2s → 4s → 8s).
+ *    4xx from BAFE is NOT retried (client error). Network errors and 5xx are retried.
+ *    If all retries fail: returns HTTP 502 to client.
+ * 4. Compute Master Signal: runs gcbBuilder + masterSignalBuilder on the BAFE chart.
+ *    Projects the result to 12 soulprint_sectors (Float array, values 0–1).
+ * 5. Persist soulprint: awaits Supabase astro_profiles.update({ soulprint_sectors }).
+ *    On success: sets soulprint_saved = true in response payload.
+ *    On failure: console.warn, sets soulprint_saved = false — still returns HTTP 200.
+ *    Recovery: transit-state endpoint derives soulprint from Wu-Xing data when DB row is absent.
+ * 6. Build response payload: { soulprint_sectors, soulprint_saved, profile_summary,
+ *    signature_blueprint, narratives }.
+ * 7. Return HTTP 200 JSON. Client (App.tsx) detects soulprint_saved=false or
+ *    seed.startsWith('fallback:') and shows a non-blocking "Soulprint wird berechnet..." hint.
+ */
 app.post('/api/experience/bootstrap', requireUserAuth, express.json(), async (req, res) => {
   try {
     const { birth } = req.body;
