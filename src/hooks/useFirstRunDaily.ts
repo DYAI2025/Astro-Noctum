@@ -101,7 +101,6 @@ export function useFirstRunDaily(
 
         // 3. Fetch fresh daily experience
         setLoading(true);
-        const today = todayKey();
         const data = await fetchDailyExperience(
           birthData,
           soulprintSectors,

@@ -22,9 +22,10 @@ const PlanetariumContext = createContext<PlanetariumContextType>({
 export function PlanetariumProvider({ children }: { children: ReactNode }) {
   const [planetariumMode, setPlanetariumModeRaw] = useState<boolean>(() => {
     try {
-      return localStorage.getItem(PLANETARIUM_STORAGE_KEY) === "true";
+      const stored = localStorage.getItem(PLANETARIUM_STORAGE_KEY);
+      return stored !== null ? stored === "true" : true;
     } catch {
-      return false;
+      return true;
     }
   });
 

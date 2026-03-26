@@ -309,10 +309,6 @@ export function Dashboard({
 
         {/* Right: language toggle + profile actions */}
         <div className="flex shrink-0 items-center gap-3 pt-1">
-          <Button variant="ghost" size="sm" onClick={onReset} className="text-[10px] uppercase tracking-[0.3em]">
-            <ArrowLeft className="w-4 h-4" />
-            {t("dashboard.startOver")}
-          </Button>
         </div>
       </motion.header>
 
@@ -334,14 +330,7 @@ export function Dashboard({
           <UpgradeButton />
         </Card>
       )}
-      {isPremium && (
-        <motion.div
-          className="mb-8 flex justify-end"
-          {...fadeIn(0.15)}
-        >
-          <ManageSubscription className="text-ink/45 hover:text-gold-deep" />
-        </motion.div>
-      )}
+
 
       {/* ── Tour sentinel: step 1 triggers when astro section scrolls into view ── */}
       <div ref={astroSentinelRef} className="h-px" aria-hidden="true" />
