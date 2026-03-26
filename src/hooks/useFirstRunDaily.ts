@@ -81,14 +81,15 @@ export function useFirstRunDaily(
         // 1. Check if user already dismissed the modal today
         const { data: profile } = await supabase
           .from('profiles')
-          .select('daily_modal_seen')
+          .select('daily_modal_seen_date')
           .eq('id', userId)
           .single();
 
         if (cancelled) return;
-        // First-run only: once user has seen the modal, they won't see it again.
-        // Future: change to daily_modal_seen_date for daily recurrence.
-        if (profile?.daily_modal_seen) return;
+        // Daily recurrence: show modal once per calendar day.
+        // daily_modal_seen_date stores the last date the user dismissed the modal.
+        const today = todayKey();
+        if (profile?.daily_modal_seen_date === today) return;
 
         // 2. Check localStorage cache
         const cached = getCachedDaily();
@@ -100,7 +101,6 @@ export function useFirstRunDaily(
 
         // 3. Fetch fresh daily experience
         setLoading(true);
-        const today = todayKey();
         const data = await fetchDailyExperience(
           birthData,
           soulprintSectors,
@@ -129,10 +129,11 @@ export function useFirstRunDaily(
   const handleClose = useCallback(() => {
     setShowModal(false);
 
-    // Mark as seen in profiles (fire-and-forget)
+    // Mark today's date as seen in profiles (fire-and-forget)
+    const today = todayKey();
     supabase
       .from('profiles')
-      .update({ daily_modal_seen: true })
+      .update({ daily_modal_seen_date: today })
       .eq('id', userId)
       .then(({ error }) => {
         if (error) console.warn('[useFirstRunDaily] Failed to mark seen:', error);

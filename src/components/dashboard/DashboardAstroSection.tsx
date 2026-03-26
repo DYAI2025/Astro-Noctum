@@ -174,7 +174,7 @@ export function DashboardAstroSection({
 
         {/* Birth Sky Welcome Banner */}
         <AnimatePresence>
-          {showBirthSkyWelcome && (
+          {showBirthSkyWelcome && planetariumMode && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

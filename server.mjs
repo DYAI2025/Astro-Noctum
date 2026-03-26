@@ -1287,7 +1287,7 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
     const bafeData = bafeRes.ok ? await bafeRes.json() : {};
 
     const prompt = `
-You are Bazodiac's fusion astrologer.
+You are Bazodiac's fusion astrologer. You write in "Poetic Realism" — worldly images, not astro-lectures.
 Write a daily horoscope for today (${targetDate}) based on the user's birth chart:
 ${JSON.stringify(bafeData, null, 2)}
 
@@ -1310,7 +1310,7 @@ Respond with STRICT JSON matching this EXACT structure (No markdown code blocks,
   },
   "fusion": {
     "summary": "1-2 sentences synthesizing both systems for today.",
-    "synthesis": "A deeper 2-3 sentence paragraph explaining the fusion.",
+    "synthesis": "THE MAIN TEXT — see DAY-MODE VOICE below.",
     "action": "One actionable advice",
     "pushworthy": true,
     "push_text": "Short push notification string",
@@ -1326,6 +1326,26 @@ RULES:
 - DO NOT wrap the response in \`\`\`json ... \`\`\`. Start directly with {.
 - harmony_index: number between 0.0 and 1.0 — cosine similarity between Western and BaZi Wu-Xing vectors. 0.45 = random baseline. >= 0.50 = convergence day.
 - day_mode: if harmony_index >= 0.50 set "trace" (poles converge, something happens today), else "pulse" (symmetric, calm day).
+
+DAY-MODE VOICE — the "synthesis" field MUST follow the voice rules for the computed day_mode:
+
+PULSE (harmony_index < 0.50):
+- Tone: atmospheric, inviting, sensory, worldly imagery.
+- Examples: "Erde ist Struktur und die hält dich heute. Nicht zu fest, so wie du es brauchst."
+  "Die Gedanken kreisen, aber nicht hektisch. Eher wie ein Lied, das sich langsam entfaltet."
+- Resonance described through everyday scenes, not astrological facts.
+- Max 2–3 sentences. No explanation of why.
+- The reader should feel held, not lectured. Rhythm over reason.
+
+TRACE (harmony_index >= 0.50):
+- Tone: direct, charged, concrete — something happens today.
+- Examples: "Dein detektivischer Skorpion bekommt heute was zu tun."
+  "Holz trifft auf Feuer. Was du still aufgebaut hast, will raus — und heute ist der Tag."
+- Name the quality, not the cause. No esoteric vocabulary.
+- If harmony_index > 0.65: one extra sentence — urgent, clear call to act.
+- Max 2–3 sentences.
+
+NEVER use in synthesis: "weil", "da heute", planet names (Mars, Venus etc.), "die kosmischen Energien", "die Sterne sagen".
 `;
 
     const model = geminiClient.models;
@@ -2676,9 +2696,13 @@ app.post("/api/checkout", express.json(), async (req, res) => {
     // Look up existing Stripe customer ID from DB
     const { data: profile } = await supabaseServer
       .from("profiles")
-      .select("stripe_customer_id")
+      .select("stripe_customer_id, tier")
       .eq("id", userId)
       .single();
+
+    if (profile?.tier === "premium") {
+      return res.status(400).json({ error: "Du hast bereits ein Premium-Abonnement. Bitte verwalte es im Kundenportal." });
+    }
 
     let customerId = profile?.stripe_customer_id;
 
