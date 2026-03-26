@@ -1203,14 +1203,17 @@ app.post('/api/experience/bootstrap', requireUserAuth, express.json(), async (re
     let soulprint_saved = false;
     if (supabaseServer) {
       try {
-        const { error } = await supabaseServer
+        const { data, error } = await supabaseServer
           .from('astro_profiles')
           .update({ soulprint_sectors: soulprintSectors })
-          .eq('user_id', req.userId);
+          .eq('user_id', req.userId)
+          .select('user_id');
         if (error) {
           console.warn('[bootstrap] soulprint save failed', error.message);
-        } else {
+        } else if (Array.isArray(data) && data.length > 0) {
           soulprint_saved = true;
+        } else {
+          console.warn('[bootstrap] soulprint save affected 0 rows for user_id', req.userId);
         }
       } catch (err) {
         console.warn('[bootstrap] soulprint save threw', err);
