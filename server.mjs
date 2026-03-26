@@ -1155,10 +1155,11 @@ app.post('/api/experience/bootstrap', requireUserAuth, express.json(), async (re
           lng: birth.lon,
           timeZone: birth.tz
         }),
-        signal: AbortSignal.timeout(15000),
+        // Reduced per-attempt timeout to keep total worst-case under typical client/proxy limits.
+        signal: AbortSignal.timeout(7000),
       },
       3,    // maxRetries
-      2000  // baseDelayMs
+      1000  // baseDelayMs (reduced to shorten overall backoff duration)
     );
 
     if (!bafeRes.ok) {
