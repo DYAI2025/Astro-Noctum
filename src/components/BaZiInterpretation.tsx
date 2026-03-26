@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { getBaZiInterpretation } from "../lib/astro-data/bazi-interpretations";
 import { detectTensions } from "../lib/astro-data/wuxing-cycles";
 import { getWuxingByKey } from "../lib/astro-data/wuxing";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface BaZiInterpretationProps {
   animal: string;
@@ -12,6 +13,7 @@ interface BaZiInterpretationProps {
 }
 
 export function BaZiInterpretation({ animal, element, balance, lang }: BaZiInterpretationProps) {
+  const { t } = useLanguage();
   const interpretation = useMemo(
     () => getBaZiInterpretation(animal, element),
     [animal, element],
@@ -49,7 +51,7 @@ export function BaZiInterpretation({ animal, element, balance, lang }: BaZiInter
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <h4 className="text-[9px] uppercase tracking-[0.3em] text-[#3D8B37]/70 mb-2">
-            {lang === "de" ? "Stärken" : "Strengths"}
+            {t("dashboard.bazi.strengths")}
           </h4>
           <ul className="space-y-1.5">
             {interpretation.strengths.map((s, i) => (
@@ -62,7 +64,7 @@ export function BaZiInterpretation({ animal, element, balance, lang }: BaZiInter
         </div>
         <div>
           <h4 className="text-[9px] uppercase tracking-[0.3em] text-[#D63B0F]/50 mb-2">
-            {lang === "de" ? "Schatten" : "Shadows"}
+            {t("dashboard.bazi.shadows")}
           </h4>
           <ul className="space-y-1.5">
             {interpretation.shadows.map((s, i) => (
@@ -79,7 +81,7 @@ export function BaZiInterpretation({ animal, element, balance, lang }: BaZiInter
       {tensions.length > 0 && (
         <div className="border-t border-[#8B6914]/10 pt-4">
           <h4 className="text-[9px] uppercase tracking-[0.3em] text-[#C8930A]/60 mb-3">
-            {lang === "de" ? "Spannungen in deiner Balance" : "Tensions in Your Balance"}
+            {t("dashboard.bazi.tensionsTitle")}
           </h4>
           <div className="space-y-2">
             {tensions.map((tension, i) => {

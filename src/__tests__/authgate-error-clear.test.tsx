@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 // Mock contexts before importing component
@@ -6,6 +6,7 @@ vi.mock('../contexts/AuthContext', () => ({
   useAuth: () => ({
     signIn: vi.fn().mockResolvedValue('Invalid credentials'),
     signUp: vi.fn().mockResolvedValue(null),
+    resetPassword: vi.fn().mockResolvedValue(null),
     loading: false,
   }),
 }));
@@ -27,13 +28,14 @@ describe('AuthGate error clearing', () => {
   it('clears password mismatch error when user types in confirm password field', () => {
     render(<AuthGate />);
 
-    // Both forms are displayed simultaneously. Find the register form's password fields.
-    // There are two password fields in login + two in register + one confirm = 5 password inputs total.
-    const passwordInputs = screen.getAllByPlaceholderText('auth.passwordPlaceholder');
-    // First is login password, second is register password
-    const registerPassword = passwordInputs[1];
+    // Switch to register view
+    const toggleBtn = screen.getByRole('button', { name: /jetzt registrieren/i });
+    fireEvent.click(toggleBtn);
 
-    const confirmPassword = screen.getByPlaceholderText('Passwort wiederholen');
+    const passwordInputs = screen.getAllByPlaceholderText('auth.passwordPlaceholder');
+    const registerPassword = passwordInputs[0];
+
+    const confirmPassword = screen.getByPlaceholderText('auth.confirmPasswordPlaceholder');
 
     // Fill mismatched passwords
     fireEvent.change(registerPassword, { target: { value: 'password1' } });
@@ -42,11 +44,11 @@ describe('AuthGate error clearing', () => {
     // We also need an email for the form to be valid, but since password mismatch
     // is checked before submit reaches signUp, we just need to trigger submit.
     const emailInputs = screen.getAllByPlaceholderText('auth.emailPlaceholder');
-    const registerEmail = emailInputs[1];
+    const registerEmail = emailInputs[0];
     fireEvent.change(registerEmail, { target: { value: 'test@example.com' } });
 
     // Submit the register form
-    const registerButton = screen.getByRole('button', { name: /konto erstellen/i });
+    const registerButton = screen.getByRole('button', { name: /auth\.signUpBtn/i });
     fireEvent.click(registerButton);
 
     // Error should appear (password mismatch)
@@ -62,18 +64,21 @@ describe('AuthGate error clearing', () => {
   it('clears password mismatch error when user types in register password field', () => {
     render(<AuthGate />);
 
+    const toggleBtn = screen.getByRole('button', { name: /jetzt registrieren/i });
+    fireEvent.click(toggleBtn);
+
     const passwordInputs = screen.getAllByPlaceholderText('auth.passwordPlaceholder');
-    const registerPassword = passwordInputs[1];
-    const confirmPassword = screen.getByPlaceholderText('Passwort wiederholen');
+    const registerPassword = passwordInputs[0];
+    const confirmPassword = screen.getByPlaceholderText('auth.confirmPasswordPlaceholder');
     const emailInputs = screen.getAllByPlaceholderText('auth.emailPlaceholder');
-    const registerEmail = emailInputs[1];
+    const registerEmail = emailInputs[0];
 
     fireEvent.change(registerEmail, { target: { value: 'test@example.com' } });
     fireEvent.change(registerPassword, { target: { value: 'password1' } });
     fireEvent.change(confirmPassword, { target: { value: 'password2' } });
 
     // Submit to trigger mismatch error
-    const registerButton = screen.getByRole('button', { name: /konto erstellen/i });
+    const registerButton = screen.getByRole('button', { name: /auth\.signUpBtn/i });
     fireEvent.click(registerButton);
 
     expect(screen.getByText('auth.passwordMismatch')).toBeDefined();
@@ -88,17 +93,20 @@ describe('AuthGate error clearing', () => {
   it('clears password mismatch error when user types in register email field', () => {
     render(<AuthGate />);
 
+    const toggleBtn = screen.getByRole('button', { name: /jetzt registrieren/i });
+    fireEvent.click(toggleBtn);
+
     const passwordInputs = screen.getAllByPlaceholderText('auth.passwordPlaceholder');
-    const registerPassword = passwordInputs[1];
-    const confirmPassword = screen.getByPlaceholderText('Passwort wiederholen');
+    const registerPassword = passwordInputs[0];
+    const confirmPassword = screen.getByPlaceholderText('auth.confirmPasswordPlaceholder');
     const emailInputs = screen.getAllByPlaceholderText('auth.emailPlaceholder');
-    const registerEmail = emailInputs[1];
+    const registerEmail = emailInputs[0];
 
     fireEvent.change(registerEmail, { target: { value: 'test@example.com' } });
     fireEvent.change(registerPassword, { target: { value: 'password1' } });
     fireEvent.change(confirmPassword, { target: { value: 'password2' } });
 
-    const registerButton = screen.getByRole('button', { name: /konto erstellen/i });
+    const registerButton = screen.getByRole('button', { name: /auth\.signUpBtn/i });
     fireEvent.click(registerButton);
 
     expect(screen.getByText('auth.passwordMismatch')).toBeDefined();
@@ -121,9 +129,11 @@ describe('AuthGate error clearing', () => {
     fireEvent.change(loginEmail, { target: { value: 'test@example.com' } });
     fireEvent.change(loginPassword, { target: { value: 'wrongpassword' } });
 
-    // Submit login form
-    const loginButton = screen.getByRole('button', { name: /einloggen/i });
-    fireEvent.click(loginButton);
+    // Submit login form — wrap in act() since signIn triggers async state updates
+    const loginButton = screen.getByRole('button', { name: /auth\.signin/i });
+    await act(async () => {
+      fireEvent.click(loginButton);
+    });
 
     // Wait for async signIn to complete
     await vi.waitFor(() => {

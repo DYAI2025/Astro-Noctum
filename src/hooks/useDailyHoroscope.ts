@@ -59,7 +59,9 @@ export function useDailyHoroscope(
           return;
         }
       }
-    } catch { /* ignore cache errors */ }
+    } catch (err) {
+      console.warn('[DailyHoroscope] Cache read error:', err instanceof Error ? err.message : err);
+    }
 
     setLoading(true);
     setError(null);
@@ -122,7 +124,9 @@ export function useDailyHoroscope(
           dateStr: today,
         };
         localStorage.setItem(cacheKey, JSON.stringify(cacheEntry));
-      } catch { /* ignore storage errors */ }
+      } catch (err) {
+        console.warn('[DailyHoroscope] Cache write error:', err instanceof Error ? err.message : err);
+      }
 
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Horoscope generation failed';

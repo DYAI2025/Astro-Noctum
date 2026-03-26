@@ -11,20 +11,25 @@ interface PlanetariumContextType {
   planetariumMode: boolean;
   togglePlanetarium: () => void;
   setPlanetariumMode: (value: boolean) => void;
+  skyMode: 'birth' | 'current';
+  setSkyMode: (mode: 'birth' | 'current') => void;
 }
 
 const PlanetariumContext = createContext<PlanetariumContextType>({
   planetariumMode: false,
   togglePlanetarium: () => {},
   setPlanetariumMode: () => {},
+  skyMode: 'birth',
+  setSkyMode: () => {},
 });
 
 export function PlanetariumProvider({ children }: { children: ReactNode }) {
   const [planetariumMode, setPlanetariumModeRaw] = useState<boolean>(() => {
     try {
-      return localStorage.getItem(PLANETARIUM_STORAGE_KEY) === "true";
+      const stored = localStorage.getItem(PLANETARIUM_STORAGE_KEY);
+      return stored !== null ? stored === "true" : true;
     } catch {
-      return false;
+      return true;
     }
   });
 
@@ -37,10 +42,27 @@ export function PlanetariumProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const togglePlanetarium = () => setPlanetariumMode(!planetariumMode);
+  const [skyMode, setSkyModeRaw] = useState<'birth' | 'current'>('birth');
+
+  function setSkyMode(mode: 'birth' | 'current') {
+    setSkyModeRaw(mode);
+    if (mode === 'current') setPlanetariumMode(true);
+  }
+
+  const togglePlanetarium = () => {
+    setPlanetariumModeRaw((prev) => {
+      const newValue = !prev;
+      try {
+        localStorage.setItem(PLANETARIUM_STORAGE_KEY, String(newValue));
+      } catch {
+        // ignore
+      }
+      return newValue;
+    });
+  };
 
   return (
-    <PlanetariumContext.Provider value={{ planetariumMode, togglePlanetarium, setPlanetariumMode }}>
+    <PlanetariumContext.Provider value={{ planetariumMode, togglePlanetarium, setPlanetariumMode, skyMode, setSkyMode }}>
       {children}
     </PlanetariumContext.Provider>
   );

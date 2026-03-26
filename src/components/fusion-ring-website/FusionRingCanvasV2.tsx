@@ -5,15 +5,9 @@ import {
   PLANETS,
   PLANET_MAP,
   ZODIAC_SIGNS,
-  QUIZ_DIMS,
-  computeWeights,
   generateSignature,
-  generateTransitParticles,
   computeSpiroParams,
-  computeEmergence,
   createTestPreset,
-  getTier,
-  fractalDepth,
   hash01,
   lerp,
   clamp,
@@ -23,14 +17,11 @@ import {
   type QuizDimension,
   type PlanetDef,
 } from './bazodiac-engine';
-import { FusionRingInputController } from './fusion-ring-input';
-import { createDemoTransitState, type TransitStateV1 } from './fusion-ring-transit';
 import {
   createDemoProfile,
   createEmptySedimentationState,
   type FusionRingProfile,
 } from './fusion-ring-profile';
-import type { QuizClusterResult } from './fusion-ring-input';
 
 function isWebGLAvailable(): boolean {
   try {
@@ -54,22 +45,10 @@ interface EffectState {
   clusterColorHex?: string;
 }
 
-const EFFECT_CONFIGS: Record<string, { label: string; sublabel: string; color: string; borderColor: string }> = {
-  resonanzsprung: { label: 'RESONANZSPRUNG', sublabel: 'Delta \u2265 0.18 \u00b7 Sector Spike', color: 'rgba(255,58,42,0.9)', borderColor: 'rgba(255,58,42,0.4)' },
-  dominanzwechsel: { label: 'DOMINANZWECHSEL', sublabel: 'Sector Override \u00b7 \u2265 0.08', color: 'rgba(255,184,42,0.9)', borderColor: 'rgba(255,184,42,0.4)' },
-  mond_event: { label: 'MOND-EVENT', sublabel: 'Lunar Phase \u00b7 Peak Sector', color: 'rgba(180,200,255,0.9)', borderColor: 'rgba(180,200,255,0.4)' },
-  spannungsachse: { label: 'SPANNUNGSACHSE', sublabel: 'Opposition Tension \u00b7 S1\u2194S7', color: 'rgba(200,80,255,0.9)', borderColor: 'rgba(200,80,255,0.4)' },
-  korona_eruption: { label: 'KORONA-ERUPTION', sublabel: 'Energy Strands \u00b7 Peak Overflow', color: 'rgba(42,255,90,0.9)', borderColor: 'rgba(42,255,90,0.4)' },
-  divergenz_spike: { label: 'DIVERGENZ', sublabel: 'DIVERGENCE DETECTED', color: 'rgba(255,255,255,0.95)', borderColor: 'rgba(255,80,60,0.5)' },
-  burst: { label: 'BURST', sublabel: 'Particle Explosion \u00b7 Outward', color: 'rgba(255,200,60,0.95)', borderColor: 'rgba(255,160,30,0.5)' },
-  crunch: { label: 'CRUNCH', sublabel: 'Compression \u00b7 Inward Collapse', color: 'rgba(100,180,255,0.95)', borderColor: 'rgba(60,120,255,0.5)' },
-};
-
 export interface FusionRingCanvasProps {
   natalWeights?: Record<string, number>;
   quizWeights?: Record<string, number>;
   isMini?: boolean;
-  showUI?: boolean;
   revealProgress?: number; // 0..1, used for onboarding reveal
   effectTrigger?: { type: string; color?: string; timestamp: number; intensity?: number } | null;
   solarModulation?: number; // 1.0–1.5, multiplied into particle intensity
@@ -1117,208 +1096,6 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// BAZODIAC CONFIG PANEL — Planet Weight Editor
-// ═══════════════════════════════════════════════════════════════════
-
-function BazodiacConfigPanel({ bazState, onUpdate, version }: {
-  bazState: BazodiacState;
-  onUpdate: (s: BazodiacState) => void;
-  version: number;
-}) {
-  const [tab, setTab] = useState<'planets' | 'quiz' | 'json'>('planets');
-  const [jsonInput, setJsonInput] = useState('');
-  const [jsonError, setJsonError] = useState('');
-
-  const panelStyle: React.CSSProperties = {
-    position: 'absolute', top: '70px', right: '20px', zIndex: 20,
-    width: '360px', maxHeight: 'calc(100vh - 140px)', overflowY: 'auto',
-    background: 'rgba(8,8,18,0.92)', borderRadius: '12px',
-    border: '1px solid rgba(220,160,20,0.25)', padding: '16px',
-    fontFamily: '"SF Mono", "Fira Code", monospace', fontSize: '9px',
-    backdropFilter: 'blur(12px)', color: 'rgba(200,200,220,0.8)',
-  };
-  const labelStyle: React.CSSProperties = { color: 'rgba(220,180,40,0.7)', fontSize: '8px', letterSpacing: '1px', marginBottom: '4px', textTransform: 'uppercase' as const };
-  const sliderStyle: React.CSSProperties = { width: '100%', cursor: 'pointer', height: '4px' };
-  const tabBtnStyle = (active: boolean): React.CSSProperties => ({
-    padding: '5px 10px', borderRadius: '4px', border: 'none', cursor: 'pointer',
-    background: active ? 'rgba(220,160,20,0.2)' : 'transparent',
-    color: active ? 'rgba(220,180,40,0.9)' : 'rgba(120,130,150,0.6)',
-    fontSize: '9px', fontFamily: 'inherit', letterSpacing: '1px',
-  });
-
-  const updateNatal = (planetId: string, val: number) => {
-    const natal = new Map(bazState.natal);
-    natal.set(planetId, val);
-    onUpdate({ ...bazState, natal });
-  };
-
-  const updateQuiz = (dim: QuizDimension, val: number) => {
-    const quiz = new Map(bazState.quiz);
-    quiz.set(dim, val);
-    onUpdate({ ...bazState, quiz });
-  };
-
-  const loadTestPreset = () => {
-    onUpdate({ ...createTestPreset(), solarModulation: 1.0 });
-  };
-
-  const loadFlat = () => {
-    const natal = new Map<string, number>();
-    PLANETS.forEach(p => natal.set(p.id, 0.5));
-    const quiz = new Map<QuizDimension, number>();
-    QUIZ_DIMS.forEach(d => quiz.set(d, 0.5));
-    onUpdate({ natal, quiz, solarModulation: 1.0 });
-  };
-
-  const weights = computeWeights(bazState.natal, bazState.quiz);
-
-  const QUIZ_LABELS: Record<QuizDimension, string> = {
-    empathy: '💗 Empathie',
-    logic: '🧠 Logik',
-    creativity: '🎨 Kreativit\u00e4t',
-    discipline: '⚔ Disziplin',
-    intuition: '🔮 Intuition',
-    assertion: '🔥 Durchsetzung',
-  };
-
-  const exportJSON = () => {
-    const obj = {
-      natal: Object.fromEntries(bazState.natal),
-      quiz: Object.fromEntries(bazState.quiz),
-    };
-    navigator.clipboard?.writeText(JSON.stringify(obj, null, 2));
-    setJsonError('✓ Copied to clipboard');
-    setTimeout(() => setJsonError(''), 2000);
-  };
-
-  const importJSON = () => {
-    try {
-      const parsed = JSON.parse(jsonInput);
-      const natal = new Map<string, number>(Object.entries(parsed.natal ?? {}));
-      const quiz = new Map<QuizDimension, number>(Object.entries(parsed.quiz ?? {}) as [QuizDimension, number][]);
-      onUpdate({ natal, quiz, solarModulation: 1.0 });
-      setJsonError('');
-      setJsonInput('');
-    } catch (e: unknown) {
-      setJsonError(e instanceof Error ? e.message : 'Parse error');
-    }
-  };
-
-  return (
-    <div style={panelStyle}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-        <span style={{ color: 'rgba(220,180,40,0.9)', fontSize: '10px', letterSpacing: '2px' }}>BAZODIAC v{version}</span>
-        <div style={{ display: 'flex', gap: '4px' }}>
-          <button onClick={loadTestPreset} style={{ ...tabBtnStyle(false), fontSize: '7px' }} title="Test-Preset laden">TEST</button>
-          <button onClick={loadFlat} style={{ ...tabBtnStyle(false), fontSize: '7px' }} title="Neutral">FLAT</button>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: '4px', marginBottom: '12px', borderBottom: '1px solid rgba(80,90,120,0.2)', paddingBottom: '8px' }}>
-        <button onClick={() => setTab('planets')} style={tabBtnStyle(tab === 'planets')}>PLANETEN</button>
-        <button onClick={() => setTab('quiz')} style={tabBtnStyle(tab === 'quiz')}>QUIZ</button>
-        <button onClick={() => setTab('json')} style={tabBtnStyle(tab === 'json')}>JSON</button>
-      </div>
-
-      {/* PLANETS TAB */}
-      {tab === 'planets' && (
-        <div>
-          <div style={labelStyle}>Natal-Gewichte (0–1)</div>
-          {PLANETS.map(planet => {
-            const w = bazState.natal.get(planet.id) ?? 0.5;
-            const finalW = weights.weights.get(planet.id) ?? 0;
-            const tier = getTier(finalW);
-            const tierLabel = ['Glow', 'Form', 'Geometrie', 'Fraktal'][tier];
-            return (
-              <div key={planet.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '5px' }}>
-                <span style={{ width: '70px', fontSize: '8px', color: planet.hexColor }}>
-                  {planet.id}
-                </span>
-                <input type="range" min={0} max={100} value={Math.round(w * 100)}
-                  onChange={e => updateNatal(planet.id, Number(e.target.value) / 100)}
-                  style={{ ...sliderStyle, accentColor: planet.hexColor, flex: 1 }} />
-                <span style={{ width: '28px', textAlign: 'right', fontSize: '8px', color: planet.hexColor }}>
-                  {w.toFixed(2)}
-                </span>
-                <span style={{ width: '40px', textAlign: 'right', fontSize: '7px', color: 'rgba(180,190,210,0.4)' }}>
-                  →{finalW.toFixed(2)}
-                </span>
-                <span style={{ width: '55px', textAlign: 'right', fontSize: '7px', color: tier === 3 ? planet.hexColor : 'rgba(120,130,150,0.5)' }}>
-                  T{tier} {tierLabel}
-                </span>
-              </div>
-            );
-          })}
-
-          {/* Weight Summary */}
-          <div style={{ marginTop: '12px', padding: '8px', borderRadius: '6px', background: 'rgba(20,20,40,0.5)', border: '1px solid rgba(80,90,120,0.2)' }}>
-            <div style={labelStyle}>Gewichtete Signatur</div>
-            <div style={{ fontSize: '8px', color: 'rgba(180,190,210,0.6)', lineHeight: 1.6 }}>
-              Dominant: <span style={{ color: weights.dominant.hexColor }}>{weights.dominant.id}</span>
-              {' · '}Emergence: {weights.ranked.filter(r => r.weight >= 0.75).length} Fraktal-Planeten
-              {' · '}kFolds: {Math.max(3, Math.round(computeSpiroParams(weights.dominant.hz).n))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* QUIZ TAB */}
-      {tab === 'quiz' && (
-        <div>
-          <div style={labelStyle}>Quiz-Dimensionen (0–1, 0.5 = neutral)</div>
-          {QUIZ_DIMS.map(dim => {
-            const val = bazState.quiz.get(dim) ?? 0.5;
-            return (
-              <div key={dim} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '5px' }}>
-                <span style={{ width: '110px', fontSize: '8px', color: 'rgba(180,190,210,0.6)' }}>
-                  {QUIZ_LABELS[dim]}
-                </span>
-                <input type="range" min={0} max={100} value={Math.round(val * 100)}
-                  onChange={e => updateQuiz(dim, Number(e.target.value) / 100)}
-                  style={{ ...sliderStyle, accentColor: '#14b4dc', flex: 1 }} />
-                <span style={{ width: '28px', textAlign: 'right', fontSize: '8px', color: 'rgba(220,180,40,0.6)' }}>
-                  {val.toFixed(2)}
-                </span>
-              </div>
-            );
-          })}
-          <div style={{ marginTop: '8px', fontSize: '7px', color: 'rgba(120,130,150,0.4)' }}>
-            Quiz-Werte modulieren die Natal-Gewichte. 0.5 = kein Einfluss.
-          </div>
-        </div>
-      )}
-
-      {/* JSON TAB */}
-      {tab === 'json' && (
-        <div>
-          <div style={labelStyle}>Profil exportieren</div>
-          <button onClick={exportJSON} style={{ ...tabBtnStyle(false), marginBottom: '8px', border: '1px solid rgba(220,160,20,0.3)', width: '100%' }}>
-            📋 JSON IN CLIPBOARD KOPIEREN
-          </button>
-          <div style={labelStyle}>Profil importieren</div>
-          <textarea
-            value={jsonInput}
-            onChange={e => setJsonInput(e.target.value)}
-            placeholder='{"natal": {"Mars": 1.0, ...}, "quiz": {"empathy": 0.5, ...}}'
-            style={{
-              width: '100%', height: '120px', background: 'rgba(10,10,20,0.8)',
-              border: '1px solid rgba(80,90,120,0.3)', borderRadius: '4px',
-              color: 'rgba(200,200,220,0.7)', fontSize: '8px', fontFamily: 'inherit',
-              padding: '6px', resize: 'vertical',
-            }}
-          />
-          <button onClick={importJSON} style={{ ...tabBtnStyle(false), marginTop: '4px', border: '1px solid rgba(220,160,20,0.3)', width: '100%' }}>
-            IMPORTIEREN
-          </button>
-          {jsonError && <div style={{ marginTop: '4px', fontSize: '8px', color: jsonError.startsWith('✓') ? 'rgba(100,220,100,0.7)' : 'rgba(255,100,100,0.7)' }}>{jsonError}</div>}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════
 
@@ -1326,7 +1103,6 @@ export default function FusionRingCanvas({
   natalWeights,
   quizWeights,
   isMini = false,
-  showUI = false,
   revealProgress = 1.0,
   effectTrigger,
   solarModulation = 1.0,
@@ -1336,12 +1112,8 @@ export default function FusionRingCanvas({
   const [mounted, setMounted] = useState(false);
   const [webglSupported, setWebglSupported] = useState(true);
   const [postProcessDegraded, setPostProcessDegraded] = useState(false);
-  const [activeEffect, setActiveEffect] = useState<EffectType>(null);
   const effectRef = useRef<EffectState | null>(null);
   const audioRef = useRef<FusionAudioEngine | null>(null);
-  const [audioEnabled, setAudioEnabled] = useState(false);
-  const [showConfigPanel, setShowConfigPanel] = useState(false);
-  const [showDataPanel, setShowDataPanel] = useState(false);
   const [bazVersion, setBazVersion] = useState(0);
 
   // Bazodiac state
@@ -1366,17 +1138,6 @@ export default function FusionRingCanvas({
     if (typeof rebuild === 'function') rebuild();
   }, [natalWeights, quizWeights, solarModulation, dissonanceModulation]);
 
-  // Legacy profile ref for InputController compatibility
-  const profileRef = useRef<FusionRingProfile>(createDemoProfile());
-
-
-  const updateBazState = useCallback((newState: BazodiacState) => {
-    bazStateRef.current = newState;
-    setBazVersion(v => v + 1);
-    const rebuild = (window as any).__fusionRingRebuild;
-    if (typeof rebuild === 'function') rebuild();
-  }, []);
-
   useEffect(() => {
     setMounted(true);
     setWebglSupported(isWebGLAvailable());
@@ -1384,39 +1145,19 @@ export default function FusionRingCanvas({
     return () => {
       audioRef.current?.dispose();
       audioRef.current = null;
-      if (effectTimeoutRef.current !== null) {
-        clearTimeout(effectTimeoutRef.current);
-        effectTimeoutRef.current = null;
-      }
     };
   }, []);
-
-  const toggleAudio = useCallback(() => {
-    if (!audioRef.current) return;
-    if (audioEnabled) { audioRef.current.disable(); } else { audioRef.current.enable(); }
-    setAudioEnabled((v) => !v);
-  }, [audioEnabled]);
-
-  const effectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const triggerEffect = useCallback((
     type: EffectType,
     options?: { intensity?: number; duration?: number; sector?: number }
   ) => {
     if (!type) return;
-    setActiveEffect(type);
     const defaultDuration = type === 'divergenz_spike' ? 5 : type === 'burst' ? 3.5 : type === 'crunch' ? 4.5 : 4;
     const duration = options?.duration ?? defaultDuration;
     const intensity = Math.max(0, Math.min(1, options?.intensity ?? 1.0));
     const sector = options?.sector ?? 0;
     effectRef.current = { type, startTime: Date.now(), duration, intensity, sector };
-    if (effectTimeoutRef.current !== null) {
-      clearTimeout(effectTimeoutRef.current);
-    }
-    effectTimeoutRef.current = setTimeout(() => {
-      setActiveEffect(null);
-      effectTimeoutRef.current = null;
-    }, duration * 1000);
   }, []);
 
   // External effect trigger via prop
@@ -1435,54 +1176,6 @@ export default function FusionRingCanvas({
     }
   }, [effectTrigger, triggerEffect]);
 
-  // --- Input Controller ---
-  const inputControllerRef = useRef<FusionRingInputController | null>(null);
-  const [manualIntensity, setManualIntensity] = useState(0.8);
-  const [manualDuration, setManualDuration] = useState(4);
-  const [manualSector, setManualSector] = useState(0);
-  const [transitLog, setTransitLog] = useState<string[]>([]);
-
-  useEffect(() => {
-    const controller = new FusionRingInputController(profileRef.current);
-    controller.onEffectTrigger((trigger) => {
-      triggerEffect(trigger.type as EffectType, {
-        intensity: trigger.intensity,
-        duration: trigger.duration,
-        sector: trigger.sector,
-      });
-      setTransitLog(prev => [...prev.slice(-9), `▸ ${trigger.type} (I:${trigger.intensity.toFixed(2)}, S:${trigger.sector})`]);
-    });
-    inputControllerRef.current = controller;
-    return () => { controller.destroy(); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const ingestTransitJSON = useCallback((json: string) => {
-    try {
-      const state = JSON.parse(json) as TransitStateV1;
-      inputControllerRef.current?.ingestTransitState(state);
-      setTransitLog(prev => [...prev.slice(-9), `✓ Transit State ingested (${state.events?.length ?? 0} events)`]);
-    } catch (e: unknown) {
-      setTransitLog(prev => [...prev.slice(-9), `✗ Parse error: ${e instanceof Error ? e.message : 'unknown'}`]);
-    }
-  }, []);
-
-  const ingestQuizJSON = useCallback((json: string) => {
-    try {
-      const result = JSON.parse(json) as QuizClusterResult;
-      inputControllerRef.current?.ingestQuizCluster(result);
-      setTransitLog(prev => [...prev.slice(-9), `✓ Quiz Cluster ingested (${result.facettes?.length ?? 0} facettes)`]);
-    } catch (e: unknown) {
-      setTransitLog(prev => [...prev.slice(-9), `✗ Parse error: ${e instanceof Error ? e.message : 'unknown'}`]);
-    }
-  }, []);
-
-  const loadDemoTransit = useCallback(() => {
-    const demo = createDemoTransitState();
-    inputControllerRef.current?.ingestTransitState(demo);
-    setTransitLog(prev => [...prev.slice(-9), `✓ Demo Transit loaded (${demo.events.length} events)`]);
-  }, []);
-
   if (!mounted) {
     return (
       <div className="w-screen h-screen bg-black flex items-center justify-center">
@@ -1498,12 +1191,6 @@ export default function FusionRingCanvas({
       </div>
     );
   }
-
-  const effects = [
-    'resonanzsprung', 'dominanzwechsel', 'mond_event',
-    'spannungsachse', 'korona_eruption', 'divergenz_spike',
-    'burst', 'crunch',
-  ] as EffectType[];
 
   return (
     <div
@@ -1532,291 +1219,6 @@ export default function FusionRingCanvas({
           REDUZIERTER MODUS
         </div>
       )}
-
-      {showUI && (
-        <>
-          {/* Effect Buttons */}
-          <div style={{
-            position: 'absolute', bottom: 0, left: 0, right: 0,
-            display: 'flex', justifyContent: 'center', alignItems: 'flex-end',
-            padding: '16px 12px', gap: '8px', flexWrap: 'wrap', zIndex: 10,
-            background: 'linear-gradient(to top, rgba(8,8,14,0.9) 0%, rgba(8,8,14,0.5) 60%, transparent 100%)',
-            pointerEvents: 'none',
-          }}>
-        {effects.map((eff) => {
-          if (!eff) return null;
-          const config = EFFECT_CONFIGS[eff];
-          if (!config) return null;
-          const isActive = activeEffect === eff;
-          return (
-            <button
-              key={eff}
-              onClick={() => triggerEffect(eff)}
-              disabled={!!activeEffect}
-              style={{
-                pointerEvents: 'auto', position: 'relative',
-                padding: '10px 16px',
-                background: isActive ? `linear-gradient(135deg, ${config.borderColor}, rgba(8,8,14,0.8))` : 'rgba(10,10,20,0.7)',
-                border: `1px solid ${isActive ? config.color : 'rgba(80,90,120,0.3)'}`,
-                borderRadius: '8px',
-                color: isActive ? config.color : 'rgba(180,190,210,0.8)',
-                fontSize: '10px', fontFamily: '"SF Mono", "Fira Code", monospace',
-                letterSpacing: '1.5px', fontWeight: 600,
-                cursor: activeEffect ? 'not-allowed' : 'pointer',
-                transition: 'all 0.3s ease',
-                opacity: activeEffect && !isActive ? 0.4 : 1,
-                backdropFilter: 'blur(10px)', textTransform: 'uppercase',
-                lineHeight: 1.4, textAlign: 'center', minWidth: '130px',
-                boxShadow: isActive ? `0 0 20px ${config.borderColor}` : 'none',
-              }}
-            >
-              <div style={{ fontSize: '10px', fontWeight: 700 }}>{config.label}</div>
-              <div style={{ fontSize: '8px', opacity: 0.6, marginTop: '2px', letterSpacing: '0.5px' }}>{config.sublabel}</div>
-              {isActive && (
-                <div style={{
-                  position: 'absolute', top: -1, left: -1, right: -1, bottom: -1,
-                  borderRadius: '8px', border: `1px solid ${config.color}`,
-                  animation: 'pulse-border 1s ease-in-out infinite', pointerEvents: 'none',
-                }} />
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Audio Toggle */}
-      <button
-        onClick={toggleAudio}
-        aria-label={audioEnabled ? 'Mute audio' : 'Enable audio'}
-        style={{
-          position: 'absolute', top: '20px', right: '20px', zIndex: 20,
-          width: '40px', height: '40px', borderRadius: '50%',
-          background: audioEnabled ? 'rgba(20,180,220,0.15)' : 'rgba(10,10,20,0.6)',
-          border: `1px solid ${audioEnabled ? 'rgba(20,180,220,0.5)' : 'rgba(80,90,120,0.3)'}`,
-          color: audioEnabled ? 'rgba(20,180,220,0.9)' : 'rgba(120,130,150,0.6)',
-          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          backdropFilter: 'blur(10px)', transition: 'all 0.3s ease',
-          boxShadow: audioEnabled ? '0 0 15px rgba(20,180,220,0.2)' : 'none',
-        }}
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-          {audioEnabled ? (
-            <>
-              <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-              <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-            </>
-          ) : (
-            <>
-              <line x1="23" y1="9" x2="17" y2="15" />
-              <line x1="17" y1="9" x2="23" y2="15" />
-            </>
-          )}
-        </svg>
-      </button>
-
-      {/* Active Effect HUD */}
-      {activeEffect && EFFECT_CONFIGS[activeEffect] && (
-        <div style={{
-          position: 'absolute', top: '24px', left: '50%',
-          transform: 'translateX(-50%)', zIndex: 10, textAlign: 'center',
-          animation: 'fade-in-down 0.5s ease-out',
-        }}>
-          <div style={{
-            fontFamily: '"SF Mono", "Fira Code", monospace',
-            fontSize: '11px', letterSpacing: '3px',
-            color: EFFECT_CONFIGS[activeEffect]!.color,
-            textTransform: 'uppercase', fontWeight: 700,
-            textShadow: `0 0 20px ${EFFECT_CONFIGS[activeEffect]!.borderColor}`,
-          }}>
-            ◆ {EFFECT_CONFIGS[activeEffect]!.label} ◆
-          </div>
-          <div style={{
-            fontFamily: '"SF Mono", "Fira Code", monospace',
-            fontSize: '9px', letterSpacing: '2px',
-            color: 'rgba(180,190,210,0.5)', marginTop: '4px',
-          }}>
-            {EFFECT_CONFIGS[activeEffect]!.sublabel}
-          </div>
-        </div>
-      )}
-
-      {/* Data Input Toggle */}
-      <button
-        onClick={() => setShowDataPanel(v => !v)}
-        style={{
-          position: 'absolute', top: '20px', left: '20px', zIndex: 20,
-          padding: '8px 14px', borderRadius: '8px',
-          background: showDataPanel ? 'rgba(20,180,220,0.15)' : 'rgba(10,10,20,0.6)',
-          border: `1px solid ${showDataPanel ? 'rgba(20,180,220,0.5)' : 'rgba(80,90,120,0.3)'}`,
-          color: showDataPanel ? 'rgba(20,180,220,0.9)' : 'rgba(120,130,150,0.6)',
-          cursor: 'pointer', fontFamily: '"SF Mono", "Fira Code", monospace',
-          fontSize: '9px', letterSpacing: '1.5px', fontWeight: 600,
-          backdropFilter: 'blur(10px)', transition: 'all 0.3s ease',
-        }}
-      >
-        {showDataPanel ? '✕ CLOSE' : '◈ DATA INPUT'}
-      </button>
-
-      {/* Config Panel Toggle */}
-      <button
-        onClick={() => setShowConfigPanel(v => !v)}
-        style={{
-          position: 'absolute', top: '20px', left: '160px', zIndex: 20,
-          padding: '8px 14px', borderRadius: '8px',
-          background: showConfigPanel ? 'rgba(220,160,20,0.15)' : 'rgba(10,10,20,0.6)',
-          border: `1px solid ${showConfigPanel ? 'rgba(220,160,20,0.5)' : 'rgba(80,90,120,0.3)'}`,
-          color: showConfigPanel ? 'rgba(220,180,40,0.9)' : 'rgba(120,130,150,0.6)',
-          cursor: 'pointer', fontFamily: '"SF Mono", "Fira Code", monospace',
-          fontSize: '9px', letterSpacing: '1.5px', fontWeight: 600,
-          backdropFilter: 'blur(10px)', transition: 'all 0.3s ease',
-        }}
-      >
-        {showConfigPanel ? '✕ CLOSE' : '⚙ BAZODIAC'}
-      </button>
-
-      {/* Bazodiac Config Panel */}
-      {showConfigPanel && (
-        <BazodiacConfigPanel
-          bazState={bazStateRef.current}
-          onUpdate={updateBazState}
-          version={bazVersion}
-        />
-      )}
-
-      {/* Data Input Panel */}
-      {showDataPanel && (
-        <div style={{
-          position: 'absolute', top: '70px', left: '20px', zIndex: 20,
-          width: '340px', maxHeight: 'calc(100vh - 140px)', overflowY: 'auto',
-          background: 'rgba(5,5,15,0.92)', border: '1px solid rgba(80,90,120,0.3)',
-          borderRadius: '12px', padding: '16px', backdropFilter: 'blur(20px)',
-          fontFamily: '"SF Mono", "Fira Code", monospace', color: 'rgba(180,190,210,0.8)',
-        }}>
-          {/* Manual Effect Trigger */}
-          <div style={{ marginBottom: '16px' }}>
-            <div style={{ fontSize: '9px', letterSpacing: '2px', color: 'rgba(20,180,220,0.7)', marginBottom: '8px', fontWeight: 700 }}>
-              MANUAL EFFECT TRIGGER
-            </div>
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '10px' }}>
-              {effects.map(eff => eff && (
-                <button key={eff} onClick={() => triggerEffect(eff, { intensity: manualIntensity, duration: manualDuration, sector: manualSector })}
-                  disabled={!!activeEffect}
-                  style={{
-                    padding: '4px 8px', fontSize: '8px', letterSpacing: '1px',
-                    background: 'rgba(20,20,40,0.8)', border: '1px solid rgba(80,90,120,0.3)',
-                    borderRadius: '4px', color: EFFECT_CONFIGS[eff]?.color ?? '#fff',
-                    cursor: activeEffect ? 'not-allowed' : 'pointer', opacity: activeEffect ? 0.4 : 1,
-                  }}
-                >{eff.toUpperCase()}</button>
-              ))}
-            </div>
-            <div style={{ display: 'flex', gap: '12px', fontSize: '9px' }}>
-              <label style={{ flex: 1 }}>
-                <span style={{ opacity: 0.5 }}>Intensity: {manualIntensity.toFixed(2)}</span>
-                <input type="range" min="0" max="1" step="0.05" value={manualIntensity}
-                  onChange={e => setManualIntensity(parseFloat(e.target.value))}
-                  style={{ width: '100%', accentColor: '#14b4dc' }} />
-              </label>
-              <label style={{ flex: 1 }}>
-                <span style={{ opacity: 0.5 }}>Duration: {manualDuration}s</span>
-                <input type="range" min="1" max="10" step="0.5" value={manualDuration}
-                  onChange={e => setManualDuration(parseFloat(e.target.value))}
-                  style={{ width: '100%', accentColor: '#14b4dc' }} />
-              </label>
-            </div>
-            <label style={{ fontSize: '9px', display: 'block', marginTop: '6px' }}>
-              <span style={{ opacity: 0.5 }}>Sector: {manualSector}</span>
-              <input type="range" min="0" max="11" step="1" value={manualSector}
-                onChange={e => setManualSector(parseInt(e.target.value))}
-                style={{ width: '100%', accentColor: '#14b4dc' }} />
-            </label>
-          </div>
-
-          <div style={{ height: '1px', background: 'rgba(80,90,120,0.3)', margin: '12px 0' }} />
-
-          {/* Transit State JSON Input */}
-          <div style={{ marginBottom: '16px' }}>
-            <div style={{ fontSize: '9px', letterSpacing: '2px', color: 'rgba(255,184,42,0.7)', marginBottom: '8px', fontWeight: 700 }}>
-              CHANNEL A · TRANSIT STATE
-            </div>
-            <textarea
-              id="transit-json-input"
-              placeholder='Paste TRANSIT_STATE_v1 JSON here...'
-              rows={4}
-              style={{
-                width: '100%', background: 'rgba(10,10,25,0.8)', border: '1px solid rgba(80,90,120,0.3)',
-                borderRadius: '6px', padding: '8px', color: 'rgba(180,190,210,0.8)',
-                fontSize: '9px', fontFamily: '"SF Mono", "Fira Code", monospace', resize: 'vertical',
-              }}
-            />
-            <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
-              <button onClick={() => {
-                const el = document.getElementById('transit-json-input') as HTMLTextAreaElement;
-                if (el?.value) ingestTransitJSON(el.value);
-              }} style={{
-                flex: 1, padding: '6px', fontSize: '9px', letterSpacing: '1px',
-                background: 'rgba(255,184,42,0.1)', border: '1px solid rgba(255,184,42,0.3)',
-                borderRadius: '4px', color: 'rgba(255,184,42,0.8)', cursor: 'pointer',
-              }}>INGEST</button>
-              <button onClick={loadDemoTransit} style={{
-                flex: 1, padding: '6px', fontSize: '9px', letterSpacing: '1px',
-                background: 'rgba(20,180,220,0.1)', border: '1px solid rgba(20,180,220,0.3)',
-                borderRadius: '4px', color: 'rgba(20,180,220,0.8)', cursor: 'pointer',
-              }}>DEMO TRANSIT</button>
-            </div>
-          </div>
-
-          <div style={{ height: '1px', background: 'rgba(80,90,120,0.3)', margin: '12px 0' }} />
-
-          {/* Quiz Cluster JSON Input */}
-          <div style={{ marginBottom: '16px' }}>
-            <div style={{ fontSize: '9px', letterSpacing: '2px', color: 'rgba(42,255,90,0.7)', marginBottom: '8px', fontWeight: 700 }}>
-              CHANNEL B · QUIZ CLUSTER
-            </div>
-            <textarea
-              id="quiz-json-input"
-              placeholder='Paste QuizClusterResult JSON here...'
-              rows={3}
-              style={{
-                width: '100%', background: 'rgba(10,10,25,0.8)', border: '1px solid rgba(80,90,120,0.3)',
-                borderRadius: '6px', padding: '8px', color: 'rgba(180,190,210,0.8)',
-                fontSize: '9px', fontFamily: '"SF Mono", "Fira Code", monospace', resize: 'vertical',
-              }}
-            />
-            <button onClick={() => {
-              const el = document.getElementById('quiz-json-input') as HTMLTextAreaElement;
-              if (el?.value) ingestQuizJSON(el.value);
-            }} style={{
-              width: '100%', marginTop: '6px', padding: '6px', fontSize: '9px', letterSpacing: '1px',
-              background: 'rgba(42,255,90,0.1)', border: '1px solid rgba(42,255,90,0.3)',
-              borderRadius: '4px', color: 'rgba(42,255,90,0.8)', cursor: 'pointer',
-            }}>INGEST QUIZ</button>
-          </div>
-
-          {/* Event Log */}
-          {transitLog.length > 0 && (
-            <div>
-              <div style={{ fontSize: '9px', letterSpacing: '2px', color: 'rgba(180,190,210,0.4)', marginBottom: '6px', fontWeight: 700 }}>
-                EVENT LOG
-              </div>
-              <div style={{
-                fontSize: '8px', lineHeight: '1.6', color: 'rgba(180,190,210,0.5)',
-                maxHeight: '100px', overflowY: 'auto',
-              }}>
-                {transitLog.map((log, i) => <div key={i}>{log}</div>)}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-    </>
-  )}
-
-      <style>{`
-        @keyframes pulse-border { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
-        @keyframes fade-in-down { 0% { opacity: 0; transform: translateX(-50%) translateY(-10px); } 100% { opacity: 1; transform: translateX(-50%) translateY(0); } }
-      `}</style>
     </div>
   );
 }

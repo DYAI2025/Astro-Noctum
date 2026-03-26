@@ -7,11 +7,13 @@ import {
   insertBirthData,
   insertNatalChart,
   fetchAstroProfile,
+  deleteAstroProfile,
 } from "../services/supabase";
 import type { ApiData } from "../types/bafe";
 import { parseAstroProfileJson } from "../types/bafe";
 import type { TileTexts } from "../types/interpretation";
 import { trackEvent } from "../lib/analytics";
+import { retryWithBackoff } from "../lib/retryWithBackoff";
 
 function getCalcErrorMessage(lang: string): string {
   if (lang === "en") {
@@ -44,6 +46,7 @@ export interface AstroProfileResult {
   isFirstReading: boolean;
   isLoading: boolean;
   error: string | null;
+  persistError: string | null;
   handleSubmit: (data: BirthData) => Promise<void>;
   handleRegenerate: () => Promise<void>;
   handleReset: () => void;
@@ -59,6 +62,7 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
   const [isFirstReading, setIsFirstReading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [persistError, setPersistError] = useState<string | null>(null);
 
   const profileFetchedForRef = useRef<string | null>(null);
 
@@ -86,6 +90,10 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
         if (profile?.astro_json) {
           const parsed = parseAstroProfileJson(profile.astro_json);
           if (!parsed) {
+            console.warn('[AstroProfile] Corrupted astro_json for user', user.id, '— deleting row');
+            deleteAstroProfile(user.id).catch((e) =>
+              console.error('[AstroProfile] Failed to delete corrupted row:', e)
+            );
             setProfileState("not-found");
             return;
           }
@@ -97,11 +105,12 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
               const aiResult = await generateInterpretation(restoredData, lang);
               setInterpretation(aiResult.interpretation);
               setTileTexts(aiResult.tiles || {});
-            } catch {
+            } catch (err) {
+              console.warn('[AstroProfile] AI interpretation failed:', err instanceof Error ? err.message : err);
               setInterpretation(
                 lang === "de"
-                  ? "Dein kosmisches Profil wird geladen…"
-                  : "Loading your cosmic profile…"
+                  ? "Die KI-Synthese konnte nicht geladen werden. Bitte versuche es später erneut."
+                  : "The AI synthesis could not be loaded. Please try again later."
               );
             }
           } else {
@@ -145,13 +154,17 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
       trackEvent("reading_completed");
 
       try {
-        await Promise.all([
-          upsertAstroProfile(user.id, data, results, aiResult.interpretation, aiResult.tiles || {}),
-          insertBirthData(user.id, data),
-          insertNatalChart(user.id, results),
-        ]);
+        await retryWithBackoff(async () => {
+          await Promise.all([
+            upsertAstroProfile(user.id, data, results, aiResult.interpretation, aiResult.tiles || {}),
+            insertBirthData(user.id, data),
+            insertNatalChart(user.id, results),
+          ]);
+        }, { maxRetries: 3, baseDelay: 1000 });
+        setPersistError(null);
       } catch (persistErr) {
-        console.warn("Supabase persist failed:", persistErr);
+        console.error('[useAstroProfile] Persist failed after retries:', persistErr);
+        setPersistError('Deine Daten konnten nicht gespeichert werden. Bitte lade die Seite neu.');
       }
 
       setIsFirstReading(true);
@@ -234,6 +247,7 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
     isFirstReading,
     isLoading,
     error,
+    persistError,
     handleSubmit,
     handleRegenerate,
     handleReset,

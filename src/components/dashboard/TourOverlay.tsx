@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { TourStep } from '@/src/hooks/useDashboardTour';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface TourOverlayProps {
   step: TourStep;
@@ -12,12 +13,8 @@ interface TourOverlayProps {
   anchorRef?: React.RefObject<HTMLDivElement | null>;
 }
 
-/** Format ISO date string to German long format: "24. Juni 1980" */
-function formatBirthDate(raw: string): string {
-  const months = [
-    'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
-    'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
-  ];
+/** Format ISO date string to long format using the provided month names array */
+function formatBirthDate(raw: string, months: string[]): string {
   try {
     // Handle both "YYYY-MM-DD" and "YYYY-MM-DDThh:mm:ss" formats
     const datePart = raw.includes('T') ? raw.split('T')[0] : raw;
@@ -29,25 +26,16 @@ function formatBirthDate(raw: string): string {
   }
 }
 
-const STEP_CONTENT: Record<
-  Exclude<TourStep, 'done'>,
-  (props: TourOverlayProps) => { text: string }
-> = {
-  0: ({ birthDate, birthCity }) => {
-    const formatted = formatBirthDate(birthDate);
-    const city = birthCity?.trim();
-    const overClause = city ? ` über ${city}` : '';
-    return {
-      text: `Willkommen zum Firmament Deiner Geburt.\n\nSo sah der Sternenhimmel am ${formatted}${overClause} aus, als Du das Licht dieser Welt erblickt hast.`,
-    };
-  },
-  1: () => ({
-    text: 'Wir befinden uns im chinesischen Jahr des Feuerpferdes. Welches Dein Jahrestier ist und was es bedeutet, findest du in diesem Abschnitt.\n\nSchau dich erstmal um.\nSuche danach Levi und sprich mit ihm.',
-  }),
-};
-
 export function TourOverlay(props: TourOverlayProps) {
-  const { step, anchorRef, onNext } = props;
+  const { step, birthDate, birthCity, anchorRef, onNext } = props;
+  const { t } = useLanguage();
+
+  const MONTHS = [
+    t('tour.month.january'), t('tour.month.february'), t('tour.month.march'),
+    t('tour.month.april'), t('tour.month.may'), t('tour.month.june'),
+    t('tour.month.july'), t('tour.month.august'), t('tour.month.september'),
+    t('tour.month.october'), t('tour.month.november'), t('tour.month.december'),
+  ];
 
   // Scroll the anchor into view when the step becomes visible
   useEffect(() => {
@@ -60,7 +48,20 @@ export function TourOverlay(props: TourOverlayProps) {
 
   if (step === 'done') return null;
 
-  const { text } = STEP_CONTENT[step](props);
+  let text: string;
+  if (step === 0) {
+    const formatted = formatBirthDate(birthDate, MONTHS);
+    const city = birthCity?.trim();
+    if (city) {
+      text = t('tour.step0WithCity')
+        .replace('{date}', formatted)
+        .replace('{city}', city);
+    } else {
+      text = t('tour.step0NoCity').replace('{date}', formatted);
+    }
+  } else {
+    text = t('tour.step1');
+  }
 
   return (
     <AnimatePresence mode="wait">
@@ -86,7 +87,7 @@ export function TourOverlay(props: TourOverlayProps) {
             onClick={onNext}
             className="px-8 py-3 rounded-xl bg-gold/15 border border-gold/30 text-gold font-serif text-lg tracking-wide hover:bg-gold/25 hover:border-gold/50 transition-all duration-300"
           >
-            Weiter
+            {t('tour.next')}
           </button>
         </motion.div>
       </motion.div>

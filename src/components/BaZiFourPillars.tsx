@@ -5,6 +5,7 @@ import { getBranchByAnimal } from "../lib/astro-data/earthlyBranches";
 import { getWuxingByKey } from "../lib/astro-data/wuxing";
 import { Tooltip } from "./Tooltip";
 import type { MappedPillar } from "@/src/types/bafe";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface BaZiFourPillarsProps {
   pillars: {
@@ -53,6 +54,7 @@ const PILLAR_META: Record<string, { label: { en: string; de: string }; chinese: 
 };
 
 export function BaZiFourPillars({ pillars, lang, planetariumMode }: BaZiFourPillarsProps) {
+  const { t } = useLanguage();
   const pillarEntries = useMemo(() => {
     if (!pillars) return [];
     return (["year", "month", "day", "hour"] as const).map((key) => ({
@@ -104,9 +106,7 @@ export function BaZiFourPillars({ pillars, lang, planetariumMode }: BaZiFourPill
                 {isUnavailable ? (
                   <div className="text-center py-6">
                     <p className="text-xs text-[#1E2A3A]/30 italic">
-                      {lang === "de"
-                        ? "Geburtszeit nicht angegeben"
-                        : "Birth time not provided"}
+                      {t("dashboard.bazi.birthTimeNotProvided")}
                     </p>
                   </div>
                 ) : (
