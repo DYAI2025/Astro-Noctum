@@ -23,8 +23,8 @@ describe('AuthGate restructure', () => {
   it('shows login section above register section', () => {
     render(<AuthGate />);
     const allHeadings = screen.getAllByRole('heading');
-    const loginIdx = allHeadings.findIndex(h => /einloggen|login/i.test(h.textContent || ''));
-    const registerIdx = allHeadings.findIndex(h => /registrieren|register/i.test(h.textContent || ''));
+    const loginIdx = allHeadings.findIndex(h => /einloggen|login|auth\.signin/i.test(h.textContent || ''));
+    const registerIdx = allHeadings.findIndex(h => /registrieren|register|auth\.register/i.test(h.textContent || ''));
     expect(loginIdx).toBeGreaterThanOrEqual(0);
     expect(registerIdx).toBeGreaterThanOrEqual(0);
     expect(loginIdx).toBeLessThan(registerIdx);

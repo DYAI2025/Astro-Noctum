@@ -7,7 +7,7 @@ const EMAIL_STORAGE_KEY = "bazodiac_email";
 
 export function AuthGate() {
   const { signIn, signUp } = useAuth();
-  const { lang, setLang, t } = useLanguage();
+  const { lang, setLang, t } = useLanguage(); // lang kept for <select> value
 
   // ── Login fields ──────────────────────────────────────────────────────
   const [loginEmail, setLoginEmail] = useState("");
@@ -89,12 +89,10 @@ export function AuthGate() {
         {/* ── Login Section ──────────────────────────────────────────── */}
         <section>
           <h2 className="font-serif text-2xl mb-4 text-center">
-            {lang === "de" ? "Einloggen" : "Login"}
+            {t('auth.signin')}
           </h2>
           <p className="text-white/40 text-xs text-center mb-6">
-            {lang === "de"
-              ? "Melde dich an, um dein Chart zu sehen."
-              : "Sign in to view your chart."}
+            {t('auth.signinSubtitle')}
           </p>
 
           <form onSubmit={handleLogin} className="space-y-4">
@@ -122,7 +120,7 @@ export function AuthGate() {
               />
             </div>
             <button type="submit" disabled={busy} className={btnCls}>
-              {busy ? "…" : lang === "de" ? "Einloggen" : "Login"}
+              {busy ? "…" : t('auth.signin')}
             </button>
           </form>
         </section>
@@ -131,7 +129,7 @@ export function AuthGate() {
         <div className="flex items-center gap-4 my-10">
           <div className="flex-1 h-px bg-gold/10" />
           <span className="text-[10px] uppercase tracking-[0.3em] text-white/20">
-            {lang === "de" ? "oder" : "or"}
+            {t('auth.or')}
           </span>
           <div className="flex-1 h-px bg-gold/10" />
         </div>
@@ -139,12 +137,10 @@ export function AuthGate() {
         {/* ── Register Section ───────────────────────────────────────── */}
         <section>
           <h2 className="font-serif text-2xl font-bold mb-4 text-center">
-            {lang === "de" ? "Registrieren" : "Register"}
+            {t('auth.register')}
           </h2>
           <p className="text-white/40 text-xs text-center mb-6">
-            {lang === "de"
-              ? "Erstelle ein Konto, um dein Chart zu speichern."
-              : "Create an account to save your chart."}
+            {t('auth.registerSubtitle')}
           </p>
 
           <form onSubmit={handleRegister} className="space-y-4">
@@ -173,7 +169,7 @@ export function AuthGate() {
             </div>
             <div>
               <label className={labelCls}>
-                {lang === "de" ? "Passwort bestätigen" : "Confirm password"}
+                {t('auth.confirmPasswordLabel')}
               </label>
               <input
                 type="password"
@@ -182,12 +178,12 @@ export function AuthGate() {
                 value={registerConfirmPassword}
                 onChange={(e) => { setRegisterConfirmPassword(e.target.value); if (error) setError(null); }}
                 className={inputCls}
-                placeholder={lang === "de" ? "Passwort wiederholen" : "Repeat password"}
+                placeholder={t('auth.confirmPasswordPlaceholder')}
               />
             </div>
             <div>
               <label className={labelCls}>
-                {lang === "de" ? "Sprache" : "Language"}
+                {t('auth.languageLabel')}
               </label>
               <select
                 aria-label="Sprache"
@@ -200,7 +196,7 @@ export function AuthGate() {
               </select>
             </div>
             <button type="submit" disabled={busy} className={btnCls}>
-              {busy ? "…" : lang === "de" ? "Konto erstellen" : "Create account"}
+              {busy ? "…" : t('auth.signUpBtn')}
             </button>
           </form>
         </section>
