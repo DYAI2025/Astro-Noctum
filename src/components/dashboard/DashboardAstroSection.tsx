@@ -192,7 +192,7 @@ export function DashboardAstroSection({
               className="relative -mt-20 mb-4 z-20 flex justify-center pointer-events-none"
             >
               <div className="bg-[#050a14]/80 backdrop-blur-xl border border-[#D4AF37]/30 rounded-2xl px-8 py-5 max-w-lg text-center shadow-[0_0_40px_rgba(212,175,55,0.08)]">
-                <p className="text-[#D4AF37] text-[10px] uppercase tracking-[0.4em] mb-2">{"\u2726"} {lang === "de" ? "Dein Geburtshimmel" : "Your Birth Sky"} {"\u2726"}</p>
+                <p className="text-[#D4AF37] text-[10px] uppercase tracking-[0.4em] mb-2">{"\u2726"} {t("dashboard.birthSky.label")} {"\u2726"}</p>
                 <p className="text-white/80 text-sm leading-relaxed font-serif italic">
                   {(() => {
                     const d = orreryDate;
@@ -223,8 +223,8 @@ export function DashboardAstroSection({
         <motion.div className="mb-12" {...fadeIn(0.3)}>
           {/* Block A: Header */}
           <SectionDivider
-            label={lang === "de" ? "Chinesische Astrologie" : "Chinese Astrology"}
-            title={lang === "de" ? "BaZi & WuXing \u2014 Vier S\u00e4ulen des Schicksals" : "BaZi & WuXing \u2014 Four Pillars of Destiny"}
+            label={t("dashboard.bazi.sectionLabel")}
+            title={t("dashboard.bazi.sectionTitleFull")}
             icon={<IconOrbit className="w-5 h-5 text-[#8B6914] inline-block mr-2 align-middle" />}
           />
 
@@ -232,7 +232,7 @@ export function DashboardAstroSection({
           {apiData.bazi?.pillars && (
             <div className="mb-10">
               <p className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/50 mb-4">
-                {lang === "de" ? "Die Vier S\u00e4ulen" : "The Four Pillars"}
+                {t("dashboard.bazi.fourPillarsShort")}
               </p>
               <BaZiFourPillars
                 pillars={apiData.bazi.pillars}
