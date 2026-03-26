@@ -7,6 +7,7 @@ import {
   insertBirthData,
   insertNatalChart,
   fetchAstroProfile,
+  deleteAstroProfile,
 } from "../services/supabase";
 import type { ApiData } from "../types/bafe";
 import { parseAstroProfileJson } from "../types/bafe";
@@ -89,6 +90,10 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
         if (profile?.astro_json) {
           const parsed = parseAstroProfileJson(profile.astro_json);
           if (!parsed) {
+            console.warn('[AstroProfile] Corrupted astro_json for user', user.id, '— deleting row');
+            deleteAstroProfile(user.id).catch((e) =>
+              console.error('[AstroProfile] Failed to delete corrupted row:', e)
+            );
             setProfileState("not-found");
             return;
           }
