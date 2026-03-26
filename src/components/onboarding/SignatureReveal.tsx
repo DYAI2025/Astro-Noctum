@@ -54,14 +54,12 @@ export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: 
             <FusionRingCanvasV2
               natalWeights={revealProgress > 0 ? natalWeights : undefined}
               isMini
-              showUI={false}
               revealProgress={revealProgress}
               className="w-full h-full"
             />
           ) : (
             <FusionRingWebsiteCanvas
               soulProfile={revealProgress > 0 ? sectors : DEFAULT_SECTORS}
-              showEffectControls={false}
             />
           )}
         </Suspense>
