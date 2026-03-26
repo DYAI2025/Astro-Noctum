@@ -100,7 +100,8 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
               const aiResult = await generateInterpretation(restoredData, lang);
               setInterpretation(aiResult.interpretation);
               setTileTexts(aiResult.tiles || {});
-            } catch {
+            } catch (err) {
+              console.warn('[AstroProfile] AI interpretation failed:', err instanceof Error ? err.message : err);
               setInterpretation(
                 lang === "de"
                   ? "Die KI-Synthese konnte nicht geladen werden. Bitte versuche es später erneut."
