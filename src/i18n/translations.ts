@@ -214,7 +214,6 @@ const translationsEn: DeepStringRecord = {
       loading: "Loading your cosmic blueprint…",
       western: "Western",
       eastern: "Eastern",
-      loading: "Loading your cosmic blueprint\u2026",
     },
     levi: {
       ready: "Levi Bazi — Ready",
@@ -476,7 +475,6 @@ const translationsDe: DeepStringRecord = {
       loading: "Dein kosmischer Blueprint wird geladen…",
       western: "Westlich",
       eastern: "Östlich",
-      loading: "Dein kosmischer Blueprint wird geladen\u2026",
     },
     levi: {
       ready: "Levi Bazi Bereit",
