@@ -121,7 +121,7 @@ export default function App() {
       };
       const data = await bootstrapExperience(birth);
       setBootstrapData(data);
-      if (isBootstrapFallback(data.signature_blueprint?.seed ?? '')) {
+      if (isBootstrapFallback(data.signature_blueprint?.seed ?? '') || data.soulprint_saved === false) {
         setBootstrapFailed(true);
       }
       // In encounter mode, CosmicEncounter handles its own phase transitions internally.
