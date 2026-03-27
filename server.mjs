@@ -1381,7 +1381,8 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
             signature_version: 1,
             payload_json: data,
           }, { onConflict: 'user_id,local_date,engine_version,signature_version' })
-          .then(({ error }) => { if (error) console.warn('[daily] DB cache upsert failed:', error.message); });
+          .then(({ error }) => { if (error) console.warn('[daily] DB cache upsert failed:', error.message); })
+          .catch((e) => { console.warn('[daily] DB cache upsert threw:', e?.message || e); });
       }
       return res.status(resp.status).json(data);
     }
