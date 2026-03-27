@@ -67,10 +67,16 @@ export function AgentSection({
 
   const callLabel = tAgent('callBtn', `${agent.name} anrufen`);
   const hangUpLabel = tAgent('hangUpBtn', 'Auflegen');
+  const comingSoonLabel = (() => {
+    const key = 'dashboard.agent.comingSoon';
+    const val = t(key);
+    return val === key ? 'Coming Soon' : val;
+  })();
 
   // ── Load ElevenLabs widget script (once globally) ──────────────────────
 
   useEffect(() => {
+    if (import.meta.env.MODE === 'test') return;
     if (
       !document.querySelector(
         'script[src="https://unpkg.com/@elevenlabs/convai-widget-embed"]',
@@ -153,7 +159,7 @@ export function AgentSection({
       {!isAvailable ? (
         // Agent env var not configured — show "Coming Soon" badge
         <Badge variant="secondary" className="opacity-70">
-          {t('dashboard.agent.comingSoon')}
+          {comingSoonLabel}
         </Badge>
       ) : isPremium ? (
         <Button
