@@ -11,8 +11,8 @@ import { trackEvent } from "./lib/analytics";
 import { usePlanetarium } from "./contexts/PlanetariumContext";
 import { FusionRingProvider } from "./contexts/FusionRingContext";
 import { AppLayoutProvider } from "./contexts/AppLayoutContext";
-import { LeviProvider, useLevi } from "./contexts/LeviContext";
-import { LeviFloatingWidget } from "./components/LeviFloatingWidget";
+import { AgentProvider, useAgent } from "./contexts/AgentContext";
+import { AgentFloatingWidget } from "./components/AgentFloatingWidget";
 import { AppRoutes } from "./router";
 import { bootstrapExperience } from "./services/experience";
 import { BrandedLoader } from "./components/BrandedLoader";
@@ -274,7 +274,7 @@ export default function App() {
   // Authenticated app with routing
   return (
     <BrowserRouter>
-      <LeviProvider onStopAudio={ambiente.pause} onResumeAudio={ambiente.resume}>
+      <AgentProvider>
       <FusionRingProvider apiResults={apiData} userId={user.id}>
         <AppLayoutProvider value={{
           interpretation: interpretation!,
@@ -290,15 +290,17 @@ export default function App() {
           onResumeAudio: ambiente.resume,
           isFirstReading,
         }}>
-          {/* Levi Floating Widget — lives OUTSIDE the router, survives navigation */}
-          <LeviPremiumSync isPremium={isPremium} />
+          {/* Agent Floating Widget — lives OUTSIDE the router, survives navigation */}
           {hasCompleteProfile && (
-            <LeviFloatingWidget
+            <AgentFloatingWidget
               userId={user.id}
               sunSign={apiData?.western?.zodiac_sign || ''}
               zodiacAnimal={apiData?.bazi?.zodiac_sign || ''}
               dominantEl={apiData?.wuxing?.dominant_element || ''}
+              isPremium={isPremium}
               onUpgrade={handleLeviUpgrade}
+              onStopAudio={ambiente.pause}
+              onResumeAudio={ambiente.resume}
             />
           )}
           <AppShell
@@ -331,46 +333,41 @@ export default function App() {
           />
         </AppLayoutProvider>
       </FusionRingProvider>
-      </LeviProvider>
+      </AgentProvider>
     </BrowserRouter>
   );
 }
 
-// Tiny helper to sync premium status into LeviContext
-function LeviPremiumSync({ isPremium }: { isPremium: boolean }) {
-  const { setIsPremium } = useLevi();
-  useEffect(() => { setIsPremium(isPremium); }, [isPremium, setIsPremium]);
-  return null;
-}
-
-// Nav link that opens the global Levi widget instead of scrolling to a section
-function LeviNavLink({ t }: { t: (key: string) => string }) {
-  const { active, setExpanded } = useLevi();
+// Nav link that opens the global agent widget
+function AgentNavLink({ t }: { t: (key: string) => string }) {
+  const { activeAgent, agentStates, setWidgetExpanded } = useAgent();
+  const isActive = activeAgent !== null && agentStates[activeAgent]?.active;
   return (
     <a
       href="#"
       onClick={(e) => {
         e.preventDefault();
-        setExpanded(true);
+        setWidgetExpanded(true);
       }}
-      className={`transition-colors ${active ? 'text-emerald-500' : 'text-ink/60 hover:text-gold-deep'}`}
+      className={`transition-colors ${isActive ? 'text-emerald-500' : 'text-ink/60 hover:text-gold-deep'}`}
     >
       {t("nav.levi")}
-      {active && <span className="ml-1 inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />}
+      {isActive && <span className="ml-1 inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />}
     </a>
   );
 }
 
-// Mobile bottom nav Levi button — shows active state with pulsing dot
-function MobileLeviNavButton() {
-  const { active, setExpanded } = useLevi();
+// Mobile bottom nav voice button — shows active agent state
+function MobileAgentNavButton() {
+  const { activeAgent, agentStates, setWidgetExpanded } = useAgent();
+  const isActive = activeAgent !== null && agentStates[activeAgent]?.active;
   return (
     <button
-      onClick={() => setExpanded(true)}
+      onClick={() => setWidgetExpanded(true)}
       className={`flex flex-col items-center justify-center gap-0.5 min-w-[48px] min-h-[48px] p-1 rounded-lg active:bg-gold-deep/10 transition-colors ${
-        active ? 'text-emerald-500' : 'text-ink/40'
+        isActive ? 'text-emerald-500' : 'text-ink/40'
       }`}
-      aria-label="Levi"
+      aria-label="Voice Agents"
     >
       <div className="relative">
         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
@@ -379,11 +376,11 @@ function MobileLeviNavButton() {
           <line x1="12" y1="19" x2="12" y2="23" />
           <line x1="8" y1="23" x2="16" y2="23" />
         </svg>
-        {active && (
+        {isActive && (
           <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
         )}
       </div>
-      <span className="text-[9px] uppercase tracking-tight leading-none">Levi</span>
+      <span className="text-[9px] uppercase tracking-tight leading-none">Voice</span>
     </button>
   );
 }
@@ -439,7 +436,7 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
           <a href="https://sky.bazodiac.space" target="_blank" rel="noopener noreferrer" className={`transition-colors ${location.pathname === "/" ? "text-gold-deep" : "text-ink/60 hover:text-gold-deep"}`}>
             {t("nav.sky")}
           </a>
-          <LeviNavLink t={t} />
+          <AgentNavLink t={t} />
           <Link to="/faq" className={`transition-colors ${location.pathname === "/faq" ? "text-gold-deep" : "text-ink/60 hover:text-gold-deep"}`}>
             {t("nav.faq")}
           </Link>
@@ -561,7 +558,7 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
           <span className="text-[9px] uppercase tracking-tight leading-none">{t("nav.sky")}</span>
         </a>
 
-        <MobileLeviNavButton />
+        <MobileAgentNavButton />
 
         <Link to="/faq" className={`flex flex-col items-center justify-center gap-0.5 min-w-[48px] min-h-[48px] p-1 rounded-lg active:bg-gold-deep/10 transition-colors ${location.pathname === "/faq" ? "text-gold-deep" : "text-ink/40"}`}>
           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">

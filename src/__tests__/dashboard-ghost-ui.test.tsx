@@ -91,8 +91,12 @@ vi.mock('@/src/components/dashboard/DashboardInterpretationSection', () => ({
   ),
 }));
 
-vi.mock('@/src/components/dashboard/DashboardLeviSection', () => ({
-  DashboardLeviSection: () => <div data-testid="levi-section" />,
+vi.mock('@/src/components/dashboard/AgentSection', () => ({
+  AgentSection: () => <div data-testid="agent-section" />,
+}));
+vi.mock('@/src/contexts/AgentContext', () => ({
+  AgentProvider: ({ children }: any) => <>{children}</>,
+  useAgent: vi.fn(() => ({ agentStates: {}, activeAgent: null, widgetExpanded: false, startAgent: vi.fn(), stopAgent: vi.fn(), setUpgrading: vi.fn(), setWidgetExpanded: vi.fn() })),
 }));
 
 vi.mock('@/src/components/dashboard/TourOverlay', () => ({

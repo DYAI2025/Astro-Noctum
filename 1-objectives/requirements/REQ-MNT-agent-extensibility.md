@@ -2,13 +2,13 @@
 
 **Type**: Maintainability
 
-**Status**: Draft
+**Status**: Approved
 
 **Priority**: Should-have
 
 **Source**: [GOAL-multi-agent-voice](../goals/GOAL-multi-agent-voice.md)
 
-**Source stakeholder**: [STK-founder](../stakeholders.md)
+**Source stakeholder**: [STK-product-owner](../stakeholders.md)
 
 ## Description
 

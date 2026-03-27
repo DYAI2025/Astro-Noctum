@@ -19,7 +19,6 @@ import { DashboardAstroSection } from "./dashboard/DashboardAstroSection";
 import { DashboardInterpretationSection } from "./dashboard/DashboardInterpretationSection";
 import { SectionErrorBoundary } from "./dashboard/SectionErrorBoundary";
 // import { DashboardLeviSection } from "./dashboard/DashboardLeviSection";
-import { AgentProvider } from "../contexts/AgentContext";
 import { AgentSection } from "./dashboard/AgentSection";
 import { AGENTS } from "@/packages/shared/src/agents/config";
 import { CosmicWeatherCard } from "./CosmicWeatherCard";
@@ -31,7 +30,7 @@ import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { BlueprintReveal } from "./dashboard/BlueprintReveal";
 import MiniSignature from "./dashboard/MiniSignature";
-import { soulprintToDimensionWeights } from "./fusion-ring-website/signatur-bridge";
+import { soulprintToDimensionWeights, soulprintToNatalWeights } from "./fusion-ring-website/signatur-bridge";
 import InfluenceGauges from "./dashboard/InfluenceGauges";
 import { TourOverlay } from "./dashboard/TourOverlay";
 import { useDashboardTour } from "@/src/hooks/useDashboardTour";
@@ -423,23 +422,21 @@ export function Dashboard({
       {/* ═══ VOICE AGENTS — Multi-Agent Section ═══════════════════════ */}
       <motion.div className="mb-12 sm:mb-16" {...fadeIn(0.4)}>
         <SectionErrorBoundary name="Agents">
-          <AgentProvider>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
-              {AGENTS.map(agent => (
-                <AgentSection
-                  key={agent.id}
-                  agent={agent}
-                  isPremium={isPremium}
-                  userId={userId}
-                  onStopAudio={onStopAudio}
-                  onResumeAudio={onResumeAudio}
-                  sunSign={apiData?.western?.zodiac_sign || ''}
-                  zodiacAnimal={apiData?.bazi?.zodiac_sign || ''}
-                  dominantEl={apiData?.wuxing?.dominant_element || ''}
-                />
-              ))}
-            </div>
-          </AgentProvider>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+            {AGENTS.map(agent => (
+              <AgentSection
+                key={agent.id}
+                agent={agent}
+                isPremium={isPremium}
+                userId={userId}
+                onStopAudio={onStopAudio}
+                onResumeAudio={onResumeAudio}
+                sunSign={apiData?.western?.zodiac_sign || ''}
+                zodiacAnimal={apiData?.bazi?.zodiac_sign || ''}
+                dominantEl={apiData?.wuxing?.dominant_element || ''}
+              />
+            ))}
+          </div>
         </SectionErrorBoundary>
       </motion.div>
 

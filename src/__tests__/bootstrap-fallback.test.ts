@@ -17,8 +17,8 @@ vi.mock('@/src/hooks/usePremium', () => ({ usePremium: vi.fn(() => ({ isPremium:
 vi.mock('@/src/contexts/PlanetariumContext', () => ({ usePlanetarium: vi.fn(() => ({ planetariumMode: false, togglePlanetarium: vi.fn() })) }));
 vi.mock('@/src/contexts/FusionRingContext', () => ({ FusionRingProvider: ({ children }: any) => children }));
 vi.mock('@/src/contexts/AppLayoutContext', () => ({ AppLayoutProvider: ({ children }: any) => children }));
-vi.mock('@/src/contexts/LeviContext', () => ({ LeviProvider: ({ children }: any) => children, useLevi: vi.fn(() => ({ active: false, setExpanded: vi.fn(), setIsPremium: vi.fn() })) }));
-vi.mock('@/src/components/LeviFloatingWidget', () => ({ LeviFloatingWidget: () => null }));
+vi.mock('@/src/contexts/AgentContext', () => ({ AgentProvider: ({ children }: any) => children, useAgent: vi.fn(() => ({ agentStates: {}, activeAgent: null, widgetExpanded: false, startAgent: vi.fn(), stopAgent: vi.fn(), setUpgrading: vi.fn(), setWidgetExpanded: vi.fn() })) }));
+vi.mock('@/src/components/AgentFloatingWidget', () => ({ AgentFloatingWidget: () => null }));
 vi.mock('@/src/router', () => ({ AppRoutes: () => null }));
 vi.mock('@/src/services/experience', () => ({ bootstrapExperience: vi.fn() }));
 vi.mock('@/src/lib/analytics', () => ({ trackEvent: vi.fn() }));
