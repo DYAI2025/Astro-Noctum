@@ -2630,6 +2630,14 @@ app.get("/api/profile/:userId", async (req, res) => {
 
   const { userId } = req.params;
 
+  // Determine which agent is requesting the profile (levi or eve)
+  const VALID_AGENT_TYPES = ['levi', 'eve'];
+  const agentParam = req.query.agent;
+  const agentType = agentParam === undefined ? 'levi' : agentParam;
+  if (!VALID_AGENT_TYPES.includes(agentType)) {
+    return res.status(400).json({ error: 'invalid_agent_type' });
+  }
+
   const { data, error } = await supabaseServer
     .from("astro_profiles")
     .select("*")
@@ -2708,6 +2716,7 @@ app.get("/api/profile/:userId", async (req, res) => {
       .from("agent_conversations")
       .select("summary, topics, created_at")
       .eq("user_id", userId)
+      .eq("agent_type", agentType)
       .order("created_at", { ascending: false })
       .limit(5);
     if (convosError) {
@@ -2758,7 +2767,7 @@ app.get("/api/profile/:userId", async (req, res) => {
   });
 });
 
-// ── POST /api/agent/conversation — Save Levi conversation summary ───
+// ── POST /api/agent/conversation — Save agent conversation summary ──
 app.post("/api/agent/conversation", async (req, res) => {
   // Verify bearer token
   const authHeader = req.headers.authorization || "";
@@ -2772,10 +2781,17 @@ app.post("/api/agent/conversation", async (req, res) => {
     return res.status(500).json({ error: "Supabase not configured on server" });
   }
 
-  const { user_id, summary, topics } = req.body;
+  const { user_id, summary, topics, agent_type } = req.body;
 
   if (!user_id || !summary) {
     return res.status(400).json({ error: "user_id and summary are required" });
+  }
+
+  // Validate agent_type — default to 'levi' for backward compatibility
+  const VALID_AGENT_TYPES = ['levi', 'eve'];
+  const resolvedAgentType = agent_type === undefined ? 'levi' : agent_type;
+  if (!VALID_AGENT_TYPES.includes(resolvedAgentType)) {
+    return res.status(400).json({ error: 'invalid_agent_type' });
   }
 
   const { error } = await supabaseServer
@@ -2784,6 +2800,7 @@ app.post("/api/agent/conversation", async (req, res) => {
       user_id,
       summary,
       topics: topics || [],
+      agent_type: resolvedAgentType,
     });
 
   if (error) {
