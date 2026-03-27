@@ -239,9 +239,18 @@ export function Dashboard({
             .maybeSingle(),
         ]);
 
-        if (profileRes.error) throw profileRes.error;
-        const data = profileRes.data;
         if (cancelled) return;
+
+        if (profileRes.error) throw profileRes.error;
+
+        if (birthRes.error) {
+          console.error('[Dashboard] Birth data fetch failed:', birthRes.error);
+          if (!cancelled) {
+            setMetaError(birthRes.error.message || 'Failed to load birth city');
+          }
+        }
+
+        const data = profileRes.data;
         if (!data) {
           setMetaLoading(false);
           return;
