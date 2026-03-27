@@ -1518,7 +1518,14 @@ NEVER use in synthesis: "weil", "da heute", planet names (Mars, Venus etc.), "di
           signature_version: 1,
           payload_json: parsedData,
         }, { onConflict: 'user_id,local_date,engine_version,signature_version' })
-        .then(({ error }) => { if (error) console.warn('[daily] DB cache upsert failed:', error.message); });
+        .then(({ error }) => {
+          if (error) {
+            console.warn('[daily] DB cache upsert failed:', error.message);
+          }
+        })
+        .catch((err) => {
+          console.error('[daily] DB cache upsert rejected:', err);
+        });
     }
 
     res.status(200).json(parsedData);
