@@ -31,7 +31,7 @@ import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { BlueprintReveal } from "./dashboard/BlueprintReveal";
 import MiniSignature from "./dashboard/MiniSignature";
-import { soulprintToNatalWeights } from "./fusion-ring-website/signatur-bridge";
+import { soulprintToDimensionWeights } from "./fusion-ring-website/signatur-bridge";
 import InfluenceGauges from "./dashboard/InfluenceGauges";
 import { TourOverlay } from "./dashboard/TourOverlay";
 import { useDashboardTour } from "@/src/hooks/useDashboardTour";
@@ -400,8 +400,8 @@ export function Dashboard({
       <motion.div className="mb-12 sm:mb-16" {...fadeIn(0.35)}>
         <SectionErrorBoundary name="MiniSignature">
           <MiniSignature
-            natalWeights={profileMeta.soulprintSectors ? soulprintToNatalWeights(profileMeta.soulprintSectors) : undefined}
-            quizWeights={profileMeta.quizSectors.length === 12 ? soulprintToNatalWeights(profileMeta.quizSectors) : undefined}
+            natalWeights={profileMeta.soulprintSectors ? soulprintToDimensionWeights(profileMeta.soulprintSectors) : undefined}
+            quizWeights={profileMeta.quizSectors.length === 12 ? soulprintToDimensionWeights(profileMeta.quizSectors) : undefined}
             dayHarmonic={dayHarmonic}
             onExpand={() => window.location.assign('/signatur')}
           />

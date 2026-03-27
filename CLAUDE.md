@@ -322,9 +322,9 @@ The Experience API is a high-level layer on FuFirE that orchestrates bootstrap, 
 |------|---------|
 | `src/services/experience.ts` | Experience API client — `bootstrapExperience()`, `signatureDelta()`, `fetchDailyExperience()`. All POST to `/api/experience/*` proxy |
 | `src/lib/schemas/experience.ts` | Zod schemas for all Experience API responses (`BootstrapResponseSchema`, `SignatureDeltaResponseSchema`, `DailyResponseSchema`) |
-| `src/lib/feature-flags.ts` | Feature flag module with localStorage override. Three flags: `signature_onboarding_v1` (onboarding flow), `daily_modal_v1` (daily modal), `signature_engine_v2` (V2 spirograph engine, default true) |
+| `src/lib/feature-flags.ts` | Feature flag module with localStorage override. Three flags: `signature_onboarding_v1` (onboarding flow), `daily_modal_v1` (Day-Pulse/Trace modal), `signature_engine_v2` (V2 spirograph engine, default true) |
 | `src/components/onboarding/SignatureReveal.tsx` | Signatur reveal phase — shows V2 or V1 ring (gated by `signature_engine_v2`), profile summary, quiz question. Calls `signatureDelta()` on answer, passes quiz weights to V2 |
-| `src/components/dashboard/DailyHoroscopeModal.tsx` | 3-tab modal (Westlich/BaZi/Fusion) showing the daily horoscope. Rendered on first Dashboard visit |
+| `src/components/dashboard/DayModeModal.tsx` | Day-Pulse / Day-Trace modal — shows daily horoscope with mode snapshot, feature-flagged via `daily_modal_v1` |
 | `src/hooks/useFirstRunDaily.ts` | Hook that checks `profiles.daily_modal_seen`, then fetches daily horoscope via Experience API. Caches in localStorage by date |
 | `supabase-migrations/20260316_experience_tables.sql` | Migration: creates `user_signature_state`, `daily_horoscope_cache` tables; adds `soulprint_sectors` to `astro_profiles` and `daily_modal_seen` to `profiles` |
 
