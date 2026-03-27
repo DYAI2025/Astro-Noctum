@@ -42,12 +42,13 @@ function calculateResult(finalScores: Scores): Profile {
 // SUB-COMPONENTS
 // ═══════════════════════════════════════════════════════════════
 
-function ProgressBar({ current, total, lang }: { current: number; total: number; lang: string }) {
+function ProgressBar({ current, total }: { current: number; total: number }) {
+  const { t } = useLanguage();
   const pct = ((current + 1) / total) * 100;
   return (
     <div className="w-full mb-8">
       <div className="flex justify-between items-center mb-2">
-        <span className="text-xs text-white/40 uppercase tracking-widest font-sans">{lang === 'de' ? 'Frage' : 'Question'}</span>
+        <span className="text-xs text-white/40 uppercase tracking-widest font-sans">{t('quiz.questionLabel')}</span>
         <span className="text-sm text-[#D4AF37] font-medium tabular-nums">
           {current + 1} / {total}
         </span>
@@ -68,7 +69,8 @@ function ProgressBar({ current, total, lang }: { current: number; total: number;
 // SCREEN: INTRO
 // ═══════════════════════════════════════════════════════════════
 
-function IntroScreen({ onStart, lang }: { onStart: () => void; lang: string }) {
+function IntroScreen({ onStart }: { onStart: () => void }) {
+  const { t } = useLanguage();
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -99,7 +101,7 @@ function IntroScreen({ onStart, lang }: { onStart: () => void; lang: string }) {
             <path d="M9 11l3 3L22 4" />
             <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
           </svg>
-          <span>{lang === 'de' ? '12 Fragen' : '12 Questions'}</span>
+          <span>{t('quiz.nQuestions12')}</span>
         </div>
       </div>
 
@@ -107,7 +109,7 @@ function IntroScreen({ onStart, lang }: { onStart: () => void; lang: string }) {
         onClick={onStart}
         className="bg-[#D4AF37] text-[#00050A] font-semibold px-8 py-3.5 rounded-xl text-base hover:bg-[#E8C878] transition-colors shadow-lg shadow-[#D4AF37]/20"
       >
-        {lang === 'de' ? 'Analyse starten' : 'Start analysis'}
+        {t('quiz.startAnalysis')}
       </button>
 
       <p className="text-[11px] text-white/30 text-center mt-6 max-w-sm">
@@ -125,12 +127,10 @@ function QuestionScreen({
   questionIdx,
   total,
   onAnswer,
-  lang,
 }: {
   questionIdx: number;
   total: number;
   onAnswer: (optionIdx: number) => void;
-  lang: string;
 }) {
   const [selected, setSelected] = useState<number | null>(null);
   const question = questions[questionIdx];
@@ -153,7 +153,7 @@ function QuestionScreen({
       transition={{ duration: 0.35, ease: 'easeOut' }}
       className="flex flex-col px-6 py-8 min-h-full"
     >
-      <ProgressBar current={questionIdx} total={total} lang={lang} />
+      <ProgressBar current={questionIdx} total={total} />
 
       <p className="text-[#D4AF37]/70 text-xs uppercase tracking-widest mb-3 font-sans">
         {question.scenario}
@@ -240,12 +240,11 @@ function LoadingScreen() {
 function ResultScreen({
   profile,
   onClose,
-  lang,
 }: {
   profile: Profile;
   onClose: () => void;
-  lang: string;
 }) {
+  const { t } = useLanguage();
   const [showShare, setShowShare] = useState(false);
   return (
     <motion.div
@@ -316,7 +315,7 @@ function ResultScreen({
       {/* Cluster Info Box */}
       <div className="w-full max-w-sm mt-5 p-4 rounded-xl bg-[#D4AF37]/10 border border-[#D4AF37]/20">
         <p className="text-xs text-[#D4AF37] leading-relaxed text-center">
-          {lang === 'de' ? <><span className="font-semibold">Hinweis:</span> Deine Ergebnisse fließen nach Abschluss des gesamten Quiz-Clusters in deine Signatur ein.</> : <><span className="font-semibold">Note:</span> Your results will flow into your Signatur after completing the full quiz cluster.</>}
+          <><span className="font-semibold">{t('quiz.clusterNoteLabel')}</span> {t('quiz.clusterNote')}</>
         </p>
       </div>
 
@@ -327,7 +326,7 @@ function ResultScreen({
           className="flex-1 bg-transparent border border-[#D4AF37]/30 text-white/60 text-sm py-3 rounded-xl hover:border-[#D4AF37] hover:text-white transition-colors flex items-center justify-center gap-2"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-          {lang === 'de' ? 'Teilen' : 'Share'}
+          {t('common.share')}
         </button>
         <button
           onClick={onClose}
@@ -356,7 +355,7 @@ function ResultScreen({
 // ═══════════════════════════════════════════════════════════════
 
 export default function CareerDNAQuiz({ onComplete, onClose }: CareerDNAQuizProps) {
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
   const [screen, setScreen] = useState<Screen>('intro');
   const [questionIdx, setQuestionIdx] = useState(0);
   const [scores, setScores] = useState<Scores>({});
@@ -408,7 +407,7 @@ export default function CareerDNAQuiz({ onComplete, onClose }: CareerDNAQuizProp
   return (
     <div className="relative w-full h-full min-h-[500px] flex flex-col">
       <AnimatePresence mode="wait">
-        {screen === 'intro' && <IntroScreen key="intro" onStart={handleStart} lang={lang} />}
+        {screen === 'intro' && <IntroScreen key="intro" onStart={handleStart} />}
 
         {screen === 'quiz' && (
           <QuestionScreen
@@ -416,14 +415,13 @@ export default function CareerDNAQuiz({ onComplete, onClose }: CareerDNAQuizProp
             questionIdx={questionIdx}
             total={questions.length}
             onAnswer={handleAnswer}
-            lang={lang}
           />
         )}
 
         {screen === 'loading' && <LoadingScreen key="loading" />}
 
         {screen === 'result' && resultProfile && (
-          <ResultScreen key="result" profile={resultProfile} onClose={onClose} lang={lang} />
+          <ResultScreen key="result" profile={resultProfile} onClose={onClose} />
         )}
       </AnimatePresence>
     </div>

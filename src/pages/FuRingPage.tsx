@@ -143,7 +143,7 @@ export default function FuRingPage() {
           <Link
             to="/"
             className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/40 px-3 py-1.5 text-xs uppercase tracking-[0.2em] text-white/70 transition hover:border-[#D4AF37]/60 hover:text-[#D4AF37]"
-            aria-label={lang === 'de' ? 'Zurück zum Dashboard' : 'Back to dashboard'}
+            aria-label={t('fuRing.backLabel')}
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             {t('furing3d.back')}
@@ -170,7 +170,7 @@ export default function FuRingPage() {
           className="flex items-center justify-center gap-2 rounded-2xl border border-[#D4AF37]/30 bg-[#D4AF37]/10 px-4 py-3 text-sm text-[#D4AF37] transition hover:bg-[#D4AF37]/20 md:hidden"
         >
           <Sparkles className="h-4 w-4" />
-          {lang === 'de' ? 'Quiz-Cluster entdecken' : 'Discover Quiz Clusters'}
+          {t('fuRing.discoverClusters')}
         </Link>
 
         {/* Main content: Sidebar + Pipeline Bridge + Ring */}
@@ -274,10 +274,10 @@ export default function FuRingPage() {
             <div className="rounded-2xl border border-[#D4AF37]/30 bg-black/80 backdrop-blur-xl px-8 py-6 text-center">
               <p className="text-3xl mb-2">{completedClusterDef.icon}</p>
               <p className="text-[#D4AF37] font-serif text-lg font-semibold">
-                {completedClusterDef.name} {lang === 'de' ? 'abgeschlossen' : 'completed'}
+                {completedClusterDef.name} {t('cluster.clusterCompleted')}
               </p>
               <p className="text-white/50 text-sm mt-1">
-                {lang === 'de' ? 'Deine Energie wurde aktualisiert' : 'Your energy has been updated'}
+                {t('cluster.energyUpdated')}
               </p>
             </div>
           </motion.div>

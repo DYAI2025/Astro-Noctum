@@ -79,7 +79,7 @@ function QuizLoadingFallback() {
 
 // --- Component ---
 export default function QuizOverlay({ quizId, onComplete, onClose }: QuizOverlayProps) {
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   // Close on Escape key
@@ -108,8 +108,8 @@ export default function QuizOverlay({ quizId, onComplete, onClose }: QuizOverlay
 
   // Fallback for unknown quiz IDs
   if (quizId && !QuizComponent) {
-    const notFoundMsg = lang === 'en' ? 'Quiz not found.' : 'Quiz nicht gefunden.';
-    const closeMsg = lang === 'en' ? 'Close' : 'Schließen';
+    const notFoundMsg = t('quiz.notFound');
+    const closeMsg = t('quiz.closeLabel');
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-obsidian/80 backdrop-blur-sm">
         <div className="bg-[#0D0F14] rounded-2xl p-8 max-w-sm text-center space-y-4">

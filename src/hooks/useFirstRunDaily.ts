@@ -79,11 +79,17 @@ export function useFirstRunDaily(
     (async () => {
       try {
         // 1. Check if user already dismissed the modal today
-        const { data: profile } = await supabase
+        const { data: profile, error: dbError } = await supabase
           .from('profiles')
           .select('daily_modal_seen_date')
           .eq('id', userId)
           .maybeSingle();
+
+        if (dbError) {
+          // If column is missing (PGRST204 or similar), we log and continue
+          // so the user still sees the modal (it just won't be suppressed today).
+          console.warn('[useFirstRunDaily] Could not check seen_date (column might be missing):', dbError.message);
+        }
 
         if (cancelled) return;
         // Daily recurrence: show modal once per calendar day.

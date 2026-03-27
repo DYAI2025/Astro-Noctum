@@ -10,7 +10,7 @@ interface SharePopupProps {
 const SHARE_BASE_URL = 'https://bazodiac.space';
 
 export function SharePopup({ quizTitle, resultTitle, onClose }: SharePopupProps) {
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
 
   const shareText = lang === 'de'
     ? `Mein Bazodiac ${quizTitle}-Ergebnis: ${resultTitle}! Finde dein kosmisches Profil:`
@@ -79,7 +79,7 @@ export function SharePopup({ quizTitle, resultTitle, onClose }: SharePopupProps)
         transition={{ duration: 0.2 }}
       >
         <h3 className="mb-4 text-center font-serif text-lg text-white">
-          {lang === 'de' ? 'Ergebnis teilen' : 'Share Result'}
+          {t('quiz.share.title')}
         </h3>
 
         <div className="grid grid-cols-4 gap-3">
@@ -107,7 +107,7 @@ export function SharePopup({ quizTitle, resultTitle, onClose }: SharePopupProps)
           onClick={onClose}
           className="mt-4 w-full rounded-lg border border-white/10 py-2 text-xs text-white/50 transition hover:text-white"
         >
-          {lang === 'de' ? 'Schließen' : 'Close'}
+          {t('quiz.share.close')}
         </button>
       </motion.div>
     </>

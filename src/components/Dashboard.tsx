@@ -215,48 +215,64 @@ export function Dashboard({
     quizSectors: number[];
     birthCity: string;
   }>({ birthInput: null, soulprintSectors: null, quizSectors: EMPTY_SECTORS, birthCity: '' });
+  const [metaLoading, setMetaLoading] = useState(true);
+  const [metaError, setMetaError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!userId) return;
     let cancelled = false;
+    setMetaLoading(true);
+    setMetaError(null);
 
     (async () => {
-      const [profileRes, birthRes] = await Promise.all([
-        supabase
-          .from('astro_profiles')
-          .select('birth_date, birth_time, iana_time_zone, birth_lat, birth_lng, soulprint_sectors')
-          .eq('user_id', userId)
-          .maybeSingle(),
-        supabase
-          .from('birth_data')
-          .select('place_label')
-          .eq('user_id', userId)
-          .maybeSingle(),
-      ]);
+      try {
+        const [profileRes, birthRes] = await Promise.all([
+          supabase
+            .from('astro_profiles')
+            .select('birth_date, birth_time, iana_time_zone, birth_lat, birth_lng, soulprint_sectors')
+            .eq('user_id', userId)
+            .maybeSingle(),
+          supabase
+            .from('birth_data')
+            .select('place_label')
+            .eq('user_id', userId)
+            .maybeSingle(),
+        ]);
 
-      const data = profileRes.data;
-      if (cancelled || !data) return;
+        if (profileRes.error) throw profileRes.error;
+        const data = profileRes.data;
+        if (cancelled) return;
+        if (!data) {
+          setMetaLoading(false);
+          return;
+        }
 
-      const birthInput = (data.birth_date && data.birth_lat != null && data.birth_lng != null)
-        ? {
-            date: data.birth_date,
-            time: data.birth_time || '12:00',
-            tz: data.iana_time_zone || 'Europe/Berlin',
-            lat: data.birth_lat,
-            lon: data.birth_lng,
-          }
-        : null;
+        const birthInput = (data.birth_date && data.birth_lat != null && data.birth_lng != null)
+          ? {
+              date: data.birth_date,
+              time: data.birth_time || '12:00',
+              tz: data.iana_time_zone || 'Europe/Berlin',
+              lat: data.birth_lat,
+              lon: data.birth_lng,
+            }
+          : null;
 
-      const soulprint = Array.isArray(data.soulprint_sectors) && data.soulprint_sectors.length === 12
-        ? data.soulprint_sectors as number[]
-        : null;
+        const soulprint = Array.isArray(data.soulprint_sectors) && data.soulprint_sectors.length === 12
+          ? data.soulprint_sectors as number[]
+          : null;
 
-      setProfileMeta({
-        birthInput,
-        soulprintSectors: soulprint,
-        quizSectors: EMPTY_SECTORS,
-        birthCity: birthRes.data?.place_label || '',
-      });
+        setProfileMeta({
+          birthInput,
+          soulprintSectors: soulprint,
+          quizSectors: EMPTY_SECTORS,
+          birthCity: birthRes.data?.place_label || '',
+        });
+      } catch (err: any) {
+        console.error('[Dashboard] Meta fetch failed:', err);
+        if (!cancelled) setMetaError(err.message || 'Failed to load profile data');
+      } finally {
+        if (!cancelled) setMetaLoading(false);
+      }
     })();
 
     return () => { cancelled = true; };
@@ -286,14 +302,22 @@ export function Dashboard({
       <div ref={planetariumSentinelRef} className="h-px" aria-hidden="true" />
 
       {/* Issues banner */}
-      {apiIssues.length > 0 && (
+      {(apiIssues.length > 0 || metaError) && (
         <div className="mb-8 rounded-xl border border-amber-400/40 bg-amber-50 px-4 py-3 text-xs text-amber-800">
-          {t("dashboard.fallbackNote")}
-          <ul className="mt-2 list-disc pl-4 space-y-1">
-            {apiIssues.map((issue, i) => (
-              <li key={i}><span className="font-semibold">{issue.endpoint}</span>: {issue.message}</li>
-            ))}
-          </ul>
+          {metaError ? (
+            <p className="flex items-center gap-2">
+              <span className="font-semibold">Notice:</span> {metaError}
+            </p>
+          ) : (
+            <>
+              {t("dashboard.fallbackNote")}
+              <ul className="mt-2 list-disc pl-4 space-y-1">
+                {apiIssues.map((issue, i) => (
+                  <li key={i}><span className="font-semibold">{issue.endpoint}</span>: {issue.message}</li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
       )}
 
@@ -413,7 +437,9 @@ export function Dashboard({
       {/* ═══ INFLUENCE GAUGES ═══════════════════════════════════════════ */}
       <motion.div className="mb-12 sm:mb-16" {...fadeIn(0.42)}>
         <SectionErrorBoundary name="InfluenceGauges">
-          <InfluenceGauges />
+          <InfluenceGauges
+            weights={profileMeta.soulprintSectors ? soulprintToNatalWeights(profileMeta.soulprintSectors) : undefined}
+          />
         </SectionErrorBoundary>
       </motion.div>
 

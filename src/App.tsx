@@ -15,6 +15,7 @@ import { LeviProvider, useLevi } from "./contexts/LeviContext";
 import { LeviFloatingWidget } from "./components/LeviFloatingWidget";
 import { AppRoutes } from "./router";
 import { bootstrapExperience } from "./services/experience";
+import { BrandedLoader } from "./components/BrandedLoader";
 import { usePremium } from "./hooks/usePremium";
 import { isFeatureEnabled } from "./lib/feature-flags";
 import type { BootstrapResponse, SignatureDeltaResponse } from "./lib/schemas/experience";
@@ -36,16 +37,53 @@ export default function App() {
 
   const [showSplash, setShowSplash] = useState(true);
   const [siteVisible, setSiteVisible] = useState(false);
-  const [bootstrapData, setBootstrapData] = useState<BootstrapResponse | null>(null);
+  
+  // -- ONBOARDING PERSISTENCE --
+  const [bootstrapData, setBootstrapData] = useState<BootstrapResponse | null>(() => {
+    try {
+      const saved = localStorage.getItem('bazodiac_onboarding_data');
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  });
+
   const [onboardingPhase, setOnboardingPhase] = useState<'form' | 'encounter' | 'signature' | 'done'>(() => {
+    const saved = localStorage.getItem('bazodiac_onboarding_phase');
+    if (saved && ['form', 'encounter', 'signature', 'done'].includes(saved)) {
+      return saved as any;
+    }
     if (isFeatureEnabled('cosmic_encounter_v1')) return 'encounter';
     return 'form';
   });
+
   const [bootstrapFailed, setBootstrapFailed] = useState(false);
+  
   // Tracks whether the user has submitted the birth form this session.
-  // Returning users never set this — it distinguishes "new user mid-onboarding"
-  // from "returning user with existing profile".
-  const [hasStartedOnboarding, setHasStartedOnboarding] = useState(false);
+  // Restored from phase to survive refresh.
+  const [hasStartedOnboarding, setHasStartedOnboarding] = useState(() => {
+    const savedPhase = localStorage.getItem('bazodiac_onboarding_phase');
+    return savedPhase !== null && savedPhase !== 'form' && savedPhase !== 'done';
+  });
+
+  // Keep localStorage in sync
+  useEffect(() => {
+    localStorage.setItem('bazodiac_onboarding_phase', onboardingPhase);
+  }, [onboardingPhase]);
+
+  useEffect(() => {
+    if (bootstrapData) {
+      localStorage.setItem('bazodiac_onboarding_data', JSON.stringify(bootstrapData));
+    } else {
+      localStorage.removeItem('bazodiac_onboarding_data');
+    }
+  }, [bootstrapData]);
+
+  // Reset onboarding persistence on logout
+  useEffect(() => {
+    if (!user && !authLoading) {
+      localStorage.removeItem('bazodiac_onboarding_phase');
+      localStorage.removeItem('bazodiac_onboarding_data');
+    }
+  }, [user, authLoading]);
 
   // Returning users (already logged in from prior session) skip Splash entirely
   const isReturningUser = !authLoading && user !== null;
@@ -193,7 +231,7 @@ export default function App() {
   if (authLoading) {
     return (
       <div className="min-h-screen morning-bg flex items-center justify-center">
-        <div className="w-1 h-1 bg-gold-deep rounded-full animate-ping" />
+        <BrandedLoader />
       </div>
     );
   }
@@ -206,11 +244,10 @@ export default function App() {
   // ── Profile loading — wait for Supabase fetch ─────────────────────────
   if (profileState === "loading" || profileState === "idle") {
     return (
-      <div className="min-h-screen morning-bg flex flex-col items-center justify-center gap-6">
-        <div className="w-1 h-1 bg-gold-deep rounded-full animate-ping" />
-        <p className="text-[10px] uppercase tracking-[0.4em] text-gold-deep/50 font-mono">
-          {lang === "de" ? "Lade dein kosmisches Profil…" : "Loading your cosmic profile…"}
-        </p>
+      <div className="min-h-screen morning-bg flex flex-col items-center justify-center">
+        <BrandedLoader
+          message={lang === "de" ? "Lade dein kosmisches Profil…" : "Loading your cosmic profile…"}
+        />
       </div>
     );
   }
