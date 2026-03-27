@@ -119,10 +119,6 @@ vi.mock('@/src/components/UpgradeButton', () => ({
   UpgradeButton: () => <button>Upgrade</button>,
 }));
 
-vi.mock('@/src/components/dashboard/DailyHoroscopeModal', () => ({
-  DailyHoroscopeModal: () => null,
-}));
-
 import React from 'react';
 import { Dashboard } from '@/src/components/Dashboard';
 
