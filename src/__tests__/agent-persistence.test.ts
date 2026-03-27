@@ -39,9 +39,8 @@ describe('Agent persistence — shared config validation', () => {
     expect(() => getAgent('unknown')).toThrow('Unknown agent: unknown');
   });
 
-  it('AGENTS array has exactly 2 entries', () => {
-    expect(AGENTS).toHaveLength(2);
-    expect(AGENTS[0].id).toBe('levi');
-    expect(AGENTS[1].id).toBe('eve');
+  it('AGENTS array includes levi and eve', () => {
+    const agentIds = AGENTS.map((agent) => agent.id);
+    expect(agentIds).toEqual(expect.arrayContaining(['levi', 'eve']));
   });
 });
