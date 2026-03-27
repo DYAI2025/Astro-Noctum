@@ -57,7 +57,7 @@ You are Claude, co-working as Product Owner for Bazodiac alongside Ben (the foun
 - Use `SDLC-status` to get a quick project health check before any planning session.
 - When Ben says "klären wir das" or equivalent, gather context, then present a concrete proposal — do not ask open-ended questions.
 
-### Key product context (current as of 2026-03-24)
+### Key product context (current as of 2026-03-26)
 
 - **Live features:** Fusion Ring V2 (spirograph, 28K particles), BaZi + Western + Wu-Xing calculation via BAFE, 22 quizzes, Levi voice agent, space weather modulation, premium paywall (Stripe — partially wired)
 - **In-progress:** Dashboard layout redesign, onboarding flow, FuFirE Experience API wiring
@@ -217,11 +217,16 @@ Defined in `src/router.tsx`, all lazy-loaded:
 
 | Route | Page |
 |-------|------|
-| `/` | `DashboardPage` — main astro dashboard |
+| `/` | `DashboardPage` — main astro dashboard (redirects to `/onboarding` if no profile) |
 | `/signatur` | `FuRingPage` — Signatur (Fusion Ring) visualization |
+| `/fu-ring` | `FuRingPage` — alias for `/signatur` |
+| `/signatur/quizzes` | `SignaturQuizzesPage` — quiz selection for Signatur |
 | `/wu-xing` | `WuXingPage` — Wu Xing five-elements detail |
 | `/wissen` | `WissenPage` — SEO article index |
 | `/wissen/:slug` | `ArtikelPage` — individual SEO article |
+| `/onboarding` | `OnboardingPage` — birth data form → SignatureReveal → Dashboard |
+| `/sky` | `SkyPage` — sky/space weather visualization |
+| `/faq` | `FaqPage` — FAQ page |
 
 ### Two Server Contexts
 
@@ -287,6 +292,10 @@ FusionRing3D → baseSignals[12] → soulprintToNatalWeights() → natalWeights{
 | `src/components/quizzes/Kinky/` | Kinky quiz series (multi-part, premium) |
 | `src/components/quizzes/PartnerMatch/` | PartnerMatch quiz series including `ConversationAnalysisQuiz` |
 | `src/components/ClusterEnergySystem.tsx` | Renders quiz-result "energy clusters" on the Dashboard |
+| `src/components/dashboard/InfluenceGauges.tsx` | "Heutige Einflüsse" gauge section — Mars/Jupiter/Venus/Saturn static defaults, accepts `influences` prop |
+| `src/components/dashboard/DayModeModal.tsx` | Day-Pulse / Day-Trace modal — replaces legacy DailyHoroscopeModal, feature-flagged via `daily_modal_v1` |
+| `src/components/dashboard/DashboardLeviSection.tsx` | Levi voice agent section — ElevenLabs widget mount, premium gate |
+| `src/lib/fusion-ring/day-harmonic.ts` | DayHarmonicState extraction — computes day-mode ring modulation from transit data |
 | `src/components/fusion-ring-3d/FusionRing3D.tsx` | Three.js 3D Fusion Ring — used on `/fu-ring` page |
 | `src/components/fusion-ring-website/bazodiac-engine.ts` | V2 Signatur engine (891 lines) — Cousto-frequency spirograph math, 7 planet definitions with Hz/color/zodiac, 4-tier particle generation (glow→curve→fractal→subfractal), kaleidoscope folding, emergence/pattern-jump detection. Pure TypeScript, no framework deps |
 | `src/components/fusion-ring-website/FusionRingCanvasV2.tsx` | V2 Three.js renderer (1699 lines) — consumes `natalWeights` (7 planets) + `quizWeights` (6 dimensions) props, renders 28K spirograph particles with bloom postprocessing. Has built-in config panel, audio integration, effect system. Replaces V1 when `signature_engine_v2` flag is enabled |
@@ -319,7 +328,12 @@ The Experience API is a high-level layer on FuFirE that orchestrates bootstrap, 
 | `src/hooks/useFirstRunDaily.ts` | Hook that checks `profiles.daily_modal_seen`, then fetches daily horoscope via Experience API. Caches in localStorage by date |
 | `supabase-migrations/20260316_experience_tables.sql` | Migration: creates `user_signature_state`, `daily_horoscope_cache` tables; adds `soulprint_sectors` to `astro_profiles` and `daily_modal_seen` to `profiles` |
 
-**Feature flags:** Override in browser console via `localStorage.setItem('ff_signature_onboarding_v1', 'false')`. When off, the app falls through to the legacy BAFE-only flow. The V2 engine can be disabled via `localStorage.setItem('ff_signature_engine_v2', 'false')` — all three ring mount points (SignatureReveal, Dashboard, FuRingPage) instantly fall back to V1.
+**Feature flags:** Override in browser console via `localStorage.setItem('ff_<flag>', 'false')`. 12 flags total in `src/lib/feature-flags.ts`:
+- **On by default:** `signature_onboarding_v1`, `daily_modal_v1`, `signature_engine_v2`, `sky_jieqi_banner`, `sky_flare_timeline`, `sky_aurora_layer`, `sky_geometry_gating`
+- **Off by default:** `sky_neo_ribbon`, `sky_epoch_mood`, `sky_jpl_proxy`
+- **Hard-disabled (locked, no localStorage override):** `cosmic_encounter_v1`
+
+The V2 engine can be disabled via `localStorage.setItem('ff_signature_engine_v2', 'false')` — all three ring mount points (SignatureReveal, Dashboard, FuRingPage) instantly fall back to V1.
 
 **Server proxy:** `server.mjs` proxies all three Experience endpoints (`/api/experience/bootstrap`, `/api/experience/signature-delta`, `/api/experience/daily`) to FuFirE. The bootstrap and signature-delta routes are protected with `requireUserAuth`, while the daily route is currently unauthenticated. All three use 10KB payload limits, 10–20s timeouts, and return 502 on FuFirE failure.
 
@@ -472,7 +486,7 @@ Per-task done-conditions:
 | New component | Test file exists in `src/__tests__/`, `npx vitest run src/__tests__/<name>.test.tsx` passes |
 | API change | `npx vitest run src/__tests__/api-routes.test.ts` passes, `npm run lint` clean |
 | Schema change | Zod schema test passes, existing tests still green |
-| Sprint feature | Full suite `npm run test` passes (586+ tests), code review completed |
+| Sprint feature | Full suite `npm run test` passes (800+ tests), code review completed |
 
 ### Known Issues
 

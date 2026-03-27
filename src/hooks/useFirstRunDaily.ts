@@ -83,7 +83,7 @@ export function useFirstRunDaily(
           .from('profiles')
           .select('daily_modal_seen_date')
           .eq('id', userId)
-          .single();
+          .maybeSingle();
 
         if (cancelled) return;
         // Daily recurrence: show modal once per calendar day.
