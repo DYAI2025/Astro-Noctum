@@ -10,6 +10,10 @@ interface GaugeProps {
 }
 
 function Gauge({ label, value, color = "bg-white", tooltip }: GaugeProps) {
+  // Safeguard: handle NaN, undefined or out-of-range values
+  const safeValue = isNaN(value) || value === undefined ? 0 : Math.max(0, Math.min(1, value));
+  const percent = Math.round(safeValue * 100);
+
   const inner = (
     <div
       className={`space-y-3 group${tooltip ? " cursor-help" : ""}`}
@@ -20,17 +24,17 @@ function Gauge({ label, value, color = "bg-white", tooltip }: GaugeProps) {
           {label}
         </span>
         <span className="text-[10px] font-mono text-zinc-400">
-          {Math.round(value * 100)}%
+          {percent}%
         </span>
       </div>
       <div className="h-[6px] w-full bg-zinc-900/50 rounded-full overflow-hidden border border-white/5 relative">
         <div
           className="absolute inset-y-0 left-0 bg-white/10 blur-[4px]"
-          style={{ width: `${value * 100}%` }}
+          style={{ width: `${percent}%` }}
         />
         <div
           className={`h-full ${color} transition-all duration-1000 ease-out relative z-10`}
-          style={{ width: `${value * 100}%` }}
+          style={{ width: `${percent}%` }}
         />
       </div>
     </div>
@@ -49,40 +53,39 @@ export interface InfluenceData {
   tooltip?: string;
 }
 
-function useDefaultInfluences(): InfluenceData[] {
+function useInfluences(weights?: Record<string, number>): InfluenceData[] {
   const { t } = useLanguage();
   return useMemo(() => [
     {
       label: t("dashboard.influences.marsLabel"),
-      value: 0.82,
+      value: weights?.Mars ?? 0.82,
       color: "bg-gradient-to-r from-red-500 to-orange-400",
       tooltip: t("dashboard.influences.marsTooltip"),
     },
     {
       label: t("dashboard.influences.jupiterLabel"),
-      value: 0.65,
+      value: weights?.Jupiter ?? 0.65,
       color: "bg-gradient-to-r from-cyan-400 to-blue-500",
       tooltip: t("dashboard.influences.jupiterTooltip"),
     },
     {
       label: t("dashboard.influences.venusLabel"),
-      value: 0.45,
+      value: weights?.Venus ?? 0.45,
       color: "bg-gradient-to-r from-purple-400 to-pink-400",
       tooltip: t("dashboard.influences.venusTooltip"),
     },
     {
       label: t("dashboard.influences.saturnLabel"),
-      value: 0.30,
+      value: weights?.Saturn ?? 0.30,
       color: "bg-gradient-to-r from-zinc-400 to-zinc-200",
       tooltip: t("dashboard.influences.saturnTooltip"),
     },
-  ], [t]);
+  ], [t, weights]);
 }
 
-export default function InfluenceGauges({ influences }: { influences?: InfluenceData[] }) {
+export default function InfluenceGauges({ weights }: { weights?: Record<string, number> }) {
   const { t } = useLanguage();
-  const defaultInfluences = useDefaultInfluences();
-  const items = influences ?? defaultInfluences;
+  const items = useInfluences(weights);
 
   return (
     <div className="bg-zinc-900/40 border border-zinc-800 p-8 rounded-[2rem] space-y-8">
