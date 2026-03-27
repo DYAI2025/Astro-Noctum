@@ -153,7 +153,7 @@ export function AgentSection({
       {!isAvailable ? (
         // Agent env var not configured — show "Coming Soon" badge
         <Badge variant="secondary" className="opacity-70">
-          Coming Soon
+          {t('dashboard.agent.comingSoon')}
         </Badge>
       ) : isPremium ? (
         <Button
