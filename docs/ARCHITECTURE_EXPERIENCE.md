@@ -12,7 +12,7 @@ sequenceDiagram
     participant FF as FuFirE
     participant SB as Supabase
     participant Dash as Dashboard
-    participant DM as DailyHoroscopeModal
+    participant DM as DayModeModal
 
     U->>BF: Enter birth data
     BF->>App: onSubmit(formData)
@@ -59,7 +59,7 @@ sequenceDiagram
     FF-->>Proxy: DailyResponse
     Proxy-->>Dash: DailyResponse
 
-    Dash->>DM: Show DailyHoroscopeModal
+    Dash->>DM: Show DayModeModal
     U->>DM: Browse tabs (Western / BaZi / Fusion)
     U->>DM: Close modal
     DM->>SB: UPDATE profiles SET daily_modal_seen = true
@@ -100,7 +100,7 @@ sequenceDiagram
     └─────────────────────┘    └──────────────────────────┘    └──────────┬──────────┘
                                                                           │
                                                                ┌──────────┴──────────┐
-                                                               │ DailyHoroscopeModal │
+                                                               │ DayModeModal │
                                                                │  (3-tab UI)         │
                                                                └─────────────────────┘
 
@@ -139,7 +139,7 @@ App.tsx
                 │   ├── checks profiles.daily_modal_seen
                 │   ├── checks localStorage cache
                 │   └── calls fetchDailyExperience()
-                └── DailyHoroscopeModal (if showModal)
+                └── DayModeModal (if showModal)
                     ├── Tab: Westlich (SectionContent)
                     ├── Tab: BaZi (SectionContent)
                     └── Tab: Fusion (FusionContent)
@@ -281,7 +281,7 @@ Two client-side feature flags in `src/lib/feature-flags.ts`:
 | Flag | Default | Controls |
 |------|---------|----------|
 | `signature_onboarding_v1` | `true` | Whether `App.tsx` calls `bootstrapExperience()` and shows the `SignatureReveal` phase. When `false`, the app skips directly to Dashboard after BAFE completes. |
-| `daily_modal_v1` | `true` | Whether `useFirstRunDaily` fetches and displays the `DailyHoroscopeModal`. |
+| `daily_modal_v1` | `true` | Whether `useFirstRunDaily` fetches and displays the `DayModeModal`. |
 
 **Override pattern:** Flags check `localStorage` for `ff_{flag_name}`. A stored value of `"true"` or `"false"` overrides the hardcoded default. Removing the key restores the default.
 
@@ -298,7 +298,7 @@ localStorage.removeItem('ff_signature_onboarding_v1');
 
 1. **Deploy FuFirE** with the `experience` router (`routers/experience.py`) and supporting services (`services/soulprint.py`, `services/signature_blueprint.py`, `services/daily_western.py`, `services/daily_eastern.py`, `services/daily_fusion.py`, `services/quiz_affinity.py`). Ensure `data/affinity_map.json` is present.
 2. **Apply Supabase migration** `supabase-migrations/20260316_experience_tables.sql` -- creates `user_signature_state`, `daily_horoscope_cache`, adds columns to `astro_profiles` and `profiles`.
-3. **Deploy Astro-Noctum** with the updated `App.tsx`, new components (`SignatureReveal`, `DailyHoroscopeModal`), hooks (`useFirstRunDaily`), services (`experience.ts`), schemas (`experience.ts`), and feature flags (`feature-flags.ts`). The `server.mjs` proxy routes must also be deployed.
+3. **Deploy Astro-Noctum** with the updated `App.tsx`, new components (`SignatureReveal`, `DayModeModal`), hooks (`useFirstRunDaily`), services (`experience.ts`), schemas (`experience.ts`), and feature flags (`feature-flags.ts`). The `server.mjs` proxy routes must also be deployed.
 
 **Rollback:** Set feature flags to `false` via environment config or instruct users to override via localStorage. No database rollback needed -- new tables and columns are additive.
 
