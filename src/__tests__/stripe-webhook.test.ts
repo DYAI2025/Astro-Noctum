@@ -85,7 +85,7 @@ describe('Stripe webhook: customer.subscription.updated', () => {
     const subBlock = serverCode.match(
       /customer\.subscription\.updated[\s\S]*?(?=\} else if \(event\.type === "customer\.subscription\.deleted)/
     )?.[0];
-    expect(subBlock).toContain('isActive ? "premium" : "free"');
+    expect(subBlock).toMatch(/tier:\s*\w+\s*\?\s*"premium"\s*:\s*"free"/);
   });
 
   it('tracks subscription_end from current_period_end', () => {
