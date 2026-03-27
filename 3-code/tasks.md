@@ -1,6 +1,20 @@
 # Development Tasks
 
-## Phase: Current Sprint — S-DASH-POLISH (Dashboard Polish & Navigation)
+## Phase: Current Sprint — S-DAUP (Dashboard Aufräumen)
+
+**Sprint Goal:** Bestätigte Bugs im Dashboard beheben: Four Pillars-Duplikat entfernen, Sunsign/BaZi/Wuxing Kacheln auf Detail-View umbauen, leeren Blueprint-Placeholder fixen, DayModeModal Dark-Mode-Kontrast korrigieren, MiniSignature-Skalierung prüfen.
+
+| ID | Task | Component | Req | Status | Notes |
+|----|------|-----------|-----|--------|-------|
+| DAUP-01 | Remove duplicate Four Pillars section | frontend | — | Done | `DashboardAstroSection.tsx:314–324` removed |
+| DAUP-02 | Build click-to-detail for Sunsign / BaZi / Wuxing tiles (modal or drawer) | frontend | REQ-F-astro-card-detail-view | Done | `AstroDetailModal.tsx` created; `DashboardHeroNav` → buttons with `onTileClick`; wired in `DashboardAstroSection` |
+| DAUP-03 | Fix oversized empty Blueprint placeholder | frontend | — | Done | `BlueprintReveal.tsx:35–39` — returns null instead of 220px skeleton |
+| DAUP-04 | Fix CosmicWeatherCard Dark Mode contrast | frontend | — | Done | `CosmicWeatherCard.tsx:80,117` — `bg-white/60` → `bg-[#00050A]/80`, border → gold |
+| DAUP-05 | Constrain MiniSignature width in Dashboard | frontend | — | Done | `Dashboard.tsx` wrapper — added `max-w-xs mx-auto` |
+
+---
+
+## Phase: Completed — S-DASH-POLISH (Dashboard Polish & Navigation)
 
 **Sprint Goal:** Dashboard wird production-ready: Ghost UI entfernen, Navigation überarbeiten, Planetarium aufwerten, Detailansichten aufbauen, Levi-Layer fixen.
 **Full Sprint Spec:** [Sprints/sprint-dashboard-polish/SPRINT.md](../Sprints/sprint-dashboard-polish/SPRINT.md)

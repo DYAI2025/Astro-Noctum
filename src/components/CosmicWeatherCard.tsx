@@ -77,7 +77,7 @@ export function CosmicWeatherCard({
 
   if (loading && !horoscope) {
     return (
-      <div className="w-full max-w-md mx-auto rounded-2xl border border-[#8B6914]/15 bg-white/50 backdrop-blur-sm p-5">
+      <div className="w-full max-w-md mx-auto rounded-2xl border border-[#D4AF37]/15 bg-[#00050A]/80 backdrop-blur-md p-5">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-[#8B6914]/5 animate-pulse" />
           <div className="flex-1 space-y-2">
@@ -114,7 +114,7 @@ export function CosmicWeatherCard({
       transition={{ duration: 0.6, ease: 'easeOut' }}
       className="w-full max-w-md mx-auto"
     >
-      <div className="rounded-2xl border border-[#8B6914]/15 bg-white/60 backdrop-blur-sm overflow-hidden">
+      <div className="rounded-2xl border border-[#D4AF37]/15 bg-[#00050A]/80 backdrop-blur-md overflow-hidden">
         {/* Header */}
         <button
           onClick={() => setExpanded(!expanded)}

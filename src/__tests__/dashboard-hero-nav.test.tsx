@@ -60,13 +60,18 @@ describe('DashboardHeroNav', () => {
     expect(screen.getByText('Holz')).toBeInTheDocument();
   });
 
-  it('renders three anchor links with correct hrefs', () => {
-    render(<DashboardHeroNav sunSign="Leo" dominantElement="Holz" zodiacAnimal="Drache" />);
-    const links = screen.getAllByRole('link');
-    expect(links).toHaveLength(3);
-    expect(links[0]).toHaveAttribute('href', '#section-western');
-    expect(links[1]).toHaveAttribute('href', '#section-bazi');
-    expect(links[2]).toHaveAttribute('href', '#section-wuxing');
+  it('renders three buttons that call onTileClick with the correct id', async () => {
+    const onTileClick = vi.fn();
+    const { user } = await import('@testing-library/user-event').then(m => ({ user: m.default.setup() }));
+    render(<DashboardHeroNav sunSign="Leo" dominantElement="Holz" zodiacAnimal="Drache" onTileClick={onTileClick} />);
+    const buttons = screen.getAllByRole('button');
+    expect(buttons).toHaveLength(3);
+    await user.click(buttons[0]);
+    expect(onTileClick).toHaveBeenCalledWith('western');
+    await user.click(buttons[1]);
+    expect(onTileClick).toHaveBeenCalledWith('bazi');
+    await user.click(buttons[2]);
+    expect(onTileClick).toHaveBeenCalledWith('wuxing');
   });
 
   it('renders EN labels when lang is en', () => {

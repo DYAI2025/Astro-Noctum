@@ -406,7 +406,7 @@ export function Dashboard({
       </SectionErrorBoundary>
 
       {/* ═══ SIGNATUR V3 — Bipolar Trail Mini Preview ═══════════════════ */}
-      <motion.div className="mb-12 sm:mb-16" {...fadeIn(0.35)}>
+      <motion.div className="mb-12 sm:mb-16 max-w-xs mx-auto" {...fadeIn(0.35)}>
         <SectionErrorBoundary name="MiniSignature">
           <MiniSignature
             natalWeights={profileMeta.soulprintSectors ? soulprintToDimensionWeights(profileMeta.soulprintSectors) : undefined}
