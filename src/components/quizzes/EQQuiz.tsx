@@ -339,7 +339,7 @@ function ProgressBar({ current, total }: { current: number; total: number; lang:
   return (
     <div className="w-full mb-8">
       <div className="flex justify-between items-center mb-2">
-        <span className="text-xs text-white/40 uppercase tracking-widest font-sans">{t('quiz.questionLabel')}</span>
+        <span className="text-xs text-white/40 uppercase tracking-widest font-sans">Question</span>
         <span className="text-sm text-[#D4AF37] font-medium tabular-nums">
           {current + 1} / {total}
         </span>
