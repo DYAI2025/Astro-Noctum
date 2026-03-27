@@ -297,7 +297,9 @@ The proxy adds a 10-20s timeout per endpoint, a 10KB payload size limit, and ret
     "synthesis": "Beide Systeme zeigen heute einen gemeinsamen Impuls: Tiefe. Gleichzeitig entsteht Spannung im Bereich Karriere, Gleichklang, Staerkung, Vertrauen. Die Synthese liegt darin, beides bewusst zu halten.",
     "action": "Nutze heute gezielt den Bereich Tiefe. Plane eine bewusste Handlung, die beide Energien verbindet.",
     "pushworthy": false,
-    "push_text": null
+    "push_text": null,
+    "harmony_index": 0.52,
+    "day_mode": "trace"
   },
   "meta": {
     "engine_version": "2.4.0",
@@ -329,6 +331,8 @@ The proxy adds a 10-20s timeout per endpoint, a 10KB payload size limit, and ret
 | `fusion.action` | `string` | Actionable daily impulse. |
 | `fusion.pushworthy` | `boolean` | Whether this day warrants a push notification. `true` when relation is `power`, `wealth`, or `resource`. |
 | `fusion.push_text` | `string?` | Short push notification text. `null` when `pushworthy` is `false`. |
+| `fusion.harmony_index` | `number` | Cosine similarity between Western and Eastern Wu-Xing vectors, range 0-1. 0.45 = random baseline, >= 0.50 = convergence day. |
+| `fusion.day_mode` | `string` | `"pulse"` when `harmony_index` < 0.50 (calm day), `"trace"` when `harmony_index` >= 0.50 (convergence day). |
 | `meta` | `object` | Engine version and generation timestamp. |
 
 **Error responses:**
