@@ -56,7 +56,7 @@ export function AgentProvider({ children }: { children: ReactNode }) {
       ...prev,
       [id]: { ...prev[id], active: false },
     }));
-    setActiveAgent(null);
+    setActiveAgent((prev) => (prev === id ? null : prev));
   }, []);
 
   const setUpgrading = useCallback((id: AgentId, value: boolean) => {
