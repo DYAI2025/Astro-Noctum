@@ -1,14 +1,17 @@
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Orbit, Flame, BookOpen } from 'lucide-react';
-
-const NAV_ITEMS = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard', sub: [] },
-  { to: '/signatur', icon: Orbit, label: 'Signatur', sub: ['Quiz-Cluster', 'Ringe'] },
-  { to: '/wu-xing', icon: Flame, label: 'Wu-Xing', sub: ['5 Elemente', 'Häuser'] },
-  { to: '/wissen', icon: BookOpen, label: 'Wissen', sub: ['Artikel', 'Glossar'] },
-] as const;
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export function NavVariantA() {
+  const { t } = useLanguage();
+
+  const NAV_ITEMS = [
+    { to: '/', icon: LayoutDashboard, label: t('nav.sidebar.home'), sub: [] as string[] },
+    { to: '/signatur', icon: Orbit, label: t('nav.sidebar.signatur'), sub: [t('nav.sidebar.subQuizCluster'), t('nav.sidebar.subRings')] },
+    { to: '/wu-xing', icon: Flame, label: t('nav.sidebar.wuXing'), sub: [t('nav.sidebar.sub5Elements'), t('nav.sidebar.subHouses')] },
+    { to: '/wissen', icon: BookOpen, label: t('nav.sidebar.wissen'), sub: [t('nav.sidebar.subArticles'), t('nav.sidebar.subGlossary')] },
+  ];
+
   return (
     <nav className="fixed left-0 top-0 h-screen w-56 bg-[#00050A] border-r border-[#D4AF37]/10 flex flex-col gap-1 pt-8 px-3 z-50">
       <div className="mb-8 px-3">

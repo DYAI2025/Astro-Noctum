@@ -4,7 +4,23 @@ import InfluenceGauges from '../components/dashboard/InfluenceGauges';
 
 // Mock useLanguage
 vi.mock('../contexts/LanguageContext', () => ({
-  useLanguage: () => ({ lang: 'de', t: (k: string) => k }),
+  useLanguage: () => ({
+    lang: 'de',
+    t: (key: string) => {
+      const map: Record<string, string> = {
+        'dashboard.influences.sectionTitle': 'Heutige Einflüsse',
+        'dashboard.influences.marsLabel': 'Mars-Sektor',
+        'dashboard.influences.marsTooltip': 'Mars steht für Antrieb, Durchsetzungskraft und körperliche Energie. Ein hoher Mars-Sektor-Wert zeigt eine Phase erhöhter Tatkraft und Entschlossenheit an.',
+        'dashboard.influences.jupiterLabel': 'Jupiter-Sektor',
+        'dashboard.influences.jupiterTooltip': 'Jupiter repräsentiert Wachstum, Weisheit und Expansion. Dieser Wert spiegelt das Potenzial für neue Erkenntnisse, Optimismus und günstige Entwicklungen wider.',
+        'dashboard.influences.venusLabel': 'Venus-Balance',
+        'dashboard.influences.venusTooltip': 'Venus steht für Harmonie, Beziehungen und ästhetisches Empfinden. Die Venus-Balance zeigt, wie stark die Einflüsse von Liebe, Schönheit und Verbundenheit heute wirken.',
+        'dashboard.influences.saturnLabel': 'Saturn-Fokus',
+        'dashboard.influences.saturnTooltip': 'Saturn verkörpert Struktur, Disziplin und Verantwortung. Ein niedriger Saturn-Fokus deutet auf eine Phase mit weniger äußeren Beschränkungen und mehr Gestaltungsfreiheit hin.',
+      };
+      return map[key] || key;
+    },
+  }),
 }));
 
 // Mock Tooltip to make tooltip text visible

@@ -22,6 +22,13 @@ export default function BlueprintCard({
   const resolvedTitle = title ?? t("dashboard.blueprint.title");
   const resolvedCtaText = ctaText ?? t("dashboard.blueprint.cta");
 
+  // Show skeleton when content is empty
+  if (content.trim().length === 0) {
+    return (
+      <div className="animate-pulse bg-zinc-900/40 rounded-2xl h-[220px] border border-zinc-800" />
+    );
+  }
+
   return (
     <div className="relative group overflow-hidden">
       {/* Background glow effect */}

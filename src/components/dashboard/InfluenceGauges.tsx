@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Tooltip } from "../Tooltip";
 import { useLanguage } from '../../contexts/LanguageContext';
 
@@ -48,44 +49,50 @@ export interface InfluenceData {
   tooltip?: string;
 }
 
-const DEFAULT_INFLUENCES: InfluenceData[] = [
-  {
-    label: "Mars-Sektor",
-    value: 0.82,
-    color: "bg-gradient-to-r from-red-500 to-orange-400",
-    tooltip: "Mars steht für Antrieb, Durchsetzungskraft und körperliche Energie. Ein hoher Mars-Sektor-Wert zeigt eine Phase erhöhter Tatkraft und Entschlossenheit an.",
-  },
-  {
-    label: "Jupiter-Sektor",
-    value: 0.65,
-    color: "bg-gradient-to-r from-cyan-400 to-blue-500",
-    tooltip: "Jupiter repräsentiert Wachstum, Weisheit und Expansion. Dieser Wert spiegelt das Potenzial für neue Erkenntnisse, Optimismus und günstige Entwicklungen wider.",
-  },
-  {
-    label: "Venus-Balance",
-    value: 0.45,
-    color: "bg-gradient-to-r from-purple-400 to-pink-400",
-    tooltip: "Venus steht für Harmonie, Beziehungen und ästhetisches Empfinden. Die Venus-Balance zeigt, wie stark die Einflüsse von Liebe, Schönheit und Verbundenheit heute wirken.",
-  },
-  {
-    label: "Saturn-Fokus",
-    value: 0.30,
-    color: "bg-gradient-to-r from-zinc-400 to-zinc-200",
-    tooltip: "Saturn verkörpert Struktur, Disziplin und Verantwortung. Ein niedriger Saturn-Fokus deutet auf eine Phase mit weniger äußeren Beschränkungen und mehr Gestaltungsfreiheit hin.",
-  },
-];
+function useDefaultInfluences(): InfluenceData[] {
+  const { t } = useLanguage();
+  return useMemo(() => [
+    {
+      label: t("dashboard.influences.marsLabel"),
+      value: 0.82,
+      color: "bg-gradient-to-r from-red-500 to-orange-400",
+      tooltip: t("dashboard.influences.marsTooltip"),
+    },
+    {
+      label: t("dashboard.influences.jupiterLabel"),
+      value: 0.65,
+      color: "bg-gradient-to-r from-cyan-400 to-blue-500",
+      tooltip: t("dashboard.influences.jupiterTooltip"),
+    },
+    {
+      label: t("dashboard.influences.venusLabel"),
+      value: 0.45,
+      color: "bg-gradient-to-r from-purple-400 to-pink-400",
+      tooltip: t("dashboard.influences.venusTooltip"),
+    },
+    {
+      label: t("dashboard.influences.saturnLabel"),
+      value: 0.30,
+      color: "bg-gradient-to-r from-zinc-400 to-zinc-200",
+      tooltip: t("dashboard.influences.saturnTooltip"),
+    },
+  ], [t]);
+}
 
-export default function InfluenceGauges({ influences = DEFAULT_INFLUENCES }: { influences?: InfluenceData[] }) {
-  const { lang } = useLanguage();
+export default function InfluenceGauges({ influences }: { influences?: InfluenceData[] }) {
+  const { t } = useLanguage();
+  const defaultInfluences = useDefaultInfluences();
+  const items = influences ?? defaultInfluences;
+
   return (
     <div className="bg-zinc-900/40 border border-zinc-800 p-8 rounded-[2rem] space-y-8">
       <div className="flex justify-between items-center">
-        <h2 className="text-[10px] font-bold tracking-[0.2em] text-zinc-500 uppercase">{lang === 'de' ? 'Heutige Einflüsse' : "Today's Influences"}</h2>
+        <h2 className="text-[10px] font-bold tracking-[0.2em] text-zinc-500 uppercase">{t('dashboard.influences.sectionTitle')}</h2>
         <div className="text-[8px] font-mono text-zinc-600">TRANSIT</div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12">
-        {influences.map((inf, i) => (
+        {items.map((inf, i) => (
           <Gauge key={i} label={inf.label} value={inf.value} color={inf.color} tooltip={inf.tooltip} />
         ))}
       </div>

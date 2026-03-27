@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   IconHouse,
@@ -6,6 +6,7 @@ import {
   IconMountain,
   IconTelescope,
 } from "../animated-icons";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -25,60 +26,57 @@ interface NavItem {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Nav config
-// ─────────────────────────────────────────────────────────────────────────────
-
-const NAV_ITEMS: NavItem[] = [
-  {
-    id: "home",
-    label: "Dein Bazodiac",
-    href: "/",
-    Icon: IconHouse,
-    subItems: [
-      { label: "Planetarium", href: "/" },
-      { label: "Kosmischer Blueprint", href: "/" },
-      { label: "Wu Xing", href: "/wu-xing" },
-    ],
-  },
-  {
-    id: "signatur",
-    label: "Signatur",
-    href: "/signatur",
-    Icon: IconOrbit,
-    subItems: [
-      { label: "Fusion Ring", href: "/signatur" },
-      { label: "Quizze", href: "/signatur" },
-      { label: "Cluster", href: "/signatur" },
-    ],
-  },
-  {
-    id: "wu-xing",
-    label: "Wu Xing",
-    href: "/wu-xing",
-    Icon: IconMountain,
-  },
-  {
-    id: "wissen",
-    label: "Wissen",
-    href: "/wissen",
-    Icon: IconTelescope,
-    subItems: [
-      { label: "Artikel", href: "/wissen" },
-      { label: "Horoskop", href: "/wissen" },
-    ],
-  },
-];
-
-// ─────────────────────────────────────────────────────────────────────────────
 // Component
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function NavSidebarA() {
   const location = useLocation();
+  const { t } = useLanguage();
   const [expanded, setExpanded] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
   const sidebarRef = useRef<HTMLElement>(null);
   const submenuTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const NAV_ITEMS: NavItem[] = useMemo(() => [
+    {
+      id: "home",
+      label: t("nav.sidebar.home"),
+      href: "/",
+      Icon: IconHouse,
+      subItems: [
+        { label: t("nav.sidebar.subPlanetarium"), href: "/" },
+        { label: t("nav.sidebar.subCosmicBlueprint"), href: "/" },
+        { label: t("nav.sidebar.subWuXing"), href: "/wu-xing" },
+      ],
+    },
+    {
+      id: "signatur",
+      label: t("nav.sidebar.signatur"),
+      href: "/signatur",
+      Icon: IconOrbit,
+      subItems: [
+        { label: t("nav.sidebar.subFusionRing"), href: "/signatur" },
+        { label: t("nav.sidebar.subQuizzes"), href: "/signatur" },
+        { label: t("nav.sidebar.subCluster"), href: "/signatur" },
+      ],
+    },
+    {
+      id: "wu-xing",
+      label: t("nav.sidebar.wuXing"),
+      href: "/wu-xing",
+      Icon: IconMountain,
+    },
+    {
+      id: "wissen",
+      label: t("nav.sidebar.wissen"),
+      href: "/wissen",
+      Icon: IconTelescope,
+      subItems: [
+        { label: t("nav.sidebar.subArticles"), href: "/wissen" },
+        { label: t("nav.sidebar.subHoroscope"), href: "/wissen" },
+      ],
+    },
+  ], [t]);
 
   const isActive = (href: string) =>
     href === "/" ? location.pathname === "/" : location.pathname.startsWith(href);
@@ -128,7 +126,7 @@ export function NavSidebarA() {
         onMouseEnter={handleMouseEnterSidebar}
         onMouseLeave={handleMouseLeaveSidebar}
         className="fixed left-0 top-0 z-50 flex h-full flex-col"
-        aria-label="Hauptnavigation"
+        aria-label={t("nav.sidebar.mainNavLabel")}
       >
         <div
           className={[
@@ -276,7 +274,7 @@ export function NavSidebarA() {
                 "opacity-100 translate-x-0 transition-[opacity,transform] duration-200",
               ].join(" ")}
               role="menu"
-              aria-label={`${item.label} Untermenü`}
+              aria-label={`${item.label} ${t("nav.sidebar.submenuSuffix")}`}
             >
               {/* Section header */}
               <div className="flex h-16 shrink-0 items-end border-b border-[#D4AF37]/10 px-4 pb-3">

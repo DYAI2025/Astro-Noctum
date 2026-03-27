@@ -18,7 +18,18 @@ vi.mock('motion/react', () => ({
 
 // Mock useLanguage
 vi.mock('../contexts/LanguageContext', () => ({
-  useLanguage: () => ({ lang: 'de', t: (k: string) => k }),
+  useLanguage: () => ({
+    lang: 'de',
+    t: (key: string) => {
+      const map: Record<string, string> = {
+        'dashboard.blueprintReveal.cosmicAnalysis': 'Kosmische Analyse',
+        'dashboard.blueprintReveal.title': 'Dein Bazodiac Blueprint',
+        'dashboard.blueprintReveal.teaser': 'Deine einzigartige kosmische Signatur. Bereit zur Enthüllung.',
+        'dashboard.blueprintReveal.revealBtn': 'Entdecken',
+      };
+      return map[key] || key;
+    },
+  }),
 }));
 
 const defaultProps = {
