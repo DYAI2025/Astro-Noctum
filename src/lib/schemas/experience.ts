@@ -44,6 +44,7 @@ export const BootstrapResponseSchema = z.object({
   narratives: NarrativesSchema,
   signature_blueprint: SignatureBlueprintSchema,
   meta: MetaInfoSchema,
+  soulprint_saved: z.boolean().optional(),
 });
 export type BootstrapResponse = z.infer<typeof BootstrapResponseSchema>;
 
