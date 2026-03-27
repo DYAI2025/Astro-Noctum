@@ -13,7 +13,7 @@ interface BlueprintRevealProps {
 }
 
 export function BlueprintReveal({ content, aspects, elements, onCtaClick }: BlueprintRevealProps) {
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
   const [revealed, setRevealed] = useState<boolean>(() => {
     try {
       return localStorage.getItem(STORAGE_KEY) === '1';
@@ -55,15 +55,13 @@ export function BlueprintReveal({ content, aspects, elements, onCtaClick }: Blue
 
           <div className="relative space-y-3">
             <p className="text-[9px] uppercase tracking-[0.45em] text-[#D4AF37]/50">
-              {lang === 'de' ? 'Kosmische Analyse' : 'Cosmic Analysis'}
+              {t('dashboard.blueprintReveal.cosmicAnalysis')}
             </p>
             <h3 className="font-serif text-2xl text-white/90">
-              {lang === 'de' ? 'Dein Bazodiac Blueprint' : 'Your Bazodiac Blueprint'}
+              {t('dashboard.blueprintReveal.title')}
             </h3>
             <p className="text-sm text-white/40 max-w-xs leading-relaxed">
-              {lang === 'de'
-                ? 'Deine einzigartige kosmische Signatur. Bereit zur Enthüllung.'
-                : 'Your unique cosmic signature. Ready to be revealed.'}
+              {t('dashboard.blueprintReveal.teaser')}
             </p>
           </div>
 
@@ -76,7 +74,7 @@ export function BlueprintReveal({ content, aspects, elements, onCtaClick }: Blue
               'hover:bg-[#D4AF37]/10 transition-all duration-300',
             ].join(' ')}
           >
-            {lang === 'de' ? 'Entdecken' : 'Reveal'}
+            {t('dashboard.blueprintReveal.revealBtn')}
           </button>
         </motion.div>
       ) : (

@@ -2,14 +2,9 @@ import { motion } from 'motion/react';
 import { usePlanetarium } from '../../contexts/PlanetariumContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 
-const LABELS = {
-  birth: { de: 'Geburtshimmel', en: 'Birth Sky' },
-  current: { de: 'Heutiger Himmel', en: 'Current Sky' },
-} as const;
-
 export function SkyModeToggle() {
   const { skyMode, setSkyMode } = usePlanetarium();
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
 
   const nextMode = skyMode === 'birth' ? 'current' : 'birth';
 
@@ -40,8 +35,8 @@ export function SkyModeToggle() {
             </>
           )}
         </svg>
-        <span>{LABELS[skyMode][lang]}</span>
-        <span className="text-[8px] text-white/30 ml-1">{'\u2192'} {LABELS[nextMode][lang]}</span>
+        <span>{t(`dashboard.skyMode.${skyMode}`)}</span>
+        <span className="text-[8px] text-white/30 ml-1">{'\u2192'} {t(`dashboard.skyMode.${nextMode}`)}</span>
       </motion.button>
     </div>
   );

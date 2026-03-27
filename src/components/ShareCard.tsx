@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/src/contexts/AuthContext';
+import { useLanguage } from '@/src/contexts/LanguageContext';
 import { trackEvent } from '@/src/lib/analytics';
 import {
   getShareUrl,
@@ -11,6 +12,7 @@ import {
 
 export function ShareCard({ sunSign, moonSign }: { sunSign: string; moonSign: string }) {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -21,11 +23,13 @@ export function ShareCard({ sunSign, moonSign }: { sunSign: string; moonSign: st
     return url;
   };
 
-  const shareText = `My Bazodiac Fusion Reading: ${sunSign} Sun × ${moonSign} Moon. Discover yours:`;
+  const shareText = t('dashboard.share.shareText')
+    .replace('{sunSign}', sunSign)
+    .replace('{moonSign}', moonSign);
 
   return (
     <div className="glass-card p-4 space-y-3">
-      <h3 className="font-serif text-gold text-lg">Share Your Reading</h3>
+      <h3 className="font-serif text-gold text-lg">{t('dashboard.share.title')}</h3>
       <div className="flex gap-2 flex-wrap">
         <button
           onClick={async () => {
@@ -69,7 +73,7 @@ export function ShareCard({ sunSign, moonSign }: { sunSign: string; moonSign: st
           }}
           className="px-4 py-2 bg-ash text-dawn rounded-lg text-sm hover:bg-ash/80 transition-colors"
         >
-          {copied ? 'Copied!' : 'Copy Link'}
+          {copied ? t('dashboard.share.copied') : t('dashboard.share.copyLink')}
         </button>
       </div>
     </div>

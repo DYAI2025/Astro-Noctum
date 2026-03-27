@@ -53,45 +53,37 @@ interface DashboardHeroNavProps {
 interface TileConfig {
   id: string;
   anchor: string;
-  labelDe: string;
-  labelEn: string;
-  ariaLabelDe: string;
-  ariaLabelEn: string;
+  labelKey: string;
+  ariaKey: string;
   value: string;
   icon: ReactNode;
 }
 
 export function DashboardHeroNav({ sunSign, dominantElement, zodiacAnimal }: DashboardHeroNavProps) {
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
 
   const tiles: TileConfig[] = [
     {
       id: 'western',
       anchor: '#section-western',
-      labelDe: 'Sonnenzeichen',
-      labelEn: 'Sun Sign',
-      ariaLabelDe: 'Zur Westlichen Astrologie springen',
-      ariaLabelEn: 'Jump to Western Astrology',
+      labelKey: 'dashboard.heroNav.westernLabel',
+      ariaKey: 'dashboard.heroNav.westernAria',
       value: sunSign || '—',
       icon: <SunIcon className="w-7 h-7" />,
     },
     {
       id: 'bazi',
       anchor: '#section-bazi',
-      labelDe: 'BaZi',
-      labelEn: 'BaZi',
-      ariaLabelDe: 'Zu BaZi springen',
-      ariaLabelEn: 'Jump to BaZi',
+      labelKey: 'dashboard.heroNav.baziLabel',
+      ariaKey: 'dashboard.heroNav.baziAria',
       value: zodiacAnimal || '—',
       icon: <PillarIcon className="w-7 h-7" />,
     },
     {
       id: 'wuxing',
       anchor: '#section-wuxing',
-      labelDe: 'Wu Xing',
-      labelEn: 'Wu Xing',
-      ariaLabelDe: 'Zu Wu Xing springen',
-      ariaLabelEn: 'Jump to Wu Xing',
+      labelKey: 'dashboard.heroNav.wuxingLabel',
+      ariaKey: 'dashboard.heroNav.wuxingAria',
       value: dominantElement || '—',
       icon: <ElementsIcon className="w-7 h-7" />,
     },
@@ -108,7 +100,7 @@ export function DashboardHeroNav({ sunSign, dominantElement, zodiacAnimal }: Das
         <a
           key={tile.id}
           href={tile.anchor}
-          aria-label={lang === 'de' ? tile.ariaLabelDe : tile.ariaLabelEn}
+          aria-label={t(tile.ariaKey)}
           className={[
             'group relative flex flex-col items-center justify-center',
             'gap-3 py-8 px-6 rounded-2xl',
@@ -125,7 +117,7 @@ export function DashboardHeroNav({ sunSign, dominantElement, zodiacAnimal }: Das
 
           {/* Label */}
           <p className="text-[9px] uppercase tracking-[0.35em] text-[#D4AF37]/50 group-hover:text-[#D4AF37]/80 transition-colors duration-300">
-            {lang === 'de' ? tile.labelDe : tile.labelEn}
+            {t(tile.labelKey)}
           </p>
 
           {/* Value */}

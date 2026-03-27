@@ -1,26 +1,29 @@
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Orbit, Flame, BookOpen } from 'lucide-react';
-
-const NAV_ITEMS = [
-  {
-    to: '/', icon: LayoutDashboard, label: 'Dashboard',
-    panel: { title: 'Dashboard', items: ['Dein Chart', 'Planetarium', 'Elemente'] },
-  },
-  {
-    to: '/signatur', icon: Orbit, label: 'Signatur',
-    panel: { title: 'Signatur', items: ['Frequenz-Ring', 'Quiz-Cluster', 'Dissonanz'] },
-  },
-  {
-    to: '/wu-xing', icon: Flame, label: 'Wu-Xing',
-    panel: { title: 'Wu-Xing', items: ['5 Elemente', 'Zyklen', 'Häuser'] },
-  },
-  {
-    to: '/wissen', icon: BookOpen, label: 'Wissen',
-    panel: { title: 'Wissen', items: ['Artikel', 'Horoskop-Guide', 'Glossar'] },
-  },
-] as const;
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export function NavVariantC() {
+  const { t } = useLanguage();
+
+  const NAV_ITEMS = [
+    {
+      to: '/', icon: LayoutDashboard, label: t('nav.sidebar.home'),
+      panel: { title: t('nav.sidebar.home'), items: [t('dashboard.bazi.sectionTitle'), t('nav.sidebar.subPlanetarium'), t('nav.sidebar.sub5Elements')] },
+    },
+    {
+      to: '/signatur', icon: Orbit, label: t('nav.sidebar.signatur'),
+      panel: { title: t('nav.sidebar.signatur'), items: [t('nav.sidebar.subFusionRing'), t('nav.sidebar.subQuizCluster'), t('nav.sidebar.subCluster')] },
+    },
+    {
+      to: '/wu-xing', icon: Flame, label: t('nav.sidebar.wuXing'),
+      panel: { title: t('nav.sidebar.wuXing'), items: [t('nav.sidebar.sub5Elements'), t('nav.sidebar.subHouses')] },
+    },
+    {
+      to: '/wissen', icon: BookOpen, label: t('nav.sidebar.wissen'),
+      panel: { title: t('nav.sidebar.wissen'), items: [t('nav.sidebar.subArticles'), t('nav.sidebar.subHoroscopeGuide'), t('nav.sidebar.subGlossary')] },
+    },
+  ];
+
   return (
     <nav className="fixed left-0 top-0 h-screen w-16 bg-[#00050A] border-r border-[#D4AF37]/10 flex flex-col items-center gap-2 pt-6 z-50">
       <div className="mb-6">
