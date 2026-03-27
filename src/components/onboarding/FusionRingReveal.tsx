@@ -68,7 +68,6 @@ export default function FusionRingReveal({
           natalWeights={natalWeights}
           quizWeights={quizWeights}
           revealProgress={revealProgress}
-          showUI={false}
           isMini={false}
         />
       </Suspense>

@@ -1,14 +1,18 @@
 import { lazy, Suspense } from 'react';
+import type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
 
-const FusionRingCanvasV2 = lazy(() => import('../fusion-ring-website/FusionRingCanvasV2'));
+const SignaturV3Canvas = lazy(() => import('../signatur-v3/SignaturV3Canvas'));
 
 interface MiniSignatureProps {
   natalWeights?: Record<string, number>;
   quizWeights?: Record<string, number>;
+  dayHarmonic?: DayHarmonicState | null;
   onExpand?: () => void;
 }
 
-export default function MiniSignature({ natalWeights, quizWeights, onExpand }: MiniSignatureProps) {
+const EMPTY_WEIGHTS: Record<string, number> = {};
+
+export default function MiniSignature({ natalWeights, quizWeights, dayHarmonic, onExpand }: MiniSignatureProps) {
   return (
     <div
       onClick={onExpand}
@@ -17,11 +21,12 @@ export default function MiniSignature({ natalWeights, quizWeights, onExpand }: M
       <div className="relative w-full aspect-square rounded-full overflow-hidden bg-black/20">
         <div className="absolute inset-0 scale-125 group-hover:scale-150 transition-transform duration-1000">
           <Suspense fallback={<div className="w-full h-full bg-zinc-900/20 rounded-full animate-pulse" />}>
-            <FusionRingCanvasV2
-              natalWeights={natalWeights}
-              quizWeights={quizWeights}
-              isMini={true}
-              showUI={false}
+            <SignaturV3Canvas
+              natalWeights={natalWeights ?? EMPTY_WEIGHTS}
+              quizWeights={quizWeights ?? EMPTY_WEIGHTS}
+              dayHarmonic={dayHarmonic ?? undefined}
+              width={240}
+              height={240}
             />
           </Suspense>
         </div>

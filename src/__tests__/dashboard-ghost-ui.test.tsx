@@ -64,6 +64,16 @@ vi.mock('@/src/lib/feature-flags', () => ({
   isFeatureEnabled: () => false,
 }));
 
+vi.mock('@/src/contexts/FusionRingContext', () => ({
+  useFusionRingContext: () => ({
+    events: [],
+    signal: null,
+    masterSignal: null,
+    addQuizResult: vi.fn(),
+    completedModules: new Set(),
+  }),
+}));
+
 // ── Heavy component mocks ──────────────────────────────────────────────────
 vi.mock('@/src/components/dashboard/BlueprintCard', () => ({
   default: () => <div data-testid="blueprint-card" />,

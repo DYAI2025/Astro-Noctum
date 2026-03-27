@@ -30,3 +30,28 @@ export function isFeatureEnabled(flag: FlagName): boolean {
   if (override !== null) return override === 'true';
   return FLAGS[flag];
 }
+
+const CRITICAL_FLAGS: FlagName[] = [
+  'signature_onboarding_v1',
+  'daily_modal_v1',
+  'signature_engine_v2',
+];
+
+/**
+ * Warns to console when a critical feature flag has been overridden to false.
+ * Called at module initialization so the warning appears on every app boot.
+ */
+export function validateCriticalFlags(): void {
+  // Only check overrides in a browser environment where localStorage exists
+  if (typeof window === 'undefined' || !window.localStorage) return;
+
+  for (const flagName of CRITICAL_FLAGS) {
+    const override = window.localStorage.getItem(`ff_${flagName}`);
+    if (override === 'false') {
+      console.warn('[FeatureFlags] Critical flag disabled via override:', flagName);
+    }
+  }
+}
+
+// Run at module initialization
+validateCriticalFlags();

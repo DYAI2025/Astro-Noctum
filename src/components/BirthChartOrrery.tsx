@@ -126,6 +126,8 @@ interface BirthChartOrreryProps {
   birthConstellation?: string;
   /** Auto-start time-lapse on mount (first visit experience) */
   autoPlay?: boolean;
+  /** When true, override simTime to "now" (current sky) instead of birth date */
+  currentSky?: boolean;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -137,6 +139,7 @@ export function BirthChartOrrery({
   planetariumMode = false,
   birthConstellation,
   autoPlay = false,
+  currentSky = false,
 }: BirthChartOrreryProps) {
   const { lang, t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -189,6 +192,7 @@ export function BirthChartOrrery({
   const nextShootingStarRef = useRef(6 + Math.random() * 8);
 
   // Animation loop refs
+  const currentSkyRef  = useRef(currentSky);
   const simTimeRef     = useRef(daysSinceJ2000(birthDate));
   const obsLatRef      = useRef(observerLat);
   const obsLonRef      = useRef(observerLon);
@@ -272,6 +276,7 @@ export function BirthChartOrrery({
   useEffect(() => { showConNRef.current   = showConstellationNames; },[showConstellationNames]);
   useEffect(() => { isPlayingRef.current  = isPlaying; },        [isPlaying]);
   useEffect(() => { speedRef.current      = speed; },            [speed]);
+  useEffect(() => { currentSkyRef.current = currentSky; },       [currentSky]);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // THREE.JS INIT
@@ -648,6 +653,11 @@ export function BirthChartOrrery({
       raf = requestAnimationFrame(animate);
       const dt = clock.getDelta();
       elapsedRef.current += dt;
+
+      // Current sky: override simTime with "now" (J2000 epoch days)
+      if (currentSkyRef.current) {
+        simTimeRef.current = daysSinceJ2000(new Date());
+      }
 
       updateMaterials(dt, sunMaterialRef.current ?? undefined);
 
@@ -1048,72 +1058,6 @@ export function BirthChartOrrery({
           }
         </button>
       </div>
-
-      {/* Planet legend + date label (orrery / Solar System mode) — S-DP-17 */}
-      {!planetariumMode && (
-        <div className="absolute bottom-0 left-0 right-0 z-10 pointer-events-none bg-black/40 backdrop-blur-sm px-5 py-2">
-          {/* S-DP-16/17: date label for solar system view */}
-          <p className="text-base text-white font-medium mb-1">
-            {lang === 'de'
-              ? `Planetenposition am ${dateStr}`
-              : `Planetary positions on ${dateStr}`}
-          </p>
-          <div className="flex flex-wrap gap-3">
-            {Object.entries(PLANETS)
-              .filter(([key]) => key !== 'earth')
-              .map(([key, planet]) => (
-                <span key={key} className="flex items-center gap-1.5 text-[9px] text-white/40">
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: planet.color, boxShadow: `0 0 4px ${planet.color}40` }} />
-                  {planet.name}
-                </span>
-              ))}
-          </div>
-        </div>
-      )}
-
-      {/* Planetarium bottom: S-DP-15 current positions + S-DP-16 constellation label */}
-      {planetariumMode && (
-        <div className="absolute bottom-0 left-0 right-0 z-10 pointer-events-none">
-          {/* S-DP-16: constellation description banner */}
-          <div className="bg-black/50 backdrop-blur-sm px-5 py-2.5">
-            <p className="text-base text-white font-medium">
-              {lang === 'de'
-                ? `Planetenposition am ${dateStr}`
-                : `Planetary positions on ${dateStr}`}
-            </p>
-            {birthConstellation && (
-              <p className="text-sm text-[#D4AF37]/90">
-                {lang === 'de' ? `Geburts-Sternbild: ${birthConstellation}` : `Birth constellation: ${birthConstellation}`}
-              </p>
-            )}
-
-            {/* S-DP-15: current planet positions */}
-            <div className="mt-2 border-t border-white/10 pt-2">
-              <p className="text-xs text-[#7EC8E3]/70 mb-1.5 uppercase tracking-widest">
-                {lang === 'de' ? 'Aktuelle Planetenposition: heute' : 'Current planet positions: today'}
-              </p>
-              <div className="flex flex-wrap gap-x-4 gap-y-1">
-                {currentPlanetSigns.map(({ key, symbol, name, sign }) => (
-                  <span key={key} className="flex items-center gap-1 text-xs">
-                    <span className="text-[#7EC8E3]">{symbol}</span>
-                    <span className="text-white/60">{name}</span>
-                    <span className="text-[#7EC8E3]/80">in {sign}</span>
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Navigation hint */}
-          <div className="bg-black/30 px-5 py-1">
-            <p className="text-[9px] text-white/25 tracking-widest uppercase font-mono text-center">
-              {lang === 'de'
-                ? 'ZIEHEN ZUM UMSCHAUEN · MAUSZEIGER ÜBER OBJEKTE FÜR INFO'
-                : 'DRAG TO LOOK AROUND · HOVER OBJECTS FOR INFO'}
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* Hover Tooltip */}
       {hoveredObject && (

@@ -5,13 +5,13 @@ import type {
   BafeWuxingResponse,
   BafeTstResponse,
   BafePillarRaw,
-  BafeProblemDetail,
   MappedBazi,
   MappedWestern,
   MappedWuxing,
   MappedPillar,
 } from '../types/bafe';
 import { supabase } from '../lib/supabase';
+import { retryWithBackoff } from '../lib/retryWithBackoff';
 
 export interface BirthData {
   date: string; // ISO 8601 local date time e.g. 2024-02-10T14:30:00
@@ -68,6 +68,22 @@ const fetchWithTimeout = async (url: string, options: RequestInit, timeoutMs = 1
   }
 };
 
+/** Error with HTTP status — enables retry logic to distinguish 4xx from 5xx. */
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+    public readonly endpoint: string,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+
+  get isRetriable(): boolean {
+    return this.status >= 500;
+  }
+}
+
 function validateBirthData(data: BirthData) {
   if (!data.date || !data.tz) {
     throw new Error("Birth data is incomplete: date and timezone are required.");
@@ -92,29 +108,49 @@ async function postCalculation<T = unknown>(
     headers["Authorization"] = `Bearer ${session.access_token}`;
   }
 
-  const res = await fetchWithTimeout(`${BASE_URL}/calculate/${endpoint}`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify(payload),
-  });
+  return retryWithBackoff(
+    async () => {
+      const res = await fetchWithTimeout(`${BASE_URL}/calculate/${endpoint}`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(payload),
+      });
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    let detail = text;
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        let detail = text;
 
-    // Try parsing as Problem+JSON (BAFE C2 format)
-    try {
-      const problem: BafeProblemDetail = JSON.parse(text);
-      if (problem.detail) detail = problem.detail;
-      else if (problem.title) detail = problem.title;
-    } catch {
-      // Not JSON — use raw text
-    }
+        // Try parsing as JSON (BAFE Problem+JSON or Express error format)
+        try {
+          const parsed = JSON.parse(text);
+          if (parsed.detail) detail = parsed.detail;
+          else if (parsed.title) detail = parsed.title;
+          else if (parsed.error) detail = parsed.error;   // Express format
+        } catch {
+          // Not JSON — use raw text (e.g. plain "Service Unavailable" from proxy)
+        }
 
-    throw new Error(`Failed to calculate ${endpoint}: ${res.status} ${detail}`);
-  }
+        // Fallback: if detail is empty, use the HTTP status text
+        if (!detail) detail = res.statusText || `HTTP ${res.status}`;
 
-  return res.json() as Promise<T>;
+        throw new ApiError(
+          `Failed to calculate ${endpoint}: ${res.status} ${detail}`,
+          res.status,
+          endpoint,
+        );
+      }
+
+      return res.json() as Promise<T>;
+    },
+    {
+      maxRetries: 2,          // initial + 2 retries = 3 total attempts
+      baseDelay: 800,         // 800ms → 1600ms backoff (enough for Railway wake)
+      shouldRetry: (err) => err instanceof ApiError && err.isRetriable,
+      onRetry: (attempt, err) => {
+        console.warn(`[api] Retry ${attempt} for ${endpoint}:`, (err as Error).message);
+      },
+    },
+  );
 }
 
 export async function calculateBazi(data: BirthData): Promise<MappedBazi> {
@@ -289,6 +325,18 @@ const MOCK_DATA: {
 
 export async function calculateAll(data: BirthData): Promise<ApiResults> {
   const issues: ApiIssue[] = [];
+
+  // Proactively refresh the Supabase token before firing all 5 endpoints.
+  // New users may have a stale cached token after spending time on the birth form.
+  // refreshSession() updates the in-memory cache that getSession() reads,
+  // so the subsequent postCalculation() calls automatically use the fresh token.
+  try {
+    await supabase.auth.refreshSession();
+  } catch (refreshErr) {
+    console.warn("[api] Session refresh failed, proceeding with cached token:", refreshErr);
+    // Non-fatal: postCalculation will use whatever getSession() returns.
+    // If the token is truly dead, each endpoint will fail with 401 → no retry → fallback.
+  }
 
   const withFallback = async <T>(
     endpoint: ApiIssue["endpoint"],

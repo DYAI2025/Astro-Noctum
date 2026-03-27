@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useLanguage } from "../contexts/LanguageContext";
 
 type LegalSection = "impressum" | "privacy" | "terms" | null;
 
@@ -166,6 +167,7 @@ Wir behalten uns das Recht vor, diese AGB zu ändern. Die fortgesetzte Nutzung n
 
 export function LegalFooter({ lang }: { lang: "en" | "de" }) {
   const [open, setOpen] = useState<LegalSection>(null);
+  const { t } = useLanguage();
 
   const toggle = (section: LegalSection) => {
     setOpen((prev) => (prev === section ? null : section));
@@ -184,7 +186,7 @@ export function LegalFooter({ lang }: { lang: "en" | "de" }) {
           onClick={() => toggle("impressum")}
           className="hover:text-[#8B6914]/60 transition-colors cursor-pointer"
         >
-          {lang === "de" ? "Impressum" : "Legal Notice"}
+          {t("legal.impressum")}
         </button>
         <span className="text-[#1E2A3A]/10">|</span>
         <button
@@ -192,7 +194,7 @@ export function LegalFooter({ lang }: { lang: "en" | "de" }) {
           onClick={() => toggle("privacy")}
           className="hover:text-[#8B6914]/60 transition-colors cursor-pointer"
         >
-          {lang === "de" ? "Datenschutz" : "Privacy"}
+          {t("legal.privacy")}
         </button>
         <span className="text-[#1E2A3A]/10">|</span>
         <button
@@ -200,7 +202,7 @@ export function LegalFooter({ lang }: { lang: "en" | "de" }) {
           onClick={() => toggle("terms")}
           className="hover:text-[#8B6914]/60 transition-colors cursor-pointer"
         >
-          {lang === "de" ? "AGB" : "Terms"}
+          {t("legal.terms")}
         </button>
       </div>
 
@@ -224,7 +226,7 @@ export function LegalFooter({ lang }: { lang: "en" | "de" }) {
                   type="button"
                   onClick={() => setOpen(null)}
                   className="text-[#1E2A3A]/25 hover:text-[#1E2A3A]/50 text-xs transition-colors"
-                  aria-label="Close"
+                  aria-label={t("legal.closeAriaLabel")}
                 >
                   &times;
                 </button>

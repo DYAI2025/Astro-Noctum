@@ -9,6 +9,31 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { GoogleGenAI } from "@google/genai";
 
+// Exponential-backoff fetch helper used by the bootstrap endpoint.
+// Retries on network errors and 5xx responses only; 4xx is returned immediately.
+async function fetchWithRetry(url, options, maxRetries = 3, baseDelayMs = 2000) {
+  let lastError;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const res = await fetch(url, options);
+      if (res.ok || (res.status >= 400 && res.status < 500)) {
+        // 2xx–3xx: success; 4xx: client error, do not retry
+        return res;
+      }
+      // 5xx: server error — fall through to retry
+      lastError = new Error(`BAFE responded with ${res.status}`);
+    } catch (err) {
+      // Network error
+      lastError = err;
+    }
+    if (attempt < maxRetries) {
+      const delayMs = baseDelayMs * Math.pow(2, attempt); // 2s, 4s, 8s
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+  throw lastError;
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
@@ -138,6 +163,24 @@ app.use((req, res, next) => {
   }
 
   next();
+});
+
+// ── Global Body Parsing Middleware ───────────────────────────────────
+// Parse JSON/urlencoded bodies for all /api/* routes.
+// Exception: /api/webhook/stripe uses express.raw() for signature verification.
+app.use('/api/', (req, res, next) => {
+  // Skip Stripe webhook – it needs raw body
+  if (req.path.startsWith('/webhook/stripe')) {
+    return next();
+  }
+  express.json()(req, res, next);
+});
+
+app.use('/api/', (req, res, next) => {
+  if (req.path.startsWith('/webhook/stripe')) {
+    return next();
+  }
+  express.urlencoded({ extended: true })(req, res, next);
 });
 
 // ── Rate Limiting ────────────────────────────────────────────────────
@@ -403,7 +446,7 @@ async function requireUserAuth(req, res, next) {
 // ── /calculate/:endpoint  (bazi, western, fusion, wuxing, tst) ──────
 const CALC_ENDPOINTS = ["bazi", "western", "fusion", "wuxing", "tst"];
 
-app.post("/api/calculate/:endpoint", requireUserAuth, express.json(), (req, res) => {
+app.post("/api/calculate/:endpoint", requireUserAuth, (req, res) => {
   const { endpoint } = req.params;
   if (!CALC_ENDPOINTS.includes(endpoint)) {
     return res.status(400).json({ error: `Unknown endpoint: ${endpoint}` });
@@ -416,7 +459,7 @@ app.post("/api/calculate/:endpoint", requireUserAuth, express.json(), (req, res)
 });
 
 // ── /chart ──────────────────────────────────────────────────────────
-app.post("/api/chart", requireUserAuth, express.json(), (req, res) => {
+app.post("/api/chart", requireUserAuth, (req, res) => {
   proxyToBafeWithFallback(bafeFallbackUrls("/chart"), req, res);
 });
 
@@ -1092,24 +1135,50 @@ setInterval(() => {
 }, 60 * 60 * 1000);
 
 // ── Experience API proxy ──────────────────────────────────────────
-app.post('/api/experience/bootstrap', requireUserAuth, express.json(), async (req, res) => {
+/**
+ * Bootstrap endpoint — 7-step flow:
+ *
+ * 1. Validate auth: requireUserAuth middleware checks Supabase JWT, attaches req.userId.
+ * 2. Parse birth data: req.body must contain { date, time, lat, lon, tz }.
+ * 3. Fetch chart from BAFE: POST to /chart with 15s AbortSignal timeout.
+ *    Uses fetchWithRetry (max 3 attempts, exponential backoff: 2s → 4s → 8s).
+ *    4xx from BAFE is NOT retried (client error). Network errors and 5xx are retried.
+ *    If all retries fail: returns HTTP 502 to client.
+ * 4. Compute Master Signal: runs gcbBuilder + masterSignalBuilder on the BAFE chart.
+ *    Projects the result to 12 soulprint_sectors (Float array, values 0–1).
+ * 5. Persist soulprint: awaits Supabase astro_profiles.update({ soulprint_sectors }).
+ *    On success: sets soulprint_saved = true in response payload.
+ *    On failure: console.warn, sets soulprint_saved = false — still returns HTTP 200.
+ *    Recovery: transit-state endpoint derives soulprint from Wu-Xing data when DB row is absent.
+ * 6. Build response payload: { soulprint_sectors, soulprint_saved, profile_summary,
+ *    signature_blueprint, narratives }.
+ * 7. Return HTTP 200 JSON. Client (App.tsx) detects soulprint_saved=false or
+ *    seed.startsWith('fallback:') and shows a non-blocking "Soulprint wird berechnet..." hint.
+ */
+app.post('/api/experience/bootstrap', requireUserAuth, async (req, res) => {
   try {
     const { birth } = req.body;
     if (!birth) return res.status(400).json({ error: 'Missing birth data' });
 
     // 1. Fetch Natal Chart from BAFE
-    const bafeRes = await fetch(`${BAFE_BASE_URL}/chart`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        birthDate: birth.date,
-        birthTime: birth.time,
-        lat: birth.lat,
-        lng: birth.lon,
-        timeZone: birth.tz
-      }),
-      signal: AbortSignal.timeout(15000)
-    });
+    const bafeRes = await fetchWithRetry(
+      `${BAFE_BASE_URL}/chart`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          birthDate: birth.date,
+          birthTime: birth.time,
+          lat: birth.lat,
+          lng: birth.lon,
+          timeZone: birth.tz
+        }),
+        // Reduced per-attempt timeout to keep total worst-case under typical client/proxy limits.
+        signal: AbortSignal.timeout(7000),
+      },
+      3,    // maxRetries
+      1000  // baseDelayMs (reduced to shorten overall backoff duration)
+    );
 
     if (!bafeRes.ok) {
         throw new Error(`BAFE responded with ${bafeRes.status}`);
@@ -1150,22 +1219,34 @@ app.post('/api/experience/bootstrap', requireUserAuth, express.json(), async (re
     };
 
     // 5. Save to Supabase
+    let soulprint_saved = false;
     if (supabaseServer) {
-        const { error: updateError } = await supabaseServer.from("astro_profiles").update({ 
-            soulprint_sectors: soulprintSectors 
-        }).eq("user_id", req.userId);
-        
-        if (updateError) console.warn("[bootstrap] failed to save soulprint_sectors:", updateError.message);
+      try {
+        const { data, error } = await supabaseServer
+          .from('astro_profiles')
+          .update({ soulprint_sectors: soulprintSectors })
+          .eq('user_id', req.userId)
+          .select('user_id');
+        if (error) {
+          console.warn('[bootstrap] soulprint save failed', error.message);
+        } else if (Array.isArray(data) && data.length > 0) {
+          soulprint_saved = true;
+        } else {
+          console.warn('[bootstrap] soulprint save affected 0 rows for user_id', req.userId);
+        }
+      } catch (err) {
+        console.warn('[bootstrap] soulprint save threw', err);
+      }
     }
 
-    res.status(200).json(responsePayload);
+    res.status(200).json({ ...responsePayload, soulprint_saved });
   } catch (err) {
     console.error('[experience/bootstrap] Error:', err.message);
     res.status(502).json({ error: 'experience_unavailable' });
   }
 });
 
-app.post('/api/experience/signature-delta', requireUserAuth, express.json(), async (req, res) => {
+app.post('/api/experience/signature-delta', requireUserAuth, async (req, res) => {
   try {
     const { quiz_answer, signature_blueprint } = req.body;
     if (!quiz_answer) return res.status(400).json({ error: "Missing quiz_answer" });
@@ -1320,7 +1401,7 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
     const bafeData = bafeRes.ok ? await bafeRes.json() : {};
 
     const prompt = `
-You are Bazodiac's fusion astrologer.
+You are Bazodiac's fusion astrologer. You write in "Poetic Realism" — worldly images, not astro-lectures.
 Write a daily horoscope for today (${targetDate}) based on the user's birth chart:
 ${JSON.stringify(bafeData, null, 2)}
 
@@ -1343,7 +1424,7 @@ Respond with STRICT JSON matching this EXACT structure (No markdown code blocks,
   },
   "fusion": {
     "summary": "1-2 sentences synthesizing both systems for today.",
-    "synthesis": "A deeper 2-3 sentence paragraph explaining the fusion.",
+    "synthesis": "THE MAIN TEXT — see DAY-MODE VOICE below.",
     "action": "One actionable advice",
     "pushworthy": true,
     "push_text": "Short push notification string",
@@ -1359,6 +1440,26 @@ RULES:
 - DO NOT wrap the response in \`\`\`json ... \`\`\`. Start directly with {.
 - harmony_index: number between 0.0 and 1.0 — cosine similarity between Western and BaZi Wu-Xing vectors. 0.45 = random baseline. >= 0.50 = convergence day.
 - day_mode: if harmony_index >= 0.50 set "trace" (poles converge, something happens today), else "pulse" (symmetric, calm day).
+
+DAY-MODE VOICE — the "synthesis" field MUST follow the voice rules for the computed day_mode:
+
+PULSE (harmony_index < 0.50):
+- Tone: atmospheric, inviting, sensory, worldly imagery.
+- Examples: "Erde ist Struktur und die hält dich heute. Nicht zu fest, so wie du es brauchst."
+  "Die Gedanken kreisen, aber nicht hektisch. Eher wie ein Lied, das sich langsam entfaltet."
+- Resonance described through everyday scenes, not astrological facts.
+- Max 2–3 sentences. No explanation of why.
+- The reader should feel held, not lectured. Rhythm over reason.
+
+TRACE (harmony_index >= 0.50):
+- Tone: direct, charged, concrete — something happens today.
+- Examples: "Dein detektivischer Skorpion bekommt heute was zu tun."
+  "Holz trifft auf Feuer. Was du still aufgebaut hast, will raus — und heute ist der Tag."
+- Name the quality, not the cause. No esoteric vocabulary.
+- If harmony_index > 0.65: one extra sentence — urgent, clear call to act.
+- Max 2–3 sentences.
+
+NEVER use in synthesis: "weil", "da heute", planet names (Mars, Venus etc.), "die kosmischen Energien", "die Sterne sagen".
 `;
 
     const model = geminiClient.models;
@@ -1429,7 +1530,7 @@ RULES:
 // ── /api/contribute ──────────────────────────────────────────────────
 // Persists quiz sector weights to contribution_events table.
 // Authenticated via Supabase JWT. Upserts on (user_id, module_id).
-app.post("/api/contribute", express.json(), async (req, res) => {
+app.post("/api/contribute", async (req, res) => {
   if (!supabaseServer) {
     return res.status(503).json({ error: "Supabase not configured" });
   }
@@ -2100,7 +2201,7 @@ app.get("/api/space-weather/timeline", async (_req, res) => {
 // ── POST /api/contribution/space-weather ────────────────────────────
 // Accepts a space-weather event and converts it to 12-sector contribution
 // weights, then upserts into contribution_events for the authenticated user.
-app.post("/api/contribution/space-weather", express.json(), async (req, res) => {
+app.post("/api/contribution/space-weather", async (req, res) => {
   if (!supabaseServer) {
     return res.status(503).json({ error: "Supabase not configured" });
   }
@@ -2410,7 +2511,7 @@ app.get("/api/mobile/bootstrap", (_req, res) => {
 });
 
 // ── /api/webhook/chart ──────────────────────────────────────────────
-app.post("/api/webhook/chart", express.json(), (req, res) => {
+app.post("/api/webhook/chart", (req, res) => {
   proxyToBafeWithFallback(
     bafeFallbackUrls("/api/webhooks/chart"),
     req,
@@ -2481,6 +2582,14 @@ const supabaseServer =
         auth: { autoRefreshToken: false, persistSession: false },
       })
     : null;
+
+// ─── Stripe ENV validation ─────────────────────────────────
+const STRIPE_VARS = ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_PRICE_ID'];
+const missingStripe = STRIPE_VARS.filter(v => !process.env[v]);
+if (missingStripe.length > 0) {
+  console.warn('[STRIPE] Missing ENV vars:', missingStripe.join(', '));
+  console.warn('[STRIPE] Payment endpoints will return 503 until configured.');
+}
 
 // ── Stripe ───────────────────────────────────────────────────────────
 const stripe = process.env.STRIPE_SECRET_KEY
@@ -2642,7 +2751,7 @@ app.get("/api/profile/:userId", async (req, res) => {
 });
 
 // ── POST /api/agent/conversation — Save Levi conversation summary ───
-app.post("/api/agent/conversation", express.json(), async (req, res) => {
+app.post("/api/agent/conversation", async (req, res) => {
   // Verify bearer token
   const authHeader = req.headers.authorization || "";
   const token = authHeader.replace("Bearer ", "").trim();
@@ -2690,15 +2799,21 @@ async function verifySupabaseUser(req) {
 // ── Stripe: Create Checkout Session ──────────────────────────────────
 // Reuses existing Stripe customer if one exists in profiles.stripe_customer_id,
 // otherwise creates a new customer and saves the ID immediately.
-app.post("/api/checkout", express.json(), async (req, res) => {
+app.post("/api/checkout", async (req, res) => {
   if (!supabaseServer) return res.status(500).json({ error: "Database not configured" });
 
   // Verify the caller is the authenticated user
   const authedUser = await verifySupabaseUser(req);
   if (!authedUser) return res.status(401).json({ error: "Unauthorized" });
+  if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_PRICE_ID) {
+    console.error('[STRIPE] Checkout called without configured Stripe variables');
+    return res.status(503).json({
+      error: 'Payment system is being configured. Please try again later.',
+      code: 'STRIPE_NOT_CONFIGURED'
+    });
+  }
   if (!stripe) return res.status(503).json({ error: "Payment not configured" });
   const stripePriceId = process.env.STRIPE_PRICE_ID;
-  if (!stripePriceId) return res.status(503).json({ error: "Stripe price not configured" });
 
   const telemetry = extractClientTelemetry(req);
   const userId = authedUser.id;
@@ -2723,9 +2838,13 @@ app.post("/api/checkout", express.json(), async (req, res) => {
     // Look up existing Stripe customer ID from DB
     const { data: profile } = await supabaseServer
       .from("profiles")
-      .select("stripe_customer_id")
+      .select("stripe_customer_id, tier")
       .eq("id", userId)
       .single();
+
+    if (profile?.tier === "premium") {
+      return res.status(400).json({ error: "Du hast bereits ein Premium-Abonnement. Bitte verwalte es im Kundenportal." });
+    }
 
     let customerId = profile?.stripe_customer_id;
 
@@ -2780,7 +2899,7 @@ app.post("/api/checkout", express.json(), async (req, res) => {
 });
 
 // ── Stripe: Customer Portal (manage billing) ──────────────────────────
-app.post("/api/customer-portal", express.json(), async (req, res) => {
+app.post("/api/customer-portal", async (req, res) => {
   if (!supabaseServer) return res.status(500).json({ error: "Database not configured" });
 
   const authedUser = await verifySupabaseUser(req);
@@ -2846,8 +2965,11 @@ app.post("/api/customer-portal", express.json(), async (req, res) => {
 // ── Stripe: Webhook (raw body required for signature verification) ───
 app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async (req, res) => {
   if (!stripe) return res.status(503).end();
+  if (!process.env.STRIPE_WEBHOOK_SECRET) {
+    console.error('[STRIPE] Webhook received but STRIPE_WEBHOOK_SECRET is not set!');
+    return res.status(503).json({ error: 'Webhook not configured' });
+  }
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  if (!webhookSecret) return res.status(503).json({ error: "Webhook not configured" });
 
   const sig = req.headers["stripe-signature"];
   if (typeof sig !== "string" || !sig) {
@@ -2984,7 +3106,7 @@ app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async
 });
 
 // ── Share URL ────────────────────────────────────────────────────────
-app.post("/api/share", express.json(), async (req, res) => {
+app.post("/api/share", async (req, res) => {
   const authedUser = await verifySupabaseUser(req);
   if (!authedUser) return res.status(401).json({ error: "Unauthorized" });
 
@@ -3029,7 +3151,12 @@ app.get("/share/:hash", async (_req, res) => {
 });
 
 // ── AI Interpretation proxy (Gemini key stays server-side) ───────────
-app.post("/api/interpret", express.json({ limit: "50kb" }), async (req, res) => {
+app.post("/api/interpret", async (req, res) => {
+  // Body already parsed by global middleware, but we need to enforce 50kb limit
+  const rawBody = JSON.stringify(req.body);
+  if (rawBody.length > 50000) {
+    return res.status(413).json({ error: "Payload too large (max 50kb)" });
+  }
   const { data, lang = "en" } = req.body || {};
   if (!data || typeof data !== "object") {
     return res.status(400).json({ error: "data is required" });
@@ -3117,7 +3244,7 @@ app.get("*", (_req, res) => {
 });
 
 // ── POST /api/analyze/conversation — Dialogue analysis with Gemini ──────
-app.post("/api/analyze/conversation", express.json(), async (req, res) => {
+app.post("/api/analyze/conversation", async (req, res) => {
   if (!geminiClient) {
     return res.status(503).json({ error: "Gemini API not configured" });
   }

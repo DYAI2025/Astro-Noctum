@@ -2,6 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Project Workflow
+
+- Always verify open task status against `git log` before reporting — `3-code/tasks.md` frequently lags behind actual commits by several sessions.
+- Single-word responses ("proceed", "ship", "check again", "yes", "update") are complete instructions — act immediately without asking for clarification.
+
 ## What This Is
 
 Bazodiac (Astro-Noctum) — a fusion astrology web + mobile app combining Western astrology, Chinese BaZi, and Wu-Xing (Five Elements). Users enter birth data, get chart calculations from the external BAFE API, AI-generated interpretations via Gemini, and can talk to "Levi Bazi" (an ElevenLabs voice agent). The UI is German-language, dark luxury aesthetic (obsidian/gold palette).

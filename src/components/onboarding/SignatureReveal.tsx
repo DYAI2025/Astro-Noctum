@@ -21,9 +21,10 @@ function canRunV2(): boolean {
 interface Props {
   bootstrapData: BootstrapResponse;
   onComplete: (deltaData: SignatureDeltaResponse | null) => void;
+  bootstrapFailed?: boolean;
 }
 
-export function SignatureReveal({ bootstrapData, onComplete }: Props) {
+export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: Props) {
   const { lang } = useLanguage();
   const [showButton, setShowButton] = useState(false);
   const [revealProgress, setRevealProgress] = useState(0);
@@ -32,6 +33,8 @@ export function SignatureReveal({ bootstrapData, onComplete }: Props) {
   const sectors = bootstrapData.soulprint_sectors?.length === 12
     ? bootstrapData.soulprint_sectors
     : DEFAULT_SECTORS;
+
+  const isFallback = bootstrapData.meta?.engine_version === 'fallback';
 
   const natalWeights = useMemo(() => soulprintToNatalWeights(sectors), [sectors]);
 
@@ -51,18 +54,25 @@ export function SignatureReveal({ bootstrapData, onComplete }: Props) {
             <FusionRingCanvasV2
               natalWeights={revealProgress > 0 ? natalWeights : undefined}
               isMini
-              showUI={false}
               revealProgress={revealProgress}
               className="w-full h-full"
             />
           ) : (
             <FusionRingWebsiteCanvas
               soulProfile={revealProgress > 0 ? sectors : DEFAULT_SECTORS}
-              showEffectControls={false}
             />
           )}
         </Suspense>
       </div>
+
+      {/* Fallback hint — non-blocking, shown only when bootstrap used synthetic data */}
+      {bootstrapFailed && (
+        <p className="text-xs text-gold/60 text-center mt-2">
+          {lang === 'de'
+            ? 'Dein Soulprint wird berechnet...'
+            : 'Your Soulprint is being calculated...'}
+        </p>
+      )}
 
       {/* Title */}
       <motion.p
@@ -71,8 +81,24 @@ export function SignatureReveal({ bootstrapData, onComplete }: Props) {
         animate={{ opacity: 1 }}
         transition={{ delay: 1, duration: 1.5 }}
       >
-        {lang === 'de' ? 'Deine Signatur entsteht...' : 'Your signature is forming...'}
+        {isFallback
+          ? (lang === 'de' ? 'Deine Signatur konnte nicht vollständig berechnet werden.' : 'Your signature could not be fully calculated.')
+          : (lang === 'de' ? 'Deine Signatur entsteht...' : 'Your signature is forming...')}
       </motion.p>
+
+      {/* Fallback subtitle — shown when bootstrap used synthetic data */}
+      {isFallback && (
+        <motion.p
+          className="mt-2 text-xs text-white/40 max-w-xs text-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5, duration: 1 }}
+        >
+          {lang === 'de'
+            ? 'Du siehst eine Vorschau. Deine persönliche Signatur wird beim nächsten Laden berechnet.'
+            : 'You see a preview. Your personal signature will be calculated on next load.'}
+        </motion.p>
+      )}
 
       {/* Continue button — appears after animation */}
       <AnimatePresence>
@@ -83,7 +109,9 @@ export function SignatureReveal({ bootstrapData, onComplete }: Props) {
             className="mt-10 px-8 py-3 border border-[#D4AF37]/30 text-[#D4AF37] text-xs uppercase tracking-[0.3em] rounded-lg hover:bg-[#D4AF37]/10 transition-colors"
             onClick={() => onComplete(null)}
           >
-            {lang === 'de' ? 'Weiter' : 'Continue'}
+            {isFallback
+              ? (lang === 'de' ? 'Trotzdem weiter' : 'Continue anyway')
+              : (lang === 'de' ? 'Weiter' : 'Continue')}
           </motion.button>
         )}
       </AnimatePresence>
