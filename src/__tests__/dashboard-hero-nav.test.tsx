@@ -14,9 +14,31 @@ vi.mock('motion/react', () => ({
 // Mutable lang ref so individual tests can override the locale
 const mockLang = { lang: 'de' };
 
+const translations: Record<string, Record<string, string>> = {
+  de: {
+    'dashboard.heroNav.westernLabel': 'Sonnenzeichen',
+    'dashboard.heroNav.westernAria': 'Zur Westlichen Astrologie springen',
+    'dashboard.heroNav.baziLabel': 'BaZi',
+    'dashboard.heroNav.baziAria': 'Zu BaZi springen',
+    'dashboard.heroNav.wuxingLabel': 'Wu Xing',
+    'dashboard.heroNav.wuxingAria': 'Zu Wu Xing springen',
+  },
+  en: {
+    'dashboard.heroNav.westernLabel': 'Sun Sign',
+    'dashboard.heroNav.westernAria': 'Jump to Western Astrology',
+    'dashboard.heroNav.baziLabel': 'BaZi',
+    'dashboard.heroNav.baziAria': 'Jump to BaZi',
+    'dashboard.heroNav.wuxingLabel': 'Wu Xing',
+    'dashboard.heroNav.wuxingAria': 'Jump to Wu Xing',
+  },
+};
+
 // Mock useLanguage
 vi.mock('../contexts/LanguageContext', () => ({
-  useLanguage: () => mockLang,
+  useLanguage: () => ({
+    ...mockLang,
+    t: (key: string) => translations[mockLang.lang]?.[key] || key,
+  }),
 }));
 
 describe('DashboardHeroNav', () => {

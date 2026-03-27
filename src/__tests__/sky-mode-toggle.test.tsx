@@ -10,7 +10,16 @@ vi.mock('motion/react', () => ({
 }));
 
 vi.mock('../contexts/LanguageContext', () => ({
-  useLanguage: () => ({ lang: 'de' }),
+  useLanguage: () => ({
+    lang: 'de',
+    t: (key: string) => {
+      const map: Record<string, string> = {
+        'dashboard.skyMode.birth': 'Geburtshimmel',
+        'dashboard.skyMode.current': 'Heutiger Himmel',
+      };
+      return map[key] || key;
+    },
+  }),
 }));
 
 const mockSetSkyMode = vi.fn();

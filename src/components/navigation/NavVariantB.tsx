@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-
-const NAV_ITEMS = [
-  { to: '/', label: 'Dashboard', sub: [] },
-  { to: '/signatur', label: 'Signatur', sub: ['Quiz-Cluster', 'Ringe anzeigen'] },
-  { to: '/wu-xing', label: 'Wu-Xing', sub: ['5 Elemente', 'Westliche Häuser'] },
-  { to: '/wissen', label: 'Wissen', sub: ['Alle Artikel', 'Glossar'] },
-] as const;
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export function NavVariantB() {
+  const { t } = useLanguage();
   const [open, setOpen] = useState<string | null>(null);
+
+  const NAV_ITEMS = [
+    { to: '/', label: t('nav.sidebar.home'), sub: [] as string[] },
+    { to: '/signatur', label: t('nav.sidebar.signatur'), sub: [t('nav.sidebar.subQuizCluster'), t('nav.sidebar.subShowRings')] },
+    { to: '/wu-xing', label: t('nav.sidebar.wuXing'), sub: [t('nav.sidebar.sub5Elements'), t('nav.sidebar.subWesternHouses')] },
+    { to: '/wissen', label: t('nav.sidebar.wissen'), sub: [t('nav.sidebar.subAllArticles'), t('nav.sidebar.subGlossary')] },
+  ];
 
   return (
     <nav className="fixed top-0 left-0 right-0 h-14 bg-[#00050A]/95 backdrop-blur-sm border-b border-[#D4AF37]/10 flex items-center px-8 gap-8 z-50">
