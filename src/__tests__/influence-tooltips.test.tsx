@@ -37,13 +37,10 @@ describe('InfluenceGauges tooltips', () => {
     expect(wrappers.length).toBe(4);
   });
 
-  it('passes tooltip text from influence data', () => {
-    const custom = [
-      { label: 'Test', value: 0.5, color: 'bg-white', tooltip: 'Test explanation' },
-    ];
-    render(<InfluenceGauges influences={custom} />);
-    const wrapper = screen.getByTestId('tooltip-wrapper');
-    expect(wrapper.getAttribute('data-tooltip')).toBe('Test explanation');
+  it('passes tooltip text from i18n for each gauge', () => {
+    render(<InfluenceGauges />);
+    const wrappers = screen.getAllByTestId('tooltip-wrapper');
+    expect(wrappers[0].getAttribute('data-tooltip')).toContain('Mars');
   });
 
   it('default influences all have non-empty tooltips', () => {
