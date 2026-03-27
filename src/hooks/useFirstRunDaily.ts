@@ -88,8 +88,8 @@ export function useFirstRunDaily(
         if (cancelled) return;
         // Daily recurrence: show modal once per calendar day.
         // daily_modal_seen_date stores the last date the user dismissed the modal.
-        const today = todayKey();
-        if (profile?.daily_modal_seen_date === today) return;
+        const todayDate = todayKey();
+        if (profile?.daily_modal_seen_date === todayDate) return;
 
         // 2. Check localStorage cache
         const cached = getCachedDaily();
@@ -105,7 +105,7 @@ export function useFirstRunDaily(
           birthData,
           soulprintSectors,
           quizSectors,
-          today,
+          todayDate,
         );
 
         if (cancelled) return;
