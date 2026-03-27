@@ -25,4 +25,4 @@ ALTER TABLE agent_conversations
   ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT now();
 
 CREATE INDEX IF NOT EXISTS idx_agent_conversations_user_agent
-  ON agent_conversations (user_id, agent_type);
+  ON agent_conversations (user_id, agent_type, created_at DESC);
