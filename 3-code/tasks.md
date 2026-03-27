@@ -69,6 +69,126 @@
 | DAY-06 | DayModeModal wired into Dashboard | frontend | Done | commit 8096396 |
 | DAY-07 | Extract DayHarmonicState to lib/fusion-ring/day-harmonic.ts | frontend | Done | commit 78f18c4 |
 
+## Phase: Current Sprint — S-SIG (Signatur Definition & Build)
+
+**Sprint Goal:** Signatur V3 (Bipolar Trail Engine) production-ready auf Web + iOS. Cousto-Audio, Dissonance-Wiring, Mobile Native 3D, Performance-Targets.
+
+### Execution Plan
+
+#### Phase 1: Signatur V3 Web Production
+
+**Capabilities delivered:**
+- V3 bipolar trail engine replaces V2 as default Signatur renderer
+- Dissonance model drives visible pole behavior
+- Day harmonic and space weather modulate membrane layer
+- V2 remains as feature-flag fallback
+
+**Tasks:**
+1. TASK-v3-engine-production
+2. TASK-v3-dissonance-wiring
+3. TASK-v3-day-harmonic
+4. TASK-v3-space-weather
+5. TASK-v3-data-bridge
+6. TASK-v3-feature-flag
+7. TASK-v3-graceful-fallback
+8. TASK-v3-unit-tests
+9. TASK-phase-1-manual-testing
+
+#### Phase 2: Cousto Audio Synthesis
+
+**Capabilities delivered:**
+- Signatur generates ambient sound from Cousto frequencies
+- Pole weight maps to oscillator amplitude
+- User controls for mute/volume
+
+**Tasks:**
+1. TASK-audio-synthesis-module
+2. TASK-audio-weight-mapping
+3. TASK-audio-ui-controls
+4. TASK-audio-lifecycle
+5. TASK-audio-ios-safari
+6. TASK-phase-2-manual-testing
+
+#### Phase 3: Mobile Native 3D Signatur
+
+**Capabilities delivered:**
+- Full 3D Signatur on iOS via expo-gl
+- Same mathematical model as web, reduced particles
+- Touch gesture controls
+
+**Tasks:**
+1. TASK-mobile-v3-engine
+2. TASK-mobile-mount-signatur
+3. TASK-mobile-gesture-handler
+4. TASK-mobile-data-pipeline
+5. TASK-mobile-audio
+6. TASK-phase-3-manual-testing
+
+#### Phase 4: Performance & Cross-Platform Polish
+
+**Capabilities delivered:**
+- All REQ-PERF targets met across platforms
+- Optimized trail rendering
+
+**Tasks:**
+1. TASK-perf-desktop-benchmark
+2. TASK-perf-mobile-web-benchmark
+3. TASK-perf-ios-native-benchmark
+4. TASK-perf-trail-optimization
+5. TASK-perf-first-frame
+6. TASK-perf-transit-api
+7. TASK-phase-4-manual-testing
+
+### Phase 1 Tasks — Signatur V3 Web Production
+
+| ID | Task | Component | Req | Status | Dependencies | Updated | Notes |
+|----|------|-----------|-----|--------|--------------|---------|-------|
+| TASK-v3-engine-production | Finalize V3 bipolar trail engine: 12 poles, Cousto frequencies, additive trail rendering, center void | frontend | [REQ-F-signatur-rendering-engine](../1-objectives/requirements/REQ-F-signatur-rendering-engine.md) | Done | - | 2026-03-27 | External dissonance + solar modulation interfaces, delta-time, visibility API |
+| TASK-v3-dissonance-wiring | Wire three-layer dissonance into V3: d_natal→movement mode, d_accumulated→trail density, d_elemental→Sheng/Ke texture | frontend | [REQ-F-signatur-rendering-engine](../1-objectives/requirements/REQ-F-signatur-rendering-engine.md) | Done | TASK-v3-engine-production | 2026-03-27 | External DissonanceResult → V3DissonanceState, Dashboard wired |
+| TASK-v3-day-harmonic | Wire DayHarmonicState into V3 pole configuration (day-mode visual accent) | frontend | [REQ-F-signatur-data-pipeline](../1-objectives/requirements/REQ-F-signatur-data-pipeline.md) | Done | TASK-v3-engine-production | 2026-03-27 | Already wired in Day-Pulse sprint (DAY-01–07) |
+| TASK-v3-space-weather | Wire space weather modulation into V3 membrane layer (solar pressure → trail intensity 1.0–1.5) | frontend | [REQ-F-signatur-data-pipeline](../1-objectives/requirements/REQ-F-signatur-data-pipeline.md) | Done | TASK-v3-engine-production | 2026-03-27 | SolarModulation interface + Dashboard wiring done in dissonance-wiring |
+| TASK-v3-data-bridge | Verify signatur-bridge: soulprint→natalWeights(7), quizSectors→quizWeights(6), transit polling — all feeding V3 | frontend | [REQ-F-signatur-data-pipeline](../1-objectives/requirements/REQ-F-signatur-data-pipeline.md) | Done | TASK-v3-engine-production | 2026-03-27 | Bridge verified: soulprintToDimensionWeights→6D, soulprintToNatalWeights→7D, quizSectorsToQuizWeights→6D |
+| TASK-v3-feature-flag | Add signatur_engine_v3 feature flag: V3 default, V2 fallback via localStorage | frontend | [REQ-F-signatur-rendering-engine](../1-objectives/requirements/REQ-F-signatur-rendering-engine.md) | Done | TASK-v3-engine-production | 2026-03-27 | Flag added, Dashboard V3 gated, critical flag warning |
+| TASK-v3-graceful-fallback | Implement graceful data source fallback: missing transit/weather/quiz → neutral defaults, no visual glitch | frontend | [REQ-F-signatur-data-pipeline](../1-objectives/requirements/REQ-F-signatur-data-pipeline.md) | Done | TASK-v3-data-bridge | 2026-03-27 | Engine defaults to 0.5 per dimension, null solar/dissonance/dayHarmonic all guarded |
+| TASK-v3-unit-tests | Vitest: pole determinism, dissonance→visual correlation, data bridge transforms | frontend | [REQ-F-signatur-rendering-engine](../1-objectives/requirements/REQ-F-signatur-rendering-engine.md) | Done | TASK-v3-dissonance-wiring | 2026-03-27 | 15 tests: dimensions, determinism, dissonance, day-harmonic, trails |
+| TASK-phase-1-manual-testing | Create runbook: Signatur V3 web manual test scenarios | frontend | - | Todo | TASK-v3-unit-tests | 2026-03-27 | Deferred to end of sprint |
+
+### Phase 2 Tasks — Cousto Audio Synthesis
+
+| ID | Task | Component | Req | Status | Dependencies | Updated | Notes |
+|----|------|-----------|-----|--------|--------------|---------|-------|
+| TASK-audio-synthesis-module | Create CoustoAudioEngine: Web Audio API, 6 frequencies (Mars 144.72, Moon 210.42, Sun 126.22, Mercury 141.27, Jupiter 183.58, Saturn 147.85 Hz) | frontend | [REQ-F-signatur-rendering-engine](../1-objectives/requirements/REQ-F-signatur-rendering-engine.md) | Todo | TASK-v3-engine-production | 2026-03-27 | |
+| TASK-audio-weight-mapping | Map pole weights to oscillator gain with smooth interpolation | frontend | [REQ-F-signatur-rendering-engine](../1-objectives/requirements/REQ-F-signatur-rendering-engine.md) | Todo | TASK-audio-synthesis-module | 2026-03-27 | |
+| TASK-audio-ui-controls | Add mute toggle + volume slider to Signatur page (localStorage persisted) | frontend | [REQ-F-signatur-rendering-engine](../1-objectives/requirements/REQ-F-signatur-rendering-engine.md) | Todo | TASK-audio-synthesis-module | 2026-03-27 | |
+| TASK-audio-lifecycle | Wire audio lifecycle: start on mount, suspend on hidden, resume on visible, stop on unmount | frontend | [REQ-F-signatur-rendering-engine](../1-objectives/requirements/REQ-F-signatur-rendering-engine.md) | Todo | TASK-audio-synthesis-module | 2026-03-27 | |
+| TASK-audio-ios-safari | Test/fix Web Audio API on mobile Safari (user gesture for AudioContext.resume()) | frontend | [REQ-PERF-signatur-performance](../1-objectives/requirements/REQ-PERF-signatur-performance.md) | Todo | TASK-audio-lifecycle | 2026-03-27 | |
+| TASK-phase-2-manual-testing | Update runbook: audio test scenarios (mute, volume, tab switch, Safari gesture) | frontend | - | Todo | TASK-audio-ios-safari | 2026-03-27 | |
+
+### Phase 3 Tasks — Mobile Native 3D Signatur
+
+| ID | Task | Component | Req | Status | Dependencies | Updated | Notes |
+|----|------|-----------|-----|--------|--------------|---------|-------|
+| TASK-mobile-v3-engine | Adapt V3 bipolar trail engine for expo-gl: Canvas 2D → GL context, reduced trail buffer | mobile | [REQ-F-signatur-mobile-native](../1-objectives/requirements/REQ-F-signatur-mobile-native.md) | Todo | TASK-v3-engine-production | 2026-03-27 | SignaturCanvas.tsx exists as starting point |
+| TASK-mobile-mount-signatur | Mount V3 SignaturCanvas on FuRingScreen, replacing 2D bootstrap view | mobile | [REQ-F-signatur-mobile-native](../1-objectives/requirements/REQ-F-signatur-mobile-native.md) | Todo | TASK-mobile-v3-engine | 2026-03-27 | |
+| TASK-mobile-gesture-handler | Implement gesture controls: pan (1 finger), pinch-zoom (2 fingers), orbit (drag) | mobile | [REQ-F-signatur-mobile-native](../1-objectives/requirements/REQ-F-signatur-mobile-native.md) | Todo | TASK-mobile-mount-signatur | 2026-03-27 | react-native-gesture-handler |
+| TASK-mobile-data-pipeline | Wire useBootstrapSignatur → natal weights + quiz weights → V3 input vector | mobile | [REQ-F-signatur-data-pipeline](../1-objectives/requirements/REQ-F-signatur-data-pipeline.md) | Todo | TASK-mobile-mount-signatur | 2026-03-27 | |
+| TASK-mobile-audio | Implement Cousto audio on React Native via expo-av (6 oscillators, weight-mapped gain) | mobile | [REQ-F-signatur-mobile-native](../1-objectives/requirements/REQ-F-signatur-mobile-native.md) | Todo | TASK-audio-synthesis-module, TASK-mobile-mount-signatur | 2026-03-27 | |
+| TASK-phase-3-manual-testing | Update runbook: iOS Signatur test scenarios (gestures, audio, data, older device perf) | mobile, frontend | - | Todo | TASK-mobile-audio | 2026-03-27 | |
+
+### Phase 4 Tasks — Performance & Cross-Platform Polish
+
+| ID | Task | Component | Req | Status | Dependencies | Updated | Notes |
+|----|------|-----------|-----|--------|--------------|---------|-------|
+| TASK-perf-desktop-benchmark | Benchmark V3 on desktop Chrome/Safari: target ≥60fps sustained | frontend | [REQ-PERF-signatur-performance](../1-objectives/requirements/REQ-PERF-signatur-performance.md) | Todo | TASK-v3-engine-production | 2026-03-27 | |
+| TASK-perf-mobile-web-benchmark | Benchmark V3 on mobile Safari/Chrome: target ≥30fps with reduced trails | frontend | [REQ-PERF-signatur-performance](../1-objectives/requirements/REQ-PERF-signatur-performance.md) | Todo | TASK-v3-engine-production | 2026-03-27 | |
+| TASK-perf-ios-native-benchmark | Benchmark iOS native (iPhone 12+): ≥30fps, <150MB GPU, no thermal throttle 60s | mobile | [REQ-PERF-signatur-performance](../1-objectives/requirements/REQ-PERF-signatur-performance.md) | Todo | TASK-mobile-v3-engine | 2026-03-27 | |
+| TASK-perf-trail-optimization | Optimize trail buffer size, fade rate, render batch based on benchmarks | frontend, mobile | [REQ-PERF-signatur-performance](../1-objectives/requirements/REQ-PERF-signatur-performance.md) | Todo | TASK-perf-desktop-benchmark, TASK-perf-ios-native-benchmark | 2026-03-27 | |
+| TASK-perf-first-frame | Validate <2s first visible frame from data availability on all platforms | frontend, mobile | [REQ-PERF-signatur-performance](../1-objectives/requirements/REQ-PERF-signatur-performance.md) | Todo | TASK-v3-engine-production, TASK-mobile-mount-signatur | 2026-03-27 | |
+| TASK-perf-transit-api | Validate /api/transit-state p95 <500ms under concurrent load | api-server | [REQ-PERF-signatur-performance](../1-objectives/requirements/REQ-PERF-signatur-performance.md) | Todo | - | 2026-03-27 | |
+| TASK-phase-4-manual-testing | Final runbook: all-platform Signatur test matrix | frontend, mobile, api-server | - | Todo | TASK-perf-trail-optimization | 2026-03-27 | |
+
+---
+
 ## Phase: Deferred (Previously Current Sprint — moved to next sprint)
 
 | ID | Task | Component | Req | Status | Notes |

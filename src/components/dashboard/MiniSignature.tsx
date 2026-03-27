@@ -1,5 +1,7 @@
 import { lazy, Suspense } from 'react';
 import type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
+import type { DissonanceResult } from '../../lib/fusion-ring/dissonance';
+import type { SolarModulation } from '../signatur-v3/bipolar-engine';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 const SignaturV3Canvas = lazy(() => import('../signatur-v3/SignaturV3Canvas'));
@@ -8,12 +10,14 @@ interface MiniSignatureProps {
   natalWeights?: Record<string, number>;
   quizWeights?: Record<string, number>;
   dayHarmonic?: DayHarmonicState | null;
+  externalDissonance?: DissonanceResult | null;
+  solarModulation?: SolarModulation;
   onExpand?: () => void;
 }
 
 const EMPTY_WEIGHTS: Record<string, number> = {};
 
-export default function MiniSignature({ natalWeights, quizWeights, dayHarmonic, onExpand }: MiniSignatureProps) {
+export default function MiniSignature({ natalWeights, quizWeights, dayHarmonic, externalDissonance, solarModulation, onExpand }: MiniSignatureProps) {
   const { t } = useLanguage();
   const hasData = natalWeights && Object.keys(natalWeights).length > 0;
 
@@ -36,6 +40,8 @@ export default function MiniSignature({ natalWeights, quizWeights, dayHarmonic, 
                 natalWeights={natalWeights ?? EMPTY_WEIGHTS}
                 quizWeights={quizWeights ?? EMPTY_WEIGHTS}
                 dayHarmonic={dayHarmonic ?? undefined}
+                externalDissonance={externalDissonance}
+                solarModulation={solarModulation}
                 width={240}
                 height={240}
               />

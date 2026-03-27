@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   ArrowLeft,
@@ -35,6 +35,8 @@ import InfluenceGauges from "./dashboard/InfluenceGauges";
 import { TourOverlay } from "./dashboard/TourOverlay";
 import { useDashboardTour } from "@/src/hooks/useDashboardTour";
 import { usePlanetarium } from "@/src/contexts/PlanetariumContext";
+import { useDissonance } from "@/src/hooks/useDissonance";
+import { useSpaceWeather } from "@/src/hooks/useSpaceWeather";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Static data
@@ -288,6 +290,7 @@ export function Dashboard({
 
   // ── Feature flags ──────────────────────────────────────────────────
   const dailyEnabled = isFeatureEnabled('daily_modal_v1');
+  const v3Enabled = isFeatureEnabled('signature_engine_v3');
 
   // ── Daily horoscope modal ───────────────────────────────────────────
   const { dailyData, dayHarmonic, showModal, handleClose: handleDailyClose } = useFirstRunDaily(
@@ -296,6 +299,26 @@ export function Dashboard({
     profileMeta.soulprintSectors,
     profileMeta.quizSectors,
   );
+
+  // ── Dissonance for V3 mini signature ───────────────────────────────
+  const natalPlanetWeights = useMemo(
+    () => profileMeta.soulprintSectors ? soulprintToNatalWeights(profileMeta.soulprintSectors) : null,
+    [profileMeta.soulprintSectors],
+  );
+  const { dissonance: miniDissonance } = useDissonance({
+    natalWeights: natalPlanetWeights,
+    currentWeights: natalPlanetWeights, // no quiz planet weights on dashboard; natal-only baseline
+    previousWeights: null,
+    wuxinBalance: apiData?.wuxing?.elements ?? undefined,
+  });
+
+  // ── Space weather for V3 mini signature ──────────────────────────
+  const spaceWeather = useSpaceWeather();
+  const miniSolar = useMemo(() => spaceWeather ? {
+    ringModulation: spaceWeather.ringModulation,
+    triggerEffect: spaceWeather.triggerEffect,
+    kpIndex: spaceWeather.kpIndex,
+  } : undefined, [spaceWeather.ringModulation, spaceWeather.triggerEffect, spaceWeather.kpIndex]);
 
   // ── Render ────────────────────────────────────────────────────────────
 
@@ -405,16 +428,18 @@ export function Dashboard({
       </SectionErrorBoundary>
 
       {/* ═══ SIGNATUR V3 — Bipolar Trail Mini Preview ═══════════════════ */}
-      <motion.div className="mb-12 sm:mb-16 max-w-xs mx-auto" {...fadeIn(0.35)}>
+      {v3Enabled && <motion.div className="mb-12 sm:mb-16 max-w-xs mx-auto" {...fadeIn(0.35)}>
         <SectionErrorBoundary name="MiniSignature">
           <MiniSignature
             natalWeights={profileMeta.soulprintSectors ? soulprintToDimensionWeights(profileMeta.soulprintSectors) : undefined}
             quizWeights={profileMeta.quizSectors.length === 12 ? soulprintToDimensionWeights(profileMeta.quizSectors) : undefined}
             dayHarmonic={dayHarmonic}
+            externalDissonance={miniDissonance}
+            solarModulation={miniSolar}
             onExpand={() => window.location.assign('/signatur')}
           />
         </SectionErrorBoundary>
-      </motion.div>
+      </motion.div>}
 
       {/* ── Tour sentinel: step 2 triggers when Levi/interpretation area scrolls into view ── */}
       <div ref={leviSentinelRef} className="h-px" aria-hidden="true" />
