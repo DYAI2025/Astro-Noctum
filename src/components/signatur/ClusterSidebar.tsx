@@ -69,7 +69,7 @@ function ClusterPanel({
             <h3 className="text-sm font-medium text-white/90">{cluster.name}</h3>
             <span className="text-[10px] text-white/60">
               {complete
-                ? t('cluster.completed')
+                ? (lang === 'de' ? 'Abgeschlossen' : 'Completed')
                 : `${done}/${total}`}
             </span>
           </div>
