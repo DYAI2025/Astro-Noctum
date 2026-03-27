@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Sparkles } from 'lucide-react';
+import { ArrowLeft, Sparkles, Volume2, VolumeX } from 'lucide-react';
 import { useLanguage } from '@/src/contexts/LanguageContext';
 import { useAppLayout } from '@/src/contexts/AppLayoutContext';
 import { FusionRing3D } from '@/src/components/fusion-ring-3d/FusionRing3D';
@@ -26,6 +26,7 @@ import {
 import { quizSectorsToQuizWeights, soulprintToNatalWeights } from '@/src/components/fusion-ring-website/signatur-bridge';
 import type { ContributionEvent } from '@/src/lib/lme/types';
 import { eventToSectorSignals } from '@/src/lib/fusion-ring/test-signal';
+import { useCoustoAudio } from '@/src/hooks/useCoustoAudio';
 
 export default function FuRingPage() {
   const { t, lang } = useLanguage();
@@ -70,6 +71,13 @@ export default function FuRingPage() {
     () => apiData?.wuxing?.elements ?? undefined,
     [apiData?.wuxing?.elements],
   );
+
+  // Cousto audio — dimension weights drive oscillator gains
+  const audioWeights = useMemo(
+    () => liveQuizWeights ?? (signalData?.baseSignals ? quizSectorsToQuizWeights(signalData.baseSignals) : undefined),
+    [liveQuizWeights, signalData?.baseSignals],
+  );
+  const { muted: audioMuted, toggleMute: toggleAudioMute, volume: audioVolume, setVolume: setAudioVolume } = useCoustoAudio(audioWeights);
 
   const { modulation: dissonanceModulation, dissonance } = useDissonance({
     natalWeights: natalPlanetWeights,
@@ -149,8 +157,32 @@ export default function FuRingPage() {
             {t('furing3d.back')}
           </Link>
 
-          <div className="rounded-full border border-white/10 bg-black/45 px-3 py-1 text-[10px] uppercase tracking-[0.25em] text-white/65">
-            {t('furing3d.badge')}
+          <div className="flex items-center gap-3">
+            {/* Cousto Audio controls */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleAudioMute}
+                className="rounded-full border border-white/10 bg-black/45 p-1.5 text-white/60 transition hover:border-[#D4AF37]/40 hover:text-[#D4AF37]"
+                aria-label={audioMuted ? 'Unmute' : 'Mute'}
+              >
+                {audioMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+              </button>
+              {!audioMuted && (
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={audioVolume}
+                  onChange={e => setAudioVolume(parseFloat(e.target.value))}
+                  className="h-1 w-16 cursor-pointer appearance-none rounded-full bg-white/10 accent-[#D4AF37] [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#D4AF37]"
+                  aria-label="Volume"
+                />
+              )}
+            </div>
+            <div className="rounded-full border border-white/10 bg-black/45 px-3 py-1 text-[10px] uppercase tracking-[0.25em] text-white/65">
+              {t('furing3d.badge')}
+            </div>
           </div>
         </header>
 

@@ -157,12 +157,12 @@
 
 | ID | Task | Component | Req | Status | Dependencies | Updated | Notes |
 |----|------|-----------|-----|--------|--------------|---------|-------|
-| TASK-audio-synthesis-module | Create CoustoAudioEngine: Web Audio API, 6 frequencies (Mars 144.72, Moon 210.42, Sun 126.22, Mercury 141.27, Jupiter 183.58, Saturn 147.85 Hz) | frontend | [REQ-F-signatur-rendering-engine](../1-objectives/requirements/REQ-F-signatur-rendering-engine.md) | Todo | TASK-v3-engine-production | 2026-03-27 | |
-| TASK-audio-weight-mapping | Map pole weights to oscillator gain with smooth interpolation | frontend | [REQ-F-signatur-rendering-engine](../1-objectives/requirements/REQ-F-signatur-rendering-engine.md) | Todo | TASK-audio-synthesis-module | 2026-03-27 | |
-| TASK-audio-ui-controls | Add mute toggle + volume slider to Signatur page (localStorage persisted) | frontend | [REQ-F-signatur-rendering-engine](../1-objectives/requirements/REQ-F-signatur-rendering-engine.md) | Todo | TASK-audio-synthesis-module | 2026-03-27 | |
-| TASK-audio-lifecycle | Wire audio lifecycle: start on mount, suspend on hidden, resume on visible, stop on unmount | frontend | [REQ-F-signatur-rendering-engine](../1-objectives/requirements/REQ-F-signatur-rendering-engine.md) | Todo | TASK-audio-synthesis-module | 2026-03-27 | |
-| TASK-audio-ios-safari | Test/fix Web Audio API on mobile Safari (user gesture for AudioContext.resume()) | frontend | [REQ-PERF-signatur-performance](../1-objectives/requirements/REQ-PERF-signatur-performance.md) | Todo | TASK-audio-lifecycle | 2026-03-27 | |
-| TASK-phase-2-manual-testing | Update runbook: audio test scenarios (mute, volume, tab switch, Safari gesture) | frontend | - | Todo | TASK-audio-ios-safari | 2026-03-27 | |
+| TASK-audio-synthesis-module | Create CoustoAudioEngine: Web Audio API, 6 frequencies (Mars 144.72, Moon 210.42, Sun 126.22, Mercury 141.27, Jupiter 183.58, Saturn 147.85 Hz) | frontend | [REQ-F-signatur-rendering-engine](../1-objectives/requirements/REQ-F-signatur-rendering-engine.md) | Done | TASK-v3-engine-production | 2026-03-27 | cousto-audio-engine.ts — 6 sine oscillators |
+| TASK-audio-weight-mapping | Map pole weights to oscillator gain with smooth interpolation | frontend | [REQ-F-signatur-rendering-engine](../1-objectives/requirements/REQ-F-signatur-rendering-engine.md) | Done | TASK-audio-synthesis-module | 2026-03-27 | linearRampToValueAtTime with 300ms ramp |
+| TASK-audio-ui-controls | Add mute toggle + volume slider to Signatur page (localStorage persisted) | frontend | [REQ-F-signatur-rendering-engine](../1-objectives/requirements/REQ-F-signatur-rendering-engine.md) | Done | TASK-audio-synthesis-module | 2026-03-27 | FuRingPage header, VolumeX/Volume2 icons |
+| TASK-audio-lifecycle | Wire audio lifecycle: start on mount, suspend on hidden, resume on visible, stop on unmount | frontend | [REQ-F-signatur-rendering-engine](../1-objectives/requirements/REQ-F-signatur-rendering-engine.md) | Done | TASK-audio-synthesis-module | 2026-03-27 | useCoustoAudio hook, visibility API |
+| TASK-audio-ios-safari | Test/fix Web Audio API on mobile Safari (user gesture for AudioContext.resume()) | frontend | [REQ-PERF-signatur-performance](../1-objectives/requirements/REQ-PERF-signatur-performance.md) | Done | TASK-audio-lifecycle | 2026-03-27 | Click/touchstart listener starts AudioContext |
+| TASK-phase-2-manual-testing | Update runbook: audio test scenarios (mute, volume, tab switch, Safari gesture) | frontend | - | Todo | TASK-audio-ios-safari | 2026-03-27 | Deferred to end of sprint |
 
 ### Phase 3 Tasks — Mobile Native 3D Signatur
 
