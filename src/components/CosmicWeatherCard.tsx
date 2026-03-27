@@ -93,7 +93,9 @@ export function CosmicWeatherCard({
     return (
       <div className="w-full max-w-md mx-auto rounded-2xl border border-red-200 bg-red-50/50 p-4">
         <p className="text-xs text-red-600/70">
-          {t('cosmicWeather.loadError')}
+          {lang === 'de'
+            ? 'Tageshoroskop konnte nicht geladen werden. Bitte versuche es erneut.'
+            : 'Daily horoscope could not be loaded. Please try again.'}
         </p>
       </div>
     );
