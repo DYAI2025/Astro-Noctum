@@ -108,8 +108,11 @@ export default function QuizOverlay({ quizId, onComplete, onClose }: QuizOverlay
 
   // Fallback for unknown quiz IDs
   if (quizId && !QuizComponent) {
-    const notFoundMsg = t('quiz.notFound');
-    const closeMsg = t('quiz.closeLabel');
+    const notFoundMsg =
+      lang === 'de'
+        ? 'Dieses Quiz konnte nicht geladen werden.'
+        : 'This quiz could not be loaded.';
+    const closeMsg = lang === 'de' ? 'Schließen' : 'Close';
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-obsidian/80 backdrop-blur-sm">
         <div className="bg-[#0D0F14] rounded-2xl p-8 max-w-sm text-center space-y-4">
