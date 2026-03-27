@@ -2632,8 +2632,8 @@ app.get("/api/profile/:userId", async (req, res) => {
 
   // Determine which agent is requesting the profile (levi or eve)
   const VALID_AGENT_TYPES = ['levi', 'eve'];
-  const agentParam = req.query.agent;
-  const agentType = agentParam === undefined ? 'levi' : agentParam;
+  const rawAgentType = req.query.agent_type ?? req.query.agent;
+  const agentType = rawAgentType === undefined ? 'levi' : String(rawAgentType);
   if (!VALID_AGENT_TYPES.includes(agentType)) {
     return res.status(400).json({ error: 'invalid_agent_type' });
   }
