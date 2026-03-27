@@ -247,6 +247,25 @@ const translationsEn: DeepStringRecord = {
       callBtn: "Call Levi",
       hangUpBtn: "Hang Up",
     },
+    agent: {
+      levi: {
+        ready: "Levi Bazi — Ready",
+        active: "Levi Bazi — In Conversation",
+        readyDesc: "Your calm mentor. Levi guides you through your chart with depth and composure.",
+        activeDesc: "Ambient music paused. Talk to Levi about your chart.",
+        callBtn: "Call Levi",
+        hangUpBtn: "Hang Up",
+      },
+      eve: {
+        ready: "Eve — Ready",
+        active: "Eve — In Conversation",
+        readyDesc: "Direct. Bold. To the point. Eve tells it like it is — no detours.",
+        activeDesc: "Ambient music paused. Eve is listening.",
+        callBtn: "Call Eve",
+        hangUpBtn: "Hang Up",
+      },
+      comingSoon: "Coming Soon",
+    },
     premium: {
       title: "Unlock Your Full Reading",
       teaser: "Discover the complete fusion of Western astrology, BaZi, and Wu-Xing — a reading no other app can offer.",
@@ -566,6 +585,25 @@ const translationsDe: DeepStringRecord = {
       activeDesc: "Ambient-Musik pausiert. Sprich mit Levi über dein Chart.",
       callBtn: "Call Levi",
       hangUpBtn: "Auflegen",
+    },
+    agent: {
+      levi: {
+        ready: "Levi Bazi Bereit",
+        active: "Levi Bazi — Im Gespräch",
+        readyDesc: "Dein ruhiger Mentor. Levi führt dich mit Tiefe und Gelassenheit durch dein Chart.",
+        activeDesc: "Ambient-Musik pausiert. Sprich mit Levi über dein Chart.",
+        callBtn: "Call Levi",
+        hangUpBtn: "Auflegen",
+      },
+      eve: {
+        ready: "Eve Bereit",
+        active: "Eve — Im Gespräch",
+        readyDesc: "Direkt. Frech. Auf den Punkt. Eve sagt dir, was Sache ist — ohne Umwege.",
+        activeDesc: "Ambient-Musik pausiert. Eve hört zu.",
+        callBtn: "Call Eve",
+        hangUpBtn: "Auflegen",
+      },
+      comingSoon: "Kommt bald",
     },
     premium: {
       title: "Dein vollständiges Reading freischalten",

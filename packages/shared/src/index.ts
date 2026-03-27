@@ -10,3 +10,4 @@ export * from "./quizzes/scoring";
 export { QUIZ_DEFINITIONS } from "./quizzes/definitions";
 export * from "./experience";
 export * from "./signatur";
+export * from "./agents/config";

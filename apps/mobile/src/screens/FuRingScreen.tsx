@@ -153,7 +153,7 @@ export function FuRingScreen() {
     );
   }
 
-  if (!soulprintSectors) {
+  if (!soulprintSectors || !sectors) {
     return (
       <View style={styles.center}>
         <Text style={styles.emoji}>{'\u2726'}</Text>
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
   seedText: {
     color: COLORS.text,
     fontSize: 14,
-    fontFamily: undefined, // monospace would be ideal but RN default is fine
+    fontFamily: undefined,
     letterSpacing: 0.5,
     opacity: 0.7,
   },
