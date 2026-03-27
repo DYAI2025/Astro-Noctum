@@ -261,7 +261,7 @@ export function DashboardAstroSection({
                 to="/wu-xing"
                 className="text-[9px] uppercase tracking-[0.2em] text-[#8B6914]/60 hover:text-[#8B6914] transition-colors flex items-center gap-1.5"
               >
-                <span>{t('dashboardAstro.detailedView')}</span>
+                <span>{lang === "de" ? "Detailansicht" : "Detailed view"}</span>
                 <ArrowUp className="w-3 h-3 rotate-45" />
               </Link>
             </div>
