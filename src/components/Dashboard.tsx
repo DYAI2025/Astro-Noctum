@@ -18,7 +18,10 @@ import type { TileTexts } from "../types/interpretation";
 import { DashboardAstroSection } from "./dashboard/DashboardAstroSection";
 import { DashboardInterpretationSection } from "./dashboard/DashboardInterpretationSection";
 import { SectionErrorBoundary } from "./dashboard/SectionErrorBoundary";
-import { DashboardLeviSection } from "./dashboard/DashboardLeviSection";
+// import { DashboardLeviSection } from "./dashboard/DashboardLeviSection";
+import { AgentProvider } from "../contexts/AgentContext";
+import { AgentSection } from "./dashboard/AgentSection";
+import { AGENTS } from "@/packages/shared/src/agents/config";
 import { CosmicWeatherCard } from "./CosmicWeatherCard";
 import { isFeatureEnabled } from "../lib/feature-flags";
 import { useDailyHoroscope } from "../hooks/useDailyHoroscope";
@@ -384,18 +387,26 @@ export function Dashboard({
       {/* ── Tour sentinel: step 2 triggers when Levi/interpretation area scrolls into view ── */}
       <div ref={leviSentinelRef} className="h-px" aria-hidden="true" />
 
-      {/* ═══ LEVI BAZI — Voice Agent Section ═══════════════════════════ */}
+      {/* ═══ VOICE AGENTS — Multi-Agent Section ═══════════════════════ */}
       <motion.div className="mb-12 sm:mb-16" {...fadeIn(0.4)}>
-        <SectionErrorBoundary name="Levi">
-          <DashboardLeviSection
-            isPremium={isPremium}
-            userId={userId}
-            onStopAudio={onStopAudio}
-            onResumeAudio={onResumeAudio}
-            sunSign={apiData?.western?.zodiac_sign || ''}
-            zodiacAnimal={apiData?.bazi?.zodiac_sign || ''}
-            dominantEl={apiData?.wuxing?.dominant_element || ''}
-          />
+        <SectionErrorBoundary name="Agents">
+          <AgentProvider>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+              {AGENTS.map(agent => (
+                <AgentSection
+                  key={agent.id}
+                  agent={agent}
+                  isPremium={isPremium}
+                  userId={userId}
+                  onStopAudio={onStopAudio}
+                  onResumeAudio={onResumeAudio}
+                  sunSign={apiData?.western?.zodiac_sign || ''}
+                  zodiacAnimal={apiData?.bazi?.zodiac_sign || ''}
+                  dominantEl={apiData?.wuxing?.dominant_element || ''}
+                />
+              ))}
+            </div>
+          </AgentProvider>
         </SectionErrorBoundary>
       </motion.div>
 
