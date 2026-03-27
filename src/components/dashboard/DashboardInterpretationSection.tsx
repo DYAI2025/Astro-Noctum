@@ -50,7 +50,7 @@ export function DashboardInterpretationSection({
           <div className="h-3 bg-[#8B6914]/8 rounded w-5/6" />
           <div className="h-3 bg-[#8B6914]/8 rounded w-2/3" />
           <p className="text-[11px] text-[#1E2A3A]/30 italic mt-4">
-            {t('interpretation.generating')}
+            {t('dashboard.interpretation.generating')}
           </p>
         </div>
       ) : (
