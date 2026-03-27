@@ -143,7 +143,7 @@ export default function FuRingPage() {
           <Link
             to="/"
             className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/40 px-3 py-1.5 text-xs uppercase tracking-[0.2em] text-white/70 transition hover:border-[#D4AF37]/60 hover:text-[#D4AF37]"
-            aria-label={t('fuRing.backLabel')}
+            aria-label={t('furing3d.back')}
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             {t('furing3d.back')}
