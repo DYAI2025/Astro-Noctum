@@ -320,9 +320,9 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 
 | ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
 |----|------|----------|--------|-----|--------------|---------|-------|
-| TASK-onboarding-route | Build OnboardingPage with BirthForm + FusionRingReveal + quiz phase as state machine | P1 | Todo | [REQ-F-cosmic-encounter-onboarding](../1-objectives/requirements/REQ-F-cosmic-encounter-onboarding.md) | TASK-fuffire-experience-api | 2026-03-28 | 7-phase state machine |
-| TASK-onboarding-mobile-fallback | Implement mobile fallback for onboarding (CSS+image when viewport < 768px) | P1 | Todo | [REQ-F-cosmic-encounter-onboarding](../1-objectives/requirements/REQ-F-cosmic-encounter-onboarding.md) | TASK-onboarding-route | 2026-03-28 | CosmicEncounterMobile component |
-| TASK-onboarding-flag-gate | Gate full Cosmic Encounter behind `cosmic_encounter_v1` flag; legacy BirthForm as fallback | P1 | Todo | [REQ-F-cosmic-encounter-onboarding](../1-objectives/requirements/REQ-F-cosmic-encounter-onboarding.md) | TASK-onboarding-route | 2026-03-28 | Flag currently hard-disabled |
+| TASK-onboarding-route | Build OnboardingPage with BirthForm + FusionRingReveal + quiz phase as state machine | P1 | Done | [REQ-F-cosmic-encounter-onboarding](../1-objectives/requirements/REQ-F-cosmic-encounter-onboarding.md) | TASK-fuffire-experience-api | 2026-03-28 | 7-phase state machine |
+| TASK-onboarding-mobile-fallback | Implement mobile fallback for onboarding (CSS+image when viewport < 768px) | P1 | Done | [REQ-F-cosmic-encounter-onboarding](../1-objectives/requirements/REQ-F-cosmic-encounter-onboarding.md) | TASK-onboarding-route | 2026-03-28 | CosmicEncounterMobile component |
+| TASK-onboarding-flag-gate | Gate full Cosmic Encounter behind `cosmic_encounter_v1` flag; legacy BirthForm as fallback | P1 | Done | [REQ-F-cosmic-encounter-onboarding](../1-objectives/requirements/REQ-F-cosmic-encounter-onboarding.md) | TASK-onboarding-route | 2026-03-28 | Flag currently hard-disabled |
 | TASK-dashboard-wireframe | Design wireframe for Dashboard redesign (Big Three top, influence gauges, Levi, Blueprint) | P1 | Todo | - | - | 2026-03-28 | Design-first: needs Ben's approval |
 | TASK-dashboard-layout-redesign | Implement Dashboard layout per approved wireframe | P1 | Todo | - | TASK-dashboard-wireframe | 2026-03-28 | |
 | TASK-daily-home-port | Port 5-zone Daily Home layout to Dashboard.tsx with real Contexts | P1 | Deferred | [REQ-F-cosmic-encounter-onboarding](../1-objectives/requirements/REQ-F-cosmic-encounter-onboarding.md) | TASK-dashboard-layout-redesign | 2026-03-28 | Data mapping from source layout |
@@ -340,7 +340,7 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 
 | ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
 |----|------|----------|--------|-----|--------------|---------|-------|
-| TASK-fuffire-experience-api | Wire `/experience/bootstrap` + `/experience/signature-delta` in server.mjs; replace direct BAFE calls | P1 | Todo | [REQ-F-cosmic-encounter-onboarding](../1-objectives/requirements/REQ-F-cosmic-encounter-onboarding.md) | - | 2026-03-28 | FuFirE live at bafe-production.up.railway.app |
+| TASK-fuffire-experience-api | Wire `/experience/bootstrap` + `/experience/signature-delta` in server.mjs; replace direct BAFE calls | P1 | Done | [REQ-F-cosmic-encounter-onboarding](../1-objectives/requirements/REQ-F-cosmic-encounter-onboarding.md) | - | 2026-03-28 | FuFirE live at bafe-production.up.railway.app |
 | TASK-levi-system-prompt | Configure ElevenLabs agent with Signatur V2 knowledge base | P1 | Deferred | - | - | 2026-03-28 | See docs/LEVI_SIGNATUR_V2_KNOWLEDGE.md |
 | TASK-levi-auto-summary | Auto-summarize user profile after 3 Levi sessions via /api/agent/summary | P2 | Todo | - | TASK-levi-system-prompt | 2026-03-28 | |
 
@@ -359,7 +359,7 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 |----|------|----------|--------|-----|--------------|---------|-------|
 | TASK-deploy-runbook | Create Railway deploy runbook (build, env vars checklist, rollback steps) | P0 | Done | - | - | 2026-03-28 | |
 | TASK-migration-runbook | Create Supabase migration runbook (SQL Editor workflow, rollback patterns) | P0 | Done | - | - | 2026-03-28 | |
-| TASK-phase-b-manual-testing | Create onboarding runbook: test scenarios for all 7 phases, desktop + mobile, flag on/off | P1 | Todo | - | TASK-onboarding-flag-gate | 2026-03-28 | |
+| TASK-phase-b-manual-testing | Create onboarding runbook: test scenarios for all 7 phases, desktop + mobile, flag on/off | P1 | Done | - | TASK-onboarding-flag-gate | 2026-03-28 | |
 | TASK-phase-e-manual-testing | Update deploy runbook with depth-nav test scenarios and element-adaptation verification | P1 | Todo | - | TASK-engagement-fluidity | 2026-03-28 | |
 
 ## Partnership Features (Blocked)
