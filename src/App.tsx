@@ -11,10 +11,11 @@ import { trackEvent } from "./lib/analytics";
 import { usePlanetarium } from "./contexts/PlanetariumContext";
 import { FusionRingProvider } from "./contexts/FusionRingContext";
 import { AppLayoutProvider } from "./contexts/AppLayoutContext";
-import { LeviProvider, useLevi } from "./contexts/LeviContext";
-import { LeviFloatingWidget } from "./components/LeviFloatingWidget";
+import { AgentProvider, useAgent } from "./contexts/AgentContext";
+import { AgentFloatingWidget } from "./components/AgentFloatingWidget";
 import { AppRoutes } from "./router";
 import { bootstrapExperience } from "./services/experience";
+import { BrandedLoader } from "./components/BrandedLoader";
 import { usePremium } from "./hooks/usePremium";
 import { isFeatureEnabled } from "./lib/feature-flags";
 import type { BootstrapResponse, SignatureDeltaResponse } from "./lib/schemas/experience";
@@ -36,16 +37,53 @@ export default function App() {
 
   const [showSplash, setShowSplash] = useState(true);
   const [siteVisible, setSiteVisible] = useState(false);
-  const [bootstrapData, setBootstrapData] = useState<BootstrapResponse | null>(null);
+  
+  // -- ONBOARDING PERSISTENCE --
+  const [bootstrapData, setBootstrapData] = useState<BootstrapResponse | null>(() => {
+    try {
+      const saved = localStorage.getItem('bazodiac_onboarding_data');
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  });
+
   const [onboardingPhase, setOnboardingPhase] = useState<'form' | 'encounter' | 'signature' | 'done'>(() => {
+    const saved = localStorage.getItem('bazodiac_onboarding_phase');
+    if (saved && ['form', 'encounter', 'signature', 'done'].includes(saved)) {
+      return saved as any;
+    }
     if (isFeatureEnabled('cosmic_encounter_v1')) return 'encounter';
     return 'form';
   });
+
   const [bootstrapFailed, setBootstrapFailed] = useState(false);
+  
   // Tracks whether the user has submitted the birth form this session.
-  // Returning users never set this — it distinguishes "new user mid-onboarding"
-  // from "returning user with existing profile".
-  const [hasStartedOnboarding, setHasStartedOnboarding] = useState(false);
+  // Restored from phase to survive refresh.
+  const [hasStartedOnboarding, setHasStartedOnboarding] = useState(() => {
+    const savedPhase = localStorage.getItem('bazodiac_onboarding_phase');
+    return savedPhase !== null && savedPhase !== 'form' && savedPhase !== 'done';
+  });
+
+  // Keep localStorage in sync
+  useEffect(() => {
+    localStorage.setItem('bazodiac_onboarding_phase', onboardingPhase);
+  }, [onboardingPhase]);
+
+  useEffect(() => {
+    if (bootstrapData) {
+      localStorage.setItem('bazodiac_onboarding_data', JSON.stringify(bootstrapData));
+    } else {
+      localStorage.removeItem('bazodiac_onboarding_data');
+    }
+  }, [bootstrapData]);
+
+  // Reset onboarding persistence on logout
+  useEffect(() => {
+    if (!user && !authLoading) {
+      localStorage.removeItem('bazodiac_onboarding_phase');
+      localStorage.removeItem('bazodiac_onboarding_data');
+    }
+  }, [user, authLoading]);
 
   // Returning users (already logged in from prior session) skip Splash entirely
   const isReturningUser = !authLoading && user !== null;
@@ -193,7 +231,7 @@ export default function App() {
   if (authLoading) {
     return (
       <div className="min-h-screen morning-bg flex items-center justify-center">
-        <div className="w-1 h-1 bg-gold-deep rounded-full animate-ping" />
+        <BrandedLoader />
       </div>
     );
   }
@@ -206,11 +244,10 @@ export default function App() {
   // ── Profile loading — wait for Supabase fetch ─────────────────────────
   if (profileState === "loading" || profileState === "idle") {
     return (
-      <div className="min-h-screen morning-bg flex flex-col items-center justify-center gap-6">
-        <div className="w-1 h-1 bg-gold-deep rounded-full animate-ping" />
-        <p className="text-[10px] uppercase tracking-[0.4em] text-gold-deep/50 font-mono">
-          {lang === "de" ? "Lade dein kosmisches Profil…" : "Loading your cosmic profile…"}
-        </p>
+      <div className="min-h-screen morning-bg flex flex-col items-center justify-center">
+        <BrandedLoader
+          message={lang === "de" ? "Lade dein kosmisches Profil…" : "Loading your cosmic profile…"}
+        />
       </div>
     );
   }
@@ -237,7 +274,7 @@ export default function App() {
   // Authenticated app with routing
   return (
     <BrowserRouter>
-      <LeviProvider onStopAudio={ambiente.pause} onResumeAudio={ambiente.resume}>
+      <AgentProvider>
       <FusionRingProvider apiResults={apiData} userId={user.id}>
         <AppLayoutProvider value={{
           interpretation: interpretation!,
@@ -253,15 +290,17 @@ export default function App() {
           onResumeAudio: ambiente.resume,
           isFirstReading,
         }}>
-          {/* Levi Floating Widget — lives OUTSIDE the router, survives navigation */}
-          <LeviPremiumSync isPremium={isPremium} />
+          {/* Agent Floating Widget — lives OUTSIDE the router, survives navigation */}
           {hasCompleteProfile && (
-            <LeviFloatingWidget
+            <AgentFloatingWidget
               userId={user.id}
               sunSign={apiData?.western?.zodiac_sign || ''}
               zodiacAnimal={apiData?.bazi?.zodiac_sign || ''}
               dominantEl={apiData?.wuxing?.dominant_element || ''}
+              isPremium={isPremium}
               onUpgrade={handleLeviUpgrade}
+              onStopAudio={ambiente.pause}
+              onResumeAudio={ambiente.resume}
             />
           )}
           <AppShell
@@ -294,46 +333,41 @@ export default function App() {
           />
         </AppLayoutProvider>
       </FusionRingProvider>
-      </LeviProvider>
+      </AgentProvider>
     </BrowserRouter>
   );
 }
 
-// Tiny helper to sync premium status into LeviContext
-function LeviPremiumSync({ isPremium }: { isPremium: boolean }) {
-  const { setIsPremium } = useLevi();
-  useEffect(() => { setIsPremium(isPremium); }, [isPremium, setIsPremium]);
-  return null;
-}
-
-// Nav link that opens the global Levi widget instead of scrolling to a section
-function LeviNavLink({ t }: { t: (key: string) => string }) {
-  const { active, setExpanded } = useLevi();
+// Nav link that opens the global agent widget
+function AgentNavLink({ t }: { t: (key: string) => string }) {
+  const { activeAgent, agentStates, setWidgetExpanded } = useAgent();
+  const isActive = activeAgent !== null && agentStates[activeAgent]?.active;
   return (
     <a
       href="#"
       onClick={(e) => {
         e.preventDefault();
-        setExpanded(true);
+        setWidgetExpanded(true);
       }}
-      className={`transition-colors ${active ? 'text-emerald-500' : 'text-ink/60 hover:text-gold-deep'}`}
+      className={`transition-colors ${isActive ? 'text-emerald-500' : 'text-ink/60 hover:text-gold-deep'}`}
     >
       {t("nav.levi")}
-      {active && <span className="ml-1 inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />}
+      {isActive && <span className="ml-1 inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />}
     </a>
   );
 }
 
-// Mobile bottom nav Levi button — shows active state with pulsing dot
-function MobileLeviNavButton() {
-  const { active, setExpanded } = useLevi();
+// Mobile bottom nav voice button — shows active agent state
+function MobileAgentNavButton() {
+  const { activeAgent, agentStates, setWidgetExpanded } = useAgent();
+  const isActive = activeAgent !== null && agentStates[activeAgent]?.active;
   return (
     <button
-      onClick={() => setExpanded(true)}
+      onClick={() => setWidgetExpanded(true)}
       className={`flex flex-col items-center justify-center gap-0.5 min-w-[48px] min-h-[48px] p-1 rounded-lg active:bg-gold-deep/10 transition-colors ${
-        active ? 'text-emerald-500' : 'text-ink/40'
+        isActive ? 'text-emerald-500' : 'text-ink/40'
       }`}
-      aria-label="Levi"
+      aria-label="Voice Agents"
     >
       <div className="relative">
         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
@@ -342,11 +376,11 @@ function MobileLeviNavButton() {
           <line x1="12" y1="19" x2="12" y2="23" />
           <line x1="8" y1="23" x2="16" y2="23" />
         </svg>
-        {active && (
+        {isActive && (
           <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
         )}
       </div>
-      <span className="text-[9px] uppercase tracking-tight leading-none">Levi</span>
+      <span className="text-[9px] uppercase tracking-tight leading-none">Voice</span>
     </button>
   );
 }
@@ -402,7 +436,7 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
           <a href="https://sky.bazodiac.space" target="_blank" rel="noopener noreferrer" className={`transition-colors ${location.pathname === "/" ? "text-gold-deep" : "text-ink/60 hover:text-gold-deep"}`}>
             {t("nav.sky")}
           </a>
-          <LeviNavLink t={t} />
+          <AgentNavLink t={t} />
           <Link to="/faq" className={`transition-colors ${location.pathname === "/faq" ? "text-gold-deep" : "text-ink/60 hover:text-gold-deep"}`}>
             {t("nav.faq")}
           </Link>
@@ -524,7 +558,7 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
           <span className="text-[9px] uppercase tracking-tight leading-none">{t("nav.sky")}</span>
         </a>
 
-        <MobileLeviNavButton />
+        <MobileAgentNavButton />
 
         <Link to="/faq" className={`flex flex-col items-center justify-center gap-0.5 min-w-[48px] min-h-[48px] p-1 rounded-lg active:bg-gold-deep/10 transition-colors ${location.pathname === "/faq" ? "text-gold-deep" : "text-ink/40"}`}>
           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">

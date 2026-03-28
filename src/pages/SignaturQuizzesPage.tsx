@@ -13,7 +13,7 @@ import QuizOverlay from '@/src/components/QuizOverlay';
 import type { ContributionEvent } from '@/src/lib/lme/types';
 
 export default function SignaturQuizzesPage() {
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
   const { isPremium } = usePremium();
   const { completedModuleIds, addModule } = useCompletedModules();
   const suggestedModule = useQuizSuggestion(completedModuleIds);
@@ -39,17 +39,15 @@ export default function SignaturQuizzesPage() {
             className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/40 px-3 py-1.5 text-xs uppercase tracking-[0.2em] text-white/70 transition hover:border-[#D4AF37]/60 hover:text-[#D4AF37]"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            {lang === 'de' ? 'Signatur' : 'Signature'}
+            {t('signaturQuizzes.backLabel')}
           </Link>
         </header>
 
         <h1 className="mb-2 font-serif text-2xl text-[#D4AF37]">
-          {lang === 'de' ? 'Quiz-Cluster' : 'Quiz Clusters'}
+          {t('signaturQuizzes.title')}
         </h1>
         <p className="mb-6 text-sm text-white/60">
-          {lang === 'de'
-            ? 'Beantworte Quizze, um deine Signatur zu formen.'
-            : 'Answer quizzes to shape your signature.'}
+          {t('signaturQuizzes.subtitle')}
         </p>
 
         <ClusterSidebar

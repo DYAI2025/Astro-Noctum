@@ -2,11 +2,11 @@
 
 **Description**: Introduce Eve as a second ElevenLabs AI voice agent alongside Levi, enabling users to choose between two distinct personas (Levi: calm/wise/mentoring; Eve: direct/bold/modern) while sharing the same astrological data foundation. Requires refactoring the Levi-specific architecture into a generic multi-agent system.
 
-**Status**: Draft
+**Status**: Approved
 
 **Priority**: Must-have
 
-**Source stakeholder**: [STK-end-user](../stakeholders.md), [STK-founder](../stakeholders.md)
+**Source stakeholder**: [STK-end-user](../stakeholders.md), [STK-product-owner](../stakeholders.md)
 
 ## Success Criteria
 

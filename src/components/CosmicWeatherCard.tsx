@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 import type { DailyHoroscope } from '@/src/lib/horoscope/types';
+import { useLanguage } from '@/src/contexts/LanguageContext';
 
 interface CosmicWeatherCardProps {
   horoscope: DailyHoroscope | null;
@@ -71,11 +72,12 @@ export function CosmicWeatherCard({
   lang,
   isPremium,
 }: CosmicWeatherCardProps) {
+  const { t } = useLanguage();
   const [expanded, setExpanded] = useState(false);
 
   if (loading && !horoscope) {
     return (
-      <div className="w-full max-w-md mx-auto rounded-2xl border border-[#8B6914]/15 bg-white/50 backdrop-blur-sm p-5">
+      <div className="w-full max-w-md mx-auto rounded-2xl border border-[#D4AF37]/15 bg-[#00050A]/80 backdrop-blur-md p-5">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-[#8B6914]/5 animate-pulse" />
           <div className="flex-1 space-y-2">
@@ -91,7 +93,9 @@ export function CosmicWeatherCard({
     return (
       <div className="w-full max-w-md mx-auto rounded-2xl border border-red-200 bg-red-50/50 p-4">
         <p className="text-xs text-red-600/70">
-          {lang === 'de' ? 'Horoskop konnte nicht geladen werden.' : 'Could not load horoscope.'}
+          {lang === 'de'
+            ? 'Tageshoroskop konnte nicht geladen werden. Bitte versuche es erneut.'
+            : 'Daily horoscope could not be loaded. Please try again.'}
         </p>
       </div>
     );
@@ -110,7 +114,7 @@ export function CosmicWeatherCard({
       transition={{ duration: 0.6, ease: 'easeOut' }}
       className="w-full max-w-md mx-auto"
     >
-      <div className="rounded-2xl border border-[#8B6914]/15 bg-white/60 backdrop-blur-sm overflow-hidden">
+      <div className="rounded-2xl border border-[#D4AF37]/15 bg-[#00050A]/80 backdrop-blur-md overflow-hidden">
         {/* Header */}
         <button
           onClick={() => setExpanded(!expanded)}
@@ -122,7 +126,7 @@ export function CosmicWeatherCard({
             <div className="flex items-center gap-1.5 mb-1">
               <Sparkles className="w-3 h-3 text-[#D4AF37]" />
               <span className="text-[8px] uppercase tracking-[0.3em] text-[#8B6914]/50 font-mono">
-                {lang === 'de' ? 'Kosmisches Wetter' : 'Cosmic Weather'}
+                {t('cosmicWeather.title')}
               </span>
               {isPremium && (
                 <span className="text-[7px] uppercase tracking-wider text-[#D4AF37] bg-[#D4AF37]/10 px-1.5 py-0.5 rounded-full">
@@ -184,7 +188,7 @@ export function CosmicWeatherCard({
                         onRefresh();
                       }}
                       className="text-[#8B6914]/30 hover:text-[#8B6914]/60 transition-colors p-1"
-                      title={lang === 'de' ? 'Aktualisieren' : 'Refresh'}
+                      title={t('cosmicWeather.refresh')}
                     >
                       <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
                     </button>

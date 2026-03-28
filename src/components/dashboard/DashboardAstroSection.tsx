@@ -16,6 +16,7 @@ import type { ApiData } from "../../types/bafe";
 import type { TileTexts } from "../../types/interpretation";
 import { AstroAccordion } from "./AstroAccordion";
 import { DashboardHeroNav } from "./DashboardHeroNav";
+import { AstroDetailModal, type AstroDetailId } from "./AstroDetailModal";
 import { WuXingIcon } from "../animated-icons/CosmicSymbols";
 import { IconOrbit } from "../animated-icons";
 
@@ -87,6 +88,9 @@ export function DashboardAstroSection({
 }: DashboardAstroSectionProps) {
   const { lang, t } = useLanguage();
   const { planetariumMode, setPlanetariumMode, skyMode } = usePlanetarium();
+
+  // ── Astro detail modal ────────────────────────────────────────────
+  const [activeDetail, setActiveDetail] = useState<AstroDetailId | null>(null);
 
   // ── First-visit Birth Sky welcome ────────────────────────────────
   const [showBirthSkyWelcome, setShowBirthSkyWelcome] = useState(false);
@@ -168,6 +172,15 @@ export function DashboardAstroSection({
         sunSign={sunSign}
         dominantElement={dominantEl}
         zodiacAnimal={yearAnimal}
+        onTileClick={setActiveDetail}
+      />
+
+      {/* ═══ ASTRO DETAIL MODAL ════════════════════════════════════════ */}
+      <AstroDetailModal
+        activeId={activeDetail}
+        onClose={() => setActiveDetail(null)}
+        apiData={apiData}
+        tileTexts={tileTexts || {}}
       />
 
       {/* ═══ 3D ORRERY ════════════════════════════════════════════════ */}
@@ -261,7 +274,7 @@ export function DashboardAstroSection({
                 to="/wu-xing"
                 className="text-[9px] uppercase tracking-[0.2em] text-[#8B6914]/60 hover:text-[#8B6914] transition-colors flex items-center gap-1.5"
               >
-                <span>{lang === 'de' ? 'Detailansicht' : 'Detailed View'}</span>
+                <span>{lang === "de" ? "Detailansicht" : "Detailed view"}</span>
                 <ArrowUp className="w-3 h-3 rotate-45" />
               </Link>
             </div>
@@ -309,20 +322,6 @@ export function DashboardAstroSection({
               </div>
             </div>
           </div>
-
-          {/* Block B: Four Pillars */}
-          {apiData.bazi?.pillars && (
-            <div className="mb-10">
-              <p className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/50 mb-4">
-                {lang === "de" ? "Die Vier S\u00e4ulen" : "The Four Pillars"}
-              </p>
-              <BaZiFourPillars
-                pillars={apiData.bazi.pillars}
-                lang={lang}
-                planetariumMode={planetariumMode}
-              />
-            </div>
-          )}
 
           {/* Block D: Interpretation */}
           <div className="morning-card p-6 md:p-8">

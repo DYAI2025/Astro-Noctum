@@ -11,7 +11,7 @@ interface AstroAccordionProps {
 }
 
 export function AstroAccordion({ apiData, tileTexts }: AstroAccordionProps) {
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
   const [openTile, setOpenTile] = useState<string | null>(null);
 
   const toggle = (id: string) => setOpenTile(prev => prev === id ? null : id);
@@ -28,17 +28,17 @@ export function AstroAccordion({ apiData, tileTexts }: AstroAccordionProps) {
     {
       id: 'western',
       icon: '☀️',
-      title: lang === 'de' ? 'Sonnenzeichen' : 'Sun Sign',
+      title: t('astroAccordion.sunSign'),
       value: sunData ? sunData.name[lang] : sunSignKey || '—',
       description: sunData?.sun[lang] || tileTexts.sun || '',
       subTiles: [
         {
-          label: lang === 'de' ? 'Mondzeichen' : 'Moon Sign',
+          label: t('astroAccordion.moonSign'),
           value: moonData ? moonData.name[lang] : moonSignKey || '—',
           description: moonData?.moon[lang] || tileTexts.moon || '',
         },
         {
-          label: lang === 'de' ? 'Aszendent' : 'Ascendant',
+          label: t('astroAccordion.ascendant'),
           value: ascData ? ascData.name[lang] : ascSignKey || '—',
           description: ascData?.asc[lang] || '',
         },
@@ -52,20 +52,20 @@ export function AstroAccordion({ apiData, tileTexts }: AstroAccordionProps) {
       description: tileTexts.dayMaster || '',
       subTiles: [
         {
-          label: lang === 'de' ? 'Tagesmeister' : 'Day Master',
+          label: t('astroAccordion.dayMaster'),
           value: apiData.bazi?.day_master || '—',
           description: tileTexts.dayMaster || '',
         },
         {
-          label: lang === 'de' ? 'Monatsstamm' : 'Month Stem',
+          label: t('astroAccordion.monthStem'),
           value: apiData.bazi?.pillars?.month?.stem || '—',
         },
         {
-          label: lang === 'de' ? 'Jahresstamm' : 'Year Stem',
+          label: t('astroAccordion.yearStem'),
           value: apiData.bazi?.pillars?.year?.stem || '—',
         },
         {
-          label: lang === 'de' ? 'Stundenstamm' : 'Hour Stem',
+          label: t('astroAccordion.hourStem'),
           value: apiData.bazi?.pillars?.hour?.stem || '—',
         },
       ],
@@ -78,15 +78,15 @@ export function AstroAccordion({ apiData, tileTexts }: AstroAccordionProps) {
       description: tileTexts.dominantWuXing || '',
       subTiles: [
         {
-          label: lang === 'de' ? 'Dominantes Element' : 'Dominant Element',
+          label: t('astroAccordion.dominantElement'),
           value: apiData.wuxing?.dominant_element || '—',
         },
         {
-          label: lang === 'de' ? 'Sekundäres Element' : 'Secondary Element',
+          label: t('astroAccordion.secondaryElement'),
           value: String(apiData.wuxing?.['secondary_element' as keyof typeof apiData.wuxing] ?? '—'),
         },
         {
-          label: lang === 'de' ? 'Mangel-Element' : 'Deficient Element',
+          label: t('astroAccordion.deficientElement'),
           value: String(apiData.wuxing?.['deficient_element' as keyof typeof apiData.wuxing] ?? '—'),
         },
       ],

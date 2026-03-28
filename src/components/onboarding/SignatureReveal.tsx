@@ -25,7 +25,7 @@ interface Props {
 }
 
 export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: Props) {
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
   const [showButton, setShowButton] = useState(false);
   const [revealProgress, setRevealProgress] = useState(0);
 
@@ -68,9 +68,7 @@ export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: 
       {/* Fallback hint — non-blocking, shown only when bootstrap used synthetic data */}
       {bootstrapFailed && (
         <p className="text-xs text-gold/60 text-center mt-2">
-          {lang === 'de'
-            ? 'Dein Soulprint wird berechnet...'
-            : 'Your Soulprint is being calculated...'}
+          {t('signatureReveal.soulprintCalculating')}
         </p>
       )}
 
@@ -82,8 +80,8 @@ export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: 
         transition={{ delay: 1, duration: 1.5 }}
       >
         {isFallback
-          ? (lang === 'de' ? 'Deine Signatur konnte nicht vollständig berechnet werden.' : 'Your signature could not be fully calculated.')
-          : (lang === 'de' ? 'Deine Signatur entsteht...' : 'Your signature is forming...')}
+          ? t('signatureReveal.signaturePartialError')
+          : t('signatureReveal.signatureForming')}
       </motion.p>
 
       {/* Fallback subtitle — shown when bootstrap used synthetic data */}
@@ -94,9 +92,7 @@ export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: 
           animate={{ opacity: 1 }}
           transition={{ delay: 1.5, duration: 1 }}
         >
-          {lang === 'de'
-            ? 'Du siehst eine Vorschau. Deine persönliche Signatur wird beim nächsten Laden berechnet.'
-            : 'You see a preview. Your personal signature will be calculated on next load.'}
+          {t('signatureReveal.previewNote')}
         </motion.p>
       )}
 
@@ -110,8 +106,8 @@ export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: 
             onClick={() => onComplete(null)}
           >
             {isFallback
-              ? (lang === 'de' ? 'Trotzdem weiter' : 'Continue anyway')
-              : (lang === 'de' ? 'Weiter' : 'Continue')}
+              ? t('signatureReveal.continueAnyway')
+              : t('common.continue')}
           </motion.button>
         )}
       </AnimatePresence>

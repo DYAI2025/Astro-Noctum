@@ -18,9 +18,11 @@ interface AgentState {
 interface AgentContextValue {
   agentStates: Record<AgentId, AgentState>;
   activeAgent: AgentId | null;
+  widgetExpanded: boolean;
   startAgent: (id: AgentId) => void;
   stopAgent: (id: AgentId) => void;
   setUpgrading: (id: AgentId, value: boolean) => void;
+  setWidgetExpanded: (v: boolean) => void;
 }
 
 // --- Initial state ---
@@ -39,6 +41,7 @@ export function AgentProvider({ children }: { children: ReactNode }) {
   const [agentStates, setAgentStates] =
     useState<Record<AgentId, AgentState>>(initialAgentStates);
   const [activeAgent, setActiveAgent] = useState<AgentId | null>(null);
+  const [widgetExpanded, setWidgetExpanded] = useState(false);
 
   const startAgent = useCallback((id: AgentId) => {
     setAgentStates((prev) => {
@@ -67,8 +70,8 @@ export function AgentProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<AgentContextValue>(
-    () => ({ agentStates, activeAgent, startAgent, stopAgent, setUpgrading }),
-    [agentStates, activeAgent, startAgent, stopAgent, setUpgrading],
+    () => ({ agentStates, activeAgent, widgetExpanded, startAgent, stopAgent, setUpgrading, setWidgetExpanded }),
+    [agentStates, activeAgent, widgetExpanded, startAgent, stopAgent, setUpgrading],
   );
 
   return (
