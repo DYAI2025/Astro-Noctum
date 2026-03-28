@@ -2,7 +2,30 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { AstroDetailModal } from '../components/dashboard/AstroDetailModal';
 import type { ApiData } from '../types/bafe';
+import React from 'react';
 
+// Mock motion/react to disable animations in tests
+vi.mock('motion/react', () => {
+  const MockAnimatePresence = ({ children }: { children: React.ReactNode }) => <>{children}</>;
+
+  const mockMotion = new Proxy(
+    {},
+    {
+      get: (_target, _prop) => {
+        // Return a simple passthrough component for any motion.* element
+        return ({ children, ...rest }: React.HTMLAttributes<HTMLElement>) => (
+          <div {...rest}>{children}</div>
+        );
+      },
+    }
+  );
+
+  return {
+    __esModule: true,
+    AnimatePresence: MockAnimatePresence,
+    motion: mockMotion,
+  };
+});
 // Mock LanguageContext
 vi.mock('../contexts/LanguageContext', () => ({
   useLanguage: () => ({
