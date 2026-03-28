@@ -151,3 +151,85 @@ describe('V3 Engine Performance', () => {
     console.log(`[V3 Perf] Full modulated frame avg ${avgMs.toFixed(3)}ms (budget: 16.6ms)`);
   });
 });
+
+/**
+ * Mobile Web Benchmark — reduced trail config simulating mobile viewport (<768px).
+ * Target: ≥30fps → budget 33.3ms per frame.
+ * Mobile uses shorter trails and smaller canvas to reduce draw calls.
+ */
+const MOBILE_CONFIG: SignaturV3Config = {
+  maxR: 120,            // smaller canvas (240x240 vs 500x500)
+  maxTrailLength: 500,  // 75% fewer trail points than desktop
+  trailPersistence: 0.80,
+  timeScale: 1.0,
+};
+
+describe('V3 Engine Performance — Mobile Web (30fps target)', () => {
+  it('single mobile frame < 1ms (budget: 33.3ms for 30fps)', () => {
+    const poles = initializePoles(MOBILE_CONFIG, NATAL, QUIZ);
+    const dissonance = computeV3Dissonance(NATAL, QUIZ);
+    const activeConfig = modulateConfig(MOBILE_CONFIG, DAY_HARMONIC);
+
+    const start = performance.now();
+    updatePoles(poles, dissonance, activeConfig, 1.0, DAY_HARMONIC, SOLAR);
+    const elapsed = performance.now() - start;
+
+    expect(elapsed).toBeLessThan(1);
+  });
+
+  it('1000 mobile frames complete in < 200ms', () => {
+    const poles = initializePoles(MOBILE_CONFIG, NATAL, QUIZ);
+    const dissonance = computeV3Dissonance(NATAL, QUIZ);
+    const activeConfig = modulateConfig(MOBILE_CONFIG, DAY_HARMONIC);
+
+    const start = performance.now();
+    for (let frame = 0; frame < 1000; frame++) {
+      updatePoles(poles, dissonance, activeConfig, frame * 0.033, DAY_HARMONIC, SOLAR);
+    }
+    const elapsed = performance.now() - start;
+
+    expect(elapsed).toBeLessThan(200);
+
+    const avgMs = elapsed / 1000;
+    console.log(`[V3 Mobile Perf] 1000 frames in ${elapsed.toFixed(1)}ms — avg ${avgMs.toFixed(3)}ms/frame`);
+  });
+
+  it('mobile trail memory bounded at 500', () => {
+    const poles = initializePoles(MOBILE_CONFIG, NATAL, QUIZ);
+    const dissonance = computeDissonance(NATAL, QUIZ);
+
+    for (let frame = 0; frame < 2000; frame++) {
+      updatePoles(poles, dissonance, MOBILE_CONFIG, frame * 0.033);
+    }
+
+    for (const pole of poles) {
+      expect(pole.trailLength).toBeLessThanOrEqual(MOBILE_CONFIG.maxTrailLength);
+    }
+  });
+
+  it('full mobile frame with all modulations < 1ms (budget: 33.3ms)', () => {
+    const poles = initializePoles(MOBILE_CONFIG, NATAL, QUIZ);
+    const external = {
+      d_natal: 0.5, d_accumulated: 0.3,
+      d_elemental: { magnitude: 0.6, type: 'ke' as const, pair: ['Fire', 'Water'] as [string, string] },
+      intensity: 0.45,
+    };
+    const dissonance = computeV3Dissonance(NATAL, QUIZ, external);
+    const activeConfig = modulateConfig(MOBILE_CONFIG, DAY_HARMONIC);
+
+    // Warm up
+    for (let i = 0; i < 10; i++) {
+      updatePoles(poles, dissonance, activeConfig, i * 0.033, DAY_HARMONIC, SOLAR);
+    }
+
+    const start = performance.now();
+    for (let frame = 0; frame < 100; frame++) {
+      updatePoles(poles, dissonance, activeConfig, (frame + 10) * 0.033, DAY_HARMONIC, SOLAR);
+    }
+    const elapsed = performance.now() - start;
+    const avgMs = elapsed / 100;
+
+    expect(avgMs).toBeLessThan(1);
+    console.log(`[V3 Mobile Perf] Full modulated frame avg ${avgMs.toFixed(3)}ms (budget: 33.3ms)`);
+  });
+});
