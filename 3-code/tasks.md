@@ -150,7 +150,7 @@
 | TASK-v3-feature-flag | Add signatur_engine_v3 feature flag: V3 default, V2 fallback via localStorage | frontend | [REQ-F-signatur-rendering-engine](../1-objectives/requirements/REQ-F-signatur-rendering-engine.md) | Done | TASK-v3-engine-production | 2026-03-27 | Flag added, Dashboard V3 gated, critical flag warning |
 | TASK-v3-graceful-fallback | Implement graceful data source fallback: missing transit/weather/quiz → neutral defaults, no visual glitch | frontend | [REQ-F-signatur-data-pipeline](../1-objectives/requirements/REQ-F-signatur-data-pipeline.md) | Done | TASK-v3-data-bridge | 2026-03-27 | Engine defaults to 0.5 per dimension, null solar/dissonance/dayHarmonic all guarded |
 | TASK-v3-unit-tests | Vitest: pole determinism, dissonance→visual correlation, data bridge transforms | frontend | [REQ-F-signatur-rendering-engine](../1-objectives/requirements/REQ-F-signatur-rendering-engine.md) | Done | TASK-v3-dissonance-wiring | 2026-03-27 | 15 tests: dimensions, determinism, dissonance, day-harmonic, trails |
-| TASK-phase-1-manual-testing | Create runbook: Signatur V3 web manual test scenarios | frontend | - | Todo | TASK-v3-unit-tests | 2026-03-27 | Deferred to end of sprint |
+| TASK-phase-1-manual-testing | Create runbook: Signatur V3 web manual test scenarios | frontend | - | Done | TASK-v3-unit-tests | 2026-03-28 | docs/runbooks/signatur-v3-web-manual-testing.md |
 
 ### Phase 2 Tasks — Cousto Audio Synthesis
 
@@ -161,7 +161,7 @@
 | TASK-audio-ui-controls | Add mute toggle + volume slider to Signatur page (localStorage persisted) | frontend | [REQ-F-signatur-rendering-engine](../1-objectives/requirements/REQ-F-signatur-rendering-engine.md) | Done | TASK-audio-synthesis-module | 2026-03-27 | FuRingPage header, VolumeX/Volume2 icons |
 | TASK-audio-lifecycle | Wire audio lifecycle: start on mount, suspend on hidden, resume on visible, stop on unmount | frontend | [REQ-F-signatur-rendering-engine](../1-objectives/requirements/REQ-F-signatur-rendering-engine.md) | Done | TASK-audio-synthesis-module | 2026-03-27 | useCoustoAudio hook, visibility API |
 | TASK-audio-ios-safari | Test/fix Web Audio API on mobile Safari (user gesture for AudioContext.resume()) | frontend | [REQ-PERF-signatur-performance](../1-objectives/requirements/REQ-PERF-signatur-performance.md) | Done | TASK-audio-lifecycle | 2026-03-27 | Click/touchstart listener starts AudioContext |
-| TASK-phase-2-manual-testing | Update runbook: audio test scenarios (mute, volume, tab switch, Safari gesture) | frontend | - | Todo | TASK-audio-ios-safari | 2026-03-27 | Deferred to end of sprint |
+| TASK-phase-2-manual-testing | Update runbook: audio test scenarios (mute, volume, tab switch, Safari gesture) | frontend | - | Done | TASK-audio-ios-safari | 2026-03-28 | docs/runbooks/signatur-cousto-audio-manual-testing.md |
 
 ### Phase 3 Tasks — Mobile Native 3D Signatur
 
@@ -182,9 +182,9 @@
 | TASK-perf-mobile-web-benchmark | Benchmark V3 on mobile Safari/Chrome: target ≥30fps with reduced trails | frontend | [REQ-PERF-signatur-performance](../1-objectives/requirements/REQ-PERF-signatur-performance.md) | Done | TASK-v3-engine-production | 2026-03-28 | 0.002ms/frame avg — 0.006% of 33.3ms budget |
 | TASK-perf-ios-native-benchmark | Benchmark iOS native (iPhone 12+): ≥30fps, <150MB GPU, no thermal throttle 60s | mobile | [REQ-PERF-signatur-performance](../1-objectives/requirements/REQ-PERF-signatur-performance.md) | Cancelled | TASK-mobile-v3-engine | 2026-03-28 | Skipped: iOS in separate Swift repo |
 | TASK-perf-trail-optimization | Optimize trail buffer size, fade rate, render batch based on benchmarks | frontend | [REQ-PERF-signatur-performance](../1-objectives/requirements/REQ-PERF-signatur-performance.md) | Done | TASK-perf-desktop-benchmark | 2026-03-28 | 3-tier adaptive: high(2000) / medium(800) / low(300) auto-selected by canvas size |
-| TASK-perf-first-frame | Validate <2s first visible frame from data availability on web | frontend | [REQ-PERF-signatur-performance](../1-objectives/requirements/REQ-PERF-signatur-performance.md) | Todo | TASK-v3-engine-production | 2026-03-28 | Mobile dependency cancelled — web-only |
-| TASK-perf-transit-api | Validate /api/transit-state p95 <500ms under concurrent load | api-server | [REQ-PERF-signatur-performance](../1-objectives/requirements/REQ-PERF-signatur-performance.md) | Todo | - | 2026-03-27 | |
-| TASK-phase-4-manual-testing | Final runbook: all-platform Signatur test matrix | frontend, mobile, api-server | - | Todo | TASK-perf-trail-optimization | 2026-03-27 | |
+| TASK-perf-first-frame | Validate <2s first visible frame from data availability on web | frontend | [REQ-PERF-signatur-performance](../1-objectives/requirements/REQ-PERF-signatur-performance.md) | Done | TASK-v3-engine-production | 2026-03-28 | <50ms init→frame-ready (budget: 2000ms). 2 tests added |
+| TASK-perf-transit-api | Validate /api/transit-state p95 <500ms under concurrent load | api-server | [REQ-PERF-signatur-performance](../1-objectives/requirements/REQ-PERF-signatur-performance.md) | Done | - | 2026-03-28 | scripts/benchmark-transit-state.mjs — run against staging with BENCHMARK_USER_ID + TOKEN |
+| TASK-phase-4-manual-testing | Final runbook: all-platform Signatur test matrix | frontend, mobile, api-server | - | Done | TASK-perf-trail-optimization | 2026-03-28 | docs/runbooks/signatur-performance-test-matrix.md |
 
 ---
 

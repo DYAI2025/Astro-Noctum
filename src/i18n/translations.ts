@@ -377,6 +377,16 @@ const translationsEn: DeepStringRecord = {
       ctaLabel: "Unlock Premium",
     },
   },
+  astroAccordion: {
+    sunSign: "Sun Sign",
+    moonSign: "Moon Sign",
+    ascendant: "Ascendant",
+    yearAnimal: "Year Animal",
+    dayMaster: "Day Master",
+    monthStem: "Month Pillar",
+    hourStem: "Hour Pillar",
+    dominantElement: "Dominant Element",
+  },
 } as const;
 
 const translationsDe: DeepStringRecord = {
@@ -748,6 +758,16 @@ const translationsDe: DeepStringRecord = {
       description: "Dieser Cluster ist Teil des Premium-Erlebnisses. Schalte tiefere Einblicke in deine Signatur frei.",
       ctaLabel: "Premium freischalten",
     },
+  },
+  astroAccordion: {
+    sunSign: "Sonnenzeichen",
+    moonSign: "Mondzeichen",
+    ascendant: "Aszendent",
+    yearAnimal: "Jahrestier",
+    dayMaster: "Tagesmeister",
+    monthStem: "Monatssäule",
+    hourStem: "Stundensäule",
+    dominantElement: "Dominantes Element",
   },
 };
 

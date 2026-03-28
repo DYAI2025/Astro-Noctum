@@ -2,6 +2,9 @@
 import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { getZodiacSign } from '../../lib/astro-data/zodiacSigns';
+import { getStemByCharacter } from '../../lib/astro-data/heavenlyStems';
+import { getWuxingByKey } from '../../lib/astro-data/wuxing';
+import { getBranchByAnimal } from '../../lib/astro-data/earthlyBranches';
 import { useLanguage } from '../../contexts/LanguageContext';
 import type { ApiData } from '../../types/bafe';
 import type { TileTexts } from '../../types/interpretation';
@@ -39,6 +42,20 @@ export function AstroDetailModal({ activeId, onClose, apiData, tileTexts }: Astr
   const moonData = getZodiacSign(moonSignKey);
   const ascData = getZodiacSign(ascSignKey);
 
+  // BaZi pillar stem lookups
+  const pillars = apiData.bazi?.pillars;
+  const dayStem = getStemByCharacter(pillars?.day?.stem || '');
+  const monthStem = getStemByCharacter(pillars?.month?.stem || '');
+  const hourStem = getStemByCharacter(pillars?.hour?.stem || '');
+
+  // BaZi year animal lookup
+  const yearAnimal = getBranchByAnimal(apiData.bazi?.zodiac_sign || '');
+
+  // WuXing element lookups
+  const dominantEl = getWuxingByKey(apiData.wuxing?.dominant_element || '');
+  const wuxingElements = apiData.wuxing?.elements || {};
+  const sortedElements = Object.entries(wuxingElements).sort(([, a], [, b]) => b - a);
+
   type TileConfig = {
     title: string;
     icon: string;
@@ -67,31 +84,55 @@ export function AstroDetailModal({ activeId, onClose, apiData, tileTexts }: Astr
       ],
     },
     bazi: {
-      title: 'BaZi',
+      title: t('astroAccordion.yearAnimal'),
       icon: '🏯',
-      headline: apiData.bazi?.zodiac_sign || '—',
-      description: tileTexts.dayMaster || '',
+      headline: yearAnimal
+        ? `${yearAnimal.emoji} ${yearAnimal.animal[lang]}`
+        : apiData.bazi?.zodiac_sign || '—',
+      description: yearAnimal?.description[lang] || tileTexts.yearAnimal || '',
       subRows: [
         {
           label: t('astroAccordion.dayMaster'),
-          value: apiData.bazi?.day_master || '—',
-          description: tileTexts.dayMaster || '',
+          value: dayStem ? dayStem.name[lang] : (apiData.bazi?.day_master || '—'),
+          description: dayStem?.dayMaster[lang] || tileTexts.dayMaster || '',
         },
-        { label: t('astroAccordion.monthStem'), value: apiData.bazi?.pillars?.month?.stem || '—' },
-        { label: t('astroAccordion.yearStem'),  value: apiData.bazi?.pillars?.year?.stem  || '—' },
-        { label: t('astroAccordion.hourStem'),  value: apiData.bazi?.pillars?.hour?.stem  || '—' },
+        {
+          label: t('astroAccordion.monthStem'),
+          value: monthStem ? monthStem.name[lang] : (pillars?.month?.stem || '—'),
+          description: monthStem?.monthStem[lang] || '',
+        },
+        {
+          label: t('astroAccordion.hourStem'),
+          value: hourStem ? hourStem.name[lang] : (pillars?.hour?.stem || '—'),
+          description: hourStem?.dayMaster[lang] || '',
+        },
       ],
     },
     wuxing: {
       title: 'Wu Xing',
-      icon: '🔥',
-      headline: apiData.wuxing?.dominant_element || '—',
-      description: tileTexts.dominantWuXing || '',
-      subRows: [
-        { label: t('astroAccordion.dominantElement'),  value: apiData.wuxing?.dominant_element || '—' },
-        { label: t('astroAccordion.secondaryElement'), value: String((apiData.wuxing as Record<string, unknown>)?.['secondary_element'] ?? '—') },
-        { label: t('astroAccordion.deficientElement'), value: String((apiData.wuxing as Record<string, unknown>)?.['deficient_element'] ?? '—') },
-      ],
+      icon: dominantEl?.emoji || '🔥',
+      headline: dominantEl ? dominantEl.name[lang] : (apiData.wuxing?.dominant_element || '—'),
+      description: dominantEl?.description[lang] || tileTexts.dominantWuXing || '',
+      subRows: sortedElements.length > 0
+        ? Array.from(
+            new Map(
+              sortedElements.map(([elKey, pct]) => {
+                const el = getWuxingByKey(elKey);
+                const canonicalKey = el?.key ?? elKey;
+                return [
+                  canonicalKey,
+                  {
+                    label: el ? el.name[lang] : elKey,
+                    value: `${Math.round(pct)}%`,
+                    description: el?.description[lang] || '',
+                  },
+                ];
+              }),
+            ).values(),
+          )
+        : [
+            { label: t('astroAccordion.dominantElement'), value: apiData.wuxing?.dominant_element || '—' },
+          ],
     },
   };
 
