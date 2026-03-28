@@ -91,12 +91,14 @@ export function AgentFloatingWidget({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="w-[320px] max-w-[calc(100vw-32px)] rounded-2xl overflow-hidden shadow-2xl border"
+            className="w-[320px] max-w-[calc(100vw-32px)] rounded-2xl overflow-visible shadow-2xl border"
             style={{
               borderColor: `${agent.accentColor}33`,
               background:
                 'linear-gradient(180deg, rgba(15,12,8,0.95) 0%, rgba(25,20,12,0.97) 100%)',
-              backdropFilter: 'blur(24px)',
+              // backdrop-filter creates a stacking context that traps
+              // the ElevenLabs popup z-index — disable it during a call
+              ...(isActive ? {} : { backdropFilter: 'blur(24px)' }),
             }}
           >
             {/* Header */}

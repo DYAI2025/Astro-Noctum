@@ -192,7 +192,7 @@ export function AgentSection({
       {isPremium && isActive && elevenLabsAgentId && (
         <div
           data-agent-widget={agent.id}
-          className="mt-6 relative z-50 w-full flex justify-center"
+          className="mt-6 relative z-[99999] w-full flex justify-center"
         >
           <elevenlabs-convai
             agent-id={elevenLabsAgentId}
