@@ -173,9 +173,9 @@ export function AgentFloatingWidget({
                 </button>
               )}
 
-              {/* ElevenLabs widget */}
+              {/* ElevenLabs widget — single instance, high z-index for mobile */}
               {isPremium && isActive && elevenLabsAgentId && (
-                <div className="w-full flex justify-center mt-2">
+                <div className="w-full flex justify-center mt-2 relative z-[99999]">
                   <elevenlabs-convai
                     agent-id={elevenLabsAgentId}
                     dynamic-variables={JSON.stringify({

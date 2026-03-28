@@ -921,22 +921,21 @@ h1, h2, h3 { letter-spacing: 0.1em; }
 .enter-scroll-rod--bottom { bottom: 0; border-radius: 0 0 3px 3px; }
 
 /* ── ElevenLabs Widget — force to foreground ─────────────────────── */
-/* The convai widget renders popups (microphone permission, call confirm)
-   inside Shadow DOM *and* sometimes appends overlays to <body>.
-   We must ensure nothing in our UI clips or stacks above them.          */
-
 elevenlabs-convai {
-  position: relative;
   z-index: 99999 !important;
-  overflow: visible !important;
+  position: relative !important;
 }
-
-/* Light-DOM children (if any) */
 elevenlabs-convai * {
   z-index: 99999 !important;
 }
+/* Catch any ElevenLabs-injected iframes or global overlays */
+elevenlabs-convai iframe,
+div[id^="elevenlabs"],
+div[class*="elevenlabs"] {
+  z-index: 99999 !important;
+  pointer-events: auto !important;
+}
 
-/* Widget containers — both Levi and generic agent */
 [data-levi-widget],
 [data-agent-widget] {
   position: relative;

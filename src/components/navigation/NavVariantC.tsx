@@ -42,6 +42,7 @@ export function NavVariantC() {
               }`
             }
             title={label}
+            aria-label={label}
           >
             <Icon className="w-5 h-5" />
           </NavLink>

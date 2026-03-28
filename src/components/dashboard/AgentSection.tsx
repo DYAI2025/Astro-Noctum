@@ -67,10 +67,16 @@ export function AgentSection({
 
   const callLabel = tAgent('callBtn', `${agent.name} anrufen`);
   const hangUpLabel = tAgent('hangUpBtn', 'Auflegen');
+  const comingSoonLabel = (() => {
+    const key = 'dashboard.agent.comingSoon';
+    const val = t(key);
+    return val === key ? 'Coming Soon' : val;
+  })();
 
   // ── Load ElevenLabs widget script (once globally) ──────────────────────
 
   useEffect(() => {
+    if (import.meta.env.MODE === 'test') return;
     if (
       !document.querySelector(
         'script[src="https://unpkg.com/@elevenlabs/convai-widget-embed"]',
@@ -153,7 +159,7 @@ export function AgentSection({
       {!isAvailable ? (
         // Agent env var not configured — show "Coming Soon" badge
         <Badge variant="secondary" className="opacity-70">
-          {t('dashboard.agent.comingSoon')}
+          {comingSoonLabel}
         </Badge>
       ) : isPremium ? (
         <Button
@@ -188,21 +194,8 @@ export function AgentSection({
         </Button>
       )}
 
-      {/* ── ElevenLabs widget (expands below when active) ────────────── */}
-      {isPremium && isActive && elevenLabsAgentId && (
-        <div
-          data-agent-widget={agent.id}
-          className="mt-6 relative z-[99999] w-full flex justify-center"
-        >
-          <elevenlabs-convai
-            agent-id={elevenLabsAgentId}
-            dynamic-variables={JSON.stringify({
-              user_id: userId,
-              chart_context: `${sunSign} / ${zodiacAnimal} / ${dominantEl}`,
-            })}
-          />
-        </div>
-      )}
+      {/* ElevenLabs widget lives only in AgentFloatingWidget (App-level)
+         to avoid duplicate instances and z-index layering issues on mobile */}
     </div>
   );
 }

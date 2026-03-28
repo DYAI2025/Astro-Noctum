@@ -4,17 +4,31 @@ import { MemoryRouter } from 'react-router-dom';
 import { NavVariantA } from '../components/navigation/NavVariantA';
 import { NavVariantB } from '../components/navigation/NavVariantB';
 import { NavVariantC } from '../components/navigation/NavVariantC';
+import { LanguageProvider } from '../contexts/LanguageContext';
+import { translations } from '../i18n/translations';
 
 function wrap(Component: React.ComponentType) {
-  return render(<MemoryRouter><Component /></MemoryRouter>);
+  localStorage.setItem('bazodiac_lang', 'en');
+  return render(
+    <MemoryRouter>
+      <LanguageProvider>
+        <Component />
+      </LanguageProvider>
+    </MemoryRouter>,
+  );
 }
 
-const ROUTES = ['Dashboard', 'Signatur', 'Wu-Xing', 'Wissen'];
+const NAV_LABELS = [
+  translations.en.nav.sidebar.home,
+  translations.en.nav.sidebar.signatur,
+  translations.en.nav.sidebar.wuXing,
+  translations.en.nav.sidebar.wissen,
+];
 
 describe('NavVariantA', () => {
   it('renders all 4 route labels', () => {
     wrap(NavVariantA);
-    ROUTES.forEach(r => expect(screen.getByText(r)).toBeTruthy());
+    NAV_LABELS.forEach((label) => expect(screen.getByText(label)).toBeTruthy());
   });
   it('renders Bazodiac brand name', () => {
     wrap(NavVariantA);
@@ -25,7 +39,7 @@ describe('NavVariantA', () => {
 describe('NavVariantB', () => {
   it('renders all 4 route labels', () => {
     wrap(NavVariantB);
-    ROUTES.forEach(r => expect(screen.getByText(r)).toBeTruthy());
+    NAV_LABELS.forEach((label) => expect(screen.getByText(label)).toBeTruthy());
   });
   it('renders Bazodiac brand name', () => {
     wrap(NavVariantB);

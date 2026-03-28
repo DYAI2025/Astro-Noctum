@@ -9,7 +9,6 @@ const TRACKS: string[] = [
   "/ambiente/bazodiac/Cosmic Heartbeat.mp3",
   "/ambiente/bazodiac/Cosmic Resonance.mp3",
   "/ambiente/bazodiac/Darkness Is a Mirror.mp3",
-  "/ambiente/bazodiac/Elysian Transition (3).mp3",
   "/ambiente/bazodiac/Elysian Transition.mp3",
   "/ambiente/bazodiac/Galactic Garden.mp3",
   "/ambiente/bazodiac/Geometry of Grace.mp3",
@@ -17,15 +16,12 @@ const TRACKS: string[] = [
   "/ambiente/bazodiac/Into the Wild.mp3",
   "/ambiente/bazodiac/Neptune's Flow (2).mp3",
   "/ambiente/bazodiac/Rite of Emergence.mp3",
-  "/ambiente/bazodiac/Roots and Stars (1).mp3",
   "/ambiente/bazodiac/Roots and Stars.mp3",
   "/ambiente/bazodiac/Sacred Water Flow Through Mycelium.mp3",
   "/ambiente/bazodiac/Shining With the Stars.mp3",
-  "/ambiente/bazodiac/Symmetry of the Celestial Sphere (1).mp3",
   "/ambiente/bazodiac/Symmetry of the Celestial Sphere.mp3",
   "/ambiente/bazodiac/Wood Dragon Awakening.mp3",
   "/ambiente/bazodiac/Wood Dragon Rebirth.mp3",
-  "/ambiente/bazodiac/Zodiac's Breath (2).mp3",
   "/ambiente/bazodiac/Zodiac's Breath.mp3",
 ];
 
@@ -56,9 +52,7 @@ export function useAmbientePlayer() {
     audio.preload = "auto";
     audioRef.current = audio;
 
-    // When a track ends, advance to the next one
-    const handleEnded = () => {
-      trackIndexRef.current = (trackIndexRef.current + 1) % TRACKS.length;
+    const playCurrentTrack = () => {
       audio.src = TRACKS[trackIndexRef.current];
       audio.play().catch((err) => {
         const errorName = (err as any)?.name;
@@ -70,10 +64,25 @@ export function useAmbientePlayer() {
       });
     };
 
+    // When a track ends, advance to the next one
+    const handleEnded = () => {
+      trackIndexRef.current = (trackIndexRef.current + 1) % TRACKS.length;
+      playCurrentTrack();
+    };
+
+    // If a track file fails to load/decode, skip to the next one
+    const handleError = () => {
+      console.warn("[AmbientePlayer] Track failed, skipping:", TRACKS[trackIndexRef.current]);
+      trackIndexRef.current = (trackIndexRef.current + 1) % TRACKS.length;
+      playCurrentTrack();
+    };
+
     audio.addEventListener("ended", handleEnded);
+    audio.addEventListener("error", handleError);
 
     return () => {
       audio.removeEventListener("ended", handleEnded);
+      audio.removeEventListener("error", handleError);
       audio.pause();
       audio.src = "";
     };
