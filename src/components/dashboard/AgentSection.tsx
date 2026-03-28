@@ -194,21 +194,8 @@ export function AgentSection({
         </Button>
       )}
 
-      {/* ── ElevenLabs widget (expands below when active) ────────────── */}
-      {isPremium && isActive && elevenLabsAgentId && (
-        <div
-          data-agent-widget={agent.id}
-          className="mt-6 relative z-50 w-full flex justify-center"
-        >
-          <elevenlabs-convai
-            agent-id={elevenLabsAgentId}
-            dynamic-variables={JSON.stringify({
-              user_id: userId,
-              chart_context: `${sunSign} / ${zodiacAnimal} / ${dominantEl}`,
-            })}
-          />
-        </div>
-      )}
+      {/* ElevenLabs widget lives only in AgentFloatingWidget (App-level)
+         to avoid duplicate instances and z-index layering issues on mobile */}
     </div>
   );
 }

@@ -91,7 +91,7 @@ export function AgentFloatingWidget({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="w-[320px] max-w-[calc(100vw-32px)] rounded-2xl overflow-hidden shadow-2xl border"
+            className="w-[320px] max-w-[calc(100vw-32px)] rounded-2xl overflow-visible shadow-2xl border"
             style={{
               borderColor: `${agent.accentColor}33`,
               background:
@@ -171,9 +171,9 @@ export function AgentFloatingWidget({
                 </button>
               )}
 
-              {/* ElevenLabs widget */}
+              {/* ElevenLabs widget — single instance, high z-index for mobile */}
               {isPremium && isActive && elevenLabsAgentId && (
-                <div className="w-full flex justify-center mt-2">
+                <div className="w-full flex justify-center mt-2 relative z-[99999]">
                   <elevenlabs-convai
                     agent-id={elevenLabsAgentId}
                     dynamic-variables={JSON.stringify({
