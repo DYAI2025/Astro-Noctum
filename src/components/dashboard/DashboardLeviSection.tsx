@@ -48,6 +48,7 @@ export function DashboardLeviSection({
 
   // Load ElevenLabs widget
   useEffect(() => {
+    if (import.meta.env.MODE === "test") return;
     if (!document.querySelector('script[src="https://unpkg.com/@elevenlabs/convai-widget-embed"]')) {
       const s = document.createElement("script");
       s.src = "https://unpkg.com/@elevenlabs/convai-widget-embed";

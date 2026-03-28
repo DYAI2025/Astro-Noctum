@@ -84,6 +84,8 @@ const translationsEn: DeepStringRecord = {
     confirmPasswordLabel: "Confirm password",
     confirmPasswordPlaceholder: "Repeat password",
     languageLabel: "Language",
+    passwordRequirements: "Minimum 6 characters",
+    passwordStrength: "Password strength",
     or: "or",
     passwordMismatch: "Passwords do not match.",
   },
@@ -178,6 +180,15 @@ const translationsEn: DeepStringRecord = {
       datePrefix: "Planetary positions on",
       playTitle: "Start time-lapse",
       pauseTitle: "Pause",
+      solarSystem: "☉ SOLAR SYSTEM",
+      planetarium: "✦ PLANETARIUM",
+      unavailable: "Visualisation unavailable",
+      todayPrefix: "Today: ",
+      fullscreen: "Fullscreen",
+      exitFullscreen: "Exit fullscreen",
+      constellation: "Constellation",
+      altitude: "Alt",
+      azimuth: "Az",
     },
     birthSky: {
       message: "This is the sky above {place} on {date} at {time} — the moment you were born.",
@@ -236,8 +247,13 @@ const translationsEn: DeepStringRecord = {
     blueprint: {
       title: "Cosmic Blueprint",
       cta: "Read full Blueprint →",
+      loading: "Loading your cosmic blueprint…",
       western: "Western",
       eastern: "Eastern",
+    },
+    miniSignature: {
+      calculating: "Calculating signature…",
+      label: "Your Form",
     },
     levi: {
       ready: "Levi Bazi — Ready",
@@ -246,6 +262,25 @@ const translationsEn: DeepStringRecord = {
       activeDesc: "Ambient music paused. Talk to Levi about your chart.",
       callBtn: "Call Levi",
       hangUpBtn: "Hang Up",
+    },
+    agent: {
+      levi: {
+        ready: "Levi Bazi — Ready",
+        active: "Levi Bazi — In Conversation",
+        readyDesc: "Your calm mentor. Levi guides you through your chart with depth and composure.",
+        activeDesc: "Ambient music paused. Talk to Levi about your chart.",
+        callBtn: "Call Levi",
+        hangUpBtn: "Hang Up",
+      },
+      eve: {
+        ready: "Eve — Ready",
+        active: "Eve — In Conversation",
+        readyDesc: "Direct. Bold. To the point. Eve tells it like it is — no detours.",
+        activeDesc: "Ambient music paused. Eve is listening.",
+        callBtn: "Call Eve",
+        hangUpBtn: "Hang Up",
+      },
+      comingSoon: "Coming Soon",
     },
     premium: {
       title: "Unlock Your Full Reading",
@@ -324,6 +359,23 @@ const translationsEn: DeepStringRecord = {
     privacy: 'Privacy',
     terms: 'Terms',
     closeAriaLabel: 'Close',
+  },
+  quiz: {
+    share: {
+      title: "Share Result",
+      close: "Close",
+    },
+    loveLanguages: {
+      introDesc: "Everyone gives and receives love in their own way. Discover in 12 questions which love archetype shapes your nature.",
+    },
+  },
+  signatur: {
+    premiumModal: {
+      unlockLabel: "Unlock Premium",
+      closeLabel: "Close",
+      description: "This cluster is part of the premium experience. Unlock deeper insights into your signature.",
+      ctaLabel: "Unlock Premium",
+    },
   },
 } as const;
 
@@ -404,6 +456,8 @@ const translationsDe: DeepStringRecord = {
     confirmPasswordLabel: "Passwort bestätigen",
     confirmPasswordPlaceholder: "Passwort wiederholen",
     languageLabel: "Sprache",
+    passwordRequirements: "Mindestens 6 Zeichen",
+    passwordStrength: "Passwortstärke",
     or: "oder",
     passwordMismatch: "Passwörter stimmen nicht überein.",
   },
@@ -498,6 +552,15 @@ const translationsDe: DeepStringRecord = {
       datePrefix: "Planetenpositionen am",
       playTitle: "Zeitraffer starten",
       pauseTitle: "Pause",
+      solarSystem: "☉ SONNENSYSTEM",
+      planetarium: "✦ PLANETARIUM",
+      unavailable: "Visualisierung nicht verfügbar",
+      todayPrefix: "Heute: ",
+      fullscreen: "Vollbild",
+      exitFullscreen: "Vollbild verlassen",
+      constellation: "Sternbild",
+      altitude: "Höhe",
+      azimuth: "Azimut",
     },
     birthSky: {
       message: "So sah der Himmel über {place} am {date} um {time} aus — dem Moment deiner Geburt.",
@@ -556,8 +619,13 @@ const translationsDe: DeepStringRecord = {
     blueprint: {
       title: "Kosmischer Blueprint",
       cta: "ganzen Blueprint lesen →",
+      loading: "Dein kosmischer Blueprint wird geladen…",
       western: "Westlich",
       eastern: "Östlich",
+    },
+    miniSignature: {
+      calculating: "Signatur wird berechnet…",
+      label: "Deine Form",
     },
     levi: {
       ready: "Levi Bazi Bereit",
@@ -566,6 +634,25 @@ const translationsDe: DeepStringRecord = {
       activeDesc: "Ambient-Musik pausiert. Sprich mit Levi über dein Chart.",
       callBtn: "Call Levi",
       hangUpBtn: "Auflegen",
+    },
+    agent: {
+      levi: {
+        ready: "Levi Bazi Bereit",
+        active: "Levi Bazi — Im Gespräch",
+        readyDesc: "Dein ruhiger Mentor. Levi führt dich mit Tiefe und Gelassenheit durch dein Chart.",
+        activeDesc: "Ambient-Musik pausiert. Sprich mit Levi über dein Chart.",
+        callBtn: "Call Levi",
+        hangUpBtn: "Auflegen",
+      },
+      eve: {
+        ready: "Eve Bereit",
+        active: "Eve — Im Gespräch",
+        readyDesc: "Direkt. Frech. Auf den Punkt. Eve sagt dir, was Sache ist — ohne Umwege.",
+        activeDesc: "Ambient-Musik pausiert. Eve hört zu.",
+        callBtn: "Call Eve",
+        hangUpBtn: "Auflegen",
+      },
+      comingSoon: "Kommt bald",
     },
     premium: {
       title: "Dein vollständiges Reading freischalten",
@@ -644,6 +731,23 @@ const translationsDe: DeepStringRecord = {
     privacy: 'Datenschutz',
     terms: 'AGB',
     closeAriaLabel: 'Schließen',
+  },
+  quiz: {
+    share: {
+      title: "Ergebnis teilen",
+      close: "Schließen",
+    },
+    loveLanguages: {
+      introDesc: "Jeder Mensch gibt und empfängt Liebe auf eine eigene Art. Entdecke in 12 Fragen, welcher Liebenden-Archetyp dein Wesen prägt.",
+    },
+  },
+  signatur: {
+    premiumModal: {
+      unlockLabel: "Premium freischalten",
+      closeLabel: "Schließen",
+      description: "Dieser Cluster ist Teil des Premium-Erlebnisses. Schalte tiefere Einblicke in deine Signatur frei.",
+      ctaLabel: "Premium freischalten",
+    },
   },
 };
 

@@ -8,6 +8,7 @@ import compression from "compression";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { GoogleGenAI } from "@google/genai";
+import Stripe from 'stripe';
 
 // Exponential-backoff fetch helper used by the bootstrap endpoint.
 // Retries on network errors and 5xx responses only; 4xx is returned immediately.
@@ -52,7 +53,7 @@ if (missing.length > 0) {
   console.warn(`[server] WARNING: Missing env vars (dev mode): ${missing.join(', ')}`);
 }
 
-const OPTIONAL_ENV_VARS = ['GEMINI_API_KEY', 'ELEVENLABS_TOOL_SECRET'];
+const OPTIONAL_ENV_VARS = ['GEMINI_API_KEY', 'ELEVENLABS_TOOL_SECRET', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_BUY_ID'];
 for (const v of OPTIONAL_ENV_VARS) {
   if (!process.env[v]) {
     console.warn(`[server] Optional env var not set: ${v} (some features may be degraded)`);
@@ -63,6 +64,15 @@ for (const v of OPTIONAL_ENV_VARS) {
 const geminiClient = process.env.GEMINI_API_KEY
   ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
   : null;
+
+// ── Stripe client (server-side only) ──────────────────────────────
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-12-15' })
+  : null;
+
+if (!stripe && process.env.NODE_ENV === 'production') {
+  console.warn('[server] Stripe not configured (STRIPE_SECRET_KEY missing)');
+}
 
 function buildGeminiPrompt(data, lang) {
   const l = lang === 'de' ? 'German' : 'English';
@@ -468,6 +478,110 @@ app.get("/api/chart", requireUserAuth, (req, res) => {
   const suffix = `/chart${qs ? `?${qs}` : ""}`;
   proxyToBafeWithFallback(bafeFallbackUrls(suffix), req, res);
 });
+
+// ── /api/create-checkout-session ─────────────────────────────────
+app.post('/api/create-checkout-session', requireUserAuth, async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: 'Stripe not configured' });
+  }
+
+  try {
+    const { returnUrl } = req.body;
+    if (!returnUrl) {
+      return res.status(400).json({ error: 'returnUrl is required' });
+    }
+
+    const sanitizedReturnUrl = sanitizeCheckoutReturnUrl(
+      returnUrl,
+      `${APP_URL}?upgrade=success`
+    );
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price: process.env.STRIPE_BUY_ID,
+          quantity: 1,
+        },
+      ],
+      success_url: sanitizedReturnUrl,
+      cancel_url: `${APP_URL}`,
+      customer_email: req.body.email || undefined,
+      metadata: {
+        userId: req.userId,
+        appPlatform: req.body.appPlatform || 'web',
+      },
+    });
+
+    console.log(`[stripe] checkout session created: ${session.id} for user ${req.userId}`);
+    res.json({ sessionId: session.id, url: session.url });
+  } catch (err) {
+    console.error('[stripe] checkout session creation failed:', err.message);
+    res.status(500).json({ error: 'Failed to create checkout session' });
+  }
+});
+
+// ── /api/webhook/stripe ─────────────────────────────────────────
+// Must use express.raw() to get the raw body for signature verification
+app.post(
+  '/api/webhook/stripe',
+  express.raw({ type: 'application/json' }),
+  async (req, res) => {
+    if (!stripe) {
+      return res.status(503).json({ error: 'Stripe not configured' });
+    }
+
+    const sig = req.headers['stripe-signature'];
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+    if (!webhookSecret) {
+      console.warn('[stripe] webhook received but STRIPE_WEBHOOK_SECRET not configured');
+      return res.status(400).json({ error: 'Webhook secret not configured' });
+    }
+
+    let event;
+    try {
+      event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+    } catch (err) {
+      console.error('[stripe] webhook signature verification failed:', err.message);
+      return res.status(400).json({ error: 'Webhook signature verification failed' });
+    }
+
+    try {
+      if (event.type === 'checkout.session.completed') {
+        const session = event.data.object;
+        const userId = session.metadata?.userId;
+
+        if (!userId) {
+          console.warn('[stripe] checkout.session.completed but no userId in metadata');
+          return res.json({ received: true });
+        }
+
+        console.log(`[stripe] checkout.session.completed for user ${userId}`);
+
+        // Update user tier in Supabase
+        if (supabaseServer) {
+          const { error } = await supabaseServer
+            .from('astro_profiles')
+            .update({ tier: 'premium' })
+            .eq('user_id', userId);
+
+          if (error) {
+            console.error('[stripe] failed to update user tier:', error.message);
+          } else {
+            console.log(`[stripe] user ${userId} upgraded to premium`);
+          }
+        }
+      }
+
+      res.json({ received: true });
+    } catch (err) {
+      console.error('[stripe] webhook processing failed:', err.message);
+      res.status(500).json({ error: 'Webhook processing failed' });
+    }
+  }
+);
 
 // ── Transit-state helpers ────────────────────────────────────────────
 
@@ -2591,26 +2705,6 @@ const supabaseServer =
       })
     : null;
 
-// ─── Stripe ENV validation ─────────────────────────────────
-const STRIPE_VARS = ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_PRICE_ID'];
-const missingStripe = STRIPE_VARS.filter(v => !process.env[v]);
-if (missingStripe.length > 0) {
-  console.warn('[STRIPE] Missing ENV vars:', missingStripe.join(', '));
-  console.warn('[STRIPE] Payment endpoints will return 503 until configured.');
-}
-
-// ── Stripe ───────────────────────────────────────────────────────────
-const stripe = process.env.STRIPE_SECRET_KEY
-  ? new (await import("stripe")).default(process.env.STRIPE_SECRET_KEY)
-  : null;
-
-if (stripe) {
-  const testMode = process.env.STRIPE_SECRET_KEY?.startsWith('sk_test_');
-  console.log(`[stripe] initialized (${testMode ? 'TEST' : 'LIVE'} mode)`);
-} else {
-  console.log('[stripe] not configured — checkout will return 503');
-}
-
 // ── GET /api/profile/:userId — ElevenLabs Custom Tool endpoint ──────
 app.get("/api/profile/:userId", async (req, res) => {
   // Verify bearer token
@@ -2629,6 +2723,14 @@ app.get("/api/profile/:userId", async (req, res) => {
   }
 
   const { userId } = req.params;
+
+  // Determine which agent is requesting the profile (levi or eve)
+  const VALID_AGENT_TYPES = ['levi', 'eve'];
+  const rawAgentType = req.query.agent_type ?? req.query.agent;
+  const agentType = rawAgentType === undefined ? 'levi' : String(rawAgentType);
+  if (!VALID_AGENT_TYPES.includes(agentType)) {
+    return res.status(400).json({ error: 'invalid_agent_type' });
+  }
 
   const { data, error } = await supabaseServer
     .from("astro_profiles")
@@ -2708,6 +2810,7 @@ app.get("/api/profile/:userId", async (req, res) => {
       .from("agent_conversations")
       .select("summary, topics, created_at")
       .eq("user_id", userId)
+      .eq("agent_type", agentType)
       .order("created_at", { ascending: false })
       .limit(5);
     if (convosError) {
@@ -2758,7 +2861,7 @@ app.get("/api/profile/:userId", async (req, res) => {
   });
 });
 
-// ── POST /api/agent/conversation — Save Levi conversation summary ───
+// ── POST /api/agent/conversation — Save agent conversation summary ──
 app.post("/api/agent/conversation", async (req, res) => {
   // Verify bearer token
   const authHeader = req.headers.authorization || "";
@@ -2772,10 +2875,17 @@ app.post("/api/agent/conversation", async (req, res) => {
     return res.status(500).json({ error: "Supabase not configured on server" });
   }
 
-  const { user_id, summary, topics } = req.body;
+  const { user_id, summary, topics, agent_type } = req.body;
 
   if (!user_id || !summary) {
     return res.status(400).json({ error: "user_id and summary are required" });
+  }
+
+  // Validate agent_type — default to 'levi' for backward compatibility
+  const VALID_AGENT_TYPES = ['levi', 'eve'];
+  const resolvedAgentType = agent_type === undefined ? 'levi' : agent_type;
+  if (!VALID_AGENT_TYPES.includes(resolvedAgentType)) {
+    return res.status(400).json({ error: 'invalid_agent_type' });
   }
 
   const { error } = await supabaseServer
@@ -2784,6 +2894,7 @@ app.post("/api/agent/conversation", async (req, res) => {
       user_id,
       summary,
       topics: topics || [],
+      agent_type: resolvedAgentType,
     });
 
   if (error) {

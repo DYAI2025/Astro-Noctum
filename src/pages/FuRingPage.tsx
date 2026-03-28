@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Sparkles } from 'lucide-react';
+import { ArrowLeft, Sparkles, Volume2, VolumeX } from 'lucide-react';
 import { useLanguage } from '@/src/contexts/LanguageContext';
 import { useAppLayout } from '@/src/contexts/AppLayoutContext';
 import { FusionRing3D } from '@/src/components/fusion-ring-3d/FusionRing3D';
@@ -26,6 +26,9 @@ import {
 import { quizSectorsToQuizWeights, soulprintToNatalWeights } from '@/src/components/fusion-ring-website/signatur-bridge';
 import type { ContributionEvent } from '@/src/lib/lme/types';
 import { eventToSectorSignals } from '@/src/lib/fusion-ring/test-signal';
+import { useCoustoAudio } from '@/src/hooks/useCoustoAudio';
+import { useCosmicResonance } from '@/src/hooks/useCosmicResonance';
+import { SpaceWeatherPanel } from '@/src/components/signatur/SpaceWeatherPanel';
 
 export default function FuRingPage() {
   const { t, lang } = useLanguage();
@@ -71,11 +74,29 @@ export default function FuRingPage() {
     [apiData?.wuxing?.elements],
   );
 
+  // Cousto audio — dimension weights drive oscillator gains
+  const audioWeights = useMemo(
+    () => liveQuizWeights ?? (signalData?.baseSignals ? quizSectorsToQuizWeights(signalData.baseSignals) : undefined),
+    [liveQuizWeights, signalData?.baseSignals],
+  );
+  const { muted: audioMuted, toggleMute: toggleAudioMute, volume: audioVolume, setVolume: setAudioVolume } = useCoustoAudio(audioWeights);
+
   const { modulation: dissonanceModulation, dissonance } = useDissonance({
     natalWeights: natalPlanetWeights,
     currentWeights: currentPlanetWeights,
     previousWeights: null,
     wuxinBalance,
+  });
+
+  // Cosmic resonance — personalized space weather sensitivity
+  const sunSign = apiData?.western?.zodiac_sign as string | undefined;
+  const moonSign = apiData?.western?.moon_sign as string | undefined;
+  const { profile: resonanceProfile, dimensionMultipliers } = useCosmicResonance({
+    natalWeights: natalPlanetWeights,
+    ringModulation: spaceWeather.ringModulation,
+    kpIndex: spaceWeather.kpIndex,
+    sunSign,
+    moonSign,
   });
 
   const handleQuizComplete = useCallback((event: ContributionEvent) => {
@@ -143,14 +164,38 @@ export default function FuRingPage() {
           <Link
             to="/"
             className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/40 px-3 py-1.5 text-xs uppercase tracking-[0.2em] text-white/70 transition hover:border-[#D4AF37]/60 hover:text-[#D4AF37]"
-            aria-label={lang === 'de' ? 'Zurück zum Dashboard' : 'Back to dashboard'}
+            aria-label={t('furing3d.back')}
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             {t('furing3d.back')}
           </Link>
 
-          <div className="rounded-full border border-white/10 bg-black/45 px-3 py-1 text-[10px] uppercase tracking-[0.25em] text-white/65">
-            {t('furing3d.badge')}
+          <div className="flex items-center gap-3">
+            {/* Cousto Audio controls */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleAudioMute}
+                className="rounded-full border border-white/10 bg-black/45 p-1.5 text-white/60 transition hover:border-[#D4AF37]/40 hover:text-[#D4AF37]"
+                aria-label={audioMuted ? 'Unmute' : 'Mute'}
+              >
+                {audioMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+              </button>
+              {!audioMuted && (
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={audioVolume}
+                  onChange={e => setAudioVolume(parseFloat(e.target.value))}
+                  className="h-1 w-16 cursor-pointer appearance-none rounded-full bg-white/10 accent-[#D4AF37] [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#D4AF37]"
+                  aria-label="Volume"
+                />
+              )}
+            </div>
+            <div className="rounded-full border border-white/10 bg-black/45 px-3 py-1 text-[10px] uppercase tracking-[0.25em] text-white/65">
+              {t('furing3d.badge')}
+            </div>
           </div>
         </header>
 
@@ -170,11 +215,11 @@ export default function FuRingPage() {
           className="flex items-center justify-center gap-2 rounded-2xl border border-[#D4AF37]/30 bg-[#D4AF37]/10 px-4 py-3 text-sm text-[#D4AF37] transition hover:bg-[#D4AF37]/20 md:hidden"
         >
           <Sparkles className="h-4 w-4" />
-          {lang === 'de' ? 'Quiz-Cluster entdecken' : 'Discover Quiz Clusters'}
+          {t('fuRing.discoverClusters')}
         </Link>
 
-        {/* Main content: Sidebar + Pipeline Bridge + Ring */}
-        <div className="flex gap-6">
+        {/* Main content: Sidebar + Pipeline Bridge + Ring + Weather Panel */}
+        <div className="flex flex-col gap-6 md:flex-row">
           {/* Cluster Sidebar — hidden on mobile */}
           <div className="hidden shrink-0 md:block">
             <ClusterSidebar
@@ -203,7 +248,7 @@ export default function FuRingPage() {
             ))}
           </div>
 
-          {/* Ring */}
+          {/* Ring — intuitive side */}
           <div className="min-w-0 flex-1">
             <FusionRing3D
               userId={userId}
@@ -223,6 +268,25 @@ export default function FuRingPage() {
                 reload: t('furing3d.reload'),
                 eventAnnouncePrefix: t('furing3d.eventAnnouncePrefix'),
               }}
+            />
+          </div>
+
+          {/* Space Weather Panel — scientific side (desktop: right column, mobile: below ring) */}
+          <div className="w-full shrink-0 md:w-64 lg:w-72">
+            <SpaceWeatherPanel
+              kpIndex={spaceWeather.kpIndex}
+              gScale={spaceWeather.gScale}
+              xrayFlux={spaceWeather.xrayFlux ?? null}
+              xrayClass={spaceWeather.xrayClass ?? null}
+              protonFlux={spaceWeather.protonFlux ?? null}
+              f107={spaceWeather.f107 ?? null}
+              solarCyclePhase={spaceWeather.solarCyclePhase ?? null}
+              ringModulation={spaceWeather.ringModulation}
+              solarPressure={spaceWeather.solarPressure}
+              events={spaceWeather.events ?? []}
+              alerts={spaceWeather.alerts ?? []}
+              resonance={resonanceProfile}
+              lastUpdate={spaceWeather.lastUpdate ? String(spaceWeather.lastUpdate) : null}
             />
           </div>
         </div>
@@ -274,10 +338,10 @@ export default function FuRingPage() {
             <div className="rounded-2xl border border-[#D4AF37]/30 bg-black/80 backdrop-blur-xl px-8 py-6 text-center">
               <p className="text-3xl mb-2">{completedClusterDef.icon}</p>
               <p className="text-[#D4AF37] font-serif text-lg font-semibold">
-                {completedClusterDef.name} {lang === 'de' ? 'abgeschlossen' : 'completed'}
+                {completedClusterDef.name} {t('cluster.clusterCompleted')}
               </p>
               <p className="text-white/50 text-sm mt-1">
-                {lang === 'de' ? 'Deine Energie wurde aktualisiert' : 'Your energy has been updated'}
+                {t('cluster.energyUpdated')}
               </p>
             </div>
           </motion.div>

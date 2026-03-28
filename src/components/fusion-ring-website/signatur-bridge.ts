@@ -64,3 +64,11 @@ export function quizSectorsToQuizWeights(sectors: number[]): Record<string, numb
     discipline: sectors[9] ?? fallback,
   };
 }
+
+/**
+ * Signatur V3 expects weights keyed by dimension ids.
+ * For 12-sector inputs we use the same deterministic mapping as quiz sectors.
+ */
+export function soulprintToDimensionWeights(sectors: number[]): Record<string, number> {
+  return quizSectorsToQuizWeights(sectors);
+}

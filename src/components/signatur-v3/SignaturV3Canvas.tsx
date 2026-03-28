@@ -15,14 +15,16 @@ import { useRef, useEffect, useCallback, useMemo } from 'react';
 import {
   type PoleState,
   type SignaturV3Config,
-  type DissonanceState,
+  type V3DissonanceState,
   type DayHarmonicState,
+  type SolarModulation,
   DIMENSIONS,
   initializePoles,
-  computeDissonance,
+  computeV3Dissonance,
   updatePoles,
   modulateConfig,
 } from './bipolar-engine';
+import type { DissonanceResult } from '../../lib/fusion-ring/dissonance';
 
 // ═══════════════════════════════════════
 //  PROPS
@@ -35,24 +37,43 @@ export interface SignaturV3Props {
   quizWeights: Record<string, number>;
   /** Day harmonic state — modulates trail persistence and Lissajous blend */
   dayHarmonic?: DayHarmonicState;
+  /** External 3-layer dissonance from useDissonance hook */
+  externalDissonance?: DissonanceResult | null;
+  /** Space weather modulation from useSpaceWeather */
+  solarModulation?: SolarModulation;
   /** Canvas CSS class */
   className?: string;
   /** Width override */
   width?: number;
   /** Height override */
   height?: number;
+  /** Quality tier override: 'auto' selects based on canvas size */
+  quality?: 'high' | 'medium' | 'low' | 'auto';
 }
 
 // ═══════════════════════════════════════
-//  DEFAULT CONFIG
+//  ADAPTIVE CONFIG — trail tier selection
 // ═══════════════════════════════════════
 
-const DEFAULT_CONFIG: SignaturV3Config = {
-  maxR: 200,
-  maxTrailLength: 2000,
-  trailPersistence: 0.85,
-  timeScale: 1.0,
+type QualityTier = 'high' | 'medium' | 'low';
+
+const TIER_CONFIGS: Record<QualityTier, Omit<SignaturV3Config, 'maxR'>> = {
+  high: { maxTrailLength: 2000, trailPersistence: 0.85, timeScale: 1.0 },
+  medium: { maxTrailLength: 800, trailPersistence: 0.82, timeScale: 1.0 },
+  low: { maxTrailLength: 300, trailPersistence: 0.78, timeScale: 1.0 },
 };
+
+function selectQualityTier(width: number, height: number): QualityTier {
+  const size = Math.min(width, height);
+  if (size >= 400) return 'high';
+  if (size >= 250) return 'medium';
+  return 'low';
+}
+
+function buildConfig(width: number, height: number, quality: 'high' | 'medium' | 'low' | 'auto'): SignaturV3Config {
+  const tier = quality === 'auto' ? selectQualityTier(width, height) : quality;
+  return { ...TIER_CONFIGS[tier], maxR: Math.min(width, height) * 0.4 };
+}
 
 // ═══════════════════════════════════════
 //  RENDER HELPERS
@@ -194,24 +215,31 @@ export default function SignaturV3Canvas({
   natalWeights,
   quizWeights,
   dayHarmonic,
+  externalDissonance,
+  solarModulation,
   className,
   width = 500,
   height = 500,
+  quality = 'auto',
 }: SignaturV3Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef<number>(0);
   const polesRef = useRef<PoleState[] | null>(null);
-  const dissonanceRef = useRef<DissonanceState | null>(null);
+  const dissonanceRef = useRef<V3DissonanceState | null>(null);
   const dayHarmonicRef = useRef<DayHarmonicState | undefined>(dayHarmonic);
+  const solarRef = useRef<SolarModulation | undefined>(solarModulation);
   const timeRef = useRef(0);
+  const lastFrameRef = useRef(0);
+  const visibleRef = useRef(true);
 
-  // Keep ref in sync with prop (avoids restarting animation loop on each change)
+  // Keep refs in sync with props (avoids restarting animation loop on each change)
   dayHarmonicRef.current = dayHarmonic;
+  solarRef.current = solarModulation;
 
-  const config = useMemo(() => ({
-    ...DEFAULT_CONFIG,
-    maxR: Math.min(width, height) * 0.4,
-  }), [width, height]);
+  const config = useMemo(
+    () => buildConfig(width, height, quality),
+    [width, height, quality],
+  );
 
   const natalMap = useMemo(() => {
     const m = new Map<string, number>();
@@ -228,11 +256,26 @@ export default function SignaturV3Canvas({
   // Initialize poles when weights change
   useEffect(() => {
     polesRef.current = initializePoles(config, natalMap, quizMap);
-    dissonanceRef.current = computeDissonance(natalMap, quizMap);
-  }, [config, natalMap, quizMap]);
+    dissonanceRef.current = computeV3Dissonance(natalMap, quizMap, externalDissonance);
+  }, [config, natalMap, quizMap, externalDissonance]);
 
-  // Animation loop
+  // Pause when tab hidden, resume on visible
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      visibleRef.current = !document.hidden;
+      if (!document.hidden) {
+        lastFrameRef.current = performance.now();
+        animRef.current = requestAnimationFrame(render);
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+  }, []);
+
+  // Animation loop with delta time
   const render = useCallback(() => {
+    if (!visibleRef.current) return;
+
     const canvas = canvasRef.current;
     const poles = polesRef.current;
     const dissonance = dissonanceRef.current;
@@ -255,7 +298,11 @@ export default function SignaturV3Canvas({
     const cx = width / 2;
     const cy = height / 2;
 
-    timeRef.current += 0.016; // ~60fps
+    // Delta time for frame-rate-independent animation
+    const now = performance.now();
+    const dt = lastFrameRef.current ? Math.min((now - lastFrameRef.current) / 1000, 0.05) : 0.016;
+    lastFrameRef.current = now;
+    timeRef.current += dt;
 
     // Apply day-harmonic config modulation (trail persistence etc.)
     const activeConfig = dayHarmonicRef.current
@@ -263,12 +310,14 @@ export default function SignaturV3Canvas({
       : config;
 
     // Update pole positions
-    updatePoles(poles, dissonance, activeConfig, timeRef.current, dayHarmonicRef.current);
+    updatePoles(poles, dissonance, activeConfig, timeRef.current, dayHarmonicRef.current, solarRef.current);
 
     // === RENDER ===
 
     // Semi-transparent clear — trails persist through partial fade
-    ctx.fillStyle = `rgba(8, 5, 15, ${0.02 + dissonance.dNatal * 0.03})`;
+    // Solar storms increase fade rate slightly (more energy = brighter trails)
+    const solarFadeMod = solarRef.current ? (solarRef.current.ringModulation - 1.0) * 0.01 : 0;
+    ctx.fillStyle = `rgba(8, 5, 15, ${0.02 + dissonance.dNatal * 0.03 - solarFadeMod})`;
     ctx.fillRect(0, 0, width, height);
 
     // Dimension axes (very subtle guide lines)
@@ -302,6 +351,7 @@ export default function SignaturV3Canvas({
   }, [width, height, config]);
 
   useEffect(() => {
+    lastFrameRef.current = performance.now();
     animRef.current = requestAnimationFrame(render);
     return () => cancelAnimationFrame(animRef.current);
   }, [render]);

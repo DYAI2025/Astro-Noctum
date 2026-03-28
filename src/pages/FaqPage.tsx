@@ -6,7 +6,7 @@ import { LegalFooter } from '@/src/components/LegalFooter';
 import { useLanguage } from '@/src/contexts/LanguageContext';
 
 export default function FaqPage() {
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
 
   const toggle = (key: string) => {
@@ -27,10 +27,10 @@ export default function FaqPage() {
       {/* Header */}
       <div className="text-center mb-12">
         <p className="text-gold-deep/55 text-[9px] uppercase tracking-[0.5em] mb-3">
-          {lang === 'de' ? 'Kosmisches Wissen' : 'Cosmic Knowledge'}
+          {t('faq.cosmicKnowledge')}
         </p>
         <h1 className="font-serif text-3xl sm:text-4xl text-ink">
-          {lang === 'de' ? 'Häufige Fragen' : 'Frequently Asked Questions'}
+          {t('faq.title')}
         </h1>
       </div>
 
@@ -89,15 +89,13 @@ export default function FaqPage() {
       {/* CTA */}
       <div className="mt-16 text-center">
         <p className="text-xs text-ink/40 mb-4">
-          {lang === 'de'
-            ? 'Entdecke dein persönliches kosmisches Profil'
-            : 'Discover your personal cosmic profile'}
+          {t('faq.ctaText')}
         </p>
         <a
           href="/"
           className="inline-block px-8 py-3 border border-gold/25 text-gold text-[10px] uppercase tracking-[0.3em] rounded-lg hover:bg-gold/10 transition-colors"
         >
-          {lang === 'de' ? 'Zum Dashboard' : 'Go to Dashboard'}
+          {t('faq.ctaButton')}
         </a>
       </div>
 

@@ -7,7 +7,7 @@ import {
   computeDayHarmonic,
 } from '../lib/fusion-ring/day-harmonic';
 
-// ── Types ────────────────────────────────────────────────────────────
+// ── Types ─────────────────────────────────────────────────────────────
 
 interface BirthInput {
   date: string;
@@ -25,7 +25,7 @@ interface UseFirstRunDailyResult {
   handleClose: () => void;
 }
 
-// ── Cache key helper ─────────────────────────────────────────────────
+// ── Cache key helper ──────────────────────────────────────────────────
 
 function todayKey(): string {
   return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
@@ -56,7 +56,7 @@ function setCachedDaily(data: DailyResponse): void {
   }
 }
 
-// ── Hook ─────────────────────────────────────────────────────────────
+// ── Hook ──────────────────────────────────────────────────────────────
 
 export function useFirstRunDaily(
   userId: string,
@@ -77,19 +77,28 @@ export function useFirstRunDaily(
     let cancelled = false;
 
     (async () => {
+      const todayDate = todayKey();
+
       try {
         // 1. Check if user already dismissed the modal today
-        const { data: profile } = await supabase
+        // Graceful fallback: if query fails (e.g. column doesn't exist),
+        // assume modal was NOT seen and show it
+        let alreadySeen = false;
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('daily_modal_seen_date')
           .eq('id', userId)
           .maybeSingle();
 
+        if (profileError) {
+          console.warn('[useFirstRunDaily] Profile query failed, showing modal:', profileError.message);
+          alreadySeen = false;
+        } else if (profile?.daily_modal_seen_date === todayDate) {
+          alreadySeen = true;
+        }
+
         if (cancelled) return;
-        // Daily recurrence: show modal once per calendar day.
-        // daily_modal_seen_date stores the last date the user dismissed the modal.
-        const today = todayKey();
-        if (profile?.daily_modal_seen_date === today) return;
+        if (alreadySeen) return;
 
         // 2. Check localStorage cache
         const cached = getCachedDaily();
@@ -105,7 +114,7 @@ export function useFirstRunDaily(
           birthData,
           soulprintSectors,
           quizSectors,
-          today,
+          todayDate,
         );
 
         if (cancelled) return;
@@ -114,8 +123,12 @@ export function useFirstRunDaily(
         setDailyData(data);
         setShowModal(true);
       } catch (err) {
-        console.error('[useFirstRunDaily] Failed:', err);
-        // Silently fail — daily modal is non-critical
+        // Graceful fallback: on any error, show the modal anyway
+        // This ensures the modal appears even if the DB column is missing
+        console.warn('[useFirstRunDaily] Error occurred, showing modal:', err);
+        if (!cancelled) {
+          setShowModal(true);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }

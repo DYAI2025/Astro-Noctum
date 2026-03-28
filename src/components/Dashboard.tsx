@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   ArrowLeft,
@@ -18,7 +18,9 @@ import type { TileTexts } from "../types/interpretation";
 import { DashboardAstroSection } from "./dashboard/DashboardAstroSection";
 import { DashboardInterpretationSection } from "./dashboard/DashboardInterpretationSection";
 import { SectionErrorBoundary } from "./dashboard/SectionErrorBoundary";
-import { DashboardLeviSection } from "./dashboard/DashboardLeviSection";
+// import { DashboardLeviSection } from "./dashboard/DashboardLeviSection";
+import { AgentSection } from "./dashboard/AgentSection";
+import { AGENTS } from "@/packages/shared/src/agents/config";
 import { CosmicWeatherCard } from "./CosmicWeatherCard";
 import { isFeatureEnabled } from "../lib/feature-flags";
 import { useDailyHoroscope } from "../hooks/useDailyHoroscope";
@@ -28,11 +30,13 @@ import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { BlueprintReveal } from "./dashboard/BlueprintReveal";
 import MiniSignature from "./dashboard/MiniSignature";
-import { soulprintToNatalWeights } from "./fusion-ring-website/signatur-bridge";
+import { soulprintToDimensionWeights, soulprintToNatalWeights } from "./fusion-ring-website/signatur-bridge";
 import InfluenceGauges from "./dashboard/InfluenceGauges";
 import { TourOverlay } from "./dashboard/TourOverlay";
 import { useDashboardTour } from "@/src/hooks/useDashboardTour";
 import { usePlanetarium } from "@/src/contexts/PlanetariumContext";
+import { useDissonance } from "@/src/hooks/useDissonance";
+import { useSpaceWeather } from "@/src/hooks/useSpaceWeather";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Static data
@@ -212,48 +216,73 @@ export function Dashboard({
     quizSectors: number[];
     birthCity: string;
   }>({ birthInput: null, soulprintSectors: null, quizSectors: EMPTY_SECTORS, birthCity: '' });
+  const [metaLoading, setMetaLoading] = useState(true);
+  const [metaError, setMetaError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!userId) return;
     let cancelled = false;
+    setMetaLoading(true);
+    setMetaError(null);
 
     (async () => {
-      const [profileRes, birthRes] = await Promise.all([
-        supabase
-          .from('astro_profiles')
-          .select('birth_date, birth_time, iana_time_zone, birth_lat, birth_lng, soulprint_sectors')
-          .eq('user_id', userId)
-          .maybeSingle(),
-        supabase
-          .from('birth_data')
-          .select('place_label')
-          .eq('user_id', userId)
-          .maybeSingle(),
-      ]);
+      try {
+        const [profileRes, birthRes] = await Promise.all([
+          supabase
+            .from('astro_profiles')
+            .select('birth_date, birth_time, iana_time_zone, birth_lat, birth_lng, soulprint_sectors')
+            .eq('user_id', userId)
+            .maybeSingle(),
+          supabase
+            .from('birth_data')
+            .select('place_label')
+            .eq('user_id', userId)
+            .maybeSingle(),
+        ]);
 
-      const data = profileRes.data;
-      if (cancelled || !data) return;
+        if (cancelled) return;
 
-      const birthInput = (data.birth_date && data.birth_lat != null && data.birth_lng != null)
-        ? {
-            date: data.birth_date,
-            time: data.birth_time || '12:00',
-            tz: data.iana_time_zone || 'Europe/Berlin',
-            lat: data.birth_lat,
-            lon: data.birth_lng,
+        if (profileRes.error) throw profileRes.error;
+
+        if (birthRes.error) {
+          console.error('[Dashboard] Birth data fetch failed:', birthRes.error);
+          if (!cancelled) {
+            setMetaError(birthRes.error.message || 'Failed to load birth city');
           }
-        : null;
+        }
 
-      const soulprint = Array.isArray(data.soulprint_sectors) && data.soulprint_sectors.length === 12
-        ? data.soulprint_sectors as number[]
-        : null;
+        const data = profileRes.data;
+        if (!data) {
+          setMetaLoading(false);
+          return;
+        }
 
-      setProfileMeta({
-        birthInput,
-        soulprintSectors: soulprint,
-        quizSectors: EMPTY_SECTORS,
-        birthCity: birthRes.data?.place_label || '',
-      });
+        const birthInput = (data.birth_date && data.birth_lat != null && data.birth_lng != null)
+          ? {
+              date: data.birth_date,
+              time: data.birth_time || '12:00',
+              tz: data.iana_time_zone || 'Europe/Berlin',
+              lat: data.birth_lat,
+              lon: data.birth_lng,
+            }
+          : null;
+
+        const soulprint = Array.isArray(data.soulprint_sectors) && data.soulprint_sectors.length === 12
+          ? data.soulprint_sectors as number[]
+          : null;
+
+        setProfileMeta({
+          birthInput,
+          soulprintSectors: soulprint,
+          quizSectors: EMPTY_SECTORS,
+          birthCity: birthRes.data?.place_label || '',
+        });
+      } catch (err: any) {
+        console.error('[Dashboard] Meta fetch failed:', err);
+        if (!cancelled) setMetaError(err.message || 'Failed to load profile data');
+      } finally {
+        if (!cancelled) setMetaLoading(false);
+      }
     })();
 
     return () => { cancelled = true; };
@@ -261,6 +290,7 @@ export function Dashboard({
 
   // ── Feature flags ──────────────────────────────────────────────────
   const dailyEnabled = isFeatureEnabled('daily_modal_v1');
+  const v3Enabled = isFeatureEnabled('signature_engine_v3');
 
   // ── Daily horoscope modal ───────────────────────────────────────────
   const { dailyData, dayHarmonic, showModal, handleClose: handleDailyClose } = useFirstRunDaily(
@@ -269,6 +299,26 @@ export function Dashboard({
     profileMeta.soulprintSectors,
     profileMeta.quizSectors,
   );
+
+  // ── Dissonance for V3 mini signature ───────────────────────────────
+  const natalPlanetWeights = useMemo(
+    () => profileMeta.soulprintSectors ? soulprintToNatalWeights(profileMeta.soulprintSectors) : null,
+    [profileMeta.soulprintSectors],
+  );
+  const { dissonance: miniDissonance } = useDissonance({
+    natalWeights: natalPlanetWeights,
+    currentWeights: natalPlanetWeights, // no quiz planet weights on dashboard; natal-only baseline
+    previousWeights: null,
+    wuxinBalance: apiData?.wuxing?.elements ?? undefined,
+  });
+
+  // ── Space weather for V3 mini signature ──────────────────────────
+  const spaceWeather = useSpaceWeather();
+  const miniSolar = useMemo(() => spaceWeather ? {
+    ringModulation: spaceWeather.ringModulation,
+    triggerEffect: spaceWeather.triggerEffect,
+    kpIndex: spaceWeather.kpIndex,
+  } : undefined, [spaceWeather.ringModulation, spaceWeather.triggerEffect, spaceWeather.kpIndex]);
 
   // ── Render ────────────────────────────────────────────────────────────
 
@@ -283,14 +333,22 @@ export function Dashboard({
       <div ref={planetariumSentinelRef} className="h-px" aria-hidden="true" />
 
       {/* Issues banner */}
-      {apiIssues.length > 0 && (
+      {(apiIssues.length > 0 || metaError) && (
         <div className="mb-8 rounded-xl border border-amber-400/40 bg-amber-50 px-4 py-3 text-xs text-amber-800">
-          {t("dashboard.fallbackNote")}
-          <ul className="mt-2 list-disc pl-4 space-y-1">
-            {apiIssues.map((issue, i) => (
-              <li key={i}><span className="font-semibold">{issue.endpoint}</span>: {issue.message}</li>
-            ))}
-          </ul>
+          {metaError ? (
+            <p className="flex items-center gap-2">
+              <span className="font-semibold">Notice:</span> {metaError}
+            </p>
+          ) : (
+            <>
+              {t("dashboard.fallbackNote")}
+              <ul className="mt-2 list-disc pl-4 space-y-1">
+                {apiIssues.map((issue, i) => (
+                  <li key={i}><span className="font-semibold">{issue.endpoint}</span>: {issue.message}</li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
       )}
 
@@ -370,39 +428,49 @@ export function Dashboard({
       </SectionErrorBoundary>
 
       {/* ═══ SIGNATUR V3 — Bipolar Trail Mini Preview ═══════════════════ */}
-      <motion.div className="mb-12 sm:mb-16" {...fadeIn(0.35)}>
+      {v3Enabled && <motion.div className="mb-12 sm:mb-16 max-w-xs mx-auto" {...fadeIn(0.35)}>
         <SectionErrorBoundary name="MiniSignature">
           <MiniSignature
-            natalWeights={profileMeta.soulprintSectors ? soulprintToNatalWeights(profileMeta.soulprintSectors) : undefined}
-            quizWeights={profileMeta.quizSectors.length === 12 ? soulprintToNatalWeights(profileMeta.quizSectors) : undefined}
+            natalWeights={profileMeta.soulprintSectors ? soulprintToDimensionWeights(profileMeta.soulprintSectors) : undefined}
+            quizWeights={profileMeta.quizSectors.length === 12 ? soulprintToDimensionWeights(profileMeta.quizSectors) : undefined}
             dayHarmonic={dayHarmonic}
+            externalDissonance={miniDissonance}
+            solarModulation={miniSolar}
             onExpand={() => window.location.assign('/signatur')}
           />
         </SectionErrorBoundary>
-      </motion.div>
+      </motion.div>}
 
       {/* ── Tour sentinel: step 2 triggers when Levi/interpretation area scrolls into view ── */}
       <div ref={leviSentinelRef} className="h-px" aria-hidden="true" />
 
-      {/* ═══ LEVI BAZI — Voice Agent Section ═══════════════════════════ */}
+      {/* ═══ VOICE AGENTS — Multi-Agent Section ═══════════════════════ */}
       <motion.div className="mb-12 sm:mb-16" {...fadeIn(0.4)}>
-        <SectionErrorBoundary name="Levi">
-          <DashboardLeviSection
-            isPremium={isPremium}
-            userId={userId}
-            onStopAudio={onStopAudio}
-            onResumeAudio={onResumeAudio}
-            sunSign={apiData?.western?.zodiac_sign || ''}
-            zodiacAnimal={apiData?.bazi?.zodiac_sign || ''}
-            dominantEl={apiData?.wuxing?.dominant_element || ''}
-          />
+        <SectionErrorBoundary name="Agents">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+            {AGENTS.map(agent => (
+              <AgentSection
+                key={agent.id}
+                agent={agent}
+                isPremium={isPremium}
+                userId={userId}
+                onStopAudio={onStopAudio}
+                onResumeAudio={onResumeAudio}
+                sunSign={apiData?.western?.zodiac_sign || ''}
+                zodiacAnimal={apiData?.bazi?.zodiac_sign || ''}
+                dominantEl={apiData?.wuxing?.dominant_element || ''}
+              />
+            ))}
+          </div>
         </SectionErrorBoundary>
       </motion.div>
 
       {/* ═══ INFLUENCE GAUGES ═══════════════════════════════════════════ */}
       <motion.div className="mb-12 sm:mb-16" {...fadeIn(0.42)}>
         <SectionErrorBoundary name="InfluenceGauges">
-          <InfluenceGauges />
+          <InfluenceGauges
+            weights={profileMeta.soulprintSectors ? soulprintToNatalWeights(profileMeta.soulprintSectors) : undefined}
+          />
         </SectionErrorBoundary>
       </motion.div>
 

@@ -4,6 +4,7 @@ import { Lock, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import type { ClusterDef } from '@/src/lib/fusion-ring/clusters';
 import { clusterProgress } from '@/src/lib/fusion-ring/clusters';
 import { MODULE_TO_QUIZ_ID, QUIZ_NAMES } from '@/src/lib/fusion-ring/quiz-maps';
+import { useLanguage } from '@/src/contexts/LanguageContext';
 
 interface ClusterCardProps {
   cluster: ClusterDef;
@@ -14,6 +15,7 @@ interface ClusterCardProps {
 }
 
 export function ClusterCard({ cluster, completedModules, onStartQuiz, isPremium, lang }: ClusterCardProps) {
+  const { t } = useLanguage();
   const [expanded, setExpanded] = useState(false);
   const progress = clusterProgress(cluster, completedModules);
   const done = cluster.quizModuleIds.filter(id => completedModules.has(id)).length;
@@ -47,7 +49,7 @@ export function ClusterCard({ cluster, completedModules, onStartQuiz, isPremium,
             <h3 className="font-serif text-base text-gold/90">{cluster.name}</h3>
             <span className="text-xs text-gold/40">
               {isComplete
-                ? (lang === 'de' ? 'Abgeschlossen' : 'Completed')
+                ? t('cluster.completed')
                 : `${done}/${total}`}
             </span>
           </div>
@@ -123,7 +125,7 @@ export function ClusterCard({ cluster, completedModules, onStartQuiz, isPremium,
                       </div>
                     ) : (
                       <span className="text-xs text-gold/40 shrink-0">
-                        {lang === 'de' ? 'Starten' : 'Start'} →
+                        {t('cluster.start')} →
                       </span>
                     )}
                   </button>
