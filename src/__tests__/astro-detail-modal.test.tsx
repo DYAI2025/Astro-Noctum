@@ -65,7 +65,18 @@ const mockApiData: ApiData = {
   },
   wuxing: {
     dominant_element: 'Wood',
-    elements: { Wood: 35, Fire: 25, Earth: 15, Metal: 15, Water: 10 },
+    elements: {
+      Wood: 35,
+      Holz: 35,
+      Fire: 25,
+      Feuer: 25,
+      Earth: 15,
+      Erde: 15,
+      Metal: 15,
+      Metall: 15,
+      Water: 10,
+      Wasser: 10,
+    },
   },
 };
 
