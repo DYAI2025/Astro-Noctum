@@ -921,12 +921,23 @@ h1, h2, h3 { letter-spacing: 0.1em; }
 .enter-scroll-rod--bottom { bottom: 0; border-radius: 0 0 3px 3px; }
 
 /* ── ElevenLabs Widget — force to foreground ─────────────────────── */
-elevenlabs-convai,
+elevenlabs-convai {
+  z-index: 99999 !important;
+  position: relative !important;
+}
 elevenlabs-convai * {
   z-index: 99999 !important;
 }
+/* Catch any ElevenLabs-injected iframes or global overlays */
+elevenlabs-convai iframe,
+div[id^="elevenlabs"],
+div[class*="elevenlabs"] {
+  z-index: 99999 !important;
+  pointer-events: auto !important;
+}
 
-[data-levi-widget] {
+[data-levi-widget],
+[data-agent-widget] {
   position: relative;
   z-index: 99999 !important;
 }
