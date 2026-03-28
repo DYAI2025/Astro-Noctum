@@ -27,6 +27,8 @@ import { quizSectorsToQuizWeights, soulprintToNatalWeights } from '@/src/compone
 import type { ContributionEvent } from '@/src/lib/lme/types';
 import { eventToSectorSignals } from '@/src/lib/fusion-ring/test-signal';
 import { useCoustoAudio } from '@/src/hooks/useCoustoAudio';
+import { useCosmicResonance } from '@/src/hooks/useCosmicResonance';
+import { SpaceWeatherPanel } from '@/src/components/signatur/SpaceWeatherPanel';
 
 export default function FuRingPage() {
   const { t, lang } = useLanguage();
@@ -84,6 +86,17 @@ export default function FuRingPage() {
     currentWeights: currentPlanetWeights,
     previousWeights: null,
     wuxinBalance,
+  });
+
+  // Cosmic resonance — personalized space weather sensitivity
+  const sunSign = apiData?.western?.zodiac_sign as string | undefined;
+  const moonSign = apiData?.western?.moon_sign as string | undefined;
+  const { profile: resonanceProfile, dimensionMultipliers } = useCosmicResonance({
+    natalWeights: natalPlanetWeights,
+    ringModulation: spaceWeather.ringModulation,
+    kpIndex: spaceWeather.kpIndex,
+    sunSign,
+    moonSign,
   });
 
   const handleQuizComplete = useCallback((event: ContributionEvent) => {
@@ -205,8 +218,8 @@ export default function FuRingPage() {
           {t('fuRing.discoverClusters')}
         </Link>
 
-        {/* Main content: Sidebar + Pipeline Bridge + Ring */}
-        <div className="flex gap-6">
+        {/* Main content: Sidebar + Pipeline Bridge + Ring + Weather Panel */}
+        <div className="flex flex-col gap-6 md:flex-row">
           {/* Cluster Sidebar — hidden on mobile */}
           <div className="hidden shrink-0 md:block">
             <ClusterSidebar
@@ -235,7 +248,7 @@ export default function FuRingPage() {
             ))}
           </div>
 
-          {/* Ring */}
+          {/* Ring — intuitive side */}
           <div className="min-w-0 flex-1">
             <FusionRing3D
               userId={userId}
@@ -255,6 +268,25 @@ export default function FuRingPage() {
                 reload: t('furing3d.reload'),
                 eventAnnouncePrefix: t('furing3d.eventAnnouncePrefix'),
               }}
+            />
+          </div>
+
+          {/* Space Weather Panel — scientific side (desktop: right column, mobile: below ring) */}
+          <div className="w-full shrink-0 md:w-64 lg:w-72">
+            <SpaceWeatherPanel
+              kpIndex={spaceWeather.kpIndex}
+              gScale={spaceWeather.gScale}
+              xrayFlux={spaceWeather.xrayFlux ?? null}
+              xrayClass={spaceWeather.xrayClass ?? null}
+              protonFlux={spaceWeather.protonFlux ?? null}
+              f107={spaceWeather.f107 ?? null}
+              solarCyclePhase={spaceWeather.solarCyclePhase ?? null}
+              ringModulation={spaceWeather.ringModulation}
+              solarPressure={spaceWeather.solarPressure}
+              events={spaceWeather.events ?? []}
+              alerts={spaceWeather.alerts ?? []}
+              resonance={resonanceProfile}
+              lastUpdate={spaceWeather.lastUpdate ? String(spaceWeather.lastUpdate) : null}
             />
           </div>
         </div>
