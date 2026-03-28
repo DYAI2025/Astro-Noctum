@@ -384,11 +384,8 @@ const translationsEn: DeepStringRecord = {
     yearAnimal: "Year Animal",
     dayMaster: "Day Master",
     monthStem: "Month Pillar",
-    yearStem: "Year Pillar",
     hourStem: "Hour Pillar",
     dominantElement: "Dominant Element",
-    secondaryElement: "Secondary Element",
-    deficientElement: "Deficient Element",
   },
 } as const;
 
@@ -769,11 +766,8 @@ const translationsDe: DeepStringRecord = {
     yearAnimal: "Jahrestier",
     dayMaster: "Tagesmeister",
     monthStem: "Monatssäule",
-    yearStem: "Jahressäule",
     hourStem: "Stundensäule",
     dominantElement: "Dominantes Element",
-    secondaryElement: "Sekundäres Element",
-    deficientElement: "Schwaches Element",
   },
 };
 

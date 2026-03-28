@@ -277,3 +277,63 @@ describe('V3 Engine Performance — Mobile Web (30fps target)', () => {
     console.log(`[V3 Mobile Perf] Full modulated frame avg ${avgMs.toFixed(3)}ms (budget: 33.3ms)`);
   });
 });
+
+/**
+ * First Frame Validation — REQ-PERF acceptance criterion:
+ * "First visible frame appears within 2 seconds of data availability."
+ *
+ * Measures the time from data availability (natal + quiz weights ready)
+ * to the first complete frame output (pole init + dissonance + first update).
+ * This covers everything the engine does synchronously before the canvas
+ * can render — the remaining time is browser rAF scheduling (~16ms)
+ * and canvas draw calls (measured separately in desktop/mobile benchmarks).
+ */
+describe('V3 First Frame Readiness (< 2s budget)', () => {
+  it('init → first frame data ready in < 50ms (budget: 2000ms)', () => {
+    const start = performance.now();
+
+    // Step 1: Initialize poles from natal + quiz weights (synchronous)
+    const poles = initializePoles(CONFIG, NATAL, QUIZ);
+
+    // Step 2: Compute dissonance (synchronous)
+    const external = {
+      d_natal: 0.5, d_accumulated: 0.3,
+      d_elemental: { magnitude: 0.6, type: 'ke' as const, pair: ['Fire', 'Water'] as [string, string] },
+      intensity: 0.45,
+    };
+    const dissonance = computeV3Dissonance(NATAL, QUIZ, external);
+
+    // Step 3: Modulate config with day harmonic (synchronous)
+    const activeConfig = modulateConfig(CONFIG, DAY_HARMONIC);
+
+    // Step 4: First frame update (synchronous)
+    updatePoles(poles, dissonance, activeConfig, 0.016, DAY_HARMONIC, SOLAR);
+
+    const elapsed = performance.now() - start;
+
+    // All synchronous engine work should complete in well under 50ms
+    // (leaving >1950ms of the 2s budget for data fetch + canvas mount + rAF)
+    expect(elapsed).toBeLessThan(50);
+    console.log(`[V3 First Frame] Data-ready → frame-ready: ${elapsed.toFixed(2)}ms (budget: 2000ms)`);
+  });
+
+  it('100 cold starts average < 10ms each', () => {
+    const times: number[] = [];
+    for (let i = 0; i < 100; i++) {
+      const start = performance.now();
+      const poles = initializePoles(CONFIG, NATAL, QUIZ);
+      const dissonance = computeV3Dissonance(NATAL, QUIZ);
+      const activeConfig = modulateConfig(CONFIG, DAY_HARMONIC);
+      updatePoles(poles, dissonance, activeConfig, 0.016, DAY_HARMONIC, SOLAR);
+      times.push(performance.now() - start);
+    }
+
+    const avg = times.reduce((a, b) => a + b, 0) / times.length;
+    const max = Math.max(...times);
+    const p95 = times.sort((a, b) => a - b)[Math.floor(times.length * 0.95)]!;
+
+    expect(avg).toBeLessThan(10);
+    expect(p95).toBeLessThan(20);
+    console.log(`[V3 First Frame] 100 cold starts — avg: ${avg.toFixed(2)}ms, p95: ${p95.toFixed(2)}ms, max: ${max.toFixed(2)}ms`);
+  });
+});
