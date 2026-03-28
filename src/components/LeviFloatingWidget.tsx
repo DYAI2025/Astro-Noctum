@@ -61,10 +61,10 @@ export function LeviFloatingWidget({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="w-[320px] max-w-[calc(100vw-32px)] rounded-2xl overflow-hidden shadow-2xl border border-[#8B6914]/20"
+            className="w-[320px] max-w-[calc(100vw-32px)] rounded-2xl overflow-visible shadow-2xl border border-[#8B6914]/20"
             style={{
               background: 'linear-gradient(180deg, rgba(15,12,8,0.95) 0%, rgba(25,20,12,0.97) 100%)',
-              backdropFilter: 'blur(24px)',
+              ...(active ? {} : { backdropFilter: 'blur(24px)' }),
             }}
           >
             {/* Header */}

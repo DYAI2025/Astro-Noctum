@@ -921,13 +921,20 @@ h1, h2, h3 { letter-spacing: 0.1em; }
 .enter-scroll-rod--bottom { bottom: 0; border-radius: 0 0 3px 3px; }
 
 /* ── ElevenLabs Widget — force to foreground ─────────────────────── */
+/* The convai widget renders popups (microphone permission, call confirm)
+   inside Shadow DOM *and* sometimes appends overlays to <body>.
+   We must ensure nothing in our UI clips or stacks above them.          */
+
 elevenlabs-convai {
+  position: relative;
   z-index: 99999 !important;
-  position: relative !important;
+  overflow: visible !important;
 }
+
 elevenlabs-convai * {
   z-index: 99999 !important;
 }
+
 /* Catch any ElevenLabs-injected iframes or global overlays */
 elevenlabs-convai iframe,
 div[id^="elevenlabs"],
@@ -940,6 +947,25 @@ div[class*="elevenlabs"] {
 [data-agent-widget] {
   position: relative;
   z-index: 99999 !important;
+  overflow: visible !important;
+}
+
+/* When the widget is active, break its parent morning-card out of any
+   stacking context that would otherwise clip/trap the popup.             */
+.morning-card:has(elevenlabs-convai) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  overflow: visible !important;
+  z-index: 99999 !important;
+}
+
+/* Body-level overlays appended by the ElevenLabs SDK */
+body > div[class*="eleven"],
+body > div[id*="eleven"],
+body > div[class*="convai"],
+body > div[id*="convai"] {
+  z-index: 999999 !important;
+  position: fixed !important;
 }
 
 /* ── Reduced Motion ──────────────────────────────────────────────── */
