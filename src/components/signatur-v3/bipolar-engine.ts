@@ -86,6 +86,8 @@ export interface SolarModulation {
   triggerEffect: boolean;
   /** Kp index 0-9 for intensity scaling */
   kpIndex: number;
+  /** Per-dimension solar multipliers from cosmic resonance (personalized) */
+  dimensionMultipliers?: Record<string, number>;
 }
 
 // ═══════════════════════════════════════
@@ -420,18 +422,20 @@ export function updatePoles(
       poleB.y -= jB;
     }
 
-    // === SOLAR MODULATION → membrane intensity ===
-    // Space weather expands orbital radius (storms push poles outward)
+    // === SOLAR MODULATION → membrane intensity (personalized via resonance) ===
     if (solar && solar.ringModulation > 1.0) {
-      const expansion = (solar.ringModulation - 1.0) * 0.5; // 0–0.25 range
+      // Per-dimension multiplier from cosmic resonance (default 1.0 if not available)
+      const dimMul = solar.dimensionMultipliers?.[dimId] ?? 1.0;
+      const expansion = (solar.ringModulation - 1.0) * 0.5 * (dimMul - 0.5); // resonance-weighted
+
       poleA.x *= (1 + expansion);
       poleA.y *= (1 + expansion);
       poleB.x *= (1 + expansion);
       poleB.y *= (1 + expansion);
 
-      // G3+ storms add high-frequency pulsation
+      // G3+ storms add high-frequency pulsation, scaled by dimension resonance
       if (solar.triggerEffect) {
-        const stormPulse = Math.sin(time * 20 + dim.hz * 0.1) * config.maxR * 0.02;
+        const stormPulse = Math.sin(time * 20 + dim.hz * 0.1) * config.maxR * 0.02 * dimMul;
         poleA.x += stormPulse;
         poleB.x -= stormPulse;
       }
