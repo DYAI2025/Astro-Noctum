@@ -114,14 +114,22 @@ export function AstroDetailModal({ activeId, onClose, apiData, tileTexts }: Astr
       headline: dominantEl ? dominantEl.name[lang] : (apiData.wuxing?.dominant_element || '—'),
       description: dominantEl?.description[lang] || tileTexts.dominantWuXing || '',
       subRows: sortedElements.length > 0
-        ? sortedElements.map(([elKey, pct]) => {
-            const el = getWuxingByKey(elKey);
-            return {
-              label: el ? el.name[lang] : elKey,
-              value: `${Math.round(pct)}%`,
-              description: el?.description[lang] || '',
-            };
-          })
+        ? Array.from(
+            new Map(
+              sortedElements.map(([elKey, pct]) => {
+                const el = getWuxingByKey(elKey);
+                const canonicalKey = el?.key ?? elKey;
+                return [
+                  canonicalKey,
+                  {
+                    label: el ? el.name[lang] : elKey,
+                    value: `${Math.round(pct)}%`,
+                    description: el?.description[lang] || '',
+                  },
+                ];
+              }),
+            ).values(),
+          )
         : [
             { label: t('astroAccordion.dominantElement'), value: apiData.wuxing?.dominant_element || '—' },
           ],
