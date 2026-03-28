@@ -46,6 +46,22 @@ export function Splash({ onEnter, onLanguageSelect }: SplashProps) {
     }
   }, []);
 
+  // First-time visitors: show skip button on any interaction during video
+  useEffect(() => {
+    if (phase !== "video" || canSkip) return;
+
+    const reveal = () => setCanSkip(true);
+    window.addEventListener("keydown", reveal, { once: true });
+    window.addEventListener("touchstart", reveal, { once: true });
+    window.addEventListener("pointerdown", reveal, { once: true });
+
+    return () => {
+      window.removeEventListener("keydown", reveal);
+      window.removeEventListener("touchstart", reveal);
+      window.removeEventListener("pointerdown", reveal);
+    };
+  }, [phase, canSkip]);
+
   // Cleanup timers
   useEffect(() => {
     return () => {
@@ -263,12 +279,12 @@ export function Splash({ onEnter, onLanguageSelect }: SplashProps) {
         </div>
       )}
 
-      {/* ── SKIP BUTTON (only on repeat visits, during video) ── */}
+      {/* ── SKIP BUTTON (repeat visitors: after 1.5s; first-time: on any interaction) ── */}
       {canSkip && phase === "video" && !videoFading && (
         <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.5, duration: 0.8 }}
+          transition={{ delay: hasSeenIntro.current ? 1.5 : 0, duration: 0.8 }}
           onClick={handleSkip}
           className="absolute bottom-12 right-12 z-40 px-6 py-3 border border-white/15 text-white/50 text-[9px] uppercase tracking-[0.4em] hover:text-white/80 hover:border-white/30 hover:bg-white/5 transition-all backdrop-blur-sm"
         >
