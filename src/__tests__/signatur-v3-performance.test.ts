@@ -152,6 +152,50 @@ describe('V3 Engine Performance', () => {
   });
 });
 
+describe('V3 Adaptive Trail Tier Selection', () => {
+  it('high tier for large canvas (≥400px)', () => {
+    const poles = initializePoles(
+      { maxR: 200, maxTrailLength: 2000, trailPersistence: 0.85, timeScale: 1.0 },
+      NATAL, QUIZ,
+    );
+    expect(poles[0]!.trail.length).toBe(2000 * 2); // x,y pairs
+  });
+
+  it('medium tier config has 800 trail length', () => {
+    const mediumConfig: SignaturV3Config = { maxR: 120, maxTrailLength: 800, trailPersistence: 0.82, timeScale: 1.0 };
+    const poles = initializePoles(mediumConfig, NATAL, QUIZ);
+    expect(poles[0]!.trail.length).toBe(800 * 2);
+  });
+
+  it('low tier config has 300 trail length', () => {
+    const lowConfig: SignaturV3Config = { maxR: 80, maxTrailLength: 300, trailPersistence: 0.78, timeScale: 1.0 };
+    const poles = initializePoles(lowConfig, NATAL, QUIZ);
+    expect(poles[0]!.trail.length).toBe(300 * 2);
+  });
+
+  it('lower trail length reduces per-frame work proportionally', () => {
+    const highConfig: SignaturV3Config = { maxR: 200, maxTrailLength: 2000, trailPersistence: 0.85, timeScale: 1.0 };
+    const lowConfig: SignaturV3Config = { maxR: 80, maxTrailLength: 300, trailPersistence: 0.78, timeScale: 1.0 };
+
+    const polesHigh = initializePoles(highConfig, NATAL, QUIZ);
+    const polesLow = initializePoles(lowConfig, NATAL, QUIZ);
+    const dissonance = computeV3Dissonance(NATAL, QUIZ);
+
+    // Fill trails to max
+    for (let i = 0; i < 2500; i++) {
+      updatePoles(polesHigh, dissonance, highConfig, i * 0.016);
+      updatePoles(polesLow, dissonance, lowConfig, i * 0.016);
+    }
+
+    expect(polesHigh[0]!.trailLength).toBe(2000);
+    expect(polesLow[0]!.trailLength).toBe(300);
+
+    // Canvas draw cost is proportional to trailLength — low is ~6.7x cheaper to render
+    const ratio = polesHigh[0]!.trailLength / polesLow[0]!.trailLength;
+    expect(ratio).toBeCloseTo(6.67, 1);
+  });
+});
+
 /**
  * Mobile Web Benchmark — reduced trail config simulating mobile viewport (<768px).
  * Target: ≥30fps → budget 33.3ms per frame.

@@ -47,18 +47,33 @@ export interface SignaturV3Props {
   width?: number;
   /** Height override */
   height?: number;
+  /** Quality tier override: 'auto' selects based on canvas size */
+  quality?: 'high' | 'medium' | 'low' | 'auto';
 }
 
 // ═══════════════════════════════════════
-//  DEFAULT CONFIG
+//  ADAPTIVE CONFIG — trail tier selection
 // ═══════════════════════════════════════
 
-const DEFAULT_CONFIG: SignaturV3Config = {
-  maxR: 200,
-  maxTrailLength: 2000,
-  trailPersistence: 0.85,
-  timeScale: 1.0,
+type QualityTier = 'high' | 'medium' | 'low';
+
+const TIER_CONFIGS: Record<QualityTier, Omit<SignaturV3Config, 'maxR'>> = {
+  high: { maxTrailLength: 2000, trailPersistence: 0.85, timeScale: 1.0 },
+  medium: { maxTrailLength: 800, trailPersistence: 0.82, timeScale: 1.0 },
+  low: { maxTrailLength: 300, trailPersistence: 0.78, timeScale: 1.0 },
 };
+
+function selectQualityTier(width: number, height: number): QualityTier {
+  const size = Math.min(width, height);
+  if (size >= 400) return 'high';
+  if (size >= 250) return 'medium';
+  return 'low';
+}
+
+function buildConfig(width: number, height: number, quality: 'high' | 'medium' | 'low' | 'auto'): SignaturV3Config {
+  const tier = quality === 'auto' ? selectQualityTier(width, height) : quality;
+  return { ...TIER_CONFIGS[tier], maxR: Math.min(width, height) * 0.4 };
+}
 
 // ═══════════════════════════════════════
 //  RENDER HELPERS
@@ -205,6 +220,7 @@ export default function SignaturV3Canvas({
   className,
   width = 500,
   height = 500,
+  quality = 'auto',
 }: SignaturV3Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef<number>(0);
@@ -220,10 +236,10 @@ export default function SignaturV3Canvas({
   dayHarmonicRef.current = dayHarmonic;
   solarRef.current = solarModulation;
 
-  const config = useMemo(() => ({
-    ...DEFAULT_CONFIG,
-    maxR: Math.min(width, height) * 0.4,
-  }), [width, height]);
+  const config = useMemo(
+    () => buildConfig(width, height, quality),
+    [width, height, quality],
+  );
 
   const natalMap = useMemo(() => {
     const m = new Map<string, number>();

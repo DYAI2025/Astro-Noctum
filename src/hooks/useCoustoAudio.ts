@@ -70,7 +70,6 @@ export function useCoustoAudio(
     const startOnGesture = async () => {
       if (engineRef.current && !startedRef.current) {
         await engineRef.current.start();
-        engineRef.current.setVolume(volume);
         startedRef.current = true;
         setIsPlaying(true);
       }
@@ -85,7 +84,7 @@ export function useCoustoAudio(
       document.removeEventListener('click', startOnGesture);
       document.removeEventListener('touchstart', startOnGesture);
     };
-  }, [enabled, muted, volume]);
+  }, [enabled, muted]);
 
   // Visibility API — suspend/resume
   useEffect(() => {
