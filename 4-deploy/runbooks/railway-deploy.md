@@ -141,6 +141,23 @@ If the latest deploy is crashing in a loop (respecting the 10-retry cap), rollba
 
 ## Troubleshooting
 
+### Snapshot creation fails (`Failed to create snapshot`)
+
+**Symptom**: Railway deploy stops early with `Failed to create snapshot`.
+
+**Likely causes in this repo**:
+1. Build/runtime image too large (full devDependencies + large static assets)
+2. Deployment context contains duplicate ambient audio assets
+
+**Fixes now in place**:
+- `nixpacks.toml` prunes devDependencies after `npm run build` (`npm prune --omit=dev`)
+- Duplicate `public/ambiente/bazodiac/*.mp3` copies were removed and playlist references were normalized
+
+**If this happens again**:
+1. Check repository payload size: `du -sh public/ambiente node_modules .git`
+2. Verify only required ambient tracks are shipped in `public/ambiente/bazodiac/`
+3. Redeploy after pruning oversized assets or moving rarely-used media to external object storage
+
 ### BAFE API unreachable
 
 **Symptom**: `/api/calculate/*` returns 502 or timeout; logs show `ENETUNREACH` or `ECONNREFUSED`.
