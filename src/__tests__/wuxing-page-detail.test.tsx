@@ -81,8 +81,8 @@ describe('WuXingPage detail extensions', () => {
 
   it('renders the premium section header text for the extended analysis', () => {
     renderPage();
-    // The premium section heading should appear in the DOM
-    const matches = screen.queryAllByText(/Elementbalance|element balance/i);
+    // The premium section heading uses t('wuxing.deepAnalysis') — mock returns the key
+    const matches = screen.queryAllByText(/wuxing\.deepAnalysis|dashboard\.premium\.title/i);
     expect(matches.length).toBeGreaterThan(0);
   });
 

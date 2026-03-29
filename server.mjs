@@ -1701,8 +1701,7 @@ app.post('/api/vibes', requireUserAuth, async (req, res) => {
     if (vibesCache.has(cacheKey)) {
       const cached = vibesCache.get(cacheKey);
       if (Date.now() - cached.timestamp < VIBES_CACHE_TTL) {
-        const payload = { ...cached.data };
-        payload.meta = { ...payload.meta, cached: true };
+        const payload = { ...cached.data, meta: { ...cached.data.meta, cached: true } };
         return res.json(payload);
       }
     }
@@ -1721,8 +1720,7 @@ app.post('/api/vibes', requireUserAuth, async (req, res) => {
 
         if (dbCached?.payload_json) {
           vibesCache.set(cacheKey, { data: dbCached.payload_json, timestamp: Date.now() });
-          const payload = { ...dbCached.payload_json };
-          payload.meta = { ...payload.meta, cached: true };
+          const payload = { ...dbCached.payload_json, meta: { ...dbCached.payload_json.meta, cached: true } };
           return res.json(payload);
         }
       } catch (e) {

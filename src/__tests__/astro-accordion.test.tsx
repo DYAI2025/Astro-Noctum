@@ -1,8 +1,20 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi, describe, it, expect } from 'vitest';
 
+const T_MAP: Record<string, string> = {
+  'astroAccordion.sunSign': 'Sonnenzeichen',
+  'astroAccordion.moonSign': 'Mondzeichen',
+  'astroAccordion.ascendant': 'Aszendent',
+  'astroAccordion.dayMaster': 'Tagesmeister',
+  'astroAccordion.monthStem': 'Monatsstamm',
+  'astroAccordion.yearStem': 'Jahresstamm',
+  'astroAccordion.hourStem': 'Stundenstamm',
+  'astroAccordion.dominantElement': 'Dominantes Element',
+  'astroAccordion.secondaryElement': 'Sekundäres Element',
+  'astroAccordion.deficientElement': 'Schwaches Element',
+};
 vi.mock('../contexts/LanguageContext', () => ({
-  useLanguage: () => ({ lang: 'de', t: (k: string) => k }),
+  useLanguage: () => ({ lang: 'de', t: (k: string) => T_MAP[k] ?? k }),
 }));
 
 import { AstroAccordion } from '../components/dashboard/AstroAccordion';
