@@ -17,7 +17,7 @@
  * Wireframe:  docs/wireframes/dashboard-v2.md § F3
  */
 
-import type { ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { motion } from 'motion/react';
 import {
   Zap,
@@ -264,10 +264,19 @@ export function DashboardTagesEnergie({
 
   const resonance = computeResonance(harmonyIndex, solarPressure);
   const resonancePct = Math.round(resonance * 100);
-  const weatherPills = buildWeatherPills(spaceWeather, daily);
+  // Memoize: spaceWeather reference changes on every 5-min poll (new state object).
+  // daily changes at most once per day. Aligns with InfluenceGauges.tsx pattern.
+  const weatherPills = useMemo(
+    () => buildWeatherPills(spaceWeather, daily),
+    [spaceWeather, daily],
+  );
 
-  // Body: synthesis ist der Haupt-Narrativ
-  const bodyText = daily.fusion.synthesis || daily.fusion.summary;
+  // Body: synthesis ist der Haupt-Narrativ.
+  // Fallback wenn KI-Generierung leer zurückgibt (z.string() erlaubt "").
+  const bodyText =
+    daily.fusion.synthesis ||
+    daily.fusion.summary ||
+    'Tagesimpuls wird gerade berechnet …';
 
   // Reibungs-Kontext (nur Day-Trace)
   const frictionText = isTrace
@@ -385,6 +394,11 @@ export function DashboardTagesEnergie({
           {/* Bar */}
           <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
             <motion.div
+              role="progressbar"
+              aria-valuenow={resonancePct}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={`Resonanz mit dem Kosmos: ${resonancePct}%`}
               className="h-full rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${resonancePct}%` }}

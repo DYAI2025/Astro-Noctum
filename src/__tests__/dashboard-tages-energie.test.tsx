@@ -241,3 +241,56 @@ describe('DashboardTagesEnergie — Themes Kicker', () => {
     expect(kickerParagraphs.length).toBe(0);
   });
 });
+
+describe('DashboardTagesEnergie — Resonanz-Bar Accessibility', () => {
+  it('hat role="progressbar" auf dem Resonanz-Balken', () => {
+    mockIsPremium = true;
+    const { container } = render(
+      <DashboardTagesEnergie daily={DAILY} dayHarmonic={null} spaceWeather={SPACE_WEATHER} />
+    );
+    const bar = container.querySelector('[role="progressbar"]');
+    expect(bar).not.toBeNull();
+  });
+
+  it('hat aria-valuenow, aria-valuemin=0, aria-valuemax=100 auf dem Resonanz-Balken', () => {
+    mockIsPremium = true;
+    const { container } = render(
+      <DashboardTagesEnergie daily={DAILY} dayHarmonic={null} spaceWeather={SPACE_WEATHER} />
+    );
+    const bar = container.querySelector('[role="progressbar"]');
+    expect(bar?.getAttribute('aria-valuemin')).toBe('0');
+    expect(bar?.getAttribute('aria-valuemax')).toBe('100');
+    const valuenow = Number(bar?.getAttribute('aria-valuenow'));
+    expect(valuenow).toBeGreaterThanOrEqual(0);
+    expect(valuenow).toBeLessThanOrEqual(100);
+  });
+});
+
+describe('DashboardTagesEnergie — Body Fallback', () => {
+  it('zeigt Fallback-Text wenn synthesis und summary beide leer sind', () => {
+    mockIsPremium = true;
+    const dailyEmpty: DailyResponse = {
+      ...DAILY,
+      fusion: { ...DAILY.fusion, synthesis: '', summary: '' },
+    };
+    render(
+      <DashboardTagesEnergie
+        daily={dailyEmpty}
+        dayHarmonic={null}
+        spaceWeather={SPACE_WEATHER}
+      />
+    );
+    expect(screen.getByText(/Tagesimpuls wird/i)).toBeDefined();
+  });
+
+  it('zeigt synthesis wenn vorhanden (kein Fallback)', () => {
+    mockIsPremium = true;
+    render(
+      <DashboardTagesEnergie daily={DAILY} dayHarmonic={null} spaceWeather={SPACE_WEATHER} />
+    );
+    expect(
+      screen.getByText('Heute trägt Feuer deine Energie. Die Holz-Achse ist aktiv.')
+    ).toBeDefined();
+    expect(screen.queryByText(/Tagesimpuls wird/i)).toBeNull();
+  });
+});
