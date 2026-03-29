@@ -18,6 +18,7 @@
  */
 
 import { useMemo, type ReactNode } from 'react';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { motion } from 'motion/react';
 import {
   Zap,
@@ -92,7 +93,7 @@ function getElementConfig(el: WuXingElement | null): ElementConfig {
   }
 }
 
-function resolveElement(daily: DailyResponse | null): WuXingElement | null {
+export function resolveElement(daily: DailyResponse | null): WuXingElement | null {
   if (!daily) return null;
   const dm = daily.eastern?.evidence?.day_master ?? '';
   const key = dm.toLowerCase().trim();
@@ -101,11 +102,18 @@ function resolveElement(daily: DailyResponse | null): WuXingElement | null {
 
 // ── Resonance computation ────────────────────────────────────────────────────
 
-function computeResonance(harmonyIndex: number, solarPressure: number): number {
-  return Math.max(0, Math.min(1, harmonyIndex * 0.65 + solarPressure * 0.35));
+/** Resonance weights — defined in docs/wireframes/dashboard-v2.md § F3 */
+const RESONANCE_WEIGHT_HARMONY = 0.65;
+const RESONANCE_WEIGHT_SOLAR   = 0.35;
+
+export function computeResonance(harmonyIndex: number, solarPressure: number): number {
+  return Math.max(0, Math.min(1,
+    harmonyIndex * RESONANCE_WEIGHT_HARMONY +
+    solarPressure * RESONANCE_WEIGHT_SOLAR,
+  ));
 }
 
-function resonanceLabel(r: number): string {
+export function resonanceLabel(r: number): string {
   if (r > 0.7) return 'deine Signatur verstärkt den solaren Impuls';
   if (r > 0.5) return 'deine Signatur schwingt mit dem Kosmos';
   if (r > 0.3) return 'leichte kosmische Berührung spürbar';
@@ -122,11 +130,24 @@ interface WeatherPill {
   bg: string;
 }
 
+/**
+ * Returns a valid CSS border color.
+ * Appends hex alpha `22` to 7-char hex colors.
+ * Falls back to subtle white for rgba/hsl to avoid invalid CSS like `rgba(...)22`.
+ */
+export function toBorderColor(color: string): string {
+  return color.startsWith('#') && color.length === 7
+    ? `${color}22`
+    : 'rgba(255,255,255,0.08)';
+}
+
 function buildWeatherPills(sw: SpaceWeatherState, daily: DailyResponse | null): WeatherPill[] {
   const pills: WeatherPill[] = [];
 
-  // 1. Geomagnetischer Sturm (Kp-basiert, immer wenn kp ≥ 2)
-  if (sw.kpIndex >= 2) {
+  // 1. Geomagnetischer Sturm (Kp-basiert) — nur wenn kein server-seitiges Event vorhanden.
+  // Wenn ein geomagnetic_storm-Event existiert, wird er in Abschnitt 3 gerendert (höhere Priorität).
+  const hasGeoStormEvent = sw.events.some((e) => e.type === 'geomagnetic_storm');
+  if (sw.kpIndex >= 2 && !hasGeoStormEvent) {
     const isStrong = sw.kpIndex >= 6;
     const isMedium = sw.kpIndex >= 4;
     pills.push({
@@ -139,7 +160,7 @@ function buildWeatherPills(sw: SpaceWeatherState, daily: DailyResponse | null): 
   }
 
   // 2. Solarer Flare (nur M / X Klasse)
-  const flareClass = sw.xrayClass ?? 'A';
+  const flareClass = sw.xrayClass;
   if (flareClass === 'X' || flareClass === 'M') {
     pills.push({
       key: 'flare',
@@ -251,6 +272,7 @@ export function DashboardTagesEnergie({
   loading = false,
   onOpenDayModal,
 }: DashboardTagesEnergieProps) {
+  const { t } = useLanguage();
 
   if (loading && !daily) return <TagesEnergieSkeleton />;
   if (!daily) return null;
@@ -276,7 +298,7 @@ export function DashboardTagesEnergie({
   const bodyText =
     daily.fusion.synthesis ||
     daily.fusion.summary ||
-    'Tagesimpuls wird gerade berechnet …';
+    t('dashboard.tagesImpuls.fallbackBody');
 
   // Reibungs-Kontext (nur Day-Trace)
   const frictionText = isTrace
@@ -289,6 +311,8 @@ export function DashboardTagesEnergie({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.55, ease: 'easeOut' }}
       className="w-full"
+      aria-live="polite"
+      aria-label={t('dashboard.tagesImpuls.ariaContainer')}
     >
       <div
         className="rounded-2xl border border-white/10 overflow-hidden"
@@ -297,7 +321,7 @@ export function DashboardTagesEnergie({
         {/* ── Header ─────────────────────────────────────────── */}
         <div className="px-5 pt-5 pb-3 flex items-center justify-between gap-3">
           <span className="text-[9px] font-mono uppercase tracking-[0.3em] text-white/35 font-bold">
-            Tages-Impuls
+            {t('dashboard.tagesImpuls.sectionLabel')}
           </span>
           <span
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-mono uppercase tracking-wider font-bold"
@@ -311,7 +335,7 @@ export function DashboardTagesEnergie({
               className="w-1.5 h-1.5 rounded-full"
               style={{ background: isTrace ? '#D4AF37' : '#a0b4cc' }}
             />
-            {isTrace ? 'Day-Trace' : 'Day-Pulse'}
+            {isTrace ? t('dashboard.tagesImpuls.badgeTrace') : t('dashboard.tagesImpuls.badgePulse')}
           </span>
         </div>
 
@@ -368,14 +392,14 @@ export function DashboardTagesEnergie({
         {weatherPills.length > 0 && (
           <div className="mx-5 mb-4 pt-3 border-t border-white/6">
             <p className="text-[8px] font-mono uppercase tracking-[0.3em] text-white/25 mb-2">
-              Kosmoswetter
+              {t('dashboard.tagesImpuls.kosmoswetter')}
             </p>
             <div className="flex flex-wrap gap-1.5">
               {weatherPills.map((pill) => (
                 <span
                   key={pill.key}
                   className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-mono"
-                  style={{ background: pill.bg, color: pill.color, border: `1px solid ${pill.color}22` }}
+                  style={{ background: pill.bg, color: pill.color, border: `1px solid ${toBorderColor(pill.color)}` }}
                 >
                   {pill.icon}
                   {pill.label}
@@ -388,7 +412,7 @@ export function DashboardTagesEnergie({
         {/* ── Resonanz-Indikator ───────────────────────────────── */}
         <div className="mx-5 mb-5">
           <div className="flex items-center justify-between mb-1.5">
-            <p className="text-[9px] text-white/30 font-mono">Resonanz</p>
+            <p className="text-[9px] text-white/30 font-mono">{t('dashboard.tagesImpuls.resonanz')}</p>
             <p className="text-[9px] text-white/30 font-mono">{resonancePct}%</p>
           </div>
           {/* Bar */}
@@ -398,7 +422,7 @@ export function DashboardTagesEnergie({
               aria-valuenow={resonancePct}
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-label={`Resonanz mit dem Kosmos: ${resonancePct}%`}
+              aria-label={`${t('dashboard.tagesImpuls.ariaResonanzBar')}: ${resonancePct}%`}
               className="h-full rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${resonancePct}%` }}
@@ -420,7 +444,7 @@ export function DashboardTagesEnergie({
             onClick={onOpenDayModal}
             className="w-full flex items-center justify-end gap-1 px-5 py-3 text-[9px] font-mono uppercase tracking-wider text-white/35 hover:text-white/60 transition-colors border-t border-white/5"
           >
-            vertiefen
+            {t('dashboard.tagesImpuls.vertiefen')}
             <ArrowRight className="w-3 h-3" />
           </button>
         )}
