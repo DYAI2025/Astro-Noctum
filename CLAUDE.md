@@ -15,7 +15,7 @@ Bazodiac (Astro-Noctum) — a fusion astrology web + mobile app combining Wester
 
 **Phase:** Code (active development)
 
-4 goals (3 Approved + 1 Draft: vibes-weekly-insights). 25 requirements: 10 Implemented, 3 Approved, 12 Draft. 5 constraints (2 original + 3 new: no-unexplained-numbers, resource-oriented-framing, mobile-first-readability). 3 assumptions. 10 decisions. 5 user stories (new). 3 components decomposed (frontend, api-server, mobile). 94 of 125 tasks Done (75%). 6 partnership OQs pending. 6 deploy runbooks. Updated 2026-03-30.
+4 goals Approved. 25 requirements: 10 Implemented, 11 Approved, 4 Draft. 5 constraints. 3 assumptions. 10 decisions. 5 user stories. 3 components (frontend, api-server, mobile). Vibes/Weekly implementation plan created (2026-03-30): 3 phases (V1–V3), 26 tasks. Total: 94 of 151 tasks Done (62%). 6 partnership OQs pending. 6 deploy runbooks. Updated 2026-03-30.
 
 ---
 
