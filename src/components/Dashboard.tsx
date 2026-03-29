@@ -293,7 +293,11 @@ export function Dashboard({
   const spaceWeather = useSpaceWeather();
 
   // ── Daily horoscope modal ───────────────────────────────────────────
-  const { dailyData, dayHarmonic, showModal, handleClose: handleDailyClose } = useFirstRunDaily(
+  // isDayModalOpen: on-demand via "vertiefen →" in DashboardTagesEnergie.
+  // showModal (auto-open) deliberately not used for rendering — wireframe F3:
+  // "Modal wird nicht mehr automatisch geöffnet".
+  const [isDayModalOpen, setIsDayModalOpen] = useState(false);
+  const { dailyData, dayHarmonic, handleClose: handleDailyClose } = useFirstRunDaily(
     userId,
     profileMeta.birthInput,
     profileMeta.soulprintSectors,
@@ -369,7 +373,7 @@ export function Dashboard({
               daily={dailyData}
               dayHarmonic={dayHarmonic}
               spaceWeather={spaceWeather}
-              onOpenDayModal={dailyEnabled ? handleDailyClose : undefined}
+              onOpenDayModal={dailyEnabled ? () => setIsDayModalOpen(true) : undefined}
             />
           ) : (
             // Legacy fallback: CosmicWeatherCard solange dailyData noch nicht geladen
@@ -481,8 +485,15 @@ export function Dashboard({
 
       {/* ═══ DAILY HOROSCOPE MODAL ═══════════════════════════════════════ */}
       <AnimatePresence>
-        {dailyEnabled && showModal && dailyData && (
-          <DayModeModal data={dailyData} dayHarmonic={dayHarmonic} onClose={handleDailyClose} />
+        {dailyEnabled && isDayModalOpen && dailyData && (
+          <DayModeModal
+            data={dailyData}
+            dayHarmonic={dayHarmonic}
+            onClose={() => {
+              setIsDayModalOpen(false);
+              handleDailyClose(); // marks daily_modal_seen_date in Supabase
+            }}
+          />
         )}
       </AnimatePresence>
 

@@ -176,6 +176,17 @@ function buildWeatherPills(sw: SpaceWeatherState, daily: DailyResponse | null): 
         color: '#93c5fd',
         bg: 'rgba(147,197,253,0.12)',
       });
+    } else if (type === 'geomagnetic_storm') {
+      // G-scale string compare works correctly for single digits (G0–G5)
+      const isStrong = event.severity >= 'G3';
+      const isMedium = event.severity === 'G2';
+      pills.push({
+        key: 'geo-storm',
+        icon: <Zap className="w-3 h-3" />,
+        label: `Magnetsturm ${event.severity}`,
+        color: isStrong ? '#D4AF37' : isMedium ? '#fbbf24' : 'rgba(255,255,255,0.5)',
+        bg: isStrong ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)',
+      });
     } else if (type === 'sep') {
       pills.push({
         key: 'sep',

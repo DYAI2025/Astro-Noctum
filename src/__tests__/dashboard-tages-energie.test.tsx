@@ -152,3 +152,61 @@ describe('DashboardTagesEnergie — PremiumGate Integration', () => {
     expect(blurContainer?.textContent).toContain('Lass los, was dich bremst.');
   });
 });
+
+// ── Hilfsfunktion: minimales SpaceWeatherContribution-Event ──────────
+function makeEvent(
+  type: 'cme_arrival' | 'flare' | 'geomagnetic_storm' | 'sep' | 'hss' | 'alert',
+  severity = 'G3',
+) {
+  return {
+    schema: 'sp.contribution.v1' as const,
+    event_id: `test-${type}`,
+    type,
+    severity,
+    signature_weight: 0.3,
+    started_at: '2026-03-29T10:00:00Z',
+    expires_at: '2026-03-29T18:00:00Z',
+  };
+}
+
+describe('DashboardTagesEnergie — Kosmoswetter Pills', () => {
+  it('rendert Magnetsturm-Pill für geomagnetic_storm Event (G3)', () => {
+    mockIsPremium = true;
+    const sw: SpaceWeatherState = {
+      ...SPACE_WEATHER,
+      kpIndex: 0, // Kp-basierte Pill soll NICHT erscheinen
+      events: [makeEvent('geomagnetic_storm', 'G3')],
+    };
+    const { container } = render(
+      <DashboardTagesEnergie daily={DAILY} dayHarmonic={null} spaceWeather={sw} />
+    );
+    expect(container.textContent).toContain('Magnetsturm');
+    expect(container.textContent).toContain('G3');
+  });
+
+  it('rendert Magnetsturm-Pill als span-Element mit Sturmtext', () => {
+    mockIsPremium = true;
+    const sw: SpaceWeatherState = {
+      ...SPACE_WEATHER,
+      kpIndex: 0,
+      events: [makeEvent('geomagnetic_storm', 'G3')],
+    };
+    const { container } = render(
+      <DashboardTagesEnergie daily={DAILY} dayHarmonic={null} spaceWeather={sw} />
+    );
+    const pills = container.querySelectorAll('span');
+    const stormPill = Array.from(pills).find(
+      (el) => el.textContent?.includes('Magnetsturm'),
+    );
+    expect(stormPill).not.toBeUndefined();
+  });
+
+  it('rendert KEINE Magnetsturm-Pill wenn kein geomagnetic_storm Event vorhanden', () => {
+    mockIsPremium = true;
+    const sw: SpaceWeatherState = { ...SPACE_WEATHER, kpIndex: 0, events: [] };
+    const { container } = render(
+      <DashboardTagesEnergie daily={DAILY} dayHarmonic={null} spaceWeather={sw} />
+    );
+    expect(container.textContent).not.toContain('Magnetsturm G');
+  });
+});
