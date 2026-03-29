@@ -2,7 +2,7 @@
 
 **Type**: Functional
 
-**Status**: Draft
+**Status**: Approved
 
 **Priority**: Should-have
 

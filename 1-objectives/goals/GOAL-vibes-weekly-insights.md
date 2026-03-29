@@ -2,7 +2,7 @@
 
 **Description**: Users receive two new insight modes: on-demand "Vibes" (2–3h horizon, spontaneous) and "Weekly Insights" (7 life areas with top-3 prioritization). All outputs follow a strict transparency rule — no unexplained numbers in the UI. Insights derive from existing Fusion/Signatur logic, presented in resource-oriented language with a 3-level depth structure (Kurzsignal → Treiber → Erklärung).
 
-**Status**: Draft
+**Status**: Approved
 
 **Priority**: Must-have
 

@@ -80,7 +80,7 @@ When an artifact (goal, requirement) is no longer relevant:
 | [GOAL-fusion-astrology](goals/GOAL-fusion-astrology.md) | Must | Approved | Fuse Western astrology, Chinese BaZi, and Wu-Xing into a single living system |
 | [GOAL-autopoietic-ux](goals/GOAL-autopoietic-ux.md) | Must | Approved | UI adapts to user's elemental signature via three-layer autopoietic model |
 | [GOAL-multi-agent-voice](goals/GOAL-multi-agent-voice.md) | Must | Approved | Levi + Eve as two fixed voice agent personas with independent conversation history |
-| [GOAL-vibes-weekly-insights](goals/GOAL-vibes-weekly-insights.md) | Must | Draft | On-demand Vibes (2–3h) + Weekly Insights (7 life areas) with transparent outputs |
+| [GOAL-vibes-weekly-insights](goals/GOAL-vibes-weekly-insights.md) | Must | Approved | On-demand Vibes (2–3h) + Weekly Insights (7 life areas) with transparent outputs |
 
 ---
 
@@ -105,14 +105,14 @@ When an artifact (goal, requirement) is no longer relevant:
 | [REQ-F-signatur-mobile-native](requirements/REQ-F-signatur-mobile-native.md) | REQ-F | Must | Draft | Full 3D spirograph engine on iOS via expo-gl, gesture controls, reduced particles |
 | [REQ-PERF-signatur-performance](requirements/REQ-PERF-signatur-performance.md) | REQ-PERF | Must | Draft | 60fps desktop, 30fps mobile/iOS, <2s load, <150MB GPU, <500ms API p95 |
 | [REQ-F-quiz-generator-pipeline](requirements/REQ-F-quiz-generator-pipeline.md) | REQ-F | Must | Approved | Reusable quiz generator with formal mapping to 12-sector zodiac, 6D Signatur V3, 5D Master Signal |
-| [REQ-F-vibes-core](requirements/REQ-F-vibes-core.md) | REQ-F | Must | Draft | On-demand Vibe insight from Signatur + transit (2–3h horizon, deterministic) |
-| [REQ-F-vibes-output-structure](requirements/REQ-F-vibes-output-structure.md) | REQ-F | Must | Draft | 3-level output: Kurzsignal → Treiber → Erklärung |
-| [REQ-F-weekly-insights-engine](requirements/REQ-F-weekly-insights-engine.md) | REQ-F | Must | Draft | Weekly insights across 7 life areas with tendency labels |
-| [REQ-F-weekly-area-prioritization](requirements/REQ-F-weekly-area-prioritization.md) | REQ-F | Should | Draft | Top-3 life area highlighting with additional depth |
-| [REQ-F-transparency-rule](requirements/REQ-F-transparency-rule.md) | REQ-F | Must | Draft | System-wide: no number without explanation |
-| [REQ-F-explainability-layer](requirements/REQ-F-explainability-layer.md) | REQ-F | Must | Draft | "Warum sehe ich das?" for every insight |
-| [REQ-USA-mobile-first-readability](requirements/REQ-USA-mobile-first-readability.md) | REQ-USA | Must | Draft | <10s comprehension on mobile, mobile-first layout |
-| [REQ-PERF-vibes-response-time](requirements/REQ-PERF-vibes-response-time.md) | REQ-PERF | Must | Draft | Vibes result <2s p95, Gemini fallback within 1.5s |
+| [REQ-F-vibes-core](requirements/REQ-F-vibes-core.md) | REQ-F | Must | Approved | On-demand Vibe insight from Signatur + transit (2–3h horizon, deterministic) |
+| [REQ-F-vibes-output-structure](requirements/REQ-F-vibes-output-structure.md) | REQ-F | Must | Approved | 3-level output: Kurzsignal → Treiber → Erklärung |
+| [REQ-F-weekly-insights-engine](requirements/REQ-F-weekly-insights-engine.md) | REQ-F | Must | Approved | Weekly insights across 7 life areas with tendency labels |
+| [REQ-F-weekly-area-prioritization](requirements/REQ-F-weekly-area-prioritization.md) | REQ-F | Should | Approved | Top-3 life area highlighting with additional depth |
+| [REQ-F-transparency-rule](requirements/REQ-F-transparency-rule.md) | REQ-F | Must | Approved | System-wide: no number without explanation |
+| [REQ-F-explainability-layer](requirements/REQ-F-explainability-layer.md) | REQ-F | Must | Approved | "Warum sehe ich das?" for every insight |
+| [REQ-USA-mobile-first-readability](requirements/REQ-USA-mobile-first-readability.md) | REQ-USA | Must | Approved | <10s comprehension on mobile, mobile-first layout |
+| [REQ-PERF-vibes-response-time](requirements/REQ-PERF-vibes-response-time.md) | REQ-PERF | Must | Approved | Vibes result <2s p95, Gemini fallback within 1.5s |
 
 ---
 
