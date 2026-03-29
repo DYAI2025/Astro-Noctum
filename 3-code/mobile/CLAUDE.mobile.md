@@ -2,7 +2,7 @@ Component-specific instructions for **mobile**. Extends [../CLAUDE.code.md](../C
 
 # Mobile App
 
-**Responsibility**: iOS app — Dashboard (cosmic profile, space weather, AI interpretation), Signatur visualization (2D bootstrap view, 3D SignaturCanvas planned), universal quiz renderer, Levi voice agent (WebView), offline contribution queue with auto-flush.
+**Responsibility**: iOS app — Dashboard (cosmic profile, space weather, AI interpretation), Signatur visualization (2D bootstrap view, 3D SignaturCanvas planned), universal quiz renderer, multi-agent voice (Levi + Eve via WebView), offline contribution queue with auto-flush.
 
 **Technology**: Expo 53, React Native 0.79, `@react-navigation` (tab + stack), `@bazodiac/shared` (signal math, quiz schemas, i18n), AsyncStorage (caching), SecureStore (device identity), expo-gl + three.js (SignaturCanvas — not yet mounted)
 
@@ -26,6 +26,9 @@ For code conventions and dev setup see [`../../CLAUDE.md`](../../CLAUDE.md).
 | [REQ-F-natal-chart-calculation](../../1-objectives/requirements/REQ-F-natal-chart-calculation.md) | REQ-F | Must | DashboardScreen renders BAFE results via api-server |
 | [REQ-F-quiz-contribution-system](../../1-objectives/requirements/REQ-F-quiz-contribution-system.md) | REQ-F | Must | QuizScreen with QuizRenderer + offline queue |
 | [REQ-F-fusion-ring-visualization](../../1-objectives/requirements/REQ-F-fusion-ring-visualization.md) | REQ-F | Must | FuRingScreen (2D bootstrap view; 3D SignaturCanvas planned) |
+| [REQ-F-signatur-mobile-native](../../1-objectives/requirements/REQ-F-signatur-mobile-native.md) | REQ-F | Must | Full 3D spirograph on iOS via expo-gl, gesture controls |
+| [REQ-PERF-signatur-performance](../../1-objectives/requirements/REQ-PERF-signatur-performance.md) | REQ-PERF | Must | 30fps iOS native, <2s first frame |
+| [REQ-F-agent-dashboard-selection](../../1-objectives/requirements/REQ-F-agent-dashboard-selection.md) | REQ-F | Must | Agent selection tiles (Levi + Eve) |
 
 ## Relevant Decisions
 

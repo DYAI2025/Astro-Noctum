@@ -2,7 +2,7 @@ Component-specific instructions for the **api-server**. Extends [../CLAUDE.code.
 
 # API Server
 
-**Responsibility**: Express proxy and orchestration layer — BAFE/FuFirE calculation proxy (fallback chain), Gemini AI interpretation, Stripe payments (checkout/webhook/portal), ElevenLabs voice agent endpoints, space weather aggregation (NOAA+DONKI), transit state computation, quiz contribution ingestion, Experience API proxy (bootstrap/delta/daily), Master Signal JS port (bootstrap/delta compute locally).
+**Responsibility**: Express proxy and orchestration layer — BAFE/FuFirE calculation proxy (fallback chain), Gemini AI interpretation, Stripe payments (checkout/webhook/portal), multi-agent voice system (Levi + Eve via ElevenLabs), space weather aggregation (NOAA+DONKI), transit state computation, quiz contribution ingestion, Experience API proxy (bootstrap/delta/daily), Master Signal JS port (bootstrap/delta compute locally), per-agent conversation persistence.
 
 **Technology**: Express.js (Node 20), single-file `server.mjs`, Supabase service role client, Stripe SDK, Google Generative AI SDK
 
@@ -29,6 +29,9 @@ For code conventions, build commands, and dev setup see [`../../CLAUDE.md`](../.
 | [REQ-F-space-weather-modulation](../../1-objectives/requirements/REQ-F-space-weather-modulation.md) | REQ-F | Should | NOAA+DONKI aggregation endpoint |
 | [REQ-F-quiz-contribution-system](../../1-objectives/requirements/REQ-F-quiz-contribution-system.md) | REQ-F | Must | `/api/contribute` ingestion + transit-state composition |
 | [REQ-F-cosmic-encounter-onboarding](../../1-objectives/requirements/REQ-F-cosmic-encounter-onboarding.md) | REQ-F | Must | Experience API proxy (bootstrap, signature-delta, daily) |
+| [REQ-F-eve-voice-agent](../../1-objectives/requirements/REQ-F-eve-voice-agent.md) | REQ-F | Must | Eve ElevenLabs agent with distinct persona |
+| [REQ-F-agent-architecture-refactor](../../1-objectives/requirements/REQ-F-agent-architecture-refactor.md) | REQ-F | Must | Generic multi-agent system (config-driven, not Levi-specific) |
+| [REQ-F-agent-conversation-persistence](../../1-objectives/requirements/REQ-F-agent-conversation-persistence.md) | REQ-F | Must | Conversation history per (user_id, agent_type) |
 
 ## Relevant Decisions
 
@@ -37,3 +40,4 @@ For code conventions, build commands, and dev setup see [`../../CLAUDE.md`](../.
 | [DEC-supabase-backend](../../2-design/decisions/DEC-supabase-backend.md) | Supabase as sole backend data layer | When writing data access or auth code |
 | [DEC-swiss-ephemeris](../../2-design/decisions/DEC-swiss-ephemeris.md) | Swiss Ephemeris via BAFE | When adding or modifying BAFE proxy routes |
 | [DEC-master-signal-weights](../../2-design/decisions/DEC-master-signal-weights.md) | Master Signal formula locked | When modifying Master Signal JS port in server.mjs |
+| [DEC-multi-agent-voice](../../2-design/decisions/DEC-multi-agent-voice.md) | Levi + Eve as fixed voice personas | When adding agents, changing system prompts, or modifying agent config |
