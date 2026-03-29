@@ -77,9 +77,11 @@ When an artifact (goal, requirement) is no longer relevant:
 
 | File | Priority | Status | Summary |
 |------|----------|--------|---------|
-| [GOAL-fusion-astrology](goals/GOAL-fusion-astrology.md) | Must | Approved | Fuse Western astrology, Chinese BaZi, and Wu-Xing into a single living system |
+| [GOAL-fusion-astrology](goals/GOAL-fusion-astrology.md) | Must | Draft | Kymatic fusion system — Signatur V3 als lebendiges kymatisches System; bijektive Kohärenz (modified 2026-03-29) |
 | [GOAL-autopoietic-ux](goals/GOAL-autopoietic-ux.md) | Must | Approved | UI adapts to user's elemental signature via three-layer autopoietic model |
 | [GOAL-multi-agent-voice](goals/GOAL-multi-agent-voice.md) | Must | Approved | Levi + Eve as two fixed voice agent personas with independent conversation history |
+| [GOAL-signatur-phase2-density](goals/GOAL-signatur-phase2-density.md) | Should | Draft | Phase 2: Density Field (128×128), d_accumulated aktiv, bijektive Präzision |
+| [GOAL-signatur-phase3-matching](goals/GOAL-signatur-phase3-matching.md) | Could | Draft | Phase 3: Dual-Ring, Matching/Dating, Teambuilding, Audio-Layer |
 
 ---
 
@@ -99,10 +101,17 @@ When an artifact (goal, requirement) is no longer relevant:
 | [REQ-F-agent-dashboard-selection](requirements/REQ-F-agent-dashboard-selection.md) | REQ-F | Must | Implemented | Dashboard shows two fixed side-by-side agent tiles (Levi + Eve) |
 | [REQ-MNT-agent-extensibility](requirements/REQ-MNT-agent-extensibility.md) | REQ-MNT | Should | Approved | Adding third agent requires config only, no structural code changes |
 | [REQ-SEC-eve-brand-safety](requirements/REQ-SEC-eve-brand-safety.md) | REQ-SEC | Must | Approved | Eve persona brand-safe; system prompt reviewed before production |
-| [REQ-F-signatur-rendering-engine](requirements/REQ-F-signatur-rendering-engine.md) | REQ-F | Must | Draft | V2 Cousto-frequency spirograph: 7 planets, 4-tier particles, kaleidoscope, emergence, ambient sound |
-| [REQ-F-signatur-data-pipeline](requirements/REQ-F-signatur-data-pipeline.md) | REQ-F | Must | Draft | Soulprint→natal weights, quiz→dimensions, transit, space weather, True North caps |
-| [REQ-F-signatur-mobile-native](requirements/REQ-F-signatur-mobile-native.md) | REQ-F | Must | Draft | Full 3D spirograph engine on iOS via expo-gl, gesture controls, reduced particles |
-| [REQ-PERF-signatur-performance](requirements/REQ-PERF-signatur-performance.md) | REQ-PERF | Must | Draft | 60fps desktop, 30fps mobile/iOS, <2s load, <150MB GPU, <500ms API p95 |
+| [REQ-F-signatur-rendering-engine](requirements/REQ-F-signatur-rendering-engine.md) | REQ-F | Must | Implemented | V3 Bipolar Trail Engine: 12 Pole, Cousto-Hz-Geschwindigkeiten, Float32Array-Trails, adaptive Tiers, additive Blendung |
+| [REQ-F-signatur-data-pipeline](requirements/REQ-F-signatur-data-pipeline.md) | REQ-F | Must | Implemented | Soulprint→6D, Quiz→6D, True North, Pol-Tabelle, H-Formel, Day/Night-Pulse/Trace |
+| [REQ-F-signatur-mobile-native](requirements/REQ-F-signatur-mobile-native.md) | REQ-F | Must | Deprecated | Superseded by REQ-F-signatur-ios-swift (Expo-Ansatz Cancelled) |
+| [REQ-PERF-signatur-performance](requirements/REQ-PERF-signatur-performance.md) | REQ-PERF | Must | Implemented | 60fps Desktop ✓, 30fps Mobile ✓, <2s First Frame ✓, <500ms API p95 |
+| [REQ-F-signatur-dissonance-model](requirements/REQ-F-signatur-dissonance-model.md) | REQ-F | Must | Draft | Drei-Schichten: d_natal (symmetrisch↔Lissajous), d_accumulated (Phase 2), d_elemental (Ke/Sheng-Textur) |
+| [REQ-F-signatur-quiz-morph](requirements/REQ-F-signatur-quiz-morph.md) | REQ-F | Must | Draft | Proportionales, kontinuierliches 2s-Morphing der Signatur bei Quiz-Completion |
+| [REQ-F-signatur-determinism](requirements/REQ-F-signatur-determinism.md) | REQ-F | Must | Draft | Identische Inputs → identische Geometrie; plattformübergreifend (Web + iOS) |
+| [REQ-F-signatur-density-field](requirements/REQ-F-signatur-density-field.md) | REQ-F | Should | Draft | Phase 2: 128×128 Float-Raster aus Trail-Daten; Basis für Matching und Bijektivität |
+| [REQ-F-signatur-ios-swift](requirements/REQ-F-signatur-ios-swift.md) | REQ-F | Must | Draft | iOS Swift Native: SignaturV3Engine.swift + SignaturV3View.swift, Metal/Core Graphics |
+| [REQ-F-signatur-shared-bridge](requirements/REQ-F-signatur-shared-bridge.md) | REQ-F | Must | Draft | packages/shared/src/signatur/ als Single Source of Truth für DIMENSION_DEFS und Bridge-Funktionen |
+| [REQ-F-signatur-day-night-pulse](requirements/REQ-F-signatur-day-night-pulse.md) | REQ-F | Must | Draft | Day/Night-Pulse & Trace: H-Formel, Trail-Persistenz-Modulation, Night-Variante (Premium) |
 
 ---
 

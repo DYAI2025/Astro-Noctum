@@ -2,7 +2,7 @@
 
 **Type**: Functional
 
-**Status**: Draft
+**Status**: Deprecated
 
 **Priority**: Must-have
 
@@ -10,9 +10,11 @@
 
 **Source stakeholder**: [STK-end-user](../stakeholders.md)
 
+> **Deprecated** — Superseded by [REQ-F-signatur-ios-swift](REQ-F-signatur-ios-swift.md). Expo/React Native approach was cancelled (S-SIG Phase 3, 2026-03-28); iOS is a native Swift repo.
+
 ## Description
 
-The iOS app renders the full 3D Signatur engine via expo-gl and three.js — not a 2D fallback. The same Cousto-frequency spirograph model runs on mobile with reduced particle count adapted for mobile GPU constraints. Touch gestures control the camera. Cousto-frequency ambient sound plays through the device speaker or headphones.
+~~The iOS app renders the full 3D Signatur engine via expo-gl and three.js — not a 2D fallback.~~ The same Cousto-frequency spirograph model runs on mobile with reduced particle count adapted for mobile GPU constraints. Touch gestures control the camera. Cousto-frequency ambient sound plays through the device speaker or headphones.
 
 ## Acceptance Criteria
 
