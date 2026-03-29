@@ -319,10 +319,10 @@ export function DashboardTagesEnergie({
           <div className="flex-1 min-w-0">
             {/* Gold accent line */}
             <div className="w-8 h-[2px] bg-gradient-to-r from-[#D4AF37]/50 to-transparent mb-2" />
-            {/* Themes as kicker */}
-            {daily.fusion.day_mode && (
+            {/* Themes as kicker — only when themes are available */}
+            {(daily.western?.themes?.length ?? 0) > 0 && (
               <p className="text-[10px] font-mono uppercase tracking-widest text-[#D4AF37]/50 mb-1">
-                {daily.western?.themes?.slice(0, 2).join(' · ') ?? ''}
+                {daily.western!.themes!.slice(0, 2).join(' · ')}
               </p>
             )}
           </div>

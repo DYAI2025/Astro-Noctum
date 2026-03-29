@@ -210,3 +210,34 @@ describe('DashboardTagesEnergie — Kosmoswetter Pills', () => {
     expect(container.textContent).not.toContain('Magnetsturm G');
   });
 });
+
+describe('DashboardTagesEnergie — Themes Kicker', () => {
+  it('rendert Themes-Kicker wenn western.themes nicht leer', () => {
+    mockIsPremium = true;
+    // DAILY fixture hat themes: ['Transformation', 'Kommunikation']
+    render(
+      <DashboardTagesEnergie daily={DAILY} dayHarmonic={null} spaceWeather={SPACE_WEATHER} />
+    );
+    // CSS uppercase transformiert nur visuell — DOM-Text bleibt lowercase
+    expect(screen.getByText('Transformation · Kommunikation')).toBeDefined();
+  });
+
+  it('rendert KEINEN Themes-Kicker wenn western.themes leer ist', () => {
+    mockIsPremium = true;
+    const dailyNoThemes: DailyResponse = {
+      ...DAILY,
+      western: { ...DAILY.western, themes: [] },
+    };
+    const { container } = render(
+      <DashboardTagesEnergie
+        daily={dailyNoThemes}
+        dayHarmonic={null}
+        spaceWeather={SPACE_WEATHER}
+      />
+    );
+    // Mit altem day_mode-Guard: leeres <p> würde immer gerendert.
+    // Mit korrektem Guard: kein Kicker-Element im DOM.
+    const kickerParagraphs = container.querySelectorAll('p.text-\\[10px\\]');
+    expect(kickerParagraphs.length).toBe(0);
+  });
+});
