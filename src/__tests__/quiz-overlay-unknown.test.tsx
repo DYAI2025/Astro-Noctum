@@ -21,7 +21,7 @@ describe('QuizOverlay — unknown quiz ID', () => {
       />,
     );
 
-    expect(screen.getByText('Quiz nicht gefunden.')).toBeTruthy();
+    expect(screen.getByText('Dieses Quiz konnte nicht geladen werden.')).toBeTruthy();
     expect(screen.getByText('Schließen')).toBeTruthy();
   });
 
@@ -53,7 +53,7 @@ describe('QuizOverlay — unknown quiz ID', () => {
       />,
     );
 
-    expect(screen.queryByText('Quiz nicht gefunden.')).toBeNull();
+    expect(screen.queryByText('Dieses Quiz konnte nicht geladen werden.')).toBeNull();
     expect(container.innerHTML).toBe('');
   });
 });

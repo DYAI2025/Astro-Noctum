@@ -79,6 +79,20 @@ export const AFFINITY_MAP: Record<string, number[]> = {
   'achievement':     [.1, 0,  .1, 0,  .2, .2, 0,  0,  .1, .3, 0,  0 ],
   'diplomacy':       [0,  0,  .1, .1, 0,  0,  .4, 0,  0,  .1, .2, .1],
 
+  // === SHADOW ARCHETYPE keywords ===
+  // Destroyer: Fire / Aries primary
+  'aggressive':          [.4, 0,  0,  0,  .1, 0,  0,  .3, .1, 0,  0,  .1],
+  // 'primal_force' already exists above (Paket 5)
+  // Orphan: Water / Scorpio primary
+  'isolation':           [0,  0,  0,  .3, 0,  0,  .1, .2, 0,  .1, 0,  .3],
+  'vulnerability':       [0,  0,  0,  .4, 0,  0,  .1, .2, 0,  0,  0,  .3],
+  // Tyrant: Earth / Capricorn primary
+  // 'dominance' already exists above (Paket 5)
+  'strategic_control':   [0,  0,  0,  0,  .2, .2, 0,  .3, 0,  .3, 0,  0 ],
+  // Trickster: Metal / Virgo primary
+  'deflection':          [0,  0,  .3, 0,  0,  .2, .2, 0,  .2, 0,  .1, 0 ],
+  'mimicry':             [0,  0,  .3, .1, 0,  .2, .2, 0,  0,  0,  0,  .2],
+
   // === PARTNER MATCH keywords ===
   'anchor':          [0, .1, 0, .4, 0,  0,  .3, 0,  0,  0,  .1, .1],
   'security':        [0, .2, 0, .4, 0,  0,  .2, 0,  0,  0,  .1, .1],
