@@ -1046,6 +1046,10 @@ app.get("/api/transit-state/:userId", requireUserAuth, async (req, res) => {
 const horoscopeCache = new Map(); // userId:dateStr → { horoscope, timestamp }
 const HOROSCOPE_CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
 
+// ── Vibes cache (L1 in-memory) ──────────────────────────────────────
+const vibesCache = new Map(); // vibes:userId:thirtyMinSlot → { data, timestamp }
+const VIBES_CACHE_TTL = 30 * 60 * 1000; // 30 min (matches slot window)
+
 // Sector domain labels for template generation
 const SECTOR_DOMAINS = [
   { de: 'Antrieb', en: 'Drive' },       // 0 Aries
@@ -1646,6 +1650,274 @@ NEVER use in synthesis: "weil", "da heute", planet names (Mars, Venus etc.), "di
   } catch (err) {
     console.error('[experience/daily] Error:', err.message);
     res.status(502).json({ error: 'experience_unavailable' });
+  }
+});
+
+// ── /api/vibes ──────────────────────────────────────────────────────
+// Short-horizon vibes signal (2-3h) combining soulprint, transit, and space weather.
+// Uses Gemini for generation with L1 (in-memory) + L2 (Supabase vibes_cache) caching.
+// Deterministic fallback when Gemini is unavailable (template per dominant Wu-Xing element).
+
+const VIBES_FALLBACK = {
+  Wood:  { kurzsignal: 'Wachstumsphase \u2014 neue Impulse entstehen', treiber: ['Kreative Energie', 'Offenheit f\u00fcr Neues', 'Innere Bewegung'], erklaerung: 'Deine Holz-Energie beg\u00fcnstigt Expansion und frische Perspektiven.' },
+  Fire:  { kurzsignal: 'Hohe Ausstrahlung \u2014 sichtbar und pr\u00e4sent', treiber: ['Charisma steigt', 'Emotionale Intensit\u00e4t', 'Spontanit\u00e4t'], erklaerung: 'Feuer-Energie verst\u00e4rkt deine Sichtbarkeit und emotionale Resonanz.' },
+  Earth: { kurzsignal: 'Stabile Phase \u2014 guter Boden f\u00fcr Entscheidungen', treiber: ['Innere Ruhe', 'Praktischer Fokus', 'Verl\u00e4sslichkeit'], erklaerung: 'Erd-Energie gibt dir Bodenhaftung und klare Orientierung.' },
+  Metal: { kurzsignal: 'Klarheit und Struktur \u2014 guter Moment f\u00fcr Ordnung', treiber: ['Analytische Sch\u00e4rfe', 'Reduktion auf das Wesentliche', 'Disziplin'], erklaerung: 'Metall-Energie unterst\u00fctzt Fokus und bewusste Entscheidungen.' },
+  Water: { kurzsignal: 'Intuitive Phase \u2014 vertraue deinem Gesp\u00fcr', treiber: ['Tiefe Wahrnehmung', 'Emotionale Sensibilit\u00e4t', 'Reflexion'], erklaerung: 'Wasser-Energie verst\u00e4rkt deine intuitive Wahrnehmung und innere Tiefe.' },
+};
+
+// Zodiac sector index (0-11) → Wu-Xing element (Aries=0, Taurus=1, ... Pisces=11)
+const SECTOR_ELEMENT = ['Fire', 'Earth', 'Metal', 'Water', 'Wood', 'Fire', 'Earth', 'Metal', 'Water', 'Wood', 'Fire', 'Earth'];
+
+function dominantElementFromSoulprint(sectors) {
+  if (!Array.isArray(sectors) || sectors.length !== 12) return 'Fire';
+  const totals = { Fire: 0, Earth: 0, Metal: 0, Water: 0, Wood: 0 };
+  for (let i = 0; i < 12; i++) {
+    totals[SECTOR_ELEMENT[i]] += (sectors[i] || 0);
+  }
+  let maxEl = 'Fire';
+  let maxVal = -1;
+  for (const [el, val] of Object.entries(totals)) {
+    if (val > maxVal) { maxVal = val; maxEl = el; }
+  }
+  return maxEl;
+}
+
+function vibesSlotKey(userId) {
+  const slot = Math.floor(Date.now() / (30 * 60 * 1000));
+  return `vibes:${userId}:${slot}`;
+}
+
+function vibesSlotString() {
+  return String(Math.floor(Date.now() / (30 * 60 * 1000)));
+}
+
+app.post('/api/vibes', requireUserAuth, async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    // ── L1: In-memory cache check ────────────────────────────────────
+    const cacheKey = vibesSlotKey(userId);
+    if (vibesCache.has(cacheKey)) {
+      const cached = vibesCache.get(cacheKey);
+      if (Date.now() - cached.timestamp < VIBES_CACHE_TTL) {
+        const payload = { ...cached.data };
+        payload.meta = { ...payload.meta, cached: true };
+        return res.json(payload);
+      }
+    }
+
+    // ── L2: Supabase vibes_cache check ───────────────────────────────
+    const timeSlot = vibesSlotString();
+    if (supabaseServer) {
+      try {
+        const { data: dbCached } = await supabaseServer
+          .from('vibes_cache')
+          .select('payload_json')
+          .eq('user_id', userId)
+          .eq('time_slot', timeSlot)
+          .eq('engine_version', 'v1-gemini-vibes')
+          .maybeSingle();
+
+        if (dbCached?.payload_json) {
+          vibesCache.set(cacheKey, { data: dbCached.payload_json, timestamp: Date.now() });
+          const payload = { ...dbCached.payload_json };
+          payload.meta = { ...payload.meta, cached: true };
+          return res.json(payload);
+        }
+      } catch (e) {
+        console.warn('[vibes] L2 cache read failed, continuing to generation:', e.message);
+      }
+    }
+
+    // ── Load user data ───────────────────────────────────────────────
+    let soulprintSectors = null;
+    let sunSign = null;
+    let moonSign = null;
+    let ascSign = null;
+
+    if (supabaseServer) {
+      const { data: profile } = await supabaseServer
+        .from('astro_profiles')
+        .select('soulprint_sectors, sun_sign, moon_sign, asc_sign, astro_json')
+        .eq('user_id', userId)
+        .single();
+
+      if (profile) {
+        soulprintSectors = profile.soulprint_sectors
+          || deriveSoulprintSectors(profile.astro_json, userId);
+        sunSign = profile.sun_sign || null;
+        moonSign = profile.moon_sign || null;
+        ascSign = profile.asc_sign || null;
+      }
+    }
+
+    // Fallback soulprint if no profile
+    if (!soulprintSectors || !Array.isArray(soulprintSectors) || soulprintSectors.length !== 12) {
+      soulprintSectors = deriveSoulprintSectors(null, userId);
+    }
+
+    // ── Load space weather from existing cache ───────────────────────
+    let spaceWeatherSummary = 'Keine aktuelle Weltraumwetter-Daten verfügbar.';
+    if (spaceWeatherCache?.payload) {
+      const sw = spaceWeatherCache.payload;
+      const kp = sw.kp_index ?? sw.kp ?? 0;
+      spaceWeatherSummary = `Kp-Index: ${kp}, Quelle: ${sw.source || 'NOAA'}`;
+      if (sw.xray_class) spaceWeatherSummary += `, Röntgen-Klasse: ${sw.xray_class}`;
+      if (sw.f107) spaceWeatherSummary += `, F10.7: ${sw.f107}`;
+    }
+    // Also check the extended cache
+    if (extendedWeatherCache?.payload) {
+      const ext = extendedWeatherCache.payload;
+      if (ext.kp?.current) spaceWeatherSummary = `Kp-Index: ${ext.kp.current}`;
+      if (ext.xray?.class) spaceWeatherSummary += `, Röntgen: ${ext.xray.class}`;
+      if (ext.events?.length > 0) {
+        spaceWeatherSummary += `, Aktive Events: ${ext.events.map(e => e.type).join(', ')}`;
+      }
+    }
+
+    const dominantElement = dominantElementFromSoulprint(soulprintSectors);
+
+    // ── Gemini generation or fallback ────────────────────────────────
+    if (!geminiClient) {
+      console.warn('[vibes] Gemini API key missing, returning deterministic fallback');
+      const fb = VIBES_FALLBACK[dominantElement] || VIBES_FALLBACK.Fire;
+      const fallbackPayload = {
+        timestamp: new Date().toISOString(),
+        horizon: '2-3h',
+        kurzsignal: fb.kurzsignal,
+        treiber: fb.treiber,
+        erklaerung: fb.erklaerung,
+        explain: {
+          signatur_context: `Dominantes Element: ${dominantElement}`,
+          transit_context: spaceWeatherSummary,
+        },
+        meta: { engine_version: 'v1-gemini-vibes', cached: false },
+      };
+      vibesCache.set(cacheKey, { data: fallbackPayload, timestamp: Date.now() });
+      return res.json(fallbackPayload);
+    }
+
+    // ── Construct Gemini prompt ──────────────────────────────────────
+    const prompt = `Du bist Bazodiac's Vibes-Engine. Du generierst ein kurzes, ressourcenorientiertes Stimmungsbild für die nächsten 2-3 Stunden.
+
+EINGABEDATEN:
+- Soulprint-Sektoren (12 Zodiak-Sektoren, 0-1): ${JSON.stringify(soulprintSectors)}
+- Sonnenzeichen: ${sunSign || 'unbekannt'}
+- Mondzeichen: ${moonSign || 'unbekannt'}
+- Aszendent: ${ascSign || 'unbekannt'}
+- Dominantes Wu-Xing Element: ${dominantElement}
+- Weltraumwetter: ${spaceWeatherSummary}
+- Aktuelle Zeit: ${new Date().toISOString()}
+
+AUSGABE: Striktes JSON mit dieser exakten Struktur:
+{
+  "kurzsignal": "Ein Satz — die Kernstimmung der nächsten 2-3 Stunden",
+  "treiber": ["Label 1", "Label 2", "Label 3"],
+  "erklaerung": "1-2 Sätze Erklärung, warum diese Stimmung gerade da ist",
+  "explain": {
+    "signatur_context": "1-2 Sätze über die Signatur des Users und was sie gerade bedeutet",
+    "transit_context": "1-2 Sätze über die aktuelle kosmische Konstellation"
+  }
+}
+
+REGELN:
+1. Sprache: Deutsch
+2. KEINE unerklärten Zahlen im Output
+3. Ressourcenorientierte Sprache: verwende "Tendenz", "kann", "begünstigt", "Phase" — NIEMALS "wird", "Schicksal", "muss", "bestimmt"
+4. kurzsignal: GENAU 1 Satz, maximal 60 Zeichen
+5. treiber: 3-5 kurze Labels (je 2-4 Worte), keine ganzen Sätze
+6. erklaerung: 1-2 Sätze, alltagsnah formuliert
+7. explain.signatur_context: Bezug zur Signatur des Users, ohne Fachjargon
+8. explain.transit_context: Bezug zur aktuellen Konstellation/Weltraumwetter
+9. KEINE Planetennamen (Mars, Venus etc.), KEIN "die Sterne sagen", KEIN esoterischer Jargon
+10. Output MUSS valides JSON sein. KEIN Markdown, KEINE Code-Blöcke. Direkt mit { beginnen.`;
+
+    const model = geminiClient.models;
+    const result = await model.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: {
+        temperature: 0.8,
+        responseMimeType: 'application/json',
+      },
+    });
+
+    const rawText =
+      typeof result?.text === 'string'
+        ? result.text
+        : typeof result?.response?.text === 'string'
+          ? result.response.text
+          : undefined;
+    let jsonStr = rawText?.trim() || '';
+
+    if (!jsonStr) {
+      console.error('[vibes] Empty response text from model, falling back');
+      const fb = VIBES_FALLBACK[dominantElement] || VIBES_FALLBACK.Fire;
+      return res.json({
+        timestamp: new Date().toISOString(),
+        horizon: '2-3h',
+        ...fb,
+        explain: {
+          signatur_context: `Dominantes Element: ${dominantElement}`,
+          transit_context: spaceWeatherSummary,
+        },
+        meta: { engine_version: 'v1-gemini-vibes', cached: false },
+      });
+    }
+
+    if (jsonStr.startsWith('```json')) {
+      jsonStr = jsonStr.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    }
+
+    const parsed = JSON.parse(jsonStr);
+
+    // Assemble full payload with envelope
+    const vibesPayload = {
+      timestamp: new Date().toISOString(),
+      horizon: '2-3h',
+      kurzsignal: parsed.kurzsignal || VIBES_FALLBACK[dominantElement]?.kurzsignal || '',
+      treiber: Array.isArray(parsed.treiber) ? parsed.treiber.slice(0, 5) : VIBES_FALLBACK[dominantElement]?.treiber || [],
+      erklaerung: parsed.erklaerung || VIBES_FALLBACK[dominantElement]?.erklaerung || '',
+      explain: {
+        signatur_context: parsed.explain?.signatur_context || `Dominantes Element: ${dominantElement}`,
+        transit_context: parsed.explain?.transit_context || spaceWeatherSummary,
+      },
+      meta: { engine_version: 'v1-gemini-vibes', cached: false },
+    };
+
+    // ── L1: Store in memory ──────────────────────────────────────────
+    vibesCache.set(cacheKey, { data: vibesPayload, timestamp: Date.now() });
+
+    // ── L2: Fire-and-forget Supabase upsert ──────────────────────────
+    if (supabaseServer) {
+      supabaseServer
+        .from('vibes_cache')
+        .upsert({
+          user_id: userId,
+          time_slot: timeSlot,
+          engine_version: 'v1-gemini-vibes',
+          payload_json: vibesPayload,
+        }, { onConflict: 'user_id,time_slot,engine_version' })
+        .then(({ error }) => {
+          if (error) console.warn('[vibes] DB cache upsert failed:', error.message);
+        })
+        .catch((e) => {
+          console.warn('[vibes] DB cache upsert threw:', e?.message || e);
+        });
+    }
+
+    // ── L1: Evict stale vibes entries ────────────────────────────────
+    const now = Date.now();
+    const expired = [...vibesCache.entries()]
+      .filter(([, entry]) => now - entry.timestamp > VIBES_CACHE_TTL)
+      .map(([key]) => key);
+    expired.forEach(key => vibesCache.delete(key));
+
+    return res.status(200).json(vibesPayload);
+  } catch (err) {
+    console.error('[vibes] Error:', err.message);
+    return res.status(502).json({ error: 'experience_unavailable' });
   }
 });
 

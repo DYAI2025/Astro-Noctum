@@ -35,6 +35,7 @@ import InfluenceGauges from "./dashboard/InfluenceGauges";
 import { TourOverlay } from "./dashboard/TourOverlay";
 import { useDashboardTour } from "@/src/hooks/useDashboardTour";
 import { usePlanetarium } from "@/src/contexts/PlanetariumContext";
+import { VibesSection } from "./dashboard/VibesSection";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Static data
@@ -386,6 +387,13 @@ export function Dashboard({
               isPremium={isPremium}
             />
           )}
+        </SectionErrorBoundary>
+      </motion.div>
+
+      {/* ═══ VIBES BUTTON ═══════════════════════════════════════════ */}
+      <motion.div className="mb-8 flex justify-center" {...fadeIn(0.12)}>
+        <SectionErrorBoundary name="Vibes">
+          <VibesSection userId={userId} />
         </SectionErrorBoundary>
       </motion.div>
 

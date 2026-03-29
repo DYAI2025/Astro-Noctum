@@ -2,7 +2,7 @@ Component-specific instructions for the **frontend**. Extends [../CLAUDE.code.md
 
 # Frontend
 
-**Responsibility**: Web SPA — Dashboard, Signatur ring (V2 spirograph / V3 bipolar trails), 3D Orrery, quiz system (22 quizzes across 6 clusters), premium gating, space weather visualization, Day-Pulse/Trace modal, SEO articles.
+**Responsibility**: Web SPA — Dashboard, Signatur ring (V2 spirograph / V3 bipolar trails), 3D Orrery, quiz system (24 quizzes across 6 clusters + generator pipeline), multi-agent voice (Levi + Eve), premium gating, space weather visualization, Day-Pulse/Trace modal, SEO articles.
 
 **Technology**: React 19, TypeScript, Vite, Tailwind CSS v4, Framer Motion / motion/react, Three.js (custom GLSL shaders), Zod (runtime validation)
 
@@ -26,6 +26,12 @@ For code conventions, build commands, and dev setup see [`../../CLAUDE.md`](../.
 | [REQ-F-quiz-contribution-system](../../1-objectives/requirements/REQ-F-quiz-contribution-system.md) | REQ-F | Must | 22 quizzes across 6 clusters modulating the ring |
 | [REQ-F-cosmic-encounter-onboarding](../../1-objectives/requirements/REQ-F-cosmic-encounter-onboarding.md) | REQ-F | Must | Onboarding flow with SignatureReveal |
 | [REQ-F-space-weather-modulation](../../1-objectives/requirements/REQ-F-space-weather-modulation.md) | REQ-F | Should | Space weather visual modulation on FuRingPage |
+| [REQ-F-astro-card-detail-view](../../1-objectives/requirements/REQ-F-astro-card-detail-view.md) | REQ-F | Must | Sunsign/BaZi/Wuxing tiles open detail view modal |
+| [REQ-F-agent-dashboard-selection](../../1-objectives/requirements/REQ-F-agent-dashboard-selection.md) | REQ-F | Must | Dashboard shows Levi + Eve agent tiles side-by-side |
+| [REQ-F-quiz-generator-pipeline](../../1-objectives/requirements/REQ-F-quiz-generator-pipeline.md) | REQ-F | Must | Quiz generator with 12-sector/6D-Signatur/5D-MasterSignal mapping |
+| [REQ-F-signatur-rendering-engine](../../1-objectives/requirements/REQ-F-signatur-rendering-engine.md) | REQ-F | Must | V3 bipolar trail engine with Cousto frequencies + audio |
+| [REQ-F-signatur-data-pipeline](../../1-objectives/requirements/REQ-F-signatur-data-pipeline.md) | REQ-F | Must | Soulprint→natal weights, quiz→dimensions, transit, space weather |
+| [REQ-PERF-signatur-performance](../../1-objectives/requirements/REQ-PERF-signatur-performance.md) | REQ-PERF | Must | 60fps desktop, 30fps mobile, <2s first frame |
 
 ## Relevant Decisions
 
