@@ -260,20 +260,11 @@
 4. TASK-levi-system-prompt
 5. TASK-levi-auto-summary
 
-### Phase D: Signatur V3 Engine
+### Phase D: Signatur V3 Engine — SUPERSEDED by S-SIG sprint
 
-**Capabilities delivered:**
-- Bipolar trail engine replaces particle spirograph (DEC-signatur-v3-bipolar-trails)
-- Dissonance model visible in ring (d_natal, d_accumulated, d_elemental)
-- Bloom fine-tuning and solar coupling
-
-**Tasks:**
-1. TASK-v3-pole-system
-2. TASK-v3-trail-renderer
-3. TASK-v3-dissonance-visual
-4. TASK-v3-feature-flag
-5. TASK-bloom-fine-tuning
-6. TASK-bloom-solar-coupling
+V3 engine tasks (pole system, trail renderer, dissonance wiring, feature flag) were completed in S-SIG Phase 1–2. Remaining:
+1. TASK-bloom-fine-tuning (Deferred)
+2. TASK-bloom-solar-coupling (Todo)
 
 ### Phase E: Autopoietic UX Evolution
 
@@ -326,10 +317,10 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | TASK-dashboard-wireframe | Design wireframe for Dashboard redesign (Big Three top, influence gauges, Levi, Blueprint) | P1 | Todo | - | - | 2026-03-28 | Design-first: needs Ben's approval |
 | TASK-dashboard-layout-redesign | Implement Dashboard layout per approved wireframe | P1 | Todo | - | TASK-dashboard-wireframe | 2026-03-28 | |
 | TASK-daily-home-port | Port 5-zone Daily Home layout to Dashboard.tsx with real Contexts | P1 | Deferred | [REQ-F-cosmic-encounter-onboarding](../1-objectives/requirements/REQ-F-cosmic-encounter-onboarding.md) | TASK-dashboard-layout-redesign | 2026-03-28 | Data mapping from source layout |
-| TASK-v3-pole-system | Implement 12-pole bipolar system with Cousto frequencies and dimension mapping | P1 | Todo | [REQ-F-fusion-ring-visualization](../1-objectives/requirements/REQ-F-fusion-ring-visualization.md) | - | 2026-03-28 | DEC-signatur-v3-bipolar-trails |
-| TASK-v3-trail-renderer | Canvas 2D additive trail renderer with semi-transparent frame clear | P1 | Todo | [REQ-F-fusion-ring-visualization](../1-objectives/requirements/REQ-F-fusion-ring-visualization.md) | TASK-v3-pole-system | 2026-03-28 | |
-| TASK-v3-dissonance-visual | Wire d_natal → geometry, d_accumulated → trail density, d_elemental → vibration texture | P1 | Todo | [REQ-F-fusion-ring-visualization](../1-objectives/requirements/REQ-F-fusion-ring-visualization.md) | TASK-v3-trail-renderer | 2026-03-28 | DEC-dissonance-model |
-| TASK-v3-feature-flag | Gate V3 behind `signatur_engine_v3` flag; V2 remains default fallback | P1 | Todo | [REQ-F-fusion-ring-visualization](../1-objectives/requirements/REQ-F-fusion-ring-visualization.md) | TASK-v3-dissonance-visual | 2026-03-28 | |
+| ~~TASK-v3-pole-system~~ | ~~Duplicate of S-SIG TASK-v3-engine-production~~ | - | Done | - | - | 2026-03-29 | Superseded by S-SIG sprint |
+| ~~TASK-v3-trail-renderer~~ | ~~Duplicate of S-SIG TASK-v3-engine-production~~ | - | Done | - | - | 2026-03-29 | Superseded by S-SIG sprint |
+| ~~TASK-v3-dissonance-visual~~ | ~~Duplicate of S-SIG TASK-v3-dissonance-wiring~~ | - | Done | - | - | 2026-03-29 | Superseded by S-SIG sprint |
+| ~~TASK-v3-feature-flag~~ | ~~Duplicate of S-SIG TASK-v3-feature-flag~~ | - | Done | - | - | 2026-03-29 | Superseded by S-SIG sprint |
 | TASK-bloom-fine-tuning | Reduce glow, increase color saturation per user feedback (V2+V3) | P2 | Deferred | [REQ-F-fusion-ring-visualization](../1-objectives/requirements/REQ-F-fusion-ring-visualization.md) | - | 2026-03-28 | After live test |
 | TASK-bloom-solar-coupling | Couple Bloom intensity to solar activity via computeRingModulation | P2 | Todo | [REQ-F-space-weather-modulation](../1-objectives/requirements/REQ-F-space-weather-modulation.md) | - | 2026-03-28 | Needs decision |
 | TASK-depth-nav-implement | Implement depth navigation: Dashboard (surface) → Signatur (mid) → Core detail views (deep) | P1 | Todo | - | TASK-depth-navigation | 2026-03-28 | |
@@ -343,6 +334,8 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | TASK-fuffire-experience-api | Wire `/experience/bootstrap` + `/experience/signature-delta` in server.mjs; replace direct BAFE calls | P1 | Done | [REQ-F-cosmic-encounter-onboarding](../1-objectives/requirements/REQ-F-cosmic-encounter-onboarding.md) | - | 2026-03-28 | FuFirE live at bafe-production.up.railway.app |
 | TASK-levi-system-prompt | Configure ElevenLabs agent with Signatur V2 knowledge base | P1 | Deferred | - | - | 2026-03-28 | See docs/LEVI_SIGNATUR_V2_KNOWLEDGE.md |
 | TASK-levi-auto-summary | Auto-summarize user profile after 3 Levi sessions via /api/agent/summary | P2 | Todo | - | TASK-levi-system-prompt | 2026-03-28 | |
+| TASK-eve-brand-safety-review | Review Eve system prompt for brand safety before production launch | P1 | Todo | [REQ-SEC-eve-brand-safety](../1-objectives/requirements/REQ-SEC-eve-brand-safety.md) | - | 2026-03-29 | Needs Ben's sign-off on persona tone |
+| TASK-agent-extensibility-verify | Verify adding 3rd agent requires config-only change (no structural code) | P2 | Todo | [REQ-MNT-agent-extensibility](../1-objectives/requirements/REQ-MNT-agent-extensibility.md) | - | 2026-03-29 | Smoke test: add mock agent to config, confirm renders |
 
 ## Mobile
 
