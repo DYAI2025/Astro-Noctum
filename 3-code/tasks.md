@@ -1,6 +1,39 @@
 # Development Tasks
 
-## Phase: Current Sprint — S-DAUP (Dashboard Aufräumen)
+## Phase: Current Sprint — S-BRIDGE (Shared Bridge Refactor)
+
+**Sprint Goal:** `DIMENSION_DEFS` + V3-Bridge-Funktionen aus lokalen Dateien in `packages/shared/src/signatur/` als Single Source of Truth extrahieren. Determinismus-Test-Suite als automatisierten Beweis für plattformübergreifende Konsistenz. Swift-Konstanten-Referenzdokument für iOS-Port.
+
+### Phase 1 — DIMENSION_DEFS: Single Source of Truth
+
+| ID | Task | Component | Req | Status | Dependencies | Updated | Notes |
+|----|------|-----------|-----|--------|--------------|---------|-------|
+| TASK-sbridge-dimension-defs | Erstelle `packages/shared/src/signatur/dimension-defs.ts`: extrahiere `DimensionDef` Typ und `DIMENSION_DEFS` Array (6 Einträge, exakte Werte) aus `bipolar-engine.ts` | shared | [REQ-F-signatur-shared-bridge](../1-objectives/requirements/REQ-F-signatur-shared-bridge.md) | Done | - | 2026-03-29 | Keine Werte ändern — 1:1 Extraktion |
+| TASK-sbridge-v3-bridge-fn | Ergänze `packages/shared/src/signatur/signatur-bridge.ts` um `soulprintToDimensionWeights()` aus `src/components/fusion-ring-website/signatur-bridge.ts`; bestehende Funktionen behalten | shared | [REQ-F-signatur-shared-bridge](../1-objectives/requirements/REQ-F-signatur-shared-bridge.md) | Done | TASK-sbridge-dimension-defs | 2026-03-29 | |
+| TASK-sbridge-shared-index | Update `packages/shared/src/signatur/index.ts`: exportiere `DIMENSION_DEFS`, `DimensionDef`, `soulprintToNatalWeights`, `quizSectorsToQuizWeights`, `soulprintToDimensionWeights` | shared | [REQ-F-signatur-shared-bridge](../1-objectives/requirements/REQ-F-signatur-shared-bridge.md) | Done | TASK-sbridge-v3-bridge-fn | 2026-03-29 | |
+| TASK-sbridge-engine-consume | Update `bipolar-engine.ts`: importiere `DimensionDef` + `DIMENSION_DEFS` aus `@/packages/shared/src/signatur`; lösche lokale Definitionen; `npx vitest run` muss grün bleiben | frontend | [REQ-F-signatur-shared-bridge](../1-objectives/requirements/REQ-F-signatur-shared-bridge.md) | Done | TASK-sbridge-shared-index | 2026-03-29 | Achtung: Tests importieren aktuell direkt aus bipolar-engine |
+| TASK-sbridge-web-bridge-consume | Update `src/components/fusion-ring-website/signatur-bridge.ts`: lokale `soulprintToDimensionWeights` durch Re-Export aus `@/packages/shared/src/signatur` ersetzen | frontend | [REQ-F-signatur-shared-bridge](../1-objectives/requirements/REQ-F-signatur-shared-bridge.md) | Done | TASK-sbridge-engine-consume | 2026-03-29 | |
+| TASK-sbridge-test-imports | Update `src/__tests__/signatur-v3-engine.test.ts`: `DIMENSIONS` aus `@/packages/shared/src/signatur` importieren statt aus lokalem `bipolar-engine.ts`; alle 15 Tests müssen grün bleiben | frontend | [REQ-F-signatur-shared-bridge](../1-objectives/requirements/REQ-F-signatur-shared-bridge.md) | Done | TASK-sbridge-web-bridge-consume | 2026-03-29 | |
+
+### Phase 2 — Determinismus-Test-Suite
+
+| ID | Task | Component | Req | Status | Dependencies | Updated | Notes |
+|----|------|-----------|-----|--------|--------------|---------|-------|
+| TASK-sbridge-dim-contract | Vitest (`packages/shared`): DIMENSION_DEFS hat 6 Einträge, alle Hz einzigartig, Winkel exakt `[0, π/3, 2π/3, π, 4π/3, 5π/3]`, alle colorA/B ∈ [0,1], keine leeren Pol-Namen | shared | [REQ-F-signatur-determinism](../1-objectives/requirements/REQ-F-signatur-determinism.md) | Done | TASK-sbridge-shared-index | 2026-03-29 | |
+| TASK-sbridge-hz-constants | Vitest: Hz-Werte matchen exakt die Spec (Mars=144.72, Moon=210.42, Sun=126.22, Mercury=141.27, Jupiter=183.58, Saturn=147.85) — schlägt fehl bei stiller Änderung | shared | [REQ-F-signatur-determinism](../1-objectives/requirements/REQ-F-signatur-determinism.md) | Done | TASK-sbridge-dim-contract | 2026-03-29 | Guard-Test: Intent erzwingen |
+| TASK-sbridge-bridge-contract | Vitest: alle Outputs von `soulprintToDimensionWeights` + `quizSectorsToQuizWeights` ∈ [0,1]; Edge-cases: leeres Array → 0.5, Array mit 12 Einsen → 1.0 | shared | [REQ-F-signatur-determinism](../1-objectives/requirements/REQ-F-signatur-determinism.md) | Done | TASK-sbridge-dim-contract | 2026-03-29 | |
+| TASK-sbridge-determinism | Vitest: `initializePoles()` + 200× `updatePoles()` mit identischen Inputs zweimal → alle 12 Pol-Positionen (x,y) Differenz < 1e-10 | frontend | [REQ-F-signatur-determinism](../1-objectives/requirements/REQ-F-signatur-determinism.md) | Done | TASK-sbridge-test-imports | 2026-03-29 | Beweist Float-Determinismus für Matching-Basis |
+
+### Phase 3 — Swift-Referenz & Runbook
+
+| ID | Task | Component | Req | Status | Dependencies | Updated | Notes |
+|----|------|-----------|-----|--------|--------------|---------|-------|
+| TASK-sbridge-swift-doc | Erstelle `packages/shared/src/signatur/SWIFT_CONSTANTS.md`: Swift-ready `struct DimensionDef` + `let DIMENSION_DEFS` Array mit hz als Double, baseAngle als Double, colorA/B als `(Double,Double,Double)` — generiert aus TS-Werten | shared | [REQ-F-signatur-ios-swift](../1-objectives/requirements/REQ-F-signatur-ios-swift.md) | Done | TASK-sbridge-hz-constants | 2026-03-29 | Manueller Sync bis Codegen; kein Hardcoding in Swift |
+| TASK-sbridge-manual-testing | Erstelle `docs/runbooks/signatur-s-bridge-verification.md`: (a) `npx vitest run` grün, (b) MiniSignature rendert, (c) Signatur-Seite rendert, (d) `npx tsc --noEmit` clean | frontend, shared | - | Done | TASK-sbridge-determinism, TASK-sbridge-swift-doc | 2026-03-29 | |
+
+---
+
+## Phase: Completed — S-DAUP (Dashboard Aufräumen)
 
 **Sprint Goal:** Bestätigte Bugs im Dashboard beheben: Four Pillars-Duplikat entfernen, Sunsign/BaZi/Wuxing Kacheln auf Detail-View umbauen, leeren Blueprint-Placeholder fixen, DayModeModal Dark-Mode-Kontrast korrigieren, MiniSignature-Skalierung prüfen.
 
@@ -220,6 +253,50 @@
 
 ## Execution Plan
 
+### Sprint S-BRIDGE: Shared Bridge Refactor
+
+**Sprint Goal:** DIMENSION_DEFS als Single Source of Truth; Determinismus-Tests; Swift-Referenz.
+
+#### Phase 1: DIMENSION_DEFS Single Source of Truth
+
+**Capabilities delivered:**
+- `DIMENSION_DEFS` + alle Bridge-Funktionen aus `@bazodiac/shared/signatur` importierbar
+- `bipolar-engine.ts` und Web-Bridge konsumieren Shared Package — keine lokale Duplizierung
+- Alle bestehenden Tests laufen weiter grün
+
+**Tasks:**
+1. TASK-sbridge-dimension-defs
+2. TASK-sbridge-v3-bridge-fn
+3. TASK-sbridge-shared-index
+4. TASK-sbridge-engine-consume
+5. TASK-sbridge-web-bridge-consume
+6. TASK-sbridge-test-imports
+
+#### Phase 2: Determinismus-Test-Suite
+
+**Capabilities delivered:**
+- Automatisierter Beweis: identische Inputs → identische Pol-Geometrie (Float-Determinismus)
+- DIMENSION_DEFS Contract maschinengeprüft — stille Hz-Änderungen schlagen sofort fehl
+- Bridge-Funktionen produzieren nachweislich spec-konforme Werte ∈ [0,1]
+
+**Tasks:**
+1. TASK-sbridge-dim-contract
+2. TASK-sbridge-hz-constants
+3. TASK-sbridge-bridge-contract
+4. TASK-sbridge-determinism
+
+#### Phase 3: Swift-Referenz & Runbook
+
+**Capabilities delivered:**
+- iOS-Entwickler hat Copy-paste-ready Swift-Konstanten für alle 6 Dimensionen (kein Hardcoding)
+- Verifizierungsrunbook: Refactor nachweisbar ohne Regressionen
+
+**Tasks:**
+1. TASK-sbridge-swift-doc
+2. TASK-sbridge-manual-testing
+
+---
+
 ### Phase A: Production Hardening
 
 **Capabilities delivered:**
@@ -354,6 +431,18 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 
 ---
 
+## Shared Package
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-sbridge-dimension-defs | Erstelle `packages/shared/src/signatur/dimension-defs.ts`: `DimensionDef` + `DIMENSION_DEFS` aus `bipolar-engine.ts` extrahieren | P1 | Done | [REQ-F-signatur-shared-bridge](../1-objectives/requirements/REQ-F-signatur-shared-bridge.md) | - | 2026-03-29 | |
+| TASK-sbridge-v3-bridge-fn | `soulprintToDimensionWeights()` in `packages/shared/src/signatur/signatur-bridge.ts` portieren | P1 | Done | [REQ-F-signatur-shared-bridge](../1-objectives/requirements/REQ-F-signatur-shared-bridge.md) | TASK-sbridge-dimension-defs | 2026-03-29 | |
+| TASK-sbridge-shared-index | `packages/shared/src/signatur/index.ts` mit allen Exporten aktualisieren | P1 | Done | [REQ-F-signatur-shared-bridge](../1-objectives/requirements/REQ-F-signatur-shared-bridge.md) | TASK-sbridge-v3-bridge-fn | 2026-03-29 | |
+| TASK-sbridge-dim-contract | Vitest: DIMENSION_DEFS Contract (6 Einträge, Hz, Winkel, Farben) | P1 | Done | [REQ-F-signatur-determinism](../1-objectives/requirements/REQ-F-signatur-determinism.md) | TASK-sbridge-shared-index | 2026-03-29 | |
+| TASK-sbridge-hz-constants | Vitest: Hz-Guard-Test (exakte Spec-Werte, schlägt bei stiller Änderung fehl) | P1 | Done | [REQ-F-signatur-determinism](../1-objectives/requirements/REQ-F-signatur-determinism.md) | TASK-sbridge-dim-contract | 2026-03-29 | |
+| TASK-sbridge-bridge-contract | Vitest: Bridge-Funktionen outputs ∈ [0,1], Edge-cases | P1 | Done | [REQ-F-signatur-determinism](../1-objectives/requirements/REQ-F-signatur-determinism.md) | TASK-sbridge-dim-contract | 2026-03-29 | |
+| TASK-sbridge-swift-doc | `packages/shared/src/signatur/SWIFT_CONSTANTS.md` mit Swift-ready Konstanten | P1 | Done | [REQ-F-signatur-ios-swift](../1-objectives/requirements/REQ-F-signatur-ios-swift.md) | TASK-sbridge-hz-constants | 2026-03-29 | |
+
 ## Setup & Infrastructure
 
 | ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
@@ -369,8 +458,9 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | TASK-onboarding-route | Build OnboardingPage with BirthForm + FusionRingReveal + quiz phase as state machine | P1 | Done | [REQ-F-cosmic-encounter-onboarding](../1-objectives/requirements/REQ-F-cosmic-encounter-onboarding.md) | TASK-fuffire-experience-api | 2026-03-28 | 7-phase state machine |
 | TASK-onboarding-mobile-fallback | Implement mobile fallback for onboarding (CSS+image when viewport < 768px) | P1 | Done | [REQ-F-cosmic-encounter-onboarding](../1-objectives/requirements/REQ-F-cosmic-encounter-onboarding.md) | TASK-onboarding-route | 2026-03-28 | CosmicEncounterMobile component |
 | TASK-onboarding-flag-gate | Gate full Cosmic Encounter behind `cosmic_encounter_v1` flag; legacy BirthForm as fallback | P1 | Done | [REQ-F-cosmic-encounter-onboarding](../1-objectives/requirements/REQ-F-cosmic-encounter-onboarding.md) | TASK-onboarding-route | 2026-03-28 | Flag currently hard-disabled |
-| TASK-dashboard-wireframe | Design wireframe for Dashboard redesign (Big Three top, influence gauges, Levi, Blueprint) | P1 | Todo | - | - | 2026-03-28 | Design-first: needs Ben's approval |
-| TASK-dashboard-layout-redesign | Implement Dashboard layout per approved wireframe | P1 | Todo | - | TASK-dashboard-wireframe | 2026-03-28 | |
+| TASK-dashboard-wireframe | Design wireframe for Dashboard redesign (Big Three top, influence gauges, Levi, Blueprint) | P1 | Done | - | - | 2026-03-29 | docs/wireframes/dashboard-v2.md — F1 Big Four, F2 MiniSignature+Toggle, F3 unified TagesEnergie, F4 Upgrade nach Levi |
+| TASK-dashboard-layout-redesign | Implement Dashboard layout per approved wireframe | P1 | In Progress | - | TASK-dashboard-wireframe | 2026-03-29 | |
+| TASK-tagesenergie-hero | Erstelle `DashboardTagesEnergie.tsx`: Hero-Sektion (immer vollständig sichtbar, kein Akkordeon). Zeigt: Element-Icon + Headline, Body-Narrativ (fusion.synthesis, 2–3 Sätze), Day-Trace Reibungs-Kontext (kursiv, wenn isTrace), PremiumGate um fusion.action, Kosmoswetter-Strip (Magnetsturm/Flare/CME/HSS/SEP/Transit als Icon-Pillen), Resonanz-Indikator (Balken + Text). Ersetzt `CosmicWeatherCard` im Dashboard. DayModeModal nur noch on-demand via `[vertiefen →]` Link. | P1 | Todo | [REQ-F-signatur-day-night-pulse](../1-objectives/requirements/REQ-F-signatur-day-night-pulse.md) | TASK-dashboard-wireframe | 2026-03-29 | Datenquellen bereits alle verfügbar: dailyData, dayHarmonic, spaceWeather, isPremium |
 | TASK-daily-home-port | Port 5-zone Daily Home layout to Dashboard.tsx with real Contexts | P1 | Deferred | [REQ-F-cosmic-encounter-onboarding](../1-objectives/requirements/REQ-F-cosmic-encounter-onboarding.md) | TASK-dashboard-layout-redesign | 2026-03-28 | Data mapping from source layout |
 | ~~TASK-v3-pole-system~~ | ~~Duplicate of S-SIG TASK-v3-engine-production~~ | - | Done | - | - | 2026-03-29 | Superseded by S-SIG sprint |
 | ~~TASK-v3-trail-renderer~~ | ~~Duplicate of S-SIG TASK-v3-engine-production~~ | - | Done | - | - | 2026-03-29 | Superseded by S-SIG sprint |
@@ -378,6 +468,10 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | ~~TASK-v3-feature-flag~~ | ~~Duplicate of S-SIG TASK-v3-feature-flag~~ | - | Done | - | - | 2026-03-29 | Superseded by S-SIG sprint |
 | TASK-bloom-fine-tuning | Reduce glow, increase color saturation per user feedback (V2+V3) | P2 | Deferred | [REQ-F-fusion-ring-visualization](../1-objectives/requirements/REQ-F-fusion-ring-visualization.md) | - | 2026-03-28 | After live test |
 | TASK-bloom-solar-coupling | Couple Bloom intensity to solar activity via computeRingModulation | P2 | Todo | [REQ-F-space-weather-modulation](../1-objectives/requirements/REQ-F-space-weather-modulation.md) | - | 2026-03-28 | Needs decision |
+| TASK-sbridge-engine-consume | `bipolar-engine.ts`: `DimensionDef`+`DIMENSION_DEFS` aus Shared Package importieren; lokale Defs entfernen | P1 | Done | [REQ-F-signatur-shared-bridge](../1-objectives/requirements/REQ-F-signatur-shared-bridge.md) | TASK-sbridge-shared-index | 2026-03-29 | |
+| TASK-sbridge-web-bridge-consume | `signatur-bridge.ts` (web): lokale `soulprintToDimensionWeights` durch Shared-Import ersetzen | P1 | Done | [REQ-F-signatur-shared-bridge](../1-objectives/requirements/REQ-F-signatur-shared-bridge.md) | TASK-sbridge-engine-consume | 2026-03-29 | |
+| TASK-sbridge-test-imports | `signatur-v3-engine.test.ts`: `DIMENSIONS` aus Shared Package importieren; alle 15 Tests grün | P1 | Done | [REQ-F-signatur-shared-bridge](../1-objectives/requirements/REQ-F-signatur-shared-bridge.md) | TASK-sbridge-web-bridge-consume | 2026-03-29 | |
+| TASK-sbridge-determinism | Vitest: `initializePoles()` + 200× `updatePoles()` mit identischen Inputs → alle Pol-Positionen Δ < 1e-10 | P1 | Done | [REQ-F-signatur-determinism](../1-objectives/requirements/REQ-F-signatur-determinism.md) | TASK-sbridge-test-imports | 2026-03-29 | |
 | TASK-depth-nav-implement | Implement depth navigation: Dashboard (surface) → Signatur (mid) → Core detail views (deep) | P1 | Todo | - | TASK-depth-navigation | 2026-03-28 | |
 | TASK-element-ui-adaptation | Apply user's dominant Wu-Xing element to UI accent colors, card textures, transition speeds | P1 | Todo | - | - | 2026-03-28 | DEC-wuxing-ui-mapping |
 | TASK-engagement-fluidity | Progressive UI fluidity: new users see conventional nav, engaged users see gesture-based fluid nav | P1 | Todo | - | TASK-depth-nav-implement | 2026-03-28 | |
@@ -432,9 +526,7 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | TASK-migration-runbook | Create Supabase migration runbook (SQL Editor workflow, rollback patterns) | P0 | Done | - | - | 2026-03-28 | |
 | TASK-phase-b-manual-testing | Create onboarding runbook: test scenarios for all 7 phases, desktop + mobile, flag on/off | P1 | Done | - | TASK-onboarding-flag-gate | 2026-03-28 | |
 | TASK-phase-e-manual-testing | Update deploy runbook with depth-nav test scenarios and element-adaptation verification | P1 | Todo | - | TASK-engagement-fluidity | 2026-03-28 | |
-| TASK-vibes-manual-testing | Create runbook: Vibes test scenarios (button, result, explain, cache, fallback, mobile) | P1 | Todo | - | TASK-vibes-explainability | 2026-03-30 | |
-| TASK-weekly-manual-testing | Create runbook: Weekly test scenarios (7 areas, top-3, Monday refresh, mobile <10s) | P1 | Todo | - | TASK-weekly-route | 2026-03-30 | |
-| TASK-vibes-weekly-manual-testing | Final runbook: all-platform test matrix for Vibes + Weekly + transparency | P1 | Todo | - | TASK-vibes-weekly-e2e-test | 2026-03-30 | |
+| TASK-sbridge-manual-testing | Erstelle `docs/runbooks/signatur-s-bridge-verification.md`: vitest grün, MiniSignature rendert, Signatur-Seite rendert, tsc clean | P1 | Done | - | TASK-sbridge-determinism, TASK-sbridge-swift-doc | 2026-03-29 | |
 
 ## Partnership Features (Blocked)
 
