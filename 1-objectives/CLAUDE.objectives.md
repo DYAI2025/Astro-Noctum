@@ -80,6 +80,7 @@ When an artifact (goal, requirement) is no longer relevant:
 | [GOAL-fusion-astrology](goals/GOAL-fusion-astrology.md) | Must | Approved | Fuse Western astrology, Chinese BaZi, and Wu-Xing into a single living system |
 | [GOAL-autopoietic-ux](goals/GOAL-autopoietic-ux.md) | Must | Approved | UI adapts to user's elemental signature via three-layer autopoietic model |
 | [GOAL-multi-agent-voice](goals/GOAL-multi-agent-voice.md) | Must | Approved | Levi + Eve as two fixed voice agent personas with independent conversation history |
+| [GOAL-vibes-weekly-insights](goals/GOAL-vibes-weekly-insights.md) | Must | Draft | On-demand Vibes (2–3h) + Weekly Insights (7 life areas) with transparent outputs |
 
 ---
 
@@ -104,6 +105,14 @@ When an artifact (goal, requirement) is no longer relevant:
 | [REQ-F-signatur-mobile-native](requirements/REQ-F-signatur-mobile-native.md) | REQ-F | Must | Draft | Full 3D spirograph engine on iOS via expo-gl, gesture controls, reduced particles |
 | [REQ-PERF-signatur-performance](requirements/REQ-PERF-signatur-performance.md) | REQ-PERF | Must | Draft | 60fps desktop, 30fps mobile/iOS, <2s load, <150MB GPU, <500ms API p95 |
 | [REQ-F-quiz-generator-pipeline](requirements/REQ-F-quiz-generator-pipeline.md) | REQ-F | Must | Approved | Reusable quiz generator with formal mapping to 12-sector zodiac, 6D Signatur V3, 5D Master Signal |
+| [REQ-F-vibes-core](requirements/REQ-F-vibes-core.md) | REQ-F | Must | Draft | On-demand Vibe insight from Signatur + transit (2–3h horizon, deterministic) |
+| [REQ-F-vibes-output-structure](requirements/REQ-F-vibes-output-structure.md) | REQ-F | Must | Draft | 3-level output: Kurzsignal → Treiber → Erklärung |
+| [REQ-F-weekly-insights-engine](requirements/REQ-F-weekly-insights-engine.md) | REQ-F | Must | Draft | Weekly insights across 7 life areas with tendency labels |
+| [REQ-F-weekly-area-prioritization](requirements/REQ-F-weekly-area-prioritization.md) | REQ-F | Should | Draft | Top-3 life area highlighting with additional depth |
+| [REQ-F-transparency-rule](requirements/REQ-F-transparency-rule.md) | REQ-F | Must | Draft | System-wide: no number without explanation |
+| [REQ-F-explainability-layer](requirements/REQ-F-explainability-layer.md) | REQ-F | Must | Draft | "Warum sehe ich das?" for every insight |
+| [REQ-USA-mobile-first-readability](requirements/REQ-USA-mobile-first-readability.md) | REQ-USA | Must | Draft | <10s comprehension on mobile, mobile-first layout |
+| [REQ-PERF-vibes-response-time](requirements/REQ-PERF-vibes-response-time.md) | REQ-PERF | Must | Draft | Vibes result <2s p95, Gemini fallback within 1.5s |
 
 ---
 
@@ -111,7 +120,9 @@ When an artifact (goal, requirement) is no longer relevant:
 
 | File | Category | Status | Risk | Summary |
 |------|----------|--------|------|---------|
-<!-- Add rows as assumptions are created. File column: [ASM-kebab-name](assumptions/ASM-kebab-name.md) -->
+| [ASM-elevenlabs-multi-agent](assumptions/ASM-elevenlabs-multi-agent.md) | Technical | Unverified | Medium | ElevenLabs supports multiple agent personas per account |
+| [ASM-existing-fusion-sufficient](assumptions/ASM-existing-fusion-sufficient.md) | Technical | Unverified | Medium | Existing Fusion/Signatur logic sufficient for Vibes + Weekly Insights |
+| [ASM-gemini-text-quality](assumptions/ASM-gemini-text-quality.md) | Technical | Unverified | Medium | Gemini produces constraint-compliant insight text (≥80% first-pass) |
 
 ---
 
@@ -121,3 +132,6 @@ When an artifact (goal, requirement) is no longer relevant:
 |------|----------|--------|---------|
 | [CON-german-ui](constraints/CON-german-ui.md) | Business | Active | UI text in German; code identifiers and comments in English |
 | [CON-dark-luxury-aesthetic](constraints/CON-dark-luxury-aesthetic.md) | Business | Active | Dark OLED-first design with obsidian/gold palette, Wu-Xing element colors |
+| [CON-no-unexplained-numbers](constraints/CON-no-unexplained-numbers.md) | Business | Active | No numerical value in UI without explanation — hard rule |
+| [CON-resource-oriented-framing](constraints/CON-resource-oriented-framing.md) | Business | Active | Possibility-oriented language, no fatalistic framing |
+| [CON-mobile-first-readability](constraints/CON-mobile-first-readability.md) | Business | Active | <10s core comprehension on mobile viewport |
