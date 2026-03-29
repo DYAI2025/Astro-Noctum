@@ -951,15 +951,19 @@ div[class*="elevenlabs"] {
 }
 
 /* When the widget is active, break its parent morning-card out of any
-   stacking context that would otherwise clip/trap the popup.             */
-.morning-card:has(elevenlabs-convai) {
+   stacking context that would otherwise clip/trap the popup.
+   The active-state class z-[99999] is set in React; here we additionally
+   ensure backdrop-filter (which creates a stacking context) is removed
+   so the child z-index actually reaches the viewport layer.             */
+.morning-card:has(elevenlabs-convai),
+div:has([data-agent-widget] elevenlabs-convai) {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   overflow: visible !important;
   z-index: 99999 !important;
 }
 
-/* Body-level overlays appended by the ElevenLabs SDK */
+/* Body-level overlays appended by the ElevenLabs SDK                    */
 body > div[class*="eleven"],
 body > div[id*="eleven"],
 body > div[class*="convai"],

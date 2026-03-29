@@ -136,60 +136,67 @@ export function AgentSection({
   return (
     <div
       ref={sectionRef}
-      className={`morning-card p-5 flex flex-col items-center gap-4 max-w-xs mx-auto relative text-center ${
+      className={`relative rounded-2xl p-6 sm:p-8 flex flex-col gap-5 overflow-visible ${
         isActive ? 'z-[99999]' : 'z-10'
       }`}
-      style={{ overflow: 'visible' }}
+      style={{
+        background: `linear-gradient(135deg, ${agent.gradientFrom} 0%, ${agent.gradientTo} 100%)`,
+        border: `1px solid ${agent.accentColor}25`,
+        boxShadow: `0 4px 24px ${agent.gradientFrom}40, inset 0 1px 0 ${agent.accentColor}10`,
+      }}
     >
-      {/* ── Badge (with inline status dot) + Description ─────────────── */}
-      <div className="flex flex-col items-center gap-1.5">
-        <div className="flex items-center gap-2">
-          <div
-            className="w-2 h-2 rounded-full shrink-0 breathing"
-            style={{ backgroundColor: dotColor, boxShadow: dotShadow }}
-          />
-          <Badge variant={isActive ? 'success' : 'default'}>{badgeText}</Badge>
-        </div>
-        <p className="text-sm text-[#1E2A3A]/60 leading-snug">
-          {isActive ? activeDesc : description}
-        </p>
+      {/* ── Decorative accent line ─────────────────────────────────── */}
+      <div
+        className="absolute top-0 left-6 right-6 h-[2px] rounded-full"
+        style={{ background: `linear-gradient(90deg, transparent, ${agent.accentColor}40, transparent)` }}
+      />
+
+      {/* ── Header: status dot + agent name ────────────────────────── */}
+      <div className="flex items-center gap-3">
+        <div
+          className="w-2.5 h-2.5 rounded-full shrink-0 breathing"
+          style={{ backgroundColor: dotColor, boxShadow: dotShadow }}
+        />
+        <h3 className="font-serif text-xl text-white/90 tracking-wide">
+          {agent.name}
+        </h3>
+        {isActive && (
+          <Badge variant="success" className="ml-auto text-[8px]">LIVE</Badge>
+        )}
       </div>
 
-      {/* ── CTA Button ───────────────────────────────────────────────── */}
+      {/* ── Description ────────────────────────────────────────────── */}
+      <p className="text-sm text-white/55 leading-relaxed">
+        {isActive ? activeDesc : description}
+      </p>
+
+      {/* ── CTA Button ───────────────────────────────────────────── */}
       {!isAvailable ? (
-        // Agent env var not configured — show "Coming Soon" badge
-        <Badge variant="secondary" className="opacity-70">
+        <Badge variant="secondary" className="opacity-70 self-start">
           {comingSoonLabel}
         </Badge>
       ) : isPremium ? (
         <Button
           variant={isActive ? 'destructive' : 'outline'}
-          className="w-full"
+          className="w-full sm:w-auto sm:self-start"
           onClick={isActive ? handleHangUp : handleCall}
+          style={!isActive ? { borderColor: `${agent.accentColor}40`, color: agent.accentColor } : undefined}
         >
           {isActive ? (
-            <>
-              <PhoneOff className="w-4 h-4" /> {hangUpLabel}
-            </>
+            <><PhoneOff className="w-4 h-4" /> {hangUpLabel}</>
           ) : (
-            <>
-              <Phone className="w-4 h-4" /> {callLabel}
-            </>
+            <><Phone className="w-4 h-4" /> {callLabel}</>
           )}
         </Button>
       ) : (
         <Button
           variant="premium"
-          className="w-full"
+          className="w-full sm:w-auto sm:self-start"
           onClick={handleUpgrade}
           disabled={isUpgrading}
         >
-          {isUpgrading ? (
-            '...'
-          ) : (
-            <>
-              <Lock className="w-4 h-4" /> {t('dashboard.premium.cta')}
-            </>
+          {isUpgrading ? '...' : (
+            <><Lock className="w-4 h-4" /> {t('dashboard.premium.cta')}</>
           )}
         </Button>
       )}

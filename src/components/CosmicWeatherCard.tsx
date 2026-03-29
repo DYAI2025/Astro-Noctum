@@ -77,7 +77,7 @@ export function CosmicWeatherCard({
 
   if (loading && !horoscope) {
     return (
-      <div className="w-full max-w-md mx-auto rounded-2xl border border-[#D4AF37]/15 bg-[#00050A]/80 backdrop-blur-md p-5">
+      <div className="w-full max-w-md mx-auto morning-card rounded-2xl border border-[#8B6914]/20 p-5">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-[#8B6914]/5 animate-pulse" />
           <div className="flex-1 space-y-2">
@@ -112,20 +112,20 @@ export function CosmicWeatherCard({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}
-      className="w-full max-w-md mx-auto"
+      className="w-full max-w-lg mx-auto"
     >
-      <div className="rounded-2xl border border-[#D4AF37]/15 bg-[#00050A]/80 backdrop-blur-md overflow-hidden">
-        {/* Header */}
+      <div className="morning-card rounded-2xl border border-[#8B6914]/25 overflow-hidden shadow-[0_2px_20px_rgba(139,105,20,0.06)]">
+        {/* Header — hero-grade Day Pulse */}
         <button
           onClick={() => setExpanded(!expanded)}
-          className="w-full p-4 flex items-start gap-3 text-left hover:bg-[#8B6914]/3 transition-colors"
+          className="w-full p-5 sm:p-7 flex items-start gap-4 text-left hover:bg-[#8B6914]/3 transition-colors"
         >
-          <IntensityRing sectors={sectorIntensities} />
+          <IntensityRing sectors={sectorIntensities} size={56} />
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 mb-1">
-              <Sparkles className="w-3 h-3 text-[#D4AF37]" />
-              <span className="text-[8px] uppercase tracking-[0.3em] text-[#8B6914]/50 font-mono">
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <span className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/60 font-mono font-bold">
                 {t('cosmicWeather.title')}
               </span>
               {isPremium && (
@@ -135,12 +135,15 @@ export function CosmicWeatherCard({
               )}
             </div>
 
-            <p className="text-sm font-medium text-[#1E2A3A]/80 leading-tight">
+            {/* Gold accent line */}
+            <div className="w-10 h-[2px] bg-gradient-to-r from-[#D4AF37]/40 to-transparent mb-2" />
+
+            <p className="text-base sm:text-lg font-serif font-medium text-[#1E2A3A]/85 leading-snug">
               {horoscope.headline}
             </p>
           </div>
 
-          <div className="shrink-0 mt-1">
+          <div className="shrink-0 mt-2">
             {expanded ? (
               <ChevronUp className="w-4 h-4 text-[#8B6914]/40" />
             ) : (

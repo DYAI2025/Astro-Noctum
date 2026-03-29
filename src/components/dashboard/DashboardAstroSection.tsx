@@ -14,7 +14,7 @@ import { BaZiInterpretation } from "../BaZiInterpretation";
 import { SkyModeToggle } from "./SkyModeToggle";
 import type { ApiData } from "../../types/bafe";
 import type { TileTexts } from "../../types/interpretation";
-import { AstroAccordion } from "./AstroAccordion";
+
 import { DashboardHeroNav } from "./DashboardHeroNav";
 import { AstroDetailModal, type AstroDetailId } from "./AstroDetailModal";
 import { WuXingIcon } from "../animated-icons/CosmicSymbols";
@@ -232,11 +232,6 @@ export function DashboardAstroSection({
           <SkyModeToggle />
         </motion.div>
       )}
-
-      {/* ═══ ASTRO ACCORDION (Western + BaZi/WuXing) ═════════════════════ */}
-      <motion.div className="mb-12" {...fadeIn(0.2)}>
-        <AstroAccordion apiData={apiData} tileTexts={tileTexts || {}} />
-      </motion.div>
 
       {/* ═══ BAZI & WUXING DEEP SECTION ═══════════════════════════════ */}
       <div id="section-bazi" />

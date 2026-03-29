@@ -96,7 +96,9 @@ export function AgentFloatingWidget({
               borderColor: `${agent.accentColor}33`,
               background:
                 'linear-gradient(180deg, rgba(15,12,8,0.95) 0%, rgba(25,20,12,0.97) 100%)',
-              backdropFilter: 'blur(24px)',
+              // backdrop-filter creates a stacking context that traps
+              // the ElevenLabs popup z-index — disable it during a call
+              ...(isActive ? {} : { backdropFilter: 'blur(24px)' }),
             }}
           >
             {/* Header */}
