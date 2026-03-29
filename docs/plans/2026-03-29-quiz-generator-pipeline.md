@@ -28,7 +28,7 @@ Extract types from `docs/quiz-generator/quiz-generator-schema-v1.md` into a prop
 // + constants: ZODIAC_SECTORS, SIGNATUR_DIMENSIONS, MASTER_SIGNAL_DIMENSIONS, FUSION_WEIGHTS
 ```
 
-Re-export `QuizDefinition` from `../schema` — do NOT duplicate it.
+Re-export `QuizDefinition` from `./schema` — do NOT duplicate it.
 
 **Step 2: Write a type-check test**
 
