@@ -413,7 +413,6 @@ export function generateQuiz(input: QuizGeneratorInput & {
 
   const definition: QuizDefinition = {
     id: quizId,
-    version: '1.0.0',
     title: input.questions[0]?.scenario?.['en-US'] ? input.topic : input.topic,
     titleDe: input.topic,
     subtitle: '',
