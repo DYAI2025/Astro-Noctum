@@ -948,7 +948,8 @@ div[class*="elevenlabs"] {
    The active-state class z-[99999] is set in React; here we additionally
    ensure backdrop-filter (which creates a stacking context) is removed
    so the child z-index actually reaches the viewport layer.             */
-.morning-card:has(elevenlabs-convai) {
+.morning-card:has(elevenlabs-convai),
+div:has([data-agent-widget] elevenlabs-convai) {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   overflow: visible !important;

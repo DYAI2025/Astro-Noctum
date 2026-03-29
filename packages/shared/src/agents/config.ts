@@ -7,6 +7,8 @@ export interface AgentConfig {
   persona: 'mentor' | 'provocateur';
   statusColor: { active: string; idle: string };
   accentColor: string;
+  gradientFrom: string;
+  gradientTo: string;
   icon: string;
   description: { de: string; en: string };
 }
@@ -19,6 +21,8 @@ export const AGENTS: AgentConfig[] = [
     persona: 'mentor',
     statusColor: { active: 'rgb(52,211,153)', idle: 'rgb(139,105,20)' },
     accentColor: '#8B6914',
+    gradientFrom: '#0a1028',
+    gradientTo: '#050810',
     icon: 'levi-symbol.svg',
     description: {
       de: 'Dein ruhiger Mentor. Levi führt dich mit Tiefe und Gelassenheit durch dein Chart.',
@@ -32,6 +36,8 @@ export const AGENTS: AgentConfig[] = [
     persona: 'provocateur',
     statusColor: { active: 'rgb(236,72,153)', idle: 'rgb(156,63,122)' },
     accentColor: '#9C3F7A',
+    gradientFrom: '#0d0a1a',
+    gradientTo: '#050510',
     icon: 'eve-symbol.svg',
     description: {
       de: 'Direkt. Frech. Auf den Punkt. Eve sagt dir, was Sache ist — ohne Umwege.',
