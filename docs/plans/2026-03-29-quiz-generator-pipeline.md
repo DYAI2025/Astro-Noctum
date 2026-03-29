@@ -436,8 +436,16 @@ export function generateQuiz(input: QuizGeneratorInput & {
         scores: o.scores,
       })),
     })),
-    profiles: input.dimensions.map(d => ({ id: d.key, label: d.label })),
-    resultMapping: {},
+    // Profiles must match QuizDefinition schema: { id, title, emoji, color, description }
+    profiles: input.resultProfiles.map(p => ({
+      id: p.id,
+      title: p.title,
+      emoji: p.emoji,
+      color: p.color,
+      description: p.description,
+    })),
+    // TODO: populate resultMapping from generator input once marker/trait design is finalized
+    resultMapping: [],
   };
 
   const affinityMapEntries = generateAffinityEntries(input.dimensions);
