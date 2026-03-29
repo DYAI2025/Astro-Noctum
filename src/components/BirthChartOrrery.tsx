@@ -168,6 +168,16 @@ export function BirthChartOrrery({
   // eslint-disable-next-line react-hooks/exhaustive-deps — setSimTime/setIsPlaying are stable state setters; only birthDate should trigger re-sync
   }, [birthDate]);
 
+  // Sync currentSky → simTime to today (keeps currentDate / constellations in sync)
+  useEffect(() => {
+    if (currentSky) {
+      setSimTime(daysSinceJ2000(new Date()));
+    } else {
+      setSimTime(daysSinceJ2000(birthDate));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSky]);
+
   // ── Three.js Objekt-Refs ─────────────────────────────────────────────────
   const composerRef      = useRef<EffectComposer | null>(null);
   const planetMeshesRef  = useRef<Record<string, THREE.Mesh>>({});
