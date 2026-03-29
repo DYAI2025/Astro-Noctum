@@ -79,7 +79,7 @@ You are Claude, co-working as Product Owner for Bazodiac alongside Ben (the foun
 
 Project is in the Code phase. Multi-agent voice (Levi + Eve) sprint complete on branch `feature/multi-agent-voice-eve`. Signatur sprint (S-SIG) active.
 
-Objectives artifacts: 3 goals (3 Approved), 17 requirements (6 Implemented, 2 Approved, 9 Draft), 1 assumption (Verified), 2 constraints (Active). No user stories (waived — solo founder).
+Objectives artifacts: 3 goals (3 Approved), 16 requirements (12 Implemented, 2 Approved, 2 Draft), 1 assumption (Verified), 2 constraints (Active). No user stories (waived — solo founder).
 
 Implementation plan created (2026-03-27): 4 phases, 28 tasks covering Signatur V3 Web Production, Cousto Audio, Mobile Native 3D, Performance Polish. All tasks trace to REQ-F-signatur-rendering-engine, REQ-F-signatur-data-pipeline, REQ-F-signatur-mobile-native, REQ-PERF-signatur-performance.
 
