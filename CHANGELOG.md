@@ -1,5 +1,41 @@
 # Changelog
 
+## [Unreleased] - 2026-03-29
+
+### Features
+
+- **DashboardTagesEnergie** — neue Hero-Sektion ersetzt `CosmicWeatherCard` als primären Tages-Impuls-Container. Immer vollständig sichtbar (kein Akkordeon). Zeigt: Element-Icon (aus BaZi Day-Master), Body-Narrativ (`fusion.synthesis`), Day-Trace Reibungs-Kontext, Kosmoswetter-Strip mit Event-Icons (Magnetsturm, Flare, CME, HSS, SEP, Transit), Resonanz-Indikator (persönliche Energie × Solaraktivität). `fusion.action` hinter `<PremiumGate>`.
+- **Kosmoswetter Event-Icons** — `buildWeatherPills` rendert Icon-Pillen für alle Space-Weather-Ereignistypen: Geomagnetischer Sturm (Kp-basiert + Events), M/X-Flare, CME-Ankunft, Hochgeschwindigkeitsstrom, Protonenfluss, Planetentransit aus Daily-Evidence.
+- **Resonanz-Indikator** — animierter Balken (`motion.div`, Gold→Cyan) mit Formel `harmony_index × 0.65 + solar_pressure × 0.35`; 4 Textstufen von "fließt unabhängig" bis "verstärkt den solaren Impuls".
+- **DayModeModal on-demand** — Modal öffnet sich nicht mehr automatisch beim ersten Load. Öffnung ausschließlich via "vertiefen →" Button in `DashboardTagesEnergie`. Supabase-Tracking (`daily_modal_seen_date`) bleibt beim expliziten Schließen erhalten.
+
+### Bug Fixes
+
+- **R1-1** `geomagnetic_storm` Events wurden in `buildWeatherPills` als behandelt markiert ohne je eine Pill zu erzeugen (silent skip). Fehlender Branch ergänzt: Zap-Icon, Label `Magnetsturm {severity}`, Gold für G3+, Amber für G2.
+- **R1-2** `handleDailyClose` (Close-Funktion) wurde fälschlicherweise als `onOpenDayModal` übergeben → "vertiefen →" Button war ein No-op. Fix: lokaler `isDayModalOpen`-State in `Dashboard.tsx`; `() => setIsDayModalOpen(true)` als Open-Handler; Modal rendert auf `isDayModalOpen` statt `showModal`.
+- **R1-4** Guard `daily.fusion.day_mode &&` auf dem Themes-Kicker war immer `true` (`z.enum(['pulse','trace'])` nie null). Ersetzt durch `(daily.western?.themes?.length ?? 0) > 0` — rendert kein leeres `<p>` mehr wenn `themes: []`.
+- **R2-4** `daily.fusion.synthesis` konnte als leerer String `""` vom Server kommen (KI-Generierungsfehler). Fallback hinzugefügt: `'Tagesimpuls wird gerade berechnet …'`.
+
+### Refactoring
+
+- **R2-1** Manueller Premium-Lock (`showPremiumHint` State + `Lock`-Button) in `DashboardTagesEnergie` durch existierende `<PremiumGate>`-Komponente ersetzt. Entfernt: `isPremium`-Prop, `showPremiumHint`-State, `Lock`-Icon-Import, `useState`. Konsistent mit Design-System.
+- **R2-2** `buildWeatherPills` mit `useMemo([spaceWeather, daily])` memoized. `useSpaceWeather` pollt alle 5 Min und erzeugt neue State-Objekte → verhindert unnötiges Array-Rebuild + JSX-Element-Erstellung bei jedem Poll-Zyklus. Pattern konsistent mit `InfluenceGauges.tsx`.
+
+### Accessibility
+
+- **R2-3** `role="progressbar"` + `aria-valuenow` / `aria-valuemin` / `aria-valuemax` / `aria-label` auf dem Resonanz-Balken ergänzt. Konsistent mit `DissonanceValues.tsx`, `ClusterSidebar.tsx`, `ClusterCard.tsx`.
+
+### Tests
+
+- 17 neue Tests in 2 neuen Test-Dateien (`dashboard-tages-energie.test.tsx`, `dashboard-modal-open.test.tsx`)
+- Abdeckung: PremiumGate-Integration (5), Kosmoswetter-Pills (3), Themes-Kicker (2), Resonanz-Bar ARIA (2), Body-Fallback (2), vertiefen-Button (3)
+
+### Documentation
+
+- `docs/wireframes/dashboard-v2.md` — F3 (Tages-Energie) vollständig neu geschrieben: Hero-Sektion-Spec, Kosmoswetter-Icon-Tabelle, Resonanz-Formel
+- `1-objectives/requirements/REQ-F-signatur-day-night-pulse.md` — UI-Acceptance-Criteria für Dashboard Tages-Impuls Hero-Sektion ergänzt (6 prüfbare Criteria)
+- `3-code/tasks.md` — `TASK-tagesenergie-hero` hinzugefügt
+
 ## [Unreleased] - 2026-03-24
 
 ### Features

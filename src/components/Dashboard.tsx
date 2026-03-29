@@ -22,6 +22,8 @@ import { SectionErrorBoundary } from "./dashboard/SectionErrorBoundary";
 import { AgentSection } from "./dashboard/AgentSection";
 import { AGENTS } from "@/packages/shared/src/agents/config";
 import { CosmicWeatherCard } from "./CosmicWeatherCard";
+import { DashboardTagesEnergie } from "./dashboard/DashboardTagesEnergie";
+import { useSpaceWeather } from "../hooks/useSpaceWeather";
 import { isFeatureEnabled } from "../lib/feature-flags";
 import { useDailyHoroscope } from "../hooks/useDailyHoroscope";
 import { useFusionRingContext } from "../contexts/FusionRingContext";
@@ -287,8 +289,15 @@ export function Dashboard({
   // ── Feature flags ──────────────────────────────────────────────────
   const dailyEnabled = isFeatureEnabled('daily_modal_v1');
 
+  // ── Space weather (für DashboardTagesEnergie Resonanz + Kosmoswetter) ──
+  const spaceWeather = useSpaceWeather();
+
   // ── Daily horoscope modal ───────────────────────────────────────────
-  const { dailyData, dayHarmonic, showModal, handleClose: handleDailyClose } = useFirstRunDaily(
+  // isDayModalOpen: on-demand via "vertiefen →" in DashboardTagesEnergie.
+  // showModal (auto-open) deliberately not used for rendering — wireframe F3:
+  // "Modal wird nicht mehr automatisch geöffnet".
+  const [isDayModalOpen, setIsDayModalOpen] = useState(false);
+  const { dailyData, dayHarmonic, handleClose: handleDailyClose } = useFirstRunDaily(
     userId,
     profileMeta.birthInput,
     profileMeta.soulprintSectors,
@@ -356,17 +365,27 @@ export function Dashboard({
         </div>
       </motion.header>
 
-      {/* ═══ COSMIC WEATHER CARD (Daily Horoscope) ═══════════════════ */}
+      {/* ═══ TAGES-IMPULS — Hero-Sektion (immer vollständig sichtbar) ══════ */}
       <motion.div className="mb-8" {...fadeIn(0.1)}>
-        <SectionErrorBoundary name="CosmicWeather">
-          <CosmicWeatherCard
-            horoscope={horoscope}
-            loading={horoscopeLoading}
-            error={horoscopeError}
-            onRefresh={horoscopeRefresh}
-            lang={lang}
-            isPremium={isPremium}
-          />
+        <SectionErrorBoundary name="TagesImpuls">
+          {dailyData ? (
+            <DashboardTagesEnergie
+              daily={dailyData}
+              dayHarmonic={dayHarmonic}
+              spaceWeather={spaceWeather}
+              onOpenDayModal={dailyEnabled ? () => setIsDayModalOpen(true) : undefined}
+            />
+          ) : (
+            // Legacy fallback: CosmicWeatherCard solange dailyData noch nicht geladen
+            <CosmicWeatherCard
+              horoscope={horoscope}
+              loading={horoscopeLoading}
+              error={horoscopeError}
+              onRefresh={horoscopeRefresh}
+              lang={lang}
+              isPremium={isPremium}
+            />
+          )}
         </SectionErrorBoundary>
       </motion.div>
 
@@ -466,8 +485,15 @@ export function Dashboard({
 
       {/* ═══ DAILY HOROSCOPE MODAL ═══════════════════════════════════════ */}
       <AnimatePresence>
-        {dailyEnabled && showModal && dailyData && (
-          <DayModeModal data={dailyData} dayHarmonic={dayHarmonic} onClose={handleDailyClose} />
+        {dailyEnabled && isDayModalOpen && dailyData && (
+          <DayModeModal
+            data={dailyData}
+            dayHarmonic={dayHarmonic}
+            onClose={() => {
+              setIsDayModalOpen(false);
+              handleDailyClose(); // marks daily_modal_seen_date in Supabase
+            }}
+          />
         )}
       </AnimatePresence>
 
