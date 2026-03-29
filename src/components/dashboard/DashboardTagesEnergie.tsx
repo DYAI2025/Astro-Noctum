@@ -156,7 +156,7 @@ function buildWeatherPills(sw: SpaceWeatherState, daily: DailyResponse | null): 
 
   for (const type of priorityOrder) {
     if (seenTypes.has(type)) continue;
-    const event = sw.events?.find((e) => e.type === type);
+    const event = sw.events.find((e) => e.type === type);
     if (!event) continue;
     seenTypes.add(type);
 
@@ -257,7 +257,7 @@ export function DashboardTagesEnergie({
 
   const isTrace = (dayHarmonic?.mode ?? daily.fusion.day_mode) === 'trace';
   const harmonyIndex = dayHarmonic?.harmonyIndex ?? daily.fusion.harmony_index;
-  const solarPressure = spaceWeather.solarPressure ?? 0;
+  const solarPressure = spaceWeather.solarPressure;
 
   const element = resolveElement(daily);
   const elemConfig = getElementConfig(element);
@@ -405,6 +405,7 @@ export function DashboardTagesEnergie({
               transition={{ duration: 1.2, ease: 'easeOut', delay: 0.3 }}
               style={{
                 background: `linear-gradient(90deg, #D4AF37 0%, ${resonance > 0.5 ? '#22d3ee' : '#8B6914'} 100%)`,
+                minWidth: resonancePct > 0 ? undefined : '3px',
               }}
             />
           </div>
@@ -417,7 +418,7 @@ export function DashboardTagesEnergie({
         {onOpenDayModal && (
           <button
             onClick={onOpenDayModal}
-            className="w-full flex items-center justify-end gap-1 px-5 py-3 text-[9px] font-mono uppercase tracking-wider text-white/20 hover:text-white/50 transition-colors border-t border-white/5"
+            className="w-full flex items-center justify-end gap-1 px-5 py-3 text-[9px] font-mono uppercase tracking-wider text-white/35 hover:text-white/60 transition-colors border-t border-white/5"
           >
             vertiefen
             <ArrowRight className="w-3 h-3" />
