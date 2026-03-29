@@ -13,7 +13,10 @@ type EventName =
   | 'signature_reveal_seen'
   | 'signature_delta_applied'
   | 'day_mode_modal_opened'
-  | 'day_mode_modal_closed';
+  | 'day_mode_modal_closed'
+  | 'vibes_opened'
+  | 'vibes_closed'
+  | 'vibes_explain_opened';
 
 export function trackEvent(event: EventName, params?: Record<string, string | number>) {
   if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
