@@ -420,18 +420,14 @@ export function generateQuiz(input: QuizGeneratorInput & {
     emoji: '🔮',
     accentColor: '#D4AF37',
     scoringModel: input.scoringModel,
-    dimensions: input.dimensions.map(d => ({
-      key: d.key, label: d.label, description: d.description,
-    })),
+    dimensions: input.dimensions.map(d => d.key),
     questions: input.questions.map(q => ({
       id: q.id,
       text: q.prompt?.['en-US'] ?? q.prompt?.['de-DE'] ?? '',
-      textDe: q.prompt?.['de-DE'] ?? '',
       context: q.scenario?.['de-DE'] ?? '',
       options: q.options.map((o: any) => ({
         id: o.id,
         text: o.text?.['en-US'] ?? '',
-        textDe: o.text?.['de-DE'] ?? '',
         scores: o.scores,
       })),
     })),
