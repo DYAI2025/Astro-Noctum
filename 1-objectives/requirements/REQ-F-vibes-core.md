@@ -22,6 +22,10 @@ The system provides an on-demand "Vibe" insight derived from the user's personal
 - Given the Vibe result, when displayed, then it contains exactly 3 levels: 1 Kurzsignal (1 sentence), 3–5 Einflussfaktoren (2–4 words each), 1 Erklärung (1–2 sentences)
 - Given the Vibe result, when displayed, then it explicitly references "the next few hours" as the time horizon
 - Given the Vibe output text, when reviewed, then it uses resource-oriented language (tendencies, not predictions)
+- Given a free-tier user, when they request a Vibe within 4 hours of the last Vibe, then the system returns the cached result with a "next available" timestamp instead of generating a new Vibe
+- Given a premium user, when they request a Vibe within 2 hours of the last Vibe, then the system returns the cached result with a "next available" timestamp instead of generating a new Vibe
+- Given a Vibe output, when the Kurzsignal or Treiber text is reviewed, then every statement is logically derived from the user's soulprint sectors, transit data, or an official interpretation framework (Western, BaZi, Fusion, Wu-Xing) — no generic motivational filler
+- Given two consecutive Vibe results for the same user, when the cooldown has elapsed and new transit data is available, then the outputs differ (no repetition of identical Kurzsignal or Treiber sets)
 
 ## Related Constraints
 

@@ -1047,8 +1047,9 @@ const horoscopeCache = new Map(); // userId:dateStr → { horoscope, timestamp }
 const HOROSCOPE_CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
 
 // ── Vibes cache (L1 in-memory) ──────────────────────────────────────
-const vibesCache = new Map(); // vibes:userId:thirtyMinSlot → { data, timestamp }
-const VIBES_CACHE_TTL = 30 * 60 * 1000; // 30 min (matches slot window)
+const vibesCache = new Map(); // vibes:userId → { data, timestamp }
+const VIBES_COOLDOWN_FREE = 4 * 60 * 60 * 1000;    // 4 hours for free-tier
+const VIBES_COOLDOWN_PREMIUM = 2 * 60 * 60 * 1000;  // 2 hours for premium
 
 // ── Weekly Insights cache (L1 in-memory) ───────────────────────────
 const weeklyCache = new Map(); // weekly:userId:isoWeek → { data, timestamp }
@@ -1760,31 +1761,44 @@ function dominantElementFromSoulprint(sectors) {
   return maxEl;
 }
 
-function vibesSlotKey(userId) {
-  const slot = Math.floor(Date.now() / (30 * 60 * 1000));
-  return `vibes:${userId}:${slot}`;
-}
-
-function vibesSlotString() {
-  return String(Math.floor(Date.now() / (30 * 60 * 1000)));
+function vibesCacheKey(userId) {
+  return `vibes:${userId}`;
 }
 
 app.post('/api/vibes', requireUserAuth, async (req, res) => {
   try {
     const userId = req.userId;
 
-    // ── L1: In-memory cache check ────────────────────────────────────
-    const cacheKey = vibesSlotKey(userId);
+    // ── Determine cooldown based on premium status ───────────────────
+    let isPremium = false;
+    if (supabaseServer) {
+      const { data: prof } = await supabaseServer
+        .from('profiles')
+        .select('tier')
+        .eq('id', userId)
+        .maybeSingle();
+      isPremium = prof?.tier === 'premium';
+    }
+    const cooldownMs = isPremium ? VIBES_COOLDOWN_PREMIUM : VIBES_COOLDOWN_FREE;
+
+    // ── L1: In-memory cache + cooldown check ────────────────────────
+    const cacheKey = vibesCacheKey(userId);
     if (vibesCache.has(cacheKey)) {
       const cached = vibesCache.get(cacheKey);
-      if (Date.now() - cached.timestamp < VIBES_CACHE_TTL) {
-        const payload = { ...cached.data, meta: { ...cached.data.meta, cached: true } };
+      const elapsed = Date.now() - cached.timestamp;
+      if (elapsed < cooldownMs) {
+        const nextAvailableAt = new Date(cached.timestamp + cooldownMs).toISOString();
+        const payload = {
+          ...cached.data,
+          meta: { ...cached.data.meta, cached: true },
+          cooldown: { active: true, next_available_at: nextAvailableAt, remaining_ms: cooldownMs - elapsed },
+        };
         return res.json(payload);
       }
     }
 
     // ── L2: Supabase vibes_cache check ───────────────────────────────
-    const timeSlot = vibesSlotString();
+    const timeSlot = new Date().toISOString().slice(0, 13); // hour-level slot for DB key
     if (supabaseServer) {
       try {
         const { data: dbCached } = await supabaseServer
@@ -1906,7 +1920,9 @@ REGELN:
 7. explain.signatur_context: Bezug zur Signatur des Users, ohne Fachjargon
 8. explain.transit_context: Bezug zur aktuellen Konstellation/Weltraumwetter
 9. KEINE Planetennamen (Mars, Venus etc.), KEIN "die Sterne sagen", KEIN esoterischer Jargon
-10. Output MUSS valides JSON sein. KEIN Markdown, KEINE Code-Blöcke. Direkt mit { beginnen.`;
+10. JEDE Aussage muss logisch aus den Eingabedaten ableitbar sein: Soulprint-Sektoren, Transitdaten, Western/BaZi/Fusion/Wu-Xing Interpretation. KEINE generischen Motivationssprüche oder Fülltext.
+11. Formuliere möglichst abwechslungsreich und mit variierender Wortwahl und Perspektive, sodass die Antwort frisch wirkt.
+12. Output MUSS valides JSON sein. KEIN Markdown, KEINE Code-Blöcke. Direkt mit { beginnen.`;
 
     const model = geminiClient.models;
     const result = await model.generateContent({
@@ -1982,10 +1998,11 @@ REGELN:
         });
     }
 
-    // ── L1: Evict stale vibes entries ────────────────────────────────
+    // ── L1: Evict stale vibes entries (older than max cooldown) ─────
     const now = Date.now();
+    const maxCooldown = VIBES_COOLDOWN_FREE; // evict after the longer cooldown
     const expired = [...vibesCache.entries()]
-      .filter(([, entry]) => now - entry.timestamp > VIBES_CACHE_TTL)
+      .filter(([, entry]) => now - entry.timestamp > maxCooldown)
       .map(([key]) => key);
     expired.forEach(key => vibesCache.delete(key));
 
