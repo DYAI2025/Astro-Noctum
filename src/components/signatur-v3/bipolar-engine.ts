@@ -22,7 +22,6 @@ import type { VisualModulation } from '../../lib/fusion-ring/dissonance-visual';
 // Re-exported here so existing imports from this file continue to work.
 export type { DimensionDef } from '@/packages/shared/src/signatur/dimension-defs';
 export { DIMENSION_DEFS } from '@/packages/shared/src/signatur/dimension-defs';
-import type { DimensionDef } from '@/packages/shared/src/signatur/dimension-defs';
 import { DIMENSION_DEFS } from '@/packages/shared/src/signatur/dimension-defs';
 
 export interface PoleState {
