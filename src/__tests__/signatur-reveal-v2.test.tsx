@@ -4,8 +4,16 @@ import { vi, describe, it, expect } from 'vitest';
 vi.mock('@/src/lib/feature-flags', () => ({
   isFeatureEnabled: (flag: string) => flag === 'signature_engine_v2',
 }));
+const REVEAL_T_MAP: Record<string, string> = {
+  'common.continue': 'Weiter',
+  'signatureReveal.continueAnyway': 'Trotzdem weiter',
+  'signatureReveal.signatureForming': 'Deine Signatur formt sich...',
+  'signatureReveal.signaturePartialError': 'Signatur (Vorschau)',
+  'signatureReveal.soulprintCalculating': 'Soulprint wird berechnet...',
+  'signatureReveal.previewNote': 'Dies ist eine Vorschau.',
+};
 vi.mock('@/src/contexts/LanguageContext', () => ({
-  useLanguage: () => ({ lang: 'de', t: (k: string) => k }),
+  useLanguage: () => ({ lang: 'de', t: (k: string) => REVEAL_T_MAP[k] ?? k }),
 }));
 vi.mock('@/src/components/fusion-ring-website/signatur-bridge', () => ({
   soulprintToNatalWeights: () => ({ Sun: 0.5, Moon: 0.5 }),

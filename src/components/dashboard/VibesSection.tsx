@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -19,8 +19,11 @@ export function VibesSection({ userId }: VibesSectionProps) {
   const [error, setError] = useState<string | null>(null);
   const [vibesData, setVibesData] = useState<VibesResponse | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const fetchingRef = useRef(false);
 
   const handleFetch = useCallback(async () => {
+    if (fetchingRef.current) return;
+    fetchingRef.current = true;
     setLoading(true);
     setError(null);
 
@@ -37,6 +40,7 @@ export function VibesSection({ userId }: VibesSectionProps) {
       );
     } finally {
       setLoading(false);
+      fetchingRef.current = false;
     }
   }, [userId, lang]);
 

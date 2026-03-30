@@ -56,7 +56,6 @@ export function VibesModal({ data, onClose }: VibesModalProps) {
   const transitLabel = lang === 'de' ? 'Aktuelle Phase:' : 'Current Phase:';
 
   return (
-    <AnimatePresence>
       <motion.div
         key="vibes-backdrop"
         className="fixed inset-0 z-50 flex items-center justify-center"
@@ -168,6 +167,5 @@ export function VibesModal({ data, onClose }: VibesModalProps) {
           </div>
         </motion.div>
       </motion.div>
-    </AnimatePresence>
   );
 }

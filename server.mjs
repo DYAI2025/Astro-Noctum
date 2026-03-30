@@ -1050,6 +1050,83 @@ const HOROSCOPE_CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
 const vibesCache = new Map(); // vibes:userId:thirtyMinSlot → { data, timestamp }
 const VIBES_CACHE_TTL = 30 * 60 * 1000; // 30 min (matches slot window)
 
+// ── Weekly Insights cache (L1 in-memory) ───────────────────────────
+const weeklyCache = new Map(); // weekly:userId:isoWeek → { data, timestamp }
+
+/**
+ * ISO 8601 week string, e.g. "2026-W14".
+ * Weeks start on Monday; the first week contains the year's first Thursday.
+ */
+function getISOWeek(d = new Date()) {
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  // Thursday of current week determines the year
+  date.setUTCDate(date.getUTCDate() + 3 - ((date.getUTCDay() + 6) % 7));
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
+  const weekNum = Math.ceil(((date - yearStart) / 86400000 + 1) / 7);
+  return `${date.getUTCFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+}
+
+// ── Inlined life area definitions (mirrors packages/shared/src/weekly/life-area-mapping.ts) ──
+const WEEKLY_LIFE_AREAS = [
+  { key: 'freundschaften', label: { de: 'Freundschaften', en: 'Friendships' }, sectorIndices: [10, 2], sectorWeights: [0.6, 0.4], tendencyLabels: { de: ['Offenheit', 'Rückzug', 'Klärung', 'Spannung', 'Verbundenheit'], en: ['Openness', 'Withdrawal', 'Clarification', 'Tension', 'Connection'] } },
+  { key: 'liebe', label: { de: 'Liebe', en: 'Love' }, sectorIndices: [4, 6], sectorWeights: [0.55, 0.45], tendencyLabels: { de: ['Intensität', 'Distanz', 'Nähe', 'Spannung', 'Harmonie'], en: ['Intensity', 'Distance', 'Closeness', 'Tension', 'Harmony'] } },
+  { key: 'sex_zaertlichkeit', label: { de: 'Sex & Zärtlichkeit', en: 'Intimacy' }, sectorIndices: [7, 4], sectorWeights: [0.6, 0.4], tendencyLabels: { de: ['Leidenschaft', 'Zurückhaltung', 'Tiefe', 'Spielerisch', 'Intensität'], en: ['Passion', 'Reserve', 'Depth', 'Playful', 'Intensity'] } },
+  { key: 'beruf', label: { de: 'Beruf', en: 'Work' }, sectorIndices: [5, 9], sectorWeights: [0.5, 0.5], tendencyLabels: { de: ['Fokus', 'Ablenkung', 'Produktivität', 'Erschöpfung', 'Klarheit'], en: ['Focus', 'Distraction', 'Productivity', 'Exhaustion', 'Clarity'] } },
+  { key: 'alltag', label: { de: 'Alltag', en: 'Daily Life' }, sectorIndices: [3, 5, 0], sectorWeights: [0.4, 0.35, 0.25], tendencyLabels: { de: ['Routine', 'Unruhe', 'Leichtigkeit', 'Überforderung', 'Struktur'], en: ['Routine', 'Restlessness', 'Ease', 'Overwhelm', 'Structure'] } },
+  { key: 'karriere', label: { de: 'Karriere', en: 'Career' }, sectorIndices: [9, 1], sectorWeights: [0.6, 0.4], tendencyLabels: { de: ['Ambition', 'Stillstand', 'Wachstum', 'Umbruch', 'Stabilität'], en: ['Ambition', 'Stagnation', 'Growth', 'Upheaval', 'Stability'] } },
+  { key: 'gesundheit', label: { de: 'Gesundheit', en: 'Health' }, sectorIndices: [5, 0, 11], sectorWeights: [0.4, 0.35, 0.25], tendencyLabels: { de: ['Vitalität', 'Erschöpfung', 'Regeneration', 'Anspannung', 'Balance'], en: ['Vitality', 'Exhaustion', 'Recovery', 'Tension', 'Balance'] } },
+];
+
+/**
+ * Blend soulprint + transit sectors (60/40) for weekly scoring.
+ */
+function blendSectorsForWeeklyServer(soulprint, transit) {
+  if (!transit || !Array.isArray(transit) || transit.length < 12) return soulprint;
+  return soulprint.map((s, i) => s * 0.6 + (transit[i] || 0) * 0.4);
+}
+
+/**
+ * Compute life area scores from 12-element sector array.
+ * Returns 7 objects with key, label, score, rank, isHighlighted.
+ */
+function computeLifeAreaScoresServer(sectors) {
+  if (!sectors || !Array.isArray(sectors) || sectors.length < 12) {
+    return WEEKLY_LIFE_AREAS.map((area, i) => ({
+      key: area.key, label: area.label, score: 0.5, rank: i + 1, isHighlighted: i < 3,
+    }));
+  }
+  const rawScores = WEEKLY_LIFE_AREAS.map((area) => {
+    let score = 0;
+    for (let i = 0; i < area.sectorIndices.length; i++) {
+      score += (sectors[area.sectorIndices[i]] || 0) * area.sectorWeights[i];
+    }
+    return { key: area.key, label: area.label, score };
+  });
+  const maxScore = Math.max(...rawScores.map(r => r.score), 0.001);
+  const minScore = Math.min(...rawScores.map(r => r.score));
+  const range = maxScore - minScore || 1;
+  const normalized = rawScores.map(r => ({
+    ...r, score: Math.round(((r.score - minScore) / range) * 1000) / 1000,
+  }));
+  const sorted = [...normalized].sort((a, b) => b.score - a.score);
+  const rankMap = new Map();
+  sorted.forEach((item, idx) => rankMap.set(item.key, idx + 1));
+  return normalized.map(item => ({
+    ...item, rank: rankMap.get(item.key), isHighlighted: rankMap.get(item.key) <= 3,
+  }));
+}
+
+// Fallback templates per life area (used when Gemini is unavailable)
+const WEEKLY_FALLBACK_TEMPLATES = {
+  freundschaften: { statement: 'Soziale Kontakte können diese Woche besonders bereichernd sein.', tendency: 'Verbundenheit', explain: 'Deine persönliche Struktur begünstigt offene Begegnungen in dieser Phase.' },
+  liebe: { statement: 'In der Liebe zeigt sich eine Phase der Annäherung.', tendency: 'Nähe', explain: 'Deine Signatur deutet auf eine erhöhte Empfänglichkeit für emotionale Tiefe hin.' },
+  sex_zaertlichkeit: { statement: 'Körperliche Nähe und Sinnlichkeit stehen im Vordergrund.', tendency: 'Leidenschaft', explain: 'Die aktuelle Konstellation begünstigt intensives Erleben und Hingabe.' },
+  beruf: { statement: 'Beruflich zeichnet sich eine Phase mit klarer Ausrichtung ab.', tendency: 'Fokus', explain: 'Deine Struktur unterstützt konzentriertes Arbeiten und klare Prioritäten.' },
+  alltag: { statement: 'Der Alltag kann sich diese Woche leichter anfühlen als gewohnt.', tendency: 'Leichtigkeit', explain: 'Deine Grundenergie harmoniert mit den aktuellen Rhythmen.' },
+  karriere: { statement: 'Karriereschritte profitieren von ruhiger Überlegung.', tendency: 'Stabilität', explain: 'Die Verbindung zwischen deiner Signatur und der Wochendynamik empfiehlt überlegtes Handeln.' },
+  gesundheit: { statement: 'Dein Körper signalisiert, dass Regeneration wichtig ist.', tendency: 'Regeneration', explain: 'Deine persönliche Konstellation legt nahe, auf Erholungsphasen zu achten.' },
+};
+
 // Sector domain labels for template generation
 const SECTOR_DOMAINS = [
   { de: 'Antrieb', en: 'Drive' },       // 0 Aries
@@ -1701,8 +1778,7 @@ app.post('/api/vibes', requireUserAuth, async (req, res) => {
     if (vibesCache.has(cacheKey)) {
       const cached = vibesCache.get(cacheKey);
       if (Date.now() - cached.timestamp < VIBES_CACHE_TTL) {
-        const payload = { ...cached.data };
-        payload.meta = { ...payload.meta, cached: true };
+        const payload = { ...cached.data, meta: { ...cached.data.meta, cached: true } };
         return res.json(payload);
       }
     }
@@ -1721,8 +1797,7 @@ app.post('/api/vibes', requireUserAuth, async (req, res) => {
 
         if (dbCached?.payload_json) {
           vibesCache.set(cacheKey, { data: dbCached.payload_json, timestamp: Date.now() });
-          const payload = { ...dbCached.payload_json };
-          payload.meta = { ...payload.meta, cached: true };
+          const payload = { ...dbCached.payload_json, meta: { ...dbCached.payload_json.meta, cached: true } };
           return res.json(payload);
         }
       } catch (e) {
@@ -1918,6 +1993,249 @@ REGELN:
   } catch (err) {
     console.error('[vibes] Error:', err.message);
     return res.status(502).json({ error: 'experience_unavailable' });
+  }
+});
+
+// ── /api/weekly-insights ─────────────────────────────────────────────
+// Weekly life-area insights (7 areas, top-3 highlighted).
+// Uses Gemini for generation with L1 (in-memory) + L2 (Supabase weekly_insights_cache) caching.
+// Cache key is ISO week — valid for entire week, refreshes on Monday boundary.
+
+app.post('/api/weekly-insights', requireUserAuth, async (req, res) => {
+  try {
+    const userId = req.userId;
+    const isoWeek = getISOWeek();
+
+    // ── L1: In-memory cache check ────────────────────────────────────
+    const cacheKey = `weekly:${userId}:${isoWeek}`;
+    if (weeklyCache.has(cacheKey)) {
+      const cached = weeklyCache.get(cacheKey);
+      const payload = { ...cached.data, meta: { ...cached.data.meta, cached: true } };
+      return res.json(payload);
+    }
+
+    // ── L2: Supabase weekly_insights_cache check ─────────────────────
+    if (supabaseServer) {
+      try {
+        const { data: dbCached } = await supabaseServer
+          .from('weekly_insights_cache')
+          .select('payload_json')
+          .eq('user_id', userId)
+          .eq('iso_week', isoWeek)
+          .eq('engine_version', 'v1-gemini-weekly')
+          .maybeSingle();
+
+        if (dbCached?.payload_json) {
+          weeklyCache.set(cacheKey, { data: dbCached.payload_json });
+          const payload = { ...dbCached.payload_json, meta: { ...dbCached.payload_json.meta, cached: true } };
+          return res.json(payload);
+        }
+      } catch (e) {
+        console.warn('[weekly] L2 cache read failed, continuing to generation:', e.message);
+      }
+    }
+
+    // ── Load user data ───────────────────────────────────────────────
+    let soulprintSectors = null;
+    let sunSign = null;
+    let moonSign = null;
+    let ascSign = null;
+
+    if (supabaseServer) {
+      const { data: profile } = await supabaseServer
+        .from('astro_profiles')
+        .select('soulprint_sectors, sun_sign, moon_sign, asc_sign, astro_json')
+        .eq('user_id', userId)
+        .single();
+
+      if (profile) {
+        soulprintSectors = profile.soulprint_sectors
+          || deriveSoulprintSectors(profile.astro_json, userId);
+        sunSign = profile.sun_sign || null;
+        moonSign = profile.moon_sign || null;
+        ascSign = profile.asc_sign || null;
+      }
+    }
+
+    // Fallback soulprint if no profile
+    if (!soulprintSectors || !Array.isArray(soulprintSectors) || soulprintSectors.length !== 12) {
+      soulprintSectors = deriveSoulprintSectors(null, userId);
+    }
+
+    // ── Load transit sectors (from transit-state logic or null) ──────
+    let transitSectors = null;
+    // Derive a simple transit modulation from current date to provide weekly variation.
+    // In production this would come from BAFE transit endpoint or cached transit-state.
+    // For now, generate a deterministic per-week variation using the ISO week string.
+    const weekHash = isoWeek.split('').reduce((acc, c) => (acc * 31 + c.charCodeAt(0)) & 0xffffff, 0);
+    transitSectors = Array.from({ length: 12 }, (_, i) => {
+      const seed = ((weekHash * (i + 1) * 2654435761) >>> 0) / 0xffffffff;
+      return 0.2 + seed * 0.6; // range 0.2 – 0.8
+    });
+
+    // ── Compute life area scores ────────────────────────────────────
+    const blended = blendSectorsForWeeklyServer(soulprintSectors, transitSectors);
+    const areaScores = computeLifeAreaScoresServer(blended);
+
+    // ── Gemini generation or fallback ────────────────────────────────
+    if (!geminiClient) {
+      console.warn('[weekly] Gemini API key missing, returning deterministic fallback');
+      const fallbackAreas = areaScores.map((area) => {
+        const tpl = WEEKLY_FALLBACK_TEMPLATES[area.key] || WEEKLY_FALLBACK_TEMPLATES.alltag;
+        return {
+          key: area.key,
+          label: area.label,
+          statement: tpl.statement,
+          tendency: tpl.tendency,
+          score: area.score,
+          rank: area.rank,
+          isHighlighted: area.isHighlighted,
+          explain: area.isHighlighted
+            ? tpl.explain
+            : 'Diese Tendenz entsteht aus der aktuellen Konstellation in Verbindung mit deiner persönlichen Struktur.',
+        };
+      });
+      const fallbackPayload = {
+        week: isoWeek,
+        areas: fallbackAreas,
+        meta: { engine_version: 'v1-gemini-weekly', cached: false },
+      };
+      weeklyCache.set(cacheKey, { data: fallbackPayload });
+      return res.json(fallbackPayload);
+    }
+
+    // ── Construct Gemini prompt ──────────────────────────────────────
+    const areasForPrompt = areaScores.map((a) => ({
+      key: a.key,
+      label_de: a.label.de,
+      rank: a.rank,
+      isHighlighted: a.isHighlighted,
+    }));
+
+    const prompt = `Du bist Bazodiac's Weekly-Insights-Engine. Du generierst wöchentliche Einblicke für 7 Lebensbereiche, basierend auf der Signatur des Users und der Wochenkonstellation.
+
+EINGABEDATEN:
+- Lebensbereiche mit Ranking: ${JSON.stringify(areasForPrompt)}
+- Sonnenzeichen: ${sunSign || 'unbekannt'}
+- Mondzeichen: ${moonSign || 'unbekannt'}
+- Aszendent: ${ascSign || 'unbekannt'}
+- Aktuelle Woche: ${isoWeek}
+
+AUSGABE: Striktes JSON mit dieser exakten Struktur:
+{
+  "areas": [
+    {
+      "key": "<area key>",
+      "statement": "Ein kurzer Satz zur Tendenz dieser Woche in diesem Bereich",
+      "tendency": "Ein-Wort- oder Zwei-Wort-Tendenzlabel",
+      "explain": "Ein Satz, der erklärt, warum diese Tendenz gerade da ist"
+    }
+  ]
+}
+
+REGELN:
+1. Sprache: Deutsch
+2. Für JEDEN der 7 Bereiche genau ein Objekt im "areas"-Array, in dieser Reihenfolge der keys: freundschaften, liebe, sex_zaertlichkeit, beruf, alltag, karriere, gesundheit
+3. "statement": GENAU 1 Satz, maximal 80 Zeichen. Ressourcenorientiert — "Phase", "Tendenz", "begünstigt", "kann"
+4. "tendency": 1-2 Wörter als Label (z.B. "Intensität", "Offenheit", "Rückzug", "Klarheit")
+5. Für die Top-3 Bereiche (isHighlighted=true, Rang ${areaScores.filter(a => a.isHighlighted).map(a => a.label.de).join(', ')}): Der "explain"-Satz soll TIEFERE Einsicht bieten — Bezug zur persönlichen Signatur des Users
+6. Für die anderen 4 Bereiche: "explain" darf kürzer und allgemeiner sein
+7. KEINE unerklärten Zahlen, KEINE Prozente, KEINE Scores im Output
+8. KEINE Planetennamen, KEIN "die Sterne sagen", KEIN esoterischer Jargon
+9. Ressourcenorientierte Sprache: NIEMALS "wird", "Schicksal", "muss", "bestimmt"
+10. Output MUSS valides JSON sein. KEIN Markdown, KEINE Code-Blöcke. Direkt mit { beginnen.`;
+
+    const model = geminiClient.models;
+    const result = await model.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: {
+        temperature: 0.7,
+        responseMimeType: 'application/json',
+      },
+    });
+
+    const rawText =
+      typeof result?.text === 'string'
+        ? result.text
+        : typeof result?.response?.text === 'string'
+          ? result.response.text
+          : undefined;
+    let jsonStr = rawText?.trim() || '';
+
+    if (!jsonStr) {
+      console.error('[weekly] Empty response text from model, falling back');
+      const fallbackAreas = areaScores.map((area) => {
+        const tpl = WEEKLY_FALLBACK_TEMPLATES[area.key] || WEEKLY_FALLBACK_TEMPLATES.alltag;
+        return {
+          key: area.key, label: area.label, statement: tpl.statement, tendency: tpl.tendency,
+          score: area.score, rank: area.rank, isHighlighted: area.isHighlighted,
+          explain: area.isHighlighted ? tpl.explain : 'Diese Tendenz entsteht aus der aktuellen Konstellation in Verbindung mit deiner persönlichen Struktur.',
+        };
+      });
+      return res.json({ week: isoWeek, areas: fallbackAreas, meta: { engine_version: 'v1-gemini-weekly', cached: false } });
+    }
+
+    if (jsonStr.startsWith('```json')) {
+      jsonStr = jsonStr.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    }
+
+    const parsed = JSON.parse(jsonStr);
+    const geminiAreas = Array.isArray(parsed.areas) ? parsed.areas : [];
+
+    // Merge Gemini output with computed scores
+    const mergedAreas = areaScores.map((area) => {
+      const geminiArea = geminiAreas.find(g => g.key === area.key);
+      const tpl = WEEKLY_FALLBACK_TEMPLATES[area.key] || WEEKLY_FALLBACK_TEMPLATES.alltag;
+      return {
+        key: area.key,
+        label: area.label,
+        statement: geminiArea?.statement || tpl.statement,
+        tendency: geminiArea?.tendency || tpl.tendency,
+        score: area.score,
+        rank: area.rank,
+        isHighlighted: area.isHighlighted,
+        explain: geminiArea?.explain
+          || (area.isHighlighted ? tpl.explain : 'Diese Tendenz entsteht aus der aktuellen Konstellation in Verbindung mit deiner persönlichen Struktur.'),
+      };
+    });
+
+    const weeklyPayload = {
+      week: isoWeek,
+      areas: mergedAreas,
+      meta: { engine_version: 'v1-gemini-weekly', cached: false },
+    };
+
+    // ── L1: Store in memory ──────────────────────────────────────────
+    weeklyCache.set(cacheKey, { data: weeklyPayload });
+
+    // ── L2: Fire-and-forget Supabase upsert ──────────────────────────
+    if (supabaseServer) {
+      supabaseServer
+        .from('weekly_insights_cache')
+        .upsert({
+          user_id: userId,
+          iso_week: isoWeek,
+          engine_version: 'v1-gemini-weekly',
+          payload_json: weeklyPayload,
+        }, { onConflict: 'user_id,iso_week,engine_version' })
+        .then(({ error }) => {
+          if (error) console.warn('[weekly] DB cache upsert failed:', error.message);
+        })
+        .catch((e) => {
+          console.warn('[weekly] DB cache upsert threw:', e?.message || e);
+        });
+    }
+
+    // ── L1: Evict stale weekly entries (different week) ──────────────
+    const currentWeekSuffix = `:${isoWeek}`;
+    const stale = [...weeklyCache.keys()].filter(k => !k.endsWith(currentWeekSuffix));
+    stale.forEach(key => weeklyCache.delete(key));
+
+    return res.status(200).json(weeklyPayload);
+  } catch (err) {
+    console.error('[weekly] Error:', err.message);
+    return res.status(502).json({ error: 'weekly_insights_unavailable' });
   }
 });
 

@@ -5,6 +5,7 @@ import {
   IconOrbit,
   IconMountain,
   IconTelescope,
+  IconSunMoon,
 } from "../animated-icons";
 import { useLanguage } from "../../contexts/LanguageContext";
 
@@ -65,6 +66,12 @@ export function NavSidebarA() {
       label: t("nav.sidebar.wuXing"),
       href: "/wu-xing",
       Icon: IconMountain,
+    },
+    {
+      id: "weekly",
+      label: t("nav.sidebar.weekly"),
+      href: "/weekly",
+      Icon: IconSunMoon,
     },
     {
       id: "wissen",

@@ -16,7 +16,9 @@ type EventName =
   | 'day_mode_modal_closed'
   | 'vibes_opened'
   | 'vibes_closed'
-  | 'vibes_explain_opened';
+  | 'vibes_explain_opened'
+  | 'weekly_opened'
+  | 'weekly_area_explain_opened';
 
 export function trackEvent(event: EventName, params?: Record<string, string | number>) {
   if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
