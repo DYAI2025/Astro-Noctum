@@ -14,8 +14,10 @@ interface VibesSectionProps {
 // ── Helpers ──────────────────────────────────────────────────────────
 
 function formatCooldown(ms: number, lang: string): string {
-  const hours = Math.floor(ms / (60 * 60 * 1000));
-  const minutes = Math.ceil((ms % (60 * 60 * 1000)) / (60 * 1000));
+  // Normalize time to total minutes first to avoid "60min" remainders
+  const totalMinutes = Math.ceil(ms / (60 * 1000));
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
   if (hours > 0) {
     return lang === 'de' ? `${hours}h ${minutes}min` : `${hours}h ${minutes}min`;
   }
