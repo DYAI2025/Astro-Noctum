@@ -12,6 +12,7 @@ const ArtikelPage = lazy(() => import('./pages/ArtikelPage'));
 const OnboardingPage = lazy(() => import('./pages/OnboardingPage'));
 const SkyPage = lazy(() => import('./pages/SkyPage'));
 const FaqPage = lazy(() => import('./pages/FaqPage'));
+const WeeklyInsightsPage = lazy(() => import('./pages/WeeklyInsightsPage'));
 
 function PageLoader() {
   return (
@@ -68,6 +69,7 @@ export function AppRoutes({ hasCompleteProfile, onboardingProps }: AppRoutesProp
               : <OnboardingPage {...onboardingProps} />
           }
         />
+        <Route path="/weekly" element={<WeeklyInsightsPage />} />
         <Route path="/faq" element={<FaqPage />} />
         <Route path="/sky" element={<SkyPage />} />
         <Route path="*" element={<NotFound />} />

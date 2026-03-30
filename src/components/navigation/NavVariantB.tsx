@@ -10,6 +10,7 @@ export function NavVariantB() {
     { to: '/', label: t('nav.sidebar.home'), sub: [] as string[] },
     { to: '/signatur', label: t('nav.sidebar.signatur'), sub: [t('nav.sidebar.subQuizCluster'), t('nav.sidebar.subShowRings')] },
     { to: '/wu-xing', label: t('nav.sidebar.wuXing'), sub: [t('nav.sidebar.sub5Elements'), t('nav.sidebar.subWesternHouses')] },
+    { to: '/weekly', label: t('nav.sidebar.weekly'), sub: [] as string[] },
     { to: '/wissen', label: t('nav.sidebar.wissen'), sub: [t('nav.sidebar.subAllArticles'), t('nav.sidebar.subGlossary')] },
   ];
 
