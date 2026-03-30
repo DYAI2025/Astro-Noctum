@@ -18,7 +18,7 @@
 
 ### Exports
 
-- Given `@bazodiac/shared`, when aus `signatur/` importiert, then exportiert: `soulprintToNatalWeights()`, `quizSectorsToQuizWeights()`, `soulprintToDimensionWeights()`, `DIMENSION_DEFS` (6 Einträge), Typen `DimensionDef`, `PoleState`, `SignaturV3Config`, `V3DissonanceState`
+- Given `@bazodiac/shared`, when aus `signatur/` importiert, then exportiert: `soulprintToNatalWeights()`, `quizSectorsToQuizWeights()`, `soulprintToDimensionWeights()`, `DIMENSION_DEFS` (6 Einträge) sowie die dafür benötigten Typen (z. B. `DimensionDef`), wie sie in `packages/shared/src/signatur/index.ts` definiert sind
 - Given `DIMENSION_DEFS`, when importiert, then enthält für jede der 6 Dimensionen: `id`, `poleA`, `poleB`, `baseAngle` (Radians), `hz` (Cousto), `colorA: [r,g,b]`, `colorB: [r,g,b]`
 
 ### Single Source of Truth
