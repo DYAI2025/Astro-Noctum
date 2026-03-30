@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
 } from "lucide-react";
@@ -148,6 +149,7 @@ export function Dashboard({
   tileTexts,
 }: DashboardProps) {
   const { lang, t } = useLanguage();
+  const navigate = useNavigate();
   const { isPremium } = usePremium();
   const { user } = useAuth();
   const { events: quizEvents } = useFusionRingContext();
@@ -385,7 +387,7 @@ export function Dashboard({
               natalWeights={profileMeta.soulprintSectors ? soulprintToNatalWeights(profileMeta.soulprintSectors) : undefined}
               quizWeights={{}}
               dayHarmonic={dayHarmonic}
-              onExpand={() => window.location.assign('/signatur')}
+              onExpand={() => navigate('/signatur')}
             />
           </div>
         </SectionErrorBoundary>
