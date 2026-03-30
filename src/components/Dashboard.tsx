@@ -31,6 +31,8 @@ import { useFusionRingContext } from "../contexts/FusionRingContext";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { soulprintToNatalWeights } from "./fusion-ring-website/signatur-bridge";
+import { DashboardBigFour } from "./dashboard/DashboardBigFour";
+import MiniSignature from "./dashboard/MiniSignature";
 import InfluenceGauges from "./dashboard/InfluenceGauges";
 import { TourOverlay } from "./dashboard/TourOverlay";
 import { useDashboardTour } from "@/src/hooks/useDashboardTour";
@@ -366,6 +368,29 @@ export function Dashboard({
         </div>
       </motion.header>
 
+      {/* ═══ IDENTITY — Big Four + MiniSignature (F1+F2) ════════════════════ */}
+      <motion.div className="mb-8 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 items-start" {...fadeIn(0.05)}>
+        <SectionErrorBoundary name="BigFour">
+          <DashboardBigFour
+            sunSign={apiData?.western?.zodiac_sign || ''}
+            moonSign={apiData?.western?.moon_sign || ''}
+            ascendant={apiData?.western?.ascendant_sign || ''}
+            baziAnimal={apiData?.bazi?.zodiac_sign || ''}
+          />
+        </SectionErrorBoundary>
+
+        <SectionErrorBoundary name="MiniSignature">
+          <div className="w-[200px] md:w-[240px] mx-auto md:mx-0">
+            <MiniSignature
+              natalWeights={profileMeta.soulprintSectors ? soulprintToNatalWeights(profileMeta.soulprintSectors) : undefined}
+              quizWeights={{}}
+              dayHarmonic={dayHarmonic}
+              onExpand={() => window.location.assign('/signatur')}
+            />
+          </div>
+        </SectionErrorBoundary>
+      </motion.div>
+
       {/* ═══ TAGES-IMPULS — Hero-Sektion (immer vollständig sichtbar) ══════ */}
       <motion.div className="mb-8" {...fadeIn(0.1)}>
         <SectionErrorBoundary name="TagesImpuls">
@@ -406,24 +431,6 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
-      {/* Upgrade Banner for free users */}
-      {!isPremium && (
-        <Card variant="gold" className="mb-8 w-full max-w-6xl p-5 flex items-center justify-between gap-4"
-          {...fadeIn(0.15)}
-        >
-          <div>
-            <p className="text-sm font-medium text-ink">
-              {t("dashboard.upgradeCard.title")}
-            </p>
-            <p className="text-xs text-ink/50 mt-1">
-              {t("dashboard.upgradeCard.subtitle")}
-            </p>
-          </div>
-          <UpgradeButton />
-        </Card>
-      )}
-
-
       {/* ── Tour sentinel: step 1 triggers when astro section scrolls into view ── */}
       <div ref={astroSentinelRef} className="h-px" aria-hidden="true" />
 
@@ -461,6 +468,23 @@ export function Dashboard({
           </div>
         </SectionErrorBoundary>
       </motion.div>
+
+      {/* ═══ UPGRADE BANNER (freemium only, nach Agenten — F4) ════════════ */}
+      {!isPremium && (
+        <Card variant="gold" className="mb-8 w-full max-w-6xl p-5 flex items-center justify-between gap-4"
+          {...fadeIn(0.42)}
+        >
+          <div>
+            <p className="text-sm font-medium text-ink">
+              {t("dashboard.upgradeCard.title")}
+            </p>
+            <p className="text-xs text-ink/50 mt-1">
+              {t("dashboard.upgradeCard.subtitle")}
+            </p>
+          </div>
+          <UpgradeButton />
+        </Card>
+      )}
 
       {/* ── Tour sentinel: step 3 anchors at the navigation hints area ── */}
       <div ref={navHintsSentinelRef} className="h-px" aria-hidden="true" />

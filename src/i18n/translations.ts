@@ -255,6 +255,8 @@ const translationsEn: DeepStringRecord = {
     miniSignature: {
       calculating: "Calculating signature…",
       label: "Your Form",
+      paused: "Paused",
+      togglePause: "Pause signature",
     },
     levi: {
       ready: "Levi Bazi — Ready",
@@ -319,6 +321,12 @@ const translationsEn: DeepStringRecord = {
       fallbackBody: 'Your daily impulse is being calculated …',
       ariaContainer: 'Daily Impulse',
       ariaResonanzBar: 'Resonance with the cosmos',
+    },
+    bigFour: {
+      sunSign: 'Sun Sign',
+      moonSign: 'Moon Sign',
+      ascendant: 'Ascendant',
+      baziAnimal: 'BaZi Animal',
     },
     heroNav: {
       westernLabel: "Sun Sign",
@@ -649,6 +657,8 @@ const translationsDe: DeepStringRecord = {
     miniSignature: {
       calculating: "Signatur wird berechnet…",
       label: "Deine Form",
+      paused: "Pausiert",
+      togglePause: "Signatur pausieren",
     },
     levi: {
       ready: "Levi Bazi Bereit",
@@ -713,6 +723,12 @@ const translationsDe: DeepStringRecord = {
       fallbackBody: 'Tagesimpuls wird gerade berechnet …',
       ariaContainer: 'Tages-Impuls',
       ariaResonanzBar: 'Resonanz mit dem Kosmos',
+    },
+    bigFour: {
+      sunSign: 'Sternzeichen',
+      moonSign: 'Mondzeichen',
+      ascendant: 'Aszendent',
+      baziAnimal: 'Jahrestier',
     },
     heroNav: {
       westernLabel: "Sonnenzeichen",
