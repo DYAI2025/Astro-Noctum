@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -31,7 +31,7 @@ import { useFusionRingContext } from "../contexts/FusionRingContext";
 
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
-import { soulprintToNatalWeights } from "./fusion-ring-website/signatur-bridge";
+import { soulprintToNatalWeights, soulprintToDimensionWeights } from "./fusion-ring-website/signatur-bridge";
 import { DashboardBigFour } from "./dashboard/DashboardBigFour";
 import MiniSignature from "./dashboard/MiniSignature";
 import InfluenceGauges from "./dashboard/InfluenceGauges";
@@ -309,6 +309,12 @@ export function Dashboard({
     profileMeta.quizSectors,
   );
 
+  // ── Memoised V3 dimension weights for MiniSignature ─────────────────
+  const dimensionWeights = useMemo(
+    () => profileMeta.soulprintSectors ? soulprintToDimensionWeights(profileMeta.soulprintSectors) : undefined,
+    [profileMeta.soulprintSectors],
+  );
+
   // ── Render ────────────────────────────────────────────────────────────
 
   return (
@@ -384,7 +390,7 @@ export function Dashboard({
         <SectionErrorBoundary name="MiniSignature">
           <div className="w-[200px] md:w-[240px] mx-auto md:mx-0">
             <MiniSignature
-              natalWeights={profileMeta.soulprintSectors ? soulprintToNatalWeights(profileMeta.soulprintSectors) : undefined}
+              natalWeights={dimensionWeights}
               quizWeights={{}}
               dayHarmonic={dayHarmonic}
               onExpand={() => navigate('/signatur')}
