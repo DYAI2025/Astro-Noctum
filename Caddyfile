@@ -1,0 +1,14 @@
+:{$PORT:3000} {
+    root * /app/dist
+    encode gzip
+
+    # Redirect www → non-www (canonical domain)
+    @www header Host www.bazodiac.space
+    redir @www https://bazodiac.space{uri} permanent
+
+    # SPA fallback
+    handle {
+        try_files {path} /index.html
+        file_server
+    }
+}

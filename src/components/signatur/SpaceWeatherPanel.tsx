@@ -168,7 +168,7 @@ export function SpaceWeatherPanel({
             <span className="text-[10px] uppercase tracking-[0.15em] text-white/50">Aktive Events</span>
           </div>
           {events.slice(0, 3).map((evt, i) => (
-            <div key={i} className="rounded-lg border border-white/5 bg-white/[0.02] px-2.5 py-1.5 text-[10px] text-white/60">
+            <div key={`${evt.type}-${i}`} className="rounded-lg border border-white/5 bg-white/[0.02] px-2.5 py-1.5 text-[10px] text-white/60">
               <span className="font-mono text-white/40">{evt.type.replace(/_/g, ' ')}</span>
               {evt.description && <span className="ml-1.5">{evt.description}</span>}
             </div>
@@ -180,7 +180,7 @@ export function SpaceWeatherPanel({
       {alerts.length > 0 && (
         <div className="space-y-1">
           {alerts.slice(0, 2).map((alert, i) => (
-            <div key={i} className="rounded-lg border border-orange-500/20 bg-orange-500/5 px-2.5 py-1.5 text-[10px] text-orange-300/80">
+            <div key={`alert-${i}`} className="rounded-lg border border-orange-500/20 bg-orange-500/5 px-2.5 py-1.5 text-[10px] text-orange-300/80">
               {alert.length > 80 ? alert.slice(0, 80) + '…' : alert}
             </div>
           ))}

@@ -94,7 +94,6 @@ export default function FuRingPage() {
   const { profile: resonanceProfile, dimensionMultipliers } = useCosmicResonance({
     natalWeights: natalPlanetWeights,
     ringModulation: spaceWeather.ringModulation,
-    kpIndex: spaceWeather.kpIndex,
     sunSign,
     moonSign,
   });
