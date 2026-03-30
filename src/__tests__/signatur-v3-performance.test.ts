@@ -18,6 +18,7 @@ import {
   type SolarModulation,
 } from '../components/signatur-v3/bipolar-engine';
 import { computeDayHarmonic } from '../lib/fusion-ring/day-harmonic';
+import { selectQualityTier, buildConfig } from '../components/signatur-v3/SignaturV3Canvas';
 
 const CONFIG: SignaturV3Config = {
   maxR: 200,
@@ -153,24 +154,31 @@ describe('V3 Engine Performance', () => {
 });
 
 describe('V3 Adaptive Trail Tier Selection', () => {
-  it('high tier for large canvas (≥400px)', () => {
-    const poles = initializePoles(
-      { maxR: 200, maxTrailLength: 2000, trailPersistence: 0.85, timeScale: 1.0 },
-      NATAL, QUIZ,
-    );
-    expect(poles[0]!.trail.length).toBe(2000 * 2); // x,y pairs
+  it('selectQualityTier returns high for ≥400px', () => {
+    expect(selectQualityTier(500, 500)).toBe('high');
+    expect(selectQualityTier(400, 600)).toBe('high');
   });
 
-  it('medium tier config has 800 trail length', () => {
-    const mediumConfig: SignaturV3Config = { maxR: 120, maxTrailLength: 800, trailPersistence: 0.82, timeScale: 1.0 };
-    const poles = initializePoles(mediumConfig, NATAL, QUIZ);
-    expect(poles[0]!.trail.length).toBe(800 * 2);
+  it('selectQualityTier returns medium for 250–399px', () => {
+    expect(selectQualityTier(300, 300)).toBe('medium');
+    expect(selectQualityTier(250, 400)).toBe('medium');
   });
 
-  it('low tier config has 300 trail length', () => {
-    const lowConfig: SignaturV3Config = { maxR: 80, maxTrailLength: 300, trailPersistence: 0.78, timeScale: 1.0 };
-    const poles = initializePoles(lowConfig, NATAL, QUIZ);
-    expect(poles[0]!.trail.length).toBe(300 * 2);
+  it('selectQualityTier returns low for <250px', () => {
+    expect(selectQualityTier(200, 200)).toBe('low');
+    expect(selectQualityTier(240, 240)).toBe('low');
+  });
+
+  it('buildConfig produces correct trail lengths per tier', () => {
+    expect(buildConfig(500, 500, 'high').maxTrailLength).toBe(2000);
+    expect(buildConfig(300, 300, 'medium').maxTrailLength).toBe(800);
+    expect(buildConfig(200, 200, 'low').maxTrailLength).toBe(300);
+  });
+
+  it('buildConfig auto selects based on canvas size', () => {
+    expect(buildConfig(500, 500, 'auto').maxTrailLength).toBe(2000);
+    expect(buildConfig(300, 300, 'auto').maxTrailLength).toBe(800);
+    expect(buildConfig(200, 200, 'auto').maxTrailLength).toBe(300);
   });
 
   it('lower trail length reduces per-frame work proportionally', () => {

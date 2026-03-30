@@ -255,6 +255,8 @@ const translationsEn: DeepStringRecord = {
     miniSignature: {
       calculating: "Calculating signature…",
       label: "Your Form",
+      paused: "Paused",
+      togglePause: "Pause signature",
     },
     levi: {
       ready: "Levi Bazi — Ready",
@@ -308,6 +310,23 @@ const translationsEn: DeepStringRecord = {
       venusTooltip: "Venus stands for harmony, relationships, and aesthetic sensibility. The Venus balance shows how strongly the influences of love, beauty, and connection are felt today.",
       saturnLabel: "Saturn Focus",
       saturnTooltip: "Saturn embodies structure, discipline, and responsibility. A low Saturn focus suggests a phase with fewer external constraints and more creative freedom.",
+    },
+    tagesImpuls: {
+      sectionLabel: 'Daily Impulse',
+      badgePulse: 'Day-Pulse',
+      badgeTrace: 'Day-Trace',
+      kosmoswetter: 'Cosmic Weather',
+      resonanz: 'Resonance',
+      vertiefen: 'explore',
+      fallbackBody: 'Your daily impulse is being calculated …',
+      ariaContainer: 'Daily Impulse',
+      ariaResonanzBar: 'Resonance with the cosmos',
+    },
+    bigFour: {
+      sunSign: 'Sun Sign',
+      moonSign: 'Moon Sign',
+      ascendant: 'Ascendant',
+      baziAnimal: 'BaZi Animal',
     },
     heroNav: {
       westernLabel: "Sun Sign",
@@ -638,6 +657,8 @@ const translationsDe: DeepStringRecord = {
     miniSignature: {
       calculating: "Signatur wird berechnet…",
       label: "Deine Form",
+      paused: "Pausiert",
+      togglePause: "Signatur pausieren",
     },
     levi: {
       ready: "Levi Bazi Bereit",
@@ -691,6 +712,23 @@ const translationsDe: DeepStringRecord = {
       venusTooltip: "Venus steht für Harmonie, Beziehungen und ästhetisches Empfinden. Die Venus-Balance zeigt, wie stark die Einflüsse von Liebe, Schönheit und Verbundenheit heute wirken.",
       saturnLabel: "Saturn-Fokus",
       saturnTooltip: "Saturn verkörpert Struktur, Disziplin und Verantwortung. Ein niedriger Saturn-Fokus deutet auf eine Phase mit weniger äußeren Beschränkungen und mehr Gestaltungsfreiheit hin.",
+    },
+    tagesImpuls: {
+      sectionLabel: 'Tages-Impuls',
+      badgePulse: 'Day-Pulse',
+      badgeTrace: 'Day-Trace',
+      kosmoswetter: 'Kosmoswetter',
+      resonanz: 'Resonanz',
+      vertiefen: 'vertiefen',
+      fallbackBody: 'Tagesimpuls wird gerade berechnet …',
+      ariaContainer: 'Tages-Impuls',
+      ariaResonanzBar: 'Resonanz mit dem Kosmos',
+    },
+    bigFour: {
+      sunSign: 'Sternzeichen',
+      moonSign: 'Mondzeichen',
+      ascendant: 'Aszendent',
+      baziAnimal: 'Jahrestier',
     },
     heroNav: {
       westernLabel: "Sonnenzeichen",

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
 } from "lucide-react";
@@ -31,6 +32,8 @@ import { useFusionRingContext } from "../contexts/FusionRingContext";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { soulprintToNatalWeights } from "./fusion-ring-website/signatur-bridge";
+import { DashboardBigFour } from "./dashboard/DashboardBigFour";
+import MiniSignature from "./dashboard/MiniSignature";
 import InfluenceGauges from "./dashboard/InfluenceGauges";
 import { TourOverlay } from "./dashboard/TourOverlay";
 import { useDashboardTour } from "@/src/hooks/useDashboardTour";
@@ -146,6 +149,7 @@ export function Dashboard({
   tileTexts,
 }: DashboardProps) {
   const { lang, t } = useLanguage();
+  const navigate = useNavigate();
   const { isPremium } = usePremium();
   const { user } = useAuth();
   const { events: quizEvents } = useFusionRingContext();
@@ -366,19 +370,30 @@ export function Dashboard({
         </div>
       </motion.header>
 
-      {/* ═══ SECTION 1: BIG FOUR — Identity (replaces DashboardHeroNav) ══════ */}
-      <motion.div className="mb-8" {...fadeIn(0.05)}>
+      {/* ═══ IDENTITY — Big Four + MiniSignature (F1+F2) ════════════════════ */}
+      <motion.div className="mb-8 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 items-start" {...fadeIn(0.05)}>
         <SectionErrorBoundary name="BigFour">
           <DashboardBigFour
-            sunSign={apiData?.western?.zodiac_sign}
-            moonSign={apiData?.western?.moon_sign}
-            ascendant={apiData?.western?.ascendant_sign}
-            baziAnimal={apiData?.bazi?.zodiac_sign}
+            sunSign={apiData?.western?.zodiac_sign || ''}
+            moonSign={apiData?.western?.moon_sign || ''}
+            ascendant={apiData?.western?.ascendant_sign || ''}
+            baziAnimal={apiData?.bazi?.zodiac_sign || ''}
           />
+        </SectionErrorBoundary>
+
+        <SectionErrorBoundary name="MiniSignature">
+          <div className="w-[200px] md:w-[240px] mx-auto md:mx-0">
+            <MiniSignature
+              natalWeights={profileMeta.soulprintSectors ? soulprintToNatalWeights(profileMeta.soulprintSectors) : undefined}
+              quizWeights={{}}
+              dayHarmonic={dayHarmonic}
+              onExpand={() => navigate('/signatur')}
+            />
+          </div>
         </SectionErrorBoundary>
       </motion.div>
 
-      {/* ═══ SECTION 2: TAGES-IMPULS — Hero-Sektion (always fully visible) ══════ */}
+      {/* ═══ TAGES-IMPULS — Hero-Sektion (immer vollständig sichtbar) ══════ */}
       <motion.div className="mb-8" {...fadeIn(0.1)}>
         <SectionErrorBoundary name="TagesImpuls">
           {dailyData ? (
@@ -411,18 +426,25 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
-      {/* ═══ SECTION 4: VIBES BUTTON ═══════════════════════════════════ */}
-      <motion.div className="mb-8 flex justify-center" {...fadeIn(0.2)}>
-        <SectionErrorBoundary name="Vibes">
-          <VibesSection userId={userId} />
-        </SectionErrorBoundary>
-      </motion.div>
+      {/* ── Tour sentinel: step 1 triggers when astro section scrolls into view ── */}
+      <div ref={astroSentinelRef} className="h-px" aria-hidden="true" />
+
+      {/* ═══ SECTION 7: KOSMISCHER BLUEPRINT (Accordion: Westlich/BaZi/Wu-Xing/Orrery) ═══ */}
+      <SectionErrorBoundary name="Astro">
+        <DashboardAstroSection
+          apiData={apiData}
+          birthDate={birthDate}
+          isPremium={isPremium}
+          isFirstReading={isFirstReading}
+          tileTexts={tileTexts}
+        />
+      </SectionErrorBoundary>
 
       {/* ── Tour sentinel: step 2 triggers when Levi/interpretation area scrolls into view ── */}
       <div ref={leviSentinelRef} className="h-px" aria-hidden="true" />
 
-      {/* ═══ SECTION 5: VOICE AGENTS — Levi + Eve ════════════════════ */}
-      <motion.div className="mb-8" {...fadeIn(0.25)}>
+      {/* ═══ VOICE AGENTS — Multi-Agent Section ═══════════════════════ */}
+      <motion.div className="mb-12 sm:mb-16" {...fadeIn(0.4)}>
         <SectionErrorBoundary name="Agents">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             {AGENTS.map(agent => (
@@ -442,10 +464,10 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
-      {/* ═══ SECTION 6: UPGRADE BANNER (freemium only, after agents) ══ */}
+      {/* ═══ UPGRADE BANNER (freemium only, nach Agenten — F4) ════════════ */}
       {!isPremium && (
         <Card variant="gold" className="mb-8 w-full max-w-6xl p-5 flex items-center justify-between gap-4"
-          {...fadeIn(0.3)}
+          {...fadeIn(0.42)}
         >
           <div>
             <p className="text-sm font-medium text-ink">
@@ -458,20 +480,6 @@ export function Dashboard({
           <UpgradeButton />
         </Card>
       )}
-
-      {/* ── Tour sentinel: step 1 triggers when astro section scrolls into view ── */}
-      <div ref={astroSentinelRef} className="h-px" aria-hidden="true" />
-
-      {/* ═══ SECTION 7: KOSMISCHER BLUEPRINT (Accordion: Westlich/BaZi/Wu-Xing/Orrery) ═══ */}
-      <SectionErrorBoundary name="Astro">
-        <DashboardAstroSection
-          apiData={apiData}
-          birthDate={birthDate}
-          isPremium={isPremium}
-          isFirstReading={isFirstReading}
-          tileTexts={tileTexts}
-        />
-      </SectionErrorBoundary>
 
       {/* ── Tour sentinel: step 3 anchors at the navigation hints area ── */}
       <div ref={navHintsSentinelRef} className="h-px" aria-hidden="true" />

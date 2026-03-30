@@ -76,7 +76,7 @@ describe('Cosmic Resonance Engine', () => {
   describe('applyResonance', () => {
     it('returns 1.0 for all dimensions when no storm (ringModulation = 1.0)', () => {
       const profile = computeCosmicResonance(WATER_NATAL);
-      const result = applyResonance(profile, 1.0, 0);
+      const result = applyResonance(profile, 1.0);
 
       for (const val of Object.values(result)) {
         expect(val).toBe(1.0);
@@ -87,8 +87,8 @@ describe('Cosmic Resonance Engine', () => {
       const waterProfile = computeCosmicResonance(WATER_NATAL, 'Cancer');
       const earthProfile = computeCosmicResonance(EARTH_NATAL, 'Taurus');
 
-      const waterResult = applyResonance(waterProfile, 1.4, 7);
-      const earthResult = applyResonance(earthProfile, 1.4, 7);
+      const waterResult = applyResonance(waterProfile, 1.4);
+      const earthResult = applyResonance(earthProfile, 1.4);
 
       // Average modulation across all dimensions should be higher for water
       const waterAvg = Object.values(waterResult).reduce((a, b) => a + b, 0) / 6;
@@ -99,7 +99,7 @@ describe('Cosmic Resonance Engine', () => {
 
     it('modulation never exceeds 2.0 cap', () => {
       const profile = computeCosmicResonance(WATER_NATAL, 'Cancer', 'Pisces', 'Scorpio');
-      const result = applyResonance(profile, 1.5, 9); // extreme storm
+      const result = applyResonance(profile, 1.5); // extreme storm
 
       for (const val of Object.values(result)) {
         expect(val).toBeLessThanOrEqual(2.0);
@@ -109,7 +109,7 @@ describe('Cosmic Resonance Engine', () => {
 
     it('produces 6 dimension multipliers', () => {
       const profile = computeCosmicResonance(BALANCED_NATAL);
-      const result = applyResonance(profile, 1.3, 5);
+      const result = applyResonance(profile, 1.3);
       expect(Object.keys(result)).toHaveLength(6);
     });
   });
