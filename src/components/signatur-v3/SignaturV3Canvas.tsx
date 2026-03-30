@@ -63,14 +63,14 @@ const TIER_CONFIGS: Record<QualityTier, Omit<SignaturV3Config, 'maxR'>> = {
   low: { maxTrailLength: 300, trailPersistence: 0.78, timeScale: 1.0 },
 };
 
-function selectQualityTier(width: number, height: number): QualityTier {
+export function selectQualityTier(width: number, height: number): QualityTier {
   const size = Math.min(width, height);
   if (size >= 400) return 'high';
   if (size >= 250) return 'medium';
   return 'low';
 }
 
-function buildConfig(width: number, height: number, quality: 'high' | 'medium' | 'low' | 'auto'): SignaturV3Config {
+export function buildConfig(width: number, height: number, quality: 'high' | 'medium' | 'low' | 'auto'): SignaturV3Config {
   const tier = quality === 'auto' ? selectQualityTier(width, height) : quality;
   return { ...TIER_CONFIGS[tier], maxR: Math.min(width, height) * 0.4 };
 }

@@ -230,13 +230,11 @@ export function computeCosmicResonance(
  *
  * @param resonance - The user's cosmic resonance profile
  * @param rawRingModulation - Raw ring modulation from space weather (1.0–1.5)
- * @param kpIndex - Current Kp index (0–9)
  * @returns Per-dimension solar multipliers for the V3 engine
  */
 export function applyResonance(
   resonance: ResonanceProfile,
   rawRingModulation: number,
-  kpIndex: number,
 ): Record<string, number> {
   const result: Record<string, number> = {};
   const excess = rawRingModulation - 1.0; // 0–0.5 range

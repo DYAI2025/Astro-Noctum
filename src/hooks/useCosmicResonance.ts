@@ -17,8 +17,6 @@ export interface UseCosmicResonanceProps {
   natalWeights: Record<string, number> | null;
   /** Raw ring modulation from useSpaceWeather (1.0–1.5) */
   ringModulation: number;
-  /** Current Kp index from useSpaceWeather */
-  kpIndex: number;
   /** Optional: sun sign for refined element weighting */
   sunSign?: string;
   /** Optional: moon sign */
@@ -37,7 +35,6 @@ export interface CosmicResonanceState {
 export function useCosmicResonance({
   natalWeights,
   ringModulation,
-  kpIndex,
   sunSign,
   moonSign,
   ascSign,
@@ -49,8 +46,8 @@ export function useCosmicResonance({
 
   const dimensionMultipliers = useMemo(() => {
     if (!profile) return null;
-    return applyResonance(profile, ringModulation, kpIndex);
-  }, [profile, ringModulation, kpIndex]);
+    return applyResonance(profile, ringModulation);
+  }, [profile, ringModulation]);
 
   return { profile, dimensionMultipliers };
 }

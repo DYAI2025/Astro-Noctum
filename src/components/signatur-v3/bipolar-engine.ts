@@ -353,10 +353,11 @@ export function updatePoles(
     }
 
     // === SOLAR MODULATION → membrane intensity (personalized via resonance) ===
+    // dimMul > 1.0 → expansion (water/fire dimensions pushed outward by storms)
+    // dimMul < 1.0 → contraction (earth dimensions resist, pull inward — intentional)
     if (solar && solar.ringModulation > 1.0) {
-      // Per-dimension multiplier from cosmic resonance (default 1.0 if not available)
       const dimMul = solar.dimensionMultipliers?.[dimId] ?? 1.0;
-      const expansion = (solar.ringModulation - 1.0) * 0.5 * (dimMul - 0.5); // resonance-weighted
+      const expansion = (solar.ringModulation - 1.0) * 0.5 * (dimMul - 0.5);
 
       poleA.x *= (1 + expansion);
       poleA.y *= (1 + expansion);
