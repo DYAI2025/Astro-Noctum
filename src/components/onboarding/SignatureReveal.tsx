@@ -2,9 +2,10 @@ import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { BootstrapResponse, SignatureDeltaResponse } from '@/src/lib/schemas/experience';
 import { isFeatureEnabled } from '@/src/lib/feature-flags';
-import { soulprintToNatalWeights } from '@/src/components/fusion-ring-website/signatur-bridge';
+import { soulprintToNatalWeights, soulprintToDimensionWeights } from '@/src/components/fusion-ring-website/signatur-bridge';
 import { useLanguage } from '@/src/contexts/LanguageContext';
 
+const SignaturV3Canvas = lazy(() => import('@/src/components/signatur-v3/SignaturV3Canvas'));
 const FusionRingCanvasV2 = lazy(() => import('@/src/components/fusion-ring-website/FusionRingCanvasV2'));
 const FusionRingWebsiteCanvas = lazy(() => import('@/src/components/fusion-ring-website/FusionRingWebsiteCanvas').then(m => ({ default: m.FusionRingWebsiteCanvas })));
 
@@ -29,7 +30,8 @@ export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: 
   const [showButton, setShowButton] = useState(false);
   const [revealProgress, setRevealProgress] = useState(0);
 
-  const useV2 = isFeatureEnabled('signature_engine_v2') && canRunV2();
+  const useV3 = isFeatureEnabled('signature_engine_v3');
+  const useV2 = !useV3 && isFeatureEnabled('signature_engine_v2') && canRunV2();
   const sectors = bootstrapData.soulprint_sectors?.length === 12
     ? bootstrapData.soulprint_sectors
     : DEFAULT_SECTORS;
@@ -37,6 +39,8 @@ export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: 
   const isFallback = bootstrapData.meta?.engine_version === 'fallback';
 
   const natalWeights = useMemo(() => soulprintToNatalWeights(sectors), [sectors]);
+  const dimensionWeights = useMemo(() => soulprintToDimensionWeights(sectors), [sectors]);
+  const neutralDimensionWeights = useMemo(() => soulprintToDimensionWeights(DEFAULT_SECTORS), []);
 
   // Morph animation: neutral -> personal over 2s, then show button at 3s
   useEffect(() => {
@@ -50,7 +54,15 @@ export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: 
       {/* Ring container — round clipped */}
       <div className="w-[200px] h-[200px] rounded-full overflow-hidden relative">
         <Suspense fallback={<div className="w-full h-full bg-[#010409]" />}>
-          {useV2 ? (
+          {useV3 ? (
+            <SignaturV3Canvas
+              natalWeights={revealProgress > 0 ? dimensionWeights : neutralDimensionWeights}
+              quizWeights={{}}
+              width={200}
+              height={200}
+              quality="medium"
+            />
+          ) : useV2 ? (
             <FusionRingCanvasV2
               natalWeights={revealProgress > 0 ? natalWeights : undefined}
               isMini
