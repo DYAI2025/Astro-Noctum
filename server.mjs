@@ -1921,7 +1921,7 @@ REGELN:
 8. explain.transit_context: Bezug zur aktuellen Konstellation/Weltraumwetter
 9. KEINE Planetennamen (Mars, Venus etc.), KEIN "die Sterne sagen", KEIN esoterischer Jargon
 10. JEDE Aussage muss logisch aus den Eingabedaten ableitbar sein: Soulprint-Sektoren, Transitdaten, Western/BaZi/Fusion/Wu-Xing Interpretation. KEINE generischen Motivationssprüche oder Fülltext.
-11. Die Ausgabe muss sich von der letzten Ausgabe des Users unterscheiden — variiere Wortwahl und Perspektive.
+11. Formuliere möglichst abwechslungsreich und mit variierender Wortwahl und Perspektive, sodass die Antwort frisch wirkt.
 12. Output MUSS valides JSON sein. KEIN Markdown, KEINE Code-Blöcke. Direkt mit { beginnen.`;
 
     const model = geminiClient.models;
