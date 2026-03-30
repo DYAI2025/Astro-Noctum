@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useReducedMotion } from 'motion/react';
 
 import { useFusionSignal } from '@/src/hooks/useFusionSignal';
@@ -9,8 +9,12 @@ import {
   type RingEffectType,
 } from '@/src/components/fusion-ring-website/FusionRingWebsiteCanvas';
 import FusionRingCanvasV2 from '@/src/components/fusion-ring-website/FusionRingCanvasV2';
-import { soulprintToNatalWeights } from '@/src/components/fusion-ring-website/signatur-bridge';
+import { soulprintToNatalWeights, soulprintToDimensionWeights } from '@/src/components/fusion-ring-website/signatur-bridge';
 import { isFeatureEnabled } from '@/src/lib/feature-flags';
+import type { DissonanceResult } from '../../lib/fusion-ring/dissonance';
+import type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
+
+const SignaturV3Canvas = lazy(() => import('@/src/components/signatur-v3/SignaturV3Canvas'));
 
 export type FusionRing3DLabels = {
   regionLabel: string;
@@ -34,6 +38,10 @@ type FusionRing3DProps = {
   effectTrigger?: { type: string; color?: string; timestamp: number; intensity?: number } | null;
   solarModulation?: number;
   dissonanceModulation?: import('../../lib/fusion-ring/dissonance-visual').VisualModulation | null;
+  /** External dissonance result for V3 engine */
+  externalDissonance?: DissonanceResult | null;
+  /** Day harmonic state for V3 engine */
+  dayHarmonic?: DayHarmonicState | null;
 };
 
 type QueuedEffect = { id: string; type: RingEffectType };
@@ -71,6 +79,8 @@ export const FusionRing3D = ({
   effectTrigger,
   solarModulation,
   dissonanceModulation,
+  externalDissonance,
+  dayHarmonic,
 }: FusionRing3DProps) => {
   const prefersReducedMotion = useReducedMotion();
   const { signalData, events, resolution, loading, error } = useFusionSignal(userId);
@@ -78,6 +88,11 @@ export const FusionRing3D = ({
 
   const v2NatalWeights = useMemo(
     () => signalData?.baseSignals ? soulprintToNatalWeights(signalData.baseSignals) : undefined,
+    [signalData?.baseSignals]
+  );
+
+  const v3DimensionWeights = useMemo(
+    () => signalData?.baseSignals ? soulprintToDimensionWeights(signalData.baseSignals) : undefined,
     [signalData?.baseSignals]
   );
 
@@ -114,7 +129,19 @@ export const FusionRing3D = ({
           </div>
         )}
 
-        {isFeatureEnabled('signature_engine_v2') ? (
+        {isFeatureEnabled('signature_engine_v3') && v3DimensionWeights ? (
+          <Suspense fallback={<div className="h-full w-full bg-black/20" />}>
+            <SignaturV3Canvas
+              natalWeights={v3DimensionWeights}
+              quizWeights={quizWeights ?? {}}
+              dayHarmonic={dayHarmonic ?? undefined}
+              externalDissonance={externalDissonance}
+              solarModulation={solarModulation != null ? { ringModulation: solarModulation, triggerEffect: false, kpIndex: 0 } : undefined}
+              className="h-full w-full"
+              quality="auto"
+            />
+          </Suspense>
+        ) : isFeatureEnabled('signature_engine_v2') ? (
           <FusionRingCanvasV2
             natalWeights={v2NatalWeights}
             quizWeights={quizWeights}
@@ -154,4 +181,3 @@ export const FusionRing3D = ({
     </section>
   );
 };
-

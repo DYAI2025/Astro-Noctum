@@ -255,6 +255,8 @@ export default function FuRingPage() {
               effectTrigger={ringEffect}
               solarModulation={spaceWeather.ringModulation}
               dissonanceModulation={dissonanceModulation}
+              externalDissonance={dissonance}
+              dayHarmonic={null}
               labels={{
                 regionLabel: t('furing3d.a11y.regionLabel'),
                 loading: t('furing3d.loading'),
