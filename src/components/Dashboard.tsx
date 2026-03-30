@@ -18,7 +18,7 @@ import type { TileTexts } from "../types/interpretation";
 import { DashboardAstroSection } from "./dashboard/DashboardAstroSection";
 import { DashboardInterpretationSection } from "./dashboard/DashboardInterpretationSection";
 import { SectionErrorBoundary } from "./dashboard/SectionErrorBoundary";
-// import { DashboardLeviSection } from "./dashboard/DashboardLeviSection";
+import { DashboardBigFour } from "./dashboard/DashboardBigFour";
 import { AgentSection } from "./dashboard/AgentSection";
 import { AGENTS } from "@/packages/shared/src/agents/config";
 import { CosmicWeatherCard } from "./CosmicWeatherCard";
@@ -366,7 +366,19 @@ export function Dashboard({
         </div>
       </motion.header>
 
-      {/* ═══ TAGES-IMPULS — Hero-Sektion (immer vollständig sichtbar) ══════ */}
+      {/* ═══ SECTION 1: BIG FOUR — Identity (replaces DashboardHeroNav) ══════ */}
+      <motion.div className="mb-8" {...fadeIn(0.05)}>
+        <SectionErrorBoundary name="BigFour">
+          <DashboardBigFour
+            sunSign={apiData?.western?.zodiac_sign}
+            moonSign={apiData?.western?.moon_sign}
+            ascendant={apiData?.western?.ascendant_sign}
+            baziAnimal={apiData?.bazi?.zodiac_sign}
+          />
+        </SectionErrorBoundary>
+      </motion.div>
+
+      {/* ═══ SECTION 2: TAGES-IMPULS — Hero-Sektion (always fully visible) ══════ */}
       <motion.div className="mb-8" {...fadeIn(0.1)}>
         <SectionErrorBoundary name="TagesImpuls">
           {dailyData ? (
@@ -377,7 +389,7 @@ export function Dashboard({
               onOpenDayModal={dailyEnabled ? () => setIsDayModalOpen(true) : undefined}
             />
           ) : (
-            // Legacy fallback: CosmicWeatherCard solange dailyData noch nicht geladen
+            // Legacy fallback: CosmicWeatherCard while dailyData is not yet loaded
             <CosmicWeatherCard
               horoscope={horoscope}
               loading={horoscopeLoading}
@@ -390,14 +402,7 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
-      {/* ═══ VIBES BUTTON ═══════════════════════════════════════════ */}
-      <motion.div className="mb-8 flex justify-center" {...fadeIn(0.12)}>
-        <SectionErrorBoundary name="Vibes">
-          <VibesSection userId={userId} />
-        </SectionErrorBoundary>
-      </motion.div>
-
-      {/* ═══ INFLUENCE GAUGES — grouped with daily context ═══════════════ */}
+      {/* ═══ SECTION 3: INFLUENCE GAUGES ═══════════════════════════════ */}
       <motion.div className="mb-8" {...fadeIn(0.15)}>
         <SectionErrorBoundary name="InfluenceGauges">
           <InfluenceGauges
@@ -406,43 +411,18 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
-      {/* Upgrade Banner for free users */}
-      {!isPremium && (
-        <Card variant="gold" className="mb-8 w-full max-w-6xl p-5 flex items-center justify-between gap-4"
-          {...fadeIn(0.15)}
-        >
-          <div>
-            <p className="text-sm font-medium text-ink">
-              {t("dashboard.upgradeCard.title")}
-            </p>
-            <p className="text-xs text-ink/50 mt-1">
-              {t("dashboard.upgradeCard.subtitle")}
-            </p>
-          </div>
-          <UpgradeButton />
-        </Card>
-      )}
-
-
-      {/* ── Tour sentinel: step 1 triggers when astro section scrolls into view ── */}
-      <div ref={astroSentinelRef} className="h-px" aria-hidden="true" />
-
-      {/* ═══ ASTRO SECTION (Orrery + Western + BaZi/WuXing + Houses) ═══ */}
-      <SectionErrorBoundary name="Astro">
-        <DashboardAstroSection
-          apiData={apiData}
-          birthDate={birthDate}
-          isPremium={isPremium}
-          isFirstReading={isFirstReading}
-          tileTexts={tileTexts}
-        />
-      </SectionErrorBoundary>
+      {/* ═══ SECTION 4: VIBES BUTTON ═══════════════════════════════════ */}
+      <motion.div className="mb-8 flex justify-center" {...fadeIn(0.2)}>
+        <SectionErrorBoundary name="Vibes">
+          <VibesSection userId={userId} />
+        </SectionErrorBoundary>
+      </motion.div>
 
       {/* ── Tour sentinel: step 2 triggers when Levi/interpretation area scrolls into view ── */}
       <div ref={leviSentinelRef} className="h-px" aria-hidden="true" />
 
-      {/* ═══ VOICE AGENTS — Multi-Agent Section ═══════════════════════ */}
-      <motion.div className="mb-12 sm:mb-16" {...fadeIn(0.4)}>
+      {/* ═══ SECTION 5: VOICE AGENTS — Levi + Eve ════════════════════ */}
+      <motion.div className="mb-8" {...fadeIn(0.25)}>
         <SectionErrorBoundary name="Agents">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             {AGENTS.map(agent => (
@@ -462,15 +442,46 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
+      {/* ═══ SECTION 6: UPGRADE BANNER (freemium only, after agents) ══ */}
+      {!isPremium && (
+        <Card variant="gold" className="mb-8 w-full max-w-6xl p-5 flex items-center justify-between gap-4"
+          {...fadeIn(0.3)}
+        >
+          <div>
+            <p className="text-sm font-medium text-ink">
+              {t("dashboard.upgradeCard.title")}
+            </p>
+            <p className="text-xs text-ink/50 mt-1">
+              {t("dashboard.upgradeCard.subtitle")}
+            </p>
+          </div>
+          <UpgradeButton />
+        </Card>
+      )}
+
+      {/* ── Tour sentinel: step 1 triggers when astro section scrolls into view ── */}
+      <div ref={astroSentinelRef} className="h-px" aria-hidden="true" />
+
+      {/* ═══ SECTION 7: KOSMISCHER BLUEPRINT (Accordion: Westlich/BaZi/Wu-Xing/Orrery) ═══ */}
+      <SectionErrorBoundary name="Astro">
+        <DashboardAstroSection
+          apiData={apiData}
+          birthDate={birthDate}
+          isPremium={isPremium}
+          isFirstReading={isFirstReading}
+          tileTexts={tileTexts}
+        />
+      </SectionErrorBoundary>
+
       {/* ── Tour sentinel: step 3 anchors at the navigation hints area ── */}
       <div ref={navHintsSentinelRef} className="h-px" aria-hidden="true" />
 
       <div id="interpretation-section" />
 
-      {/* ═══ GESAMTANALYSE — full-width below Houses ═══════════════ */}
+      {/* ═══ SECTION 8: KI-SYNTHESE (premium) ═════════════════════════ */}
       <motion.div
         className="mb-12 sm:mb-16"
-        {...fadeIn(0.45)}
+        {...fadeIn(0.35)}
       >
         <SectionErrorBoundary name="Interpretation">
           <DashboardInterpretationSection
@@ -480,15 +491,14 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
-      {/* ═══ SHARE CARD ═══════════════════════════════════════════════ */}
-      <motion.div className="mb-16" {...fadeIn(0.5)}>
+      {/* ═══ SECTION 9: SHARE CARD + FOOTER ═══════════════════════════ */}
+      <motion.div className="mb-16" {...fadeIn(0.4)}>
         <ShareCard
           sunSign={apiData?.western?.zodiac_sign || ''}
           moonSign={apiData?.western?.moon_sign || ''}
         />
       </motion.div>
 
-      {/* ═══ LEGAL FOOTER ═══════════════════════════════════════════════ */}
       <LegalFooter lang={lang} />
 
       {/* ═══ DAILY HOROSCOPE MODAL ═══════════════════════════════════════ */}
