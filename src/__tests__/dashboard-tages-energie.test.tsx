@@ -280,7 +280,9 @@ describe('DashboardTagesEnergie — Body Fallback', () => {
         spaceWeather={SPACE_WEATHER}
       />
     );
-    expect(screen.getByText(/Tagesimpuls wird/i)).toBeDefined();
+    // Mock returns t: (k) => k, so the component renders the i18n key.
+    // This verifies the fallback path is reached when both strings are empty.
+    expect(screen.getByText('dashboard.tagesImpuls.fallbackBody')).toBeDefined();
   });
 
   it('zeigt synthesis wenn vorhanden (kein Fallback)', () => {

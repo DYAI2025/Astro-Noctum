@@ -77,15 +77,15 @@ You are Claude, co-working as Product Owner for Bazodiac alongside Ben (the foun
 
 ### Current State
 
-Project is in the Code phase. Multi-agent voice (Levi + Eve) sprint complete on branch `feature/multi-agent-voice-eve`. Signatur sprint (S-SIG) active.
+Project is in the Code phase. S-SIG sprint complete (28/28 tasks; Phase 3 Mobile cancelled — iOS in separate Swift repo). Current sprint: S-DAUP (Dashboard Aufräumen, 5/5 Done).
 
-Objectives artifacts: 3 goals (3 Approved), 16 requirements (12 Implemented, 2 Approved, 2 Draft), 1 assumption (Verified), 2 constraints (Active). No user stories (waived — solo founder).
+Objectives artifacts: 5 goals (2 Approved, 3 Draft), 23 requirements (12 Implemented, 2 Approved, 1 Deprecated, 8 Draft), 1 assumption (Verified), 2 constraints (Active). No user stories (waived — solo founder).
 
-Implementation plan created (2026-03-27): 4 phases, 28 tasks covering Signatur V3 Web Production, Cousto Audio, Mobile Native 3D, Performance Polish. All tasks trace to REQ-F-signatur-rendering-engine, REQ-F-signatur-data-pipeline, REQ-F-signatur-mobile-native, REQ-PERF-signatur-performance.
+Signatur V3 Architektur-Vision (2026-03-29): SIGNATUR_V3_VISION.md als Single Source of Truth definiert. 2 neue Goals (GOAL-signatur-phase2-density, GOAL-signatur-phase3-matching). 7 neue Requirements (dissonance-model, quiz-morph, determinism, density-field, ios-swift, shared-bridge, day-night-pulse). GOAL-fusion-astrology auf Draft zurückgesetzt und mit Cymatics-Prinzip geschärft. REQ-F-signatur-rendering-engine und REQ-F-signatur-data-pipeline auf V3 aktualisiert. REQ-F-signatur-mobile-native deprecated → ersetzt durch REQ-F-signatur-ios-swift.
 
-Implementation progress: 28/28 tasks done (Phase 3 cancelled — 6 tasks, iOS in separate Swift repo). S-SIG sprint complete.
+Implementierungsplan S-BRIDGE erstellt (2026-03-29): 3 Phasen, 12 Tasks — DIMENSION_DEFS Single Source of Truth, Determinismus-Test-Suite, Swift-Konstanten-Referenz. S-BRIDGE abgeschlossen (2026-03-29): 12/12 Tasks Done. DIMENSION_DEFS aus bipolar-engine.ts in packages/shared/src/signatur/dimension-defs.ts extrahiert + Object.freeze; 44 neue Tests (signatur-shared-bridge.test.ts + signatur-v3-engine.test.ts determinism); SWIFT_CONSTANTS.md erstellt; Runbook: docs/runbooks/signatur-s-bridge-verification.md. Nächster Sprint: S-MORPH (Quiz-Morphing) oder S-DENSITY (Density Field Phase 2).
 
-Gap analysis (2026-03-27): 0 Critical, 4 Important — (stale — artifacts changed since).
+Gap analysis: (stale — artifacts geändert 2026-03-29).
 
 ---
 

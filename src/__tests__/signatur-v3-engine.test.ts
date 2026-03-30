@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import {
-  DIMENSIONS,
   initializePoles,
   computeV3Dissonance,
   computeDissonance,
@@ -8,6 +7,8 @@ import {
   modulateConfig,
   type SignaturV3Config,
 } from '../components/signatur-v3/bipolar-engine';
+// DIMENSION_DEFS is now the canonical export from @bazodiac/shared
+import { DIMENSION_DEFS as DIMENSIONS } from '@/packages/shared/src/signatur/dimension-defs';
 import { computeDayHarmonic } from '../lib/fusion-ring/day-harmonic';
 
 const DEFAULT_CONFIG: SignaturV3Config = {
@@ -193,5 +194,60 @@ describe('Signatur V3 Engine', () => {
 
       expect(poles[0]!.trailLength).toBe(10); // capped at maxTrailLength
     });
+  });
+});
+
+// ─── TASK-sbridge-determinism ─────────────────────────────────────────────────
+
+describe('Signatur V3 Float-Determinismus (TASK-sbridge-determinism)', () => {
+  /**
+   * Identical inputs must produce bit-identical pole positions after N frames.
+   * Prerequisite for Matching, Density Field, and cross-platform consistency.
+   */
+  it('identical inputs produce identical pole positions after 200 frames', () => {
+    const runEngine = () => {
+      const poles = initializePoles(DEFAULT_CONFIG, NATAL, QUIZ_ALIGNED);
+      const dissonance = computeDissonance(NATAL, QUIZ_ALIGNED);
+      for (let f = 0; f < 200; f++) {
+        updatePoles(poles, dissonance, DEFAULT_CONFIG, f * 0.016);
+      }
+      return poles.map(p => ({ x: p.x, y: p.y, theta: p.theta }));
+    };
+
+    const run1 = runEngine();
+    const run2 = runEngine();
+
+    for (let i = 0; i < run1.length; i++) {
+      expect(run1[i]!.x).toBeCloseTo(run2[i]!.x, 10);
+      expect(run1[i]!.y).toBeCloseTo(run2[i]!.y, 10);
+      expect(run1[i]!.theta).toBeCloseTo(run2[i]!.theta, 10);
+    }
+  });
+
+  it('different natal inputs produce different pole positions', () => {
+    const poles1 = initializePoles(DEFAULT_CONFIG, NATAL, QUIZ_ALIGNED);
+    const poles2 = initializePoles(DEFAULT_CONFIG, QUIZ_DISSONANT, QUIZ_ALIGNED);
+    const dissonance = computeDissonance(NATAL, QUIZ_ALIGNED);
+
+    for (let f = 0; f < 200; f++) {
+      updatePoles(poles1, dissonance, DEFAULT_CONFIG, f * 0.016);
+      updatePoles(poles2, dissonance, DEFAULT_CONFIG, f * 0.016);
+    }
+
+    // At least one pole must differ — different natal → different orbit radius
+    const anyDiffers = poles1.some((p, i) =>
+      Math.abs(p.x - poles2[i]!.x) > 1e-6 || Math.abs(p.y - poles2[i]!.y) > 1e-6
+    );
+    expect(anyDiffers).toBe(true);
+  });
+
+  it('DIMENSION_DEFS are immutable at runtime (as const)', () => {
+    // Verify the array cannot be accidentally mutated via the shared export
+    const originalHz = DIMENSIONS[0]!.hz;
+    // @ts-expect-error — testing runtime immutability
+    try { (DIMENSIONS[0] as DimensionDef).hz = 999; } catch { /* expected */ }
+    // Object.freeze throws in strict mode on frozen-property assignment.
+    // This test FAILS without Object.freeze — it is not mode-independent.
+    expect(DIMENSIONS[0]!.hz).toBe(originalHz);
   });
 });

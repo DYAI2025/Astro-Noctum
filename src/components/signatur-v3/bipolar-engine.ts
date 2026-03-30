@@ -18,23 +18,11 @@ import type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
 import type { DissonanceResult } from '../../lib/fusion-ring/dissonance';
 import type { VisualModulation } from '../../lib/fusion-ring/dissonance-visual';
 
-// ═══════════════════════════════════════
-//  TYPES
-// ═══════════════════════════════════════
-
-export interface DimensionDef {
-  id: string;
-  poleA: string;         // e.g. "Durchsetzung"
-  poleB: string;         // e.g. "Hingabe"
-  /** Base angular position on the circle (radians) — like zodiac placement */
-  baseAngle: number;
-  /** Cousto Hz — drives movement speed and curve parameters */
-  hz: number;
-  /** Color for pole A */
-  colorA: [number, number, number];
-  /** Color for pole B */
-  colorB: [number, number, number];
-}
+// DimensionDef and DIMENSION_DEFS are the Single Source of Truth in @bazodiac/shared.
+// Re-exported here so existing imports from this file continue to work.
+export type { DimensionDef } from '@/packages/shared/src/signatur/dimension-defs';
+export { DIMENSION_DEFS } from '@/packages/shared/src/signatur/dimension-defs';
+import { DIMENSION_DEFS } from '@/packages/shared/src/signatur/dimension-defs';
 
 export interface PoleState {
   dimensionId: string;
@@ -94,69 +82,11 @@ export interface SolarModulation {
 //  DIMENSION DEFINITIONS
 // ═══════════════════════════════════════
 
-/**
- * 6 Dimensions, each with 2 poles = 12 poles.
- * Placed at 30° intervals around the circle (like zodiac signs).
- * Each dimension's poles are opposite (180° apart).
- *
- * Pole A sits at baseAngle, Pole B at baseAngle + π.
- */
-export const DIMENSIONS: DimensionDef[] = [
-  {
-    id: 'assertion',
-    poleA: 'Durchsetzung',
-    poleB: 'Hingabe',
-    baseAngle: 0,                    // 0° — Aries position
-    hz: 144.72,                      // Mars frequency
-    colorA: [1.0, 0.15, 0.12],      // Mars red
-    colorB: [0.68, 0.55, 1.0],      // Soft violet
-  },
-  {
-    id: 'empathy',
-    poleA: 'Einfühlung',
-    poleB: 'Abgrenzung',
-    baseAngle: Math.PI / 3,          // 60° — Cancer-adjacent
-    hz: 210.42,                      // Moon frequency
-    colorA: [0.68, 0.55, 1.0],      // Moon violet
-    colorB: [0.38, 0.52, 0.72],     // Saturn steel
-  },
-  {
-    id: 'creativity',
-    poleA: 'Schöpfung',
-    poleB: 'Struktur',
-    baseAngle: (2 * Math.PI) / 3,   // 120° — Leo position
-    hz: 126.22,                      // Sun frequency
-    colorA: [1.0, 0.72, 0.12],      // Sun gold
-    colorB: [0.20, 0.95, 1.0],      // Mercury cyan
-  },
-  {
-    id: 'logic',
-    poleA: 'Analyse',
-    poleB: 'Synthese',
-    baseAngle: Math.PI,              // 180° — Virgo-Libra
-    hz: 141.27,                      // Mercury frequency
-    colorA: [0.20, 0.95, 1.0],      // Mercury cyan
-    colorB: [1.0, 0.40, 0.72],      // Venus pink
-  },
-  {
-    id: 'intuition',
-    poleA: 'Ahnung',
-    poleB: 'Evidenz',
-    baseAngle: (4 * Math.PI) / 3,   // 240° — Sagittarius
-    hz: 183.58,                      // Jupiter frequency
-    colorA: [1.0, 0.88, 0.0],       // Jupiter gold
-    colorB: [0.38, 0.52, 0.72],     // Saturn steel
-  },
-  {
-    id: 'discipline',
-    poleA: 'Ordnung',
-    poleB: 'Freiheit',
-    baseAngle: (5 * Math.PI) / 3,   // 300° — Capricorn-Aquarius
-    hz: 147.85,                      // Saturn frequency
-    colorA: [0.38, 0.52, 0.72],     // Saturn steel
-    colorB: [1.0, 0.88, 0.0],       // Jupiter gold
-  },
-];
+// DIMENSIONS is an alias for DIMENSION_DEFS (imported from @bazodiac/shared).
+// Kept for backward-compat with any internal usages within this file.
+// External consumers should import DIMENSION_DEFS from @/packages/shared/src/signatur.
+/** @deprecated Use DIMENSION_DEFS from @bazodiac/shared */
+export const DIMENSIONS = DIMENSION_DEFS;
 
 // ═══════════════════════════════════════
 //  MATH UTILITIES
@@ -193,7 +123,7 @@ export function initializePoles(
 ): PoleState[] {
   const poles: PoleState[] = [];
 
-  for (const dim of DIMENSIONS) {
+  for (const dim of DIMENSION_DEFS) {
     const natalValue = natalWeights.get(dim.id) ?? 0.5;
     const quizValue = quizWeights.get(dim.id) ?? 0.5;
     const hzNorm = logNormHz(dim.hz);
@@ -254,7 +184,7 @@ export function computeV3Dissonance(
   const dimensional = new Map<string, number>();
   let totalDeviation = 0;
 
-  for (const dim of DIMENSIONS) {
+  for (const dim of DIMENSION_DEFS) {
     const natal = natalWeights.get(dim.id) ?? 0.5;
     const quiz = quizWeights.get(dim.id) ?? 0.5;
     const deviation = Math.abs(quiz - natal);
@@ -263,7 +193,7 @@ export function computeV3Dissonance(
   }
 
   // Use external 3-layer dissonance if available, otherwise local approximation
-  const dNatal = external?.d_natal ?? clamp(totalDeviation / DIMENSIONS.length / 0.5, 0, 1);
+  const dNatal = external?.d_natal ?? clamp(totalDeviation / DIMENSION_DEFS.length / 0.5, 0, 1);
   const dAccumulated = external?.d_accumulated ?? 0;
 
   // Map elemental type to quality scalar: Ke = -1, Sheng = +1, neutral = 0
@@ -335,7 +265,7 @@ export function updatePoles(
     const poleA = poles[i]!;
     const poleB = poles[i + 1]!;
     const dimId = poleA.dimensionId;
-    const dim = DIMENSIONS[i / 2]!;
+    const dim = DIMENSION_DEFS[i / 2]!;
     const d = dissonance.dimensional.get(dimId) ?? 0;
 
     // Advance theta
