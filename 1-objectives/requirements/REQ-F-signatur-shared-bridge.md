@@ -29,7 +29,7 @@
 
 ### Bridge-Funktionen
 
-- Given `soulprintToNatalWeights(sectors: number[12])`, when aufgerufen, then gibt `Record<dimension_id, weight>` mit 6 Werten [0,1] zurück
+- Given `soulprintToNatalWeights(sectors: number[12])`, when aufgerufen, then gibt `Record<planet_id, weight>` mit 7 Planeten-Gewichten [0,1] (Sonne, Mond, Merkur, Venus, Mars, Jupiter, Saturn) zurück
 - Given `quizSectorsToQuizWeights(sectors: number[12])`, when aufgerufen, then gibt `Record<dimension_id, weight>` mit 6 Werten [0,1] zurück
 - Given `soulprintToDimensionWeights(sectors: number[12])`, when aufgerufen, then gibt 6 Natal-Dimensions-Gewichte direkt ohne Zwischenschritt über Planeten zurück
 
