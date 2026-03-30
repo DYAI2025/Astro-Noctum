@@ -102,7 +102,7 @@ export function DashboardLeviSection({
 
       {/* ── ElevenLabs widget (expands below when active) ────────── */}
       {isPremium && leviActive && (
-        <div data-levi-widget className="mt-6 relative z-50 w-full flex justify-center">
+        <div data-levi-widget className="mt-6 relative z-[99999] w-full flex justify-center">
           <elevenlabs-convai
             agent-id={elevenLabsAgentId}
             dynamic-variables={JSON.stringify({

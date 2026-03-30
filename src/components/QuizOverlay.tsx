@@ -28,6 +28,7 @@ const PartnerMatchQuiz01 = lazy(() => import('./quizzes/PartnerMatch/PartnerMatc
 const PartnerMatchQuiz02 = lazy(() => import('./quizzes/PartnerMatch/PartnerMatchQuiz02'));
 const PartnerMatchQuiz03 = lazy(() => import('./quizzes/PartnerMatch/PartnerMatchQuiz03'));
 const ConversationAnalysisQuiz = lazy(() => import('./quizzes/PartnerMatch/ConversationAnalysisQuiz'));
+const ShadowArchetypeQuiz = lazy(() => import('./quizzes/ShadowArchetypeQuiz'));
 
 // --- Types ---
 interface QuizOverlayProps {
@@ -66,6 +67,7 @@ const QUIZ_MAP: Record<string, React.LazyExoticComponent<React.ComponentType<Qui
   partner_match_02: PartnerMatchQuiz02,
   partner_match_03: PartnerMatchQuiz03,
   partner_convo: ConversationAnalysisQuiz,
+  shadow_archetype: ShadowArchetypeQuiz,
 };
 
 // --- Loading fallback ---

@@ -629,6 +629,53 @@ export function conversationAnalysisToEvent(
   };
 }
 
+// ═══════════════════════════════════════════════════════════════
+// SHADOW ARCHETYPE
+// ═══════════════════════════════════════════════════════════════
+
+const SHADOW_DIM_MARKERS: Record<string, string[]> = {
+  destroyer: ['marker.shadow.aggressive', 'marker.shadow.primal_force'],
+  orphan:    ['marker.shadow.isolation', 'marker.shadow.vulnerability'],
+  tyrant:    ['marker.shadow.dominance', 'marker.shadow.strategic_control'],
+  trickster: ['marker.shadow.deflection', 'marker.shadow.mimicry'],
+};
+
+const SHADOW_ARCHETYPE_TAGS: Record<string, Tag> = {
+  destroyer: { id: 'tag.archetype.destroyer', label: 'Destroyer', kind: 'shadow', weight: 0.8 },
+  orphan:    { id: 'tag.archetype.orphan',    label: 'Orphan',    kind: 'shadow', weight: 0.8 },
+  tyrant:    { id: 'tag.archetype.tyrant',    label: 'Tyrant',    kind: 'shadow', weight: 0.8 },
+  trickster: { id: 'tag.archetype.trickster', label: 'Trickster', kind: 'shadow', weight: 0.8 },
+};
+
+export function shadowArchetypeToEvent(
+  scores: Record<string, number>,
+  profileId: string,
+): ContributionEvent {
+  // Max possible score per dimension: 8 questions * 3 points = 24
+  const maxScore = 24;
+  const markers: Marker[] = [];
+
+  for (const [dim, markerIds] of Object.entries(SHADOW_DIM_MARKERS)) {
+    const score = scores[dim];
+    if (score != null && score > 0) {
+      const normalized = Math.min(score / maxScore, 1);
+      for (const markerId of markerIds) {
+        markers.push({
+          id: markerId,
+          weight: normalized,
+          evidence: { confidence: 0.75, itemsAnswered: 8 },
+        });
+      }
+    }
+  }
+
+  const tags: Tag[] = [];
+  const tag = SHADOW_ARCHETYPE_TAGS[profileId];
+  if (tag) tags.push(tag);
+
+  return buildEvent('quiz.shadow_archetype.v1', markers, tags);
+}
+
 function buildEvent(
   moduleId: string,
   markers: Marker[],

@@ -337,20 +337,11 @@
 4. TASK-levi-system-prompt
 5. TASK-levi-auto-summary
 
-### Phase D: Signatur V3 Engine
+### Phase D: Signatur V3 Engine — SUPERSEDED by S-SIG sprint
 
-**Capabilities delivered:**
-- Bipolar trail engine replaces particle spirograph (DEC-signatur-v3-bipolar-trails)
-- Dissonance model visible in ring (d_natal, d_accumulated, d_elemental)
-- Bloom fine-tuning and solar coupling
-
-**Tasks:**
-1. TASK-v3-pole-system
-2. TASK-v3-trail-renderer
-3. TASK-v3-dissonance-visual
-4. TASK-v3-feature-flag
-5. TASK-bloom-fine-tuning
-6. TASK-bloom-solar-coupling
+V3 engine tasks (pole system, trail renderer, dissonance wiring, feature flag) were completed in S-SIG Phase 1–2. Remaining:
+1. TASK-bloom-fine-tuning (Deferred)
+2. TASK-bloom-solar-coupling (Todo)
 
 ### Phase E: Autopoietic UX Evolution
 
@@ -382,6 +373,61 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 2. TASK-mobile-offline-e2e
 3. TASK-mobile-onboarding
 4. TASK-ios-lockscreen-widget
+
+### Phase V1: Vibes Core (MVP)
+
+**Capabilities delivered:**
+- "Vibe abrufen" button on Dashboard delivers personalized 2–3h insight within <2s
+- 3-level output: Kurzsignal → Treiber → Erklärung
+- Deterministic: same user + timestamp = same result
+- "Warum sehe ich das?" explainability
+
+**Tasks:**
+1. TASK-vibes-api-endpoint
+2. TASK-vibes-gemini-prompt
+3. TASK-vibes-deterministic-cache
+4. TASK-vibes-fallback-template
+5. TASK-vibes-dashboard-button
+6. TASK-vibes-result-modal
+7. TASK-vibes-explainability
+8. TASK-vibes-response-time-test
+9. TASK-vibes-manual-testing
+
+### Phase V2: Weekly Insights
+
+**Capabilities delivered:**
+- "Deine Woche im Überblick" shows 7 life areas with tendency labels
+- Top 3 areas highlighted with additional depth
+- Weekly refresh (Monday boundary)
+- "Warum?" explainability per area
+
+**Tasks:**
+1. TASK-weekly-life-area-mapping
+2. TASK-weekly-api-endpoint
+3. TASK-weekly-gemini-prompt
+4. TASK-weekly-cache
+5. TASK-weekly-prioritization-algo
+6. TASK-weekly-insights-page
+7. TASK-weekly-area-explainability
+8. TASK-weekly-route
+9. TASK-weekly-manual-testing
+
+### Phase V3: Transparency & Mobile Polish
+
+**Capabilities delivered:**
+- Zero unexplained numbers in the UI (system-wide enforcement)
+- Mobile-first readability validated across all insight screens
+- Consistent logic between mobile and web
+
+**Tasks:**
+1. TASK-transparency-audit
+2. TASK-transparency-tooltips
+3. TASK-transparency-gemini-guard
+4. TASK-mobile-readability-vibes
+5. TASK-mobile-readability-weekly
+6. TASK-mobile-vibes-integration
+7. TASK-vibes-weekly-e2e-test
+8. TASK-vibes-weekly-manual-testing
 
 ---
 
@@ -416,10 +462,10 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | TASK-dashboard-layout-redesign | Implement Dashboard layout per approved wireframe | P1 | In Progress | - | TASK-dashboard-wireframe | 2026-03-29 | |
 | TASK-tagesenergie-hero | Erstelle `DashboardTagesEnergie.tsx`: Hero-Sektion (immer vollständig sichtbar, kein Akkordeon). Zeigt: Element-Icon + Headline, Body-Narrativ (fusion.synthesis, 2–3 Sätze), Day-Trace Reibungs-Kontext (kursiv, wenn isTrace), PremiumGate um fusion.action, Kosmoswetter-Strip (Magnetsturm/Flare/CME/HSS/SEP/Transit als Icon-Pillen), Resonanz-Indikator (Balken + Text). Ersetzt `CosmicWeatherCard` im Dashboard. DayModeModal nur noch on-demand via `[vertiefen →]` Link. | P1 | Todo | [REQ-F-signatur-day-night-pulse](../1-objectives/requirements/REQ-F-signatur-day-night-pulse.md) | TASK-dashboard-wireframe | 2026-03-29 | Datenquellen bereits alle verfügbar: dailyData, dayHarmonic, spaceWeather, isPremium |
 | TASK-daily-home-port | Port 5-zone Daily Home layout to Dashboard.tsx with real Contexts | P1 | Deferred | [REQ-F-cosmic-encounter-onboarding](../1-objectives/requirements/REQ-F-cosmic-encounter-onboarding.md) | TASK-dashboard-layout-redesign | 2026-03-28 | Data mapping from source layout |
-| TASK-v3-pole-system | Implement 12-pole bipolar system with Cousto frequencies and dimension mapping | P1 | Todo | [REQ-F-fusion-ring-visualization](../1-objectives/requirements/REQ-F-fusion-ring-visualization.md) | - | 2026-03-28 | DEC-signatur-v3-bipolar-trails |
-| TASK-v3-trail-renderer | Canvas 2D additive trail renderer with semi-transparent frame clear | P1 | Todo | [REQ-F-fusion-ring-visualization](../1-objectives/requirements/REQ-F-fusion-ring-visualization.md) | TASK-v3-pole-system | 2026-03-28 | |
-| TASK-v3-dissonance-visual | Wire d_natal → geometry, d_accumulated → trail density, d_elemental → vibration texture | P1 | Todo | [REQ-F-fusion-ring-visualization](../1-objectives/requirements/REQ-F-fusion-ring-visualization.md) | TASK-v3-trail-renderer | 2026-03-28 | DEC-dissonance-model |
-| TASK-v3-feature-flag | Gate V3 behind `signatur_engine_v3` flag; V2 remains default fallback | P1 | Todo | [REQ-F-fusion-ring-visualization](../1-objectives/requirements/REQ-F-fusion-ring-visualization.md) | TASK-v3-dissonance-visual | 2026-03-28 | |
+| ~~TASK-v3-pole-system~~ | ~~Duplicate of S-SIG TASK-v3-engine-production~~ | - | Done | - | - | 2026-03-29 | Superseded by S-SIG sprint |
+| ~~TASK-v3-trail-renderer~~ | ~~Duplicate of S-SIG TASK-v3-engine-production~~ | - | Done | - | - | 2026-03-29 | Superseded by S-SIG sprint |
+| ~~TASK-v3-dissonance-visual~~ | ~~Duplicate of S-SIG TASK-v3-dissonance-wiring~~ | - | Done | - | - | 2026-03-29 | Superseded by S-SIG sprint |
+| ~~TASK-v3-feature-flag~~ | ~~Duplicate of S-SIG TASK-v3-feature-flag~~ | - | Done | - | - | 2026-03-29 | Superseded by S-SIG sprint |
 | TASK-bloom-fine-tuning | Reduce glow, increase color saturation per user feedback (V2+V3) | P2 | Deferred | [REQ-F-fusion-ring-visualization](../1-objectives/requirements/REQ-F-fusion-ring-visualization.md) | - | 2026-03-28 | After live test |
 | TASK-bloom-solar-coupling | Couple Bloom intensity to solar activity via computeRingModulation | P2 | Todo | [REQ-F-space-weather-modulation](../1-objectives/requirements/REQ-F-space-weather-modulation.md) | - | 2026-03-28 | Needs decision |
 | TASK-sbridge-engine-consume | `bipolar-engine.ts`: `DimensionDef`+`DIMENSION_DEFS` aus Shared Package importieren; lokale Defs entfernen | P1 | Done | [REQ-F-signatur-shared-bridge](../1-objectives/requirements/REQ-F-signatur-shared-bridge.md) | TASK-sbridge-shared-index | 2026-03-29 | |
@@ -429,6 +475,16 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | TASK-depth-nav-implement | Implement depth navigation: Dashboard (surface) → Signatur (mid) → Core detail views (deep) | P1 | Todo | - | TASK-depth-navigation | 2026-03-28 | |
 | TASK-element-ui-adaptation | Apply user's dominant Wu-Xing element to UI accent colors, card textures, transition speeds | P1 | Todo | - | - | 2026-03-28 | DEC-wuxing-ui-mapping |
 | TASK-engagement-fluidity | Progressive UI fluidity: new users see conventional nav, engaged users see gesture-based fluid nav | P1 | Todo | - | TASK-depth-nav-implement | 2026-03-28 | |
+| TASK-vibes-dashboard-button | Add "Vibe abrufen" CTA button on Dashboard with loading skeleton | P1 | Done | [REQ-F-vibes-core](../1-objectives/requirements/REQ-F-vibes-core.md) | TASK-vibes-api-endpoint | 2026-03-30 | | [REQ-F-vibes-core](../1-objectives/requirements/REQ-F-vibes-core.md) | TASK-vibes-api-endpoint | 2026-03-30 | |
+| TASK-vibes-result-modal | Build VibesModal: Level 1 (Kurzsignal) + Level 2 (Treiber) visible, Level 3 behind "Warum?" tap | P1 | Done | [REQ-F-vibes-output-structure](../1-objectives/requirements/REQ-F-vibes-output-structure.md) | TASK-vibes-dashboard-button | 2026-03-30 | | [REQ-F-vibes-output-structure](../1-objectives/requirements/REQ-F-vibes-output-structure.md) | TASK-vibes-dashboard-button | 2026-03-30 | |
+| TASK-vibes-explainability | Implement "Warum sehe ich das?" panel referencing Signatur + constellation | P1 | Done | [REQ-F-explainability-layer](../1-objectives/requirements/REQ-F-explainability-layer.md) | TASK-vibes-result-modal | 2026-03-30 | | [REQ-F-explainability-layer](../1-objectives/requirements/REQ-F-explainability-layer.md) | TASK-vibes-result-modal | 2026-03-30 | |
+| TASK-weekly-insights-page | Build WeeklyInsightsPage: 7 area cards, top 3 highlighted, rest reduced | P1 | Done | [REQ-F-weekly-insights-engine](../1-objectives/requirements/REQ-F-weekly-insights-engine.md) | TASK-weekly-api-endpoint | 2026-03-30 | | [REQ-F-weekly-insights-engine](../1-objectives/requirements/REQ-F-weekly-insights-engine.md) | TASK-weekly-api-endpoint | 2026-03-30 | |
+| TASK-weekly-area-explainability | Add "Warum?" per area referencing Signatur sector + transit | P1 | Done | [REQ-F-explainability-layer](../1-objectives/requirements/REQ-F-explainability-layer.md) | TASK-weekly-insights-page | 2026-03-30 | | [REQ-F-explainability-layer](../1-objectives/requirements/REQ-F-explainability-layer.md) | TASK-weekly-insights-page | 2026-03-30 | |
+| TASK-weekly-route | Add `/weekly` route to router.tsx, lazy-loaded, add nav entry | P1 | Done | [REQ-F-weekly-insights-engine](../1-objectives/requirements/REQ-F-weekly-insights-engine.md) | TASK-weekly-insights-page | 2026-03-30 | | [REQ-F-weekly-insights-engine](../1-objectives/requirements/REQ-F-weekly-insights-engine.md) | TASK-weekly-insights-page | 2026-03-30 | |
+| TASK-transparency-audit | Audit all UI screens for unexplained numbers | P1 | Todo | [REQ-F-transparency-rule](../1-objectives/requirements/REQ-F-transparency-rule.md) | - | 2026-03-30 | Dashboard, Vibes, Weekly, Signatur, Wu-Xing, space weather |
+| TASK-transparency-tooltips | Add tooltips/labels for all numerical values found in audit | P1 | Todo | [REQ-F-transparency-rule](../1-objectives/requirements/REQ-F-transparency-rule.md) | TASK-transparency-audit | 2026-03-30 | |
+| TASK-mobile-readability-vibes | Optimize VibesModal for 375px: Level 1+2 above fold, ≥14px, ≥1.5 line-height | P1 | Todo | [REQ-USA-mobile-first-readability](../1-objectives/requirements/REQ-USA-mobile-first-readability.md) | TASK-vibes-result-modal | 2026-03-30 | |
+| TASK-mobile-readability-weekly | Optimize WeeklyInsightsPage for 375px: top-3 above fold | P1 | Todo | [REQ-USA-mobile-first-readability](../1-objectives/requirements/REQ-USA-mobile-first-readability.md) | TASK-weekly-insights-page | 2026-03-30 | |
 
 ## API Server
 
@@ -437,6 +493,20 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | TASK-fuffire-experience-api | Wire `/experience/bootstrap` + `/experience/signature-delta` in server.mjs; replace direct BAFE calls | P1 | Done | [REQ-F-cosmic-encounter-onboarding](../1-objectives/requirements/REQ-F-cosmic-encounter-onboarding.md) | - | 2026-03-28 | FuFirE live at bafe-production.up.railway.app |
 | TASK-levi-system-prompt | Configure ElevenLabs agent with Signatur V2 knowledge base | P1 | Deferred | - | - | 2026-03-28 | See docs/LEVI_SIGNATUR_V2_KNOWLEDGE.md |
 | TASK-levi-auto-summary | Auto-summarize user profile after 3 Levi sessions via /api/agent/summary | P2 | Todo | - | TASK-levi-system-prompt | 2026-03-28 | |
+| TASK-eve-brand-safety-review | Review Eve system prompt for brand safety before production launch | P1 | Todo | [REQ-SEC-eve-brand-safety](../1-objectives/requirements/REQ-SEC-eve-brand-safety.md) | - | 2026-03-29 | Needs Ben's sign-off on persona tone |
+| TASK-agent-extensibility-verify | Verify adding 3rd agent requires config-only change (no structural code) | P2 | Todo | [REQ-MNT-agent-extensibility](../1-objectives/requirements/REQ-MNT-agent-extensibility.md) | - | 2026-03-29 | Smoke test: add mock agent to config, confirm renders |
+| TASK-vibes-api-endpoint | Create `/api/vibes`: soulprint + transit + space weather → Gemini → 3-level JSON | P1 | Done | [REQ-F-vibes-core](../1-objectives/requirements/REQ-F-vibes-core.md) | - | 2026-03-30 | Implemented in Phase V1 | [REQ-F-vibes-core](../1-objectives/requirements/REQ-F-vibes-core.md) | - | 2026-03-30 | Reuses existing transit-state + space weather data |
+| TASK-vibes-gemini-prompt | Design Gemini prompt: 3-level structure, resource-oriented, no bare numbers, German | P1 | Done | [REQ-F-vibes-output-structure](../1-objectives/requirements/REQ-F-vibes-output-structure.md) | TASK-vibes-api-endpoint | 2026-03-30 | | [REQ-F-vibes-output-structure](../1-objectives/requirements/REQ-F-vibes-output-structure.md) | TASK-vibes-api-endpoint | 2026-03-30 | |
+| TASK-vibes-deterministic-cache | Deterministic cache: same user + same 30-min window = same result (L1 + L2 Supabase) | P1 | Done | [REQ-F-vibes-core](../1-objectives/requirements/REQ-F-vibes-core.md) | TASK-vibes-api-endpoint | 2026-03-30 | | [REQ-F-vibes-core](../1-objectives/requirements/REQ-F-vibes-core.md) | TASK-vibes-api-endpoint | 2026-03-30 | |
+| TASK-vibes-fallback-template | Deterministic fallback templates when Gemini unavailable (5 variants by element) | P1 | Done | [REQ-PERF-vibes-response-time](../1-objectives/requirements/REQ-PERF-vibes-response-time.md) | TASK-vibes-api-endpoint | 2026-03-30 | | [REQ-PERF-vibes-response-time](../1-objectives/requirements/REQ-PERF-vibes-response-time.md) | TASK-vibes-api-endpoint | 2026-03-30 | |
+| TASK-vibes-response-time-test | Perf test: Vibes API <2s p95 (Gemini), <500ms (cached) | P1 | Done | [REQ-PERF-vibes-response-time](../1-objectives/requirements/REQ-PERF-vibes-response-time.md) | TASK-vibes-deterministic-cache | 2026-03-30 | | [REQ-PERF-vibes-response-time](../1-objectives/requirements/REQ-PERF-vibes-response-time.md) | TASK-vibes-deterministic-cache | 2026-03-30 | |
+| TASK-weekly-life-area-mapping | Map 12 zodiac sectors → 7 life areas | P1 | Done | [REQ-F-weekly-insights-engine](../1-objectives/requirements/REQ-F-weekly-insights-engine.md) | - | 2026-03-30 | 18 tests, house-based mapping | [REQ-F-weekly-insights-engine](../1-objectives/requirements/REQ-F-weekly-insights-engine.md) | - | 2026-03-30 | | [REQ-F-weekly-insights-engine](../1-objectives/requirements/REQ-F-weekly-insights-engine.md) | - | 2026-03-30 | |
+| TASK-weekly-api-endpoint | Create `/api/weekly-insights`: soulprint + weekly transit → 7 areas via Gemini | P1 | Done | [REQ-F-weekly-insights-engine](../1-objectives/requirements/REQ-F-weekly-insights-engine.md) | TASK-weekly-life-area-mapping | 2026-03-30 | | [REQ-F-weekly-insights-engine](../1-objectives/requirements/REQ-F-weekly-insights-engine.md) | TASK-weekly-life-area-mapping | 2026-03-30 | |
+| TASK-weekly-gemini-prompt | Design Gemini prompt: 7 areas, 1 statement + 1 tendency each, resource-oriented, German | P1 | Done | [REQ-F-weekly-insights-engine](../1-objectives/requirements/REQ-F-weekly-insights-engine.md) | TASK-weekly-api-endpoint | 2026-03-30 | | [REQ-F-weekly-insights-engine](../1-objectives/requirements/REQ-F-weekly-insights-engine.md) | TASK-weekly-api-endpoint | 2026-03-30 | |
+| TASK-weekly-cache | Weekly cache: 1 per user per ISO week (L1 + L2 Supabase) | P1 | Done | [REQ-F-weekly-insights-engine](../1-objectives/requirements/REQ-F-weekly-insights-engine.md) | TASK-weekly-api-endpoint | 2026-03-30 | | [REQ-F-weekly-insights-engine](../1-objectives/requirements/REQ-F-weekly-insights-engine.md) | TASK-weekly-api-endpoint | 2026-03-30 | |
+| TASK-weekly-prioritization-algo | Top-3 area selection: transit intensity × soulprint weight, deterministic | P2 | Done | [REQ-F-weekly-area-prioritization](../1-objectives/requirements/REQ-F-weekly-area-prioritization.md) | TASK-weekly-api-endpoint | 2026-03-30 | | [REQ-F-weekly-area-prioritization](../1-objectives/requirements/REQ-F-weekly-area-prioritization.md) | TASK-weekly-api-endpoint | 2026-03-30 | |
+| TASK-transparency-gemini-guard | Gemini output validation: reject/rewrite responses with bare numbers | P1 | Todo | [REQ-F-transparency-rule](../1-objectives/requirements/REQ-F-transparency-rule.md) | TASK-vibes-gemini-prompt | 2026-03-30 | |
+| TASK-vibes-weekly-e2e-test | Integration test: Vibes + Weekly API return valid structure, no bare numbers | P1 | Todo | [REQ-F-transparency-rule](../1-objectives/requirements/REQ-F-transparency-rule.md) | TASK-transparency-gemini-guard | 2026-03-30 | |
 
 ## Mobile
 
@@ -446,6 +516,7 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | TASK-mobile-offline-e2e | End-to-end test: offline quiz → queue → flush on reconnect | P2 | Todo | [REQ-F-quiz-contribution-system](../1-objectives/requirements/REQ-F-quiz-contribution-system.md) | - | 2026-03-28 | |
 | TASK-mobile-onboarding | Port onboarding flow to mobile (CosmicEncounterMobile fallback) | P2 | Todo | [REQ-F-cosmic-encounter-onboarding](../1-objectives/requirements/REQ-F-cosmic-encounter-onboarding.md) | TASK-onboarding-route | 2026-03-28 | |
 | TASK-ios-lockscreen-widget | Concept + prototype for daily Signatur widget on iOS Lock Screen | P2 | Todo | - | - | 2026-03-28 | Idea phase |
+| TASK-mobile-vibes-integration | Add Vibes button + Weekly link to mobile app (same API, adapted layout) | P1 | Todo | [REQ-USA-mobile-first-readability](../1-objectives/requirements/REQ-USA-mobile-first-readability.md) | TASK-vibes-api-endpoint, TASK-weekly-api-endpoint | 2026-03-30 | |
 
 ## Deploy & Operations
 

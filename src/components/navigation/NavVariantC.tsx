@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Orbit, Flame, BookOpen } from 'lucide-react';
+import { LayoutDashboard, Orbit, Flame, BookOpen, CalendarDays } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 export function NavVariantC() {
@@ -17,6 +17,10 @@ export function NavVariantC() {
     {
       to: '/wu-xing', icon: Flame, label: t('nav.sidebar.wuXing'),
       panel: { title: t('nav.sidebar.wuXing'), items: [t('nav.sidebar.sub5Elements'), t('nav.sidebar.subHouses')] },
+    },
+    {
+      to: '/weekly', icon: CalendarDays, label: t('nav.sidebar.weekly'),
+      panel: { title: t('nav.sidebar.weekly'), items: [] },
     },
     {
       to: '/wissen', icon: BookOpen, label: t('nav.sidebar.wissen'),

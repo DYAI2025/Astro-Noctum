@@ -1,5 +1,50 @@
 # Changelog
 
+## [Unreleased] - 2026-03-30
+
+### Features
+
+- **Vibes on-demand** — `POST /api/vibes` endpoint: combines soulprint + transit + space weather via Gemini into 3-level output (Kurzsignal, Treiber, Erklaerung). L1+L2 deterministic cache (30-min slot windows). Wu-Xing element fallback when Gemini unavailable. `VibesSection` button on Dashboard + `VibesModal` with animated expand for "Warum sehe ich das?" explainability panel.
+- **Quiz Generator Pipeline** — `generateQuiz()` assembler in `@bazodiac/shared`: transforms `QuizGeneratorInput` + pre-authored questions into complete `GeneratedQuiz` with 5 artifacts (QuizDefinition, AffinityMapEntries, EventConverterSpec, ResultProfiles, AggregationRules). Includes `generateAffinityEntries()` (Wu-Xing sector distribution) and `generateEventConverter()` (marker ID construction).
+- **Shadow Archetype Quiz** — 24th quiz ("Was lauert hinter deinem Laecheln?"), 8 scenario questions, 4 dimensions (Destroyer/Orphan/Tyrant/Trickster), integrated end-to-end: definition, AFFINITY_MAP entries, `shadowArchetypeToEvent()`, React component, QUIZ_MAP + mystiker cluster registration.
+
+### SDLC Artifacts
+
+- **GOAL-vibes-weekly-insights** (Approved) — on-demand Vibes (2-3h horizon) + Weekly Insights (7 life areas) with transparent outputs
+- **8 Requirements** (Approved) — vibes-core, vibes-output-structure, weekly-insights-engine, weekly-area-prioritization, transparency-rule, explainability-layer, mobile-first-readability, vibes-response-time
+- **REQ-F-quiz-generator-pipeline** (Approved) — formal mapping contract for quiz-to-fusion systems
+- **3 Constraints** — CON-no-unexplained-numbers, CON-resource-oriented-framing, CON-mobile-first-readability
+- **3 Decisions** — DEC-vibes-not-daily, DEC-no-number-without-explanation, DEC-top-3-weekly-focus
+- **5 User Stories** — vibes-on-demand, vibes-explainability, weekly-overview, weekly-prioritization, number-transparency
+- **2 Assumptions** — existing-fusion-sufficient, gemini-text-quality
+- **Stakeholders** — STK-product-owner (Ben), STK-end-user formally defined
+- **Component steering files** updated with multi-agent + quiz-generator + signatur requirements (frontend: 12 REQ, api-server: 7 REQ, mobile: 6 REQ)
+
+### Bug Fixes
+
+- **Security** — Removed `VITE_SUPABASE_SERVICE_ROLE_KEY` + `VITE_SUPABASE_DB_BASE` from Railway (were exposed to browser build via VITE_ prefix)
+- **Test i18n mocks** — Fixed 6 pre-existing test failures: astro-accordion (4), signatur-reveal-v2 (1), wuxing-page-detail (1) — all caused by `t()` mock returning keys instead of German text
+- **Vibes cache mutation** — Deep-copy meta on cache hit to prevent L1 cache entry mutation
+- **Vibes double-tap** — Added useRef guard against concurrent fetch on rapid button taps
+- **VibesModal** — Removed redundant outer AnimatePresence (parent already wraps)
+- **Quiz overlay** — Fixed test text mismatch ("Quiz nicht gefunden" vs actual "Dieses Quiz konnte nicht geladen werden")
+- **Cluster e2e** — Updated module count 23 to 24 after shadow archetype addition
+
+### Tests
+
+- **976/976 tests pass (0 failures)** — first time fully green
+- 54 new quiz generator tests (types, affinity entries, event converter, assembler + scoreQuiz integration)
+- 3 Vibes perf tests (response time, cache hit, shape validation)
+- 8 signatur perf tests (first-frame pipeline, transit API)
+- BAFE determinism contract test (5 endpoints, graceful skip)
+
+### Deploy & Operations
+
+- 7 runbooks total: railway-deploy, supabase-migration, onboarding-test, signatur-v3-web-test, signatur-audio-test, signatur-cross-platform-test, vibes-test
+- Migration: `20260330_vibes_cache.sql` (vibes_cache table for L2 persistence)
+- Phase A-B complete (production hardening, onboarding verification)
+- Vibes/Weekly implementation plan: 3 phases (V1-V3), 26 tasks
+
 ## [Unreleased] - 2026-03-29
 
 ### Features
