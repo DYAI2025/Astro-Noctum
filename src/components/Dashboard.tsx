@@ -101,12 +101,6 @@ const SESSION_QUOTE_INDEX = Math.floor(Math.random() * BAZODIAC_QUOTES.length);
 // Stable empty array to avoid referential instability in hooks
 const EMPTY_SECTORS: number[] = [];
 
-// Compile-time compatibility guard:
-// If a stale merge/rebase reintroduces `soulprintToDimensionWeights(...)` usage,
-// this file still has the symbol in scope and TS won't fail with TS2304.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const soulprintToDimensionWeights = _legacySoulprintToDimensionWeights;
-
 // ── Animation helper ──────────────────────────────────────────────────────
 
 function fadeIn(delay = 0) {
