@@ -23,7 +23,8 @@ import {
   isClusterComplete,
   findClusterForModule,
 } from '@/src/lib/fusion-ring/clusters';
-import { quizSectorsToQuizWeights, soulprintToNatalWeights } from '@/src/components/fusion-ring-website/signatur-bridge';
+import { quizSectorsToQuizWeights } from '@/src/components/fusion-ring-website/signatur-bridge';
+import { toNatalWeightsOrUndefined } from '@/src/lib/signatur/weight-utils';
 import type { ContributionEvent } from '@/src/lib/lme/types';
 import { eventToSectorSignals } from '@/src/lib/fusion-ring/test-signal';
 import { useCoustoAudio } from '@/src/hooks/useCoustoAudio';
@@ -59,13 +60,13 @@ export default function FuRingPage() {
 
   // Natal planet weights from birth chart soulprint
   const natalPlanetWeights = useMemo(
-    () => signalData?.baseSignals ? soulprintToNatalWeights(signalData.baseSignals) : null,
+    () => toNatalWeightsOrUndefined(signalData?.baseSignals) ?? null,
     [signalData?.baseSignals],
   );
 
   // Current planet weights derived from the latest quiz sectors
   const currentPlanetWeights = useMemo(
-    () => liveQuizSectors ? soulprintToNatalWeights(liveQuizSectors) : null,
+    () => toNatalWeightsOrUndefined(liveQuizSectors) ?? null,
     [liveQuizSectors],
   );
 
