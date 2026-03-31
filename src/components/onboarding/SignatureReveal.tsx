@@ -2,9 +2,10 @@ import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { BootstrapResponse, SignatureDeltaResponse } from '@/src/lib/schemas/experience';
 import { isFeatureEnabled } from '@/src/lib/feature-flags';
-import { soulprintToNatalWeights } from '@/src/components/fusion-ring-website/signatur-bridge';
+import { soulprintToNatalWeights, soulprintToDimensionWeights } from '@/src/components/fusion-ring-website/signatur-bridge';
 import { useLanguage } from '@/src/contexts/LanguageContext';
 
+const SignaturV3Canvas = lazy(() => import('@/src/components/signatur-v3/SignaturV3Canvas'));
 const FusionRingCanvasV2 = lazy(() => import('@/src/components/fusion-ring-website/FusionRingCanvasV2'));
 const FusionRingWebsiteCanvas = lazy(() => import('@/src/components/fusion-ring-website/FusionRingWebsiteCanvas').then(m => ({ default: m.FusionRingWebsiteCanvas })));
 
@@ -25,11 +26,12 @@ interface Props {
 }
 
 export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: Props) {
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
   const [showButton, setShowButton] = useState(false);
   const [revealProgress, setRevealProgress] = useState(0);
 
-  const useV2 = isFeatureEnabled('signature_engine_v2') && canRunV2();
+  const useV3 = isFeatureEnabled('signature_engine_v3');
+  const useV2 = !useV3 && isFeatureEnabled('signature_engine_v2') && canRunV2();
   const sectors = bootstrapData.soulprint_sectors?.length === 12
     ? bootstrapData.soulprint_sectors
     : DEFAULT_SECTORS;
@@ -37,6 +39,8 @@ export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: 
   const isFallback = bootstrapData.meta?.engine_version === 'fallback';
 
   const natalWeights = useMemo(() => soulprintToNatalWeights(sectors), [sectors]);
+  const dimensionWeights = useMemo(() => soulprintToDimensionWeights(sectors), [sectors]);
+  const neutralDimensionWeights = useMemo(() => soulprintToDimensionWeights(DEFAULT_SECTORS), []);
 
   // Morph animation: neutral -> personal over 2s, then show button at 3s
   useEffect(() => {
@@ -50,7 +54,15 @@ export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: 
       {/* Ring container — round clipped */}
       <div className="w-[200px] h-[200px] rounded-full overflow-hidden relative">
         <Suspense fallback={<div className="w-full h-full bg-[#010409]" />}>
-          {useV2 ? (
+          {useV3 ? (
+            <SignaturV3Canvas
+              natalWeights={revealProgress > 0 ? dimensionWeights : neutralDimensionWeights}
+              quizWeights={{}}
+              width={200}
+              height={200}
+              quality="medium"
+            />
+          ) : useV2 ? (
             <FusionRingCanvasV2
               natalWeights={revealProgress > 0 ? natalWeights : undefined}
               isMini
@@ -68,9 +80,7 @@ export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: 
       {/* Fallback hint — non-blocking, shown only when bootstrap used synthetic data */}
       {bootstrapFailed && (
         <p className="text-xs text-gold/60 text-center mt-2">
-          {lang === 'de'
-            ? 'Dein Soulprint wird berechnet...'
-            : 'Your Soulprint is being calculated...'}
+          {t('signatureReveal.soulprintCalculating')}
         </p>
       )}
 
@@ -82,8 +92,8 @@ export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: 
         transition={{ delay: 1, duration: 1.5 }}
       >
         {isFallback
-          ? (lang === 'de' ? 'Deine Signatur konnte nicht vollständig berechnet werden.' : 'Your signature could not be fully calculated.')
-          : (lang === 'de' ? 'Deine Signatur entsteht...' : 'Your signature is forming...')}
+          ? t('signatureReveal.signaturePartialError')
+          : t('signatureReveal.signatureForming')}
       </motion.p>
 
       {/* Fallback subtitle — shown when bootstrap used synthetic data */}
@@ -94,9 +104,7 @@ export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: 
           animate={{ opacity: 1 }}
           transition={{ delay: 1.5, duration: 1 }}
         >
-          {lang === 'de'
-            ? 'Du siehst eine Vorschau. Deine persönliche Signatur wird beim nächsten Laden berechnet.'
-            : 'You see a preview. Your personal signature will be calculated on next load.'}
+          {t('signatureReveal.previewNote')}
         </motion.p>
       )}
 
@@ -110,8 +118,8 @@ export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: 
             onClick={() => onComplete(null)}
           >
             {isFallback
-              ? (lang === 'de' ? 'Trotzdem weiter' : 'Continue anyway')
-              : (lang === 'de' ? 'Weiter' : 'Continue')}
+              ? t('signatureReveal.continueAnyway')
+              : t('common.continue')}
           </motion.button>
         )}
       </AnimatePresence>

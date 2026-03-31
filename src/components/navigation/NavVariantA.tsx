@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Orbit, Flame, BookOpen } from 'lucide-react';
+import { LayoutDashboard, Orbit, Flame, BookOpen, CalendarDays } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 export function NavVariantA() {
@@ -9,6 +9,7 @@ export function NavVariantA() {
     { to: '/', icon: LayoutDashboard, label: t('nav.sidebar.home'), sub: [] as string[] },
     { to: '/signatur', icon: Orbit, label: t('nav.sidebar.signatur'), sub: [t('nav.sidebar.subQuizCluster'), t('nav.sidebar.subRings')] },
     { to: '/wu-xing', icon: Flame, label: t('nav.sidebar.wuXing'), sub: [t('nav.sidebar.sub5Elements'), t('nav.sidebar.subHouses')] },
+    { to: '/weekly', icon: CalendarDays, label: t('nav.sidebar.weekly'), sub: [] as string[] },
     { to: '/wissen', icon: BookOpen, label: t('nav.sidebar.wissen'), sub: [t('nav.sidebar.subArticles'), t('nav.sidebar.subGlossary')] },
   ];
 
@@ -23,7 +24,7 @@ export function NavVariantA() {
             to={to}
             end={to === '/'}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+              `flex items-center gap-3 px-3 min-h-11 rounded-lg text-sm transition-all duration-300 ${
                 isActive
                   ? 'bg-[#D4AF37]/10 text-[#D4AF37]'
                   : 'text-white/50 hover:text-white/80 hover:bg-white/5'

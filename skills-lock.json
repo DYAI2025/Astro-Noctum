@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "production-code-audit": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "193b23f8f9d85c5a7e05fea7b9d40083e77d96d9d496489297a0e386fb726b82"
+    }
+  }
+}

@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Orbit, Flame, BookOpen } from 'lucide-react';
+import { LayoutDashboard, Orbit, Flame, BookOpen, CalendarDays } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 export function NavVariantC() {
@@ -19,6 +19,10 @@ export function NavVariantC() {
       panel: { title: t('nav.sidebar.wuXing'), items: [t('nav.sidebar.sub5Elements'), t('nav.sidebar.subHouses')] },
     },
     {
+      to: '/weekly', icon: CalendarDays, label: t('nav.sidebar.weekly'),
+      panel: { title: t('nav.sidebar.weekly'), items: [] },
+    },
+    {
       to: '/wissen', icon: BookOpen, label: t('nav.sidebar.wissen'),
       panel: { title: t('nav.sidebar.wissen'), items: [t('nav.sidebar.subArticles'), t('nav.sidebar.subHoroscopeGuide'), t('nav.sidebar.subGlossary')] },
     },
@@ -35,13 +39,14 @@ export function NavVariantC() {
             to={to}
             end={to === '/'}
             className={({ isActive }) =>
-              `flex items-center justify-center w-10 h-10 rounded-xl transition-colors ${
+              `flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-300 ${
                 isActive
                   ? 'bg-[#D4AF37]/15 text-[#D4AF37]'
                   : 'text-white/35 hover:text-white/70 hover:bg-white/5'
               }`
             }
             title={label}
+            aria-label={label}
           >
             <Icon className="w-5 h-5" />
           </NavLink>

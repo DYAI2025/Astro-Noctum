@@ -10,9 +10,27 @@ This phase contains the **implementation**. Focus on clean, tested, maintainable
 
 | Component | Steering files | Code location | Stack |
 |-----------|---------------|---------------|-------|
-| **frontend** | `3-code/frontend/` | `../src/` | React 19 SPA, Tailwind v4, Framer Motion, Three.js |
-| **api-server** | `3-code/api-server/` | `../server/` | Express.js, Stripe, Supabase client, Gemini/ElevenLabs |
-| **mobile** | `3-code/mobile/` | `../apps/mobile/` | Expo 53 iOS app, React Native |
+| **frontend** | [`3-code/frontend/`](frontend/) | `../src/` | React 19 SPA, Tailwind v4, Framer Motion, Three.js, Zod |
+| **api-server** | [`3-code/api-server/`](api-server/) | `../server.mjs` | Express.js, Stripe, Supabase service role, Gemini, ElevenLabs |
+| **mobile** | [`3-code/mobile/`](mobile/) | `../apps/mobile/` | Expo 53 iOS, React Native 0.79, @bazodiac/shared |
+
+### Frontend
+
+- **Directory**: [`frontend/`](frontend/)
+- **Technology**: React 19, TypeScript, Vite, Tailwind CSS v4, Three.js
+- **Responsibility**: Web SPA — Dashboard, Signatur ring (V2/V3), Orrery, quiz system, premium gating, space weather visualization
+
+### API Server
+
+- **Directory**: [`api-server/`](api-server/)
+- **Technology**: Express.js (Node 20), single-file `server.mjs`
+- **Responsibility**: Proxy/orchestration layer — BAFE proxy, Gemini interpretation, Stripe payments, space weather aggregation, Experience API proxy
+
+### Mobile App
+
+- **Directory**: [`mobile/`](mobile/)
+- **Technology**: Expo 53, React Native 0.79, @react-navigation
+- **Responsibility**: iOS app — Dashboard, Signatur view, quiz renderer, voice agent, offline contribution queue
 
 ---
 

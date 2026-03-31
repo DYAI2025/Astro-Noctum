@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 import { trackEvent } from '../../lib/analytics';
@@ -30,12 +30,16 @@ function formatDate(dateStr: string): string {
 
 function ModeSnapshot({ mode, intensity }: { mode: 'pulse' | 'trace'; intensity: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [canvasOk, setCanvasOk] = useState(true);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      setCanvasOk(false);
+      return;
+    }
 
     const S = 120;
     const dpr = window.devicePixelRatio || 1;
@@ -110,11 +114,29 @@ function ModeSnapshot({ mode, intensity }: { mode: 'pulse' | 'trace'; intensity:
   }, [mode, intensity]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      style={{ width: 120, height: 120, borderRadius: '50%' }}
-      aria-hidden
-    />
+    <div style={{ position: 'relative', width: 120, height: 120 }}>
+      <canvas
+        ref={canvasRef}
+        style={{ width: 120, height: 120, borderRadius: '50%' }}
+        aria-hidden
+      />
+      {!canvasOk && (
+        <svg viewBox="0 0 200 200" className="w-full h-full absolute inset-0">
+          {mode === 'pulse' ? (
+            <>
+              <circle cx="100" cy="100" r="60" fill="none" stroke="#D4AF37" strokeWidth="0.5" opacity="0.4" />
+              <circle cx="100" cy="100" r="40" fill="none" stroke="#D4AF37" strokeWidth="0.5" opacity="0.3" />
+              <circle cx="100" cy="100" r="20" fill="none" stroke="#D4AF37" strokeWidth="0.5" opacity="0.2" />
+            </>
+          ) : (
+            <>
+              <line x1="40" y1="40" x2="160" y2="160" stroke="#D4AF37" strokeWidth="0.5" opacity="0.4" />
+              <line x1="160" y1="40" x2="40" y2="160" stroke="#00B4D8" strokeWidth="0.5" opacity="0.4" />
+            </>
+          )}
+        </svg>
+      )}
+    </div>
   );
 }
 

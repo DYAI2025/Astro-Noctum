@@ -10,21 +10,9 @@ import { WUXING_ELEMENTS } from '../lib/astro-data/wuxing';
 import { Tooltip } from '../components/Tooltip';
 import { usePlanetarium } from '../contexts/PlanetariumContext';
 import { PremiumGate } from '../components/PremiumGate';
+import { ELEMENT_COLORS, ELEMENT_COLOR_FALLBACK } from '../lib/element-colors';
 
 // ── Element Balance Bar Chart ─────────────────────────────────────────────────
-
-const ELEMENT_COLORS: Record<string, string> = {
-  Wood: '#3D8B37',
-  Holz: '#3D8B37',
-  Fire: '#D63B0F',
-  Feuer: '#D63B0F',
-  Earth: '#C49A2A',
-  Erde: '#C49A2A',
-  Metal: '#8A8A8A',
-  Metall: '#8A8A8A',
-  Water: '#2E6BB5',
-  Wasser: '#2E6BB5',
-};
 
 function ElementBalanceChart({ elements }: { elements: Record<string, number> }) {
   const entries = Object.entries(elements).filter(([, v]) => Number(v) > 0);
@@ -34,7 +22,7 @@ function ElementBalanceChart({ elements }: { elements: Record<string, number> })
     <div className="space-y-3" data-testid="element-balance-chart">
       {entries.map(([el, count]) => (
         <div key={el} className="flex items-center gap-3">
-          <span className="w-16 font-serif text-sm" style={{ color: ELEMENT_COLORS[el] ?? '#d4af37' }}>
+          <span className="w-16 font-serif text-sm" style={{ color: ELEMENT_COLORS[el] ?? ELEMENT_COLOR_FALLBACK }}>
             {el}
           </span>
           <div className="flex-1 h-2 bg-obsidian rounded-full overflow-hidden">
@@ -42,11 +30,11 @@ function ElementBalanceChart({ elements }: { elements: Record<string, number> })
               className="h-2 rounded-full transition-all duration-700"
               style={{
                 width: `${total > 0 ? (Number(count) / total) * 100 : 0}%`,
-                background: ELEMENT_COLORS[el] ?? '#d4af37',
+                background: ELEMENT_COLORS[el] ?? ELEMENT_COLOR_FALLBACK,
               }}
             />
           </div>
-          <span className="text-xs w-4 tabular-nums" style={{ color: ELEMENT_COLORS[el] ? ELEMENT_COLORS[el] + '99' : '#d4af3799' }}>
+          <span className="text-xs w-4 tabular-nums" style={{ color: ELEMENT_COLORS[el] ?? ELEMENT_COLOR_FALLBACK, opacity: 0.6 }}>
             {count}
           </span>
         </div>
@@ -112,7 +100,7 @@ export default function WuXingPage() {
             WuXing 五行
           </p>
           <h1 className="font-serif text-3xl md:text-4xl text-[#1E2A3A] mb-4">
-            {lang === 'de' ? 'Das Gleichgewicht der Elemente' : 'The Balance of Elements'}
+            {t('wuxing.balanceTitle')}
           </h1>
           <p className="text-xs text-[#1E2A3A]/45 max-w-2xl mx-auto leading-relaxed font-serif italic">
             {t("dashboard.wuxing.sectionDesc")}
@@ -123,15 +111,13 @@ export default function WuXingPage() {
         {!hasWuxingData && (
           <div className="morning-card p-10 text-center mb-12">
             <p className="text-sm text-[#1E2A3A]/50">
-              {lang === 'de'
-                ? 'Wu-Xing-Daten sind derzeit nicht verfügbar. Bitte versuche es später erneut.'
-                : 'Wu Xing data is currently unavailable. Please try again later.'}
+              {t('wuxing.dataUnavailable')}
             </p>
             <Link
               to="/"
               className="inline-block mt-4 text-sm text-[#8B6914] hover:underline"
             >
-              {lang === 'de' ? '\u2190 Zum Dashboard' : '\u2190 Back to Dashboard'}
+              {t('wuxing.backToDashboard')}
             </Link>
           </div>
         )}
@@ -145,7 +131,7 @@ export default function WuXingPage() {
             transition={{ ...fadeIn.transition, delay: 0.1 }}
           >
             <h3 className="text-[10px] uppercase tracking-[0.3em] text-[#8B6914]/60 mb-8">
-              {lang === 'de' ? 'Element-Signatur' : 'Elemental Signature'}
+              {t('wuxing.elementSignature')}
             </h3>
             <WuXingPentagon 
               balance={wuxingBalance} 
@@ -162,7 +148,7 @@ export default function WuXingPage() {
             transition={{ ...fadeIn.transition, delay: 0.2 }}
           >
             <h3 className="text-[10px] uppercase tracking-[0.3em] text-[#8B6914]/60 mb-8">
-              {lang === 'de' ? 'Interaktions-Zyklen' : 'Interaction Cycles'}
+              {t('wuxing.interactionCycles')}
             </h3>
             <WuXingCycleWheel 
               balance={wuxingBalance} 
@@ -182,7 +168,7 @@ export default function WuXingPage() {
           <div className="flex items-center gap-3 mb-8">
             <Info className="w-4 h-4 text-[#8B6914]/40" />
             <h3 className="text-[10px] uppercase tracking-[0.3em] text-[#8B6914]/60">
-              {lang === 'de' ? 'Detaillierte Verteilung' : 'Detailed Distribution'}
+              {t('wuxing.detailedDistribution')}
             </h3>
           </div>
 
@@ -240,25 +226,21 @@ export default function WuXingPage() {
           >
             <PremiumGate
               teaser={
-                lang === 'de'
-                  ? 'Erhalte eine detaillierte Elementbalance-Analyse mit Stärken, Schwächen und Empfehlungen.'
-                  : 'Get a detailed element balance analysis with strengths, weaknesses, and recommendations.'
+                t('wuxing.premiumTeaser')
               }
             >
               <div className="glass-card p-6 md:p-10">
                 <div className="flex items-center gap-3 mb-8">
                   <Info className="w-4 h-4 text-gold/40" />
                   <h3 className="text-[10px] uppercase tracking-[0.3em] text-gold/60 font-serif">
-                    {lang === 'de' ? 'Elementbalance — Tiefenanalyse' : 'Element Balance — Deep Analysis'}
+                    {t('wuxing.deepAnalysis')}
                   </h3>
                 </div>
 
                 {/* Bar chart */}
                 <div className="mb-10">
                   <p className="text-xs font-serif italic text-gold/50 mb-6 leading-relaxed">
-                    {lang === 'de'
-                      ? 'Die folgende Verteilung zeigt das Verhältnis der Fünf Elemente in deinem Geburtshoroskop.'
-                      : 'The distribution below shows the ratio of the Five Elements in your birth chart.'}
+                    {t('wuxing.distributionDesc')}
                   </p>
                   <ElementBalanceChart elements={wuxingCounts} />
                 </div>
@@ -267,15 +249,13 @@ export default function WuXingPage() {
                 {dominantEl && (
                   <div className="border-t border-gold/10 pt-8">
                     <p className="text-[10px] uppercase tracking-[0.3em] text-gold/40 mb-3">
-                      {lang === 'de' ? 'Dominantes Element' : 'Dominant Element'}
+                      {t('wuxing.dominantElement')}
                     </p>
                     <p className="font-serif text-2xl text-gold mb-3">
                       {dominantEl}
                     </p>
                     <p className="text-xs text-gold/50 leading-relaxed max-w-xl">
-                      {lang === 'de'
-                        ? `Das Element ${dominantEl} prägt deinen Charakter, deine Stärken und deine Herausforderungen maßgeblich. Es zeigt sich in deiner Lebensweise, deinen Entscheidungen und deinen natürlichen Talenten.`
-                        : `The element ${dominantEl} significantly shapes your character, strengths, and challenges. It shows in your lifestyle, decisions, and natural talents.`}
+                      {t('wuxing.dominantDesc').replace('{element}', dominantEl)}
                     </p>
                   </div>
                 )}
@@ -283,7 +263,7 @@ export default function WuXingPage() {
                 {/* Balance assessment */}
                 <div className="border-t border-gold/10 pt-8 mt-8">
                   <p className="text-[10px] uppercase tracking-[0.3em] text-gold/40 mb-4">
-                    {lang === 'de' ? 'Gleichgewicht' : 'Balance'}
+                    {t('wuxing.balance')}
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {(() => {
@@ -296,7 +276,7 @@ export default function WuXingPage() {
                           {strong.length > 0 && (
                             <div className="glass-card p-4">
                               <p className="text-[10px] uppercase tracking-widest text-gold/40 mb-2">
-                                {lang === 'de' ? 'Stark ausgeprägt' : 'Strong presence'}
+                                {t('wuxing.strongPresence')}
                               </p>
                               <p className="font-serif text-gold/80 text-sm">{strong.join(' · ')}</p>
                             </div>
@@ -304,7 +284,7 @@ export default function WuXingPage() {
                           {weak.length > 0 && (
                             <div className="glass-card p-4">
                               <p className="text-[10px] uppercase tracking-widest text-gold/40 mb-2">
-                                {lang === 'de' ? 'Zu stärken' : 'To strengthen'}
+                                {t('wuxing.toStrengthen')}
                               </p>
                               <p className="font-serif text-gold/80 text-sm">{weak.join(' · ')}</p>
                             </div>
@@ -347,7 +327,7 @@ export default function WuXingPage() {
           {...fadeIn}
           transition={{ ...fadeIn.transition, delay: 0.4 }}
         >
-          {lang === 'de' ? '© Astro-Noctum WuXing Analyse' : '© Astro-Noctum WuXing Analysis'}
+          {t('wuxing.copyright')}
         </motion.div>
       </div>
     </div>

@@ -31,11 +31,9 @@ export function BlueprintReveal({ content, aspects, elements, onCtaClick }: Blue
     setRevealed(true);
   }
 
-  // Null-safe: show skeleton when content is missing or empty
+  // Null-safe: hide silently when content is missing or empty
   if (!content || content.trim().length === 0) {
-    return (
-      <div className="animate-pulse bg-zinc-900/40 rounded-2xl h-[220px] border border-zinc-800" />
-    );
+    return null;
   }
 
   return (

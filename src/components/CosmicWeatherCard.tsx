@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 import type { DailyHoroscope } from '@/src/lib/horoscope/types';
+import { useLanguage } from '@/src/contexts/LanguageContext';
 
 interface CosmicWeatherCardProps {
   horoscope: DailyHoroscope | null;
@@ -71,11 +72,12 @@ export function CosmicWeatherCard({
   lang,
   isPremium,
 }: CosmicWeatherCardProps) {
+  const { t } = useLanguage();
   const [expanded, setExpanded] = useState(false);
 
   if (loading && !horoscope) {
     return (
-      <div className="w-full max-w-md mx-auto rounded-2xl border border-[#8B6914]/15 bg-white/50 backdrop-blur-sm p-5">
+      <div className="w-full max-w-md mx-auto morning-card rounded-2xl border border-[#8B6914]/20 p-5">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-[#8B6914]/5 animate-pulse" />
           <div className="flex-1 space-y-2">
@@ -91,7 +93,9 @@ export function CosmicWeatherCard({
     return (
       <div className="w-full max-w-md mx-auto rounded-2xl border border-red-200 bg-red-50/50 p-4">
         <p className="text-xs text-red-600/70">
-          {lang === 'de' ? 'Horoskop konnte nicht geladen werden.' : 'Could not load horoscope.'}
+          {lang === 'de'
+            ? 'Tageshoroskop konnte nicht geladen werden. Bitte versuche es erneut.'
+            : 'Daily horoscope could not be loaded. Please try again.'}
         </p>
       </div>
     );
@@ -108,21 +112,21 @@ export function CosmicWeatherCard({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}
-      className="w-full max-w-md mx-auto"
+      className="w-full max-w-lg mx-auto"
     >
-      <div className="rounded-2xl border border-[#8B6914]/15 bg-white/60 backdrop-blur-sm overflow-hidden">
-        {/* Header */}
+      <div className="morning-card rounded-2xl border border-[#8B6914]/25 overflow-hidden shadow-[0_2px_20px_rgba(139,105,20,0.06)]">
+        {/* Header — hero-grade Day Pulse */}
         <button
           onClick={() => setExpanded(!expanded)}
-          className="w-full p-4 flex items-start gap-3 text-left hover:bg-[#8B6914]/3 transition-colors"
+          className="w-full p-5 sm:p-7 flex items-start gap-4 text-left hover:bg-[#8B6914]/3 transition-colors"
         >
-          <IntensityRing sectors={sectorIntensities} />
+          <IntensityRing sectors={sectorIntensities} size={56} />
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 mb-1">
-              <Sparkles className="w-3 h-3 text-[#D4AF37]" />
-              <span className="text-[8px] uppercase tracking-[0.3em] text-[#8B6914]/50 font-mono">
-                {lang === 'de' ? 'Kosmisches Wetter' : 'Cosmic Weather'}
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <span className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/75 font-mono font-bold">
+                {t('cosmicWeather.title')}
               </span>
               {isPremium && (
                 <span className="text-[7px] uppercase tracking-wider text-[#D4AF37] bg-[#D4AF37]/10 px-1.5 py-0.5 rounded-full">
@@ -131,16 +135,19 @@ export function CosmicWeatherCard({
               )}
             </div>
 
-            <p className="text-sm font-medium text-[#1E2A3A]/80 leading-tight">
+            {/* Gold accent line */}
+            <div className="w-10 h-[2px] bg-gradient-to-r from-[#D4AF37]/40 to-transparent mb-2" />
+
+            <p className="text-base sm:text-lg font-serif font-medium text-[#1E2A3A]/85 leading-snug">
               {horoscope.headline}
             </p>
           </div>
 
-          <div className="shrink-0 mt-1">
+          <div className="shrink-0 mt-2">
             {expanded ? (
-              <ChevronUp className="w-4 h-4 text-[#8B6914]/40" />
+              <ChevronUp className="w-4 h-4 text-[#8B6914]/60" />
             ) : (
-              <ChevronDown className="w-4 h-4 text-[#8B6914]/40" />
+              <ChevronDown className="w-4 h-4 text-[#8B6914]/60" />
             )}
           </div>
         </button>
@@ -159,7 +166,7 @@ export function CosmicWeatherCard({
                 <div className="w-8 h-[1px] bg-[#8B6914]/15" />
 
                 {/* Body text */}
-                <p className="text-xs text-[#1E2A3A]/60 leading-relaxed">
+                <p className="text-xs text-[#1E2A3A]/70 leading-relaxed">
                   {horoscope.body}
                 </p>
 
@@ -173,7 +180,7 @@ export function CosmicWeatherCard({
 
                 {/* Refresh + timestamp */}
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-[8px] text-[#8B6914]/30 font-mono tracking-wider">
+                  <span className="text-[8px] text-[var(--color-text-bright-dim)] font-mono tracking-wider">
                     {horoscope.tier === 'premium' ? 'LEVI PREMIUM' : 'FREEMIUM'}
                   </span>
 
@@ -183,8 +190,8 @@ export function CosmicWeatherCard({
                         e.stopPropagation();
                         onRefresh();
                       }}
-                      className="text-[#8B6914]/30 hover:text-[#8B6914]/60 transition-colors p-1"
-                      title={lang === 'de' ? 'Aktualisieren' : 'Refresh'}
+                      className="text-[var(--color-text-bright-dim)] hover:text-[#8B6914] transition-colors p-1"
+                      title={t('cosmicWeather.refresh')}
                     >
                       <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
                     </button>

@@ -8,6 +8,7 @@ import {
   type ClusterDef,
 } from '@/src/lib/fusion-ring/clusters';
 import { MODULE_TO_QUIZ_ID, QUIZ_NAMES } from '@/src/lib/fusion-ring/quiz-maps';
+import { useLanguage } from '@/src/contexts/LanguageContext';
 
 interface ClusterSidebarProps {
   completedModuleIds: Set<string>;
@@ -35,6 +36,7 @@ function ClusterPanel({
   lang: 'de' | 'en';
   suggestedModule: string | null;
 }) {
+  const { t } = useLanguage();
   const [expanded, setExpanded] = useState(false);
   const progress = clusterProgress(cluster, completedModuleIds);
   const complete = isClusterComplete(cluster, completedModuleIds);
@@ -167,7 +169,7 @@ function ClusterPanel({
                     {quizDone ? (
                       <>
                         <Check className="h-3 w-3 shrink-0 text-emerald-400" aria-hidden="true" />
-                        <span className="sr-only">{lang === 'de' ? 'Abgeschlossen' : 'Completed'}</span>
+                        <span className="sr-only">{t('cluster.completed')}</span>
                       </>
                     ) : needsPremium ? (
                       <>
@@ -194,9 +196,10 @@ export function ClusterSidebar({
   lang,
   suggestedModule,
 }: ClusterSidebarProps) {
+  const { t } = useLanguage();
   return (
     <nav
-      aria-label={lang === 'de' ? 'Quiz-Cluster' : 'Quiz clusters'}
+      aria-label={t('cluster.quizClustersLabel')}
       className="flex w-56 shrink-0 flex-col gap-2 overflow-y-auto pr-1"
     >
       {CLUSTER_REGISTRY.map(cluster => (

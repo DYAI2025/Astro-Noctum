@@ -23,6 +23,7 @@ export const MODULE_TO_QUIZ_ID: Record<string, string> = {
   'quiz.partner_match_02.v1': 'partner_match_02',
   'quiz.partner_match_03.v1': 'partner_match_03',
   'quiz.partner_convo.v1': 'partner_convo',
+  'quiz.shadow_archetype.v1': 'shadow_archetype',
 };
 
 /** Human-readable quiz names (de/en) */
@@ -50,4 +51,5 @@ export const QUIZ_NAMES: Record<string, { de: string; en: string }> = {
   'quiz.partner_match_02.v1': { de: 'Alltag & Eigenarten', en: 'Everyday Fit & Quirks' },
   'quiz.partner_match_03.v1': { de: 'Vorlieben & Lebensstil', en: 'Preferences & Lifestyle' },
   'quiz.partner_convo.v1': { de: 'Gesprächs-Analyse', en: 'Conversation Analysis' },
+  'quiz.shadow_archetype.v1': { de: 'Schattenarchetyp', en: 'Shadow Archetype' },
 };

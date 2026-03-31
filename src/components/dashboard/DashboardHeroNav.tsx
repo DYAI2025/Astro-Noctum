@@ -48,24 +48,23 @@ interface DashboardHeroNavProps {
   sunSign: string;
   dominantElement: string;
   zodiacAnimal: string;
+  onTileClick?: (id: 'western' | 'bazi' | 'wuxing') => void;
 }
 
 interface TileConfig {
-  id: string;
-  anchor: string;
+  id: 'western' | 'bazi' | 'wuxing';
   labelKey: string;
   ariaKey: string;
   value: string;
   icon: ReactNode;
 }
 
-export function DashboardHeroNav({ sunSign, dominantElement, zodiacAnimal }: DashboardHeroNavProps) {
+export function DashboardHeroNav({ sunSign, dominantElement, zodiacAnimal, onTileClick }: DashboardHeroNavProps) {
   const { t } = useLanguage();
 
   const tiles: TileConfig[] = [
     {
       id: 'western',
-      anchor: '#section-western',
       labelKey: 'dashboard.heroNav.westernLabel',
       ariaKey: 'dashboard.heroNav.westernAria',
       value: sunSign || '—',
@@ -73,7 +72,6 @@ export function DashboardHeroNav({ sunSign, dominantElement, zodiacAnimal }: Das
     },
     {
       id: 'bazi',
-      anchor: '#section-bazi',
       labelKey: 'dashboard.heroNav.baziLabel',
       ariaKey: 'dashboard.heroNav.baziAria',
       value: zodiacAnimal || '—',
@@ -81,7 +79,6 @@ export function DashboardHeroNav({ sunSign, dominantElement, zodiacAnimal }: Das
     },
     {
       id: 'wuxing',
-      anchor: '#section-wuxing',
       labelKey: 'dashboard.heroNav.wuxingLabel',
       ariaKey: 'dashboard.heroNav.wuxingAria',
       value: dominantElement || '—',
@@ -97,16 +94,17 @@ export function DashboardHeroNav({ sunSign, dominantElement, zodiacAnimal }: Das
       transition={{ duration: 0.6, ease: 'easeOut', delay: 0.05 }}
     >
       {tiles.map((tile) => (
-        <a
+        <button
           key={tile.id}
-          href={tile.anchor}
+          type="button"
+          onClick={() => onTileClick?.(tile.id)}
           aria-label={t(tile.ariaKey)}
           className={[
             'group relative flex flex-col items-center justify-center',
-            'gap-3 py-8 px-6 rounded-2xl',
+            'gap-3 py-8 px-6 rounded-2xl w-full',
             'border border-[#D4AF37]/15 bg-[#00050A]/60 backdrop-blur-md',
             'hover:border-[#D4AF37]/40 hover:bg-[#D4AF37]/5',
-            'transition-all duration-300 cursor-pointer no-underline',
+            'transition-all duration-300 cursor-pointer',
             'shadow-[0_0_0_0_rgba(212,175,55,0)] hover:shadow-[0_0_24px_0_rgba(212,175,55,0.08)]',
           ].join(' ')}
         >
@@ -125,11 +123,11 @@ export function DashboardHeroNav({ sunSign, dominantElement, zodiacAnimal }: Das
             {tile.value}
           </p>
 
-          {/* Arrow hint */}
+          {/* Open hint */}
           <span aria-hidden="true" className="text-[#D4AF37]/20 group-hover:text-[#D4AF37]/50 text-xs transition-colors duration-300">
-            ↓
+            ↗
           </span>
-        </a>
+        </button>
       ))}
     </motion.div>
   );

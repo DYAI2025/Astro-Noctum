@@ -330,7 +330,7 @@ const DIM_COLORS: Record<string, { from: string; to: string }> = {
 // ═══════════════════════════════════════════════════════════════
 
 export default function PersonalityQuiz({ onComplete, onClose }: PersonalityQuizProps) {
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
   const dims = lang === 'de' ? DIMENSIONS_DE : DIMENSIONS_EN;
   const [screen, setScreen] = useState<Screen>('intro');
   const [currentQ, setCurrentQ] = useState(0);
@@ -416,7 +416,7 @@ export default function PersonalityQuiz({ onComplete, onClose }: PersonalityQuiz
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full
+          className="absolute right-4 top-4 flex min-h-11 min-w-[44px] items-center justify-center rounded-full
                      text-white/50 transition-colors hover:bg-white/10 hover:text-white"
           aria-label="Schliessen"
         >
@@ -453,7 +453,7 @@ export default function PersonalityQuiz({ onComplete, onClose }: PersonalityQuiz
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
               </svg>
-              {lang === 'de' ? '10 Fragen' : '10 Questions'}
+              10 Fragen
             </span>
           </div>
 
@@ -492,7 +492,7 @@ export default function PersonalityQuiz({ onComplete, onClose }: PersonalityQuiz
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full
+          className="absolute right-4 top-4 flex min-h-11 min-w-[44px] items-center justify-center rounded-full
                      text-white/50 transition-colors hover:bg-white/10 hover:text-white"
           aria-label="Schliessen"
         >
@@ -505,7 +505,7 @@ export default function PersonalityQuiz({ onComplete, onClose }: PersonalityQuiz
         <div className="mb-8">
           <div className="mb-2 flex items-center justify-between text-sm text-white/50">
             <span>
-              {lang === 'de' ? `Frage ${currentQ + 1}/${totalQuestions}` : `Question ${currentQ + 1}/${totalQuestions}`}
+              {t('quiz.questionProgressShort').replace('{current}', String(currentQ + 1)).replace('{total}', String(totalQuestions))}
             </span>
             <span>{progressPct}%</span>
           </div>
@@ -746,7 +746,7 @@ export default function PersonalityQuiz({ onComplete, onClose }: PersonalityQuiz
                            text-white/50 transition-all hover:border-[#D4AF37] hover:text-[#D4AF37] flex items-center gap-2"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-                {lang === 'de' ? 'Teilen' : 'Share'}
+                {t('common.share')}
               </button>
               <button
                 onClick={onClose}

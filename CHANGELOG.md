@@ -1,5 +1,129 @@
 # Changelog
 
+## [Unreleased] - 2026-03-31
+
+### Design System
+
+- **Design System V2** — unified token system for dark/bright mode: typography (Sora+Cormorant), spacing scale (4-80px), Wu-Xing element colors (#4CAF50/#F44336/#FF9800/#9E9E9E/#2196F3), card system, touch targets (44px min), WCAG contrast enforcement
+- **Spiritual Tech Interactions** — 300ms+ transitions, skeleton loading, cosmic comedy error messages, 5-item nav max, mobile drawer pattern
+- **Bright mode accent: #2563EB** (Blue) — tech-oriented, distinct from dark-mode Gold
+- Tokens in `src/index.css` @theme: card-dark, card-bright, accent-blue, element-*, spacing-section, radius-card, touch-min
+- New CSS classes: `.bright-card` (hover lift+shadow), `.card-element` (data-element left stripe), `.skeleton-pulse`, `.focus-ring`
+
+### S09 Design-Fitting Sprint
+
+- **Nav:** FAQ replaced by Weekly in primary nav, 44px touch targets on all nav items, `transition-all duration-300`
+- **Spacing:** `gap-20` (80px) standardized section gaps, `p-6`/`p-4` card padding
+- **Mobile:** DashboardBigFour `md:grid-cols-4`, `min-h-11` on all buttons/links
+- **Colors:** Centralized `element-colors.ts`, Wu-Xing CSS variable references replace hardcoded hex
+- **Typography:** Inter removed, Sora-only body font (`font-sans`), landing-hero font fixed
+- **WCAG:** Bright-mode text minimum `#71717A` on white (4.5:1 ratio) — bumped 7 components
+
+### Bug Fixes
+
+- **L2 cooldown persistence** — `generated_at` column on vibes_cache for cooldown survival across Railway redeploys
+- **formatCooldown** extracted to `src/lib/format-cooldown.ts` with 5 unit tests
+- **Dashboard ghost-ui test** — added react-router-dom mock for useNavigate
+- **Duplicate import** — removed double DashboardBigFour import from merge conflict
+
+### Tests
+
+- **1041/1041 pass** (0 failures, +42 from previous session)
+- 5 formatCooldown tests, cooldown response shape validation
+- ghost-ui test fixed (useNavigate mock)
+
+### Decisions
+
+- `DEC-design-system-v2` — dark/bright tokens, Wu-Xing colors, spacing, radii, touch targets
+- `DEC-spiritual-tech-interactions` — animation timing, cosmic errors, skeleton loading, nav rules
+
+### Documentation
+
+- `docs/DESIGN_SYSTEM_V2.md` — quick reference with Tailwind v4 integration
+- `docs/plans/2026-03-31-s09-design-fitting.md` — sprint plan
+- `docs/plans/2026-03-30-review-fixes-and-dashboard-polish.md` — review fixes plan
+
+## [Unreleased] - 2026-03-30
+
+### Features
+
+- **Vibes on-demand** — `POST /api/vibes` endpoint: combines soulprint + transit + space weather via Gemini into 3-level output (Kurzsignal, Treiber, Erklaerung). L1+L2 deterministic cache (30-min slot windows). Wu-Xing element fallback when Gemini unavailable. `VibesSection` button on Dashboard + `VibesModal` with animated expand for "Warum sehe ich das?" explainability panel.
+- **Quiz Generator Pipeline** — `generateQuiz()` assembler in `@bazodiac/shared`: transforms `QuizGeneratorInput` + pre-authored questions into complete `GeneratedQuiz` with 5 artifacts (QuizDefinition, AffinityMapEntries, EventConverterSpec, ResultProfiles, AggregationRules). Includes `generateAffinityEntries()` (Wu-Xing sector distribution) and `generateEventConverter()` (marker ID construction).
+- **Shadow Archetype Quiz** — 24th quiz ("Was lauert hinter deinem Laecheln?"), 8 scenario questions, 4 dimensions (Destroyer/Orphan/Tyrant/Trickster), integrated end-to-end: definition, AFFINITY_MAP entries, `shadowArchetypeToEvent()`, React component, QUIZ_MAP + mystiker cluster registration.
+
+### SDLC Artifacts
+
+- **GOAL-vibes-weekly-insights** (Approved) — on-demand Vibes (2-3h horizon) + Weekly Insights (7 life areas) with transparent outputs
+- **8 Requirements** (Approved) — vibes-core, vibes-output-structure, weekly-insights-engine, weekly-area-prioritization, transparency-rule, explainability-layer, mobile-first-readability, vibes-response-time
+- **REQ-F-quiz-generator-pipeline** (Approved) — formal mapping contract for quiz-to-fusion systems
+- **3 Constraints** — CON-no-unexplained-numbers, CON-resource-oriented-framing, CON-mobile-first-readability
+- **3 Decisions** — DEC-vibes-not-daily, DEC-no-number-without-explanation, DEC-top-3-weekly-focus
+- **5 User Stories** — vibes-on-demand, vibes-explainability, weekly-overview, weekly-prioritization, number-transparency
+- **2 Assumptions** — existing-fusion-sufficient, gemini-text-quality
+- **Stakeholders** — STK-product-owner (Ben), STK-end-user formally defined
+- **Component steering files** updated with multi-agent + quiz-generator + signatur requirements (frontend: 12 REQ, api-server: 7 REQ, mobile: 6 REQ)
+
+### Bug Fixes
+
+- **Security** — Removed `VITE_SUPABASE_SERVICE_ROLE_KEY` + `VITE_SUPABASE_DB_BASE` from Railway (were exposed to browser build via VITE_ prefix)
+- **Test i18n mocks** — Fixed 6 pre-existing test failures: astro-accordion (4), signatur-reveal-v2 (1), wuxing-page-detail (1) — all caused by `t()` mock returning keys instead of German text
+- **Vibes cache mutation** — Deep-copy meta on cache hit to prevent L1 cache entry mutation
+- **Vibes double-tap** — Added useRef guard against concurrent fetch on rapid button taps
+- **VibesModal** — Removed redundant outer AnimatePresence (parent already wraps)
+- **Quiz overlay** — Fixed test text mismatch ("Quiz nicht gefunden" vs actual "Dieses Quiz konnte nicht geladen werden")
+- **Cluster e2e** — Updated module count 23 to 24 after shadow archetype addition
+
+### Tests
+
+- **976/976 tests pass (0 failures)** — first time fully green
+- 54 new quiz generator tests (types, affinity entries, event converter, assembler + scoreQuiz integration)
+- 3 Vibes perf tests (response time, cache hit, shape validation)
+- 8 signatur perf tests (first-frame pipeline, transit API)
+- BAFE determinism contract test (5 endpoints, graceful skip)
+
+### Deploy & Operations
+
+- 7 runbooks total: railway-deploy, supabase-migration, onboarding-test, signatur-v3-web-test, signatur-audio-test, signatur-cross-platform-test, vibes-test
+- Migration: `20260330_vibes_cache.sql` (vibes_cache table for L2 persistence)
+- Phase A-B complete (production hardening, onboarding verification)
+- Vibes/Weekly implementation plan: 3 phases (V1-V3), 26 tasks
+
+## [Unreleased] - 2026-03-29
+
+### Features
+
+- **DashboardTagesEnergie** — neue Hero-Sektion ersetzt `CosmicWeatherCard` als primären Tages-Impuls-Container. Immer vollständig sichtbar (kein Akkordeon). Zeigt: Element-Icon (aus BaZi Day-Master), Body-Narrativ (`fusion.synthesis`), Day-Trace Reibungs-Kontext, Kosmoswetter-Strip mit Event-Icons (Magnetsturm, Flare, CME, HSS, SEP, Transit), Resonanz-Indikator (persönliche Energie × Solaraktivität). `fusion.action` hinter `<PremiumGate>`.
+- **Kosmoswetter Event-Icons** — `buildWeatherPills` rendert Icon-Pillen für alle Space-Weather-Ereignistypen: Geomagnetischer Sturm (Kp-basiert + Events), M/X-Flare, CME-Ankunft, Hochgeschwindigkeitsstrom, Protonenfluss, Planetentransit aus Daily-Evidence.
+- **Resonanz-Indikator** — animierter Balken (`motion.div`, Gold→Cyan) mit Formel `harmony_index × 0.65 + solar_pressure × 0.35`; 4 Textstufen von "fließt unabhängig" bis "verstärkt den solaren Impuls".
+- **DayModeModal on-demand** — Modal öffnet sich nicht mehr automatisch beim ersten Load. Öffnung ausschließlich via "vertiefen →" Button in `DashboardTagesEnergie`. Supabase-Tracking (`daily_modal_seen_date`) bleibt beim expliziten Schließen erhalten.
+
+### Bug Fixes
+
+- **R1-1** `geomagnetic_storm` Events wurden in `buildWeatherPills` als behandelt markiert ohne je eine Pill zu erzeugen (silent skip). Fehlender Branch ergänzt: Zap-Icon, Label `Magnetsturm {severity}`, Gold für G3+, Amber für G2.
+- **R1-2** `handleDailyClose` (Close-Funktion) wurde fälschlicherweise als `onOpenDayModal` übergeben → "vertiefen →" Button war ein No-op. Fix: lokaler `isDayModalOpen`-State in `Dashboard.tsx`; `() => setIsDayModalOpen(true)` als Open-Handler; Modal rendert auf `isDayModalOpen` statt `showModal`.
+- **R1-4** Guard `daily.fusion.day_mode &&` auf dem Themes-Kicker war immer `true` (`z.enum(['pulse','trace'])` nie null). Ersetzt durch `(daily.western?.themes?.length ?? 0) > 0` — rendert kein leeres `<p>` mehr wenn `themes: []`.
+- **R2-4** `daily.fusion.synthesis` konnte als leerer String `""` vom Server kommen (KI-Generierungsfehler). Fallback hinzugefügt: `'Tagesimpuls wird gerade berechnet …'`.
+
+### Refactoring
+
+- **R2-1** Manueller Premium-Lock (`showPremiumHint` State + `Lock`-Button) in `DashboardTagesEnergie` durch existierende `<PremiumGate>`-Komponente ersetzt. Entfernt: `isPremium`-Prop, `showPremiumHint`-State, `Lock`-Icon-Import, `useState`. Konsistent mit Design-System.
+- **R2-2** `buildWeatherPills` mit `useMemo([spaceWeather, daily])` memoized. `useSpaceWeather` pollt alle 5 Min und erzeugt neue State-Objekte → verhindert unnötiges Array-Rebuild + JSX-Element-Erstellung bei jedem Poll-Zyklus. Pattern konsistent mit `InfluenceGauges.tsx`.
+
+### Accessibility
+
+- **R2-3** `role="progressbar"` + `aria-valuenow` / `aria-valuemin` / `aria-valuemax` / `aria-label` auf dem Resonanz-Balken ergänzt. Konsistent mit `DissonanceValues.tsx`, `ClusterSidebar.tsx`, `ClusterCard.tsx`.
+
+### Tests
+
+- 17 neue Tests in 2 neuen Test-Dateien (`dashboard-tages-energie.test.tsx`, `dashboard-modal-open.test.tsx`)
+- Abdeckung: PremiumGate-Integration (5), Kosmoswetter-Pills (3), Themes-Kicker (2), Resonanz-Bar ARIA (2), Body-Fallback (2), vertiefen-Button (3)
+
+### Documentation
+
+- `docs/wireframes/dashboard-v2.md` — F3 (Tages-Energie) vollständig neu geschrieben: Hero-Sektion-Spec, Kosmoswetter-Icon-Tabelle, Resonanz-Formel
+- `1-objectives/requirements/REQ-F-signatur-day-night-pulse.md` — UI-Acceptance-Criteria für Dashboard Tages-Impuls Hero-Sektion ergänzt (6 prüfbare Criteria)
+- `3-code/tasks.md` — `TASK-tagesenergie-hero` hinzugefügt
+
 ## [Unreleased] - 2026-03-24
 
 ### Features

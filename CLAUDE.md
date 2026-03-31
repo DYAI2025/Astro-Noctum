@@ -11,6 +11,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Bazodiac (Astro-Noctum) — a fusion astrology web + mobile app combining Western astrology, Chinese BaZi, and Wu-Xing (Five Elements). Users enter birth data, get chart calculations from the external BAFE API, AI-generated interpretations via Gemini, and can talk to "Levi Bazi" (an ElevenLabs voice agent). The UI is German-language, dark luxury aesthetic (obsidian/gold palette).
 
+### Current State
+
+**Phase:** Code (active development)
+
+4 goals (3 Approved, 1 Draft). 25 requirements: 10 Implemented, 11 Approved, 4 Draft. 5 constraints. 3 assumptions. 10 decisions. 3 components (frontend, api-server, mobile). Sprints S-BRIDGE, S-DAUP, S-DASH-POLISH, S-SIG complete. V3 Bipolar Trail engine is default Signatur renderer (PR #225). Vibes V1 + Weekly V2 shipped. Phase V3 (Transparency) next. Total: 141 of 167 tasks Done (84%). 6 partnership OQs pending. 7 deploy runbooks. Updated 2026-03-30.
+
 ---
 
 ## Product Owner (PO) Co-Worker Role
@@ -64,6 +70,22 @@ You are Claude, co-working as Product Owner for Bazodiac alongside Ben (the foun
 - **Blocked:** Stripe checkout endpoint missing; STRIPE_WEBHOOK_SECRET not set; 3 silent-fail bugs (BUG-04/05/06)
 - **Partnership features:** 18 tasks blocked on 6 open decisions (house system, synastry consent, orb tolerance, minor aspects, narrative generation, synastry signal type)
 - **Monetization:** Stripe is the payment provider; `is_premium` flag in Supabase `profiles` table; `PremiumGate` component wraps gated features
+
+---
+
+## Project Overview
+
+### Current State
+
+Project is in the Code phase. S-SIG sprint complete (28/28 tasks; Phase 3 Mobile cancelled — iOS in separate Swift repo). Current sprint: S-DAUP (Dashboard Aufräumen, 5/5 Done).
+
+Objectives artifacts: 5 goals (2 Approved, 3 Draft), 23 requirements (12 Implemented, 2 Approved, 1 Deprecated, 8 Draft), 1 assumption (Verified), 2 constraints (Active). No user stories (waived — solo founder).
+
+Signatur V3 Architektur-Vision (2026-03-29): SIGNATUR_V3_VISION.md als Single Source of Truth definiert. 2 neue Goals (GOAL-signatur-phase2-density, GOAL-signatur-phase3-matching). 7 neue Requirements (dissonance-model, quiz-morph, determinism, density-field, ios-swift, shared-bridge, day-night-pulse). GOAL-fusion-astrology auf Draft zurückgesetzt und mit Cymatics-Prinzip geschärft. REQ-F-signatur-rendering-engine und REQ-F-signatur-data-pipeline auf V3 aktualisiert. REQ-F-signatur-mobile-native deprecated → ersetzt durch REQ-F-signatur-ios-swift.
+
+Implementierungsplan S-BRIDGE erstellt (2026-03-29): 3 Phasen, 12 Tasks — DIMENSION_DEFS Single Source of Truth, Determinismus-Test-Suite, Swift-Konstanten-Referenz. S-BRIDGE abgeschlossen (2026-03-29): 12/12 Tasks Done. DIMENSION_DEFS aus bipolar-engine.ts in packages/shared/src/signatur/dimension-defs.ts extrahiert + Object.freeze; 44 neue Tests (signatur-shared-bridge.test.ts + signatur-v3-engine.test.ts determinism); SWIFT_CONSTANTS.md erstellt; Runbook: docs/runbooks/signatur-s-bridge-verification.md. Nächster Sprint: S-MORPH (Quiz-Morphing) oder S-DENSITY (Density Field Phase 2).
+
+Gap analysis (2026-03-31): 0 Critical (2 fixed — index desync resolved), 5 Important (Draft core goal, stale summaries fixed, status conflicts fixed, 3 unverified assumptions), 3 Minor.
 
 ---
 
@@ -322,9 +344,9 @@ The Experience API is a high-level layer on FuFirE that orchestrates bootstrap, 
 |------|---------|
 | `src/services/experience.ts` | Experience API client — `bootstrapExperience()`, `signatureDelta()`, `fetchDailyExperience()`. All POST to `/api/experience/*` proxy |
 | `src/lib/schemas/experience.ts` | Zod schemas for all Experience API responses (`BootstrapResponseSchema`, `SignatureDeltaResponseSchema`, `DailyResponseSchema`) |
-| `src/lib/feature-flags.ts` | Feature flag module with localStorage override. Three flags: `signature_onboarding_v1` (onboarding flow), `daily_modal_v1` (daily modal), `signature_engine_v2` (V2 spirograph engine, default true) |
+| `src/lib/feature-flags.ts` | Feature flag module with localStorage override. Three flags: `signature_onboarding_v1` (onboarding flow), `daily_modal_v1` (Day-Pulse/Trace modal), `signature_engine_v2` (V2 spirograph engine, default true) |
 | `src/components/onboarding/SignatureReveal.tsx` | Signatur reveal phase — shows V2 or V1 ring (gated by `signature_engine_v2`), profile summary, quiz question. Calls `signatureDelta()` on answer, passes quiz weights to V2 |
-| `src/components/dashboard/DailyHoroscopeModal.tsx` | 3-tab modal (Westlich/BaZi/Fusion) showing the daily horoscope. Rendered on first Dashboard visit |
+| `src/components/dashboard/DayModeModal.tsx` | Day-Pulse / Day-Trace modal — shows daily horoscope with mode snapshot, feature-flagged via `daily_modal_v1` |
 | `src/hooks/useFirstRunDaily.ts` | Hook that checks `profiles.daily_modal_seen`, then fetches daily horoscope via Experience API. Caches in localStorage by date |
 | `supabase-migrations/20260316_experience_tables.sql` | Migration: creates `user_signature_state`, `daily_horoscope_cache` tables; adds `soulprint_sectors` to `astro_profiles` and `daily_modal_seen` to `profiles` |
 

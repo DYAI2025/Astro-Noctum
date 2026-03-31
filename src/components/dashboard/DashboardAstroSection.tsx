@@ -14,8 +14,9 @@ import { BaZiInterpretation } from "../BaZiInterpretation";
 import { SkyModeToggle } from "./SkyModeToggle";
 import type { ApiData } from "../../types/bafe";
 import type { TileTexts } from "../../types/interpretation";
-import { AstroAccordion } from "./AstroAccordion";
+
 import { DashboardHeroNav } from "./DashboardHeroNav";
+import { AstroDetailModal, type AstroDetailId } from "./AstroDetailModal";
 import { WuXingIcon } from "../animated-icons/CosmicSymbols";
 import { IconOrbit } from "../animated-icons";
 
@@ -54,7 +55,7 @@ function fadeIn(delay = 0) {
 function SectionDivider({ label, title, icon }: { label: string; title: string; icon?: React.ReactNode }) {
   return (
     <div className="border-b border-[#8B6914]/15 pb-3 sm:pb-4 mb-6 sm:mb-8">
-      <p className="text-[#8B6914]/55 text-[8px] uppercase tracking-[0.45em] mb-1">{label}</p>
+      <p className="text-[#8B6914]/75 text-[8px] uppercase tracking-[0.45em] mb-1">{label}</p>
       <h2 className="font-serif text-xl sm:text-2xl text-[#1E2A3A]">{icon}{title}</h2>
     </div>
   );
@@ -87,6 +88,9 @@ export function DashboardAstroSection({
 }: DashboardAstroSectionProps) {
   const { lang, t } = useLanguage();
   const { planetariumMode, setPlanetariumMode, skyMode } = usePlanetarium();
+
+  // ── Astro detail modal ────────────────────────────────────────────
+  const [activeDetail, setActiveDetail] = useState<AstroDetailId | null>(null);
 
   // ── First-visit Birth Sky welcome ────────────────────────────────
   const [showBirthSkyWelcome, setShowBirthSkyWelcome] = useState(false);
@@ -168,6 +172,15 @@ export function DashboardAstroSection({
         sunSign={sunSign}
         dominantElement={dominantEl}
         zodiacAnimal={yearAnimal}
+        onTileClick={setActiveDetail}
+      />
+
+      {/* ═══ ASTRO DETAIL MODAL ════════════════════════════════════════ */}
+      <AstroDetailModal
+        activeId={activeDetail}
+        onClose={() => setActiveDetail(null)}
+        apiData={apiData}
+        tileTexts={tileTexts || {}}
       />
 
       {/* ═══ 3D ORRERY ════════════════════════════════════════════════ */}
@@ -220,11 +233,6 @@ export function DashboardAstroSection({
         </motion.div>
       )}
 
-      {/* ═══ ASTRO ACCORDION (Western + BaZi/WuXing) ═════════════════════ */}
-      <motion.div className="mb-12" {...fadeIn(0.2)}>
-        <AstroAccordion apiData={apiData} tileTexts={tileTexts || {}} />
-      </motion.div>
-
       {/* ═══ BAZI & WUXING DEEP SECTION ═══════════════════════════════ */}
       <div id="section-bazi" />
       <div id="section-wuxing" />
@@ -240,7 +248,7 @@ export function DashboardAstroSection({
           {/* Block B: Four Pillars */}
           {apiData.bazi?.pillars && (
             <div className="mb-10">
-              <p className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/50 mb-4">
+              <p className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/70 mb-4">
                 {t("dashboard.bazi.fourPillarsShort")}
               </p>
               <BaZiFourPillars
@@ -254,18 +262,18 @@ export function DashboardAstroSection({
           {/* Block C: Element Balance */}
           <div className="mb-10">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/50">
+              <p className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/70">
                 WuXing {"\u4E94\u884C"}
               </p>
               <Link
                 to="/wu-xing"
                 className="text-[9px] uppercase tracking-[0.2em] text-[#8B6914]/60 hover:text-[#8B6914] transition-colors flex items-center gap-1.5"
               >
-                <span>{lang === 'de' ? 'Detailansicht' : 'Detailed View'}</span>
+                <span>{lang === "de" ? "Detailansicht" : "Detailed view"}</span>
                 <ArrowUp className="w-3 h-3 rotate-45" />
               </Link>
             </div>
-            <p className="text-xs text-[#1E2A3A]/45 mb-6 leading-relaxed max-w-2xl">
+            <p className="text-xs text-[var(--color-text-bright-dim)] mb-6 leading-relaxed max-w-2xl">
               {t("dashboard.wuxing.sectionDesc")}
             </p>
 
@@ -283,7 +291,7 @@ export function DashboardAstroSection({
                           <WuXingIcon element={el.key} className="w-6 h-6" />
                           <div className="min-w-0">
                             <div className="text-xs font-medium text-[#1E2A3A] truncate">{el.name[lang]}</div>
-                            <div className="text-[10px] text-[#1E2A3A]/35">{el.pinyin}</div>
+                            <div className="text-[10px] text-[var(--color-text-bright-dim)]">{el.pinyin}</div>
                           </div>
                         </div>
                         <div className="flex-1 wuxing-bar-track">
@@ -298,7 +306,7 @@ export function DashboardAstroSection({
                         </div>
                         <div className="w-12 shrink-0 text-right flex items-center justify-end gap-1">
                           {hasWuxingData && pctLabel > 0 && (
-                            <span className="text-[10px] text-[#1E2A3A]/45 font-mono" style={{ fontVariantNumeric: 'tabular-nums' }}>{pctLabel}%</span>
+                            <span className="text-[10px] text-[var(--color-text-bright-dim)] font-mono" style={{ fontVariantNumeric: 'tabular-nums' }}>{pctLabel}%</span>
                           )}
                           {isDom && <span className="text-sm" style={{ color: el.color }}>{"\u2605"}</span>}
                         </div>
@@ -309,20 +317,6 @@ export function DashboardAstroSection({
               </div>
             </div>
           </div>
-
-          {/* Block B: Four Pillars */}
-          {apiData.bazi?.pillars && (
-            <div className="mb-10">
-              <p className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/50 mb-4">
-                {lang === "de" ? "Die Vier S\u00e4ulen" : "The Four Pillars"}
-              </p>
-              <BaZiFourPillars
-                pillars={apiData.bazi.pillars}
-                lang={lang}
-                planetariumMode={planetariumMode}
-              />
-            </div>
-          )}
 
           {/* Block D: Interpretation */}
           <div className="morning-card p-6 md:p-8">

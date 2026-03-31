@@ -34,9 +34,9 @@ describe('Quiz-Cluster E2E pipeline', () => {
     expect(clusterProgress(cluster, full)).toBe(1);
   });
 
-  it('findClusterForModule resolves all 23 modules', () => {
+  it('findClusterForModule resolves all 24 modules', () => {
     const allModules = CLUSTER_REGISTRY.flatMap(c => c.quizModuleIds);
-    expect(allModules.length).toBe(23);
+    expect(allModules.length).toBe(24);
     for (const moduleId of allModules) {
       const cluster = findClusterForModule(moduleId);
       expect(cluster).not.toBeNull();

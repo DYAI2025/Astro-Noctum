@@ -1,5 +1,9 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState } from 'react';
+import { Pause, Play } from 'lucide-react';
 import type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
+import type { DissonanceResult } from '../../lib/fusion-ring/dissonance';
+import type { SolarModulation } from '../signatur-v3/bipolar-engine';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const SignaturV3Canvas = lazy(() => import('../signatur-v3/SignaturV3Canvas'));
 
@@ -7,29 +11,61 @@ interface MiniSignatureProps {
   natalWeights?: Record<string, number>;
   quizWeights?: Record<string, number>;
   dayHarmonic?: DayHarmonicState | null;
+  externalDissonance?: DissonanceResult | null;
+  solarModulation?: SolarModulation;
   onExpand?: () => void;
 }
 
 const EMPTY_WEIGHTS: Record<string, number> = {};
 
-export default function MiniSignature({ natalWeights, quizWeights, dayHarmonic, onExpand }: MiniSignatureProps) {
+export default function MiniSignature({ natalWeights, quizWeights, dayHarmonic, externalDissonance, solarModulation, onExpand }: MiniSignatureProps) {
+  const { t } = useLanguage();
+  const hasData = natalWeights && Object.keys(natalWeights).length > 0;
+
+  const [paused, setPaused] = useState(() =>
+    localStorage.getItem('bazodiac_mini_signature_paused') === 'true'
+  );
+  const togglePause = () => {
+    setPaused((prev) => {
+      const next = !prev;
+      localStorage.setItem('bazodiac_mini_signature_paused', String(next));
+      return next;
+    });
+  };
+
   return (
     <div
       onClick={onExpand}
       className="group bg-zinc-900/40 border border-zinc-800 p-6 md:p-8 rounded-[2rem] aspect-square flex flex-col justify-between cursor-pointer active:scale-95 transition-all duration-300 hover:border-white/20"
     >
       <div className="relative w-full aspect-square rounded-full overflow-hidden bg-black/20">
-        <div className="absolute inset-0 scale-125 group-hover:scale-150 transition-transform duration-1000">
-          <Suspense fallback={<div className="w-full h-full bg-zinc-900/20 rounded-full animate-pulse" />}>
-            <SignaturV3Canvas
-              natalWeights={natalWeights ?? EMPTY_WEIGHTS}
-              quizWeights={quizWeights ?? EMPTY_WEIGHTS}
-              dayHarmonic={dayHarmonic ?? undefined}
-              width={240}
-              height={240}
-            />
-          </Suspense>
-        </div>
+        {!hasData ? (
+          <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
+            <p className="text-[10px] text-white/40 uppercase tracking-widest animate-pulse">
+              {t('dashboard.miniSignature.calculating')}
+            </p>
+          </div>
+        ) : paused ? (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <p className="text-[10px] text-white/30 uppercase tracking-widest">
+              {t('dashboard.miniSignature.paused')}
+            </p>
+          </div>
+        ) : (
+          <div className="absolute inset-0 scale-125 group-hover:scale-150 transition-transform duration-1000">
+            <Suspense fallback={<div className="w-full h-full bg-zinc-900/20 rounded-full animate-pulse" />}>
+              <SignaturV3Canvas
+                natalWeights={natalWeights ?? EMPTY_WEIGHTS}
+                quizWeights={quizWeights ?? EMPTY_WEIGHTS}
+                dayHarmonic={dayHarmonic ?? undefined}
+                externalDissonance={externalDissonance}
+                solarModulation={solarModulation}
+                width={240}
+                height={240}
+              />
+            </Suspense>
+          </div>
+        )}
 
         {/* Decorative Inner Ring Overlay */}
         <div className="absolute inset-2 border border-white/5 rounded-full pointer-events-none" />
@@ -39,9 +75,23 @@ export default function MiniSignature({ natalWeights, quizWeights, dayHarmonic, 
       </div>
 
       <div className="mt-4 flex justify-between items-center relative z-10">
-        <span className="text-[10px] font-bold text-white/60 uppercase tracking-[0.15em]">Deine Form</span>
-        <div className="w-5 h-5 rounded-full border border-white/10 flex items-center justify-center group-hover:border-white/30 transition-colors">
-          <span className="text-[8px] text-white/30">⤢</span>
+        <span className="text-[10px] font-bold text-white/60 uppercase tracking-[0.15em]">
+          {t('dashboard.miniSignature.label')}
+        </span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={(e) => { e.stopPropagation(); togglePause(); }}
+            className="w-6 h-6 rounded-full border border-white/10 flex items-center justify-center hover:border-white/30 transition-colors"
+            aria-label={t('dashboard.miniSignature.togglePause')}
+          >
+            {paused
+              ? <Play className="w-3 h-3 text-white/40" />
+              : <Pause className="w-3 h-3 text-white/40" />
+            }
+          </button>
+          <div className="w-5 h-5 rounded-full border border-white/10 flex items-center justify-center group-hover:border-white/30 transition-colors">
+            <span className="text-[8px] text-white/30">⤢</span>
+          </div>
         </div>
       </div>
     </div>

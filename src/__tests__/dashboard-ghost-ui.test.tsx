@@ -3,6 +3,12 @@
 import { render, screen } from '@testing-library/react';
 import { vi, describe, it, expect } from 'vitest';
 
+vi.mock('react-router-dom', () => ({
+  useNavigate: () => vi.fn(),
+  useLocation: () => ({ pathname: '/' }),
+  Link: ({ children, ...props }: any) => <a {...props}>{children}</a>,
+}));
+
 // ── Context / hook mocks ───────────────────────────────────────────────────
 vi.mock('@/src/contexts/LanguageContext', () => ({
   useLanguage: () => ({
@@ -91,8 +97,12 @@ vi.mock('@/src/components/dashboard/DashboardInterpretationSection', () => ({
   ),
 }));
 
-vi.mock('@/src/components/dashboard/DashboardLeviSection', () => ({
-  DashboardLeviSection: () => <div data-testid="levi-section" />,
+vi.mock('@/src/components/dashboard/AgentSection', () => ({
+  AgentSection: () => <div data-testid="agent-section" />,
+}));
+vi.mock('@/src/contexts/AgentContext', () => ({
+  AgentProvider: ({ children }: any) => <>{children}</>,
+  useAgent: vi.fn(() => ({ agentStates: {}, activeAgent: null, widgetExpanded: false, startAgent: vi.fn(), stopAgent: vi.fn(), setUpgrading: vi.fn(), setWidgetExpanded: vi.fn() })),
 }));
 
 vi.mock('@/src/components/dashboard/TourOverlay', () => ({
@@ -117,10 +127,6 @@ vi.mock('@/src/components/ManageSubscription', () => ({
 
 vi.mock('@/src/components/UpgradeButton', () => ({
   UpgradeButton: () => <button>Upgrade</button>,
-}));
-
-vi.mock('@/src/components/dashboard/DailyHoroscopeModal', () => ({
-  DailyHoroscopeModal: () => null,
 }));
 
 import React from 'react';

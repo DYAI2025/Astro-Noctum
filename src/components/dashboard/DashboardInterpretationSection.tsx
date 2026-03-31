@@ -29,10 +29,10 @@ export function DashboardInterpretationSection({
   const hasPremiumInterpretation = interpretationParagraphs.length > 2;
 
   const proseClasses = `
-    text-[13px] text-[#1E2A3A]/60 leading-relaxed
+    text-[13px] text-[#1E2A3A]/70 leading-relaxed
     prose prose-sm max-w-none
     prose-headings:text-[#1E2A3A] prose-headings:font-serif
-    prose-p:text-[#1E2A3A]/60 prose-strong:text-[#1E2A3A]/80
+    prose-p:text-[#1E2A3A]/70 prose-strong:text-[#1E2A3A]/85
     prose-a:text-[#8B6914] prose-a:no-underline hover:prose-a:underline
     prose-hr:border-[#8B6914]/15
   `;
@@ -49,10 +49,8 @@ export function DashboardInterpretationSection({
           <div className="h-3 bg-[#8B6914]/8 rounded w-full" />
           <div className="h-3 bg-[#8B6914]/8 rounded w-5/6" />
           <div className="h-3 bg-[#8B6914]/8 rounded w-2/3" />
-          <p className="text-[11px] text-[#1E2A3A]/30 italic mt-4">
-            {lang === 'de'
-              ? 'Deine persönliche Analyse wird generiert\u2026'
-              : 'Generating your personal analysis\u2026'}
+          <p className="text-[11px] text-[var(--color-text-bright-dim)] italic mt-4">
+            {t('dashboard.interpretation.generating')}
           </p>
         </div>
       ) : (

@@ -15,24 +15,14 @@
 export type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
 export { computeDayHarmonic } from '../../lib/fusion-ring/day-harmonic';
 import type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
+import type { DissonanceResult } from '../../lib/fusion-ring/dissonance';
+import type { VisualModulation } from '../../lib/fusion-ring/dissonance-visual';
 
-// ═══════════════════════════════════════
-//  TYPES
-// ═══════════════════════════════════════
-
-export interface DimensionDef {
-  id: string;
-  poleA: string;         // e.g. "Durchsetzung"
-  poleB: string;         // e.g. "Hingabe"
-  /** Base angular position on the circle (radians) — like zodiac placement */
-  baseAngle: number;
-  /** Cousto Hz — drives movement speed and curve parameters */
-  hz: number;
-  /** Color for pole A */
-  colorA: [number, number, number];
-  /** Color for pole B */
-  colorB: [number, number, number];
-}
+// DimensionDef and DIMENSION_DEFS are the Single Source of Truth in @bazodiac/shared.
+// Re-exported here so existing imports from this file continue to work.
+export type { DimensionDef } from '@/packages/shared/src/signatur/dimension-defs';
+export { DIMENSION_DEFS } from '@/packages/shared/src/signatur/dimension-defs';
+import { DIMENSION_DEFS } from '@/packages/shared/src/signatur/dimension-defs';
 
 export interface PoleState {
   dimensionId: string;
@@ -65,7 +55,7 @@ export interface SignaturV3Config {
   timeScale: number;
 }
 
-export interface DissonanceState {
+export interface V3DissonanceState {
   /** Per-dimension dissonance [0,1] — how much the quiz deviates from natal for this axis */
   dimensional: Map<string, number>;
   /** Global natal dissonance */
@@ -76,73 +66,27 @@ export interface DissonanceState {
   elementalQuality: number;
 }
 
+/** Solar weather modulation for the membrane layer */
+export interface SolarModulation {
+  /** Ring intensity multiplier 1.0 (calm) to 1.5 (extreme storm) */
+  ringModulation: number;
+  /** Whether a G3+ storm effect should trigger */
+  triggerEffect: boolean;
+  /** Kp index 0-9 for intensity scaling */
+  kpIndex: number;
+  /** Per-dimension solar multipliers from cosmic resonance (personalized) */
+  dimensionMultipliers?: Record<string, number>;
+}
+
 // ═══════════════════════════════════════
 //  DIMENSION DEFINITIONS
 // ═══════════════════════════════════════
 
-/**
- * 6 Dimensions, each with 2 poles = 12 poles.
- * Placed at 30° intervals around the circle (like zodiac signs).
- * Each dimension's poles are opposite (180° apart).
- *
- * Pole A sits at baseAngle, Pole B at baseAngle + π.
- */
-export const DIMENSIONS: DimensionDef[] = [
-  {
-    id: 'assertion',
-    poleA: 'Durchsetzung',
-    poleB: 'Hingabe',
-    baseAngle: 0,                    // 0° — Aries position
-    hz: 144.72,                      // Mars frequency
-    colorA: [1.0, 0.15, 0.12],      // Mars red
-    colorB: [0.68, 0.55, 1.0],      // Soft violet
-  },
-  {
-    id: 'empathy',
-    poleA: 'Einfühlung',
-    poleB: 'Abgrenzung',
-    baseAngle: Math.PI / 3,          // 60° — Cancer-adjacent
-    hz: 210.42,                      // Moon frequency
-    colorA: [0.68, 0.55, 1.0],      // Moon violet
-    colorB: [0.38, 0.52, 0.72],     // Saturn steel
-  },
-  {
-    id: 'creativity',
-    poleA: 'Schöpfung',
-    poleB: 'Struktur',
-    baseAngle: (2 * Math.PI) / 3,   // 120° — Leo position
-    hz: 126.22,                      // Sun frequency
-    colorA: [1.0, 0.72, 0.12],      // Sun gold
-    colorB: [0.20, 0.95, 1.0],      // Mercury cyan
-  },
-  {
-    id: 'logic',
-    poleA: 'Analyse',
-    poleB: 'Synthese',
-    baseAngle: Math.PI,              // 180° — Virgo-Libra
-    hz: 141.27,                      // Mercury frequency
-    colorA: [0.20, 0.95, 1.0],      // Mercury cyan
-    colorB: [1.0, 0.40, 0.72],      // Venus pink
-  },
-  {
-    id: 'intuition',
-    poleA: 'Ahnung',
-    poleB: 'Evidenz',
-    baseAngle: (4 * Math.PI) / 3,   // 240° — Sagittarius
-    hz: 183.58,                      // Jupiter frequency
-    colorA: [1.0, 0.88, 0.0],       // Jupiter gold
-    colorB: [0.38, 0.52, 0.72],     // Saturn steel
-  },
-  {
-    id: 'discipline',
-    poleA: 'Ordnung',
-    poleB: 'Freiheit',
-    baseAngle: (5 * Math.PI) / 3,   // 300° — Capricorn-Aquarius
-    hz: 147.85,                      // Saturn frequency
-    colorA: [0.38, 0.52, 0.72],     // Saturn steel
-    colorB: [1.0, 0.88, 0.0],       // Jupiter gold
-  },
-];
+// DIMENSIONS is an alias for DIMENSION_DEFS (imported from @bazodiac/shared).
+// Kept for backward-compat with any internal usages within this file.
+// External consumers should import DIMENSION_DEFS from @/packages/shared/src/signatur.
+/** @deprecated Use DIMENSION_DEFS from @bazodiac/shared */
+export const DIMENSIONS = DIMENSION_DEFS;
 
 // ═══════════════════════════════════════
 //  MATH UTILITIES
@@ -179,7 +123,7 @@ export function initializePoles(
 ): PoleState[] {
   const poles: PoleState[] = [];
 
-  for (const dim of DIMENSIONS) {
+  for (const dim of DIMENSION_DEFS) {
     const natalValue = natalWeights.get(dim.id) ?? 0.5;
     const quizValue = quizWeights.get(dim.id) ?? 0.5;
     const hzNorm = logNormHz(dim.hz);
@@ -226,14 +170,21 @@ export function initializePoles(
 //  DISSONANCE COMPUTATION
 // ═══════════════════════════════════════
 
-export function computeDissonance(
+/**
+ * Compute V3 per-dimension dissonance from natal and quiz weights.
+ * When an external DissonanceResult is provided (from the full 3-layer model),
+ * its global values (d_natal, d_accumulated, d_elemental) are used.
+ * Otherwise falls back to local per-dimension deviation.
+ */
+export function computeV3Dissonance(
   natalWeights: Map<string, number>,
   quizWeights: Map<string, number>,
-): DissonanceState {
+  external?: DissonanceResult | null,
+): V3DissonanceState {
   const dimensional = new Map<string, number>();
   let totalDeviation = 0;
 
-  for (const dim of DIMENSIONS) {
+  for (const dim of DIMENSION_DEFS) {
     const natal = natalWeights.get(dim.id) ?? 0.5;
     const quiz = quizWeights.get(dim.id) ?? 0.5;
     const deviation = Math.abs(quiz - natal);
@@ -241,16 +192,27 @@ export function computeDissonance(
     totalDeviation += deviation;
   }
 
-  const dNatal = clamp(totalDeviation / DIMENSIONS.length / 0.5, 0, 1);
+  // Use external 3-layer dissonance if available, otherwise local approximation
+  const dNatal = external?.d_natal ?? clamp(totalDeviation / DIMENSION_DEFS.length / 0.5, 0, 1);
+  const dAccumulated = external?.d_accumulated ?? 0;
 
-  // TODO Phase 2: d_accumulated from quiz history
-  const dAccumulated = 0;
-
-  // TODO Phase 2: elemental quality from Wu-Xing Sheng/Ke analysis
-  // For now: derive rough quality from whether dominant dimensions clash
-  const elementalQuality = 0;
+  // Map elemental type to quality scalar: Ke = -1, Sheng = +1, neutral = 0
+  let elementalQuality = 0;
+  if (external?.d_elemental) {
+    const el = external.d_elemental;
+    if (el.type === 'ke') elementalQuality = -clamp(el.magnitude, 0, 1);
+    else if (el.type === 'sheng') elementalQuality = clamp(el.magnitude, 0, 1);
+  }
 
   return { dimensional, dNatal, dAccumulated, elementalQuality };
+}
+
+/** @deprecated Use computeV3Dissonance — kept for backward compat with MiniSignature */
+export function computeDissonance(
+  natalWeights: Map<string, number>,
+  quizWeights: Map<string, number>,
+): V3DissonanceState {
+  return computeV3Dissonance(natalWeights, quizWeights);
 }
 
 /**
@@ -293,16 +255,17 @@ export function modulateConfig(
  */
 export function updatePoles(
   poles: PoleState[],
-  dissonance: DissonanceState,
+  dissonance: V3DissonanceState,
   config: SignaturV3Config,
   time: number,
   dayHarmonic?: DayHarmonicState,
+  solar?: SolarModulation,
 ): void {
   for (let i = 0; i < poles.length; i += 2) {
     const poleA = poles[i]!;
     const poleB = poles[i + 1]!;
     const dimId = poleA.dimensionId;
-    const dim = DIMENSIONS[i / 2]!;
+    const dim = DIMENSION_DEFS[i / 2]!;
     const d = dissonance.dimensional.get(dimId) ?? 0;
 
     // Advance theta
@@ -374,6 +337,39 @@ export function updatePoles(
       const perpB = poleB.theta + Math.PI / 2;
       poleB.x += Math.cos(perpB) * crossVib * -1;
       poleB.y += Math.sin(perpB) * crossVib * -1;
+    }
+
+    // === ACCUMULATED DISSONANCE → trail complexity ===
+    // High d_accumulated causes micro-jitter that creates richer trail patterns
+    if (dissonance.dAccumulated > 0.1) {
+      const jitterAmp = dissonance.dAccumulated * config.maxR * 0.015;
+      const jitterFreq = 7.0 + dissonance.dAccumulated * 5.0;
+      const jA = Math.sin(time * jitterFreq + dim.baseAngle * 3) * jitterAmp;
+      const jB = Math.cos(time * jitterFreq + dim.baseAngle * 3) * jitterAmp;
+      poleA.x += jA;
+      poleA.y += jB;
+      poleB.x -= jA;
+      poleB.y -= jB;
+    }
+
+    // === SOLAR MODULATION → membrane intensity (personalized via resonance) ===
+    // dimMul > 1.0 → expansion (water/fire dimensions pushed outward by storms)
+    // dimMul < 1.0 → contraction (earth dimensions resist, pull inward — intentional)
+    if (solar && solar.ringModulation > 1.0) {
+      const dimMul = solar.dimensionMultipliers?.[dimId] ?? 1.0;
+      const expansion = (solar.ringModulation - 1.0) * 0.5 * (dimMul - 0.5);
+
+      poleA.x *= (1 + expansion);
+      poleA.y *= (1 + expansion);
+      poleB.x *= (1 + expansion);
+      poleB.y *= (1 + expansion);
+
+      // G3+ storms add high-frequency pulsation, scaled by dimension resonance
+      if (solar.triggerEffect) {
+        const stormPulse = Math.sin(time * 20 + dim.hz * 0.1) * config.maxR * 0.02 * dimMul;
+        poleA.x += stormPulse;
+        poleB.x -= stormPulse;
+      }
     }
 
     // === RECORD TRAIL ===

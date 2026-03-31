@@ -28,6 +28,7 @@ const PartnerMatchQuiz01 = lazy(() => import('./quizzes/PartnerMatch/PartnerMatc
 const PartnerMatchQuiz02 = lazy(() => import('./quizzes/PartnerMatch/PartnerMatchQuiz02'));
 const PartnerMatchQuiz03 = lazy(() => import('./quizzes/PartnerMatch/PartnerMatchQuiz03'));
 const ConversationAnalysisQuiz = lazy(() => import('./quizzes/PartnerMatch/ConversationAnalysisQuiz'));
+const ShadowArchetypeQuiz = lazy(() => import('./quizzes/ShadowArchetypeQuiz'));
 
 // --- Types ---
 interface QuizOverlayProps {
@@ -66,6 +67,7 @@ const QUIZ_MAP: Record<string, React.LazyExoticComponent<React.ComponentType<Qui
   partner_match_02: PartnerMatchQuiz02,
   partner_match_03: PartnerMatchQuiz03,
   partner_convo: ConversationAnalysisQuiz,
+  shadow_archetype: ShadowArchetypeQuiz,
 };
 
 // --- Loading fallback ---
@@ -79,7 +81,7 @@ function QuizLoadingFallback() {
 
 // --- Component ---
 export default function QuizOverlay({ quizId, onComplete, onClose }: QuizOverlayProps) {
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   // Close on Escape key
@@ -108,8 +110,11 @@ export default function QuizOverlay({ quizId, onComplete, onClose }: QuizOverlay
 
   // Fallback for unknown quiz IDs
   if (quizId && !QuizComponent) {
-    const notFoundMsg = lang === 'en' ? 'Quiz not found.' : 'Quiz nicht gefunden.';
-    const closeMsg = lang === 'en' ? 'Close' : 'Schließen';
+    const notFoundMsg =
+      lang === 'de'
+        ? 'Dieses Quiz konnte nicht geladen werden.'
+        : 'This quiz could not be loaded.';
+    const closeMsg = lang === 'de' ? 'Schließen' : 'Close';
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-obsidian/80 backdrop-blur-sm">
         <div className="bg-[#0D0F14] rounded-2xl p-8 max-w-sm text-center space-y-4">

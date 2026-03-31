@@ -168,6 +168,16 @@ export function BirthChartOrrery({
   // eslint-disable-next-line react-hooks/exhaustive-deps — setSimTime/setIsPlaying are stable state setters; only birthDate should trigger re-sync
   }, [birthDate]);
 
+  // Sync currentSky → simTime to today (keeps currentDate / constellations in sync)
+  useEffect(() => {
+    if (currentSky) {
+      setSimTime(daysSinceJ2000(new Date()));
+    } else {
+      setSimTime(daysSinceJ2000(birthDate));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSky]);
+
   // ── Three.js Objekt-Refs ─────────────────────────────────────────────────
   const composerRef      = useRef<EffectComposer | null>(null);
   const planetMeshesRef  = useRef<Record<string, THREE.Mesh>>({});
@@ -994,10 +1004,10 @@ export function BirthChartOrrery({
       <div className="relative w-full rounded-2xl overflow-hidden border border-[#8B6914]/15 bg-[#0a1628]/90 shadow-[0_4px_32px_rgba(0,20,60,0.15)] orrery-canvas-container flex items-center justify-center">
         <div className="text-center pointer-events-none select-none">
           <p className="text-[#8B6914]/60 text-[8px] uppercase tracking-[0.4em] mb-2">
-            {lang === 'de' ? '☉ SONNENSYSTEM' : '☉ SOLAR SYSTEM'}
+            {t('dashboard.orrery.solarSystem')}
           </p>
           <p className="text-white/20 text-[10px] font-mono">
-            {lang === 'de' ? 'Visualisierung nicht verfügbar' : 'Visualisation unavailable'}
+            {t('dashboard.orrery.unavailable')}
           </p>
         </div>
       </div>
@@ -1015,8 +1025,8 @@ export function BirthChartOrrery({
       <div className="absolute top-4 left-5 z-10 pointer-events-none">
         <p className="text-[#8B6914]/70 text-[8px] uppercase tracking-[0.4em] mb-1">
           {planetariumMode
-            ? (lang === 'de' ? '✦ PLANETARIUM' : '✦ PLANETARIUM')
-            : (lang === 'de' ? '☉ SONNENSYSTEM' : '☉ SOLAR SYSTEM')
+            ? t('dashboard.orrery.planetarium')
+            : t('dashboard.orrery.solarSystem')
           }
         </p>
         {/* S-DP-14: enlarged date/time display */}
@@ -1025,7 +1035,7 @@ export function BirthChartOrrery({
         </p>
         {planetariumMode && (
           <p className="text-sm text-[#7EC8E3]/80 mt-0.5">
-            {lang === 'de' ? 'Heute: ' : 'Today: '}{todayStr}
+            {t('dashboard.orrery.todayPrefix')}{todayStr}
           </p>
         )}
       </div>
@@ -1035,11 +1045,11 @@ export function BirthChartOrrery({
         {planetariumMode && supportsFullscreen && (
           <button
             onClick={toggleFullscreen}
-            className="w-8 h-8 rounded-full border border-[#8B6914]/25 flex items-center justify-center hover:bg-[#8B6914]/15 hover:border-[#8B6914]/45 transition-all bg-black/40 backdrop-blur-sm"
+            className="w-11 h-11 rounded-full border border-[#8B6914]/25 flex items-center justify-center hover:bg-[#8B6914]/15 hover:border-[#8B6914]/45 transition-all bg-black/40 backdrop-blur-sm"
             aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
             title={isFullscreen
-              ? (lang === 'de' ? 'Vollbild verlassen' : 'Exit fullscreen')
-              : (lang === 'de' ? 'Vollbild' : 'Fullscreen')
+              ? t('dashboard.orrery.exitFullscreen')
+              : t('dashboard.orrery.fullscreen')
             }
           >
             {isFullscreen
@@ -1050,7 +1060,7 @@ export function BirthChartOrrery({
         )}
         <button
           onClick={() => setIsPlaying(!isPlaying)}
-          className="w-8 h-8 rounded-full border border-[#8B6914]/25 flex items-center justify-center hover:bg-[#8B6914]/15 hover:border-[#8B6914]/45 transition-all bg-black/40 backdrop-blur-sm"
+          className="w-11 h-11 rounded-full border border-[#8B6914]/25 flex items-center justify-center hover:bg-[#8B6914]/15 hover:border-[#8B6914]/45 transition-all bg-black/40 backdrop-blur-sm"
         >
           {isPlaying
             ? <Pause className="w-3 h-3 text-[#8B6914]/80" />
@@ -1075,15 +1085,15 @@ export function BirthChartOrrery({
               <span className="text-[13px] text-[#EEF0FF] font-medium">{hoveredObject.name}</span>
             </div>
             {hoveredObject.type === 'star' && hoveredObject.mag != null && (
-              <p className="text-[10px] text-[#667788]">Mag: <span className="text-[#AABBCC]">{hoveredObject.mag.toFixed(2)}</span></p>
+              <p className="text-[10px] text-[#667788]" title="Scheinbare Helligkeit (Magnitude): Je niedriger der Wert, desto heller der Stern. Sichtbar mit bloßem Auge bis ca. 6.0.">Helligkeit: <span className="text-[#AABBCC]">{hoveredObject.mag.toFixed(2)} mag</span></p>
             )}
             {hoveredObject.con && (
-              <p className="text-[10px] text-[#667788]">{lang === 'de' ? 'Sternbild' : 'Constellation'}: <span className="text-[#AABBCC]">{CONSTELLATION_NAMES[hoveredObject.con] || hoveredObject.con}</span></p>
+              <p className="text-[10px] text-[#667788]">{t('dashboard.orrery.constellation')}: <span className="text-[#AABBCC]">{CONSTELLATION_NAMES[hoveredObject.con] || hoveredObject.con}</span></p>
             )}
             {hoveredObject.altitude !== 0 && (
               <div className="mt-1.5 pt-1.5 border-t border-blue-400/15">
-                <p className="text-[10px] text-[#667788]">{lang === 'de' ? 'Höhe' : 'Alt'}: <span className="text-[#AABBCC]">{hoveredObject.altitude}°</span></p>
-                <p className="text-[10px] text-[#667788]">{lang === 'de' ? 'Azimut' : 'Az'}: <span className="text-[#AABBCC]">{hoveredObject.azimuth}°</span></p>
+                <p className="text-[10px] text-[#667788]">{t('dashboard.orrery.altitude')}: <span className="text-[#AABBCC]">{hoveredObject.altitude}°</span></p>
+                <p className="text-[10px] text-[#667788]">{t('dashboard.orrery.azimuth')}: <span className="text-[#AABBCC]">{hoveredObject.azimuth}°</span></p>
               </div>
             )}
           </div>

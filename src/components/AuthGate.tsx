@@ -81,6 +81,18 @@ export function AuthGate() {
 
   const labelCls = "block text-[9px] uppercase tracking-[0.3em] text-gold/50 mb-2";
 
+  const getPasswordStrength = (pwd: string) => {
+    if (!pwd) return 0;
+    let s = 0;
+    if (pwd.length >= 6) s++;
+    if (/[A-Z]/.test(pwd)) s++;
+    if (/[0-9]/.test(pwd)) s++;
+    if (/[^A-Za-z0-9]/.test(pwd)) s++;
+    return s;
+  };
+
+  const strength = getPasswordStrength(registerPassword);
+
   const btnCls =
     "w-full py-3 border border-gold/20 text-gold text-[10px] uppercase tracking-[0.4em] hover:bg-gold/5 hover:border-gold/40 transition-all disabled:opacity-40 disabled:cursor-not-allowed";
 
@@ -201,6 +213,23 @@ export function AuthGate() {
                 className={inputCls}
                 placeholder={t("auth.passwordPlaceholder")}
               />
+              <div className="mt-2 flex items-center gap-1.5 px-1">
+                <div className="flex-1 flex gap-1">
+                  {[1, 2, 3, 4].map((step) => (
+                    <div
+                      key={step}
+                      className={`h-0.5 flex-1 rounded-full transition-colors duration-500 ${
+                        step <= strength
+                          ? strength <= 1 ? "bg-red-500/60" : strength <= 2 ? "bg-amber-500/60" : "bg-emerald-500/60"
+                          : "bg-white/5"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="text-[8px] uppercase tracking-tighter text-white/20">
+                  {t("auth.passwordRequirements")}
+                </span>
+              </div>
             </div>
             <div>
               <label className={labelCls}>

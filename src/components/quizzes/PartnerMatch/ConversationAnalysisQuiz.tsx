@@ -24,7 +24,7 @@ interface AnalysisResult {
 }
 
 export default function ConversationAnalysisQuiz({ onComplete, onClose }: ConversationAnalysisQuizProps) {
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
   const [text, setText] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
@@ -32,7 +32,7 @@ export default function ConversationAnalysisQuiz({ onComplete, onClose }: Conver
 
   const handleAnalyze = async () => {
     if (!text.trim() || text.length < 20) {
-      setError(lang === 'de' ? 'Bitte gib einen längeren Dialog ein (min. 20 Zeichen).' : 'Please enter a longer dialogue (min. 20 chars).');
+      setError(t('conversationAnalysis.tooShort'));
       return;
     }
 
@@ -52,7 +52,7 @@ export default function ConversationAnalysisQuiz({ onComplete, onClose }: Conver
       setResult(data);
     } catch (err) {
       console.error(err);
-      setError(lang === 'de' ? 'Analyse fehlgeschlagen. Bitte versuche es später erneut.' : 'Analysis failed. Please try again later.');
+      setError(t('conversationAnalysis.analysisFailed'));
     } finally {
       setIsAnalyzing(false);
     }
@@ -79,7 +79,7 @@ export default function ConversationAnalysisQuiz({ onComplete, onClose }: Conver
         <div>
           <h2 className="font-serif text-2xl mb-1 flex items-center gap-2">
             <MessageSquare className="w-6 h-4 text-[#9B3A6A]" />
-            {lang === 'de' ? 'Gesprächs-Analyse' : 'Conversation Analysis'}
+            {t('conversationAnalysis.title')}
           </h2>
           <p className="text-xs text-white/40 uppercase tracking-widest">
             Partner Match — AI Integration
@@ -101,15 +101,12 @@ export default function ConversationAnalysisQuiz({ onComplete, onClose }: Conver
           >
             <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
               <label className="block text-[10px] uppercase tracking-widest text-[#9B3A6A] mb-4 font-bold">
-                {lang === 'de' ? 'Dialog kopieren & einfügen' : 'Paste Dialogue Here'}
+                {t('conversationAnalysis.pasteLabel')}
               </label>
               <textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                placeholder={lang === 'de' 
-                  ? "Person A: Hallo!\nPerson B: Hi, wie geht's?\n..." 
-                  : "Person A: Hello!\nPerson B: Hi, how are you?\n..."
-                }
+                placeholder={t('conversationAnalysis.placeholder')}
                 className="w-full h-64 bg-transparent border-none focus:ring-0 text-sm leading-relaxed placeholder:text-white/20 resize-none"
               />
             </div>
@@ -131,20 +128,18 @@ export default function ConversationAnalysisQuiz({ onComplete, onClose }: Conver
               {isAnalyzing ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  {lang === 'de' ? 'Sprecher werden getrennt...' : 'Separating Speakers...'}
+                  {t('conversationAnalysis.separatingSpeakers')}
                 </>
               ) : (
                 <>
                   <Sparkles className="w-5 h-5" />
-                  {lang === 'de' ? 'Dialog analysieren' : 'Analyze Dialogue'}
+                  {t('conversationAnalysis.analyzeDialogue')}
                 </>
               )}
             </button>
 
             <p className="text-[10px] text-white/30 text-center italic">
-              {lang === 'de' 
-                ? 'Die KI trennt automatisch zwischen dir und deinem Partner und erkennt semantische Muster.'
-                : 'AI will automatically separate you and your partner and detect semantic patterns.'}
+              {t('conversationAnalysis.aiHint')}
             </p>
           </motion.div>
         ) : (
@@ -178,7 +173,8 @@ export default function ConversationAnalysisQuiz({ onComplete, onClose }: Conver
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <span className="text-3xl font-serif">{Math.round(result.resonance * 100)}%</span>
-                  <span className="text-[8px] uppercase tracking-tighter opacity-50">Resonance</span>
+                  <span className="text-[8px] uppercase tracking-tighter opacity-50">Resonanz</span>
+                  <span className="text-[7px] text-white/30 mt-1 max-w-[100px] text-center leading-tight">Wie stark die Gesprächsthemen mit deiner Signatur übereinstimmen</span>
                 </div>
               </div>
             </div>
@@ -193,7 +189,7 @@ export default function ConversationAnalysisQuiz({ onComplete, onClose }: Conver
             {/* Dialogue View */}
             <div className="space-y-4">
               <h3 className="text-[10px] uppercase tracking-widest text-white/40 font-bold">
-                {lang === 'de' ? 'Erkannter Dialogverlauf' : 'Detected Dialogue Flow'}
+                {t('conversationAnalysis.dialogueFlow')}
               </h3>
               <div className="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
                 {result.lines.map((line, i) => (
@@ -213,7 +209,7 @@ export default function ConversationAnalysisQuiz({ onComplete, onClose }: Conver
               onClick={handleFinish}
               className="w-full py-4 rounded-xl font-bold bg-white text-[#050A18] hover:bg-white/90 transition-all"
             >
-              {lang === 'de' ? 'Ergebnis übernehmen' : 'Apply Results'}
+              {t('conversationAnalysis.applyResults')}
             </button>
           </motion.div>
         )}

@@ -58,6 +58,7 @@ export const CLUSTER_REGISTRY: ClusterDef[] = [
       'quiz.rpg_identity.v1',
       'quiz.party_need.v1',
       'quiz.celebrity_soulmate.v1',
+      'quiz.shadow_archetype.v1',
     ],
   },
   {

@@ -26,6 +26,41 @@
   --color-ring-border:   rgba(70,130,220,0.18);
   --color-ring-text:     rgba(215,230,255,0.85);
   --color-ring-muted:    rgba(215,230,255,0.40);
+
+  /* ── Design System V2 Tokens ─────────────────────────────────────────── */
+
+  /* Dark mode cards */
+  --color-card-dark:          #0D0F14;
+  --color-card-dark-elevated: #14161B;
+
+  /* Bright mode (extends Morning) */
+  --color-card-bright:        #FAFAFA;
+  --color-text-bright:        #111111;
+  --color-text-bright-body:   #4A4A4A;
+  --color-text-bright-dim:    #71717A;
+  --color-accent-blue:        #2563EB;
+  --color-border-bright:      #E4E4E7;
+
+  /* Wu-Xing Element Colors */
+  --color-element-wood:  #4CAF50;
+  --color-element-fire:  #F44336;
+  --color-element-earth: #FF9800;
+  --color-element-metal: #9E9E9E;
+  --color-element-water: #2196F3;
+
+  /* Spacing */
+  --spacing-section: 80px;
+
+  /* Radii */
+  --radius-card:    12px;
+  --radius-card-lg: 16px;
+
+  /* Touch targets */
+  --touch-min:   44px;
+  --touch-input: 48px;
+
+  /* CJK font */
+  --font-cjk: "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
 }
 
 /* ── CSS Custom Properties ─────────────────────────────────────────────── */
@@ -134,6 +169,51 @@ body {
 
 .gold-glow {
   box-shadow: 0 0 20px rgba(212, 175, 55, 0.08), 0 0 60px rgba(212, 175, 55, 0.04);
+}
+
+/* ── Design System V2 — Bright Mode Cards ──────────────────────────────── */
+
+.bright-card {
+  background: var(--color-card-bright);
+  border: 1px solid var(--color-border-bright);
+  border-radius: var(--radius-card);
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.3s ease;
+}
+.bright-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+  border-color: var(--color-accent-blue);
+}
+
+/* Element-coded card (left border stripe) */
+.card-element {
+  border-left: 4px solid var(--element-color, var(--color-gold));
+}
+.card-element[data-element="Wood"]  { --element-color: var(--color-element-wood);  }
+.card-element[data-element="Fire"]  { --element-color: var(--color-element-fire);  }
+.card-element[data-element="Earth"] { --element-color: var(--color-element-earth); }
+.card-element[data-element="Metal"] { --element-color: var(--color-element-metal); }
+.card-element[data-element="Water"] { --element-color: var(--color-element-water); }
+
+/* Skeleton loading (both modes) */
+.skeleton-pulse {
+  background: linear-gradient(90deg, transparent 25%, rgba(212,175,55,0.06) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Focus ring — accessible, both modes */
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-accent-blue, var(--color-gold));
+  outline-offset: 2px;
 }
 
 /* Fu-Ring card — flat, dark, no glass */
@@ -613,7 +693,7 @@ h1, h2, h3 { letter-spacing: 0.1em; }
 .landing-hero-root {
   background: radial-gradient(circle at top, #050b1a 0%, #020617 100%);
   color: #f8f9fa;
-  font-family: 'Inter', 'Sora', sans-serif;
+  font-family: 'Sora', ui-sans-serif, system-ui, sans-serif;
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   cursor: none;
@@ -921,14 +1001,55 @@ h1, h2, h3 { letter-spacing: 0.1em; }
 .enter-scroll-rod--bottom { bottom: 0; border-radius: 0 0 3px 3px; }
 
 /* ── ElevenLabs Widget — force to foreground ─────────────────────── */
-elevenlabs-convai,
+/* The convai widget renders popups (microphone permission, call confirm)
+   inside Shadow DOM *and* sometimes appends overlays to <body>.
+   We must ensure nothing in our UI clips or stacks above them.          */
+
+elevenlabs-convai {
+  position: relative;
+  z-index: 99999 !important;
+  overflow: visible !important;
+}
+
 elevenlabs-convai * {
   z-index: 99999 !important;
 }
 
-[data-levi-widget] {
+/* Catch any ElevenLabs-injected iframes or global overlays */
+elevenlabs-convai iframe,
+div[id^="elevenlabs"],
+div[class*="elevenlabs"] {
+  z-index: 99999 !important;
+  pointer-events: auto !important;
+}
+
+[data-levi-widget],
+[data-agent-widget] {
   position: relative;
   z-index: 99999 !important;
+  overflow: visible !important;
+}
+
+/* When the widget is active, break its parent morning-card out of any
+   stacking context that would otherwise clip/trap the popup.
+   The active-state class z-[99999] is set in React; here we additionally
+   ensure backdrop-filter (which creates a stacking context) is removed
+   so the child z-index actually reaches the viewport layer.             */
+.morning-card:has(elevenlabs-convai),
+div:has([data-agent-widget] elevenlabs-convai) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  overflow: visible !important;
+  z-index: 99999 !important;
+}
+
+/* Body-level overlays appended by the ElevenLabs SDK                    */
+body > div[class*="eleven"],
+body > div[id*="eleven"],
+body > div[class*="convai"],
+body > div[id*="convai"] {
+  z-index: 999999 !important;
+  position: fixed !important;
 }
 
 /* ── Reduced Motion ──────────────────────────────────────────────── */
