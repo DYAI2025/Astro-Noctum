@@ -1,5 +1,48 @@
 # Changelog
 
+## [Unreleased] - 2026-03-31
+
+### Design System
+
+- **Design System V2** — unified token system for dark/bright mode: typography (Sora+Cormorant), spacing scale (4-80px), Wu-Xing element colors (#4CAF50/#F44336/#FF9800/#9E9E9E/#2196F3), card system, touch targets (44px min), WCAG contrast enforcement
+- **Spiritual Tech Interactions** — 300ms+ transitions, skeleton loading, cosmic comedy error messages, 5-item nav max, mobile drawer pattern
+- **Bright mode accent: #2563EB** (Blue) — tech-oriented, distinct from dark-mode Gold
+- Tokens in `src/index.css` @theme: card-dark, card-bright, accent-blue, element-*, spacing-section, radius-card, touch-min
+- New CSS classes: `.bright-card` (hover lift+shadow), `.card-element` (data-element left stripe), `.skeleton-pulse`, `.focus-ring`
+
+### S09 Design-Fitting Sprint
+
+- **Nav:** FAQ replaced by Weekly in primary nav, 44px touch targets on all nav items, `transition-all duration-300`
+- **Spacing:** `gap-20` (80px) standardized section gaps, `p-6`/`p-4` card padding
+- **Mobile:** DashboardBigFour `md:grid-cols-4`, `min-h-11` on all buttons/links
+- **Colors:** Centralized `element-colors.ts`, Wu-Xing CSS variable references replace hardcoded hex
+- **Typography:** Inter removed, Sora-only body font (`font-sans`), landing-hero font fixed
+- **WCAG:** Bright-mode text minimum `#71717A` on white (4.5:1 ratio) — bumped 7 components
+
+### Bug Fixes
+
+- **L2 cooldown persistence** — `generated_at` column on vibes_cache for cooldown survival across Railway redeploys
+- **formatCooldown** extracted to `src/lib/format-cooldown.ts` with 5 unit tests
+- **Dashboard ghost-ui test** — added react-router-dom mock for useNavigate
+- **Duplicate import** — removed double DashboardBigFour import from merge conflict
+
+### Tests
+
+- **1041/1041 pass** (0 failures, +42 from previous session)
+- 5 formatCooldown tests, cooldown response shape validation
+- ghost-ui test fixed (useNavigate mock)
+
+### Decisions
+
+- `DEC-design-system-v2` — dark/bright tokens, Wu-Xing colors, spacing, radii, touch targets
+- `DEC-spiritual-tech-interactions` — animation timing, cosmic errors, skeleton loading, nav rules
+
+### Documentation
+
+- `docs/DESIGN_SYSTEM_V2.md` — quick reference with Tailwind v4 integration
+- `docs/plans/2026-03-31-s09-design-fitting.md` — sprint plan
+- `docs/plans/2026-03-30-review-fixes-and-dashboard-polish.md` — review fixes plan
+
 ## [Unreleased] - 2026-03-30
 
 ### Features
