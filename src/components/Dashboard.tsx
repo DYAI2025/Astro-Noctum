@@ -32,7 +32,6 @@ import { useFusionRingContext } from "../contexts/FusionRingContext";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { soulprintToNatalWeights } from "./fusion-ring-website/signatur-bridge";
-import { DashboardBigFour } from "./dashboard/DashboardBigFour";
 import MiniSignature from "./dashboard/MiniSignature";
 import InfluenceGauges from "./dashboard/InfluenceGauges";
 import { TourOverlay } from "./dashboard/TourOverlay";
