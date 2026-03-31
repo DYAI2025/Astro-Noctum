@@ -15,7 +15,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "start": "node server.mjs",
-    "typecheck:src": "./scripts/ci-typecheck-src.sh"
+    "typecheck:src": "bash ./scripts/ci-typecheck-src.sh"
   },
   "engines": {
     "node": ">=20.19.0"
