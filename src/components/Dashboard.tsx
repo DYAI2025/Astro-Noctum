@@ -31,7 +31,6 @@ import { useFusionRingContext } from "../contexts/FusionRingContext";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { toNatalWeightsOrUndefined } from "@/src/lib/signatur/weight-utils";
-import { soulprintToDimensionWeights as _legacySoulprintToDimensionWeights } from "./fusion-ring-website/signatur-bridge";
 import { DashboardBigFour as DashboardBigFourCard } from "./dashboard/DashboardBigFour";
 import MiniSignature from "./dashboard/MiniSignature";
 import InfluenceGauges from "./dashboard/InfluenceGauges";
