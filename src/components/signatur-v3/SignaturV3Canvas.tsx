@@ -384,9 +384,11 @@ export default function SignaturV3Canvas({
       <div ref={containerRef} className={className} style={{ width: '100%', height: '100%' }}>
         <canvas
           ref={canvasRef}
+          className={className}
           style={{
             width: effectiveW,
             height: effectiveH,
+            background: 'radial-gradient(ellipse at center, #0d0a1a 0%, #050308 100%)',
             borderRadius: '50%',
             background: 'radial-gradient(ellipse at center, #0d0a1a 0%, #050308 100%)',
           }}
