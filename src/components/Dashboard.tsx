@@ -30,7 +30,7 @@ import { useFusionRingContext } from "../contexts/FusionRingContext";
 
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
-import { soulprintToNatalWeights } from "./fusion-ring-website/signatur-bridge";
+import { toNatalWeightsOrUndefined } from "@/src/lib/signatur/weight-utils";
 import { DashboardBigFour as DashboardBigFourCard } from "./dashboard/DashboardBigFour";
 import MiniSignature from "./dashboard/MiniSignature";
 import InfluenceGauges from "./dashboard/InfluenceGauges";
@@ -308,7 +308,7 @@ export function Dashboard({
     profileMeta.quizSectors,
   );
   const natalWeights = useMemo(
-    () => (profileMeta.soulprintSectors ? soulprintToNatalWeights(profileMeta.soulprintSectors) : undefined),
+    () => toNatalWeightsOrUndefined(profileMeta.soulprintSectors),
     [profileMeta.soulprintSectors],
   );
 
