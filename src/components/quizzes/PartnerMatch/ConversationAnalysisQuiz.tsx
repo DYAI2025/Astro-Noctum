@@ -173,7 +173,8 @@ export default function ConversationAnalysisQuiz({ onComplete, onClose }: Conver
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <span className="text-3xl font-serif">{Math.round(result.resonance * 100)}%</span>
-                  <span className="text-[8px] uppercase tracking-tighter opacity-50">Resonance</span>
+                  <span className="text-[8px] uppercase tracking-tighter opacity-50">Resonanz</span>
+                  <span className="text-[7px] text-white/30 mt-1 max-w-[100px] text-center leading-tight">Wie stark die Gesprächsthemen mit deiner Signatur übereinstimmen</span>
                 </div>
               </div>
             </div>
