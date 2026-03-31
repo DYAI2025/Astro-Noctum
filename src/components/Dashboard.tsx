@@ -312,6 +312,12 @@ export function Dashboard({
     [profileMeta.soulprintSectors],
   );
 
+  // ── Memoised V3 dimension weights for MiniSignature ─────────────────
+  const dimensionWeights = useMemo(
+    () => profileMeta.soulprintSectors ? soulprintToDimensionWeights(profileMeta.soulprintSectors) : undefined,
+    [profileMeta.soulprintSectors],
+  );
+
   // ── Render ────────────────────────────────────────────────────────────
 
   return (

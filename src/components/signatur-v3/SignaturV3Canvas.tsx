@@ -11,7 +11,7 @@
  * 4. A subtle density glow shows the emergent structure
  */
 
-import { useRef, useEffect, useCallback, useMemo } from 'react';
+import { useRef, useEffect, useCallback, useMemo, useState } from 'react';
 import {
   type PoleState,
   type SignaturV3Config,
@@ -223,6 +223,7 @@ export default function SignaturV3Canvas({
   quality = 'auto',
 }: SignaturV3Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const animRef = useRef<number>(0);
   const polesRef = useRef<PoleState[] | null>(null);
   const dissonanceRef = useRef<V3DissonanceState | null>(null);
@@ -232,13 +233,35 @@ export default function SignaturV3Canvas({
   const lastFrameRef = useRef(0);
   const visibleRef = useRef(true);
 
+  // Responsive sizing — uses ResizeObserver when no explicit width/height
+  const isResponsive = width == null && height == null;
+  const [containerSize, setContainerSize] = useState({ w: width || 500, h: height || 500 });
+
+  useEffect(() => {
+    if (!isResponsive) {
+      setContainerSize({ w: width || 500, h: height || 500 });
+      return;
+    }
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(entries => {
+      const entry = entries[0];
+      if (entry) setContainerSize({ w: entry.contentRect.width, h: entry.contentRect.height });
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [isResponsive, width, height]);
+
+  const effectiveW = containerSize.w;
+  const effectiveH = containerSize.h;
+
   // Keep refs in sync with props (avoids restarting animation loop on each change)
   dayHarmonicRef.current = dayHarmonic;
   solarRef.current = solarModulation;
 
   const config = useMemo(
-    () => buildConfig(width, height, quality),
-    [width, height, quality],
+    () => buildConfig(effectiveW, effectiveH, quality),
+    [effectiveW, effectiveH, quality],
   );
 
   const natalMap = useMemo(() => {
@@ -285,8 +308,8 @@ export default function SignaturV3Canvas({
     if (!ctx) return;
 
     const dpr = window.devicePixelRatio || 1;
-    const w = width * dpr;
-    const h = height * dpr;
+    const w = effectiveW * dpr;
+    const h = effectiveH * dpr;
 
     if (canvas.width !== w || canvas.height !== h) {
       canvas.width = w;
@@ -295,8 +318,8 @@ export default function SignaturV3Canvas({
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    const cx = width / 2;
-    const cy = height / 2;
+    const cx = effectiveW / 2;
+    const cy = effectiveH / 2;
 
     // Delta time for frame-rate-independent animation
     const now = performance.now();
@@ -318,7 +341,7 @@ export default function SignaturV3Canvas({
     // Solar storms increase fade rate slightly (more energy = brighter trails)
     const solarFadeMod = solarRef.current ? (solarRef.current.ringModulation - 1.0) * 0.01 : 0;
     ctx.fillStyle = `rgba(8, 5, 15, ${0.02 + dissonance.dNatal * 0.03 - solarFadeMod})`;
-    ctx.fillRect(0, 0, width, height);
+    ctx.fillRect(0, 0, effectiveW, effectiveH);
 
     // Dimension axes (very subtle guide lines)
     for (const dim of DIMENSIONS) {
@@ -348,7 +371,7 @@ export default function SignaturV3Canvas({
     drawCenter(ctx, cx, cy);
 
     animRef.current = requestAnimationFrame(render);
-  }, [width, height, config]);
+  }, [effectiveW, effectiveH, config]);
 
   useEffect(() => {
     lastFrameRef.current = performance.now();
@@ -356,13 +379,29 @@ export default function SignaturV3Canvas({
     return () => cancelAnimationFrame(animRef.current);
   }, [render]);
 
+  if (isResponsive) {
+    return (
+      <div ref={containerRef} className={className} style={{ width: '100%', height: '100%' }}>
+        <canvas
+          ref={canvasRef}
+          className={className}
+          style={{
+            width: effectiveW,
+            height: effectiveH,
+            background: 'radial-gradient(ellipse at center, #0d0a1a 0%, #050308 100%)',
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <canvas
       ref={canvasRef}
       className={className}
       style={{
-        width,
-        height,
+        width: effectiveW,
+        height: effectiveH,
         background: 'radial-gradient(ellipse at center, #0d0a1a 0%, #050308 100%)',
         borderRadius: '50%',
       }}

@@ -2,7 +2,7 @@
 
 **Description**: Fuse Western astrology, Chinese BaZi, and Wu-Xing into a single living system that calculates, combines, and visualizes all three traditions through a unified Signatur. This is the core product differentiator — no other platform merges these systems into one kymatic, deterministic, AI-interpreted signature. The Signatur is not an image. It is a living system: 12 points move according to physical laws, and the traces they leave *are* the Signatur. Form emerges from behavior — Cymatics principle: know the tone, know the geometry.
 
-**Status**: Draft
+**Status**: Approved
 
 **Priority**: Must-have
 
