@@ -32,7 +32,7 @@ import { useFusionRingContext } from "../contexts/FusionRingContext";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { soulprintToNatalWeights } from "./fusion-ring-website/signatur-bridge";
-import { DashboardBigFour } from "./dashboard/DashboardBigFour";
+import { DashboardBigFour as DashboardBigFourCard } from "./dashboard/DashboardBigFour";
 import MiniSignature from "./dashboard/MiniSignature";
 import InfluenceGauges from "./dashboard/InfluenceGauges";
 import { TourOverlay } from "./dashboard/TourOverlay";
@@ -373,7 +373,7 @@ export function Dashboard({
       {/* ═══ IDENTITY — Big Four + MiniSignature (F1+F2) ════════════════════ */}
       <motion.div className="mb-8 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 items-start" {...fadeIn(0.05)}>
         <SectionErrorBoundary name="BigFour">
-          <DashboardBigFour
+          <DashboardBigFourCard
             sunSign={apiData?.western?.zodiac_sign || ''}
             moonSign={apiData?.western?.moon_sign || ''}
             ascendant={apiData?.western?.ascendant_sign || ''}
