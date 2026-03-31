@@ -30,7 +30,10 @@ import { useFusionRingContext } from "../contexts/FusionRingContext";
 
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
-import { toNatalWeightsOrUndefined } from "@/src/lib/signatur/weight-utils";
+import {
+  toNatalWeightsOrUndefined,
+  toDimensionWeightsOrUndefined,
+} from "@/src/lib/signatur/weight-utils";
 import { DashboardBigFour as DashboardBigFourCard } from "./dashboard/DashboardBigFour";
 import MiniSignature from "./dashboard/MiniSignature";
 import InfluenceGauges from "./dashboard/InfluenceGauges";
@@ -314,7 +317,7 @@ export function Dashboard({
 
   // ── Memoised V3 dimension weights for MiniSignature ─────────────────
   const dimensionWeights = useMemo(
-    () => profileMeta.soulprintSectors ? soulprintToDimensionWeights(profileMeta.soulprintSectors) : undefined,
+    () => toDimensionWeightsOrUndefined(profileMeta.soulprintSectors),
     [profileMeta.soulprintSectors],
   );
 
