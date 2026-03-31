@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -19,7 +19,6 @@ import type { TileTexts } from "../types/interpretation";
 import { DashboardAstroSection } from "./dashboard/DashboardAstroSection";
 import { DashboardInterpretationSection } from "./dashboard/DashboardInterpretationSection";
 import { SectionErrorBoundary } from "./dashboard/SectionErrorBoundary";
-import { DashboardBigFour } from "./dashboard/DashboardBigFour";
 import { AgentSection } from "./dashboard/AgentSection";
 import { AGENTS } from "@/packages/shared/src/agents/config";
 import { CosmicWeatherCard } from "./CosmicWeatherCard";
@@ -308,6 +307,10 @@ export function Dashboard({
     profileMeta.soulprintSectors,
     profileMeta.quizSectors,
   );
+  const natalWeights = useMemo(
+    () => (profileMeta.soulprintSectors ? soulprintToNatalWeights(profileMeta.soulprintSectors) : undefined),
+    [profileMeta.soulprintSectors],
+  );
 
   // ── Render ────────────────────────────────────────────────────────────
 
@@ -384,7 +387,7 @@ export function Dashboard({
         <SectionErrorBoundary name="MiniSignature">
           <div className="w-[200px] md:w-[240px] mx-auto md:mx-0">
             <MiniSignature
-              natalWeights={profileMeta.soulprintSectors ? soulprintToNatalWeights(profileMeta.soulprintSectors) : undefined}
+              natalWeights={natalWeights}
               quizWeights={{}}
               dayHarmonic={dayHarmonic}
               onExpand={() => navigate('/signatur')}
@@ -421,7 +424,7 @@ export function Dashboard({
       <motion.div {...fadeIn(0.15)}>
         <SectionErrorBoundary name="InfluenceGauges">
           <InfluenceGauges
-            weights={profileMeta.soulprintSectors ? soulprintToNatalWeights(profileMeta.soulprintSectors) : undefined}
+            weights={natalWeights}
           />
         </SectionErrorBoundary>
       </motion.div>
