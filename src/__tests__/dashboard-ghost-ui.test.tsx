@@ -3,6 +3,12 @@
 import { render, screen } from '@testing-library/react';
 import { vi, describe, it, expect } from 'vitest';
 
+vi.mock('react-router-dom', () => ({
+  useNavigate: () => vi.fn(),
+  useLocation: () => ({ pathname: '/' }),
+  Link: ({ children, ...props }: any) => <a {...props}>{children}</a>,
+}));
+
 // ── Context / hook mocks ───────────────────────────────────────────────────
 vi.mock('@/src/contexts/LanguageContext', () => ({
   useLanguage: () => ({

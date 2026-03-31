@@ -1047,8 +1047,9 @@ const horoscopeCache = new Map(); // userId:dateStr → { horoscope, timestamp }
 const HOROSCOPE_CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
 
 // ── Vibes cache (L1 in-memory) ──────────────────────────────────────
-const vibesCache = new Map(); // vibes:userId:thirtyMinSlot → { data, timestamp }
-const VIBES_CACHE_TTL = 30 * 60 * 1000; // 30 min (matches slot window)
+const vibesCache = new Map(); // vibes:userId → { data, timestamp }
+const VIBES_COOLDOWN_FREE = 4 * 60 * 60 * 1000;    // 4 hours for free-tier
+const VIBES_COOLDOWN_PREMIUM = 2 * 60 * 60 * 1000;  // 2 hours for premium
 
 // ── Weekly Insights cache (L1 in-memory) ───────────────────────────
 const weeklyCache = new Map(); // weekly:userId:isoWeek → { data, timestamp }
@@ -1760,45 +1761,71 @@ function dominantElementFromSoulprint(sectors) {
   return maxEl;
 }
 
-function vibesSlotKey(userId) {
-  const slot = Math.floor(Date.now() / (30 * 60 * 1000));
-  return `vibes:${userId}:${slot}`;
-}
-
-function vibesSlotString() {
-  return String(Math.floor(Date.now() / (30 * 60 * 1000)));
+function vibesCacheKey(userId) {
+  return `vibes:${userId}`;
 }
 
 app.post('/api/vibes', requireUserAuth, async (req, res) => {
   try {
     const userId = req.userId;
 
-    // ── L1: In-memory cache check ────────────────────────────────────
-    const cacheKey = vibesSlotKey(userId);
+    // ── Determine cooldown based on premium status ───────────────────
+    let isPremium = false;
+    if (supabaseServer) {
+      const { data: prof } = await supabaseServer
+        .from('profiles')
+        .select('tier')
+        .eq('id', userId)
+        .maybeSingle();
+      isPremium = prof?.tier === 'premium';
+    }
+    const cooldownMs = isPremium ? VIBES_COOLDOWN_PREMIUM : VIBES_COOLDOWN_FREE;
+
+    // ── L1: In-memory cache + cooldown check ────────────────────────
+    const cacheKey = vibesCacheKey(userId);
     if (vibesCache.has(cacheKey)) {
       const cached = vibesCache.get(cacheKey);
-      if (Date.now() - cached.timestamp < VIBES_CACHE_TTL) {
-        const payload = { ...cached.data, meta: { ...cached.data.meta, cached: true } };
+      const elapsed = Date.now() - cached.timestamp;
+      if (elapsed < cooldownMs) {
+        const nextAvailableAt = new Date(cached.timestamp + cooldownMs).toISOString();
+        const payload = {
+          ...cached.data,
+          meta: { ...cached.data.meta, cached: true },
+          cooldown: { active: true, next_available_at: nextAvailableAt, remaining_ms: cooldownMs - elapsed },
+        };
         return res.json(payload);
       }
     }
 
     // ── L2: Supabase vibes_cache check ───────────────────────────────
-    const timeSlot = vibesSlotString();
+    const timeSlot = new Date().toISOString().slice(0, 13); // hour-level slot for DB key
     if (supabaseServer) {
       try {
         const { data: dbCached } = await supabaseServer
           .from('vibes_cache')
-          .select('payload_json')
+          .select('payload_json, generated_at')
           .eq('user_id', userId)
           .eq('time_slot', timeSlot)
           .eq('engine_version', 'v1-gemini-vibes')
           .maybeSingle();
 
         if (dbCached?.payload_json) {
-          vibesCache.set(cacheKey, { data: dbCached.payload_json, timestamp: Date.now() });
-          const payload = { ...dbCached.payload_json, meta: { ...dbCached.payload_json.meta, cached: true } };
-          return res.json(payload);
+          const generatedAt = dbCached.generated_at
+            ? new Date(dbCached.generated_at).getTime()
+            : Date.now();
+          const elapsed = Date.now() - generatedAt;
+          // Populate L1 cache with the correct generated_at timestamp
+          vibesCache.set(cacheKey, { data: dbCached.payload_json, timestamp: generatedAt });
+          if (elapsed < cooldownMs) {
+            // Still in cooldown — return cached with cooldown info
+            const nextAvailableAt = new Date(generatedAt + cooldownMs).toISOString();
+            return res.json({
+              ...dbCached.payload_json,
+              meta: { ...dbCached.payload_json.meta, cached: true },
+              cooldown: { active: true, next_available_at: nextAvailableAt, remaining_ms: cooldownMs - elapsed },
+            });
+          }
+          // Cooldown expired — fall through to generation
         }
       } catch (e) {
         console.warn('[vibes] L2 cache read failed, continuing to generation:', e.message);
@@ -1906,7 +1933,9 @@ REGELN:
 7. explain.signatur_context: Bezug zur Signatur des Users, ohne Fachjargon
 8. explain.transit_context: Bezug zur aktuellen Konstellation/Weltraumwetter
 9. KEINE Planetennamen (Mars, Venus etc.), KEIN "die Sterne sagen", KEIN esoterischer Jargon
-10. Output MUSS valides JSON sein. KEIN Markdown, KEINE Code-Blöcke. Direkt mit { beginnen.`;
+10. JEDE Aussage muss logisch aus den Eingabedaten ableitbar sein: Soulprint-Sektoren, Transitdaten, Western/BaZi/Fusion/Wu-Xing Interpretation. KEINE generischen Motivationssprüche oder Fülltext.
+11. Formuliere möglichst abwechslungsreich und mit variierender Wortwahl und Perspektive, sodass die Antwort frisch wirkt.
+12. Output MUSS valides JSON sein. KEIN Markdown, KEINE Code-Blöcke. Direkt mit { beginnen.`;
 
     const model = geminiClient.models;
     const result = await model.generateContent({
@@ -1973,6 +2002,7 @@ REGELN:
           time_slot: timeSlot,
           engine_version: 'v1-gemini-vibes',
           payload_json: vibesPayload,
+          generated_at: new Date().toISOString(),
         }, { onConflict: 'user_id,time_slot,engine_version' })
         .then(({ error }) => {
           if (error) console.warn('[vibes] DB cache upsert failed:', error.message);
@@ -1982,10 +2012,11 @@ REGELN:
         });
     }
 
-    // ── L1: Evict stale vibes entries ────────────────────────────────
+    // ── L1: Evict stale vibes entries (older than max cooldown) ─────
     const now = Date.now();
+    const maxCooldown = VIBES_COOLDOWN_FREE; // evict after the longer cooldown
     const expired = [...vibesCache.entries()]
-      .filter(([, entry]) => now - entry.timestamp > VIBES_CACHE_TTL)
+      .filter(([, entry]) => now - entry.timestamp > maxCooldown)
       .map(([key]) => key);
     expired.forEach(key => vibesCache.delete(key));
 
@@ -3393,6 +3424,68 @@ app.get("/api/profile/:userId", async (req, res) => {
   const weakest_planet = sortedPlanets ? sortedPlanets[sortedPlanets.length - 1][0] : null;
   const emergence_target = weakest_planet;
 
+  // ── Signatur V2 enriched context for voice agent personalization ──
+  const ELEMENT_DESCRIPTIONS_DE = {
+    wood:  { label: 'Holz',   desc: 'Wachstum, Kreativitaet und Erneuerung' },
+    fire:  { label: 'Feuer',  desc: 'Leidenschaft, Ausdruck und Transformation' },
+    earth: { label: 'Erde',   desc: 'Stabilitaet, Fuersorglichkeit und Erdung' },
+    metal: { label: 'Metall', desc: 'Struktur, Klarheit und Praezision' },
+    water: { label: 'Wasser', desc: 'Tiefe, Intuition und Anpassungsfaehigkeit' },
+  };
+
+  const domEl = (wuxing.dominant_element || '').toLowerCase();
+  const elInfo = ELEMENT_DESCRIPTIONS_DE[domEl] || null;
+
+  const signatur_summary = elInfo
+    ? `Deine Signatur betont ${elInfo.label} — ${elInfo.desc}.`
+    : dominant_planet
+      ? `Deine Signatur wird von ${dominant_planet} dominiert.`
+      : null;
+
+  // Day mode: check daily horoscope cache for today's pulse/trace
+  let day_mode_context = null;
+  if (supabaseServer) {
+    try {
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const { data: dailyCache } = await supabaseServer
+        .from('daily_horoscope_cache')
+        .select('payload_json')
+        .eq('user_id', userId)
+        .eq('local_date', todayStr)
+        .maybeSingle();
+      if (dailyCache?.payload_json?.fusion) {
+        const f = dailyCache.payload_json.fusion;
+        day_mode_context = {
+          mode: f.day_mode || null,
+          harmony_index: f.harmony_index ?? null,
+          synthesis: f.synthesis || null,
+        };
+      }
+    } catch (e) {
+      console.warn('[profile] daily cache lookup failed:', e.message);
+    }
+  }
+
+  // Vibes summary: check latest vibes cache for Kurzsignal
+  let vibes_summary = null;
+  if (supabaseServer) {
+    try {
+      const { data: vibesRow } = await supabaseServer
+        .from('vibes_cache')
+        .select('payload_json')
+        .eq('user_id', userId)
+        .order('time_slot', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (vibesRow?.payload_json) {
+        const vp = vibesRow.payload_json;
+        vibes_summary = vp.kurzsignal || vp.vibe?.kurzsignal || null;
+      }
+    } catch (e) {
+      console.warn('[profile] vibes cache lookup failed:', e.message);
+    }
+  }
+
   // Fetch past conversation summaries for session continuity
   let pastConversations = [];
   try {
@@ -3446,6 +3539,14 @@ app.get("/api/profile/:userId", async (req, res) => {
     weakest_planet,
     emergence_target,
 
+    // Signatur V2 enriched context
+    dominant_element_detail: elInfo
+      ? { element: domEl, label: elInfo.label, description: elInfo.desc }
+      : null,
+    signatur_summary,
+    day_mode: day_mode_context,
+    vibes_summary,
+
     // Past conversation summaries for session continuity
     past_conversations: pastConversations,
   });
@@ -3493,6 +3594,121 @@ app.post("/api/agent/conversation", async (req, res) => {
   }
 
   res.json({ status: "saved" });
+});
+
+// ── POST /api/agent/summary — Auto-synthesize user profile from conversations ──
+app.post("/api/agent/summary", requireUserAuth, async (req, res) => {
+  if (!supabaseServer) {
+    return res.status(500).json({ error: "Database not configured" });
+  }
+
+  const userId = req.userId;
+  const REQUIRED_SESSIONS = 3;
+
+  try {
+    // Count total conversations for this user
+    const { count, error: countError } = await supabaseServer
+      .from("agent_conversations")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId);
+
+    if (countError) {
+      console.error("[agent/summary] count error:", countError);
+      return res.status(500).json({ error: countError.message });
+    }
+
+    const totalSessions = count || 0;
+
+    if (totalSessions < REQUIRED_SESSIONS) {
+      return res.json({
+        summary: null,
+        sessions_remaining: REQUIRED_SESSIONS - totalSessions,
+        total_sessions: totalSessions,
+      });
+    }
+
+    // Load last 3 conversations with summaries and topics
+    const { data: convos, error: convosError } = await supabaseServer
+      .from("agent_conversations")
+      .select("summary, topics, agent_type, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(3);
+
+    if (convosError) {
+      console.error("[agent/summary] fetch error:", convosError);
+      return res.status(500).json({ error: convosError.message });
+    }
+
+    // Build context for Gemini synthesis
+    const conversationContext = convos
+      .map((c, i) => {
+        const topicsStr = Array.isArray(c.topics) && c.topics.length > 0
+          ? c.topics.join(", ")
+          : "keine Themen";
+        return `Session ${i + 1} (${c.agent_type || 'levi'}): ${c.summary || 'Keine Zusammenfassung'}. Themen: ${topicsStr}`;
+      })
+      .join("\n");
+
+    if (!geminiClient) {
+      // Without Gemini, return a simple concatenation
+      const fallbackSummary = convos
+        .filter(c => c.summary)
+        .map(c => c.summary)
+        .join(" | ");
+      return res.json({
+        summary: fallbackSummary || null,
+        sessions_remaining: 0,
+        total_sessions: totalSessions,
+        meta: { engine: "fallback" },
+      });
+    }
+
+    // Call Gemini to synthesize a profile summary
+    const prompt = `Du bist Bazodiac, eine Fusions-Astrologie-App. Basierend auf den letzten Gespraechen eines Nutzers mit den Sprach-Agenten Levi und Eve, erstelle ein praegnantes 2-Satz-Profil auf Deutsch. Das Profil soll die Persoenlichkeit, wiederkehrende Themen und astrologische Interessen des Nutzers zusammenfassen. Antworte NUR mit den 2 Saetzen, ohne Anrede oder Erklaerung.
+
+Gespraeche:
+${conversationContext}`;
+
+    const response = await Promise.race([
+      geminiClient.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: prompt,
+        config: { temperature: 0.7 },
+      }),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Gemini timeout")), 15000)
+      ),
+    ]);
+
+    const summaryText = response.text?.trim();
+
+    if (!summaryText) {
+      return res.status(502).json({ error: "Empty response from AI" });
+    }
+
+    // Persist to astro_profiles.agent_summary (fire-and-forget)
+    supabaseServer
+      .from("astro_profiles")
+      .update({ agent_summary: summaryText })
+      .eq("user_id", userId)
+      .then(({ error }) => {
+        if (error) console.warn("[agent/summary] DB persist failed:", error.message);
+      })
+      .catch((err) => {
+        console.error("[agent/summary] DB persist rejected:", err);
+      });
+
+    return res.json({
+      summary: summaryText,
+      sessions_remaining: 0,
+      total_sessions: totalSessions,
+      meta: { engine: "gemini-2.0-flash" },
+    });
+  } catch (err) {
+    console.error("[agent/summary] Error:", err.message);
+    return res.status(500).json({ error: "Summary generation failed" });
+  }
 });
 
 // ── Helper: verify Supabase JWT from Authorization header ───────────

@@ -16,8 +16,8 @@ export function AuroraLayer() {
       <p className="text-sm text-white/70">{aurora.visibilityDE}</p>
 
       <div className="flex gap-4 text-xs text-white/40">
-        <span>Kp {aurora.kp.toFixed(1)}</span>
-        {aurora.gfzKp != null && <span>GFZ: {aurora.gfzKp.toFixed(1)}</span>}
+        <span title="Kp-Index (0–9): Maß für geomagnetische Aktivität. Ab Kp 5 = Magnetsturm.">Kp {aurora.kp.toFixed(1)}</span>
+        {aurora.gfzKp != null && <span title="GFZ-Kp (0–9): Geomagnetischer Index des Helmholtz-Zentrums Potsdam. Ab 5 = Sturm.">GFZ: {aurora.gfzKp.toFixed(1)}</span>}
       </div>
 
       {aurora.europeForecast.length > 0 && (

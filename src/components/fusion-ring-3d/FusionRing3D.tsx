@@ -114,7 +114,7 @@ export const FusionRing3D = ({
 
   const resolutionText = `${labels.resolution}: ${Math.round(resolution)}%`;
   const eventDescription = latestEvent
-    ? `${labels.eventAnnouncePrefix}: ${latestEvent.type} · S${latestEvent.sector + 1} · Δ ${latestEvent.delta.toFixed(2)}`
+    ? `${labels.eventAnnouncePrefix}: ${latestEvent.type} · S${latestEvent.sector + 1} · Letzte Änderung: ${latestEvent.delta >= 0 ? '+' : ''}${latestEvent.delta.toFixed(2)}`
     : labels.latestEvents;
 
   return (

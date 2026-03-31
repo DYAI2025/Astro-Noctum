@@ -24,7 +24,7 @@ export function NavVariantA() {
             to={to}
             end={to === '/'}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+              `flex items-center gap-3 px-3 min-h-11 rounded-lg text-sm transition-all duration-300 ${
                 isActive
                   ? 'bg-[#D4AF37]/10 text-[#D4AF37]'
                   : 'text-white/50 hover:text-white/80 hover:bg-white/5'

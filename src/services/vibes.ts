@@ -13,6 +13,11 @@ export interface VibesResponse {
     transit_context: string;
   };
   meta: { engine_version: string; cached: boolean };
+  cooldown?: {
+    active: boolean;
+    next_available_at: string;
+    remaining_ms: number;
+  };
 }
 
 // ── API Client ───────────────────────────────────────────────────────

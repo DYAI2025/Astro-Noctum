@@ -19,7 +19,7 @@ import { BrandedLoader } from "./components/BrandedLoader";
 import { usePremium } from "./hooks/usePremium";
 import { isFeatureEnabled } from "./lib/feature-flags";
 import type { BootstrapResponse, SignatureDeltaResponse } from "./lib/schemas/experience";
-import { Volume2, VolumeX, LogOut } from "lucide-react";
+import { Volume2, VolumeX, LogOut, CalendarDays } from "lucide-react";
 import { IconHouse as House, IconSparkles as Sparkles, IconTelescope as TelescopeIcon } from "./components/animated-icons";
 
 /**
@@ -427,19 +427,19 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
         </Link>
 
         <nav className="flex space-x-12 text-[10px] uppercase tracking-[0.3em]">
-          <Link to="/" className={`transition-colors ${location.pathname === "/" ? "text-gold-deep" : "text-ink/60 hover:text-gold-deep"}`}>
+          <Link to="/" className={`min-h-11 flex items-center border-b-2 transition-all duration-300 ${location.pathname === "/" ? "text-gold-deep border-current" : "text-ink/60 hover:text-gold-deep border-transparent"}`}>
             {t("nav.atlas")}
           </Link>
-          <Link to="/signatur" className={`transition-colors ${location.pathname === "/signatur" ? "text-gold-deep" : "text-ink/60 hover:text-gold-deep"}`}>
+          <Link to="/signatur" className={`min-h-11 flex items-center border-b-2 transition-all duration-300 ${location.pathname === "/signatur" ? "text-gold-deep border-current" : "text-ink/60 hover:text-gold-deep border-transparent"}`}>
             {t("nav.signatur")}
           </Link>
-          <a href="https://sky.bazodiac.space" target="_blank" rel="noopener noreferrer" className={`transition-colors ${location.pathname === "/" ? "text-gold-deep" : "text-ink/60 hover:text-gold-deep"}`}>
+          <a href="https://sky.bazodiac.space" target="_blank" rel="noopener noreferrer" className={`min-h-11 flex items-center border-b-2 transition-all duration-300 text-ink/60 hover:text-gold-deep border-transparent`}>
             {t("nav.sky")}
           </a>
-          <AgentNavLink t={t} />
-          <Link to="/faq" className={`transition-colors ${location.pathname === "/faq" ? "text-gold-deep" : "text-ink/60 hover:text-gold-deep"}`}>
-            {t("nav.faq")}
+          <Link to="/weekly" className={`min-h-11 flex items-center border-b-2 transition-all duration-300 ${location.pathname === "/weekly" ? "text-gold-deep border-current" : "text-ink/60 hover:text-gold-deep border-transparent"}`}>
+            {t("nav.weekly")}
           </Link>
+          <AgentNavLink t={t} />
         </nav>
 
         <div className="flex items-center gap-5">
@@ -560,13 +560,9 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
 
         <MobileAgentNavButton />
 
-        <Link to="/faq" className={`flex flex-col items-center justify-center gap-0.5 min-w-[48px] min-h-[48px] p-1 rounded-lg active:bg-gold-deep/10 transition-colors ${location.pathname === "/faq" ? "text-gold-deep" : "text-ink/40"}`}>
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-            <path d="M12 17h.01" />
-          </svg>
-          <span className="text-[9px] uppercase tracking-tight leading-none">{t("nav.faq")}</span>
+        <Link to="/weekly" className={`flex flex-col items-center justify-center gap-0.5 min-w-[48px] min-h-[48px] p-1 rounded-lg active:bg-gold-deep/10 transition-colors ${location.pathname === "/weekly" ? "text-gold-deep" : "text-ink/40"}`}>
+          <CalendarDays className="w-5 h-5" aria-hidden="true" />
+          <span className="text-[9px] uppercase tracking-tight leading-none">{t("nav.weekly")}</span>
         </Link>
       </nav>
       )}

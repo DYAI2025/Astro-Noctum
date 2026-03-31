@@ -88,7 +88,7 @@ export default function InfluenceGauges({ weights }: { weights?: Record<string, 
   const items = useInfluences(weights);
 
   return (
-    <div className="bg-zinc-900/40 border border-zinc-800 p-8 rounded-[2rem] space-y-8">
+    <div className="bg-zinc-900/40 border border-zinc-800 p-6 rounded-[2rem] space-y-8">
       <div className="flex justify-between items-center">
         <h2 className="text-[10px] font-bold tracking-[0.2em] text-zinc-500 uppercase">{t('dashboard.influences.sectionTitle')}</h2>
         <div className="text-[8px] font-mono text-zinc-600">TRANSIT</div>

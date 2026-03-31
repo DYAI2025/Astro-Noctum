@@ -1045,7 +1045,7 @@ export function BirthChartOrrery({
         {planetariumMode && supportsFullscreen && (
           <button
             onClick={toggleFullscreen}
-            className="w-8 h-8 rounded-full border border-[#8B6914]/25 flex items-center justify-center hover:bg-[#8B6914]/15 hover:border-[#8B6914]/45 transition-all bg-black/40 backdrop-blur-sm"
+            className="w-11 h-11 rounded-full border border-[#8B6914]/25 flex items-center justify-center hover:bg-[#8B6914]/15 hover:border-[#8B6914]/45 transition-all bg-black/40 backdrop-blur-sm"
             aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
             title={isFullscreen
               ? t('dashboard.orrery.exitFullscreen')
@@ -1060,7 +1060,7 @@ export function BirthChartOrrery({
         )}
         <button
           onClick={() => setIsPlaying(!isPlaying)}
-          className="w-8 h-8 rounded-full border border-[#8B6914]/25 flex items-center justify-center hover:bg-[#8B6914]/15 hover:border-[#8B6914]/45 transition-all bg-black/40 backdrop-blur-sm"
+          className="w-11 h-11 rounded-full border border-[#8B6914]/25 flex items-center justify-center hover:bg-[#8B6914]/15 hover:border-[#8B6914]/45 transition-all bg-black/40 backdrop-blur-sm"
         >
           {isPlaying
             ? <Pause className="w-3 h-3 text-[#8B6914]/80" />
@@ -1085,7 +1085,7 @@ export function BirthChartOrrery({
               <span className="text-[13px] text-[#EEF0FF] font-medium">{hoveredObject.name}</span>
             </div>
             {hoveredObject.type === 'star' && hoveredObject.mag != null && (
-              <p className="text-[10px] text-[#667788]">Mag: <span className="text-[#AABBCC]">{hoveredObject.mag.toFixed(2)}</span></p>
+              <p className="text-[10px] text-[#667788]" title="Scheinbare Helligkeit (Magnitude): Je niedriger der Wert, desto heller der Stern. Sichtbar mit bloßem Auge bis ca. 6.0.">Helligkeit: <span className="text-[#AABBCC]">{hoveredObject.mag.toFixed(2)} mag</span></p>
             )}
             {hoveredObject.con && (
               <p className="text-[10px] text-[#667788]">{t('dashboard.orrery.constellation')}: <span className="text-[#AABBCC]">{CONSTELLATION_NAMES[hoveredObject.con] || hoveredObject.con}</span></p>

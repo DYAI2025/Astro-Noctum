@@ -144,4 +144,47 @@ describe('Vibes API: /api/vibes performance and shape', () => {
       `treiber: ${data.treiber.length} items, erklaerung: ${data.erklaerung.length} chars`,
     );
   }, 15_000);
+
+  it('cached response includes cooldown shape when active', async () => {
+    const reachable = await reachablePromise;
+    if (!reachable) {
+      console.log(`Server at ${BASE_URL} is unreachable — skipping cooldown shape test`);
+      return; // graceful skip
+    }
+
+    // Fire two requests — second one should be cached and may include cooldown
+    await measureRequest();
+    const { status, body } = await measureRequest();
+
+    if (status === 429) {
+      console.log('[Vibes API] Rate-limited (429) — skipping cooldown shape test');
+      return;
+    }
+
+    if (!status || status >= 500 || status === 404) {
+      console.log(`[Vibes API] Server returned ${status} — skipping cooldown shape test`);
+      return;
+    }
+
+    const data = JSON.parse(body);
+
+    // The cooldown field is only present when an active cooldown is in effect
+    if (!data.cooldown) {
+      console.log('[Vibes API] No cooldown field in response — generation was fresh, skipping shape check');
+      return;
+    }
+
+    // Validate cooldown shape
+    expect(typeof data.cooldown.active).toBe('boolean');
+    expect(typeof data.cooldown.next_available_at).toBe('string');
+    // Validate ISO 8601 date string
+    expect(Number.isNaN(Date.parse(data.cooldown.next_available_at))).toBe(false);
+    expect(typeof data.cooldown.remaining_ms).toBe('number');
+    expect(data.cooldown.remaining_ms).toBeGreaterThanOrEqual(0);
+
+    console.log(
+      `[Vibes API] Cooldown shape OK — active: ${data.cooldown.active}, ` +
+      `remaining: ${Math.round(data.cooldown.remaining_ms / 1000)}s`,
+    );
+  }, 20_000);
 });

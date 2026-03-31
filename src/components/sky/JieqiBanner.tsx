@@ -70,7 +70,7 @@ export function JieqiBanner({ weather }: JieqiBannerProps) {
             ${weather.kpIndex >= 5 ? 'bg-red-500 animate-pulse' : weather.kpIndex >= 3 ? 'bg-amber-400' : 'bg-green-400'}
           `} />
           <span className="text-xs text-white/50">
-            {weather.gScale} — Kp {weather.kpIndex.toFixed(1)}
+            <span title="Kp-Index (0–9): Maß für geomagnetische Aktivität. Ab Kp 5 = Magnetsturm.">{weather.gScale} — Kp {weather.kpIndex.toFixed(1)}</span>
             {weather.xrayClass !== 'A' && ` | ${weather.xrayClass}-class`}
           </span>
         </div>

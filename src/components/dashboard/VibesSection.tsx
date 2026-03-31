@@ -1,8 +1,9 @@
 import { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Clock } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { fetchVibes, type VibesResponse } from '../../services/vibes';
+import { formatCooldown } from '../../lib/format-cooldown';
 import { VibesModal } from './VibesModal';
 
 // ── Types ────────────────────────────────────────────────────────────
@@ -48,6 +49,12 @@ export function VibesSection({ userId }: VibesSectionProps) {
     setShowModal(false);
   }, []);
 
+  const isCooldown = vibesData?.cooldown?.active;
+  const cooldownLabel = isCooldown
+    ? lang === 'de'
+      ? `Nächster Vibe in ${formatCooldown(vibesData.cooldown!.remaining_ms, lang)}`
+      : `Next vibe in ${formatCooldown(vibesData.cooldown!.remaining_ms, lang)}`
+    : null;
   const buttonLabel = lang === 'de' ? 'Vibe abrufen' : 'Get Vibe';
 
   return (
@@ -60,7 +67,6 @@ export function VibesSection({ userId }: VibesSectionProps) {
         >
           {loading ? (
             <>
-              {/* Skeleton pulse */}
               <span className="inline-block w-4 h-4 rounded-full bg-gold/30 animate-pulse" />
               <span className="inline-block w-20 h-4 rounded bg-gold/20 animate-pulse" />
             </>
@@ -71,6 +77,14 @@ export function VibesSection({ userId }: VibesSectionProps) {
             </>
           )}
         </button>
+
+        {/* Cooldown indicator */}
+        {cooldownLabel && (
+          <p className="flex items-center gap-1 text-[10px] text-gold/40">
+            <Clock size={10} />
+            <span>{cooldownLabel}</span>
+          </p>
+        )}
 
         {/* Error message */}
         {error && (
