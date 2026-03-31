@@ -10,11 +10,12 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "clean": "rm -rf dist",
-    "lint": "tsc --noEmit",
+    "lint": "npm run typecheck:src",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "start": "node server.mjs"
+    "start": "node server.mjs",
+    "typecheck:src": "./scripts/ci-typecheck-src.sh"
   },
   "engines": {
     "node": ">=20.19.0"
