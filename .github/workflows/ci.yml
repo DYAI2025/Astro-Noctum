@@ -33,7 +33,7 @@ jobs:
       - run: npm ci
 
       - name: TypeScript check (src/ only)
-        run: ./scripts/ci-typecheck-src.sh
+        run: npm run typecheck:src
 
   build:
     name: Build
