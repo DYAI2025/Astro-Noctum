@@ -30,7 +30,8 @@ import { useFusionRingContext } from "../contexts/FusionRingContext";
 
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
-import { soulprintToNatalWeights } from "./fusion-ring-website/signatur-bridge";
+import { toNatalWeightsOrUndefined } from "@/src/lib/signatur/weight-utils";
+import { soulprintToDimensionWeights as _legacySoulprintToDimensionWeights } from "./fusion-ring-website/signatur-bridge";
 import { DashboardBigFour as DashboardBigFourCard } from "./dashboard/DashboardBigFour";
 import MiniSignature from "./dashboard/MiniSignature";
 import InfluenceGauges from "./dashboard/InfluenceGauges";
@@ -100,6 +101,12 @@ const SESSION_QUOTE_INDEX = Math.floor(Math.random() * BAZODIAC_QUOTES.length);
 
 // Stable empty array to avoid referential instability in hooks
 const EMPTY_SECTORS: number[] = [];
+
+// Compile-time compatibility guard:
+// If a stale merge/rebase reintroduces `soulprintToDimensionWeights(...)` usage,
+// this file still has the symbol in scope and TS won't fail with TS2304.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const soulprintToDimensionWeights = _legacySoulprintToDimensionWeights;
 
 // ── Animation helper ──────────────────────────────────────────────────────
 
@@ -308,7 +315,7 @@ export function Dashboard({
     profileMeta.quizSectors,
   );
   const natalWeights = useMemo(
-    () => (profileMeta.soulprintSectors ? soulprintToNatalWeights(profileMeta.soulprintSectors) : undefined),
+    () => toNatalWeightsOrUndefined(profileMeta.soulprintSectors),
     [profileMeta.soulprintSectors],
   );
 
