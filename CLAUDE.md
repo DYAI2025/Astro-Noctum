@@ -15,7 +15,7 @@ Bazodiac (Astro-Noctum) — a fusion astrology web + mobile app combining Wester
 
 **Phase:** Code (active development)
 
-4 goals Approved. 25 requirements: 10 Implemented, 11 Approved, 4 Draft. 5 constraints. 3 assumptions. 10 decisions. 5 user stories. 3 components (frontend, api-server, mobile). Vibes/Weekly implementation plan created (2026-03-30): 3 phases (V1–V3), 26 tasks. Total: 94 of 151 tasks Done (62%). 6 partnership OQs pending. 6 deploy runbooks. Updated 2026-03-30.
+4 goals (3 Approved, 1 Draft). 25 requirements: 10 Implemented, 11 Approved, 4 Draft. 5 constraints. 3 assumptions. 10 decisions. 3 components (frontend, api-server, mobile). Sprints S-BRIDGE, S-DAUP, S-DASH-POLISH, S-SIG complete. V3 Bipolar Trail engine is default Signatur renderer (PR #225). Vibes V1 + Weekly V2 shipped. Phase V3 (Transparency) next. Total: 141 of 167 tasks Done (84%). 6 partnership OQs pending. 7 deploy runbooks. Updated 2026-03-30.
 
 ---
 
@@ -85,7 +85,7 @@ Signatur V3 Architektur-Vision (2026-03-29): SIGNATUR_V3_VISION.md als Single So
 
 Implementierungsplan S-BRIDGE erstellt (2026-03-29): 3 Phasen, 12 Tasks — DIMENSION_DEFS Single Source of Truth, Determinismus-Test-Suite, Swift-Konstanten-Referenz. S-BRIDGE abgeschlossen (2026-03-29): 12/12 Tasks Done. DIMENSION_DEFS aus bipolar-engine.ts in packages/shared/src/signatur/dimension-defs.ts extrahiert + Object.freeze; 44 neue Tests (signatur-shared-bridge.test.ts + signatur-v3-engine.test.ts determinism); SWIFT_CONSTANTS.md erstellt; Runbook: docs/runbooks/signatur-s-bridge-verification.md. Nächster Sprint: S-MORPH (Quiz-Morphing) oder S-DENSITY (Density Field Phase 2).
 
-Gap analysis: (stale — artifacts geändert 2026-03-29).
+Gap analysis (2026-03-31): 0 Critical (2 fixed — index desync resolved), 5 Important (Draft core goal, stale summaries fixed, status conflicts fixed, 3 unverified assumptions), 3 Minor.
 
 ---
 

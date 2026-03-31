@@ -2,7 +2,7 @@
 
 **Category**: Technical
 
-**Status**: Unverified
+**Status**: Verified
 
 **Risk**: Medium — if insufficient, a new computation engine would be needed (high effort)
 
