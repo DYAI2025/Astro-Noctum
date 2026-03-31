@@ -136,15 +136,7 @@ export const FusionRing3D = ({
               quizWeights={quizWeights ?? {}}
               dayHarmonic={dayHarmonic ?? undefined}
               externalDissonance={externalDissonance}
-              solarModulation={
-                solarModulation != null
-                  ? {
-                      ringModulation: solarModulation,
-                      triggerEffect: kpIndex >= 7,
-                      kpIndex,
-                    }
-                  : undefined
-              }
+              solarModulation={solarModulation != null ? { ringModulation: solarModulation, triggerEffect: kpIndex >= 5, kpIndex } : undefined}
               className="h-full w-full"
               quality="auto"
             />
