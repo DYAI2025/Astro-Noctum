@@ -1,4 +1,8 @@
-import { soulprintToNatalWeights, quizSectorsToQuizWeights } from '@/src/components/fusion-ring-website/signatur-bridge';
+import {
+  soulprintToNatalWeights,
+  quizSectorsToQuizWeights,
+  soulprintToDimensionWeights,
+} from '@/src/components/fusion-ring-website/signatur-bridge';
 
 /**
  * Normalized guard for 12-sector arrays used across Dashboard/Signatur flows.
@@ -14,4 +18,8 @@ export function toNatalWeightsOrUndefined(sectors: number[] | null | undefined):
 
 export function toQuizWeightsOrUndefined(sectors: number[] | null | undefined): Record<string, number> | undefined {
   return hasFullSectorSet(sectors) ? quizSectorsToQuizWeights(sectors) : undefined;
+}
+
+export function toDimensionWeightsOrUndefined(sectors: number[] | null | undefined): Record<string, number> | undefined {
+  return hasFullSectorSet(sectors) ? soulprintToDimensionWeights(sectors) : undefined;
 }

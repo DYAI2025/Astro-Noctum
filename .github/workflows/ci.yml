@@ -33,14 +33,7 @@ jobs:
       - run: npm ci
 
       - name: TypeScript check (src/ only)
-        run: |
-          npx tsc --noEmit 2>&1 | tee /tmp/tsc-output.txt || true
-          if grep -q "^src/" /tmp/tsc-output.txt; then
-            echo "::error::TypeScript errors in src/"
-            grep "^src/" /tmp/tsc-output.txt
-            exit 1
-          fi
-          echo "No TypeScript errors in src/"
+        run: npm run typecheck:src
 
   build:
     name: Build

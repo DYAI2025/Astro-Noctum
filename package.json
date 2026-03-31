@@ -11,6 +11,7 @@
     "build-storybook": "storybook build",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
+    "typecheck:src": "bash ./scripts/ci-typecheck-src.sh",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
