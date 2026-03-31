@@ -389,8 +389,6 @@ export default function SignaturV3Canvas({
             width: effectiveW,
             height: effectiveH,
             background: 'radial-gradient(ellipse at center, #0d0a1a 0%, #050308 100%)',
-            borderRadius: '50%',
-            background: 'radial-gradient(ellipse at center, #0d0a1a 0%, #050308 100%)',
           }}
         />
       </div>
