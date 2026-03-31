@@ -13,6 +13,7 @@ import { usePremium } from '@/src/hooks/usePremium';
 import { useSpaceWeather } from '@/src/hooks/useSpaceWeather';
 import { useFusionSignal } from '@/src/hooks/useFusionSignal';
 import { useDissonance } from '@/src/hooks/useDissonance';
+import { useFirstRunDaily } from '@/src/hooks/useFirstRunDaily';
 import { upsertDissonanceState } from '@/src/services/supabase';
 import { ClusterSidebar } from '@/src/components/signatur/ClusterSidebar';
 import { DissonanceValues } from '@/src/components/settings/DissonanceValues';
@@ -39,6 +40,7 @@ export default function FuRingPage() {
   const quizContribution = useQuizContribution(completedModuleIds);
   const spaceWeather = useSpaceWeather();
   const { signalData } = useFusionSignal(userId);
+  const { dayHarmonic } = useFirstRunDaily(userId, null, signalData?.baseSignals ?? null, []);
 
   const [activeQuiz, setActiveQuiz] = useState<string | null>(null);
   const [justCompletedCluster, setJustCompletedCluster] = useState<string | null>(null);
@@ -256,7 +258,7 @@ export default function FuRingPage() {
               solarModulation={spaceWeather.ringModulation}
               dissonanceModulation={dissonanceModulation}
               externalDissonance={dissonance}
-              dayHarmonic={null}
+              dayHarmonic={dayHarmonic}
               labels={{
                 regionLabel: t('furing3d.a11y.regionLabel'),
                 loading: t('furing3d.loading'),
