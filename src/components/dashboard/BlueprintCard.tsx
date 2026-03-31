@@ -43,15 +43,15 @@ export default function BlueprintCard({
           </div>
         </div>
 
-        <p className="font-sora text-2xl md:text-3xl font-light leading-relaxed tracking-tight text-white/90">
+        <p className="font-sans text-2xl md:text-3xl font-light leading-relaxed tracking-tight text-white/90">
           {content}
         </p>
 
         <div className="flex flex-wrap gap-6 pt-2">
           {aspects.length > 0 && (
             <div className="space-y-1">
-              <span className="font-sora text-[10px] text-zinc-600 uppercase tracking-widest block">{t("dashboard.blueprint.western")}</span>
-              <div className="flex gap-3 text-xs text-zinc-400 font-medium font-sora">
+              <span className="font-sans text-[10px] text-zinc-600 uppercase tracking-widest block">{t("dashboard.blueprint.western")}</span>
+              <div className="flex gap-3 text-xs text-zinc-400 font-medium font-sans">
                 {aspects.map((aspect, i) => (
                   <span key={i}>{aspect}</span>
                 ))}
@@ -61,8 +61,8 @@ export default function BlueprintCard({
 
           {elements.length > 0 && (
             <div className="space-y-1">
-              <span className="font-sora text-[10px] text-zinc-600 uppercase tracking-widest block">{t("dashboard.blueprint.eastern")}</span>
-              <div className="flex gap-3 text-xs text-zinc-400 font-medium font-sora">
+              <span className="font-sans text-[10px] text-zinc-600 uppercase tracking-widest block">{t("dashboard.blueprint.eastern")}</span>
+              <div className="flex gap-3 text-xs text-zinc-400 font-medium font-sans">
                 {elements.map((element, i) => (
                   <span key={i} className="text-cyan-400/80">{element}</span>
                 ))}

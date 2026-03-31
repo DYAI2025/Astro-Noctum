@@ -107,7 +107,7 @@ export function ClusterCard({ cluster, completedModules, onStartQuiz, isPremium,
                     type="button"
                     disabled={quizDone || needsPremium}
                     onClick={() => quizId && onStartQuiz(quizId)}
-                    className={`w-full flex items-center justify-between p-3 rounded-lg text-left transition-colors ${
+                    className={`w-full flex items-center justify-between p-3 min-h-11 rounded-lg text-left transition-colors ${
                       quizDone
                         ? 'bg-gold/5 opacity-60'
                         : needsPremium

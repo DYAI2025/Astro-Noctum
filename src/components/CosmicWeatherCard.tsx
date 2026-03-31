@@ -125,7 +125,7 @@ export function CosmicWeatherCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
               <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
-              <span className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/60 font-mono font-bold">
+              <span className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/75 font-mono font-bold">
                 {t('cosmicWeather.title')}
               </span>
               {isPremium && (
@@ -145,9 +145,9 @@ export function CosmicWeatherCard({
 
           <div className="shrink-0 mt-2">
             {expanded ? (
-              <ChevronUp className="w-4 h-4 text-[#8B6914]/40" />
+              <ChevronUp className="w-4 h-4 text-[#8B6914]/60" />
             ) : (
-              <ChevronDown className="w-4 h-4 text-[#8B6914]/40" />
+              <ChevronDown className="w-4 h-4 text-[#8B6914]/60" />
             )}
           </div>
         </button>
@@ -166,7 +166,7 @@ export function CosmicWeatherCard({
                 <div className="w-8 h-[1px] bg-[#8B6914]/15" />
 
                 {/* Body text */}
-                <p className="text-xs text-[#1E2A3A]/60 leading-relaxed">
+                <p className="text-xs text-[#1E2A3A]/70 leading-relaxed">
                   {horoscope.body}
                 </p>
 
@@ -180,7 +180,7 @@ export function CosmicWeatherCard({
 
                 {/* Refresh + timestamp */}
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-[8px] text-[#8B6914]/30 font-mono tracking-wider">
+                  <span className="text-[8px] text-[var(--color-text-bright-dim)] font-mono tracking-wider">
                     {horoscope.tier === 'premium' ? 'LEVI PREMIUM' : 'FREEMIUM'}
                   </span>
 
@@ -190,7 +190,7 @@ export function CosmicWeatherCard({
                         e.stopPropagation();
                         onRefresh();
                       }}
-                      className="text-[#8B6914]/30 hover:text-[#8B6914]/60 transition-colors p-1"
+                      className="text-[var(--color-text-bright-dim)] hover:text-[#8B6914] transition-colors p-1"
                       title={t('cosmicWeather.refresh')}
                     >
                       <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />

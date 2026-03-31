@@ -693,7 +693,7 @@ h1, h2, h3 { letter-spacing: 0.1em; }
 .landing-hero-root {
   background: radial-gradient(circle at top, #050b1a 0%, #020617 100%);
   color: #f8f9fa;
-  font-family: 'Inter', 'Sora', sans-serif;
+  font-family: 'Sora', ui-sans-serif, system-ui, sans-serif;
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   cursor: none;

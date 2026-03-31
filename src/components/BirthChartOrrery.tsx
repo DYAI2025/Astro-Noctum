@@ -1045,7 +1045,7 @@ export function BirthChartOrrery({
         {planetariumMode && supportsFullscreen && (
           <button
             onClick={toggleFullscreen}
-            className="w-8 h-8 rounded-full border border-[#8B6914]/25 flex items-center justify-center hover:bg-[#8B6914]/15 hover:border-[#8B6914]/45 transition-all bg-black/40 backdrop-blur-sm"
+            className="w-11 h-11 rounded-full border border-[#8B6914]/25 flex items-center justify-center hover:bg-[#8B6914]/15 hover:border-[#8B6914]/45 transition-all bg-black/40 backdrop-blur-sm"
             aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
             title={isFullscreen
               ? t('dashboard.orrery.exitFullscreen')
@@ -1060,7 +1060,7 @@ export function BirthChartOrrery({
         )}
         <button
           onClick={() => setIsPlaying(!isPlaying)}
-          className="w-8 h-8 rounded-full border border-[#8B6914]/25 flex items-center justify-center hover:bg-[#8B6914]/15 hover:border-[#8B6914]/45 transition-all bg-black/40 backdrop-blur-sm"
+          className="w-11 h-11 rounded-full border border-[#8B6914]/25 flex items-center justify-center hover:bg-[#8B6914]/15 hover:border-[#8B6914]/45 transition-all bg-black/40 backdrop-blur-sm"
         >
           {isPlaying
             ? <Pause className="w-3 h-3 text-[#8B6914]/80" />

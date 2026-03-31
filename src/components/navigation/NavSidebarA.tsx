@@ -168,8 +168,8 @@ export function NavSidebarA() {
                     to={item.href}
                     onMouseEnter={() => handleItemMouseEnter(item.id, hasSubmenu)}
                     className={[
-                      "al-icon-wrapper group flex items-center gap-3 rounded-lg px-3 py-2.5",
-                      "transition-colors duration-200",
+                      "al-icon-wrapper group flex items-center gap-3 rounded-lg px-3 min-h-11",
+                      "transition-all duration-300",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37]/50",
                       active
                         ? "bg-[#D4AF37]/10 text-[#D4AF37]"
