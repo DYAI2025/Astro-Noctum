@@ -234,7 +234,7 @@ export default function SignaturV3Canvas({
   const visibleRef = useRef(true);
 
   // Responsive sizing — uses ResizeObserver when no explicit width/height
-  const isResponsive = !width && !height;
+  const isResponsive = width == null && height == null;
   const [containerSize, setContainerSize] = useState({ w: width || 500, h: height || 500 });
 
   useEffect(() => {
