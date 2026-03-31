@@ -31,8 +31,8 @@ function getAreaIcon(key: string): string {
 
 function SkeletonCard({ highlighted }: { highlighted: boolean }) {
   const base = highlighted
-    ? 'border border-gold/20 bg-gold/5 p-5'
-    : 'border border-gold/10 bg-[#0D0F14] p-3';
+    ? 'border border-gold/20 bg-gold/5 p-6'
+    : 'border border-gold/10 bg-[#0D0F14] p-4';
   return (
     <div className={`rounded-xl ${base} animate-pulse`}>
       <div className="flex items-center gap-3 mb-2">
@@ -83,7 +83,7 @@ function HighlightedAreaCard({ area, lang }: { area: WeeklyArea; lang: 'de' | 'e
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
-      className="rounded-xl border border-gold/20 bg-gold/5 p-5"
+      className="rounded-xl border border-gold/20 bg-gold/5 p-6"
     >
       {/* Header */}
       <div className="flex items-center gap-3">
@@ -104,7 +104,7 @@ function HighlightedAreaCard({ area, lang }: { area: WeeklyArea; lang: 'de' | 'e
       {/* Warum? toggle */}
       <button
         onClick={handleExplainToggle}
-        className="flex items-center gap-1.5 text-xs text-white/50 hover:text-white/80 transition-colors mt-3"
+        className="flex items-center gap-1.5 text-xs text-white/50 hover:text-white/80 transition-colors mt-3 min-h-11"
       >
         <span>{whyLabel}</span>
         <motion.span
@@ -148,7 +148,7 @@ function CompactAreaCard({ area, lang }: { area: WeeklyArea; lang: 'de' | 'en' }
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: 'easeOut' }}
-      className="rounded-xl border border-gold/10 bg-[#0D0F14] p-3"
+      className="rounded-xl border border-gold/10 bg-[#0D0F14] p-4"
     >
       <div className="flex items-center gap-3">
         <span className="text-base" role="img" aria-label={label}>

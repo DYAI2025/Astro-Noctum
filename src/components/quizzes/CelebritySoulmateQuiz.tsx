@@ -419,9 +419,10 @@ function ResultScreen({
 
         {/* Match percentage */}
         <div className="flex justify-center mb-5">
-          <span className="px-4 py-2 bg-[#D4AF37]/15 text-[#D4AF37] rounded-full font-bold border border-[#D4AF37]/30 text-sm">
+          <span className="px-4 py-2 bg-[#D4AF37]/15 text-[#D4AF37] rounded-full font-bold border border-[#D4AF37]/30 text-sm" title="Basierend auf der Übereinstimmung eurer Persönlichkeitsdimensionen (Energie, Kreativität, Bindung, Ambition).">
             {result.match.matchPercent}% Seelenverwandtschaft
           </span>
+          <p className="text-[10px] text-white/30 mt-1.5">Basierend auf der Übereinstimmung eurer Persönlichkeitsdimensionen.</p>
         </div>
 
         {/* Divider */}

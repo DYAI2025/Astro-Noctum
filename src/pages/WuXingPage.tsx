@@ -10,21 +10,9 @@ import { WUXING_ELEMENTS } from '../lib/astro-data/wuxing';
 import { Tooltip } from '../components/Tooltip';
 import { usePlanetarium } from '../contexts/PlanetariumContext';
 import { PremiumGate } from '../components/PremiumGate';
+import { ELEMENT_COLORS, ELEMENT_COLOR_FALLBACK } from '../lib/element-colors';
 
 // ── Element Balance Bar Chart ─────────────────────────────────────────────────
-
-const ELEMENT_COLORS: Record<string, string> = {
-  Wood: '#3D8B37',
-  Holz: '#3D8B37',
-  Fire: '#D63B0F',
-  Feuer: '#D63B0F',
-  Earth: '#C49A2A',
-  Erde: '#C49A2A',
-  Metal: '#8A8A8A',
-  Metall: '#8A8A8A',
-  Water: '#2E6BB5',
-  Wasser: '#2E6BB5',
-};
 
 function ElementBalanceChart({ elements }: { elements: Record<string, number> }) {
   const entries = Object.entries(elements).filter(([, v]) => Number(v) > 0);
@@ -34,7 +22,7 @@ function ElementBalanceChart({ elements }: { elements: Record<string, number> })
     <div className="space-y-3" data-testid="element-balance-chart">
       {entries.map(([el, count]) => (
         <div key={el} className="flex items-center gap-3">
-          <span className="w-16 font-serif text-sm" style={{ color: ELEMENT_COLORS[el] ?? '#d4af37' }}>
+          <span className="w-16 font-serif text-sm" style={{ color: ELEMENT_COLORS[el] ?? ELEMENT_COLOR_FALLBACK }}>
             {el}
           </span>
           <div className="flex-1 h-2 bg-obsidian rounded-full overflow-hidden">
@@ -42,11 +30,11 @@ function ElementBalanceChart({ elements }: { elements: Record<string, number> })
               className="h-2 rounded-full transition-all duration-700"
               style={{
                 width: `${total > 0 ? (Number(count) / total) * 100 : 0}%`,
-                background: ELEMENT_COLORS[el] ?? '#d4af37',
+                background: ELEMENT_COLORS[el] ?? ELEMENT_COLOR_FALLBACK,
               }}
             />
           </div>
-          <span className="text-xs w-4 tabular-nums" style={{ color: ELEMENT_COLORS[el] ? ELEMENT_COLORS[el] + '99' : '#d4af3799' }}>
+          <span className="text-xs w-4 tabular-nums" style={{ color: ELEMENT_COLORS[el] ?? ELEMENT_COLOR_FALLBACK, opacity: 0.6 }}>
             {count}
           </span>
         </div>

@@ -416,7 +416,7 @@ export default function PersonalityQuiz({ onComplete, onClose }: PersonalityQuiz
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full
+          className="absolute right-4 top-4 flex min-h-11 min-w-[44px] items-center justify-center rounded-full
                      text-white/50 transition-colors hover:bg-white/10 hover:text-white"
           aria-label="Schliessen"
         >
@@ -492,7 +492,7 @@ export default function PersonalityQuiz({ onComplete, onClose }: PersonalityQuiz
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full
+          className="absolute right-4 top-4 flex min-h-11 min-w-[44px] items-center justify-center rounded-full
                      text-white/50 transition-colors hover:bg-white/10 hover:text-white"
           aria-label="Schliessen"
         >

@@ -55,7 +55,7 @@ function fadeIn(delay = 0) {
 function SectionDivider({ label, title, icon }: { label: string; title: string; icon?: React.ReactNode }) {
   return (
     <div className="border-b border-[#8B6914]/15 pb-3 sm:pb-4 mb-6 sm:mb-8">
-      <p className="text-[#8B6914]/55 text-[8px] uppercase tracking-[0.45em] mb-1">{label}</p>
+      <p className="text-[#8B6914]/75 text-[8px] uppercase tracking-[0.45em] mb-1">{label}</p>
       <h2 className="font-serif text-xl sm:text-2xl text-[#1E2A3A]">{icon}{title}</h2>
     </div>
   );
@@ -248,7 +248,7 @@ export function DashboardAstroSection({
           {/* Block B: Four Pillars */}
           {apiData.bazi?.pillars && (
             <div className="mb-10">
-              <p className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/50 mb-4">
+              <p className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/70 mb-4">
                 {t("dashboard.bazi.fourPillarsShort")}
               </p>
               <BaZiFourPillars
@@ -262,7 +262,7 @@ export function DashboardAstroSection({
           {/* Block C: Element Balance */}
           <div className="mb-10">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/50">
+              <p className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/70">
                 WuXing {"\u4E94\u884C"}
               </p>
               <Link
@@ -273,7 +273,7 @@ export function DashboardAstroSection({
                 <ArrowUp className="w-3 h-3 rotate-45" />
               </Link>
             </div>
-            <p className="text-xs text-[#1E2A3A]/45 mb-6 leading-relaxed max-w-2xl">
+            <p className="text-xs text-[var(--color-text-bright-dim)] mb-6 leading-relaxed max-w-2xl">
               {t("dashboard.wuxing.sectionDesc")}
             </p>
 
@@ -291,7 +291,7 @@ export function DashboardAstroSection({
                           <WuXingIcon element={el.key} className="w-6 h-6" />
                           <div className="min-w-0">
                             <div className="text-xs font-medium text-[#1E2A3A] truncate">{el.name[lang]}</div>
-                            <div className="text-[10px] text-[#1E2A3A]/35">{el.pinyin}</div>
+                            <div className="text-[10px] text-[var(--color-text-bright-dim)]">{el.pinyin}</div>
                           </div>
                         </div>
                         <div className="flex-1 wuxing-bar-track">
@@ -306,7 +306,7 @@ export function DashboardAstroSection({
                         </div>
                         <div className="w-12 shrink-0 text-right flex items-center justify-end gap-1">
                           {hasWuxingData && pctLabel > 0 && (
-                            <span className="text-[10px] text-[#1E2A3A]/45 font-mono" style={{ fontVariantNumeric: 'tabular-nums' }}>{pctLabel}%</span>
+                            <span className="text-[10px] text-[var(--color-text-bright-dim)] font-mono" style={{ fontVariantNumeric: 'tabular-nums' }}>{pctLabel}%</span>
                           )}
                           {isDom && <span className="text-sm" style={{ color: el.color }}>{"\u2605"}</span>}
                         </div>

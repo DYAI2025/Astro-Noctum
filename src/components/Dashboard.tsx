@@ -19,7 +19,7 @@ import type { TileTexts } from "../types/interpretation";
 import { DashboardAstroSection } from "./dashboard/DashboardAstroSection";
 import { DashboardInterpretationSection } from "./dashboard/DashboardInterpretationSection";
 import { SectionErrorBoundary } from "./dashboard/SectionErrorBoundary";
-// import { DashboardLeviSection } from "./dashboard/DashboardLeviSection";
+import { DashboardBigFour } from "./dashboard/DashboardBigFour";
 import { AgentSection } from "./dashboard/AgentSection";
 import { AGENTS } from "@/packages/shared/src/agents/config";
 import { CosmicWeatherCard } from "./CosmicWeatherCard";
@@ -316,14 +316,14 @@ export function Dashboard({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className="w-full max-w-6xl mx-auto px-4 md:px-6"
+      className="w-full max-w-6xl mx-auto px-4 md:px-6 flex flex-col gap-20"
     >
       {/* ── Tour sentinel: step 0 anchors at the planetarium (top of dashboard) ── */}
       <div ref={planetariumSentinelRef} className="h-px" aria-hidden="true" />
 
       {/* Issues banner */}
       {(apiIssues.length > 0 || metaError) && (
-        <div className="mb-8 rounded-xl border border-amber-400/40 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+        <div className="rounded-xl border border-amber-400/40 bg-amber-50 px-4 py-3 text-xs text-amber-800">
           {metaError ? (
             <p className="flex items-center gap-2">
               <span className="font-semibold">Notice:</span> {metaError}
@@ -343,7 +343,7 @@ export function Dashboard({
 
       {/* ═══ PAGE HEADER ═══════════════════════════════════════════════ */}
       <motion.header
-        className="flex items-start justify-between border-b border-[#D4AF37]/15 pb-6 mb-8"
+        className="flex items-start justify-between border-b border-[#D4AF37]/15 pb-6"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
@@ -371,7 +371,7 @@ export function Dashboard({
       </motion.header>
 
       {/* ═══ IDENTITY — Big Four + MiniSignature (F1+F2) ════════════════════ */}
-      <motion.div className="mb-8 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 items-start" {...fadeIn(0.05)}>
+      <motion.div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 items-start" {...fadeIn(0.05)}>
         <SectionErrorBoundary name="BigFour">
           <DashboardBigFourCard
             sunSign={apiData?.western?.zodiac_sign || ''}
@@ -394,7 +394,7 @@ export function Dashboard({
       </motion.div>
 
       {/* ═══ TAGES-IMPULS — Hero-Sektion (immer vollständig sichtbar) ══════ */}
-      <motion.div className="mb-8" {...fadeIn(0.1)}>
+      <motion.div {...fadeIn(0.1)}>
         <SectionErrorBoundary name="TagesImpuls">
           {dailyData ? (
             <DashboardTagesEnergie
@@ -404,7 +404,7 @@ export function Dashboard({
               onOpenDayModal={dailyEnabled ? () => setIsDayModalOpen(true) : undefined}
             />
           ) : (
-            // Legacy fallback: CosmicWeatherCard solange dailyData noch nicht geladen
+            // Legacy fallback: CosmicWeatherCard while dailyData is not yet loaded
             <CosmicWeatherCard
               horoscope={horoscope}
               loading={horoscopeLoading}
@@ -417,15 +417,8 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
-      {/* ═══ VIBES BUTTON ═══════════════════════════════════════════ */}
-      <motion.div className="mb-8 flex justify-center" {...fadeIn(0.12)}>
-        <SectionErrorBoundary name="Vibes">
-          <VibesSection userId={userId} />
-        </SectionErrorBoundary>
-      </motion.div>
-
-      {/* ═══ INFLUENCE GAUGES — grouped with daily context ═══════════════ */}
-      <motion.div className="mb-8" {...fadeIn(0.15)}>
+      {/* ═══ SECTION 3: INFLUENCE GAUGES ═══════════════════════════════ */}
+      <motion.div {...fadeIn(0.15)}>
         <SectionErrorBoundary name="InfluenceGauges">
           <InfluenceGauges
             weights={profileMeta.soulprintSectors ? soulprintToNatalWeights(profileMeta.soulprintSectors) : undefined}
@@ -436,7 +429,7 @@ export function Dashboard({
       {/* ── Tour sentinel: step 1 triggers when astro section scrolls into view ── */}
       <div ref={astroSentinelRef} className="h-px" aria-hidden="true" />
 
-      {/* ═══ ASTRO SECTION (Orrery + Western + BaZi/WuXing + Houses) ═══ */}
+      {/* ═══ SECTION 7: KOSMISCHER BLUEPRINT (Accordion: Westlich/BaZi/Wu-Xing/Orrery) ═══ */}
       <SectionErrorBoundary name="Astro">
         <DashboardAstroSection
           apiData={apiData}
@@ -451,7 +444,7 @@ export function Dashboard({
       <div ref={leviSentinelRef} className="h-px" aria-hidden="true" />
 
       {/* ═══ VOICE AGENTS — Multi-Agent Section ═══════════════════════ */}
-      <motion.div className="mb-12 sm:mb-16" {...fadeIn(0.4)}>
+      <motion.div {...fadeIn(0.4)}>
         <SectionErrorBoundary name="Agents">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             {AGENTS.map(agent => (
@@ -473,7 +466,7 @@ export function Dashboard({
 
       {/* ═══ UPGRADE BANNER (freemium only, nach Agenten — F4) ════════════ */}
       {!isPremium && (
-        <Card variant="gold" className="mb-8 w-full max-w-6xl p-5 flex items-center justify-between gap-4"
+        <Card variant="gold" className="w-full max-w-6xl p-6 flex items-center justify-between gap-4"
           {...fadeIn(0.42)}
         >
           <div>
@@ -493,10 +486,9 @@ export function Dashboard({
 
       <div id="interpretation-section" />
 
-      {/* ═══ GESAMTANALYSE — full-width below Houses ═══════════════ */}
+      {/* ═══ SECTION 8: KI-SYNTHESE (premium) ═════════════════════════ */}
       <motion.div
-        className="mb-12 sm:mb-16"
-        {...fadeIn(0.45)}
+        {...fadeIn(0.35)}
       >
         <SectionErrorBoundary name="Interpretation">
           <DashboardInterpretationSection
@@ -506,15 +498,14 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
-      {/* ═══ SHARE CARD ═══════════════════════════════════════════════ */}
-      <motion.div className="mb-16" {...fadeIn(0.5)}>
+      {/* ═══ SECTION 9: SHARE CARD + FOOTER ═══════════════════════════ */}
+      <motion.div {...fadeIn(0.4)}>
         <ShareCard
           sunSign={apiData?.western?.zodiac_sign || ''}
           moonSign={apiData?.western?.moon_sign || ''}
         />
       </motion.div>
 
-      {/* ═══ LEGAL FOOTER ═══════════════════════════════════════════════ */}
       <LegalFooter lang={lang} />
 
       {/* ═══ DAILY HOROSCOPE MODAL ═══════════════════════════════════════ */}

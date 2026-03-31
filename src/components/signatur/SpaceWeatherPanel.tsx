@@ -121,9 +121,9 @@ export function SpaceWeatherPanel({
       <div className="flex items-center justify-between rounded-lg border border-white/5 bg-white/[0.02] px-3 py-2">
         <div className="flex items-center gap-1.5">
           <Waves className="h-3 w-3 text-[#D4AF37]/60" />
-          <span className="text-[10px] uppercase tracking-[0.15em] text-white/50">Signatur-Modulation</span>
+          <span className="text-[10px] uppercase tracking-[0.15em] text-white/50" title="Wie stark die aktuelle Sonnenaktivität deine Signatur beeinflusst. 0% = kein Einfluss, 50% = starker Einfluss.">Signatur-Modulation</span>
         </div>
-        <span className="font-mono text-sm text-[#D4AF37]">
+        <span className="font-mono text-sm text-[#D4AF37]" title="Wie stark die aktuelle Sonnenaktivität deine Signatur beeinflusst. 0% = kein Einfluss, 50% = starker Einfluss.">
           {((ringModulation - 1) * 100).toFixed(0)}%
         </span>
       </div>

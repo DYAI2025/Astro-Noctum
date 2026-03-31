@@ -36,7 +36,7 @@ export function DashboardBigFour({ sunSign, moonSign, ascendant, baziAnimal }: D
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
       {items.map(({ icon, labelKey, value, color }) => (
         <div
           key={labelKey}

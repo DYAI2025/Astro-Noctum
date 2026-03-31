@@ -39,7 +39,7 @@ export function NavVariantC() {
             to={to}
             end={to === '/'}
             className={({ isActive }) =>
-              `flex items-center justify-center w-10 h-10 rounded-xl transition-colors ${
+              `flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-300 ${
                 isActive
                   ? 'bg-[#D4AF37]/15 text-[#D4AF37]'
                   : 'text-white/35 hover:text-white/70 hover:bg-white/5'

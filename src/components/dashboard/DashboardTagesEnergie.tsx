@@ -79,15 +79,15 @@ interface ElementConfig {
 function getElementConfig(el: WuXingElement | null): ElementConfig {
   switch (el) {
     case 'feuer':
-      return { icon: <Flame className="w-5 h-5" />, label: 'Feuer', color: '#ef4444', accent: 'rgba(239,68,68,0.12)' };
+      return { icon: <Flame className="w-5 h-5" />, label: 'Feuer', color: 'var(--color-element-fire)', accent: 'rgba(244,67,54,0.12)' };
     case 'wasser':
-      return { icon: <Droplets className="w-5 h-5" />, label: 'Wasser', color: '#60a5fa', accent: 'rgba(96,165,250,0.12)' };
+      return { icon: <Droplets className="w-5 h-5" />, label: 'Wasser', color: 'var(--color-element-water)', accent: 'rgba(33,150,243,0.12)' };
     case 'holz':
-      return { icon: <Leaf className="w-5 h-5" />, label: 'Holz', color: '#4ade80', accent: 'rgba(74,222,128,0.12)' };
+      return { icon: <Leaf className="w-5 h-5" />, label: 'Holz', color: 'var(--color-element-wood)', accent: 'rgba(76,175,80,0.12)' };
     case 'metall':
-      return { icon: <Sparkles className="w-5 h-5" />, label: 'Metall', color: '#e2e8f0', accent: 'rgba(226,232,240,0.10)' };
+      return { icon: <Sparkles className="w-5 h-5" />, label: 'Metall', color: 'var(--color-element-metal)', accent: 'rgba(158,158,158,0.10)' };
     case 'erde':
-      return { icon: <Mountain className="w-5 h-5" />, label: 'Erde', color: '#fbbf24', accent: 'rgba(251,191,36,0.12)' };
+      return { icon: <Mountain className="w-5 h-5" />, label: 'Erde', color: 'var(--color-element-earth)', accent: 'rgba(255,152,0,0.12)' };
     default:
       return { icon: <CircleDot className="w-5 h-5" />, label: '', color: '#D4AF37', accent: 'rgba(212,175,55,0.10)' };
   }
