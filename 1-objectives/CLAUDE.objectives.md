@@ -108,10 +108,10 @@ When an artifact (goal, requirement) is no longer relevant:
 | [REQ-PERF-signatur-performance](requirements/REQ-PERF-signatur-performance.md) | REQ-PERF | Must | Implemented | 60fps desktop (0.01ms/frame), 30fps mobile (0.002ms/frame), adaptive trail tiers |
 | [REQ-F-signatur-dissonance-model](requirements/REQ-F-signatur-dissonance-model.md) | REQ-F | Must | Draft | Drei-Schichten-Dissonanz: d_natal→Geometrie, d_accumulated→Komplexität, d_elemental→Textur |
 | [REQ-F-signatur-quiz-morph](requirements/REQ-F-signatur-quiz-morph.md) | REQ-F | Must | Draft | Quiz-Completion morpht Signatur live — Pol-Verhalten ändert sich proportional zur Dissonanz |
-| [REQ-F-signatur-determinism](requirements/REQ-F-signatur-determinism.md) | REQ-F | Must | Draft | Identische Inputs → bit-identische Pol-Positionen auf allen Plattformen |
+| [REQ-F-signatur-determinism](requirements/REQ-F-signatur-determinism.md) | REQ-F | Must | Implemented | Identische Inputs → bit-identische Pol-Positionen auf allen Plattformen |
 | [REQ-F-signatur-density-field](requirements/REQ-F-signatur-density-field.md) | REQ-F | Should | Draft | 128×128 Float-Raster als numerische Signatur-Repräsentation für Vergleich + Matching |
 | [REQ-F-signatur-ios-swift](requirements/REQ-F-signatur-ios-swift.md) | REQ-F | Must | Draft | Native Swift/SwiftUI Signatur — ersetzt deprecated expo-gl Ansatz |
-| [REQ-F-signatur-shared-bridge](requirements/REQ-F-signatur-shared-bridge.md) | REQ-F | Must | Draft | DIMENSION_DEFS als Single Source of Truth in @bazodiac/shared + Swift-Konstanten |
+| [REQ-F-signatur-shared-bridge](requirements/REQ-F-signatur-shared-bridge.md) | REQ-F | Must | Implemented | DIMENSION_DEFS als Single Source of Truth in @bazodiac/shared + Swift-Konstanten |
 | [REQ-F-signatur-day-night-pulse](requirements/REQ-F-signatur-day-night-pulse.md) | REQ-F | Must | Draft | Day-Pulse/Trace + Night-Pulse/Trace Modulation der Signatur |
 | [REQ-F-quiz-generator-pipeline](requirements/REQ-F-quiz-generator-pipeline.md) | REQ-F | Must | Approved | Reusable quiz generator with formal mapping to 12-sector zodiac, 6D Signatur V3, 5D Master Signal |
 | [REQ-F-vibes-core](requirements/REQ-F-vibes-core.md) | REQ-F | Must | Approved | On-demand Vibe insight from Signatur + transit (2–3h horizon, deterministic) |
