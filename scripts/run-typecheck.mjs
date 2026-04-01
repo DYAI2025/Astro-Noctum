@@ -16,7 +16,8 @@ if (!selectedScript) {
 }
 
 console.log(`Running npm script: ${selectedScript}`);
-const result = spawnSync('npm', ['run', selectedScript], { stdio: 'inherit' });
+const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+const result = spawnSync(npmCommand, ['run', selectedScript], { stdio: 'inherit' });
 
 if (result.error) {
   console.error(result.error.message);
