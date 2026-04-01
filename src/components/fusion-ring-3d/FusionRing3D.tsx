@@ -9,7 +9,7 @@ import {
   type RingEffectType,
 } from '@/src/components/fusion-ring-website/FusionRingWebsiteCanvas';
 import FusionRingCanvasV2 from '@/src/components/fusion-ring-website/FusionRingCanvasV2';
-import { soulprintToNatalWeights, soulprintToDimensionWeights } from '@/src/components/fusion-ring-website/signatur-bridge';
+import { toDimensionWeightsOrUndefined, toNatalWeightsOrUndefined } from '@/src/lib/signatur/weight-utils';
 import { isFeatureEnabled } from '@/src/lib/feature-flags';
 import type { DissonanceResult } from '../../lib/fusion-ring/dissonance';
 import type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
@@ -87,12 +87,12 @@ export const FusionRing3D = ({
   const { kpIndex } = useSpaceWeather();
 
   const v2NatalWeights = useMemo(
-    () => signalData?.baseSignals ? soulprintToNatalWeights(signalData.baseSignals) : undefined,
+    () => toNatalWeightsOrUndefined(signalData?.baseSignals),
     [signalData?.baseSignals]
   );
 
   const v3DimensionWeights = useMemo(
-    () => signalData?.baseSignals ? soulprintToDimensionWeights(signalData.baseSignals) : undefined,
+    () => toDimensionWeightsOrUndefined(signalData?.baseSignals),
     [signalData?.baseSignals]
   );
 

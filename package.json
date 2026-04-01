@@ -12,11 +12,12 @@
     "build-storybook": "storybook build",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
-    "typecheck:src": "bash ./scripts/ci-typecheck-src.sh",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "start": "node server.mjs"
+    "start": "node server.mjs",
+    "typecheck:src": "bash ./scripts/ci-typecheck-src.sh",
+    "typecheck": "node ./scripts/run-typecheck.mjs"
   },
   "engines": {
     "node": ">=20.19.0"

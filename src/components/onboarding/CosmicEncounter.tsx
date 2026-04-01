@@ -14,7 +14,7 @@ import { EncounterBirthForm } from './EncounterBirthForm';
 import { LeviSpeechBubble } from './LeviSpeechBubble';
 import { MyzeliumNetwork } from './MyzeliumNetwork';
 import { useParallax } from './useParallax';
-import { soulprintToNatalWeights } from '../fusion-ring-website/signatur-bridge';
+import { toNatalWeightsOrUndefined } from '@/src/lib/signatur/weight-utils';
 import type { BootstrapResponse, SignatureDeltaResponse } from '../../lib/schemas/experience';
 
 // Lazy-load heavy ring components
@@ -107,8 +107,7 @@ export function CosmicEncounter({
 
   // Compute natal weights when bootstrap data arrives
   const natalWeights = useMemo(() => {
-    if (!bootstrapData?.soulprint_sectors) return undefined;
-    return soulprintToNatalWeights(bootstrapData.soulprint_sectors);
+    return toNatalWeightsOrUndefined(bootstrapData?.soulprint_sectors);
   }, [bootstrapData]);
 
   // ── Phase 1: materializing → levi-speaks (3s auto-trigger) ────────
