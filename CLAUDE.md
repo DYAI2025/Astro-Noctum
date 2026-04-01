@@ -15,7 +15,7 @@ Bazodiac (Astro-Noctum) — a fusion astrology web + mobile app combining Wester
 
 **Phase:** Code (active development)
 
-4 goals (3 Approved, 1 Draft). 25 requirements: 10 Implemented, 11 Approved, 4 Draft. 5 constraints. 3 assumptions. 10 decisions. 3 components (frontend, api-server, mobile). Sprints S-BRIDGE, S-DAUP, S-DASH-POLISH, S-SIG complete. V3 Bipolar Trail engine is default Signatur renderer (PR #225). Vibes V1 + Weekly V2 shipped. Phase V3 (Transparency) next. Total: 141 of 167 tasks Done (84%). 6 partnership OQs pending. 7 deploy runbooks. Updated 2026-03-30.
+6 goals (4 Approved, 2 Draft). 36 requirements: 15 Implemented, 11 Approved, 9 Draft, 1 Deprecated. 5 constraints. 4 assumptions. 13 decisions. 3 components (frontend, api-server, mobile). Sprints S-BRIDGE, S-DAUP, S-DASH-POLISH, S-SIG complete. V3 Bipolar Trail engine is default Signatur renderer (PR #225). Vibes V1 + Weekly V2 shipped. Phase V3 (Transparency) next. Total: 141 of 167 tasks Done (84%). 6 partnership OQs pending. 7 deploy runbooks. Updated 2026-04-02.
 
 ---
 

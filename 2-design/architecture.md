@@ -264,11 +264,11 @@ The Vibes feature delivers a short-horizon emotional/energetic forecast based on
 - L1: In-memory `vibesCache` Map with cooldown-based eviction (stale entries purged after max cooldown)
 - L2: Supabase `vibes_cache` (composite key: `user_id + date + engine_version`)
 - Engine version: `v1-gemini-vibes`
-- Cache hit returns immediately without LLM call — achieves p95 < 2s target
+- Cache hit returns immediately without LLM call — achieves p95 < 200ms
 
 **Fallback**: If Gemini API key is missing or generation fails, returns a deterministic fallback computed from soulprint sectors alone (no LLM). Marked `cached: false` in response meta.
 
-**Performance**: `< 2s p95` (cache hit path). Gemini generation target: `< 1.5s`. (`REQ-PERF-vibes-response-time`)
+**Performance**: `< 200ms p95` (cache hit path). Gemini generation target: `< 2s` (p95); `< 1.5s` goal per `REQ-PERF-vibes-response-time`. See `DEC-vibes-gemini-strategy`.
 
 ---
 
@@ -378,5 +378,12 @@ The quiz generator pipeline defines a formal, reusable mapping from quiz answers
 - [`DEC-wuxing-ui-mapping`](decisions/DEC-wuxing-ui-mapping.md) — Wu-Xing element-to-UI mapping conventions
 - [`DEC-dissonance-model`](decisions/DEC-dissonance-model.md) — Three-layer dissonance model for signature modulation
 - [`DEC-signatur-v3-bipolar-trails`](decisions/DEC-signatur-v3-bipolar-trails.md) — Bipolar trail engine (V3 prototype, replacing particle spirograph)
+- [`DEC-multi-agent-voice`](decisions/DEC-multi-agent-voice.md) — Config-driven multi-agent voice architecture (Levi + Eve)
+- [`DEC-vibes-not-daily`](decisions/DEC-vibes-not-daily.md) — On-demand Vibes (2–3h) instead of fixed daily insight
+- [`DEC-vibes-gemini-strategy`](decisions/DEC-vibes-gemini-strategy.md) — Gemini for Vibes + Weekly Insights with two-level caching
+- [`DEC-no-number-without-explanation`](decisions/DEC-no-number-without-explanation.md) — No numerical value in UI without explanation
+- [`DEC-top-3-weekly-focus`](decisions/DEC-top-3-weekly-focus.md) — Weekly Insights highlights top-3 life areas
+- [`DEC-design-system-v2`](decisions/DEC-design-system-v2.md) — Unified design system with dark/bright mode tokens
+- [`DEC-spiritual-tech-interactions`](decisions/DEC-spiritual-tech-interactions.md) — Spiritual Tech interaction philosophy
 - [`archive/TRUENORTH.md`](../archive/TRUENORTH.md) — Three-layer autopoietic model and five governing laws
 - `bazodiac_engine/ARCHITECTURE.md` — Signal engine internals and projection modules
