@@ -25,6 +25,6 @@
 - Requirements: [REQ-F-astro-card-detail-view](../requirements/REQ-F-astro-card-detail-view.md)
 - Requirements: [REQ-F-signatur-rendering-engine](../requirements/REQ-F-signatur-rendering-engine.md)
 - Requirements: [REQ-F-signatur-data-pipeline](../requirements/REQ-F-signatur-data-pipeline.md)
-- Requirements: ~~[REQ-F-signatur-mobile-native](../requirements/REQ-F-signatur-mobile-native.md)~~ (Deprecated — replaced by REQ-F-signatur-ios-swift)
+- Requirements: ~~[REQ-F-signatur-mobile-native](../requirements/REQ-F-signatur-mobile-native.md)~~ (Deprecated — replaced by [REQ-F-signatur-ios-swift](../requirements/REQ-F-signatur-ios-swift.md))
 - Requirements: [REQ-F-depth-navigation](../requirements/REQ-F-depth-navigation.md)
 - Requirements: [REQ-F-progressive-ui-fluidity](../requirements/REQ-F-progressive-ui-fluidity.md)
