@@ -123,6 +123,8 @@ When an artifact (goal, requirement) is no longer relevant:
 | [REQ-USA-mobile-first-readability](requirements/REQ-USA-mobile-first-readability.md) | REQ-USA | Must | Approved | <10s comprehension on mobile, mobile-first layout |
 | [REQ-PERF-vibes-response-time](requirements/REQ-PERF-vibes-response-time.md) | REQ-PERF | Must | Approved | Vibes result <2s p95, Gemini fallback within 1.5s |
 | [REQ-F-orbital-signatur-visualization](requirements/REQ-F-orbital-signatur-visualization.md) | REQ-F | Should | Draft | Parametric ellipse in Valence×Arousal space — Home-Base orbit + perturbed trajectory |
+| [REQ-F-depth-navigation](requirements/REQ-F-depth-navigation.md) | REQ-F | Must | Draft | Z-axis depth navigation: Dashboard (surface) → Signatur (mid) → detail views (core) |
+| [REQ-F-progressive-ui-fluidity](requirements/REQ-F-progressive-ui-fluidity.md) | REQ-F | Must | Draft | UI fluidity grows with cluster completion; conventional for new users, gesture-driven for engaged users |
 
 ---
 
