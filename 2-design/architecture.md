@@ -219,6 +219,64 @@ Individuation thresholds: >= 0.60 strongly individual, >= 0.30 distinctly person
 | Space weather (NASA DONKI) | 15 minutes | In-memory |
 | Space weather extended (NOAA+DONKI) | 5 minutes | In-memory |
 | Transit state | No-store | Fallback to profile-derived data |
+| Vibes result | Cooldown-based | In-memory (L1) + Supabase vibes_cache (L2) |
+| Weekly Insights | ISO week boundary | In-memory (L1) + Supabase weekly_insights_cache (L2) |
+
+---
+
+## Vibes & Weekly Insights
+
+### Vibes (On-Demand, 2–3h Horizon)
+
+**Endpoint**: `POST /api/vibes` (requires Supabase JWT) | **Requirements**: `REQ-F-vibes-core`, `REQ-F-vibes-output-structure`, `REQ-PERF-vibes-response-time`
+
+The Vibes feature delivers a short-horizon emotional/energetic forecast based on the user's current signature state. It is on-demand — the user requests a Vibe at any time and receives insight tuned to the next 2–3 hours. Distinct from the daily Experience API flow (`/api/experience/daily`); see `DEC-vibes-not-daily`.
+
+**Data pipeline:**
+1. Load `soulprint_sectors` (12-vector) + big-three signs from `astro_profiles`
+2. Load current space weather state from `/api/space-weather/extended` (5-min cached)
+3. Blend signature × transit context into a Gemini prompt
+4. Generate 3-level output via Gemini (`gemini-3-flash-preview`, 15s timeout):
+   - `kurzsignal` — one-sentence headline (≤120 chars)
+   - `treiber` — driving force explanation (2–3 sentences)
+   - `erklaerung` — deeper pattern context (paragraph)
+5. Persist result to L2 cache (Supabase `vibes_cache`)
+
+**Caching strategy:**
+- L1: In-memory `vibesCache` Map with cooldown-based eviction (stale entries purged after max cooldown)
+- L2: Supabase `vibes_cache` (composite key: `user_id + date + engine_version`)
+- Engine version: `v1-gemini-vibes`
+- Cache hit returns immediately without LLM call — achieves p95 < 2s target
+
+**Fallback**: If Gemini API key is missing or generation fails, returns a deterministic fallback computed from soulprint sectors alone (no LLM). Marked `cached: false` in response meta.
+
+**Performance**: `< 2s p95` (cache hit path). Gemini generation target: `< 1.5s`. (`REQ-PERF-vibes-response-time`)
+
+---
+
+### Weekly Insights (7 Life Areas)
+
+**Endpoint**: `POST /api/weekly-insights` (requires Supabase JWT) | **Requirements**: `REQ-F-weekly-insights-engine`, `REQ-F-weekly-area-prioritization`
+
+Weekly Insights computes a 7-life-area outlook for the current ISO week. The top-3 areas receive expanded content; the remaining 4 are compact 1-line tendency labels. See `DEC-top-3-weekly-focus`.
+
+**Life areas**: Love, Career, Wellbeing, Creativity, Social, Learning, Energy
+
+**Data pipeline:**
+1. Load `soulprint_sectors` + big-three signs from `astro_profiles`
+2. Compute deterministic transit sectors from ISO week hash — same user + same week always produces the same transit input
+3. Blend soulprint × transit → 7 life-area scores via `computeLifeAreaScores()`
+4. Rank areas by score; top-3 flagged for expanded content generation
+5. Generate via Gemini (`gemini-3-flash-preview`): top-3 areas get full paragraph + tendency label; remaining 4 get 1-line tendency label only
+6. Persist to Supabase `weekly_insights_cache`
+
+**Caching strategy:**
+- L1: In-memory `weeklyCache` Map, keyed by `weekly:{userId}:{isoWeek}`
+- L2: Supabase `weekly_insights_cache` (keys: `user_id + iso_week + engine_version`)
+- Cache valid for entire ISO week; refreshes automatically on Monday boundary (new `isoWeek` key)
+- Engine version: `v1-gemini-weekly`
+
+**Top-3 determinism**: Area ranking is derived from the soulprint × transit blend score, not randomized. Deterministic: same user + same week → same top-3. (`DEC-top-3-weekly-focus`)
 
 ---
 
