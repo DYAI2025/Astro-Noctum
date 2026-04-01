@@ -21,3 +21,7 @@ New users see a conventional, predictable UI (routes, buttons, scroll). As the u
 - Given a user with all 6 clusters completed, when they interact with the app, then the full fluidity layer is active — gesture-based navigation and spatial depth transitions are the primary interaction mode
 - Given `prefers-reduced-motion: reduce` is set, when any user opens the app regardless of cluster completion, then no motion-based fluidity affordances are shown; conventional UI is used throughout
 - Given the fluidity level changes (new cluster completed), when the user next opens the app, then the UI reflects the new fluidity level without requiring an app restart or manual refresh
+
+## Related Constraints
+
+- [CON-dark-luxury-aesthetic](../constraints/CON-dark-luxury-aesthetic.md) — all fluid affordances (gesture-hint animations, spatial depth hints) must use the obsidian/gold palette; no bright flashes or light-mode elements

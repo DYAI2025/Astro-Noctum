@@ -136,6 +136,7 @@ When an artifact (goal, requirement) is no longer relevant:
 | [ASM-elevenlabs-multi-agent](assumptions/ASM-elevenlabs-multi-agent.md) | Technical | Verified | Medium | ElevenLabs supports multiple agent personas per account |
 | [ASM-existing-fusion-sufficient](assumptions/ASM-existing-fusion-sufficient.md) | Technical | Verified | Medium | Existing Fusion/Signatur logic sufficient for Vibes + Weekly Insights |
 | [ASM-gemini-text-quality](assumptions/ASM-gemini-text-quality.md) | Technical | Verified | Medium | Gemini produces constraint-compliant insight text (≥80% first-pass) |
+| [ASM-ued-metrics-available](assumptions/ASM-ued-metrics-available.md) | Technical | Unverified | Medium | UED metrics (home_base, σ_v, σ_a, instability, rise/recovery rate) derivable from soulprint + transit |
 
 ---
 
