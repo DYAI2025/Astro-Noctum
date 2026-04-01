@@ -94,9 +94,27 @@ Dual-context usage (`DEC-supabase-backend`):
 
 The `/api/interpret` endpoint sends combined astrological results (Western + BaZi + WuXing + Master Signal context) to Gemini for personalized horoscope text generation. Invoked server-side to protect the API key in production; client-side via `VITE_GEMINI_API_KEY` in development.
 
-### ElevenLabs Voice Agent
+### ElevenLabs Voice Agents (Multi-Agent)
 
-Levi Bazi is an ElevenLabs voice widget embedded in the Dashboard. It calls back to the Express server at `/api/profile/:userId` to fetch the user's astro profile (soulprint sectors + natal weights) and `/api/agent/conversation` to persist conversation summaries. Authentication uses `ELEVENLABS_TOOL_SECRET`.
+**Decision**: `DEC-multi-agent-voice` | **Requirements**: `REQ-F-eve-voice-agent`, `REQ-F-agent-architecture-refactor`, `REQ-MNT-agent-extensibility`
+
+Bazodiac uses a **config-driven multi-agent architecture** where each voice agent is defined by an `AgentConfig` entry in the `AGENTS` array (in `@bazodiac/shared`). No agent-specific components exist — all rendering derives from config.
+
+**Two fixed agents:**
+- **Levi Bazi** (`VITE_ELEVENLABS_AGENT_ID`) — primary agent, empathic/philosophical tone
+- **Eve** (`VITE_ELEVENLABS_EVE_AGENT_ID`) — second agent, bold/modern persona; shows "coming soon" if env var missing
+
+**Key architectural components:**
+- `AgentProvider` context: replaces Levi-specific state with generic `activeAgent`, `agentState` keyed by `AgentId`
+- `AgentSection` component: renders from config — one instance per agent, no Levi-specific code
+- `AgentFloatingWidget`: one floating ElevenLabs widget per agent, keyed by `agent.id`
+- `agent_conversations.agent_type` DB column: partitions conversation history — agents never see each other's sessions
+
+**Dashboard layout**: Two fixed side-by-side tiles (not a generic gallery). The product decision is two agents; the architecture decision is config-driven extensibility for future agents.
+
+**Server-side**: `/api/profile/:userId` and `/api/agent` accept `agent_type` parameter. Profile endpoint filters conversation history by agent type; save endpoint writes with type. Auth: `ELEVENLABS_TOOL_SECRET`.
+
+**Extensibility**: Adding a third agent = add 1 `AgentConfig` entry + 1 env var + 1 DB migration (update `agent_type` check constraint). Zero component changes. (`REQ-MNT-agent-extensibility`)
 
 ### Space Weather
 
@@ -328,6 +346,28 @@ All content-bearing UI sections must achieve <10s comprehension on a 375px mobil
 - Mobile (< 640px): 1-column layout; 2×2 for the Big Four astrological tiles
 - Tablet (640–1024px): 2 columns
 - Desktop (> 1024px): 3–4 columns
+
+---
+
+## Quiz Generator Pipeline
+
+**Requirement**: `REQ-F-quiz-generator-pipeline`
+
+The quiz generator pipeline defines a formal, reusable mapping from quiz answers to Signatur dimensions. All 22 quiz components share the same data contract and output through `@bazodiac/shared`.
+
+**Data contract (quiz output)**:
+- All quizzes emit a `ContributionEvent` via `onComplete` callback
+- `ContributionEvent` carries semantic `Marker`s (format: `marker.{domain}.{keyword}`, weight 0–1)
+- Markers are mapped to 12-sector zodiac weight vectors via `AFFINITY_MAP` in `eventToSectorSignals()`
+
+**Formal mappings** (defined in `@bazodiac/shared`):
+1. **12-sector zodiac mapping**: `eventToSectorSignals()` + `AFFINITY_MAP` → `soulprint_sectors[12]`
+2. **6D Signatur V3 mapping**: `quizSectorsToQuizWeights()` (from `packages/shared/src/signatur/`) → `quizWeights[6]` (one per DIMENSION_DEFS entry)
+3. **5D Master Signal mapping**: `quiz-projection.ts` → `quizProjection[5]` (passion, stability, future, connection, autonomy)
+
+**Cluster gate**: A cluster's contribution is only persisted when ALL quizzes in that cluster are complete. Gate logic lives in `useQuizContribution`.
+
+**Universal scoring engine**: `scoreQuiz()` in `@bazodiac/shared/src/quizzes/scoring.ts` handles all three scoring models (multi-dimension, categorical, profile-driven) via a unified `QuizDefinition` type.
 
 ---
 
