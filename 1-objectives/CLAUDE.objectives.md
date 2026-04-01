@@ -122,6 +122,7 @@ When an artifact (goal, requirement) is no longer relevant:
 | [REQ-F-explainability-layer](requirements/REQ-F-explainability-layer.md) | REQ-F | Must | Approved | "Warum sehe ich das?" for every insight |
 | [REQ-USA-mobile-first-readability](requirements/REQ-USA-mobile-first-readability.md) | REQ-USA | Must | Approved | <10s comprehension on mobile, mobile-first layout |
 | [REQ-PERF-vibes-response-time](requirements/REQ-PERF-vibes-response-time.md) | REQ-PERF | Must | Approved | Vibes result <2s p95, Gemini fallback within 1.5s |
+| [REQ-F-orbital-signatur-visualization](requirements/REQ-F-orbital-signatur-visualization.md) | REQ-F | Should | Draft | Parametric ellipse in Valence×Arousal space — Home-Base orbit + perturbed trajectory |
 
 ---
 
