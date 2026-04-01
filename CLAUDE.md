@@ -85,7 +85,7 @@ Signatur V3 Architektur-Vision (2026-03-29): SIGNATUR_V3_VISION.md als Single So
 
 Implementierungsplan S-BRIDGE erstellt (2026-03-29): 3 Phasen, 12 Tasks — DIMENSION_DEFS Single Source of Truth, Determinismus-Test-Suite, Swift-Konstanten-Referenz. S-BRIDGE abgeschlossen (2026-03-29): 12/12 Tasks Done. DIMENSION_DEFS aus bipolar-engine.ts in packages/shared/src/signatur/dimension-defs.ts extrahiert + Object.freeze; 44 neue Tests (signatur-shared-bridge.test.ts + signatur-v3-engine.test.ts determinism); SWIFT_CONSTANTS.md erstellt; Runbook: docs/runbooks/signatur-s-bridge-verification.md. Nächster Sprint: S-MORPH (Quiz-Morphing) oder S-DENSITY (Density Field Phase 2).
 
-Gap analysis (2026-03-31): 0 Critical (2 fixed — index desync resolved), 5 Important (Draft core goal, stale summaries fixed, status conflicts fixed, 3 unverified assumptions), 3 Minor.
+Gap analysis (2026-04-01): 4 Critical, 4 Important resolved — GOAL-fusion-astrology approved; 2 goals + 7 requirements + 2 new REQs added to indexes; 5 stale statuses fixed; 2 assumptions verified; WCAG REQ added.
 
 ---
 

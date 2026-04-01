@@ -108,10 +108,10 @@ When an artifact (goal, requirement) is no longer relevant:
 | [REQ-PERF-signatur-performance](requirements/REQ-PERF-signatur-performance.md) | REQ-PERF | Must | Implemented | 60fps desktop (0.01ms/frame), 30fps mobile (0.002ms/frame), adaptive trail tiers |
 | [REQ-F-signatur-dissonance-model](requirements/REQ-F-signatur-dissonance-model.md) | REQ-F | Must | Draft | Drei-Schichten-Dissonanz: d_natal→Geometrie, d_accumulated→Komplexität, d_elemental→Textur |
 | [REQ-F-signatur-quiz-morph](requirements/REQ-F-signatur-quiz-morph.md) | REQ-F | Must | Draft | Quiz-Completion morpht Signatur live — Pol-Verhalten ändert sich proportional zur Dissonanz |
-| [REQ-F-signatur-determinism](requirements/REQ-F-signatur-determinism.md) | REQ-F | Must | Draft | Identische Inputs → bit-identische Pol-Positionen auf allen Plattformen |
+| [REQ-F-signatur-determinism](requirements/REQ-F-signatur-determinism.md) | REQ-F | Must | Implemented | Identische Inputs → bit-identische Pol-Positionen auf allen Plattformen |
 | [REQ-F-signatur-density-field](requirements/REQ-F-signatur-density-field.md) | REQ-F | Should | Draft | 128×128 Float-Raster als numerische Signatur-Repräsentation für Vergleich + Matching |
 | [REQ-F-signatur-ios-swift](requirements/REQ-F-signatur-ios-swift.md) | REQ-F | Must | Draft | Native Swift/SwiftUI Signatur — ersetzt deprecated expo-gl Ansatz |
-| [REQ-F-signatur-shared-bridge](requirements/REQ-F-signatur-shared-bridge.md) | REQ-F | Must | Draft | DIMENSION_DEFS als Single Source of Truth in @bazodiac/shared + Swift-Konstanten |
+| [REQ-F-signatur-shared-bridge](requirements/REQ-F-signatur-shared-bridge.md) | REQ-F | Must | Implemented | DIMENSION_DEFS als Single Source of Truth in @bazodiac/shared + Swift-Konstanten |
 | [REQ-F-signatur-day-night-pulse](requirements/REQ-F-signatur-day-night-pulse.md) | REQ-F | Must | Draft | Day-Pulse/Trace + Night-Pulse/Trace Modulation der Signatur |
 | [REQ-F-quiz-generator-pipeline](requirements/REQ-F-quiz-generator-pipeline.md) | REQ-F | Must | Approved | Reusable quiz generator with formal mapping to 12-sector zodiac, 6D Signatur V3, 5D Master Signal |
 | [REQ-F-vibes-core](requirements/REQ-F-vibes-core.md) | REQ-F | Must | Approved | On-demand Vibe insight from Signatur + transit (2–3h horizon, deterministic) |
@@ -123,6 +123,9 @@ When an artifact (goal, requirement) is no longer relevant:
 | [REQ-USA-mobile-first-readability](requirements/REQ-USA-mobile-first-readability.md) | REQ-USA | Must | Approved | <10s comprehension on mobile, mobile-first layout |
 | [REQ-PERF-vibes-response-time](requirements/REQ-PERF-vibes-response-time.md) | REQ-PERF | Must | Approved | Vibes result <2s p95, Gemini fallback within 1.5s |
 | [REQ-F-orbital-signatur-visualization](requirements/REQ-F-orbital-signatur-visualization.md) | REQ-F | Should | Draft | Parametric ellipse in Valence×Arousal space — Home-Base orbit + perturbed trajectory |
+| [REQ-F-depth-navigation](requirements/REQ-F-depth-navigation.md) | REQ-F | Must | Draft | Z-axis depth navigation: Dashboard (surface) → Signatur (mid) → detail views (core) |
+| [REQ-F-progressive-ui-fluidity](requirements/REQ-F-progressive-ui-fluidity.md) | REQ-F | Must | Draft | UI fluidity grows with cluster completion; conventional for new users, gesture-driven for engaged users |
+| [REQ-USA-wcag-contrast](requirements/REQ-USA-wcag-contrast.md) | REQ-USA | Should | Draft | WCAG 2.1 AA contrast ratios enforced on all text/interactive elements against obsidian background |
 
 ---
 
@@ -133,6 +136,7 @@ When an artifact (goal, requirement) is no longer relevant:
 | [ASM-elevenlabs-multi-agent](assumptions/ASM-elevenlabs-multi-agent.md) | Technical | Verified | Medium | ElevenLabs supports multiple agent personas per account |
 | [ASM-existing-fusion-sufficient](assumptions/ASM-existing-fusion-sufficient.md) | Technical | Verified | Medium | Existing Fusion/Signatur logic sufficient for Vibes + Weekly Insights |
 | [ASM-gemini-text-quality](assumptions/ASM-gemini-text-quality.md) | Technical | Verified | Medium | Gemini produces constraint-compliant insight text (≥80% first-pass) |
+| [ASM-ued-metrics-available](assumptions/ASM-ued-metrics-available.md) | Technical | Unverified | Medium | UED metrics (home_base, σ_v, σ_a, instability, rise/recovery rate) derivable from soulprint + transit |
 
 ---
 
