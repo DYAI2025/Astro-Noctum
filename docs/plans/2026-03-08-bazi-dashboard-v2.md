@@ -8,7 +8,7 @@
 
 **Tech Stack:** React 19, TypeScript, Tailwind CSS v4, Framer Motion
 
-**Source of truth:** Dev Brief at `features/plan/Implementation-plan/Dev_Brief_BaZi_Dashboard_v2.md` (docx)
+**Source of truth:** Dev Brief at `features/plan/Implementation-plan/Dev_Brief_BaZi_Dashboard_v2.docx`
 
 ---
 
