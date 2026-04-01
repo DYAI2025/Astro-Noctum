@@ -3,7 +3,7 @@
 | ID | Name | Role | Influence | Goals |
 |----|------|------|-----------|-------|
 | STK-product-owner | Ben | Founder & Lead Developer | High | GOAL-fusion-astrology, GOAL-autopoietic-ux, GOAL-multi-agent-voice |
-| STK-end-user | End Users | German-speaking astrology enthusiasts | Medium | GOAL-fusion-astrology, GOAL-autopoietic-ux |
+| STK-end-user | End Users | German-speaking astrology enthusiasts | Medium | GOAL-fusion-astrology, GOAL-autopoietic-ux, GOAL-vibes-weekly-insights |
 
 ## Influence Levels
 
