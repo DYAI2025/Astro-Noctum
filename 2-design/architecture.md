@@ -280,6 +280,57 @@ Weekly Insights computes a 7-life-area outlook for the current ISO week. The top
 
 ---
 
+## Transparency & Explainability (System-Wide Pattern)
+
+### No Number Without Explanation
+
+**Constraint**: `CON-no-unexplained-numbers` | **Decision**: `DEC-no-number-without-explanation` | **Requirement**: `REQ-F-transparency-rule`
+
+Every numerical value displayed in the UI must have an accompanying explanation. If a value cannot be explained in its context, it is replaced with a qualitative label (`hoch` / `mittel` / `niedrig`) or removed entirely. This is a hard product constraint, not a guideline.
+
+Scope: Dashboard, Vibes, Weekly Insights, Signatur coherence index, space weather display, influence gauges.
+
+**Enforcement pattern:**
+- Every `<span>` displaying a number must have an associated tooltip, inline label, or context sentence
+- Internal scores (harmony index, solar pressure score, life-area score) shown to users: either display with a meaning label ("Hohe Harmonie — Westlich und BaZi konvergieren") or hide the number
+- Gemini prompts include explicit instruction: "Do not include unexplained numerical values"
+- PR review gate: any new numerical display requires explanation mechanism before merge
+
+### "Warum sehe ich das?" — Explainability Layer
+
+**Requirement**: `REQ-F-explainability-layer`
+
+Every insight, tendency label, and influence score must have an accessible explanation of why the user sees it. The design pattern:
+
+1. **Surface layer**: insight text (kurzsignal, tendency label, gauge value)
+2. **Expand trigger**: "Warum?" link or info icon — always present, never hidden behind premium
+3. **Explanation content**: 1–3 sentences citing the data inputs that drove this result (which astrological factor, signal strength, what the user could do with the information)
+4. **Animation**: 300ms ease-out expand panel or bottom-sheet drawer (`DEC-spiritual-tech-interactions`)
+
+This pattern applies to: Vibes kurzsignal, Weekly life-area tendency labels, Dashboard influence gauges, Signatur coherence index display.
+
+---
+
+## Mobile-First Design Constraints
+
+**Constraint**: `CON-mobile-first-readability` | **Requirement**: `REQ-USA-mobile-first-readability`
+
+All content-bearing UI sections must achieve <10s comprehension on a 375px mobile viewport. This is not a "nice to have" — it is a hard product constraint.
+
+**Required design behaviour:**
+- Maximum 3 content levels above the fold before scroll is required
+- Body text minimum: `--text-sm` (14px / 1.5 line-height) — never smaller
+- Touch targets ≥ 44px — enforced via `--touch-min` token (`DEC-design-system-v2`)
+- Dashboard sections use progressive disclosure: headline → 1-line summary → expand for detail
+- No horizontal scroll on mobile at any viewport ≥ 320px
+
+**Responsive grid** (from `DEC-design-system-v2`):
+- Mobile (< 640px): 1-column layout; 2×2 for the Big Four astrological tiles
+- Tablet (640–1024px): 2 columns
+- Desktop (> 1024px): 3–4 columns
+
+---
+
 ## References
 
 - [`DEC-supabase-backend`](decisions/DEC-supabase-backend.md) — Supabase as auth and persistence layer
