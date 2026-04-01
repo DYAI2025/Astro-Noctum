@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { BootstrapResponse, SignatureDeltaResponse } from '@/src/lib/schemas/experience';
 import { isFeatureEnabled } from '@/src/lib/feature-flags';
-import { soulprintToNatalWeights, soulprintToDimensionWeights } from '@/src/components/fusion-ring-website/signatur-bridge';
+import { toDimensionWeightsOrUndefined, toNatalWeightsOrUndefined } from '@/src/lib/signatur/weight-utils';
 import { useLanguage } from '@/src/contexts/LanguageContext';
 
 const SignaturV3Canvas = lazy(() => import('@/src/components/signatur-v3/SignaturV3Canvas'));
@@ -38,9 +38,9 @@ export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: 
 
   const isFallback = bootstrapData.meta?.engine_version === 'fallback';
 
-  const natalWeights = useMemo(() => soulprintToNatalWeights(sectors), [sectors]);
-  const dimensionWeights = useMemo(() => soulprintToDimensionWeights(sectors), [sectors]);
-  const neutralDimensionWeights = useMemo(() => soulprintToDimensionWeights(DEFAULT_SECTORS), []);
+  const natalWeights = useMemo(() => toNatalWeightsOrUndefined(sectors), [sectors]);
+  const dimensionWeights = useMemo(() => toDimensionWeightsOrUndefined(sectors), [sectors]);
+  const neutralDimensionWeights = useMemo(() => toDimensionWeightsOrUndefined(DEFAULT_SECTORS) ?? {}, []);
 
   // Morph animation: neutral -> personal over 2s, then show button at 3s
   useEffect(() => {

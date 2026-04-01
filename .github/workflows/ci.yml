@@ -32,8 +32,8 @@ jobs:
 
       - run: npm ci
 
-      - name: TypeScript check (src/ only)
-        run: npm run typecheck:src
+      - name: TypeScript check
+        run: npm run typecheck
 
   build:
     name: Build

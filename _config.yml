@@ -1,0 +1,15 @@
+# GitHub Pages/Jekyll build configuration
+# Exclude binary files that were mistakenly committed with .md extension
+# to prevent UTF-8 parsing failures in Liquid/Jekyll.
+exclude:
+  - docs/Bazodiac_Dev_Brief_04_Cleanup.md
+  - features/docs/specs/Bazahuawa.md
+  - features/docs/specs/Bazodiac Fusion Ring Signal Logic.md
+  - features/docs/specs/Bazodiac_Semantic_Marker_Mapping_v2.md
+  - features/plan/Fu-Ring/Fu-Ring-final/Uploads/Dev_Brief_Fusion_Ring_v2.md
+  - features/plan/Implementation-plan/Bazodiac_Fusion_Ring_Architektur_v1.md
+  - features/plan/Implementation-plan/Bazodiac_Sky_Spec.md
+  - features/plan/Implementation-plan/Bazodiac_Transit_State_Spec.md
+  - features/plan/Implementation-plan/Dev_Brief_BaZi_Dashboard_v2.md
+  - features/plan/Implementation-plan/Dev_Brief_BaZi_WuXing_Dashboard.md
+  - features/plan/Implementation-plan/Dev_Brief_Fusion_Ring_v2.md
