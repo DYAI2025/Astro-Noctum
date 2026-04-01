@@ -13,6 +13,7 @@ import { usePremium } from '@/src/hooks/usePremium';
 import { useSpaceWeather } from '@/src/hooks/useSpaceWeather';
 import { useFusionSignal } from '@/src/hooks/useFusionSignal';
 import { useDissonance } from '@/src/hooks/useDissonance';
+import { useFirstRunDaily } from '@/src/hooks/useFirstRunDaily';
 import { upsertDissonanceState } from '@/src/services/supabase';
 import { ClusterSidebar } from '@/src/components/signatur/ClusterSidebar';
 import { DissonanceValues } from '@/src/components/settings/DissonanceValues';
@@ -23,7 +24,8 @@ import {
   isClusterComplete,
   findClusterForModule,
 } from '@/src/lib/fusion-ring/clusters';
-import { quizSectorsToQuizWeights, soulprintToNatalWeights } from '@/src/components/fusion-ring-website/signatur-bridge';
+import { quizSectorsToQuizWeights } from '@/src/components/fusion-ring-website/signatur-bridge';
+import { toNatalWeightsOrUndefined } from '@/src/lib/signatur/weight-utils';
 import type { ContributionEvent } from '@/src/lib/lme/types';
 import { eventToSectorSignals } from '@/src/lib/fusion-ring/test-signal';
 import { useCoustoAudio } from '@/src/hooks/useCoustoAudio';
@@ -39,6 +41,7 @@ export default function FuRingPage() {
   const quizContribution = useQuizContribution(completedModuleIds);
   const spaceWeather = useSpaceWeather();
   const { signalData } = useFusionSignal(userId);
+  const { dayHarmonic } = useFirstRunDaily(userId, null, signalData?.baseSignals ?? null, []);
 
   const [activeQuiz, setActiveQuiz] = useState<string | null>(null);
   const [justCompletedCluster, setJustCompletedCluster] = useState<string | null>(null);
@@ -59,13 +62,13 @@ export default function FuRingPage() {
 
   // Natal planet weights from birth chart soulprint
   const natalPlanetWeights = useMemo(
-    () => signalData?.baseSignals ? soulprintToNatalWeights(signalData.baseSignals) : null,
+    () => toNatalWeightsOrUndefined(signalData?.baseSignals) ?? null,
     [signalData?.baseSignals],
   );
 
   // Current planet weights derived from the latest quiz sectors
   const currentPlanetWeights = useMemo(
-    () => liveQuizSectors ? soulprintToNatalWeights(liveQuizSectors) : null,
+    () => toNatalWeightsOrUndefined(liveQuizSectors) ?? null,
     [liveQuizSectors],
   );
 
@@ -255,6 +258,8 @@ export default function FuRingPage() {
               effectTrigger={ringEffect}
               solarModulation={spaceWeather.ringModulation}
               dissonanceModulation={dissonanceModulation}
+              externalDissonance={dissonance}
+              dayHarmonic={dayHarmonic}
               labels={{
                 regionLabel: t('furing3d.a11y.regionLabel'),
                 loading: t('furing3d.loading'),

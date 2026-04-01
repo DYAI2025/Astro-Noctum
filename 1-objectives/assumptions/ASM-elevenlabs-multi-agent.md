@@ -21,6 +21,10 @@ The existing Levi integration uses a single Agent ID. The feature request specif
 3. Embed both `<elevenlabs-convai>` widgets on a test page with different `agent-id` attributes and verify both load independently
 4. Confirm the provided Eve Agent ID is valid and functional
 
+## Verification Notes
+
+Verified 2026-03-30: Eve voice agent is live alongside Levi — both agents operational on same ElevenLabs account.
+
 ## Related Artifacts
 
 - [GOAL-multi-agent-voice](../goals/GOAL-multi-agent-voice.md)

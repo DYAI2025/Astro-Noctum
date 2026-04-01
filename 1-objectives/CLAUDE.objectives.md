@@ -77,10 +77,12 @@ When an artifact (goal, requirement) is no longer relevant:
 
 | File | Priority | Status | Summary |
 |------|----------|--------|---------|
-| [GOAL-fusion-astrology](goals/GOAL-fusion-astrology.md) | Must | Draft | Kymatic fusion system — Signatur V3 als lebendiges kymatisches System; bijektive Kohärenz (modified 2026-03-29) |
+| [GOAL-fusion-astrology](goals/GOAL-fusion-astrology.md) | Must | Approved | Kymatic fusion system — Signatur V3 als lebendiges kymatisches System; bijektive Kohärenz |
 | [GOAL-autopoietic-ux](goals/GOAL-autopoietic-ux.md) | Must | Approved | UI adapts to user's elemental signature via three-layer autopoietic model |
 | [GOAL-multi-agent-voice](goals/GOAL-multi-agent-voice.md) | Must | Approved | Levi + Eve as two fixed voice agent personas with independent conversation history |
 | [GOAL-vibes-weekly-insights](goals/GOAL-vibes-weekly-insights.md) | Must | Approved | On-demand Vibes (2–3h) + Weekly Insights (7 life areas) with transparent outputs |
+| [GOAL-signatur-phase2-density](goals/GOAL-signatur-phase2-density.md) | Must | Draft | Density Field (128×128) als numerische Signatur-Repräsentation + vollständiges Drei-Schichten-Dissonanz-Modell |
+| [GOAL-signatur-phase3-matching](goals/GOAL-signatur-phase3-matching.md) | Must | Draft | Dual-Ring Matching, Frequenzkompatibilität, Cousto-Audio-Layer — Signatur als Identitätsprotokoll |
 
 ---
 
@@ -100,10 +102,17 @@ When an artifact (goal, requirement) is no longer relevant:
 | [REQ-F-agent-dashboard-selection](requirements/REQ-F-agent-dashboard-selection.md) | REQ-F | Must | Implemented | Dashboard shows two fixed side-by-side agent tiles (Levi + Eve) |
 | [REQ-MNT-agent-extensibility](requirements/REQ-MNT-agent-extensibility.md) | REQ-MNT | Should | Approved | Adding third agent requires config only, no structural code changes |
 | [REQ-SEC-eve-brand-safety](requirements/REQ-SEC-eve-brand-safety.md) | REQ-SEC | Must | Approved | Eve persona brand-safe; system prompt reviewed before production |
-| [REQ-F-signatur-rendering-engine](requirements/REQ-F-signatur-rendering-engine.md) | REQ-F | Must | Draft | V2 Cousto-frequency spirograph: 7 planets, 4-tier particles, kaleidoscope, emergence, ambient sound |
-| [REQ-F-signatur-data-pipeline](requirements/REQ-F-signatur-data-pipeline.md) | REQ-F | Must | Draft | Soulprint→natal weights, quiz→dimensions, transit, space weather, True North caps |
-| [REQ-F-signatur-mobile-native](requirements/REQ-F-signatur-mobile-native.md) | REQ-F | Must | Draft | Full 3D spirograph engine on iOS via expo-gl, gesture controls, reduced particles |
-| [REQ-PERF-signatur-performance](requirements/REQ-PERF-signatur-performance.md) | REQ-PERF | Must | Draft | 60fps desktop, 30fps mobile/iOS, <2s load, <150MB GPU, <500ms API p95 |
+| [REQ-F-signatur-rendering-engine](requirements/REQ-F-signatur-rendering-engine.md) | REQ-F | Must | Implemented | V3 Bipolar Trail Engine: 12 Pole, Cousto-Frequenzen, additive Trails, adaptive Tiers |
+| [REQ-F-signatur-data-pipeline](requirements/REQ-F-signatur-data-pipeline.md) | REQ-F | Must | Implemented | 6D-Dimension-Pipeline: Soulprint→natal, Quiz→dimensions, Transit, Space Weather, True North |
+| [REQ-F-signatur-mobile-native](requirements/REQ-F-signatur-mobile-native.md) | REQ-F | Must | Deprecated | ~~expo-gl~~ — superseded by REQ-F-signatur-ios-swift (native Swift) |
+| [REQ-PERF-signatur-performance](requirements/REQ-PERF-signatur-performance.md) | REQ-PERF | Must | Implemented | 60fps desktop (0.01ms/frame), 30fps mobile (0.002ms/frame), adaptive trail tiers |
+| [REQ-F-signatur-dissonance-model](requirements/REQ-F-signatur-dissonance-model.md) | REQ-F | Must | Draft | Drei-Schichten-Dissonanz: d_natal→Geometrie, d_accumulated→Komplexität, d_elemental→Textur |
+| [REQ-F-signatur-quiz-morph](requirements/REQ-F-signatur-quiz-morph.md) | REQ-F | Must | Draft | Quiz-Completion morpht Signatur live — Pol-Verhalten ändert sich proportional zur Dissonanz |
+| [REQ-F-signatur-determinism](requirements/REQ-F-signatur-determinism.md) | REQ-F | Must | Draft | Identische Inputs → bit-identische Pol-Positionen auf allen Plattformen |
+| [REQ-F-signatur-density-field](requirements/REQ-F-signatur-density-field.md) | REQ-F | Should | Draft | 128×128 Float-Raster als numerische Signatur-Repräsentation für Vergleich + Matching |
+| [REQ-F-signatur-ios-swift](requirements/REQ-F-signatur-ios-swift.md) | REQ-F | Must | Draft | Native Swift/SwiftUI Signatur — ersetzt deprecated expo-gl Ansatz |
+| [REQ-F-signatur-shared-bridge](requirements/REQ-F-signatur-shared-bridge.md) | REQ-F | Must | Draft | DIMENSION_DEFS als Single Source of Truth in @bazodiac/shared + Swift-Konstanten |
+| [REQ-F-signatur-day-night-pulse](requirements/REQ-F-signatur-day-night-pulse.md) | REQ-F | Must | Draft | Day-Pulse/Trace + Night-Pulse/Trace Modulation der Signatur |
 | [REQ-F-quiz-generator-pipeline](requirements/REQ-F-quiz-generator-pipeline.md) | REQ-F | Must | Approved | Reusable quiz generator with formal mapping to 12-sector zodiac, 6D Signatur V3, 5D Master Signal |
 | [REQ-F-vibes-core](requirements/REQ-F-vibes-core.md) | REQ-F | Must | Approved | On-demand Vibe insight from Signatur + transit (2–3h horizon, deterministic) |
 | [REQ-F-vibes-output-structure](requirements/REQ-F-vibes-output-structure.md) | REQ-F | Must | Approved | 3-level output: Kurzsignal → Treiber → Erklärung |
@@ -121,10 +130,9 @@ When an artifact (goal, requirement) is no longer relevant:
 
 | File | Category | Status | Risk | Summary |
 |------|----------|--------|------|---------|
-| [ASM-elevenlabs-multi-agent](assumptions/ASM-elevenlabs-multi-agent.md) | Technical | Unverified | Medium | ElevenLabs supports multiple agent personas per account |
-| [ASM-existing-fusion-sufficient](assumptions/ASM-existing-fusion-sufficient.md) | Technical | Unverified | Medium | Existing Fusion/Signatur logic sufficient for Vibes + Weekly Insights |
-| [ASM-gemini-text-quality](assumptions/ASM-gemini-text-quality.md) | Technical | Unverified | Medium | Gemini produces constraint-compliant insight text (≥80% first-pass) |
-| [ASM-ued-metrics-available](assumptions/ASM-ued-metrics-available.md) | Technical | Unverified | Medium | UED metrics (home_base, σ_v, σ_a, instability, rise/recovery rate) derivable from soulprint + transit |
+| [ASM-elevenlabs-multi-agent](assumptions/ASM-elevenlabs-multi-agent.md) | Technical | Verified | Medium | ElevenLabs supports multiple agent personas per account |
+| [ASM-existing-fusion-sufficient](assumptions/ASM-existing-fusion-sufficient.md) | Technical | Verified | Medium | Existing Fusion/Signatur logic sufficient for Vibes + Weekly Insights |
+| [ASM-gemini-text-quality](assumptions/ASM-gemini-text-quality.md) | Technical | Verified | Medium | Gemini produces constraint-compliant insight text (≥80% first-pass) |
 
 ---
 
