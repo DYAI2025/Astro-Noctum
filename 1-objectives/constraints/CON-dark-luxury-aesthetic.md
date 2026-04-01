@@ -21,3 +21,4 @@ The dark luxury aesthetic reinforces the product's positioning as a serious astr
 - Component libraries and third-party UI elements must be themed or replaced to match the palette
 - Accessibility (WCAG contrast ratios) must be verified against the dark background
 - Wu-Xing element colors (Wood, Fire, Earth, Metal, Water) must be defined as design tokens
+- Derived requirement: [REQ-USA-wcag-contrast](../requirements/REQ-USA-wcag-contrast.md)

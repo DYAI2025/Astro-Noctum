@@ -125,6 +125,7 @@ When an artifact (goal, requirement) is no longer relevant:
 | [REQ-F-orbital-signatur-visualization](requirements/REQ-F-orbital-signatur-visualization.md) | REQ-F | Should | Draft | Parametric ellipse in Valence×Arousal space — Home-Base orbit + perturbed trajectory |
 | [REQ-F-depth-navigation](requirements/REQ-F-depth-navigation.md) | REQ-F | Must | Draft | Z-axis depth navigation: Dashboard (surface) → Signatur (mid) → detail views (core) |
 | [REQ-F-progressive-ui-fluidity](requirements/REQ-F-progressive-ui-fluidity.md) | REQ-F | Must | Draft | UI fluidity grows with cluster completion; conventional for new users, gesture-driven for engaged users |
+| [REQ-USA-wcag-contrast](requirements/REQ-USA-wcag-contrast.md) | REQ-USA | Should | Draft | WCAG 2.1 AA contrast ratios enforced on all text/interactive elements against obsidian background |
 
 ---
 
