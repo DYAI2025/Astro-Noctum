@@ -94,8 +94,8 @@ Die einzig korrekte Version des neuen Onboardings, der Signatur und des Daily Ho
 + className?: string;
 
   // Im return JSX:
-- <div ref={canvasRef} style={{ width: '100%', height: '100%' }}>
-+ <div ref={canvasRef} className={className} style={{ width: '100%', height: '100%' }}>
+- <div ref={canvasRef} style={&#123;&#123; width: '100%', height: '100%' &#125;&#125;}>
++ <div ref={canvasRef} className={className} style={&#123;&#123; width: '100%', height: '100%' &#125;&#125;}>
 ```
 
 **Die bestehende `FusionRingWebsiteCanvas.tsx` (V1) NICHT löschen** — sie bleibt als Feature-Flag-Fallback.
