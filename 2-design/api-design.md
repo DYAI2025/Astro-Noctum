@@ -14,9 +14,14 @@ Defined in `src/router.tsx`, all lazy-loaded via React Router.
 |-------|-----------|-------------|
 | `/` | `DashboardPage` | Main astro dashboard |
 | `/signatur` | `FuRingPage` | Signatur (Fusion Ring) visualization |
+| `/fu-ring` | `FuRingPage` | Alias for `/signatur` (legacy route preserved) |
+| `/signatur/quizzes` | `SignaturQuizzesPage` | Quiz selection for Signatur |
 | `/wu-xing` | `WuXingPage` | Wu Xing five-elements detail |
 | `/wissen` | `WissenPage` | SEO article index |
 | `/wissen/:slug` | `ArtikelPage` | Individual SEO article |
+| `/onboarding` | `OnboardingPage` | Birth data form → Signature reveal → Dashboard |
+| `/sky` | `SkyPage` | Sky/space weather visualization |
+| `/faq` | `FaqPage` | FAQ page |
 
 ---
 
