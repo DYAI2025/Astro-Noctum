@@ -25,7 +25,7 @@ Use **Gemini `gemini-3-flash-preview`** as the generation backbone for both Vibe
 ## Key Points
 
 1. **Model**: `gemini-3-flash-preview` — same model used for Dashboard interpretation. 15s timeout for Vibes, 20s for Weekly Insights (longer = more structured output).
-2. **Two-level caching**: L1 in-memory (request-lifetime; evicted by cooldown) + L2 Supabase persistence (`vibes_cache`, `weekly_insights_cache`). Cache hit = no LLM call = p95 < 200ms.
+2. **Two-level caching**: L1 in-memory (process-lifetime; TTL/cooldown-based eviction) + L2 Supabase persistence (`vibes_cache`, `weekly_insights_cache`). Cache hit = no LLM call = p95 < 200ms.
 3. **Deterministic fallback**: Both endpoints return soulprint-derived content when Gemini is unavailable. Marked `cached: false` in response meta; insight quality degrades gracefully from the user’s perspective.
 4. **Prompt constraints**: All prompts include explicit instruction: "Do not include unexplained numerical values" (enforces `CON-no-unexplained-numbers` at generation time).
 5. **Engine versioning**: `v1-gemini-vibes` and `v1-gemini-weekly` in cache keys. Cache invalidated automatically when engine version changes.
