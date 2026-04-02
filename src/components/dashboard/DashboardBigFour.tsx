@@ -40,8 +40,7 @@ export function DashboardBigFour({ sunSign, moonSign, ascendant, baziAnimal }: D
       {items.map(({ icon, labelKey, value, color }) => (
         <div
           key={labelKey}
-          className="rounded-xl border border-white/8 px-4 py-3 flex items-center gap-3"
-          style={{ background: 'rgba(0,5,10,0.6)' }}
+          className="cosmic-tile px-4 py-3 flex items-center gap-3"
         >
           <div
             className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
@@ -50,10 +49,10 @@ export function DashboardBigFour({ sunSign, moonSign, ascendant, baziAnimal }: D
             {icon}
           </div>
           <div className="min-w-0">
-            <p className="text-[8px] font-mono uppercase tracking-[0.2em] text-white/35">
+            <p className="text-[8px] font-sans uppercase tracking-[0.2em] opacity-40">
               {t(labelKey)}
             </p>
-            <p className="text-sm font-serif text-white/85 truncate">
+            <p className="text-sm font-serif truncate">
               {value || '—'}
             </p>
           </div>

@@ -32,7 +32,6 @@ export type FusionRing3DLabels = {
 type FusionRing3DProps = {
   userId: string;
   isInteractive?: boolean;
-  onSpikeClick?: (sector: number) => void;
   labels: FusionRing3DLabels;
   quizWeights?: Record<string, number>;
   effectTrigger?: { type: string; color?: string; timestamp: number; intensity?: number } | null;
@@ -68,7 +67,7 @@ const pickLatestEvent = (events: TransitEvent[]): TransitEvent | null => {
   if (!events.length) return null;
   return [...events]
     .sort((a, b) => (a.timestamp ?? 0) - (b.timestamp ?? 0))
-    .at(-1) ?? events[events.length - 1] ?? null;
+    .at(-1) ?? null;
 };
 
 export const FusionRing3D = ({

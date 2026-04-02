@@ -93,7 +93,7 @@ export default function FuRingPage() {
   // Cosmic resonance — personalized space weather sensitivity
   const sunSign = apiData?.western?.zodiac_sign as string | undefined;
   const moonSign = apiData?.western?.moon_sign as string | undefined;
-  const { profile: resonanceProfile, dimensionMultipliers } = useCosmicResonance({
+  const { profile: resonanceProfile } = useCosmicResonance({
     natalWeights: natalPlanetWeights,
     ringModulation: spaceWeather.ringModulation,
     sunSign,

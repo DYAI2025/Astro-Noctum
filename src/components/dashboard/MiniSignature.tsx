@@ -36,24 +36,24 @@ export default function MiniSignature({ natalWeights, quizWeights, dayHarmonic, 
   return (
     <div
       onClick={onExpand}
-      className="group bg-zinc-900/40 border border-zinc-800 p-6 md:p-8 rounded-[2rem] aspect-square flex flex-col justify-between cursor-pointer active:scale-95 transition-all duration-300 hover:border-white/20"
+      className="group cosmic-tile p-6 md:p-8 rounded-[2rem] aspect-square flex flex-col justify-between cursor-pointer active:scale-95"
     >
-      <div className="relative w-full aspect-square rounded-full overflow-hidden bg-black/20">
+      <div className="relative w-full aspect-square rounded-full overflow-hidden bg-black/5">
         {!hasData ? (
           <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
-            <p className="text-[10px] text-white/40 uppercase tracking-widest animate-pulse">
+            <p className="text-[10px] opacity-40 uppercase tracking-widest animate-pulse font-sans">
               {t('dashboard.miniSignature.calculating')}
             </p>
           </div>
         ) : paused ? (
           <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-[10px] text-white/30 uppercase tracking-widest">
+            <p className="text-[10px] opacity-30 uppercase tracking-widest font-sans">
               {t('dashboard.miniSignature.paused')}
             </p>
           </div>
         ) : (
           <div className="absolute inset-0 scale-125 group-hover:scale-150 transition-transform duration-1000">
-            <Suspense fallback={<div className="w-full h-full bg-zinc-900/20 rounded-full animate-pulse" />}>
+            <Suspense fallback={<div className="w-full h-full opacity-20 rounded-full animate-pulse" />}>
               <SignaturV3Canvas
                 natalWeights={natalWeights ?? EMPTY_WEIGHTS}
                 quizWeights={quizWeights ?? EMPTY_WEIGHTS}
@@ -71,26 +71,26 @@ export default function MiniSignature({ natalWeights, quizWeights, dayHarmonic, 
         <div className="absolute inset-2 border border-white/5 rounded-full pointer-events-none" />
 
         {/* Subtle radial shadow to frame the ring */}
-        <div className="absolute inset-0 shadow-[inset_0_0_40px_rgba(0,0,0,0.8)] pointer-events-none" />
+        <div className="absolute inset-0 shadow-[inset_0_0_40px_rgba(0,0,0,0.4)] pointer-events-none" />
       </div>
 
       <div className="mt-4 flex justify-between items-center relative z-10">
-        <span className="text-[10px] font-bold text-white/60 uppercase tracking-[0.15em]">
+        <span className="text-[10px] font-bold opacity-60 uppercase tracking-[0.15em] font-sans">
           {t('dashboard.miniSignature.label')}
         </span>
         <div className="flex items-center gap-2">
           <button
             onClick={(e) => { e.stopPropagation(); togglePause(); }}
-            className="w-6 h-6 rounded-full border border-white/10 flex items-center justify-center hover:border-white/30 transition-colors"
+            className="w-6 h-6 rounded-full border border-current opacity-20 flex items-center justify-center hover:opacity-40 transition-opacity"
             aria-label={t('dashboard.miniSignature.togglePause')}
           >
             {paused
-              ? <Play className="w-3 h-3 text-white/40" />
-              : <Pause className="w-3 h-3 text-white/40" />
+              ? <Play className="w-3 h-3" />
+              : <Pause className="w-3 h-3" />
             }
           </button>
-          <div className="w-5 h-5 rounded-full border border-white/10 flex items-center justify-center group-hover:border-white/30 transition-colors">
-            <span className="text-[8px] text-white/30">⤢</span>
+          <div className="w-5 h-5 rounded-full border border-current opacity-20 flex items-center justify-center group-hover:opacity-40 transition-opacity">
+            <span className="text-[8px]">⤢</span>
           </div>
         </div>
       </div>
