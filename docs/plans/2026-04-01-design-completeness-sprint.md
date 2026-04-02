@@ -96,7 +96,7 @@ Insert the following content between `## Caching Strategy` and `## References` i
 
 ### Vibes (On-Demand, 2–3h Horizon)
 
-**Endpoint**: `POST /api/vibes` (requires Supabase JWT) | **Requirement**: `REQ-F-vibes-core`, `REQ-F-vibes-output-structure`, `REQ-PERF-vibes-response-time`
+**Endpoint**: `POST /api/vibes` (requires Supabase JWT) | **Requirements**: `REQ-F-vibes-core`, `REQ-F-vibes-output-structure`, `REQ-PERF-vibes-response-time`
 
 The Vibes feature delivers a short-horizon emotional/energetic forecast based on the user's current signature state. It is on-demand — the user requests a Vibe at any time and receives insight tuned to the next 2–3 hours. Distinct from the daily Experience API flow (`/api/experience/daily`); see `DEC-vibes-not-daily`.
 
