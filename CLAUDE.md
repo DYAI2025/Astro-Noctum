@@ -15,7 +15,7 @@ Bazodiac (Astro-Noctum) — a fusion astrology web + mobile app combining Wester
 
 **Phase:** Code (active development)
 
-4 goals (3 Approved, 1 Draft). 25 requirements: 10 Implemented, 11 Approved, 4 Draft. 5 constraints. 3 assumptions. 10 decisions. 3 components (frontend, api-server, mobile). Sprints S-BRIDGE, S-DAUP, S-DASH-POLISH, S-SIG complete. V3 Bipolar Trail engine is default Signatur renderer (PR #225). Vibes V1 + Weekly V2 shipped. Phase V3 (Transparency) next. Total: 141 of 167 tasks Done (84%). 6 partnership OQs pending. 7 deploy runbooks. Updated 2026-03-30.
+6 goals (4 Approved, 2 Draft). 36 requirements: 15 Implemented, 11 Approved, 9 Draft, 1 Deprecated. 5 constraints. 4 assumptions. 13 decisions. 3 components (frontend, api-server, mobile). Sprints S-BRIDGE, S-DAUP, S-DASH-POLISH, S-SIG complete. V3 Bipolar Trail engine is default Signatur renderer (PR #225). Vibes V1 + Weekly V2 shipped. Phase V3 (Transparency) next. Total: 141 of 167 tasks Done (84%). 6 partnership OQs pending. 7 deploy runbooks. Updated 2026-04-02.
 
 ---
 
@@ -86,6 +86,10 @@ Signatur V3 Architektur-Vision (2026-03-29): SIGNATUR_V3_VISION.md als Single So
 Implementierungsplan S-BRIDGE erstellt (2026-03-29): 3 Phasen, 12 Tasks — DIMENSION_DEFS Single Source of Truth, Determinismus-Test-Suite, Swift-Konstanten-Referenz. S-BRIDGE abgeschlossen (2026-03-29): 12/12 Tasks Done. DIMENSION_DEFS aus bipolar-engine.ts in packages/shared/src/signatur/dimension-defs.ts extrahiert + Object.freeze; 44 neue Tests (signatur-shared-bridge.test.ts + signatur-v3-engine.test.ts determinism); SWIFT_CONSTANTS.md erstellt; Runbook: docs/runbooks/signatur-s-bridge-verification.md. Nächster Sprint: S-MORPH (Quiz-Morphing) oder S-DENSITY (Density Field Phase 2).
 
 Gap analysis (2026-04-01): 4 Critical, 4 Important resolved — GOAL-fusion-astrology approved; 2 goals + 7 requirements + 2 new REQs added to indexes; 5 stale statuses fixed; 2 assumptions verified; WCAG REQ added.
+
+Completeness assessment (2026-04-02): 5 Critical, 4 Important, 3 Minor — all resolved in design-completeness sprint (docs/plans/2026-04-01-design-completeness-sprint.md). architecture.md extended with Vibes/Weekly/Transparency/Mobile/MultiAgent/QuizGen sections; DEC-vibes-gemini-strategy created; CLAUDE.design.md trigger table complete (13 decisions).
+
+9 Draft requirements pending approval sprint (/SDLC-elicit): signatur-dissonance-model, signatur-quiz-morph, signatur-density-field, signatur-ios-swift, signatur-day-night-pulse, orbital-signatur-visualization (blocked on ASM-ued-metrics-available), depth-navigation, progressive-ui-fluidity, wcag-contrast.
 
 ---
 

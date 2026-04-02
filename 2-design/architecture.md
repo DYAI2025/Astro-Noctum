@@ -94,9 +94,27 @@ Dual-context usage (`DEC-supabase-backend`):
 
 The `/api/interpret` endpoint sends combined astrological results (Western + BaZi + WuXing + Master Signal context) to Gemini for personalized horoscope text generation. Invoked server-side to protect the API key in production; client-side via `VITE_GEMINI_API_KEY` in development.
 
-### ElevenLabs Voice Agent
+### ElevenLabs Voice Agents (Multi-Agent)
 
-Levi Bazi is an ElevenLabs voice widget embedded in the Dashboard. It calls back to the Express server at `/api/profile/:userId` to fetch the user's astro profile (soulprint sectors + natal weights) and `/api/agent/conversation` to persist conversation summaries. Authentication uses `ELEVENLABS_TOOL_SECRET`.
+**Decision**: `DEC-multi-agent-voice` | **Requirements**: `REQ-F-eve-voice-agent`, `REQ-F-agent-architecture-refactor`, `REQ-MNT-agent-extensibility`
+
+Bazodiac uses a **config-driven multi-agent architecture** where each voice agent is defined by an `AgentConfig` entry in the `AGENTS` array (in `@bazodiac/shared`). No agent-specific components exist — all rendering derives from config.
+
+**Two fixed agents:**
+- **Levi Bazi** (`VITE_ELEVENLABS_AGENT_ID`) — primary agent, empathic/philosophical tone
+- **Eve** (`VITE_ELEVENLABS_EVE_AGENT_ID`) — second agent, bold/modern persona; shows "coming soon" if env var missing
+
+**Key architectural components:**
+- `AgentProvider` context: replaces Levi-specific state with generic `activeAgent`, `agentState` keyed by `AgentId`
+- `AgentSection` component: renders from config — one instance per agent, no Levi-specific code
+- `AgentFloatingWidget`: one floating ElevenLabs widget per agent, keyed by `agent.id`
+- `agent_conversations.agent_type` DB column: partitions conversation history — agents never see each other's sessions
+
+**Dashboard layout**: Two fixed side-by-side tiles (not a generic gallery). The product decision is two agents; the architecture decision is config-driven extensibility for future agents.
+
+**Server-side**: `/api/profile/:userId` and `/api/agent` accept `agent_type` parameter. Profile endpoint filters conversation history by agent type; save endpoint writes with type. Auth: `ELEVENLABS_TOOL_SECRET`.
+
+**Extensibility**: Adding a third agent = add 1 `AgentConfig` entry + 1 env var + 1 DB migration (update `agent_type` check constraint). Zero component changes. (`REQ-MNT-agent-extensibility`)
 
 ### Space Weather
 
@@ -219,6 +237,137 @@ Individuation thresholds: >= 0.60 strongly individual, >= 0.30 distinctly person
 | Space weather (NASA DONKI) | 15 minutes | In-memory |
 | Space weather extended (NOAA+DONKI) | 5 minutes | In-memory |
 | Transit state | No-store | Fallback to profile-derived data |
+| Vibes result | Cooldown-based | In-memory (L1) + Supabase vibes_cache (L2) |
+| Weekly Insights | ISO week boundary | In-memory (L1) + Supabase weekly_insights_cache (L2) |
+
+---
+
+## Vibes & Weekly Insights
+
+### Vibes (On-Demand, 2–3h Horizon)
+
+**Endpoint**: `POST /api/vibes` (requires Supabase JWT) | **Requirements**: `REQ-F-vibes-core`, `REQ-F-vibes-output-structure`, `REQ-PERF-vibes-response-time`
+
+The Vibes feature delivers a short-horizon emotional/energetic forecast based on the user's current signature state. It is on-demand — the user requests a Vibe at any time and receives insight tuned to the next 2–3 hours. Distinct from the daily Experience API flow (`/api/experience/daily`); see `DEC-vibes-not-daily`.
+
+**Data pipeline:**
+1. Load `soulprint_sectors` (12-vector) + big-three signs from `astro_profiles`
+2. Load current space weather state from `/api/space-weather/extended` (5-min cached)
+3. Blend signature × transit context into a Gemini prompt
+4. Generate 3-level output via Gemini (`gemini-3-flash-preview`, 15s timeout):
+   - `kurzsignal` — one-sentence headline (≤120 chars)
+   - `treiber` — driving force explanation (2–3 sentences)
+   - `erklaerung` — deeper pattern context (paragraph)
+5. Persist result to L2 cache (Supabase `vibes_cache`)
+
+**Caching strategy:**
+- L1: In-memory `vibesCache` Map with cooldown-based eviction (stale entries purged after max cooldown)
+- L2: Supabase `vibes_cache` (composite key: `user_id + hour_bucket + engine_version`; `hour_bucket` = UTC timestamp floored to 2h window; row TTL = 3h to match Vibes horizon)
+- Engine version: `v1-gemini-vibes`
+- Cache hit returns immediately without LLM call — achieves p95 < 200ms
+
+**Fallback**: If Gemini API key is missing or generation fails, returns a deterministic fallback computed from soulprint sectors alone (no LLM). Marked `cached: false` in response meta.
+
+**Performance**: `< 200ms p95` (cache hit path). Gemini generation target: `< 2s` (p95); `< 1.5s` goal per `REQ-PERF-vibes-response-time`. See `DEC-vibes-gemini-strategy`.
+
+---
+
+### Weekly Insights (7 Life Areas)
+
+**Endpoint**: `POST /api/weekly-insights` (requires Supabase JWT) | **Requirements**: `REQ-F-weekly-insights-engine`, `REQ-F-weekly-area-prioritization`
+
+Weekly Insights computes a 7-life-area outlook for the current ISO week. The top-3 areas receive expanded content; the remaining 4 are compact 1-line tendency labels. See `DEC-top-3-weekly-focus`.
+
+**Life areas**: Love, Career, Wellbeing, Creativity, Social, Learning, Energy
+
+**Data pipeline:**
+1. Load `soulprint_sectors` + big-three signs from `astro_profiles`
+2. Compute deterministic transit sectors from ISO week hash — same user + same week always produces the same transit input
+3. Blend soulprint × transit → 7 life-area scores via `computeLifeAreaScores()`
+4. Rank areas by score; top-3 flagged for expanded content generation
+5. Generate via Gemini (`gemini-3-flash-preview`): top-3 areas get full paragraph + tendency label; remaining 4 get 1-line tendency label only
+6. Persist to Supabase `weekly_insights_cache`
+
+**Caching strategy:**
+- L1: In-memory `weeklyCache` Map, keyed by `weekly:{userId}:{isoWeek}`
+- L2: Supabase `weekly_insights_cache` (keys: `user_id + iso_week + engine_version`)
+- Cache valid for entire ISO week; refreshes automatically on Monday boundary (new `isoWeek` key)
+- Engine version: `v1-gemini-weekly`
+
+**Top-3 determinism**: Area ranking is derived from the soulprint × transit blend score, not randomized. Deterministic: same user + same week → same top-3. (`DEC-top-3-weekly-focus`)
+
+---
+
+## Transparency & Explainability (System-Wide Pattern)
+
+### No Number Without Explanation
+
+**Constraint**: `CON-no-unexplained-numbers` | **Decision**: `DEC-no-number-without-explanation` | **Requirement**: `REQ-F-transparency-rule`
+
+Every numerical value displayed in the UI must have an accompanying explanation. If a value cannot be explained in its context, it is replaced with a qualitative label (`hoch` / `mittel` / `niedrig`) or removed entirely. This is a hard product constraint, not a guideline.
+
+Scope: Dashboard, Vibes, Weekly Insights, Signatur coherence index, space weather display, influence gauges.
+
+**Enforcement pattern:**
+- Every `<span>` displaying a number must have an associated tooltip, inline label, or context sentence
+- Internal scores (harmony index, solar pressure score, life-area score) shown to users: either display with a meaning label ("Hohe Harmonie — Westlich und BaZi konvergieren") or hide the number
+- Gemini prompts include explicit instruction: "Do not include unexplained numerical values"
+- PR review gate: any new numerical display requires explanation mechanism before merge
+
+### "Warum sehe ich das?" — Explainability Layer
+
+**Requirement**: `REQ-F-explainability-layer`
+
+Every insight, tendency label, and influence score must have an accessible explanation of why the user sees it. The design pattern:
+
+1. **Surface layer**: insight text (kurzsignal, tendency label, gauge value)
+2. **Expand trigger**: "Warum?" link or info icon — always present, never hidden behind premium
+3. **Explanation content**: 1–3 sentences citing the data inputs that drove this result (which astrological factor, signal strength, what the user could do with the information)
+4. **Animation**: 300ms ease-out expand panel or bottom-sheet drawer (`DEC-spiritual-tech-interactions`)
+
+This pattern applies to: Vibes kurzsignal, Weekly life-area tendency labels, Dashboard influence gauges, Signatur coherence index display.
+
+---
+
+## Mobile-First Design Constraints
+
+**Constraint**: `CON-mobile-first-readability` | **Requirement**: `REQ-USA-mobile-first-readability`
+
+All content-bearing UI sections must achieve <10s comprehension on a 375px mobile viewport. This is not a "nice to have" — it is a hard product constraint.
+
+**Required design behaviour:**
+- Maximum 3 content levels above the fold before scroll is required
+- Body text minimum: `--text-sm` (14px / 1.5 line-height) — never smaller
+- Touch targets ≥ 44px — enforced via `--touch-min` token (`DEC-design-system-v2`)
+- Dashboard sections use progressive disclosure: headline → 1-line summary → expand for detail
+- No horizontal scroll on mobile at any viewport ≥ 320px
+
+**Responsive grid** (from `DEC-design-system-v2`):
+- Mobile (< 640px): 1-column layout; 2×2 for the Big Four astrological tiles
+- Tablet (640–1024px): 2 columns
+- Desktop (> 1024px): 3–4 columns
+
+---
+
+## Quiz Generator Pipeline
+
+**Requirement**: `REQ-F-quiz-generator-pipeline`
+
+The quiz generator pipeline defines a formal, reusable mapping from quiz answers to Signatur dimensions. All 22 quiz components share the same data contract and output through `@bazodiac/shared`.
+
+**Data contract (quiz output)**:
+- All quizzes emit a `ContributionEvent` via `onComplete` callback
+- `ContributionEvent` carries semantic `Marker`s (format: `marker.{domain}.{keyword}`, weight 0–1)
+- Markers are mapped to 12-sector zodiac weight vectors via `AFFINITY_MAP` in `eventToSectorSignals()`
+
+**Formal mappings** (defined in `@bazodiac/shared`):
+1. **12-sector zodiac mapping**: `eventToSectorSignals()` + `AFFINITY_MAP` → `soulprint_sectors[12]`
+2. **6D Signatur V3 mapping**: `quizSectorsToQuizWeights()` (from `packages/shared/src/signatur/`) → `quizWeights[6]` (one per DIMENSION_DEFS entry)
+3. **5D Master Signal mapping**: `quiz-projection.ts` → `quizProjection[5]` (passion, stability, future, connection, autonomy)
+
+**Cluster gate**: A cluster's contribution is only persisted when ALL quizzes in that cluster are complete. Gate logic lives in `useQuizContribution`.
+
+**Universal scoring engine**: `scoreQuiz()` in `@bazodiac/shared/src/quizzes/scoring.ts` handles all three scoring models (multi-dimension, categorical, profile-driven) via a unified `QuizDefinition` type.
 
 ---
 
@@ -229,5 +378,12 @@ Individuation thresholds: >= 0.60 strongly individual, >= 0.30 distinctly person
 - [`DEC-wuxing-ui-mapping`](decisions/DEC-wuxing-ui-mapping.md) — Wu-Xing element-to-UI mapping conventions
 - [`DEC-dissonance-model`](decisions/DEC-dissonance-model.md) — Three-layer dissonance model for signature modulation
 - [`DEC-signatur-v3-bipolar-trails`](decisions/DEC-signatur-v3-bipolar-trails.md) — Bipolar trail engine (V3 prototype, replacing particle spirograph)
+- [`DEC-multi-agent-voice`](decisions/DEC-multi-agent-voice.md) — Config-driven multi-agent voice architecture (Levi + Eve)
+- [`DEC-vibes-not-daily`](decisions/DEC-vibes-not-daily.md) — On-demand Vibes (2–3h) instead of fixed daily insight
+- [`DEC-vibes-gemini-strategy`](decisions/DEC-vibes-gemini-strategy.md) — Gemini for Vibes + Weekly Insights with two-level caching
+- [`DEC-no-number-without-explanation`](decisions/DEC-no-number-without-explanation.md) — No numerical value in UI without explanation
+- [`DEC-top-3-weekly-focus`](decisions/DEC-top-3-weekly-focus.md) — Weekly Insights highlights top-3 life areas
+- [`DEC-design-system-v2`](decisions/DEC-design-system-v2.md) — Unified design system with dark/bright mode tokens
+- [`DEC-spiritual-tech-interactions`](decisions/DEC-spiritual-tech-interactions.md) — Spiritual Tech interaction philosophy
 - [`archive/TRUENORTH.md`](../archive/TRUENORTH.md) — Three-layer autopoietic model and five governing laws
 - `bazodiac_engine/ARCHITECTURE.md` — Signal engine internals and projection modules

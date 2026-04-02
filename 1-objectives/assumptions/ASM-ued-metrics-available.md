@@ -35,3 +35,11 @@ Proposed mapping:
 ## Dependent Artifacts
 
 - [REQ-F-orbital-signatur-visualization](../requirements/REQ-F-orbital-signatur-visualization.md)
+
+## Design Risk Note (2026-04-02)
+
+**REQ-F-orbital-signatur-visualization** (Draft) depends on this assumption being true. Until verified, the orbital visualization feature should not be implemented. The architecture does not currently define the derivation path for UED metrics from soulprint + transit data.
+
+**Verification trigger**: Before sprint S-ORBITAL or any task implementing REQ-F-orbital-signatur-visualization, verify by:
+- (a) Checking if `soulprintToNatalWeights()` output plus transit sector data contains sufficient variance to derive home_base and σ values, or
+- (b) Confirming FuFirE `/transit/state` response includes these fields directly

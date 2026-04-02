@@ -23,6 +23,15 @@ This phase defines **how** we're building the system. Focus on architecture, dat
 | [DEC-swiss-ephemeris](decisions/DEC-swiss-ephemeris.md) | Swiss Ephemeris via BAFE for all astrological calculations | When designing any feature that needs astrological data |
 | [DEC-wuxing-ui-mapping](decisions/DEC-wuxing-ui-mapping.md) | Wu-Xing elements drive UI physics via centralized mapping | When designing any visualization using element data or colors |
 | [DEC-master-signal-weights](decisions/DEC-master-signal-weights.md) | Master Signal formula locked: 0.35·N + 0.30·Q + 0.20·G + 0.15·alignment_boost | When proposing changes to signal weights, fusion formula, or adding new signal sources |
+| [DEC-dissonance-model](decisions/DEC-dissonance-model.md) | Layered dissonance model (d_natal / d_accumulated / d_elemental) | When designing signature visualization, quiz-to-visual mapping, or transition animations |
+| [DEC-signatur-v3-bipolar-trails](decisions/DEC-signatur-v3-bipolar-trails.md) | Bipolar trail engine (V3) replaces particle spirograph | When designing or modifying the Signatur renderer, trail parameters, or pole behavior |
+| [DEC-multi-agent-voice](decisions/DEC-multi-agent-voice.md) | Config-driven multi-agent voice architecture (Levi + Eve) | When adding voice agents, modifying agent UI, or changing conversation persistence |
+| [DEC-vibes-not-daily](decisions/DEC-vibes-not-daily.md) | "Vibes" on-demand (2–3h) instead of fixed daily insight | When designing Vibes UI, CTA text, or API endpoint naming |
+| [DEC-no-number-without-explanation](decisions/DEC-no-number-without-explanation.md) | No numerical value in UI without explanation | When adding any numerical display, chart, or score to the UI |
+| [DEC-top-3-weekly-focus](decisions/DEC-top-3-weekly-focus.md) | Weekly Insights highlights exactly 3 life areas as focus | When designing the Weekly Insights layout or prioritization algorithm |
+| [DEC-design-system-v2](decisions/DEC-design-system-v2.md) | Unified design system with dark/bright mode tokens | When creating or modifying any UI component, color, spacing, or typography |
+| [DEC-spiritual-tech-interactions](decisions/DEC-spiritual-tech-interactions.md) | Spiritual Tech interaction philosophy (transitions, errors, loading) | When writing error handling UI, adding animations, designing loading states |
+| [DEC-vibes-gemini-strategy](decisions/DEC-vibes-gemini-strategy.md) | Gemini for Vibes and Weekly Insights generation with two-level caching | When modifying Vibes/Weekly generation logic, model, prompts, or cache strategy |
 
 ---
 

@@ -14,9 +14,14 @@ Defined in `src/router.tsx`, all lazy-loaded via React Router.
 |-------|-----------|-------------|
 | `/` | `DashboardPage` | Main astro dashboard |
 | `/signatur` | `FuRingPage` | Signatur (Fusion Ring) visualization |
+| `/fu-ring` | `FuRingPage` | Alias for `/signatur` (legacy route preserved) |
+| `/signatur/quizzes` | `SignaturQuizzesPage` | Quiz selection for Signatur |
 | `/wu-xing` | `WuXingPage` | Wu Xing five-elements detail |
 | `/wissen` | `WissenPage` | SEO article index |
 | `/wissen/:slug` | `ArtikelPage` | Individual SEO article |
+| `/onboarding` | `OnboardingPage` | Birth data form → Signature reveal → Dashboard |
+| `/sky` | `SkyPage` | Sky/space weather visualization |
+| `/faq` | `FaqPage` | FAQ page |
 
 ---
 
@@ -52,6 +57,13 @@ Unavailable FuFirE returns `502 {"error": "experience_unavailable"}`.
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | GET | `/api/transit-state/:userId` | None | Loads user's `astro_profiles` + `contribution_events` from Supabase, POSTs to FuFirE `/transit/state`, maps response to client schema. Falls back to synthetic state (header `X-Transit-Fallback`) |
+
+### Vibes & Weekly Insights
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/api/vibes` | Supabase JWT | On-demand Vibe insight (2–3h horizon): generates kurzsignal / treiber / erklaerung from soulprint + transit. L1+L2 cached; Gemini fallback deterministic. |
+| POST | `/api/weekly-insights` | Supabase JWT | Weekly life-area insights (7 areas, top-3 expanded). Cache key = user + ISO week; valid for full week. |
 
 ### Contribution
 
@@ -110,7 +122,7 @@ Unavailable FuFirE returns `502 {"error": "experience_unavailable"}`.
 | **ElevenLabs** | ElevenLabs API | `ELEVENLABS_API_KEY` | Voice widget, agent sessions | ElevenLabs plan limits |
 | **Stripe** | `api.stripe.com` | `STRIPE_SECRET_KEY` | Checkout, webhooks, customer portal | Stripe plan limits |
 | **NOAA SWPC** | `services.swpc.noaa.gov` | None (public) | Solar wind, geomagnetic indices, alerts | Public; polled every 5 min |
-| **NASA DONKI** | `api.nasa.gov` | `NASA_API_KEY` | Coronal mass ejections, solar flares | 1000 req/hour (default key) |
+| **NASA DONKI** | `api.nasa.gov` | `NASA_API_KEY` | Coronal mass ejections, solar flares | 30 req/hour (DEMO_KEY default) / 1000 req/hour (registered key) |
 
 ---
 
