@@ -124,7 +124,7 @@ The Vibes feature delivers a short-horizon emotional/energetic forecast based on
 
 ### Weekly Insights (7 Life Areas)
 
-**Endpoint**: `POST /api/weekly-insights` (requires Supabase JWT) | **Requirement**: `REQ-F-weekly-insights-engine`, `REQ-F-weekly-area-prioritization`
+**Endpoint**: `POST /api/weekly-insights` (requires Supabase JWT) | **Requirements**: `REQ-F-weekly-insights-engine`, `REQ-F-weekly-area-prioritization`
 
 Weekly Insights computes a 7-life-area outlook for the current ISO week. The top-3 areas receive expanded content; the remaining 4 are compact 1-line tendency labels. See `DEC-top-3-weekly-focus`.
 
