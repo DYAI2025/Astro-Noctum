@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Sora:wght@100;300;400;600&family=Inter:wght@200;400;600&family=Montserrat:wght@200;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Sora:wght@100;300;400;600&display=swap");
 @import "tailwindcss" source("../src");
 @plugin "@tailwindcss/typography";
 
@@ -687,7 +687,7 @@ h1, h2, h3 { letter-spacing: 0.1em; }
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .font-landing-display {
-  font-family: 'Montserrat', 'Sora', sans-serif;
+  font-family: 'Sora', sans-serif;
 }
 
 .landing-hero-root {
