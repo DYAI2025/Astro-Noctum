@@ -19,8 +19,10 @@ import { BrandedLoader } from "./components/BrandedLoader";
 import { usePremium } from "./hooks/usePremium";
 import { isFeatureEnabled } from "./lib/feature-flags";
 import type { BootstrapResponse, SignatureDeltaResponse } from "./lib/schemas/experience";
-import { Volume2, VolumeX, LogOut, CalendarDays } from "lucide-react";
-import { IconHouse as House, IconSparkles as Sparkles, IconTelescope as TelescopeIcon } from "./components/animated-icons";
+import { Volume2, VolumeX, Settings, X } from "lucide-react";
+import { IconSparkles as Sparkles, IconTelescope as TelescopeIcon, IconOrbit as OrbitIcon } from "./components/animated-icons";
+import { SettingsMenu } from "./components/navigation/SettingsMenu";
+import { LEGAL_CONTENT } from "./components/LegalFooter";
 
 /**
  * Returns true when the bootstrap response contains fallback/synthetic soulprint data.
@@ -338,53 +340,6 @@ export default function App() {
   );
 }
 
-// Nav link that opens the global agent widget
-function AgentNavLink({ t }: { t: (key: string) => string }) {
-  const { activeAgent, agentStates, setWidgetExpanded } = useAgent();
-  const isActive = activeAgent !== null && agentStates[activeAgent]?.active;
-  return (
-    <a
-      href="#"
-      onClick={(e) => {
-        e.preventDefault();
-        setWidgetExpanded(true);
-      }}
-      className={`transition-colors ${isActive ? 'text-emerald-500' : 'text-ink/60 hover:text-gold-deep'}`}
-    >
-      {t("nav.levi")}
-      {isActive && <span className="ml-1 inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />}
-    </a>
-  );
-}
-
-// Mobile bottom nav voice button — shows active agent state
-function MobileAgentNavButton() {
-  const { activeAgent, agentStates, setWidgetExpanded } = useAgent();
-  const isActive = activeAgent !== null && agentStates[activeAgent]?.active;
-  return (
-    <button
-      onClick={() => setWidgetExpanded(true)}
-      className={`flex flex-col items-center justify-center gap-0.5 min-w-[48px] min-h-[48px] p-1 rounded-lg active:bg-gold-deep/10 transition-colors ${
-        isActive ? 'text-emerald-500' : 'text-ink/40'
-      }`}
-      aria-label="Voice Agents"
-    >
-      <div className="relative">
-        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-          <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-          <line x1="12" y1="19" x2="12" y2="23" />
-          <line x1="8" y1="23" x2="16" y2="23" />
-        </svg>
-        {isActive && (
-          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-        )}
-      </div>
-      <span className="text-[9px] uppercase tracking-tight leading-none">Voice</span>
-    </button>
-  );
-}
-
 // ─── App Shell (inside BrowserRouter) ──────────────────────────────────
 // Extracted so useLocation() works (must be inside <BrowserRouter>).
 
@@ -405,9 +360,29 @@ interface AppShellProps {
 
 function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, togglePlanetarium, ambiente, signOut, error, hasCompleteProfile, onboardingProps }: AppShellProps) {
   const location = useLocation();
+  const { activeAgent, agentStates, setWidgetExpanded } = useAgent();
+  const agentActive = activeAgent !== null && agentStates[activeAgent]?.active;
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [legalSection, setLegalSection] = useState<null | "terms" | "privacy">(null);
+
+  // Important fix #5: close settings + legal on route change
+  useEffect(() => {
+    setSettingsOpen(false);
+    setLegalSection(null);
+  }, [location.pathname]);
 
   const isSignaturRoute = location.pathname === "/signatur";
   const isOnboardingRoute = location.pathname === "/onboarding";
+
+  const navItemClass = (active: boolean) =>
+    `min-h-[44px] flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] border-b-2 transition-all duration-300 ${
+      active ? "text-gold-deep border-current" : "text-ink/60 hover:text-gold-deep border-transparent"
+    }`;
+
+  const mobileNavItemClass = (active: boolean) =>
+    `flex flex-col items-center justify-center gap-0.5 min-w-[48px] min-h-[48px] p-1 rounded-lg active:bg-gold-deep/10 transition-colors ${
+      active ? "text-gold-deep" : "text-ink/40"
+    }`;
 
   return (
     <motion.div
@@ -416,7 +391,7 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
       transition={{ duration: 2, ease: "easeOut", delay: 0.3 }}
       className={`morning-bg min-h-screen font-sans selection:bg-gold-deep/20 flex flex-col ${planetariumMode ? "planetarium text-slate-100" : "text-ink"}`}
     >
-      {/* ── Top Nav (Desktop) ────────────────────────────────────────── */}
+      {/* ── Top Nav (Desktop) — 3 primary items + Settings ───────────── */}
       {!isOnboardingRoute && (
       <header className="hidden md:flex fixed top-0 w-full h-20 items-center justify-between px-12 z-50 morning-header">
         <Link
@@ -426,61 +401,44 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
           Bazodiac
         </Link>
 
-        <nav className="flex space-x-12 text-[10px] uppercase tracking-[0.3em]">
-          <Link to="/" className={`min-h-11 flex items-center border-b-2 transition-all duration-300 ${location.pathname === "/" ? "text-gold-deep border-current" : "text-ink/60 hover:text-gold-deep border-transparent"}`}>
-            {t("nav.atlas")}
-          </Link>
-          <Link to="/signatur" className={`min-h-11 flex items-center border-b-2 transition-all duration-300 ${location.pathname === "/signatur" ? "text-gold-deep border-current" : "text-ink/60 hover:text-gold-deep border-transparent"}`}>
-            {t("nav.signatur")}
-          </Link>
-          <a href="https://sky.bazodiac.space" target="_blank" rel="noopener noreferrer" className={`min-h-11 flex items-center border-b-2 transition-all duration-300 text-ink/60 hover:text-gold-deep border-transparent`}>
-            {t("nav.sky")}
-          </a>
-          <Link to="/weekly" className={`min-h-11 flex items-center border-b-2 transition-all duration-300 ${location.pathname === "/weekly" ? "text-gold-deep border-current" : "text-ink/60 hover:text-gold-deep border-transparent"}`}>
-            {t("nav.weekly")}
-          </Link>
-          <AgentNavLink t={t} />
-        </nav>
+        {/* 3 primary nav items per DEC-navigation-shell */}
+        <nav className="flex space-x-10 text-[10px] uppercase tracking-[0.3em]" aria-label="Main navigation">
+          <button
+            onClick={() => setWidgetExpanded(true)}
+            className={navItemClass(agentActive)}
+            aria-label={t("nav.astroAgents")}
+          >
+            <span className="relative inline-flex items-center gap-2">
+              <Sparkles className="w-4 h-4 shrink-0" aria-hidden="true" />
+              {agentActive && (
+                <span className="absolute -top-1 -right-2 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
+              )}
+            </span>
+            {t("nav.astroAgents")}
+          </button>
 
-        <div className="flex items-center gap-5">
-          {/* Language toggle */}
-          <div className="lang-toggle" role="group" aria-label="Language selection">
-            <button
-              className={lang === "de" ? "active" : ""}
-              onClick={() => setLang("de")}
-              aria-pressed={lang === "de" ? "true" : "false"}
-            >
-              DE
-            </button>
-            <button
-              className={lang === "en" ? "active" : ""}
-              onClick={() => setLang("en")}
-              aria-pressed={lang === "en" ? "true" : "false"}
-            >
-              EN
-            </button>
-          </div>
-
-          <div className="w-px h-4 bg-gold-deep/20" />
-
-          {/* Planetarium toggle */}
           <button
             onClick={togglePlanetarium}
             aria-pressed={planetariumMode ? "true" : "false"}
-            aria-label={planetariumMode ? "Exit Planetarium Mode" : "Enter Planetarium Mode"}
-            className={`flex items-center gap-1.5 text-[9px] uppercase tracking-[0.2em] transition-all rounded-md px-2 py-1 ${
-              planetariumMode
-                ? "planetarium-toggle-active bg-gold/10 border border-gold/30"
-                : "text-ink/40 hover:text-gold-deep hover:bg-gold-deep/08 border border-transparent"
-            }`}
+            className={navItemClass(planetariumMode)}
+            aria-label={t("nav.planetarium")}
           >
-            <TelescopeIcon className="w-4 h-4 shrink-0" />
-            <span className="hidden lg:inline">Planetarium</span>
+            <TelescopeIcon className="w-4 h-4 shrink-0" aria-hidden="true" />
+            {t("nav.planetarium")}
           </button>
 
-          <div className="w-px h-4 bg-gold-deep/20" />
+          <Link
+            to="/signatur"
+            className={navItemClass(location.pathname === "/signatur" || location.pathname === "/fu-ring")}
+          >
+            <OrbitIcon className="w-4 h-4 shrink-0" aria-hidden="true" />
+            {t("nav.signatur")}
+          </Link>
+        </nav>
 
-          {/* Audio toggle & Volume Slider */}
+        {/* Right side: audio + settings */}
+        <div className="flex items-center gap-4">
+          {/* Audio toggle */}
           <div className="flex items-center gap-2 group/audio">
             <button
               onClick={ambiente.toggle}
@@ -495,10 +453,7 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
               )}
             </button>
             <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
+              type="range" min="0" max="1" step="0.01"
               value={ambiente.volume}
               onChange={(e) => ambiente.setVolume(parseFloat(e.target.value))}
               className="w-16 h-1 bg-gold-deep/20 rounded-full appearance-none cursor-pointer accent-[#8B6914] opacity-0 group-hover/audio:opacity-100 transition-opacity"
@@ -508,20 +463,71 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
 
           <div className="w-px h-4 bg-gold-deep/20" />
 
-          {/* User + sign-out */}
-          <span className="text-[9px] text-ink/35 tracking-wider max-w-[120px] truncate">
-            {user.email}
-          </span>
-          <button
-            onClick={signOut}
-            className="w-8 h-8 rounded-full border border-gold-deep/25 flex items-center justify-center hover:bg-gold-deep/10 hover:border-gold-deep/45 transition-colors"
-            title={t("nav.signOut")}
-            aria-label={t("nav.signOut")}
-          >
-            <LogOut className="w-3 h-3 text-gold-deep/70" aria-hidden="true" />
-          </button>
+          {/* Settings button */}
+          <div className="relative">
+            <button
+              onClick={() => setSettingsOpen((o) => !o)}
+              aria-expanded={settingsOpen}
+              aria-haspopup="menu"
+              aria-label={t("nav.settings")}
+              className={`flex items-center gap-1.5 text-[9px] uppercase tracking-[0.2em] transition-all rounded-md px-2 py-1 min-h-[44px] ${
+                settingsOpen
+                  ? "text-gold-deep bg-gold-deep/08 border border-gold-deep/20"
+                  : "text-ink/40 hover:text-gold-deep hover:bg-gold-deep/08 border border-transparent"
+              }`}
+            >
+              <Settings className="w-4 h-4 shrink-0" aria-hidden="true" />
+              <span className="hidden lg:inline">{t("nav.settings")}</span>
+            </button>
+
+            {settingsOpen && (
+              <SettingsMenu
+                position="desktop"
+                user={user}
+                lang={lang}
+                setLang={setLang}
+                planetariumMode={planetariumMode}
+                togglePlanetarium={togglePlanetarium}
+                signOut={signOut}
+                t={t}
+                onOpenLegal={(s) => setLegalSection((prev) => (prev === s ? null : s))}
+                onClose={() => setSettingsOpen(false)}
+              />
+            )}
+          </div>
         </div>
       </header>
+      )}
+
+      {/* ── Legal modal ───────────────────────────────────────────────── */}
+      {legalSection && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          onClick={() => setLegalSection(null)}
+          aria-modal="true"
+          role="dialog"
+        >
+          <div
+            className="relative max-w-2xl w-full max-h-[80vh] overflow-y-auto rounded-2xl border border-[#D4AF37]/15 bg-[#00050A]/95 backdrop-blur p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between mb-4">
+              <h4 className="text-[10px] uppercase tracking-[0.3em] text-[#D4AF37]/60 font-semibold">
+                {LEGAL_CONTENT[legalSection][lang].title}
+              </h4>
+              <button
+                onClick={() => setLegalSection(null)}
+                className="text-white/30 hover:text-white/60 transition-colors ml-4 shrink-0"
+                aria-label={t("legal.closeAriaLabel")}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="text-xs text-white/40 leading-relaxed whitespace-pre-line">
+              {LEGAL_CONTENT[legalSection][lang].body}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ── Main content (routed) ──────────────────────────────────────── */}
@@ -540,30 +546,71 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
         <AppRoutes hasCompleteProfile={hasCompleteProfile} onboardingProps={onboardingProps} />
       </main>
 
-      {/* ── Bottom Nav (Mobile) — larger touch targets, safe-area aware ── */}
+      {/* ── Bottom Nav (Mobile) — 3 primary items + Settings ─────────── */}
       {!isOnboardingRoute && (
       <nav className="md:hidden fixed bottom-0 w-full bg-white/70 backdrop-blur-xl border-t border-gold-deep/15 flex items-center justify-around z-50 h-16 px-2">
-        <Link to="/" className={`flex flex-col items-center justify-center gap-0.5 min-w-[48px] min-h-[48px] p-1 rounded-lg active:bg-gold-deep/10 transition-colors ${location.pathname === "/" ? "text-gold-deep" : "text-ink/40"}`}>
-          <House className="w-5 h-5" aria-hidden="true" />
-          <span className="text-[9px] uppercase tracking-tight leading-none">{t("nav.atlas")}</span>
-        </Link>
+        {/* Astro-Agents */}
+        <button
+          onClick={() => setWidgetExpanded(true)}
+          className={mobileNavItemClass(agentActive)}
+          aria-label={t("nav.astroAgents")}
+        >
+          <span className="relative inline-flex">
+            <Sparkles className="w-5 h-5" aria-hidden="true" />
+            {agentActive && (
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
+            )}
+          </span>
+          <span className="text-[9px] uppercase tracking-tight leading-none">{t("nav.astroAgents")}</span>
+        </button>
 
-        <Link to="/signatur" className={`flex flex-col items-center justify-center gap-0.5 min-w-[48px] min-h-[48px] p-1 rounded-lg active:bg-gold-deep/10 transition-colors ${location.pathname === "/signatur" ? "text-gold-deep" : "text-ink/40"}`}>
-          <Sparkles className="w-5 h-5" aria-hidden="true" />
+        {/* Planetarium */}
+        <button
+          onClick={togglePlanetarium}
+          aria-pressed={planetariumMode ? "true" : "false"}
+          className={mobileNavItemClass(planetariumMode)}
+        >
+          <TelescopeIcon className="w-5 h-5" aria-hidden="true" />
+          <span className="text-[9px] uppercase tracking-tight leading-none">{t("nav.planetarium")}</span>
+        </button>
+
+        {/* Signatur */}
+        <Link
+          to="/signatur"
+          className={mobileNavItemClass(location.pathname === "/signatur" || location.pathname === "/fu-ring")}
+        >
+          <OrbitIcon className="w-5 h-5" aria-hidden="true" />
           <span className="text-[9px] uppercase tracking-tight leading-none">{t("nav.signatur")}</span>
         </Link>
 
-        <a href="https://sky.bazodiac.space" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center gap-0.5 min-w-[48px] min-h-[48px] p-1 rounded-lg active:bg-gold-deep/10 transition-colors text-ink/40">
-          <TelescopeIcon className="w-5 h-5" aria-hidden="true" />
-          <span className="text-[9px] uppercase tracking-tight leading-none">{t("nav.sky")}</span>
-        </a>
+        {/* Settings */}
+        <div className="relative">
+          <button
+            onClick={() => setSettingsOpen((o) => !o)}
+            aria-expanded={settingsOpen}
+            aria-haspopup="menu"
+            className={mobileNavItemClass(settingsOpen)}
+            aria-label={t("nav.settings")}
+          >
+            <Settings className="w-5 h-5" aria-hidden="true" />
+            <span className="text-[9px] uppercase tracking-tight leading-none">{t("nav.settings")}</span>
+          </button>
 
-        <MobileAgentNavButton />
-
-        <Link to="/weekly" className={`flex flex-col items-center justify-center gap-0.5 min-w-[48px] min-h-[48px] p-1 rounded-lg active:bg-gold-deep/10 transition-colors ${location.pathname === "/weekly" ? "text-gold-deep" : "text-ink/40"}`}>
-          <CalendarDays className="w-5 h-5" aria-hidden="true" />
-          <span className="text-[9px] uppercase tracking-tight leading-none">{t("nav.weekly")}</span>
-        </Link>
+          {settingsOpen && (
+            <SettingsMenu
+              position="mobile"
+              user={user}
+              lang={lang}
+              setLang={setLang}
+              planetariumMode={planetariumMode}
+              togglePlanetarium={togglePlanetarium}
+              signOut={signOut}
+              t={t}
+              onOpenLegal={(s) => setLegalSection((prev) => (prev === s ? null : s))}
+              onClose={() => setSettingsOpen(false)}
+            />
+          )}
+        </div>
       </nav>
       )}
     </motion.div>
