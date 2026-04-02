@@ -509,7 +509,7 @@ Expected: 4 entries (supabase-backend, swiss-ephemeris, wuxing-ui-mapping, maste
 
 **Step 2: Replace the decisions table**
 
-Find and replace the `## Decisions Relevant to This Phase` section's table with the complete 12-decision table:
+Find and replace the `## Decisions Relevant to This Phase` section's table with the complete decisions table:
 
 ```markdown
 ## Decisions Relevant to This Phase
