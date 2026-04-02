@@ -262,7 +262,7 @@ The Vibes feature delivers a short-horizon emotional/energetic forecast based on
 
 **Caching strategy:**
 - L1: In-memory `vibesCache` Map with cooldown-based eviction (stale entries purged after max cooldown)
-- L2: Supabase `vibes_cache` (composite key: `user_id + date + engine_version`)
+- L2: Supabase `vibes_cache` (composite key: `user_id + hour_bucket + engine_version`; `hour_bucket` = UTC timestamp floored to 2h window; row TTL = 3h to match Vibes horizon)
 - Engine version: `v1-gemini-vibes`
 - Cache hit returns immediately without LLM call — achieves p95 < 200ms
 
