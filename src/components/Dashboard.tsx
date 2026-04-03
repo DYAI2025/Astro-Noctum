@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { ShareCard } from "./ShareCard";
@@ -38,6 +38,10 @@ import { TourOverlay } from "./dashboard/TourOverlay";
 import { useDashboardTour } from "@/src/hooks/useDashboardTour";
 import { usePlanetarium } from "@/src/contexts/PlanetariumContext";
 import { VibesSection } from "./dashboard/VibesSection";
+import { SkyModeToggle } from "./dashboard/SkyModeToggle";
+import { getConstellationForSign } from "../lib/astro-data/constellationFromSign";
+
+const BirthChartOrrery = lazy(() => import("./BirthChartOrrery").then(m => ({ default: m.BirthChartOrrery })));
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Static data
@@ -107,7 +111,7 @@ export function Dashboard({
 
   // ── Dashboard tour ────────────────────────────────────────────
   const { tourStep, next: tourNext, skip: tourSkip } = useDashboardTour(userId);
-  const { setPlanetariumMode, planetariumMode } = usePlanetarium();
+  const { setPlanetariumMode, planetariumMode, skyMode } = usePlanetarium();
   const [tourPrevPlanetariumMode, setTourPrevPlanetariumMode] = useState<boolean | null>(null);
 
   // Scroll-triggered tour: step 1 only shows when astro section is visible
@@ -236,6 +240,19 @@ export function Dashboard({
     return () => { cancelled = true; };
   }, [userId]);
 
+  // ── Planetarium data ──────────────────────────────────────────────
+  const orreryDate = useMemo(() => {
+    if (!birthDate) return new Date();
+    const d = new Date(birthDate);
+    return isNaN(d.getTime()) ? new Date() : d;
+  }, [birthDate]);
+
+  const sunSign = apiData?.western?.zodiac_sign || '';
+  const birthConstellationKey = useMemo(
+    () => getConstellationForSign(sunSign)?.key,
+    [sunSign],
+  );
+
   // ── Feature flags ──────────────────────────────────────────────────
   const dailyEnabled = isFeatureEnabled('daily_modal_v1');
 
@@ -325,6 +342,26 @@ export function Dashboard({
         </div>
       </motion.header>
 
+      {/* ═══ SECTION: PLANETARIUM ═════════════════════════════════════ */}
+      <motion.div className="-mx-4 md:-mx-6" {...fadeIn(0.02)}>
+        <Suspense fallback={<div className="w-full aspect-[16/10] min-h-[360px] bg-[#0A0A14] rounded-2xl animate-pulse" />}>
+          <BirthChartOrrery
+            birthDate={orreryDate}
+            planetariumMode={planetariumMode}
+            birthConstellation={birthConstellationKey}
+            autoPlay={isFirstReading}
+            currentSky={skyMode === 'current'}
+          />
+        </Suspense>
+      </motion.div>
+
+      {/* ═══ SKY MODE TOGGLE ═══════════════════════════════════════════ */}
+      {planetariumMode && (
+        <motion.div className="-mt-8" {...fadeIn(0.04)}>
+          <SkyModeToggle />
+        </motion.div>
+      )}
+
       {/* ═══ IDENTITY — Big Four + MiniSignature (F1+F2) ════════════════════ */}
       <motion.div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 items-start" {...fadeIn(0.05)}>
         <SectionErrorBoundary name="BigFour">
@@ -397,9 +434,7 @@ export function Dashboard({
       <SectionErrorBoundary name="Astro">
         <DashboardAstroSection
           apiData={apiData}
-          birthDate={birthDate}
           isPremium={isPremium}
-          isFirstReading={isFirstReading}
           tileTexts={tileTexts}
         />
       </SectionErrorBoundary>
