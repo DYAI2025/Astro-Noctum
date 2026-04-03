@@ -117,6 +117,7 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
 
     const newErrors: Record<string, string> = {};
 
+    // ISO YYYY-MM-DD strings: lexicographic order matches chronological order
     if (date > today) {
       newErrors.date = t("form.futureDate");
     }

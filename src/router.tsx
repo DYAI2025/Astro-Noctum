@@ -30,14 +30,8 @@ const OUTWARD_VARIANTS = {
   exit:    { scale: 1.03, opacity: 0 },
 };
 
-const LATERAL_VARIANTS = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  exit:    { opacity: 0 },
-};
-
-// When prefers-reduced-motion is active: only opacity, no scale
-const REDUCED_VARIANTS = {
+// Opacity-only fade: used for lateral navigation and prefers-reduced-motion
+const FADE_VARIANTS = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },
   exit:    { opacity: 0 },
@@ -46,7 +40,7 @@ const REDUCED_VARIANTS = {
 function getVariants(direction: TransitionDirection) {
   if (direction === 'inward') return INWARD_VARIANTS;
   if (direction === 'outward') return OUTWARD_VARIANTS;
-  return LATERAL_VARIANTS;
+  return FADE_VARIANTS;
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -86,7 +80,7 @@ export function AppRoutes({ hasCompleteProfile, onboardingProps }: AppRoutesProp
   const { direction } = useNavigationDepth();
   const prefersReducedMotion = useReducedMotion();
 
-  const variants = prefersReducedMotion ? REDUCED_VARIANTS : getVariants(direction);
+  const variants = prefersReducedMotion ? FADE_VARIANTS : getVariants(direction);
 
   return (
     <AnimatePresence mode="wait" initial={false}>
@@ -97,8 +91,8 @@ export function AppRoutes({ hasCompleteProfile, onboardingProps }: AppRoutesProp
         animate="animate"
         exit="exit"
         transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-        // Use `contents` display so the wrapper div doesn't break flex/grid layouts
-        style={{ display: 'contents' }}
+        // w-full preserves flex layout without suppressing the scale transform box
+        className="w-full"
       >
         <Suspense fallback={<PageLoader />}>
           <Routes location={location}>
