@@ -22,6 +22,11 @@ import {
   createEmptySedimentationState,
   type FusionRingProfile,
 } from './fusion-ring-profile';
+import { computeDensityField, type DensityField as EngineDensityField } from '../signatur-v3/bipolar-engine';
+
+// DebugInjection für DevUI-Overrides (Renderer-Schicht)
+import { DebugInjection, isDebugMode } from '../../debug/debug-injection';
+import type { DebugOverrides, DensityField } from '../../debug/types';
 
 function isWebGLAvailable(): boolean {
   try {
@@ -82,6 +87,59 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
   onPostProcessDegraded?: () => void;
 }) {
   const canvasRef = useRef<HTMLDivElement>(null);
+  const densityCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  // DebugInjection für Renderer-Overrides
+  const debugOverridesRef = useRef<DebugOverrides>({});
+  const currentSignatureRef = useRef<BazodiacSignature | null>(null);
+  const polesRef = useRef<Array<{ dimensionId: string; pole: 'A' | 'B'; x: number; y: number; trail: Float32Array; trailLength: number; trailHead: number }>>([]);
+  
+  useEffect(() => {
+    if (!isDebugMode()) return;
+    const debug = DebugInjection.getInstance();
+    const unsubscribe = debug.subscribe((state) => {
+      debugOverridesRef.current = state.overrides;
+      
+      // Density Field berechnen wenn aktiviert
+      if (state.overrides.showDensityField && densityCanvasRef.current && currentSignatureRef.current) {
+        renderDensityField(densityCanvasRef.current, state.overrides.densityThreshold ?? 0.7);
+      }
+    });
+    return unsubscribe;
+  }, []);
+
+  // Density Field rendern
+  const renderDensityField = useCallback((canvas: HTMLCanvasElement, threshold: number) => {
+    const ctx = canvas.getContext('2d');
+    if (!ctx || !currentSignatureRef.current) return;
+
+    // Simuliere Pole-States aus Signatur für Density-Field
+    const mockPoles = polesRef.current.map(pole => ({
+      ...pole,
+      radius: 100,
+      speed: 0.01,
+      theta: 0,
+    }));
+
+    const config = { maxR: 200, maxTrailLength: 2000, trailPersistence: 0.85, timeScale: 1.0 };
+    const field = computeDensityField(mockPoles as any, config, 128);
+
+    const imageData = ctx.createImageData(128, 128);
+    const data = imageData.data;
+
+    for (let i = 0; i < field.grid.length; i++) {
+      const density = field.grid[i] / (field.maxDensity || 1);
+      const idx = i * 4;
+
+      // Heatmap-Color: Blau (niedrig) → Gelb → Rot (hoch)
+      data[idx] = Math.min(255, density * 3 * 255);     // R
+      data[idx + 1] = Math.min(255, Math.max(0, (density - 0.33) * 3 * 255)); // G
+      data[idx + 2] = Math.min(255, Math.max(0, (density - 0.66) * 3 * 255)); // B
+      data[idx + 3] = 128; // Alpha
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+  }, []);
 
   useEffect(() => {
     if (!canvasRef?.current) return;
@@ -129,10 +187,15 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
         composer = new EffectComposer(renderer);
         const renderPass = new RenderPass(scene, camera);
         composer.addPass(renderPass);
-        
+
+        // Debug-Override für Bloom-Stärke (default: 0.55)
+        const debugBloomStrength = isDebugMode() && debugOverridesRef.current.glowRadiusOverride
+          ? (debugOverridesRef.current.glowRadiusOverride[0] / 30) * 1.2
+          : 0.55;
+
         bloomPass = new UnrealBloomPass(
           new THREE.Vector2(width, height),
-          0.55,  // strength
+          debugBloomStrength,  // strength (wird später dynamisch angepasst)
           0.35,  // radius
           0.92   // threshold
         );
@@ -299,6 +362,19 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
         blending: THREE.AdditiveBlending,
       });
 
+      // Debug-Override: Additive Blend deaktivieren (zum Testen von Farb-Logik)
+      if (isDebugMode()) {
+        const debug = DebugInjection.getInstance();
+        const overrides = debug.getOverrides();
+        if (overrides.disableAdditiveBlend) {
+          particleMat.blending = THREE.NormalBlending;
+        }
+        // Debug-Override: Fade-Alpha anpassen
+        if (overrides.fadeAlphaOverride !== undefined) {
+          particleMat.opacity = overrides.fadeAlphaOverride;
+        }
+      }
+
       const particleSystem = new THREE.Points(geometry, particleMat);
       ringGroup.add(particleSystem);
 
@@ -448,6 +524,7 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
       // ========================================
       function loadSignature(sig: BazodiacSignature) {
         currentSignature = sig;
+        currentSignatureRef.current = sig; // Für Density-Field-Overlay
         const pts = sig.particles;
         particleCount = Math.min(pts.length, MAX_PARTICLES);
         const LAYER_MAP: Record<string, number> = {
@@ -914,21 +991,35 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
         const t = clock.getElapsedTime();
         const dt = clock.getDelta() || 0.016;
 
+        // Debug-Override: Bloom-Stärke manuell überschreiben
+        let bloomStrengthOverride: number | null = null;
+        if (isDebugMode() && debugOverridesRef.current.glowRadiusOverride) {
+          const [glowMin, glowMax] = debugOverridesRef.current.glowRadiusOverride;
+          bloomStrengthOverride = (glowMin / 30) * 1.2;
+        }
+
         // Emergence-driven bloom and material intensity
         if (bloomPass && currentSignature) {
           const emergenceVal = currentSignature.emergence.emergence;
-          bloomPass.strength = lerp(0.4, 0.9, emergenceVal);
+          
+          if (bloomStrengthOverride !== null) {
+            // Debug-Override hat Vorrang
+            bloomPass.strength = bloomStrengthOverride;
+          } else {
+            // Normale Berechnung
+            bloomPass.strength = lerp(0.4, 0.9, emergenceVal);
 
-          // Solar modulation — scale bloom strength by live space weather
-          const solarMod = bazStateRef.current?.solarModulation ?? 1.0;
-          if (solarMod > 1.0) {
-            bloomPass.strength = bloomPass.strength * solarMod;
-          }
+            // Solar modulation — scale bloom strength by live space weather
+            const solarMod = bazStateRef.current?.solarModulation ?? 1.0;
+            if (solarMod > 1.0) {
+              bloomPass.strength = bloomPass.strength * solarMod;
+            }
 
-          // Dissonance complexity modulation — fractalBoost lifts bloom
-          const dMod = bazStateRef.current?.dissonanceModulation;
-          if (dMod && dMod.fractalBoost > 0) {
-            bloomPass.strength = bloomPass.strength * (1 + dMod.fractalBoost * 0.4);
+            // Dissonance complexity modulation — fractalBoost lifts bloom
+            const dMod = bazStateRef.current?.dissonanceModulation;
+            if (dMod && dMod.fractalBoost > 0) {
+              bloomPass.strength = bloomPass.strength * (1 + dMod.fractalBoost * 0.4);
+            }
           }
         }
 
@@ -1073,6 +1164,8 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
       return () => {
         disposed = true;
         cancelAnimationFrame(frameId);
+
+        // === EVENT LISTENER CLEANUP ===
         el.removeEventListener('wheel', onWheel);
         el.removeEventListener('mousedown', onMouseDown);
         window.removeEventListener('mousemove', onMouseMove);
@@ -1081,10 +1174,66 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
         window.removeEventListener('touchmove', onTouchMove);
         window.removeEventListener('touchend', onTouchEnd);
         window.removeEventListener('resize', onResize);
+
+        // === THREE.JS RESOURCE CLEANUP ===
+        // Dispose particle system
+        geometry.dispose();
+        particleMat.dispose();
+        particleSystem.removeFromParent();
+
+        // Dispose zodiac sprites with textures
+        zodiacSprites.forEach(sprite => {
+          const material = sprite.material as THREE_TYPES.SpriteMaterial;
+          if (material?.map) {
+            material.map.dispose();
+            material.map = null;
+          }
+          material?.dispose();
+          sprite.geometry?.dispose();
+          ringGroup.remove(sprite);
+        });
+        zodiacSprites.length = 0;
+
+        // Dispose dust
+        dustGeo.dispose();
+        dustMat.dispose();
+        dust.removeFromParent();
+
+        // Dispose sky dome
+        bgGeo.dispose();
+        bgMat.dispose();
+        bgSphere.removeFromParent();
+
+        // Dispose lights
+        keyLight.removeFromParent();
+        fillLight.removeFromParent();
+        ambient.removeFromParent();
+        coreLight.removeFromParent();
+        effectLight1.removeFromParent();
+        effectLight2.removeFromParent();
+
+        // Dispose post-processing
+        if (composer) {
+          composer.dispose();
+          composer = null;
+        }
+        if (bloomPass) {
+          bloomPass.dispose();
+          bloomPass = null;
+        }
+
+        // Dispose renderer
         renderer.dispose();
+        renderer.forceContextLoss();
         if (canvasRef.current?.contains?.(renderer.domElement)) {
           canvasRef.current.removeChild(renderer.domElement);
         }
+
+        // Clear scene
+        scene.clear();
+
+        // Clear window bridge
+        delete (window as any).__fusionRingRebuild;
       };
     };
 
@@ -1092,7 +1241,27 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
     return () => { cleanup?.then?.((fn) => fn?.()); };
   }, []);
 
-  return <div ref={canvasRef} style={{ width: '100%', height: '100%' }} />;
+  return (
+    <div ref={canvasRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+      {/* Density Field Overlay (nur im Debug-Modus sichtbar) */}
+      <canvas
+        ref={densityCanvasRef}
+        width={128}
+        height={128}
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+          opacity: 0.6,
+          display: isDebugMode() && debugOverridesRef.current.showDensityField ? 'block' : 'none',
+        }}
+      />
+    </div>
+  );
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1119,7 +1288,7 @@ export default function FusionRingCanvas({
   // Bazodiac state
   const bazStateRef = useRef<BazodiacState>({
     natal: new Map(Object.entries(natalWeights || createTestPreset().natal)),
-    quiz: new Map(Object.entries(quizWeights || createTestPreset().quiz) as any),
+    quiz: new Map(Object.entries(quizWeights || createTestPreset().quiz).map(([k, v]) => [k as QuizDimension, v])),
     solarModulation,
   });
 
@@ -1129,12 +1298,12 @@ export default function FusionRingCanvas({
       bazStateRef.current.natal = new Map(Object.entries(natalWeights));
     }
     if (quizWeights) {
-      bazStateRef.current.quiz = new Map(Object.entries(quizWeights) as any);
+      bazStateRef.current.quiz = new Map(Object.entries(quizWeights).map(([k, v]) => [k as QuizDimension, v]));
     }
     bazStateRef.current.solarModulation = solarModulation;
     bazStateRef.current.dissonanceModulation = dissonanceModulation;
     setBazVersion(v => v + 1);
-    const rebuild = (window as any).__fusionRingRebuild;
+    const rebuild = ((window as unknown) as Record<string, unknown>).__fusionRingRebuild as (() => void) | undefined;
     if (typeof rebuild === 'function') rebuild();
   }, [natalWeights, quizWeights, solarModulation, dissonanceModulation]);
 

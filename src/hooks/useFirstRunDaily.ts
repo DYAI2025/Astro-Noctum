@@ -27,8 +27,15 @@ interface UseFirstRunDailyResult {
 
 // ── Cache key helper ──────────────────────────────────────────────────
 
-function todayKey(): string {
-  return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+// Returns the LOCAL calendar date as YYYY-MM-DD.
+// toISOString() returns UTC — in any timezone ahead of UTC, that would
+// still show yesterday's date after local midnight.
+export function todayKey(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 
 function getCachedDaily(): DailyResponse | null {

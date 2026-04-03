@@ -73,10 +73,11 @@ interface CosmicError {
 
 ### Navigation
 
-- **Mobile:** Top-down drawer menu (not side hamburger) — better thumb reach
-- **Desktop:** Horizontal nav with active underline animation (left→right growth)
+- **Mobile web:** Top bar with 3 primary items + Settings — fully responsive, no hamburger-only hidden items (see [DEC-navigation-shell](DEC-navigation-shell.md) for item list and structure)
+- **Native mobile:** Top-down drawer menu (not side hamburger) — better thumb reach
+- **Desktop:** Horizontal scrolling top bar (preserved) with active underline animation (left→right growth)
 - **Active indicator:** Dark mode: gold underline. Bright mode: blue underline.
-- **Max 5 primary nav items** (ATLAS, SIGNATUR, SKY, WOCHE, LEVI)
+- **Primary nav items**: Astro-Agents, Planetarium, Signatur (see DEC-navigation-shell — supersedes old ATLAS/SIGNATUR/SKY/WOCHE/LEVI list)
 
 ### Focus & Accessibility
 

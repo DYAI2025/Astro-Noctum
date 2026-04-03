@@ -26,9 +26,10 @@ For code conventions and dev setup see [`../../CLAUDE.md`](../../CLAUDE.md).
 | [REQ-F-natal-chart-calculation](../../1-objectives/requirements/REQ-F-natal-chart-calculation.md) | REQ-F | Must | DashboardScreen renders BAFE results via api-server |
 | [REQ-F-quiz-contribution-system](../../1-objectives/requirements/REQ-F-quiz-contribution-system.md) | REQ-F | Must | QuizScreen with QuizRenderer + offline queue |
 | [REQ-F-fusion-ring-visualization](../../1-objectives/requirements/REQ-F-fusion-ring-visualization.md) | REQ-F | Must | FuRingScreen (2D bootstrap view; 3D SignaturCanvas planned) |
-| [REQ-F-signatur-mobile-native](../../1-objectives/requirements/REQ-F-signatur-mobile-native.md) | REQ-F | Must | Full 3D spirograph on iOS via expo-gl, gesture controls |
+| [REQ-F-agent-architecture-refactor](../../1-objectives/requirements/REQ-F-agent-architecture-refactor.md) | REQ-F | Must | Generic multi-agent UI (Levi + Eve agent selection tiles) |
+| [REQ-F-agent-dashboard-selection](../../1-objectives/requirements/REQ-F-agent-dashboard-selection.md) | REQ-F | Must | Agent selection tiles on mobile Dashboard |
+| [REQ-USA-mobile-first-readability](../../1-objectives/requirements/REQ-USA-mobile-first-readability.md) | REQ-USA | Must | Mobile-first layout, <10s comprehension |
 | [REQ-PERF-signatur-performance](../../1-objectives/requirements/REQ-PERF-signatur-performance.md) | REQ-PERF | Must | 30fps iOS native, <2s first frame |
-| [REQ-F-agent-dashboard-selection](../../1-objectives/requirements/REQ-F-agent-dashboard-selection.md) | REQ-F | Must | Agent selection tiles (Levi + Eve) |
 
 ## Relevant Decisions
 
@@ -37,3 +38,8 @@ For code conventions and dev setup see [`../../CLAUDE.md`](../../CLAUDE.md).
 | [DEC-supabase-backend](../../2-design/decisions/DEC-supabase-backend.md) | Supabase as sole backend data layer | When writing data access or auth code |
 | [DEC-swiss-ephemeris](../../2-design/decisions/DEC-swiss-ephemeris.md) | Swiss Ephemeris via BAFE | When consuming chart data from api-server |
 | [DEC-wuxing-ui-mapping](../../2-design/decisions/DEC-wuxing-ui-mapping.md) | Wu-Xing elements drive UI physics | When writing components with element-specific styling |
+| [DEC-multi-agent-voice](../../2-design/decisions/DEC-multi-agent-voice.md) | Levi + Eve as fixed voice personas | When adding agents or modifying agent UI |
+
+## Notes
+
+`REQ-F-signatur-mobile-native` (expo-gl spirograph approach) is **Deprecated** — superseded by `REQ-F-signatur-ios-swift` (native Swift renderer, tracked in a separate Swift repository outside this monorepo).

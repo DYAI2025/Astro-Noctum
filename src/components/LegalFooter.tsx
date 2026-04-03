@@ -4,7 +4,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 
 type LegalSection = "impressum" | "privacy" | "terms" | null;
 
-const LEGAL_CONTENT = {
+export const LEGAL_CONTENT = {
   impressum: {
     en: {
       title: "Legal Notice (Impressum)",

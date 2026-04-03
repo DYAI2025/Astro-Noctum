@@ -126,6 +126,9 @@ When an artifact (goal, requirement) is no longer relevant:
 | [REQ-F-depth-navigation](requirements/REQ-F-depth-navigation.md) | REQ-F | Must | Draft | Z-axis depth navigation: Dashboard (surface) → Signatur (mid) → detail views (core) |
 | [REQ-F-progressive-ui-fluidity](requirements/REQ-F-progressive-ui-fluidity.md) | REQ-F | Must | Draft | UI fluidity grows with cluster completion; conventional for new users, gesture-driven for engaged users |
 | [REQ-USA-wcag-contrast](requirements/REQ-USA-wcag-contrast.md) | REQ-USA | Should | Draft | WCAG 2.1 AA contrast ratios enforced on all text/interactive elements against obsidian background |
+| [REQ-F-dashboard-identity-cards](requirements/REQ-F-dashboard-identity-cards.md) | REQ-F | Should | Draft | Dashboard top identity cards form a coherent 5-card set incl. Wu-Xing element |
+| [REQ-F-dashboard-live-daily-signals](requirements/REQ-F-dashboard-live-daily-signals.md) | REQ-F | Must | Draft | Daily impulse and influence widgets use live date-sensitive data incl. cosmic weather |
+| [REQ-F-navigation-shell](requirements/REQ-F-navigation-shell.md) | REQ-F | Must | Draft | Top bar: 3 primary items (Astro-Agents, Planetarium, Signatur) + Settings with all utility items; mobile responsive |
 
 ---
 

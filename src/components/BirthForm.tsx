@@ -142,6 +142,7 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
       return;
     }
 
+    setFormErrors({});
     setSubmitting(true);
     onSubmit({ date: `${date}T${time}:00`, tz, lat: parsedLat, lon: parsedLon });
   };
@@ -416,6 +417,11 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
                 </>
               )}
 
+              {/* Coords error (shown above timezone when the manual input details are collapsed) */}
+              {formErrors.coords && (
+                <p className="text-xs text-red-500">{formErrors.coords}</p>
+              )}
+
               {/* Timezone (auto-detected, still editable) */}
               <div className="space-y-2">
                 <label className="text-[8px] uppercase tracking-widest text-[#1E2A3A]/50">
@@ -436,7 +442,7 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
             <div className="flex gap-4">
               <button
                 type="button"
-                onClick={() => setStep(1)}
+                onClick={() => { setFormErrors({}); setStep(1); }}
                 className="w-full md:w-auto px-8 py-4 border border-[#1E2A3A]/15 text-[#1E2A3A]/55 text-[10px] uppercase tracking-[0.3em] hover:bg-[#1E2A3A]/05 transition-colors rounded"
               >
                 {t("form.backBtn")}

@@ -54,25 +54,25 @@ function useInfluences(weights?: Record<string, number>): InfluenceData[] {
   return useMemo(() => [
     {
       label: t("dashboard.influences.marsLabel"),
-      value: weights?.Mars ?? 0.82,
+      value: weights?.Mars ?? 0,
       color: "bg-gradient-to-r from-red-500 to-orange-400",
       tooltip: t("dashboard.influences.marsTooltip"),
     },
     {
       label: t("dashboard.influences.jupiterLabel"),
-      value: weights?.Jupiter ?? 0.65,
+      value: weights?.Jupiter ?? 0,
       color: "bg-gradient-to-r from-cyan-400 to-blue-500",
       tooltip: t("dashboard.influences.jupiterTooltip"),
     },
     {
       label: t("dashboard.influences.venusLabel"),
-      value: weights?.Venus ?? 0.45,
+      value: weights?.Venus ?? 0,
       color: "bg-gradient-to-r from-purple-400 to-pink-400",
       tooltip: t("dashboard.influences.venusTooltip"),
     },
     {
       label: t("dashboard.influences.saturnLabel"),
-      value: weights?.Saturn ?? 0.30,
+      value: weights?.Saturn ?? 0,
       color: "bg-gradient-to-r from-zinc-400 to-zinc-200",
       tooltip: t("dashboard.influences.saturnTooltip"),
     },
@@ -82,6 +82,7 @@ function useInfluences(weights?: Record<string, number>): InfluenceData[] {
 export default function InfluenceGauges({ weights }: { weights?: Record<string, number> }) {
   const { t } = useLanguage();
   const items = useInfluences(weights);
+  const isLive = weights !== undefined;
 
   return (
     <div className="cosmic-tile p-6 rounded-[2rem] space-y-8">
@@ -90,9 +91,9 @@ export default function InfluenceGauges({ weights }: { weights?: Record<string, 
         <div className="text-[8px] font-sans" style={{ color: 'var(--tile-text-secondary)', opacity: 0.5 }}>TRANSIT</div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12">
-        {items.map((inf, i) => (
-          <Gauge key={i} label={inf.label} value={inf.value} color={inf.color} tooltip={inf.tooltip} />
+      <div className={`grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12 transition-opacity duration-300 ${isLive ? '' : 'opacity-40'}`}>
+        {items.map((inf) => (
+          <Gauge key={inf.label} label={inf.label} value={inf.value} color={inf.color} tooltip={inf.tooltip} />
         ))}
       </div>
     </div>
