@@ -10,6 +10,11 @@
  *   - Dissonanz: Pole bewegen sich gegenläufig DURCH den Mittelpunkt
  *
  * Die Form emergiert dort wo die meisten Spuren überlagern.
+ *
+ * Debug-Integration (DevUI):
+ *   - DebugInjection ermöglicht gesteuerte Overrides für Testing
+ *   - Nur im Development-Build aktiv (NODE_ENV === 'development')
+ *   - Wird in Production durch Tree-Shaking entfernt
  */
 
 export type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
@@ -17,6 +22,10 @@ export { computeDayHarmonic } from '../../lib/fusion-ring/day-harmonic';
 import type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
 import type { DissonanceResult } from '../../lib/fusion-ring/dissonance';
 import type { VisualModulation } from '../../lib/fusion-ring/dissonance-visual';
+
+// DebugInjection für DevUI-Overrides
+import { DebugInjection, isDebugMode } from '../../debug/debug-injection';
+import type { DebugOverrides } from '../../debug/types';
 
 // DimensionDef and DIMENSION_DEFS are the Single Source of Truth in @bazodiac/shared.
 // Re-exported here so existing imports from this file continue to work.
@@ -121,11 +130,27 @@ export function initializePoles(
   natalWeights: Map<string, number>,
   quizWeights: Map<string, number>,
 ): PoleState[] {
+  // Debug-Overrides anwenden (NUR im Dev-Build)
+  let effectiveNatal = natalWeights;
+  let effectiveQuiz = quizWeights;
+
+  if (isDebugMode()) {
+    const debug = DebugInjection.getInstance();
+    const overrides = debug.getOverrides();
+
+    if (overrides.natalOverride) {
+      effectiveNatal = overrides.natalOverride;
+    }
+    if (overrides.quizOverride) {
+      effectiveQuiz = overrides.quizOverride;
+    }
+  }
+
   const poles: PoleState[] = [];
 
   for (const dim of DIMENSION_DEFS) {
-    const natalValue = natalWeights.get(dim.id) ?? 0.5;
-    const quizValue = quizWeights.get(dim.id) ?? 0.5;
+    const natalValue = effectiveNatal.get(dim.id) ?? 0.5;
+    const quizValue = effectiveQuiz.get(dim.id) ?? 0.5;
     const hzNorm = logNormHz(dim.hz);
 
     // Base orbital radius — natal determines the "home" radius
@@ -175,6 +200,12 @@ export function initializePoles(
  * When an external DissonanceResult is provided (from the full 3-layer model),
  * its global values (d_natal, d_accumulated, d_elemental) are used.
  * Otherwise falls back to local per-dimension deviation.
+ *
+ * Debug-Integration:
+ *   - forceConsonance: setzt alle Dissonanzen auf 0
+ *   - forceDissonance: setzt alle Dissonanzen auf 1
+ *   - dissonanceOverride: manuelle Dissonanz-Werte pro Dimension
+ *   - dissonanceScale: globale Skalierung (0-2)
  */
 export function computeV3Dissonance(
   natalWeights: Map<string, number>,
@@ -193,7 +224,7 @@ export function computeV3Dissonance(
   }
 
   // Use external 3-layer dissonance if available, otherwise local approximation
-  const dNatal = external?.d_natal ?? clamp(totalDeviation / DIMENSION_DEFS.length / 0.5, 0, 1);
+  let dNatal = external?.d_natal ?? clamp(totalDeviation / DIMENSION_DEFS.length / 0.5, 0, 1);
   const dAccumulated = external?.d_accumulated ?? 0;
 
   // Map elemental type to quality scalar: Ke = -1, Sheng = +1, neutral = 0
@@ -202,6 +233,45 @@ export function computeV3Dissonance(
     const el = external.d_elemental;
     if (el.type === 'ke') elementalQuality = -clamp(el.magnitude, 0, 1);
     else if (el.type === 'sheng') elementalQuality = clamp(el.magnitude, 0, 1);
+  }
+
+  // Debug-Overrides anwenden (NUR im Dev-Build)
+  if (isDebugMode()) {
+    const debug = DebugInjection.getInstance();
+    const overrides = debug.getOverrides();
+
+    if (overrides.forceConsonance) {
+      // Alle Dissonanzen auf 0 (reine Konsonanz)
+      for (const dim of DIMENSION_DEFS) {
+        dimensional.set(dim.id, 0);
+      }
+      dNatal = 0;
+    } else if (overrides.forceDissonance) {
+      // Alle Dissonanzen auf 1 (maximale Spannung)
+      for (const dim of DIMENSION_DEFS) {
+        dimensional.set(dim.id, 1);
+      }
+      dNatal = 1;
+    } else if (overrides.dissonanceOverride) {
+      // Manuelle Dissonanz-Werte pro Dimension
+      for (const dim of DIMENSION_DEFS) {
+        const overrideValue = overrides.dissonanceOverride!.get(dim.id);
+        if (overrideValue !== undefined) {
+          dimensional.set(dim.id, overrideValue);
+        }
+      }
+      // dNatal als Durchschnitt berechnen
+      let sum = 0;
+      for (const d of dimensional.values()) sum += d;
+      dNatal = sum / DIMENSION_DEFS.length;
+    } else if (overrides.dissonanceScale !== undefined) {
+      // Globale Skalierung
+      for (const dim of DIMENSION_DEFS) {
+        const scaled = clamp((dimensional.get(dim.id) ?? 0) * overrides.dissonanceScale!, 0, 1);
+        dimensional.set(dim.id, scaled);
+      }
+      dNatal = clamp(dNatal * overrides.dissonanceScale!, 0, 1);
+    }
   }
 
   return { dimensional, dNatal, dAccumulated, elementalQuality };
@@ -252,6 +322,13 @@ export function modulateConfig(
  *
  * The interpolation between these two modes is continuous —
  * there's no switch, just a gradient from harmony to tension.
+ *
+ * Debug-Integration:
+ *   - timeFreeze: Animation anhalten
+ *   - timeScrub: Manueller Zeit-Offset
+ *   - timeSpeed: Zeit-Geschwindigkeit (0.1x - 10x)
+ *   - persistenceOverride: Trail-Persistenz überschreiben
+ *   - trailLengthOverride: Trail-Länge überschreiben
  */
 export function updatePoles(
   poles: PoleState[],
@@ -261,6 +338,37 @@ export function updatePoles(
   dayHarmonic?: DayHarmonicState,
   solar?: SolarModulation,
 ): void {
+  // Debug Time-Controls anwenden (NUR im Dev-Build)
+  let effectiveTime = time;
+  let effectiveConfig = config;
+
+  if (isDebugMode()) {
+    const debug = DebugInjection.getInstance();
+    const overrides = debug.getOverrides();
+
+    // Time-Controls
+    if (overrides.timeFreeze) {
+      effectiveTime = 0;
+    } else if (overrides.timeScrub !== undefined) {
+      effectiveTime = overrides.timeScrub;
+    } else if (overrides.timeSpeed !== undefined) {
+      effectiveTime = time * overrides.timeSpeed;
+    }
+
+    // Config-Overrides
+    if (overrides.persistenceOverride !== undefined || overrides.trailLengthOverride !== undefined) {
+      effectiveConfig = {
+        ...config,
+        ...(overrides.persistenceOverride !== undefined && {
+          trailPersistence: overrides.persistenceOverride,
+        }),
+        ...(overrides.trailLengthOverride !== undefined && {
+          maxTrailLength: overrides.trailLengthOverride,
+        }),
+      };
+    }
+  }
+
   for (let i = 0; i < poles.length; i += 2) {
     const poleA = poles[i]!;
     const poleB = poles[i + 1]!;
@@ -268,7 +376,7 @@ export function updatePoles(
     const dim = DIMENSION_DEFS[i / 2]!;
     const d = dissonance.dimensional.get(dimId) ?? 0;
 
-    // Advance theta
+    // Advance theta (speed nicht modifizieren — bereits in initializePoles berechnet)
     poleA.theta += poleA.speed;
     poleB.theta += poleB.speed;
 
@@ -310,11 +418,11 @@ export function updatePoles(
     // === DISSONANCE VIBRATION ===
     // High dissonance adds micro-oscillation (crystalline for Ke, flowing for Sheng)
     if (d > 0.1) {
-      const vibAmp = d * config.maxR * 0.03;
+      const vibAmp = d * effectiveConfig.maxR * 0.03;
       const vibFreq = dissonance.elementalQuality < 0
         ? 12.0  // Ke: high-frequency angular vibration
         : 3.0;  // Sheng: slow organic pulse
-      const vib = Math.sin(time * vibFreq + dim.baseAngle) * vibAmp;
+      const vib = Math.sin(effectiveTime * vibFreq + dim.baseAngle) * vibAmp;
 
       // Apply perpendicular to movement direction
       const perpA = poleA.theta + Math.PI / 2;
@@ -328,9 +436,9 @@ export function updatePoles(
 
     // === DAY-TRACE: micro-vibration at crossing points ===
     if (dayHarmonic?.mode === 'trace' && blend > 0.3) {
-      const vibAmp = dayHarmonic.intensity * config.maxR * 0.015;
+      const vibAmp = dayHarmonic.intensity * effectiveConfig.maxR * 0.015;
       const vibFreq = 6.0 + dayHarmonic.intensity * 8.0; // faster when more intense
-      const crossVib = Math.sin(time * vibFreq + dim.baseAngle * 2) * vibAmp;
+      const crossVib = Math.sin(effectiveTime * vibFreq + dim.baseAngle * 2) * vibAmp;
       const perpA = poleA.theta + Math.PI / 2;
       poleA.x += Math.cos(perpA) * crossVib;
       poleA.y += Math.sin(perpA) * crossVib;
@@ -366,15 +474,30 @@ export function updatePoles(
 
       // G3+ storms add high-frequency pulsation, scaled by dimension resonance
       if (solar.triggerEffect) {
-        const stormPulse = Math.sin(time * 20 + dim.hz * 0.1) * config.maxR * 0.02 * dimMul;
+        const stormPulse = Math.sin(effectiveTime * 20 + dim.hz * 0.1) * effectiveConfig.maxR * 0.02 * dimMul;
         poleA.x += stormPulse;
         poleB.x -= stormPulse;
       }
     }
 
     // === RECORD TRAIL ===
-    recordTrail(poleA, config);
-    recordTrail(poleB, config);
+    recordTrail(poleA, effectiveConfig);
+    recordTrail(poleB, effectiveConfig);
+  }
+
+  // Pole-States an DebugInjection melden (für State Inspector im Debug Panel)
+  if (isDebugMode()) {
+    const debug = DebugInjection.getInstance();
+    const poleStates = poles.map(pole => ({
+      dimensionId: pole.dimensionId,
+      pole: pole.pole,
+      x: pole.x,
+      y: pole.y,
+      radius: pole.radius,
+      speed: pole.speed,
+      dissonance: dissonance.dimensional.get(pole.dimensionId) ?? 0,
+    }));
+    debug.updatePoleStates(poleStates);
   }
 }
 

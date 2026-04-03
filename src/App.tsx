@@ -23,6 +23,7 @@ import { Volume2, VolumeX, Settings, X } from "lucide-react";
 import { IconSparkles as Sparkles, IconTelescope as TelescopeIcon, IconOrbit as OrbitIcon } from "./components/animated-icons";
 import { SettingsMenu } from "./components/navigation/SettingsMenu";
 import { LEGAL_CONTENT } from "./components/LegalFooter";
+import { DebugPanel, useDebugPanel } from "./debug";
 
 /**
  * Returns true when the bootstrap response contains fallback/synthetic soulprint data.
@@ -99,6 +100,10 @@ export default function App() {
 
   const ambiente = useAmbientePlayer();
 
+  // Premium status from Supabase profiles table
+  // Must be called before any conditional returns (Rules of Hooks)
+  const premium = usePremium();
+
   const {
     profileState,
     apiData,
@@ -114,10 +119,6 @@ export default function App() {
     handleRegenerate,
     handleReset,
   } = useAstroProfile(user, lang);
-
-  // Premium status from Supabase profiles table
-  // Must be called before any conditional returns (Rules of Hooks)
-  const { isPremium } = usePremium();
 
   // ── Handle ?upgrade=success redirect from Stripe ────────────────────
   useEffect(() => {
@@ -274,6 +275,8 @@ export default function App() {
   };
 
   // Authenticated app with routing
+  const { isOpen: debugPanelOpen, close: closeDebugPanel } = useDebugPanel();
+
   return (
     <BrowserRouter>
       <AgentProvider>
@@ -299,7 +302,7 @@ export default function App() {
               sunSign={apiData?.western?.zodiac_sign || ''}
               zodiacAnimal={apiData?.bazi?.zodiac_sign || ''}
               dominantEl={apiData?.wuxing?.dominant_element || ''}
-              isPremium={isPremium}
+              isPremium={premium.isPremium}
               onUpgrade={handleLeviUpgrade}
               onStopAudio={ambiente.pause}
               onResumeAudio={ambiente.resume}
@@ -317,6 +320,7 @@ export default function App() {
             signOut={signOut}
             error={error}
             hasCompleteProfile={hasCompleteProfile}
+            isPremium={premium.isPremium}
             onboardingProps={{
               hasCompleteProfile,
               onboardingPhase,
@@ -335,6 +339,9 @@ export default function App() {
           />
         </AppLayoutProvider>
       </FusionRingProvider>
+
+      {/* Debug Panel — Development only (Strg+D / Cmd+D to toggle) */}
+      <DebugPanel isOpen={debugPanelOpen} onClose={closeDebugPanel} />
       </AgentProvider>
     </BrowserRouter>
   );
@@ -355,10 +362,11 @@ interface AppShellProps {
   signOut: () => void;
   error: string | null;
   hasCompleteProfile: boolean;
+  isPremium: boolean;
   onboardingProps: import("./pages/OnboardingPage").OnboardingPageProps;
 }
 
-function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, togglePlanetarium, ambiente, signOut, error, hasCompleteProfile, onboardingProps }: AppShellProps) {
+function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, togglePlanetarium, ambiente, signOut, error, hasCompleteProfile, isPremium, onboardingProps }: AppShellProps) {
   const location = useLocation();
   const { activeAgent, agentStates, setWidgetExpanded } = useAgent();
   const agentActive = activeAgent !== null && agentStates[activeAgent]?.active;
@@ -492,6 +500,7 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
                 t={t}
                 onOpenLegal={(s) => setLegalSection((prev) => (prev === s ? null : s))}
                 onClose={() => setSettingsOpen(false)}
+                isPremium={isPremium}
               />
             )}
           </div>
@@ -608,6 +617,7 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
               t={t}
               onOpenLegal={(s) => setLegalSection((prev) => (prev === s ? null : s))}
               onClose={() => setSettingsOpen(false)}
+              isPremium={isPremium}
             />
           )}
         </div>
