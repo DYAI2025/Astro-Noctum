@@ -242,23 +242,23 @@ function buildWeatherPills(sw: SpaceWeatherState, daily: DailyResponse | null): 
 
 function TagesEnergieSkeleton() {
   return (
-    <div className="w-full rounded-2xl border border-white/8 bg-[#00050A]/60 p-5 sm:p-6 space-y-4 animate-pulse">
+    <div className="tages-impuls-card p-5 sm:p-6 space-y-4 animate-pulse">
       <div className="flex items-center justify-between">
-        <div className="h-2 w-24 bg-white/10 rounded" />
-        <div className="h-5 w-24 bg-white/8 rounded-full" />
+        <div className="h-2 w-24 rounded" style={{ background: 'var(--tile-border)' }} />
+        <div className="h-5 w-24 rounded-full" style={{ background: 'var(--tile-border)' }} />
       </div>
       <div className="space-y-2 pt-1">
-        <div className="h-4 w-3/4 bg-white/10 rounded" />
-        <div className="h-3 w-full bg-white/6 rounded" />
-        <div className="h-3 w-5/6 bg-white/6 rounded" />
-        <div className="h-3 w-4/6 bg-white/6 rounded" />
+        <div className="h-4 w-3/4 rounded" style={{ background: 'var(--tile-border)' }} />
+        <div className="h-3 w-full rounded" style={{ background: 'var(--tile-border)', opacity: 0.6 }} />
+        <div className="h-3 w-5/6 rounded" style={{ background: 'var(--tile-border)', opacity: 0.6 }} />
+        <div className="h-3 w-4/6 rounded" style={{ background: 'var(--tile-border)', opacity: 0.6 }} />
       </div>
       <div className="flex gap-2 pt-1">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-6 w-24 bg-white/6 rounded-full" />
+          <div key={i} className="h-6 w-24 rounded-full" style={{ background: 'var(--tile-border)', opacity: 0.6 }} />
         ))}
       </div>
-      <div className="h-2 w-full bg-white/8 rounded-full mt-2" />
+      <div className="h-2 w-full rounded-full mt-2" style={{ background: 'var(--tile-border)' }} />
     </div>
   );
 }
@@ -314,26 +314,23 @@ export function DashboardTagesEnergie({
       aria-live="polite"
       aria-label={t('dashboard.tagesImpuls.ariaContainer')}
     >
-      <div
-        className="rounded-2xl border border-white/10 overflow-hidden"
-        style={{ background: 'linear-gradient(160deg, rgba(0,5,10,0.92) 0%, rgba(10,8,0,0.88) 100%)' }}
-      >
+      <div className="tages-impuls-card">
         {/* ── Header ─────────────────────────────────────────── */}
         <div className="px-5 pt-5 pb-3 flex items-center justify-between gap-3">
-          <span className="text-[9px] font-mono uppercase tracking-[0.3em] text-white/35 font-bold">
+          <span className="text-[9px] font-sans uppercase tracking-[0.3em] font-bold" style={{ color: 'var(--tile-text-secondary)' }}>
             {t('dashboard.tagesImpuls.sectionLabel')}
           </span>
           <span
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-mono uppercase tracking-wider font-bold"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-sans uppercase tracking-wider font-bold"
             style={{
-              background: isTrace ? 'rgba(212,175,55,0.15)' : 'rgba(160,180,204,0.12)',
-              color: isTrace ? '#D4AF37' : '#a0b4cc',
-              border: `1px solid ${isTrace ? 'rgba(212,175,55,0.25)' : 'rgba(160,180,204,0.20)'}`,
+              background: isTrace ? 'var(--tile-glow)' : 'rgba(160,180,204,0.12)',
+              color: isTrace ? 'var(--tile-accent)' : 'var(--tile-text-secondary)',
+              border: `1px solid ${isTrace ? 'var(--tile-border)' : 'rgba(160,180,204,0.20)'}`,
             }}
           >
             <span
               className="w-1.5 h-1.5 rounded-full"
-              style={{ background: isTrace ? '#D4AF37' : '#a0b4cc' }}
+              style={{ background: isTrace ? 'var(--tile-accent)' : 'var(--tile-text-secondary)' }}
             />
             {isTrace ? t('dashboard.tagesImpuls.badgeTrace') : t('dashboard.tagesImpuls.badgePulse')}
           </span>
@@ -354,7 +351,7 @@ export function DashboardTagesEnergie({
             <div className="w-8 h-[2px] bg-gradient-to-r from-[#D4AF37]/50 to-transparent mb-2" />
             {/* Themes as kicker — only when themes are available */}
             {(daily.western?.themes?.length ?? 0) > 0 && (
-              <p className="text-[10px] font-mono uppercase tracking-widest text-[#D4AF37]/50 mb-1">
+              <p className="text-[10px] font-sans uppercase tracking-widest mb-1" style={{ color: 'var(--tile-accent)', opacity: 0.65 }}>
                 {daily.western!.themes!.slice(0, 2).join(' · ')}
               </p>
             )}
@@ -363,13 +360,13 @@ export function DashboardTagesEnergie({
 
         {/* ── Body — ALWAYS FULLY VISIBLE ─────────────────────── */}
         <div className="px-5 pb-4 space-y-3">
-          <p className="text-sm sm:text-[15px] text-white/80 leading-relaxed font-serif">
+          <p className="text-sm sm:text-[15px] leading-relaxed font-serif" style={{ color: 'var(--tile-text-primary)' }}>
             {bodyText}
           </p>
 
           {/* Day-Trace: Reibungs-Kontext */}
           {frictionText && (
-            <p className="text-xs text-[#D4AF37]/60 leading-relaxed italic border-l-2 border-[#D4AF37]/20 pl-3">
+            <p className="text-xs leading-relaxed italic pl-3" style={{ color: 'var(--tile-accent)', opacity: 0.7, borderLeft: '2px solid var(--tile-border)' }}>
               {frictionText}
             </p>
           )}
@@ -378,10 +375,10 @@ export function DashboardTagesEnergie({
           <PremiumGate teaser="Deine persönliche Einladung für heute">
             <div
               className="flex items-start gap-2 rounded-xl p-3 mt-1"
-              style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.12)' }}
+              style={{ background: 'var(--tile-glow)', border: '1px solid var(--tile-border)' }}
             >
-              <span className="text-[#D4AF37] text-sm mt-0.5 shrink-0">✦</span>
-              <p className="text-xs text-white/65 leading-relaxed italic">
+              <span className="text-sm mt-0.5 shrink-0" style={{ color: 'var(--tile-accent)' }}>✦</span>
+              <p className="text-xs leading-relaxed italic" style={{ color: 'var(--tile-text-secondary)' }}>
                 {daily.fusion.action}
               </p>
             </div>
@@ -390,15 +387,15 @@ export function DashboardTagesEnergie({
 
         {/* ── Kosmoswetter Strip ──────────────────────────────── */}
         {weatherPills.length > 0 && (
-          <div className="mx-5 mb-4 pt-3 border-t border-white/6">
-            <p className="text-[8px] font-mono uppercase tracking-[0.3em] text-white/25 mb-2">
+          <div className="mx-5 mb-4 pt-3 tages-impuls-divider">
+            <p className="text-[8px] font-sans uppercase tracking-[0.3em] mb-2" style={{ color: 'var(--tile-text-secondary)', opacity: 0.6 }}>
               {t('dashboard.tagesImpuls.kosmoswetter')}
             </p>
             <div className="flex flex-wrap gap-1.5">
               {weatherPills.map((pill) => (
                 <span
                   key={pill.key}
-                  className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-mono"
+                  className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-sans"
                   style={{ background: pill.bg, color: pill.color, border: `1px solid ${toBorderColor(pill.color)}` }}
                 >
                   {pill.icon}
@@ -412,11 +409,11 @@ export function DashboardTagesEnergie({
         {/* ── Resonanz-Indikator ───────────────────────────────── */}
         <div className="mx-5 mb-5">
           <div className="flex items-center justify-between mb-1.5">
-            <p className="text-[9px] text-white/30 font-mono">{t('dashboard.tagesImpuls.resonanz')}</p>
-            <p className="text-[9px] text-white/30 font-mono">{resonancePct}%</p>
+            <p className="text-[9px] font-sans" style={{ color: 'var(--tile-text-secondary)', opacity: 0.6 }}>{t('dashboard.tagesImpuls.resonanz')}</p>
+            <p className="text-[9px] font-sans" style={{ color: 'var(--tile-text-secondary)', opacity: 0.6 }}>{resonancePct}%</p>
           </div>
           {/* Bar */}
-          <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+          <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: 'var(--tile-border)' }}>
             <motion.div
               role="progressbar"
               aria-valuenow={resonancePct}
@@ -428,12 +425,12 @@ export function DashboardTagesEnergie({
               animate={{ width: `${resonancePct}%` }}
               transition={{ duration: 1.2, ease: 'easeOut', delay: 0.3 }}
               style={{
-                background: `linear-gradient(90deg, #D4AF37 0%, ${resonance > 0.5 ? '#22d3ee' : '#8B6914'} 100%)`,
+                background: `linear-gradient(90deg, var(--tile-accent) 0%, ${resonance > 0.5 ? '#22d3ee' : 'var(--tile-accent)'} 100%)`,
                 minWidth: resonancePct > 0 ? undefined : '3px',
               }}
             />
           </div>
-          <p className="text-[9px] text-white/25 mt-1.5 font-mono">
+          <p className="text-[9px] mt-1.5 font-sans" style={{ color: 'var(--tile-text-secondary)', opacity: 0.5 }}>
             {resonanceLabel(resonance)}
           </p>
         </div>
@@ -442,7 +439,8 @@ export function DashboardTagesEnergie({
         {onOpenDayModal && (
           <button
             onClick={onOpenDayModal}
-            className="w-full flex items-center justify-end gap-1 px-5 py-3 text-[9px] font-mono uppercase tracking-wider text-white/35 hover:text-white/60 transition-colors border-t border-white/5"
+            className="w-full flex items-center justify-end gap-1 px-5 py-3 text-[9px] font-sans uppercase tracking-wider transition-opacity tages-impuls-divider opacity-50 hover:opacity-80"
+            style={{ color: 'var(--tile-text-secondary)' }}
           >
             {t('dashboard.tagesImpuls.vertiefen')}
             <ArrowRight className="w-3 h-3" />
