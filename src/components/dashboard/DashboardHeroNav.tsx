@@ -101,30 +101,28 @@ export function DashboardHeroNav({ sunSign, dominantElement, zodiacAnimal, onTil
           aria-label={t(tile.ariaKey)}
           className={[
             'group relative flex flex-col items-center justify-center',
-            'gap-3 py-8 px-6 rounded-2xl w-full',
-            'border border-[#D4AF37]/15 bg-[#00050A]/60 backdrop-blur-md',
-            'hover:border-[#D4AF37]/40 hover:bg-[#D4AF37]/5',
+            'gap-3 py-8 px-6 rounded-2xl w-full cosmic-tile',
+            'hover:border-[var(--tile-accent)]',
             'transition-all duration-300 cursor-pointer',
-            'shadow-[0_0_0_0_rgba(212,175,55,0)] hover:shadow-[0_0_24px_0_rgba(212,175,55,0.08)]',
           ].join(' ')}
         >
           {/* Icon */}
-          <div className="text-[#D4AF37]/60 group-hover:text-[#D4AF37]/90 transition-colors duration-300">
+          <div className="transition-colors duration-300" style={{ color: 'var(--tile-accent)', opacity: 0.65 }}>
             {tile.icon}
           </div>
 
           {/* Label */}
-          <p className="text-[9px] uppercase tracking-[0.35em] text-[#D4AF37]/50 group-hover:text-[#D4AF37]/80 transition-colors duration-300">
+          <p className="text-[9px] font-sans uppercase tracking-[0.35em] transition-colors duration-300" style={{ color: 'var(--tile-accent)', opacity: 0.6 }}>
             {t(tile.labelKey)}
           </p>
 
           {/* Value */}
-          <p className="font-serif text-lg text-white/80 group-hover:text-white transition-colors duration-300">
+          <p className="font-serif text-lg transition-colors duration-300" style={{ color: 'var(--tile-text-primary)' }}>
             {tile.value}
           </p>
 
           {/* Open hint */}
-          <span aria-hidden="true" className="text-[#D4AF37]/20 group-hover:text-[#D4AF37]/50 text-xs transition-colors duration-300">
+          <span aria-hidden="true" className="text-xs transition-colors duration-300" style={{ color: 'var(--tile-accent)', opacity: 0.3 }}>
             ↗
           </span>
         </button>

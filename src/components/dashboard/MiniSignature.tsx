@@ -38,7 +38,7 @@ export default function MiniSignature({ natalWeights, quizWeights, dayHarmonic, 
       onClick={onExpand}
       className="group cosmic-tile p-6 md:p-8 rounded-[2rem] aspect-square flex flex-col justify-between cursor-pointer active:scale-95"
     >
-      <div className="relative w-full aspect-square rounded-full overflow-hidden bg-black/5">
+      <div className="relative w-full aspect-square rounded-full overflow-hidden" style={{ background: 'var(--tile-border)' }}>
         {!hasData ? (
           <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
             <p className="text-[10px] opacity-40 uppercase tracking-widest animate-pulse font-sans">
@@ -68,7 +68,7 @@ export default function MiniSignature({ natalWeights, quizWeights, dayHarmonic, 
         )}
 
         {/* Decorative Inner Ring Overlay */}
-        <div className="absolute inset-2 border border-white/5 rounded-full pointer-events-none" />
+        <div className="absolute inset-2 rounded-full pointer-events-none" style={{ border: '1px solid var(--tile-border)' }} />
 
         {/* Subtle radial shadow to frame the ring */}
         <div className="absolute inset-0 shadow-[inset_0_0_40px_rgba(0,0,0,0.4)] pointer-events-none" />

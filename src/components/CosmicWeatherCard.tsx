@@ -125,7 +125,7 @@ export function CosmicWeatherCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
               <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
-              <span className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/75 font-mono font-bold">
+              <span className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/75 font-sans font-bold">
                 {t('cosmicWeather.title')}
               </span>
               {isPremium && (
@@ -180,7 +180,7 @@ export function CosmicWeatherCard({
 
                 {/* Refresh + timestamp */}
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-[8px] text-[var(--color-text-bright-dim)] font-mono tracking-wider">
+                  <span className="text-[8px] text-[var(--color-text-bright-dim)] font-sans tracking-wider">
                     {horoscope.tier === 'premium' ? 'LEVI PREMIUM' : 'FREEMIUM'}
                   </span>
 

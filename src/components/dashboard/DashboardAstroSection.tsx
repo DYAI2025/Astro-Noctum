@@ -306,7 +306,7 @@ export function DashboardAstroSection({
                         </div>
                         <div className="w-12 shrink-0 text-right flex items-center justify-end gap-1">
                           {hasWuxingData && pctLabel > 0 && (
-                            <span className="text-[10px] text-[var(--color-text-bright-dim)] font-mono" style={{ fontVariantNumeric: 'tabular-nums' }}>{pctLabel}%</span>
+                            <span className="text-[10px] text-[var(--color-text-bright-dim)] font-sans" style={{ fontVariantNumeric: 'tabular-nums' }}>{pctLabel}%</span>
                           )}
                           {isDom && <span className="text-sm" style={{ color: el.color }}>{"\u2605"}</span>}
                         </div>

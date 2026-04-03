@@ -304,17 +304,17 @@ export function Dashboard({
       >
         {/* Left: title + subtitle */}
         <div>
-          <div className="w-8 h-px bg-[#D4AF37]/40 mb-4" />
-          <p className="text-[#D4AF37]/50 text-[9px] uppercase tracking-[0.5em] mb-2">
+          <div className="w-8 h-px mb-4" style={{ background: 'var(--tile-accent)', opacity: 0.4 }} />
+          <p className="text-[9px] uppercase tracking-[0.5em] mb-2" style={{ color: 'var(--tile-accent)', opacity: 0.75 }}>
             {t("dashboard.welcome")}
           </p>
-          <h1 className="font-serif text-5xl sm:text-6xl leading-tight text-white">
+          <h1 className="font-serif text-5xl sm:text-6xl leading-tight" style={{ color: 'var(--tile-text-primary)' }}>
             {t("dashboard.title")}
           </h1>
           {birthDate && (
-            <p className="mt-1.5 text-xs text-white/35 tracking-wide">
+            <p className="mt-1.5 text-xs tracking-wide" style={{ color: 'var(--tile-text-secondary)' }}>
               {t("dashboard.birthDate")}{": "}
-              <span className="text-white/55">{birthDate}</span>
+              <span style={{ color: 'var(--tile-text-secondary)' }}>{birthDate}</span>
             </p>
           )}
         </div>
