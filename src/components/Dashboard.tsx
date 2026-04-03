@@ -411,6 +411,13 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
+      {/* ═══ VIBE CTA ═══════════════════════════════════════════════ */}
+      <motion.div className="flex justify-center" {...fadeIn(0.12)}>
+        <SectionErrorBoundary name="Vibes">
+          <VibesSection userId={userId} />
+        </SectionErrorBoundary>
+      </motion.div>
+
       {/* ═══ INFLUENCES CLUSTER (Daily Pulse context) ════════════════ */}
       <div className="flex flex-col gap-6">
         <motion.div {...fadeIn(0.15)}>
