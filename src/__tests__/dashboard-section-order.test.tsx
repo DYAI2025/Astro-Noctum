@@ -31,3 +31,38 @@ describe('Dashboard section order', () => {
     expect(source).not.toMatch(/birthDate\s*[?:]/);
   });
 });
+
+describe('Dashboard full section order', () => {
+  it('sections appear in correct hierarchy order', async () => {
+    const fs = await import('fs');
+    const source = fs.readFileSync('src/components/Dashboard.tsx', 'utf-8');
+
+    const markers = [
+      'SECTION: PLANETARIUM',
+      'SKY MODE TOGGLE',
+      'IDENTITY',
+      'TAGES-IMPULS',
+      'INFLUENCES CLUSTER',
+      'KOSMISCHER BLUEPRINT',
+      'VOICE AGENTS',
+      'UPGRADE BANNER',
+      'KI-SYNTHESE',
+      'SHARE CARD',
+    ];
+
+    let lastIdx = -1;
+    for (const marker of markers) {
+      const idx = source.indexOf(marker);
+      expect(idx, `"${marker}" should exist in Dashboard.tsx`).toBeGreaterThan(-1);
+      expect(idx, `"${marker}" should come after previous section`).toBeGreaterThan(lastIdx);
+      lastIdx = idx;
+    }
+  });
+
+  it('main container uses tighter spacing than gap-20', async () => {
+    const fs = await import('fs');
+    const source = fs.readFileSync('src/components/Dashboard.tsx', 'utf-8');
+    expect(source).toContain('gap-12');
+    expect(source).not.toContain('gap-20');
+  });
+});

@@ -288,7 +288,7 @@ export function Dashboard({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className="w-full max-w-6xl mx-auto px-4 md:px-6 flex flex-col gap-20"
+      className="w-full max-w-6xl mx-auto px-4 md:px-6 flex flex-col gap-12"
     >
       {/* ── Tour sentinel: step 0 anchors at the planetarium (top of dashboard) ── */}
       <div ref={planetariumSentinelRef} className="h-px" aria-hidden="true" />
@@ -411,21 +411,20 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
-      {/* ═══ SECTION 3: INFLUENCE GAUGES ═══════════════════════════════ */}
-      <motion.div {...fadeIn(0.15)}>
-        <SectionErrorBoundary name="InfluenceGauges">
-          <InfluenceGauges
-            weights={natalWeights}
-          />
-        </SectionErrorBoundary>
-      </motion.div>
+      {/* ═══ INFLUENCES CLUSTER (Daily Pulse context) ════════════════ */}
+      <div className="flex flex-col gap-6">
+        <motion.div {...fadeIn(0.15)}>
+          <SectionErrorBoundary name="InfluenceGauges">
+            <InfluenceGauges weights={natalWeights} />
+          </SectionErrorBoundary>
+        </motion.div>
 
-      {/* ═══ SECTION 3b: COSMIC INFLUENCE ══════════════════════════════ */}
-      <motion.div {...fadeIn(0.2)}>
-        <SectionErrorBoundary name="CosmicInfluence">
-          <CosmicInfluenceSection spaceWeather={spaceWeather} />
-        </SectionErrorBoundary>
-      </motion.div>
+        <motion.div {...fadeIn(0.2)}>
+          <SectionErrorBoundary name="CosmicInfluence">
+            <CosmicInfluenceSection spaceWeather={spaceWeather} />
+          </SectionErrorBoundary>
+        </motion.div>
+      </div>
 
       {/* ── Tour sentinel: step 1 triggers when astro section scrolls into view ── */}
       <div ref={astroSentinelRef} className="h-px" aria-hidden="true" />
