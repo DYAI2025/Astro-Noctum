@@ -1206,6 +1206,97 @@ function deterministicIndex(dateStr, sector, max) {
   return Math.abs(hash) % max;
 }
 
+function extractJsonPayload(raw) {
+  if (typeof raw !== 'string') return '';
+  let value = raw.trim();
+  if (!value) return '';
+  if (value.startsWith('```json')) {
+    value = value.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+  }
+  if (!value.startsWith('{')) {
+    const first = value.indexOf('{');
+    const last = value.lastIndexOf('}');
+    if (first !== -1 && last !== -1 && last > first) {
+      value = value.slice(first, last + 1);
+    }
+  }
+  return value;
+}
+
+function buildWeeklyFallbackAreas(areaScores) {
+  return areaScores.map((area) => {
+    const tpl = WEEKLY_FALLBACK_TEMPLATES[area.key] || WEEKLY_FALLBACK_TEMPLATES.alltag;
+    return {
+      key: area.key,
+      label: area.label,
+      statement: tpl.statement,
+      tendency: tpl.tendency,
+      score: area.score,
+      rank: area.rank,
+      isHighlighted: area.isHighlighted,
+      explain: area.isHighlighted
+        ? tpl.explain
+        : 'Diese Tendenz entsteht aus der aktuellen Konstellation in Verbindung mit deiner persönlichen Struktur.',
+    };
+  });
+}
+
+function buildDailyFallbackPayload({ targetDate, lang, bafeData }) {
+  const german = lang !== 'en';
+  const dayMaster = bafeData?.bazi?.pillars?.day?.stem || '';
+  const sunSign = bafeData?.western?.zodiac_sign || (german ? 'dein Zeichen' : 'your sign');
+  const moonSign = bafeData?.western?.moon_sign || (german ? 'dein Mondzeichen' : 'your moon sign');
+  const harmonyIndex = 0.52;
+  const dayMode = harmonyIndex >= 0.5 ? 'trace' : 'pulse';
+  const synthesis = german
+    ? 'Heute entsteht Zug in deinem Alltag. Was innerlich klar ist, will sichtbar werden.'
+    : 'Today carries momentum. What is clear inside wants to become visible.';
+
+  return {
+    date: targetDate,
+    western: {
+      summary: german
+        ? `${sunSign} bringt heute Fokus auf klare Prioritäten.`
+        : `${sunSign} brings a focus on clear priorities today.`,
+      themes: german ? ['Ausrichtung', 'Klarheit'] : ['Alignment', 'Clarity'],
+      caution: german
+        ? 'Verteile deine Aufmerksamkeit nicht auf zu viele Baustellen.'
+        : 'Avoid splitting your attention across too many fronts.',
+      opportunity: german
+        ? 'Ein bewusst gesetzter Schritt kann heute viel tragen.'
+        : 'One deliberate step can carry a lot today.',
+      evidence: { transit_sectors: [1, 5] },
+    },
+    eastern: {
+      summary: german
+        ? `${moonSign} öffnet den Blick für feine Signale im Umfeld.`
+        : `${moonSign} opens your attention to subtle signals around you.`,
+      themes: german ? ['Wahrnehmung', 'Timing'] : ['Perception', 'Timing'],
+      caution: german
+        ? 'Handle nicht aus Druck, sondern aus innerer Ruhe.'
+        : 'Act from calm intent, not pressure.',
+      opportunity: german
+        ? 'Eine kleine Kurskorrektur verbessert den Tagesfluss deutlich.'
+        : 'A small course correction can improve the flow of your day.',
+      evidence: { day_master: dayMaster },
+    },
+    fusion: {
+      summary: german
+        ? 'Der Tag zeigt eine konkrete Tendenz mit gut nutzbarer Klarheit.'
+        : 'The day shows a concrete tendency with usable clarity.',
+      synthesis,
+      action: german
+        ? 'Entscheide heute eine Sache klar und setze sie direkt um.'
+        : 'Choose one thing clearly today and implement it directly.',
+      pushworthy: true,
+      push_text: german ? 'Heute ist ein guter Moment für einen klaren Schritt.' : 'Today is a good moment for one clear step.',
+      harmony_index: harmonyIndex,
+      day_mode: dayMode,
+    },
+    meta: { engine_version: 'v1-gemini-daily' },
+  };
+}
+
 app.get("/api/horoscope/daily/:userId", async (req, res) => {
   const userId = String(req.params.userId || "").trim();
   if (!userId) return res.status(400).json({ error: "Missing userId" });
@@ -1677,19 +1768,20 @@ NEVER use in synthesis: "weil", "da heute", planet names (Mars, Venus etc.), "di
           ? result.response.text
           : undefined;
     let jsonStr = rawText?.trim() || "";
+    let parsedData = null;
 
     if (!jsonStr) {
-      console.error("[experience/daily] Empty response text from model");
-      return res
-        .status(502)
-        .json({ error: "experience_unavailable", details: "empty_model_response" });
+      console.error("[experience/daily] Empty response text from model, using fallback payload");
+      parsedData = buildDailyFallbackPayload({ targetDate, lang, bafeData });
+    } else {
+      jsonStr = extractJsonPayload(jsonStr);
+      try {
+        parsedData = JSON.parse(jsonStr);
+      } catch (parseErr) {
+        console.warn('[experience/daily] Model JSON parse failed, using structured fallback:', parseErr?.message || parseErr);
+        parsedData = buildDailyFallbackPayload({ targetDate, lang, bafeData });
+      }
     }
-
-    if (jsonStr.startsWith('```json')) {
-      jsonStr = jsonStr.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-    }
-    
-    const parsedData = JSON.parse(jsonStr);
 
     // Ensure harmony_index + day_mode are always present regardless of model output
     if (parsedData?.fusion) {
@@ -1970,11 +2062,28 @@ REGELN:
       });
     }
 
-    if (jsonStr.startsWith('```json')) {
-      jsonStr = jsonStr.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    jsonStr = extractJsonPayload(jsonStr);
+    let parsed;
+    try {
+      parsed = JSON.parse(jsonStr);
+    } catch (parseErr) {
+      console.warn('[vibes] Model JSON parse failed, returning deterministic fallback:', parseErr?.message || parseErr);
+      const fb = VIBES_FALLBACK[dominantElement] || VIBES_FALLBACK.Fire;
+      const fallbackPayload = {
+        timestamp: new Date().toISOString(),
+        horizon: '2-3h',
+        kurzsignal: fb.kurzsignal,
+        treiber: fb.treiber,
+        erklaerung: fb.erklaerung,
+        explain: {
+          signatur_context: `Dominantes Element: ${dominantElement}`,
+          transit_context: spaceWeatherSummary,
+        },
+        meta: { engine_version: 'v1-gemini-vibes', cached: false },
+      };
+      vibesCache.set(cacheKey, { data: fallbackPayload, timestamp: Date.now() });
+      return res.status(200).json(fallbackPayload);
     }
-
-    const parsed = JSON.parse(jsonStr);
 
     // Assemble full payload with envelope
     const vibesPayload = {
@@ -2111,21 +2220,7 @@ app.post('/api/weekly-insights', requireUserAuth, async (req, res) => {
     // ── Gemini generation or fallback ────────────────────────────────
     if (!geminiClient) {
       console.warn('[weekly] Gemini API key missing, returning deterministic fallback');
-      const fallbackAreas = areaScores.map((area) => {
-        const tpl = WEEKLY_FALLBACK_TEMPLATES[area.key] || WEEKLY_FALLBACK_TEMPLATES.alltag;
-        return {
-          key: area.key,
-          label: area.label,
-          statement: tpl.statement,
-          tendency: tpl.tendency,
-          score: area.score,
-          rank: area.rank,
-          isHighlighted: area.isHighlighted,
-          explain: area.isHighlighted
-            ? tpl.explain
-            : 'Diese Tendenz entsteht aus der aktuellen Konstellation in Verbindung mit deiner persönlichen Struktur.',
-        };
-      });
+      const fallbackAreas = buildWeeklyFallbackAreas(areaScores);
       const fallbackPayload = {
         week: isoWeek,
         areas: fallbackAreas,
@@ -2196,22 +2291,24 @@ REGELN:
 
     if (!jsonStr) {
       console.error('[weekly] Empty response text from model, falling back');
-      const fallbackAreas = areaScores.map((area) => {
-        const tpl = WEEKLY_FALLBACK_TEMPLATES[area.key] || WEEKLY_FALLBACK_TEMPLATES.alltag;
-        return {
-          key: area.key, label: area.label, statement: tpl.statement, tendency: tpl.tendency,
-          score: area.score, rank: area.rank, isHighlighted: area.isHighlighted,
-          explain: area.isHighlighted ? tpl.explain : 'Diese Tendenz entsteht aus der aktuellen Konstellation in Verbindung mit deiner persönlichen Struktur.',
-        };
-      });
+      const fallbackAreas = buildWeeklyFallbackAreas(areaScores);
       return res.json({ week: isoWeek, areas: fallbackAreas, meta: { engine_version: 'v1-gemini-weekly', cached: false } });
     }
 
-    if (jsonStr.startsWith('```json')) {
-      jsonStr = jsonStr.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    jsonStr = extractJsonPayload(jsonStr);
+    let parsed;
+    try {
+      parsed = JSON.parse(jsonStr);
+    } catch (parseErr) {
+      console.warn('[weekly] Model JSON parse failed, returning fallback:', parseErr?.message || parseErr);
+      const fallbackPayload = {
+        week: isoWeek,
+        areas: buildWeeklyFallbackAreas(areaScores),
+        meta: { engine_version: 'v1-gemini-weekly', cached: false },
+      };
+      weeklyCache.set(cacheKey, { data: fallbackPayload });
+      return res.status(200).json(fallbackPayload);
     }
-
-    const parsed = JSON.parse(jsonStr);
     const geminiAreas = Array.isArray(parsed.areas) ? parsed.areas : [];
 
     // Merge Gemini output with computed scores
