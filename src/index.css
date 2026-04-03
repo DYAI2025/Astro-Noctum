@@ -49,11 +49,11 @@
 :root {
   /* Default: Morning (Light) Tile Settings */
   --tile-bg: rgba(255, 255, 255, 0.85);
-  --tile-border: rgba(30, 41, 59, 0.08);
+  --tile-border: rgba(30, 41, 59, 0.12);
   --tile-text-primary: #1E293B;
   --tile-text-secondary: rgba(30, 41, 59, 0.6);
   --tile-accent: #92400E;
-  --tile-glow: rgba(146, 64, 14, 0.05);
+  --tile-glow: rgba(146, 64, 14, 0.10);
   --color-text-bright-dim: rgba(30, 41, 59, 0.45);
 
   --c-obsidian:  #00050A;

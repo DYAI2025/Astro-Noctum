@@ -107,12 +107,12 @@ export function DashboardHeroNav({ sunSign, dominantElement, zodiacAnimal, onTil
           ].join(' ')}
         >
           {/* Icon */}
-          <div className="transition-colors duration-300" style={{ color: 'var(--tile-accent)', opacity: 0.65 }}>
+          <div className="opacity-65 group-hover:opacity-100 transition-opacity duration-300" style={{ color: 'var(--tile-accent)' }}>
             {tile.icon}
           </div>
 
           {/* Label */}
-          <p className="text-[9px] font-sans uppercase tracking-[0.35em] transition-colors duration-300" style={{ color: 'var(--tile-accent)', opacity: 0.6 }}>
+          <p className="text-[9px] font-sans uppercase tracking-[0.35em] opacity-60 group-hover:opacity-90 transition-opacity duration-300" style={{ color: 'var(--tile-accent)' }}>
             {t(tile.labelKey)}
           </p>
 
@@ -122,7 +122,7 @@ export function DashboardHeroNav({ sunSign, dominantElement, zodiacAnimal, onTil
           </p>
 
           {/* Open hint */}
-          <span aria-hidden="true" className="text-xs transition-colors duration-300" style={{ color: 'var(--tile-accent)', opacity: 0.3 }}>
+          <span aria-hidden="true" className="text-xs opacity-30 group-hover:opacity-70 transition-opacity duration-300" style={{ color: 'var(--tile-accent)' }}>
             ↗
           </span>
         </button>
