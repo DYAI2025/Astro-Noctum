@@ -13,12 +13,13 @@ interface MiniSignatureProps {
   dayHarmonic?: DayHarmonicState | null;
   externalDissonance?: DissonanceResult | null;
   solarModulation?: SolarModulation;
+  loading?: boolean;
   onExpand?: () => void;
 }
 
 const EMPTY_WEIGHTS: Record<string, number> = {};
 
-export default function MiniSignature({ natalWeights, quizWeights, dayHarmonic, externalDissonance, solarModulation, onExpand }: MiniSignatureProps) {
+export default function MiniSignature({ natalWeights, quizWeights, dayHarmonic, externalDissonance, solarModulation, loading, onExpand }: MiniSignatureProps) {
   const { t } = useLanguage();
   const hasData = natalWeights && Object.keys(natalWeights).length > 0;
 
@@ -39,10 +40,16 @@ export default function MiniSignature({ natalWeights, quizWeights, dayHarmonic, 
       className="group cosmic-tile p-6 md:p-8 rounded-[2rem] aspect-square flex flex-col justify-between cursor-pointer active:scale-95"
     >
       <div className="relative w-full aspect-square rounded-full overflow-hidden" style={{ background: 'var(--tile-border)' }}>
-        {!hasData ? (
+        {!hasData && loading ? (
           <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
             <p className="text-[10px] opacity-40 uppercase tracking-widest animate-pulse font-sans">
               {t('dashboard.miniSignature.calculating')}
+            </p>
+          </div>
+        ) : !hasData ? (
+          <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
+            <p className="text-[10px] opacity-30 uppercase tracking-widest font-sans">
+              {t('dashboard.miniSignature.unavailable')}
             </p>
           </div>
         ) : paused ? (

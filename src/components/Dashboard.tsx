@@ -343,6 +343,7 @@ export function Dashboard({
               natalWeights={natalWeights}
               quizWeights={{}}
               dayHarmonic={dayHarmonic}
+              loading={metaLoading}
               onExpand={() => navigate('/signatur')}
             />
           </div>

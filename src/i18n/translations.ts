@@ -265,6 +265,7 @@ const translationsEn: DeepStringRecord = {
     },
     miniSignature: {
       calculating: "Calculating signature…",
+      unavailable: "Signature unavailable",
       label: "Your Form",
       paused: "Paused",
       togglePause: "Pause signature",
@@ -697,6 +698,7 @@ const translationsDe: DeepStringRecord = {
     },
     miniSignature: {
       calculating: "Signatur wird berechnet…",
+      unavailable: "Signatur nicht verfügbar",
       label: "Deine Form",
       paused: "Pausiert",
       togglePause: "Signatur pausieren",
