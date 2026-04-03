@@ -33,11 +33,16 @@
 - **1155 passing / 1 server-only skip** (was 1041 at last CHANGELOG entry; +114)
 - New: `depth-navigation.test.tsx` (14), `influence-gauges-live.test.tsx` (7), `birthform-inline-validation.test.tsx` (8), `birthform-double-submit.test.tsx` (1), `daily-cache-key.test.ts`, `cosmic-influence-section.test.tsx`, `bipolar-engine-debug.test.ts`, `debug-injection.test.ts`, `debug-panel.test.ts`, `fusion-ring-canvas-v2-debug.test.ts`
 
+### Features (continued)
+
+- **Wu-Xing element UI adaptation** — `useElementTheme(dominantElement)` hook applies the user's dominant Wu-Xing element to the UI at runtime. Sets three CSS custom properties on `:root`: `--element-accent` (drives card hover borders and focus rings in bright mode via `--tile-accent: var(--element-accent)`), `--ui-transition-duration` (Water=0.55s fluid / Fire=0.20s sharp / Wood=0.38s spring / Metal=0.25s crisp / Earth=0.45s grounded), `--ui-transition-easing` (element-specific bezier curve). Also sets `data-element` on `<body>` which activates per-element `--tile-glow` overrides on `.cosmic-tile`, `.morning-card`, `.bright-card`. Dark mode (`.planetarium`) keeps gold accent unaffected — CSS cascade is correct. Hook wired in `App.tsx` after `useAstroProfile()`. 14 new tests.
+
 ### SDLC
 
 - **TASK-bloom-solar-coupling** → Done (already implemented in V2 bloom + V3 solarFadeMod)
 - **TASK-depth-navigation** → Done (wireframe `docs/wireframes/depth-navigation-v1.md`)
 - **TASK-depth-nav-implement** → Done (router.tsx + useNavigationDepth.ts)
+- **TASK-element-ui-adaptation** → Done (useElementTheme hook; --element-accent + --ui-transition-* CSS tokens; body[data-element] card glow; 14 tests)
 - New decisions: `DEC-navigation-shell.md` — depth layer map, AnimatePresence pattern, ROUTE_DEPTH as single source of truth
 - New requirements: `REQ-F-depth-navigation`, `REQ-F-dashboard-identity-cards`, `REQ-F-dashboard-live-daily-signals`, `REQ-F-navigation-shell`
 - Fix handoffs documented: `docs/fix-handoffs/` (birthform-inline-validation, dashboard-daily-widgets-static, dashboard-signatur-status-stuck, dashboard-theme-parity-defects, mobile-nav-utility-parity, planetarium-current-sky-toggle)

@@ -55,25 +55,25 @@ function useInfluences(weights?: Record<string, number>): InfluenceData[] {
     {
       label: t("dashboard.influences.marsLabel"),
       value: weights?.Mars ?? 0,
-      color: "bg-gradient-to-r from-red-500 to-orange-400",
+      color: "bg-gradient-to-r from-[#C53030] to-[#F56565]",
       tooltip: t("dashboard.influences.marsTooltip"),
     },
     {
       label: t("dashboard.influences.jupiterLabel"),
       value: weights?.Jupiter ?? 0,
-      color: "bg-gradient-to-r from-cyan-400 to-blue-500",
+      color: "bg-gradient-to-r from-[#2B6CB0] to-[#4299E1]",
       tooltip: t("dashboard.influences.jupiterTooltip"),
     },
     {
       label: t("dashboard.influences.venusLabel"),
       value: weights?.Venus ?? 0,
-      color: "bg-gradient-to-r from-purple-400 to-pink-400",
+      color: "bg-gradient-to-r from-[#3D8B37] to-[#68D391]",
       tooltip: t("dashboard.influences.venusTooltip"),
     },
     {
       label: t("dashboard.influences.saturnLabel"),
       value: weights?.Saturn ?? 0,
-      color: "bg-gradient-to-r from-zinc-400 to-zinc-200",
+      color: "bg-gradient-to-r from-[#718096] to-[#A0AEC0]",
       tooltip: t("dashboard.influences.saturnTooltip"),
     },
   ], [t, weights]);

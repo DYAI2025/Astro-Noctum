@@ -24,6 +24,7 @@ import { IconSparkles as Sparkles, IconTelescope as TelescopeIcon, IconOrbit as 
 import { SettingsMenu } from "./components/navigation/SettingsMenu";
 import { LEGAL_CONTENT } from "./components/LegalFooter";
 import { DebugPanel, useDebugPanel } from "./debug";
+import { useElementTheme } from "./hooks/useElementTheme";
 
 /**
  * Returns true when the bootstrap response contains fallback/synthetic soulprint data.
@@ -121,6 +122,10 @@ export default function App() {
     handleRegenerate,
     handleReset,
   } = useAstroProfile(user, lang);
+
+  // ── Wu-Xing element theming ─────────────────────────────────────────
+  // Applies element accent color + motion physics to CSS vars on :root.
+  useElementTheme(apiData?.wuxing?.dominant_element ?? '');
 
   // ── Handle ?upgrade=success redirect from Stripe ────────────────────
   useEffect(() => {

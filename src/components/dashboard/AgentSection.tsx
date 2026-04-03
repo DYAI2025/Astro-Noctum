@@ -136,49 +136,49 @@ export function AgentSection({
   return (
     <div
       ref={sectionRef}
-      className={`relative rounded-2xl p-6 sm:p-8 flex flex-col gap-5 overflow-visible ${
+      className={`relative cosmic-tile p-6 sm:p-8 flex flex-col gap-5 overflow-visible ${
         isActive ? 'z-[99999]' : 'z-10'
       }`}
       style={{
-        background: `linear-gradient(135deg, ${agent.gradientFrom} 0%, ${agent.gradientTo} 100%)`,
-        border: `1px solid ${agent.accentColor}25`,
-        boxShadow: `0 4px 24px ${agent.gradientFrom}40, inset 0 1px 0 ${agent.accentColor}10`,
+        background: `linear-gradient(135deg, var(--tile-bg) 0%, ${agent.gradientFrom}15 100%)`,
+        borderColor: isActive ? agent.accentColor : 'var(--tile-border)',
+        boxShadow: isActive ? `0 8px 32px ${agent.accentColor}25` : 'var(--tile-shadow)',
       }}
     >
       {/* ── Decorative accent line ─────────────────────────────────── */}
       <div
-        className="absolute top-0 left-6 right-6 h-[2px] rounded-full"
-        style={{ background: `linear-gradient(90deg, transparent, ${agent.accentColor}40, transparent)` }}
+        className="absolute top-0 left-6 right-6 h-[2px] rounded-full opacity-30"
+        style={{ background: `linear-gradient(90deg, transparent, ${agent.accentColor}, transparent)` }}
       />
 
       {/* ── Header: status dot + agent name ────────────────────────── */}
       <div className="flex items-center gap-3">
         <div
-          className="w-2.5 h-2.5 rounded-full shrink-0 breathing"
+          className="w-2 h-2 rounded-full shrink-0 breathing"
           style={{ backgroundColor: dotColor, boxShadow: dotShadow }}
         />
-        <h3 className="font-serif text-xl text-white/90 tracking-wide">
+        <h3 className="font-serif text-xl tracking-wide">
           {agent.name}
         </h3>
         {isActive && (
-          <Badge variant="success" className="ml-auto text-[8px]">LIVE</Badge>
+          <Badge variant="success" className="ml-auto text-[8px] font-sans">LIVE</Badge>
         )}
       </div>
 
       {/* ── Description ────────────────────────────────────────────── */}
-      <p className="text-sm text-white/55 leading-relaxed">
+      <p className="text-sm opacity-60 leading-relaxed font-sans">
         {isActive ? activeDesc : description}
       </p>
 
       {/* ── CTA Button ───────────────────────────────────────────── */}
       {!isAvailable ? (
-        <Badge variant="secondary" className="opacity-70 self-start">
+        <Badge variant="secondary" className="opacity-70 self-start font-sans">
           {comingSoonLabel}
         </Badge>
       ) : isPremium ? (
         <Button
           variant={isActive ? 'destructive' : 'outline'}
-          className="w-full sm:w-auto sm:self-start"
+          className="w-full sm:w-auto sm:self-start font-sans"
           onClick={isActive ? handleHangUp : handleCall}
           style={!isActive ? { borderColor: `${agent.accentColor}40`, color: agent.accentColor } : undefined}
         >
@@ -191,7 +191,7 @@ export function AgentSection({
       ) : (
         <Button
           variant="premium"
-          className="w-full sm:w-auto sm:self-start"
+          className="w-full sm:w-auto sm:self-start font-sans"
           onClick={handleUpgrade}
           disabled={isUpgrading}
         >

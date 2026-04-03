@@ -9,8 +9,8 @@
 
 import { describe, it, expect } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { MemoryRouter, useNavigate } from 'react-router-dom';
-import React, { act } from 'react';
+import { MemoryRouter } from 'react-router-dom';
+import React from 'react';
 import { ROUTE_DEPTH, getRouteDepth } from '../hooks/useNavigationDepth';
 
 // ── ROUTE_DEPTH contract ──────────────────────────────────────────────────────
@@ -77,34 +77,7 @@ describe('getRouteDepth()', () => {
 
 import { useNavigationDepth } from '../hooks/useNavigationDepth';
 
-function TestNavigator({ from, to }: { from: string; to: string }) {
-  const navigate = useNavigate();
-  const { direction, depth } = useNavigationDepth();
-
-  React.useEffect(() => {
-    navigate(to);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  return (
-    <div data-testid="direction">{direction}</div>
-  );
-}
-
 describe('useNavigationDepth() direction', () => {
-  function renderWithNavigation(from: string, to: string) {
-    return renderHook(
-      () => useNavigationDepth(),
-      {
-        wrapper: ({ children }: { children: React.ReactNode }) => (
-          <MemoryRouter initialEntries={[from, to]} initialIndex={0}>
-            {children}
-          </MemoryRouter>
-        ),
-      }
-    );
-  }
-
   it('returns "inward" when navigating Surface → Mid (/ → /signatur)', () => {
     // Start at surface depth 0
     const { result, rerender } = renderHook(

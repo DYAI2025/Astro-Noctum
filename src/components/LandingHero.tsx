@@ -321,7 +321,7 @@ export function LandingHero({ onContinue }: LandingHeroProps) {
           <div className="w-7 h-7 rounded-full border border-[#b0b3b8] flex items-center justify-center">
             <div className="w-1.5 h-1.5 bg-[#b0b3b8] rounded-full animate-pulse" />
           </div>
-          <span className="font-bold tracking-widest uppercase text-lg font-landing-display">
+          <span className="font-bold tracking-widest uppercase text-lg font-sans">
             Bazodiac
           </span>
         </div>
@@ -394,7 +394,7 @@ export function LandingHero({ onContinue }: LandingHeroProps) {
             initial={{ opacity: 0, y: 60 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 1.8, ease: 'easeOut' }}
-            className="text-6xl md:text-[120px] font-bold font-landing-display tracking-tighter leading-none mb-4"
+            className="text-6xl md:text-[120px] font-bold font-sans tracking-tighter leading-none mb-4"
           >
             {t.hero_title}
           </motion.h1>
@@ -493,7 +493,7 @@ export function LandingHero({ onContinue }: LandingHeroProps) {
               <span className="text-[10px] uppercase tracking-[0.4em] text-[#6366f1] font-bold mb-2 block">
                 {t.levi_role}
               </span>
-              <h2 className="text-4xl md:text-5xl font-landing-display font-bold mb-4">
+              <h2 className="text-4xl md:text-5xl font-sans font-bold mb-4">
                 {t.levi_name}
               </h2>
               <p className="text-[#b0b3b8]/70 font-light mb-6 md:mb-8 max-w-sm leading-relaxed text-sm">
@@ -528,7 +528,7 @@ export function LandingHero({ onContinue }: LandingHeroProps) {
               <span className="text-[10px] uppercase tracking-[0.4em] text-[#6366f1] font-bold mb-2 block">
                 {t.victoria_role}
               </span>
-              <h2 className="text-4xl md:text-5xl font-landing-display font-bold mb-4">
+              <h2 className="text-4xl md:text-5xl font-sans font-bold mb-4">
                 {t.victoria_name}
               </h2>
               <p className="text-[#b0b3b8]/70 font-light mb-6 md:mb-8 max-w-sm leading-relaxed text-sm">
@@ -546,7 +546,7 @@ export function LandingHero({ onContinue }: LandingHeroProps) {
       {/* ── How It Works ────────────────────────────────────────── */}
       <section id="landing-how" className="py-24 md:py-32 px-6 md:px-8">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-center text-2xl md:text-3xl font-landing-display font-semibold mb-16 md:mb-20 uppercase tracking-[0.3em] md:tracking-[0.4em]">
+          <h2 className="text-center text-2xl md:text-3xl font-sans font-semibold mb-16 md:mb-20 uppercase tracking-[0.3em] md:tracking-[0.4em]">
             {t.how_it_works_title}
           </h2>
 
@@ -710,7 +710,7 @@ export function LandingHero({ onContinue }: LandingHeroProps) {
       <footer className="py-16 md:py-24 px-6 md:px-8 border-t border-white/5 relative">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-8 md:gap-12">
           <div className="max-w-sm">
-            <span className="font-bold tracking-widest uppercase text-lg md:text-xl font-landing-display block mb-4 md:mb-6">
+            <span className="font-bold tracking-widest uppercase text-lg md:text-xl font-sans block mb-4 md:mb-6">
               Bazodiac
             </span>
             <p className="text-[10px] md:text-xs text-[#b0b3b8]/40 leading-relaxed font-light">

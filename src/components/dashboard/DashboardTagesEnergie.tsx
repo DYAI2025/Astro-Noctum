@@ -79,17 +79,17 @@ interface ElementConfig {
 function getElementConfig(el: WuXingElement | null): ElementConfig {
   switch (el) {
     case 'feuer':
-      return { icon: <Flame className="w-5 h-5" />, label: 'Feuer', color: 'var(--color-element-fire)', accent: 'rgba(244,67,54,0.12)' };
+      return { icon: <Flame className="w-5 h-5" />, label: 'Feuer', color: 'var(--color-element-fire)', accent: 'rgba(197, 48, 48, 0.12)' };
     case 'wasser':
-      return { icon: <Droplets className="w-5 h-5" />, label: 'Wasser', color: 'var(--color-element-water)', accent: 'rgba(33,150,243,0.12)' };
+      return { icon: <Droplets className="w-5 h-5" />, label: 'Wasser', color: 'var(--color-element-water)', accent: 'rgba(43, 108, 176, 0.12)' };
     case 'holz':
-      return { icon: <Leaf className="w-5 h-5" />, label: 'Holz', color: 'var(--color-element-wood)', accent: 'rgba(76,175,80,0.12)' };
+      return { icon: <Leaf className="w-5 h-5" />, label: 'Holz', color: 'var(--color-element-wood)', accent: 'rgba(61, 139, 55, 0.12)' };
     case 'metall':
-      return { icon: <Sparkles className="w-5 h-5" />, label: 'Metall', color: 'var(--color-element-metal)', accent: 'rgba(158,158,158,0.10)' };
+      return { icon: <Sparkles className="w-5 h-5" />, label: 'Metall', color: 'var(--color-element-metal)', accent: 'rgba(113, 128, 150, 0.10)' };
     case 'erde':
-      return { icon: <Mountain className="w-5 h-5" />, label: 'Erde', color: 'var(--color-element-earth)', accent: 'rgba(255,152,0,0.12)' };
+      return { icon: <Mountain className="w-5 h-5" />, label: 'Erde', color: 'var(--color-element-earth)', accent: 'rgba(214, 158, 46, 0.12)' };
     default:
-      return { icon: <CircleDot className="w-5 h-5" />, label: '', color: '#D4AF37', accent: 'rgba(212,175,55,0.10)' };
+      return { icon: <CircleDot className="w-5 h-5" />, label: '', color: 'var(--tile-accent)', accent: 'var(--tile-glow)' };
   }
 }
 
@@ -154,8 +154,8 @@ function buildWeatherPills(sw: SpaceWeatherState, daily: DailyResponse | null): 
       key: 'kp',
       icon: <Zap className="w-3 h-3" />,
       label: `${sw.gScale} Magnetsturm`,
-      color: isStrong ? '#D4AF37' : isMedium ? '#fbbf24' : 'rgba(255,255,255,0.5)',
-      bg: isStrong ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)',
+      color: isStrong ? 'var(--color-gold)' : isMedium ? '#D69E2E' : 'var(--tile-text-secondary)',
+      bg: isStrong ? 'rgba(212,175,55,0.15)' : 'var(--tile-glow)',
     });
   }
 
@@ -205,8 +205,8 @@ function buildWeatherPills(sw: SpaceWeatherState, daily: DailyResponse | null): 
         key: 'geo-storm',
         icon: <Zap className="w-3 h-3" />,
         label: `Magnetsturm ${event.severity}`,
-        color: isStrong ? '#D4AF37' : isMedium ? '#fbbf24' : 'rgba(255,255,255,0.5)',
-        bg: isStrong ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)',
+        color: isStrong ? 'var(--color-gold)' : isMedium ? '#D69E2E' : 'var(--tile-text-secondary)',
+        bg: isStrong ? 'rgba(212,175,55,0.15)' : 'var(--tile-glow)',
       });
     } else if (type === 'sep') {
       pills.push({
