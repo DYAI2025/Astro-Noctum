@@ -273,6 +273,12 @@ export function DashboardTagesEnergie({
   onOpenDayModal,
 }: DashboardTagesEnergieProps) {
   const { t } = useLanguage();
+  // Must be called before any conditional return (Rules of Hooks).
+  // `buildWeatherPills` is null-safe for `daily`.
+  const weatherPills = useMemo(
+    () => buildWeatherPills(spaceWeather, daily),
+    [spaceWeather, daily],
+  );
 
   if (loading && !daily) return <TagesEnergieSkeleton />;
   if (!daily) return null;
@@ -286,12 +292,6 @@ export function DashboardTagesEnergie({
 
   const resonance = computeResonance(harmonyIndex, solarPressure);
   const resonancePct = Math.round(resonance * 100);
-  // Memoize: spaceWeather reference changes on every 5-min poll (new state object).
-  // daily changes at most once per day. Aligns with InfluenceGauges.tsx pattern.
-  const weatherPills = useMemo(
-    () => buildWeatherPills(spaceWeather, daily),
-    [spaceWeather, daily],
-  );
 
   // Body: synthesis ist der Haupt-Narrativ.
   // Fallback wenn KI-Generierung leer zurückgibt (z.string() erlaubt "").

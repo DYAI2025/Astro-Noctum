@@ -103,6 +103,8 @@ export default function App() {
   // Premium status from Supabase profiles table
   // Must be called before any conditional returns (Rules of Hooks)
   const premium = usePremium();
+  // Must stay above any conditional returns to keep hook order stable.
+  const { isOpen: debugPanelOpen, close: closeDebugPanel } = useDebugPanel();
 
   const {
     profileState,
@@ -273,9 +275,6 @@ export default function App() {
       if (url) window.location.href = url;
     } catch { /* ignore */ }
   };
-
-  // Authenticated app with routing
-  const { isOpen: debugPanelOpen, close: closeDebugPanel } = useDebugPanel();
 
   return (
     <BrowserRouter>
