@@ -528,6 +528,82 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | TASK-phase-e-manual-testing | Update deploy runbook with depth-nav test scenarios and element-adaptation verification | P1 | Todo | - | TASK-engagement-fluidity | 2026-03-28 | |
 | TASK-sbridge-manual-testing | Erstelle `docs/runbooks/signatur-s-bridge-verification.md`: vitest grün, MiniSignature rendert, Signatur-Seite rendert, tsc clean | P1 | Done | - | TASK-sbridge-determinism, TASK-sbridge-swift-doc | 2026-03-29 | |
 
+## Sprint S-DASH-LIVE: Dashboard Live Data, Navigation & Bug Fixes
+
+**Sprint Goal:** Navigation shell mit 3 primary items + Settings umsetzen, Dashboard-Daten auf Live-Daten umstellen, 5-Card Identity Set bauen, 4 Bug-Handoffs fixen, WCAG-Kontrast auditieren.
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-nav-shell-top-bar | Build top bar component: 3 items (Astro-Agents, Planetarium, Signatur) + Settings entry point; retire old nav items | P1 | Done | [REQ-F-navigation-shell](../1-objectives/requirements/REQ-F-navigation-shell.md) | - | 2026-04-02 | Per DEC-navigation-shell |
+| TASK-nav-settings-menu | Implement Settings menu: DE/EN toggle, Dark/Bright, User Profile, Subscription, Logout, AGB, Datenschutz, sky.bazodiac.space (new tab) | P1 | Done | [REQ-F-navigation-shell](../1-objectives/requirements/REQ-F-navigation-shell.md) | TASK-nav-shell-top-bar | 2026-04-02 | |
+| TASK-nav-mobile-responsive | Verify all 3 items + Settings visible on mobile viewports without hamburger-only hide; touch targets ≥44px | P1 | Done | [REQ-F-navigation-shell](../1-objectives/requirements/REQ-F-navigation-shell.md) | TASK-nav-settings-menu | 2026-04-02 | |
+| TASK-identity-cards-component | Build 5-card identity set: Sun Sign, Moon Sign, Ascendant, Year Animal, Wu-Xing Element — consistent card design system | P2 | Done | [REQ-F-dashboard-identity-cards](../1-objectives/requirements/REQ-F-dashboard-identity-cards.md) | - | 2026-04-02 | |
+| TASK-identity-cards-fallback | Truthful fallback state per card when data unavailable; no indefinite spinner | P2 | Done | [REQ-F-dashboard-identity-cards](../1-objectives/requirements/REQ-F-dashboard-identity-cards.md) | TASK-identity-cards-component | 2026-04-02 | |
+| TASK-influence-gauges-live | Wire InfluenceGauges to live transit signal data; remove hardcoded Mars 0.82/Jupiter 0.65/Venus 0.45/Saturn 0.30 defaults | P1 | Done | [REQ-F-dashboard-live-daily-signals](../1-objectives/requirements/REQ-F-dashboard-live-daily-signals.md) | - | 2026-04-02 | Confirmed placeholder in InfluenceGauges.tsx |
+| TASK-daily-pulse-date-cache | Fix useFirstRunDaily date boundary: cache key rotates at midnight so Day-Pulse text changes each day | P1 | Done | [REQ-F-dashboard-live-daily-signals](../1-objectives/requirements/REQ-F-dashboard-live-daily-signals.md) | - | 2026-04-02 | |
+| TASK-space-weather-dashboard | Add cosmic weather as first-class influence section on Dashboard using existing NOAA/DONKI pipeline | P1 | Done | [REQ-F-dashboard-live-daily-signals](../1-objectives/requirements/REQ-F-dashboard-live-daily-signals.md) | - | 2026-04-02 | |
+| TASK-birthform-inline-validation | Replace BirthForm.tsx alert() calls with inline field-level German error messages | P1 | Done | [REQ-F-cosmic-encounter-onboarding](../1-objectives/requirements/REQ-F-cosmic-encounter-onboarding.md) | - | 2026-04-02 | Track A — fix before onboarding polish |
+| TASK-signatur-tile-resolve | Fix signature dashboard tile stuck in "wird berechnet": bootstrap failure → truthful fallback state | P1 | Todo | [REQ-F-fusion-ring-visualization](../1-objectives/requirements/REQ-F-fusion-ring-visualization.md) | - | 2026-04-02 | Check bootstrapExperience() silent-fail path |
+| TASK-planetarium-sky-wiring | Fix skyMode propagation from PlanetariumContext to BirthChartOrrery currentSky prop | P2 | Todo | - | - | 2026-04-02 | Renderer already has currentSky path — prop wiring bug |
+| TASK-wcag-contrast-audit | Audit and fix WCAG 2.1 AA contrast failures on dark background; document pass/fail per component | P2 | Todo | [REQ-USA-wcag-contrast](../1-objectives/requirements/REQ-USA-wcag-contrast.md) | - | 2026-04-02 | |
+| TASK-s-dash-live-manual-testing | Create runbook: nav shell + Settings items, identity cards, daily live data, bug fix verification scenarios | P1 | Todo | - | TASK-wcag-contrast-audit | 2026-04-02 | |
+
+---
+
+## Sprint S-SIG-MORPH: Signatur Behavior — Dissonance, Quiz Morphing, Night Pulse
+
+**Sprint Goal:** V3 Bipolar Engine erhält vollständige Dissonanz-Logik (Phase 1), kontinuierliches Quiz-Morphing, Night-Pulse/Trace-Implementierung und den DashboardTagesEnergie Hero-Card mit Kosmoswetter-Strip.
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-dissonance-d-natal-calc | Implement d_natal per dimension: normalized diff between natal_weight and quiz_weight | P1 | Todo | [REQ-F-signatur-dissonance-model](../1-objectives/requirements/REQ-F-signatur-dissonance-model.md) | - | 2026-04-02 | |
+| TASK-dissonance-lissajous-blend | Implement lerp(symmetric_orbit, lissajous_pattern, clamp(d×2, 0, 1)) in V3 pole movement | P1 | Todo | [REQ-F-signatur-dissonance-model](../1-objectives/requirements/REQ-F-signatur-dissonance-model.md) | TASK-dissonance-d-natal-calc | 2026-04-02 | ab d=0.5 reines Lissajous |
+| TASK-dissonance-elemental-vibration | Implement d_elemental vibration texture: Ke (12Hz, crystalline) vs Sheng (3Hz, organic) with elemental_quality scalar | P1 | Todo | [REQ-F-signatur-dissonance-model](../1-objectives/requirements/REQ-F-signatur-dissonance-model.md) | TASK-dissonance-d-natal-calc | 2026-04-02 | |
+| TASK-dissonance-pole-glow-scale | Scale pole head glow radius 8px (d=0) → 20px (d=1) based on d_natal | P1 | Todo | [REQ-F-signatur-dissonance-model](../1-objectives/requirements/REQ-F-signatur-dissonance-model.md) | TASK-dissonance-d-natal-calc | 2026-04-02 | Radial gradient |
+| TASK-dissonance-d-accumulated-stub | Add d_accumulated channel as neutral stub (no visible effect) — architecture-ready for Phase 2 | P1 | Todo | [REQ-F-signatur-dissonance-model](../1-objectives/requirements/REQ-F-signatur-dissonance-model.md) | TASK-dissonance-lissajous-blend | 2026-04-02 | Phase 2 hook point |
+| TASK-quiz-morph-engine-api | Add morphTo(newWeights) to V3 engine: ~2s gradual transition, continuous loop, no cuts or snapshot resets | P1 | Todo | [REQ-F-signatur-quiz-morph](../1-objectives/requirements/REQ-F-signatur-quiz-morph.md) | TASK-dissonance-d-natal-calc | 2026-04-02 | |
+| TASK-quiz-morph-trail-blend | Old trail fades as new geometry writes in during morph (organic overlay, no hard reset) | P1 | Todo | [REQ-F-signatur-quiz-morph](../1-objectives/requirements/REQ-F-signatur-quiz-morph.md) | TASK-quiz-morph-engine-api | 2026-04-02 | |
+| TASK-quiz-morph-queue | Queue rapid weight updates (<2s apart); apply sequentially without skipping | P1 | Todo | [REQ-F-signatur-quiz-morph](../1-objectives/requirements/REQ-F-signatur-quiz-morph.md) | TASK-quiz-morph-engine-api | 2026-04-02 | |
+| TASK-quiz-morph-reduced-motion | prefers-reduced-motion: instant weight update, no ringbuffer-flush visual jump | P1 | Todo | [REQ-F-signatur-quiz-morph](../1-objectives/requirements/REQ-F-signatur-quiz-morph.md) | TASK-quiz-morph-engine-api | 2026-04-02 | |
+| TASK-quiz-morph-contribution-wiring | Wire useQuizContribution → V3 morphTo() on quiz completion | P1 | Todo | [REQ-F-signatur-quiz-morph](../1-objectives/requirements/REQ-F-signatur-quiz-morph.md) | TASK-quiz-morph-trail-blend | 2026-04-02 | |
+| TASK-night-pulse-h-calc | Implement Night-Pulse H calculation: Moon position + BaZi night pillar as data basis | P1 | Todo | [REQ-F-signatur-day-night-pulse](../1-objectives/requirements/REQ-F-signatur-day-night-pulse.md) | - | 2026-04-02 | Server-side computation |
+| TASK-night-pulse-visual | Night-pulse visual modulation: same trail persistence ±% logic as day at 50% intensity ceiling | P1 | Todo | [REQ-F-signatur-day-night-pulse](../1-objectives/requirements/REQ-F-signatur-day-night-pulse.md) | TASK-night-pulse-h-calc | 2026-04-02 | |
+| TASK-night-pulse-premium-gate | Daily night access behind Premium; all users on weekends | P1 | Todo | [REQ-F-signatur-day-night-pulse](../1-objectives/requirements/REQ-F-signatur-day-night-pulse.md) | TASK-night-pulse-visual | 2026-04-02 | |
+| TASK-tagesenergie-hero-card | Build DashboardTagesEnergie hero card: always fully visible (no accordion); order: Element icon+headline, body narrative, Kosmoswetter strip, Resonanz-Indikator; fusion.action behind PremiumGate | P1 | Todo | [REQ-F-signatur-day-night-pulse](../1-objectives/requirements/REQ-F-signatur-day-night-pulse.md) | - | 2026-04-02 | Kein Collapse, kein Expand |
+| TASK-kosmoswetter-strip | Implement Kosmoswetter icon pill strip: Magnetsturm/Flare/CME/HSS/Proton/Transit — suppress G0/A-class noise | P1 | Todo | [REQ-F-signatur-day-night-pulse](../1-objectives/requirements/REQ-F-signatur-day-night-pulse.md) | TASK-tagesenergie-hero-card | 2026-04-02 | |
+| TASK-resonanz-indikator | Implement Resonanz-Indikator: resonance = clamp(harmonyIndex×0.65 + solarPressure×0.35, 0, 1) with 4-level German label copy | P1 | Todo | [REQ-F-signatur-day-night-pulse](../1-objectives/requirements/REQ-F-signatur-day-night-pulse.md) | TASK-tagesenergie-hero-card | 2026-04-02 | |
+| TASK-s-sig-morph-manual-testing | Create runbook: dissonance visual verification, quiz morph test scenarios, night pulse weekend/premium test | P1 | Todo | - | TASK-resonanz-indikator, TASK-quiz-morph-contribution-wiring | 2026-04-02 | |
+
+---
+
+## Sprint S-UX-DEPTH: Z-Axis Depth Navigation & Progressive Fluidity
+
+**Sprint Goal:** Z-Achsen-Tiefen-Navigation (Dashboard→Signatur→Detail) mit 400ms ease-out implementieren. Progressive UI-Fluidity: 0 Cluster = konventionell, 1+ = erste Fluidity-Affordance, 6 = vollständige Gesture-Navigation. prefers-reduced-motion immer berücksichtigen.
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-depth-nav-transition | Implement Z-axis transition system: zoom-in/depth-push for Dashboard→Signatur, Signatur→detail | P1 | Todo | [REQ-F-depth-navigation](../1-objectives/requirements/REQ-F-depth-navigation.md) | - | 2026-04-02 | |
+| TASK-depth-nav-back | Implement outward transition (zoom-out/depth-pop) for back navigation at all depth levels | P1 | Todo | [REQ-F-depth-navigation](../1-objectives/requirements/REQ-F-depth-navigation.md) | TASK-depth-nav-transition | 2026-04-02 | |
+| TASK-depth-nav-timing | Apply 400ms ease-out to depth transitions desktop; drawer pattern on mobile | P1 | Todo | [REQ-F-depth-navigation](../1-objectives/requirements/REQ-F-depth-navigation.md) | TASK-depth-nav-transition | 2026-04-02 | Per DEC-spiritual-tech-interactions |
+| TASK-fluidity-cluster-hook | Track cluster completion count (0–6) in user state; expose via useFluidityLevel() hook | P1 | Todo | [REQ-F-progressive-ui-fluidity](../1-objectives/requirements/REQ-F-progressive-ui-fluidity.md) | - | 2026-04-02 | |
+| TASK-fluidity-tier-0 | Verify 0-cluster users see fully conventional UI on Signatur (labeled buttons, explicit scroll indicators) | P1 | Todo | [REQ-F-progressive-ui-fluidity](../1-objectives/requirements/REQ-F-progressive-ui-fluidity.md) | TASK-fluidity-cluster-hook | 2026-04-02 | |
+| TASK-fluidity-tier-1 | Add first fluid affordance at ≥1 cluster: gesture-hint animation or reduced label prominence | P1 | Todo | [REQ-F-progressive-ui-fluidity](../1-objectives/requirements/REQ-F-progressive-ui-fluidity.md) | TASK-fluidity-tier-0 | 2026-04-02 | |
+| TASK-fluidity-tier-6 | Full fluidity at 6 clusters: gesture-based nav + spatial depth as primary interaction mode | P1 | Todo | [REQ-F-progressive-ui-fluidity](../1-objectives/requirements/REQ-F-progressive-ui-fluidity.md) | TASK-fluidity-tier-1 | 2026-04-02 | |
+| TASK-fluidity-reduced-motion | prefers-reduced-motion: force conventional UI for all cluster levels | P1 | Todo | [REQ-F-progressive-ui-fluidity](../1-objectives/requirements/REQ-F-progressive-ui-fluidity.md) | TASK-fluidity-tier-0 | 2026-04-02 | |
+| TASK-s-ux-depth-manual-testing | Create runbook: depth transition scenarios, fluidity tier progression test at 0/1/6 clusters | P1 | Todo | - | TASK-fluidity-tier-6, TASK-depth-nav-back | 2026-04-02 | |
+
+---
+
+## Backlog (Not Scheduled)
+
+| Requirement | Reason |
+|-------------|--------|
+| REQ-F-signatur-density-field | Complex separate sprint (S-DENSITY); no downstream dependency yet |
+| REQ-F-signatur-ios-swift | Separate Swift repo track; not in web app scope |
+| REQ-F-orbital-signatur-visualization | Blocked on ASM-ued-metrics-available (unverified assumption) |
+
+---
+
 ## Partnership Features (Blocked)
 
 Open questions requiring human decision before work can begin:

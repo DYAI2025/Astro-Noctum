@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { LogOut, ExternalLink } from "lucide-react";
 import { ManageSubscription } from "../ManageSubscription";
-import { usePremium } from "../../hooks/usePremium";
 
 interface SettingsMenuProps {
   /** "desktop" renders dropdown below the button; "mobile" renders above */
@@ -15,6 +14,7 @@ interface SettingsMenuProps {
   t: (key: string) => string;
   onOpenLegal: (s: "terms" | "privacy") => void;
   onClose: () => void;
+  isPremium: boolean;
 }
 
 export function SettingsMenu({
@@ -28,8 +28,8 @@ export function SettingsMenu({
   t,
   onOpenLegal,
   onClose,
+  isPremium,
 }: SettingsMenuProps) {
-  const { isPremium } = usePremium();
 
   // Minor fix #7: Escape key closes the dropdown
   useEffect(() => {

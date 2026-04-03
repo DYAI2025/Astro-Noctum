@@ -37,6 +37,7 @@ import {
 import { DashboardBigFour as DashboardBigFourCard } from "./dashboard/DashboardBigFour";
 import MiniSignature from "./dashboard/MiniSignature";
 import InfluenceGauges from "./dashboard/InfluenceGauges";
+import { CosmicInfluenceSection } from "./dashboard/CosmicInfluenceSection";
 import { TourOverlay } from "./dashboard/TourOverlay";
 import { useDashboardTour } from "@/src/hooks/useDashboardTour";
 import { usePlanetarium } from "@/src/contexts/PlanetariumContext";
@@ -390,6 +391,7 @@ export function Dashboard({
             moonSign={apiData?.western?.moon_sign || ''}
             ascendant={apiData?.western?.ascendant_sign || ''}
             baziAnimal={apiData?.bazi?.zodiac_sign || ''}
+            wuxingElement={apiData?.wuxing?.dominant_element || ''}
           />
         </SectionErrorBoundary>
 
@@ -435,6 +437,13 @@ export function Dashboard({
           <InfluenceGauges
             weights={natalWeights}
           />
+        </SectionErrorBoundary>
+      </motion.div>
+
+      {/* ═══ SECTION 3b: COSMIC INFLUENCE ══════════════════════════════ */}
+      <motion.div {...fadeIn(0.2)}>
+        <SectionErrorBoundary name="CosmicInfluence">
+          <CosmicInfluenceSection spaceWeather={spaceWeather} />
         </SectionErrorBoundary>
       </motion.div>
 

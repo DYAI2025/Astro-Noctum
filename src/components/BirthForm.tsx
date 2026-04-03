@@ -50,6 +50,7 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
   const [timeUnknown, setTimeUnknown] = useState(false);
   const [coordinates, setCoordinates] = useState("52.520000, 13.405000");
   const [tz, setTz] = useState("Europe/Berlin");
+  const [formErrors, setFormErrors] = useState<{ date?: string; coords?: string; tz?: string }>({});
   const [placeName, setPlaceName] = useState("");
   const [showMap, setShowMap] = useState(false);
   const [mapCenter, setMapCenter] = useState<{ lat: number; lon: number } | undefined>(undefined);
@@ -104,7 +105,8 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
     if (submitting) return;
 
     if (date > today) {
-      alert(t("form.futureDate"));
+      setFormErrors({ date: t("form.futureDate") });
+      setStep(1);
       return;
     }
 
@@ -113,20 +115,21 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
     const parsedLon = parseFloat(lonStr);
 
     if (isNaN(parsedLat) || isNaN(parsedLon)) {
-      alert(t("form.validCoords"));
+      setFormErrors({ coords: t("form.validCoords") });
       return;
     }
     if (parsedLat < -90 || parsedLat > 90 || parsedLon < -180 || parsedLon > 180) {
-      alert(t("form.coordsRange"));
+      setFormErrors({ coords: t("form.coordsRange") });
       return;
     }
     try {
       Intl.DateTimeFormat(undefined, { timeZone: tz });
     } catch {
-      alert(t("form.invalidTz"));
+      setFormErrors({ tz: t("form.invalidTz") });
       return;
     }
 
+    setFormErrors({});
     setSubmitting(true);
     onSubmit({ date: `${date}T${time}:00`, tz, lat: parsedLat, lon: parsedLon });
   };
@@ -187,9 +190,12 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
                   required
                   max={today}
                   value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className={inputCls}
+                  onChange={(e) => { setDate(e.target.value); setFormErrors((prev) => ({ ...prev, date: undefined })); }}
+                  className={`${inputCls} ${formErrors.date ? 'border-red-400/60' : ''}`}
                 />
+                {formErrors.date && (
+                  <p className="text-xs text-red-500 mt-1">{formErrors.date}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -236,12 +242,15 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
             <button
               type="button"
               onClick={() => {
-                if (!date) { alert(t("form.invalidDate")); return; }
-                if (!time && !timeUnknown) {
-                  const ok = window.confirm(t("form.noTime"));
-                  if (ok) { setTime("12:00"); setTimeUnknown(true); setStep(2); }
+                if (!date) {
+                  setFormErrors({ date: t("form.invalidDate") });
                   return;
                 }
+                if (!time && !timeUnknown) {
+                  setTime("12:00");
+                  setTimeUnknown(true);
+                }
+                setFormErrors({});
                 setStep(2);
               }}
               className="w-full md:w-auto px-12 py-4 border border-[#8B6914]/30 text-[#8B6914] text-[10px] uppercase tracking-[0.3em] hover:bg-[#8B6914]/08 transition-colors rounded"
@@ -365,13 +374,18 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
                       <input
                         type="text"
                         value={coordinates}
-                        onChange={(e) => setCoordinates(e.target.value)}
-                        className={inputCls}
+                        onChange={(e) => { setCoordinates(e.target.value); setFormErrors((prev) => ({ ...prev, coords: undefined })); }}
+                        className={`${inputCls} ${formErrors.coords ? 'border-red-400/60' : ''}`}
                         placeholder="52.520000, 13.405000"
                       />
                     </div>
                   </details>
                 </>
+              )}
+
+              {/* Coords error (shown above timezone when the manual input details are collapsed) */}
+              {formErrors.coords && (
+                <p className="text-xs text-red-500">{formErrors.coords}</p>
               )}
 
               {/* Timezone (auto-detected, still editable) */}
@@ -383,17 +397,20 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
                   type="text"
                   required
                   value={tz}
-                  onChange={(e) => setTz(e.target.value)}
-                  className={inputCls}
+                  onChange={(e) => { setTz(e.target.value); setFormErrors((prev) => ({ ...prev, tz: undefined })); }}
+                  className={`${inputCls} ${formErrors.tz ? 'border-red-400/60' : ''}`}
                   placeholder="Europe/Berlin"
                 />
+                {formErrors.tz && (
+                  <p className="text-xs text-red-500 mt-1">{formErrors.tz}</p>
+                )}
               </div>
             </div>
 
             <div className="flex gap-4">
               <button
                 type="button"
-                onClick={() => setStep(1)}
+                onClick={() => { setFormErrors({}); setStep(1); }}
                 className="w-full md:w-auto px-8 py-4 border border-[#1E2A3A]/15 text-[#1E2A3A]/55 text-[10px] uppercase tracking-[0.3em] hover:bg-[#1E2A3A]/05 transition-colors rounded"
               >
                 {t("form.backBtn")}

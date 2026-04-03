@@ -19,32 +19,33 @@ vi.mock('../components/PlaceAutocomplete', () => ({
 vi.mock('../components/LocationMap', () => ({
   LocationMap: () => null,
 }));
+vi.mock('../services/nominatim', () => ({
+  searchNominatim: async () => [],
+}));
 
 describe('BirthForm validation', () => {
   const mockSubmit = vi.fn();
-  let alertSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    window.alert = vi.fn();
-    alertSpy = window.alert as ReturnType<typeof vi.fn>;
   });
 
-  it('rejects future dates on submit', () => {
+  it('rejects future dates on submit — shows inline error and returns to step 1', () => {
     render(<BirthForm onSubmit={mockSubmit} isLoading={false} />);
     const dateInput = screen.getByDisplayValue('1990-01-01');
     fireEvent.change(dateInput, { target: { value: '2099-12-31' } });
 
-    // Advance to step 2 by clicking the next button
+    // Advance to step 2 (Next only checks empty date, not future date)
     const buttons = screen.getAllByRole('button');
     const nextBtn = buttons.find(b => b.textContent?.includes('form.nextBtn'));
     if (nextBtn) fireEvent.click(nextBtn);
 
-    // Submit the form
+    // Submit the form on step 2
     const form = document.querySelector('form');
     if (form) fireEvent.submit(form);
 
-    expect(alertSpy).toHaveBeenCalledWith('form.futureDate');
+    // Inline error shown (future date triggers return to step 1 + setFormErrors)
+    expect(screen.getByText('form.futureDate')).toBeDefined();
     expect(mockSubmit).not.toHaveBeenCalled();
   });
 

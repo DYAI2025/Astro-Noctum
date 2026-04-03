@@ -58,25 +58,25 @@ function useInfluences(weights?: Record<string, number>): InfluenceData[] {
   return useMemo(() => [
     {
       label: t("dashboard.influences.marsLabel"),
-      value: weights?.Mars ?? 0.82,
+      value: weights?.Mars ?? 0,
       color: "bg-gradient-to-r from-red-500 to-orange-400",
       tooltip: t("dashboard.influences.marsTooltip"),
     },
     {
       label: t("dashboard.influences.jupiterLabel"),
-      value: weights?.Jupiter ?? 0.65,
+      value: weights?.Jupiter ?? 0,
       color: "bg-gradient-to-r from-cyan-400 to-blue-500",
       tooltip: t("dashboard.influences.jupiterTooltip"),
     },
     {
       label: t("dashboard.influences.venusLabel"),
-      value: weights?.Venus ?? 0.45,
+      value: weights?.Venus ?? 0,
       color: "bg-gradient-to-r from-purple-400 to-pink-400",
       tooltip: t("dashboard.influences.venusTooltip"),
     },
     {
       label: t("dashboard.influences.saturnLabel"),
-      value: weights?.Saturn ?? 0.30,
+      value: weights?.Saturn ?? 0,
       color: "bg-gradient-to-r from-zinc-400 to-zinc-200",
       tooltip: t("dashboard.influences.saturnTooltip"),
     },
@@ -86,17 +86,20 @@ function useInfluences(weights?: Record<string, number>): InfluenceData[] {
 export default function InfluenceGauges({ weights }: { weights?: Record<string, number> }) {
   const { t } = useLanguage();
   const items = useInfluences(weights);
+  const isLive = weights !== undefined;
 
   return (
     <div className="bg-zinc-900/40 border border-zinc-800 p-6 rounded-[2rem] space-y-8">
       <div className="flex justify-between items-center">
         <h2 className="text-[10px] font-bold tracking-[0.2em] text-zinc-500 uppercase">{t('dashboard.influences.sectionTitle')}</h2>
-        <div className="text-[8px] font-mono text-zinc-600">TRANSIT</div>
+        <div className={`text-[8px] font-mono ${isLive ? 'text-emerald-500' : 'text-zinc-600'}`}>
+          {isLive ? t('dashboard.influences.liveLabel') : t('dashboard.influences.noDataLabel')}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12">
-        {items.map((inf, i) => (
-          <Gauge key={i} label={inf.label} value={inf.value} color={inf.color} tooltip={inf.tooltip} />
+      <div className={`grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12 transition-opacity duration-300 ${isLive ? '' : 'opacity-40'}`}>
+        {items.map((inf) => (
+          <Gauge key={inf.label} label={inf.label} value={inf.value} color={inf.color} tooltip={inf.tooltip} />
         ))}
       </div>
     </div>
