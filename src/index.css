@@ -52,9 +52,14 @@
   --tile-border: rgba(30, 41, 59, 0.12);
   --tile-text-primary: #1E293B;
   --tile-text-secondary: rgba(30, 41, 59, 0.6);
-  --tile-accent: #92400E;
+  /* --element-accent is overridden per-user by useElementTheme when element data loads */
+  --element-accent: #92400E;
+  --tile-accent: var(--element-accent);
   --tile-glow: rgba(146, 64, 14, 0.10);
   --color-text-bright-dim: rgba(30, 41, 59, 0.45);
+  /* UI transition physics — overridden per-element by useElementTheme */
+  --ui-transition-duration: 0.3s;
+  --ui-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
 
   --c-obsidian:  #00050A;
   --c-gold:      #D4AF37;
@@ -70,38 +75,61 @@
   --tile-accent: #D4AF37;
   --tile-glow: rgba(212, 175, 55, 0.08);
   --color-text-bright-dim: rgba(255, 255, 255, 0.40);
+
+  /* Adapt Tailwind tokens in Planetarium mode */
+  --color-ink: rgba(255, 255, 255, 0.92);
+  --color-gold-deep: #D4AF37;
+  --color-dawn: #020617;
 }
 
 /* ── Base ──────────────────────────────────────────────────────────────── */
 
 body {
   background-color: var(--c-obsidian);
-  color: rgba(255,255,255,0.9);
+  color: var(--tile-text-primary);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  font-family: var(--font-sans);
 }
 
 /* ── Unified Tile Design ────────────────────────────────────────────────── */
 
 .cosmic-tile,
-.morning-card,
-.bright-card {
+.tages-impuls-card {
   background: var(--tile-bg);
   border: 1px solid var(--tile-border);
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-card-lg);
   color: var(--tile-text-primary);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: all var(--ui-transition-duration, 0.4s) var(--ui-transition-easing, cubic-bezier(0.16, 1, 0.3, 1));
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
 }
 
+/* Element-tinted card glow — bright mode only (excluded inside .planetarium dark mode) */
+body[data-element="Wood"]  .cosmic-tile:not(:is(.planetarium *)) { --tile-glow: rgba(61, 139, 55, 0.10); }
+body[data-element="Fire"]  .cosmic-tile:not(:is(.planetarium *)) { --tile-glow: rgba(197, 48, 48, 0.10); }
+body[data-element="Earth"] .cosmic-tile:not(:is(.planetarium *)) { --tile-glow: rgba(214, 158, 46, 0.10); }
+body[data-element="Metal"] .cosmic-tile:not(:is(.planetarium *)) { --tile-glow: rgba(113, 128, 150, 0.10); }
+body[data-element="Water"] .cosmic-tile:not(:is(.planetarium *)) { --tile-glow: rgba(43, 108, 176, 0.10); }
+
 .cosmic-tile:hover,
-.morning-card:hover,
-.bright-card:hover {
+.tages-impuls-card:hover {
   border-color: var(--tile-accent);
-  box-shadow: 0 8px 30px var(--tile-glow);
-  transform: translateY(-2px);
+  box-shadow: 0 12px 40px var(--tile-glow);
+  transform: translateY(-4px);
+}
+
+.tages-impuls-divider {
+  border-top: 1px solid var(--tile-border);
+}
+
+.influence-track {
+  height: 4px;
+  background: var(--tile-border);
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
 }
 
 /* ── Dark theme — Splash / Auth ─────────────────────────────────────────── */
@@ -715,12 +743,12 @@ div[class*="elevenlabs"] {
   overflow: visible !important;
 }
 
-/* When the widget is active, break its parent morning-card out of any
+/* When the widget is active, break its parent cosmic-tile out of any
    stacking context that would otherwise clip/trap the popup.
    The active-state class z-[99999] is set in React; here we additionally
    ensure backdrop-filter (which creates a stacking context) is removed
    so the child z-index actually reaches the viewport layer.             */
-.morning-card:has(elevenlabs-convai),
+.cosmic-tile:has(elevenlabs-convai),
 div:has([data-agent-widget] elevenlabs-convai) {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
@@ -795,8 +823,8 @@ body > div[id*="convai"] {
     justify-content: center;
   }
   /* Interactive cards */
-  .morning-card button,
-  .morning-card a {
+  .cosmic-tile button,
+  .cosmic-tile a {
     min-height: 44px;
   }
   /* Lang toggle bigger touch targets */
@@ -818,7 +846,7 @@ body > div[id*="convai"] {
   h3 { font-size: 1.1rem; }
 
   /* Cards: tighter padding on small screens */
-  .morning-card {
+  .cosmic-tile {
     padding: 1rem;
     border-radius: 12px;
   }
@@ -836,7 +864,7 @@ body > div[id*="convai"] {
 
 /* ── Small phones (<375px) — extra compact ───────────────────────────── */
 @media (max-width: 374px) {
-  .morning-card {
+  .cosmic-tile {
     padding: 0.75rem;
     border-radius: 10px;
   }
