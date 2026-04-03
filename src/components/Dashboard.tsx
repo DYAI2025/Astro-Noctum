@@ -1,9 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router-dom";
-import {
-  ArrowLeft,
-} from "lucide-react";
 import { ShareCard } from "./ShareCard";
 import { usePremium } from "../hooks/usePremium";
 import { useAuth } from "../contexts/AuthContext";
@@ -28,7 +25,6 @@ import { isFeatureEnabled } from "../lib/feature-flags";
 import { useDailyHoroscope } from "../hooks/useDailyHoroscope";
 import { useFusionRingContext } from "../contexts/FusionRingContext";
 
-import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import {
   toNatalWeightsOrUndefined,
@@ -46,61 +42,6 @@ import { VibesSection } from "./dashboard/VibesSection";
 // ─────────────────────────────────────────────────────────────────────────────
 // Static data
 // ─────────────────────────────────────────────────────────────────────────────
-
-// ── Session-random bilingual quotes ──────────────────────────────────────
-const BAZODIAC_QUOTES: { en: string; de: string }[] = [
-  {
-    en: "The stars compel nothing — they invite. The Atlas shows the path you are already on.",
-    de: "Die Sterne erzwingen nichts, sie laden ein. Der Atlas zeigt den Weg, den du bereits gehst.",
-  },
-  {
-    en: "As long as we don't examine the dynamics, they act like fate. But once we look, they become our flow.",
-    de: "Solange wir die Dynamiken nicht betrachten, wirken sie wie Schicksal. Schauen wir aber hin, dann werden sie zu unserem Fluss.",
-  },
-  {
-    en: "Your chart is not a verdict — it is a conversation between who you are and who you are becoming.",
-    de: "Dein Chart ist kein Urteil — es ist ein Gespräch zwischen dem, wer du bist, und dem, wer du wirst.",
-  },
-  {
-    en: "The cosmos doesn't define you. It reflects the possibilities you carry within.",
-    de: "Der Kosmos definiert dich nicht. Er spiegelt die Möglichkeiten, die du in dir trägst.",
-  },
-  {
-    en: "Between the constellations lies not distance, but resonance — just as between your elements.",
-    de: "Zwischen den Sternbildern liegt keine Distanz, sondern Resonanz — genau wie zwischen deinen Elementen.",
-  },
-  {
-    en: "What the sky held at your birth was not a plan, but a palette. You choose the colours.",
-    de: "Was der Himmel bei deiner Geburt bereithielt, war kein Plan, sondern eine Palette. Du wählst die Farben.",
-  },
-  {
-    en: "Your elements don't fight each other — they negotiate. Balance is not stillness, it is dance.",
-    de: "Deine Elemente bekämpfen sich nicht — sie verhandeln. Balance ist nicht Stillstand, sondern Tanz.",
-  },
-  {
-    en: "The pillar that feels weakest often carries the most untapped strength.",
-    de: "Die Säule, die sich am schwächsten anfühlt, trägt oft die meiste ungenutzte Kraft.",
-  },
-  {
-    en: "Awareness is the bridge between pattern and freedom. Your chart builds that bridge.",
-    de: "Bewusstsein ist die Brücke zwischen Muster und Freiheit. Dein Chart baut diese Brücke.",
-  },
-  {
-    en: "No two birth skies are alike — and that is precisely your power.",
-    de: "Kein Geburtshimmel gleicht dem anderen — und genau das ist deine Kraft.",
-  },
-  {
-    en: "The universe doesn't whisper instructions. It hums possibilities — listen closely.",
-    de: "Das Universum flüstert keine Anweisungen. Es summt Möglichkeiten — hör genau hin.",
-  },
-  {
-    en: "Your cosmic signature is not written in stone. It is written in light — always shifting, always yours.",
-    de: "Deine kosmische Signatur ist nicht in Stein geschrieben. Sie ist in Licht geschrieben — immer in Bewegung, immer deine.",
-  },
-];
-
-// Pick one quote per session (stable across re-renders)
-const SESSION_QUOTE_INDEX = Math.floor(Math.random() * BAZODIAC_QUOTES.length);
 
 // Stable empty array to avoid referential instability in hooks
 const EMPTY_SECTORS: number[] = [];
@@ -283,9 +224,10 @@ export function Dashboard({
           quizSectors: EMPTY_SECTORS,
           birthCity: birthRes.data?.place_label || '',
         });
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('[Dashboard] Meta fetch failed:', err);
-        if (!cancelled) setMetaError(err.message || 'Failed to load profile data');
+        const message = err instanceof Error ? err.message : 'Failed to load profile data';
+        if (!cancelled) setMetaError(message);
       } finally {
         if (!cancelled) setMetaLoading(false);
       }
@@ -363,17 +305,17 @@ export function Dashboard({
       >
         {/* Left: title + subtitle */}
         <div>
-          <div className="w-8 h-px bg-[#D4AF37]/40 mb-4" />
-          <p className="text-[#D4AF37]/50 text-[9px] uppercase tracking-[0.5em] mb-2">
+          <div className="w-8 h-px mb-4" style={{ background: 'var(--tile-accent)', opacity: 0.4 }} />
+          <p className="text-[9px] uppercase tracking-[0.5em] mb-2" style={{ color: 'var(--tile-accent)', opacity: 0.75 }}>
             {t("dashboard.welcome")}
           </p>
-          <h1 className="font-serif text-5xl sm:text-6xl leading-tight text-white">
+          <h1 className="font-serif text-5xl sm:text-6xl leading-tight" style={{ color: 'var(--tile-text-primary)' }}>
             {t("dashboard.title")}
           </h1>
           {birthDate && (
-            <p className="mt-1.5 text-xs text-white/35 tracking-wide">
+            <p className="mt-1.5 text-xs tracking-wide" style={{ color: 'var(--tile-text-secondary)' }}>
               {t("dashboard.birthDate")}{": "}
-              <span className="text-white/55">{birthDate}</span>
+              <span style={{ color: 'var(--tile-text-secondary)' }}>{birthDate}</span>
             </p>
           )}
         </div>

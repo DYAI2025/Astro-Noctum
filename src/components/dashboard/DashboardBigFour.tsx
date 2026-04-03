@@ -91,7 +91,7 @@ export function DashboardBigFour({
       {items.map(({ icon, labelKey, value, colorClasses }) => (
         <div
           key={labelKey}
-          className="rounded-xl border border-white/8 bg-[#00050A]/60 px-4 py-3 flex items-center gap-3"
+          className="cosmic-tile px-4 py-3 flex items-center gap-3"
         >
           <div
             className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${colorClasses}`}
@@ -99,10 +99,10 @@ export function DashboardBigFour({
             {icon}
           </div>
           <div className="min-w-0">
-            <p className="text-[8px] uppercase tracking-[0.2em] text-white/35 font-sans">
+            <p className="text-[8px] font-sans uppercase tracking-[0.2em] opacity-40">
               {t(labelKey)}
             </p>
-            <p className="text-sm font-serif text-white/85 truncate">
+            <p className="text-sm font-serif truncate">
               {value || '—'}
             </p>
           </div>

@@ -24,8 +24,7 @@ import {
   isClusterComplete,
   findClusterForModule,
 } from '@/src/lib/fusion-ring/clusters';
-import { quizSectorsToQuizWeights } from '@/src/components/fusion-ring-website/signatur-bridge';
-import { toNatalWeightsOrUndefined } from '@/src/lib/signatur/weight-utils';
+import { toNatalWeightsOrUndefined, toQuizWeightsOrUndefined } from '@/src/lib/signatur/weight-utils';
 import type { ContributionEvent } from '@/src/lib/lme/types';
 import { eventToSectorSignals } from '@/src/lib/fusion-ring/test-signal';
 import { useCoustoAudio } from '@/src/hooks/useCoustoAudio';
@@ -79,7 +78,7 @@ export default function FuRingPage() {
 
   // Cousto audio — dimension weights drive oscillator gains
   const audioWeights = useMemo(
-    () => liveQuizWeights ?? (signalData?.baseSignals ? quizSectorsToQuizWeights(signalData.baseSignals) : undefined),
+    () => liveQuizWeights ?? toQuizWeightsOrUndefined(signalData?.baseSignals),
     [liveQuizWeights, signalData?.baseSignals],
   );
   const { muted: audioMuted, toggleMute: toggleAudioMute, volume: audioVolume, setVolume: setAudioVolume } = useCoustoAudio(audioWeights);
@@ -94,7 +93,7 @@ export default function FuRingPage() {
   // Cosmic resonance — personalized space weather sensitivity
   const sunSign = apiData?.western?.zodiac_sign as string | undefined;
   const moonSign = apiData?.western?.moon_sign as string | undefined;
-  const { profile: resonanceProfile, dimensionMultipliers } = useCosmicResonance({
+  const { profile: resonanceProfile } = useCosmicResonance({
     natalWeights: natalPlanetWeights,
     ringModulation: spaceWeather.ringModulation,
     sunSign,
@@ -121,7 +120,7 @@ export default function FuRingPage() {
       const sectors = eventToSectorSignals(event);
       if (sectors && sectors.length === 12) {
         const normalized = sectors.map(s => (s + 1) / 2);
-        setLiveQuizWeights(quizSectorsToQuizWeights(normalized));
+        setLiveQuizWeights(toQuizWeightsOrUndefined(normalized));
         setLiveQuizSectors(normalized);
       }
 

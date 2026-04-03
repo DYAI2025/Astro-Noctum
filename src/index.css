@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Sora:wght@100;300;400;600&family=Inter:wght@200;400;600&family=Montserrat:wght@200;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Sora:wght@100;300;400;600&display=swap");
 @import "tailwindcss" source("../src");
 @plugin "@tailwindcss/typography";
 
@@ -8,45 +8,26 @@
   --font-sans: "Sora", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Cormorant Garamond", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 
-  /* Dark (legacy / splash / auth) */
+  /* Dark (Default / Planetarium) */
   --color-obsidian: #00050A;
+  --color-cosmic-blue: #020617;
   --color-gold:     #D4AF37;
+  --color-gold-muted: rgba(212, 175, 55, 0.5);
   --color-ash:      #1A1C1E;
 
-  /* Morning (main app) */
-  --color-dawn:       #E2ECF6;
-  --color-dawn-deep:  #CDDDE9;
-  --color-ink:        #1E2A3A;
-  --color-ink-60:     rgba(30,42,58,0.60);
-  --color-gold-deep:  #8B6914;
+  /* Morning (Light Mode) */
+  --color-dawn:       #F8FAFC;
+  --color-dawn-deep:  #E2E8F0;
+  --color-ink:        #1E293B;
+  --color-ink-60:     rgba(30, 41, 59, 0.60);
+  --color-gold-deep:  #92400E;
 
-  /* Fu-Ring page (always dark) */
-  --color-ring-bg:       #020509;
-  --color-ring-surface:  #0A1628;
-  --color-ring-border:   rgba(70,130,220,0.18);
-  --color-ring-text:     rgba(215,230,255,0.85);
-  --color-ring-muted:    rgba(215,230,255,0.40);
-
-  /* ── Design System V2 Tokens ─────────────────────────────────────────── */
-
-  /* Dark mode cards */
-  --color-card-dark:          #0D0F14;
-  --color-card-dark-elevated: #14161B;
-
-  /* Bright mode (extends Morning) */
-  --color-card-bright:        #FAFAFA;
-  --color-text-bright:        #111111;
-  --color-text-bright-body:   #4A4A4A;
-  --color-text-bright-dim:    #71717A;
-  --color-accent-blue:        #2563EB;
-  --color-border-bright:      #E4E4E7;
-
-  /* Wu-Xing Element Colors */
-  --color-element-wood:  #4CAF50;
-  --color-element-fire:  #F44336;
-  --color-element-earth: #FF9800;
-  --color-element-metal: #9E9E9E;
-  --color-element-water: #2196F3;
+  /* Wu-Xing Element Palette — Refined Astrological Tones */
+  --color-element-wood:  #3D8B37;
+  --color-element-fire:  #C53030;
+  --color-element-earth: #D69E2E;
+  --color-element-metal: #718096;
+  --color-element-water: #2B6CB0;
 
   /* Spacing */
   --spacing-section: 80px;
@@ -66,11 +47,29 @@
 /* ── CSS Custom Properties ─────────────────────────────────────────────── */
 
 :root {
-  /* Dark defaults */
+  /* Default: Morning (Light) Tile Settings */
+  --tile-bg: rgba(255, 255, 255, 0.85);
+  --tile-border: rgba(30, 41, 59, 0.12);
+  --tile-text-primary: #1E293B;
+  --tile-text-secondary: rgba(30, 41, 59, 0.6);
+  --tile-accent: #92400E;
+  --tile-glow: rgba(146, 64, 14, 0.10);
+  --color-text-bright-dim: rgba(30, 41, 59, 0.45);
+
   --c-obsidian:  #00050A;
   --c-gold:      #D4AF37;
-  --c-gold-glow: rgba(212,175,55,0.4);
-  --c-ash:       #1A1C1E;
+  --c-gold-glow: rgba(212, 175, 55, 0.4);
+}
+
+.planetarium {
+  /* Planetarium (Dark) Tile Settings */
+  --tile-bg: rgba(13, 15, 20, 0.85);
+  --tile-border: rgba(212, 175, 55, 0.15);
+  --tile-text-primary: rgba(255, 255, 255, 0.92);
+  --tile-text-secondary: rgba(255, 255, 255, 0.6);
+  --tile-accent: #D4AF37;
+  --tile-glow: rgba(212, 175, 55, 0.08);
+  --color-text-bright-dim: rgba(255, 255, 255, 0.40);
 }
 
 /* ── Base ──────────────────────────────────────────────────────────────── */
@@ -80,6 +79,29 @@ body {
   color: rgba(255,255,255,0.9);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+}
+
+/* ── Unified Tile Design ────────────────────────────────────────────────── */
+
+.cosmic-tile,
+.morning-card,
+.bright-card {
+  background: var(--tile-bg);
+  border: 1px solid var(--tile-border);
+  border-radius: var(--radius-card);
+  color: var(--tile-text-primary);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.cosmic-tile:hover,
+.morning-card:hover,
+.bright-card:hover {
+  border-color: var(--tile-accent);
+  box-shadow: 0 8px 30px var(--tile-glow);
+  transform: translateY(-2px);
 }
 
 /* ── Dark theme — Splash / Auth ─────────────────────────────────────────── */
@@ -130,41 +152,18 @@ body {
 
 /* ── Morning theme — logged-in main app ────────────────────────────────── */
 
-/* Background gradient — bluish-gray morning sky
-   Fixed attachment prevents gradient repainting on scroll (desktop).
-   Disabled on mobile: iOS Safari breaks fixed bg-attachment. */
 .morning-bg {
   background: linear-gradient(
     180deg,
-    #C8DDF0 0%,
-    #D4E6F2 10%,
-    #DCEDF5 28%,
-    #E4F0F7 52%,
-    #EBF3F9 76%,
-    #F0F6FA 100%
+    #F8FAFC 0%,
+    #F1F5F9 30%,
+    #E2E8F0 100%
   );
   background-attachment: fixed;
   min-height: 100vh;
 }
 @media (max-width: 767px) {
-  /* iOS Safari ignores fixed bg-attachment — revert to scroll */
   .morning-bg { background-attachment: scroll; }
-}
-
-/* Morning glass card — high contrast in light mode, performant blur */
-.morning-card {
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(30, 42, 58, 0.08);
-  border-radius: 16px;
-  box-shadow: 0 1px 3px rgba(30, 42, 58, 0.04);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.morning-card:hover {
-  border-color: rgba(139, 105, 20, 0.18);
-  box-shadow: 0 4px 16px rgba(30, 42, 58, 0.06), 0 0 0 1px rgba(139, 105, 20, 0.08);
 }
 
 .gold-glow {
@@ -172,22 +171,6 @@ body {
 }
 
 /* ── Design System V2 — Bright Mode Cards ──────────────────────────────── */
-
-.bright-card {
-  background: var(--color-card-bright);
-  border: 1px solid var(--color-border-bright);
-  border-radius: var(--radius-card);
-  padding: 24px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              border-color 0.3s ease;
-}
-.bright-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 30px rgba(0,0,0,0.08);
-  border-color: var(--color-accent-blue);
-}
 
 /* Element-coded card (left border stripe) */
 .card-element {
@@ -212,16 +195,8 @@ body {
 
 /* Focus ring — accessible, both modes */
 .focus-ring:focus-visible {
-  outline: 2px solid var(--color-accent-blue, var(--color-gold));
+  outline: 2px solid var(--tile-accent);
   outline-offset: 2px;
-}
-
-/* Fu-Ring card — flat, dark, no glass */
-.ring-card {
-  background: #0A1628;
-  border: 1px solid rgba(70,130,220,0.18);
-  border-radius: 8px;
-  color: rgba(215,230,255,0.85);
 }
 
 /* Morning stele (BaZi pillars — light variant) */
@@ -245,34 +220,21 @@ body {
   transform: translateX(-50%);
   width: 40%;
   height: 1px;
-  background: #8B6914;
+  background: var(--tile-accent);
   box-shadow: 0 0 10px rgba(139,105,20,0.4);
   opacity: 0.65;
 }
 .morning-stele:hover {
-  border-color: rgba(180,150,46,0.35);
+  border-color: var(--tile-accent);
   background: rgba(255,255,255,0.80);
 }
 
 /* Morning nav header */
 .morning-header {
-  background: rgba(200,221,240,0.70);
+  background: rgba(248, 250, 252, 0.8);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(165,195,225,0.30);
-}
-
-/* WuXing element bar track (used in compact bar chart, Dashboard) */
-.wuxing-bar-track {
-  height: 6px;
-  border-radius: 3px;
-  background: rgba(165,195,225,0.20);
-  overflow: hidden;
-}
-.wuxing-bar-fill {
-  height: 100%;
-  border-radius: 3px;
-  transition: width 1.2s cubic-bezier(0.16,1,0.3,1);
+  border-bottom: 1px solid rgba(30, 41, 59, 0.08);
 }
 
 /* ── Shared animations ─────────────────────────────────────────────────── */
@@ -285,122 +247,27 @@ body {
   animation: breathe 5s ease-in-out infinite;
 }
 
-/* Skeleton loader */
-.skeleton-dust {
-  background: linear-gradient(90deg,
-    rgba(212,175,55,0.02) 0%,
-    rgba(212,175,55,0.12) 50%,
-    rgba(212,175,55,0.02) 100%
-  );
-  background-size: 200% 100%;
-  animation: dust-slide 3s infinite ease-in-out;
-  border-radius: 2px;
-  position: relative;
-  overflow: hidden;
-}
-.skeleton-dust::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.2'/%3E%3C/svg%3E");
-}
-@keyframes dust-slide {
-  0%   { background-position:  200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-/* Gold pulse for first-reveal sub-tiles */
-@keyframes pulse-gold {
-  0%, 100% { border-color: rgba(212, 175, 55, 0.15); }
-  50%      { border-color: rgba(212, 175, 55, 0.6); }
-}
-.animate-pulse-gold {
-  animation: pulse-gold 1.2s ease-in-out 2;
-}
-
-/* Morning skeleton */
-.morning-skeleton {
-  background: linear-gradient(90deg,
-    rgba(165,195,225,0.08) 0%,
-    rgba(165,195,225,0.25) 50%,
-    rgba(165,195,225,0.08) 100%
-  );
-  background-size: 200% 100%;
-  animation: dust-slide 2.5s infinite ease-in-out;
-  border-radius: 4px;
-}
-
-/* ── Layout ────────────────────────────────────────────────────────────── */
-
-.chart-grid {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 3rem;
-}
-@media (max-width: 1024px) {
-  .chart-grid { grid-template-columns: 1fr; }
-}
-
-/* Two-column morning layout */
-.morning-grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  align-items: start;
-}
-/* <767px = stacked (Tailwind md: starts at 768px) */
-@media (max-width: 767px) {
-  .morning-grid-2 { grid-template-columns: 1fr; gap: 1rem; }
-}
-
-/* ── Orrery canvas container ─── responsive height via plain CSS ──────── */
-/* Using index.css (not Tailwind arbitrary values) so that clientHeight    */
-/* is always correct when Three.js reads it in useEffect.                   */
-.orrery-canvas-container {
-  width: 100%;
-  height: 260px;   /* mobile-first compact height */
-}
-@media (min-width: 768px) {
-  .orrery-canvas-container {
-    height: 460px; /* restore full height on tablet/desktop */
-  }
-}
-/* Fullscreen: canvas fills the entire screen, shows more sky */
-:fullscreen .orrery-canvas-container,
-:-webkit-full-screen .orrery-canvas-container {
-  height: 100vh;
-  height: 100dvh; /* respects mobile browser chrome */
-}
-
 /* ── Typography ────────────────────────────────────────────────────────── */
 
-h1, h2, h3 { letter-spacing: 0.1em; }
+h1, h2, h3, h4, h5, h6 { 
+  font-family: var(--font-serif);
+  letter-spacing: 0.05em; 
+}
 
 .nav-link.active {
-  color: var(--c-gold);
-  border-bottom: 1px solid rgba(212,175,55,0.3);
+  color: var(--tile-accent);
+  border-bottom: 1px solid var(--tile-accent);
 }
 
-/* Radial Chart */
-.radial-vector {
-  stroke-dasharray: 200;
-  stroke-dashoffset: 200;
-  animation: draw-line 3s forwards cubic-bezier(0.16,1,0.3,1);
-}
-@keyframes draw-line { to { stroke-dashoffset: 0; } }
-
-/* Parallax */
-#parallax-bg img { will-change: transform; }
-
-/* ── Language Toggle — light (morning header + mobile nav) ─────────────── */
+/* ── Language Toggle ───────────────────────────────────────────────────── */
 
 .lang-toggle {
   display: flex;
   align-items: center;
-  border: 1px solid rgba(139,105,20,0.28);
+  border: 1px solid var(--tile-border);
   border-radius: 6px;
   overflow: hidden;
-  background: rgba(255,255,255,0.48);
+  background: var(--tile-bg);
 }
 .lang-toggle button {
   padding: 4px 10px;
@@ -408,278 +275,100 @@ h1, h2, h3 { letter-spacing: 0.1em; }
   letter-spacing: 0.15em;
   text-transform: uppercase;
   transition: background 0.2s, color 0.2s;
-  color: rgba(30,42,58,0.48);
+  color: var(--tile-text-secondary);
   background: transparent;
   border: none;
   cursor: pointer;
   line-height: 1;
 }
 .lang-toggle button.active {
-  background: rgba(139,105,20,0.11);
-  color: #8B6914;
+  background: var(--tile-glow);
+  color: var(--tile-accent);
   font-weight: 600;
-}
-.lang-toggle button:hover:not(.active) {
-  background: rgba(139,105,20,0.05);
-  color: rgba(30,42,58,0.72);
 }
 
-/* Dark variant — AuthGate (obsidian bg) */
-.lang-toggle-dark {
-  display: flex;
-  align-items: center;
-  border: 1px solid rgba(212,175,55,0.20);
-  border-radius: 6px;
+/* WuXing balance bar — mode-aware */
+.wuxing-bar-track {
+  flex: 1;
+  height: 6px;
+  background: var(--tile-border);
+  border-radius: 9999px;
   overflow: hidden;
-  background: rgba(255,255,255,0.04);
 }
-.lang-toggle-dark button {
-  padding: 4px 10px;
-  font-size: 9px;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  transition: background 0.2s, color 0.2s;
-  color: rgba(255,255,255,0.30);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  line-height: 1;
+
+.wuxing-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.8s ease-out;
 }
-.lang-toggle-dark button.active {
-  background: rgba(212,175,55,0.12);
-  color: #D4AF37;
-  font-weight: 600;
+
+/* ── Mode-aware Dashboard Tiles ─────────────────────────────────────────── */
+
+/* TagesEnergie card — bright mode default, dark override via .planetarium */
+.tages-impuls-card {
+  background: var(--tile-bg);
+  border: 1px solid var(--tile-border);
+  border-radius: 1rem;
+  overflow: hidden;
 }
-.lang-toggle-dark button:hover:not(.active) {
-  color: rgba(255,255,255,0.60);
-  background: rgba(212,175,55,0.06);
+
+.planetarium .tages-impuls-card {
+  background: linear-gradient(160deg, rgba(0,5,10,0.92) 0%, rgba(10,8,0,0.88) 100%);
+  border-color: rgba(255,255,255,0.10);
+}
+
+/* TagesEnergie inner dividers */
+.tages-impuls-divider {
+  border-top: 1px solid var(--tile-border);
+}
+
+.planetarium .tages-impuls-divider {
+  border-top-color: rgba(255,255,255,0.06);
+}
+
+/* InfluenceGauges bar track */
+.influence-track {
+  height: 6px;
+  width: 100%;
+  background: var(--tile-border);
+  border: 1px solid rgba(0,0,0,0.04);
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.planetarium .influence-track {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.05);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    PLANETARIUM MODE OVERRIDES
-   Applied when root div carries class="... planetarium"
-   Cascade: these rules are outside @layer, so they win over Tailwind utilities.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Background ──────────────────────────────────────────────────────────── */
-/* .planetarium and .morning-bg are on the SAME element, so no space between selectors */
 .planetarium.morning-bg,
 .planetarium .morning-bg {
   background:
-    radial-gradient(ellipse at 50% 0%, rgba(20, 55, 130, 0.12) 0%, transparent 65%),
+    radial-gradient(ellipse at 50% 0%, rgba(20, 55, 130, 0.15) 0%, transparent 70%),
     linear-gradient(180deg, #020509 0%, #030a18 50%, #040c1f 100%) !important;
   background-attachment: fixed;
 }
-@media (max-width: 767px) {
-  .planetarium.morning-bg,
-  .planetarium .morning-bg { background-attachment: scroll; }
-}
 
-/* ── Cards & Steles ──────────────────────────────────────────────────────── */
-.planetarium .morning-card {
-  background: rgba(8, 16, 42, 0.84) !important;
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
-  border: 1px solid rgba(70, 130, 220, 0.22) !important;
-  color: rgba(215, 230, 255, 0.92) !important;
-}
-.planetarium .morning-card:hover {
-  border-color: rgba(90, 150, 240, 0.40) !important;
-  background: rgba(12, 22, 55, 0.90) !important;
-  box-shadow: 0 8px 32px -8px rgba(0, 10, 60, 0.30), 0 0 16px rgba(70, 130, 220, 0.06);
-}
-
-/* Special tiles (Sun Sign + Year Animal) — gold border in Planetarium Mode */
-.planetarium [data-special="true"] {
-  border: 1px solid rgba(212, 175, 55, 0.42) !important;
-  box-shadow: 0 0 18px rgba(212, 175, 55, 0.07), inset 0 0 28px rgba(212, 175, 55, 0.025);
-}
-.planetarium [data-special="true"]:hover {
-  border-color: rgba(212, 175, 55, 0.62) !important;
-}
-
-/* Stele (Four Pillars) */
-.planetarium .morning-stele {
-  background: rgba(6, 14, 38, 0.80) !important;
-  border: 1px solid rgba(70, 130, 220, 0.20) !important;
-}
-.planetarium .morning-stele::before {
-  background: #D4AF37 !important;
-  opacity: 0.45;
-}
-.planetarium .morning-stele:hover {
-  border-color: rgba(90, 150, 240, 0.38) !important;
-  background: rgba(10, 20, 52, 0.88) !important;
-}
-
-/* Header */
 .planetarium .morning-header,
 .planetarium.morning-header {
   background: rgba(3, 8, 25, 0.82) !important;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(70, 130, 220, 0.18);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.15);
 }
 
-/* Mobile bottom nav */
-.planetarium nav.fixed.bottom-0 {
-  background: rgba(3, 8, 25, 0.88) !important;
-  border-top: 1px solid rgba(70, 130, 220, 0.18) !important;
-}
-
-/* Skeleton */
-.planetarium .morning-skeleton {
-  background: linear-gradient(90deg,
-    rgba(70, 130, 220, 0.05) 0%,
-    rgba(70, 130, 220, 0.18) 50%,
-    rgba(70, 130, 220, 0.05) 100%
-  );
-}
-
-/* WuXing bar track */
-.planetarium .wuxing-bar-track {
-  background: rgba(70, 130, 220, 0.12);
-}
-
-/* Lang toggle (light variant becomes dark in planetarium) */
-.planetarium .lang-toggle {
-  border-color: rgba(212, 175, 55, 0.22);
-  background: rgba(255, 255, 255, 0.04);
-}
-.planetarium .lang-toggle button {
-  color: rgba(215, 230, 255, 0.35);
-}
-.planetarium .lang-toggle button.active {
-  background: rgba(212, 175, 55, 0.12);
-  color: #D4AF37;
-}
-.planetarium .lang-toggle button:hover:not(.active) {
-  color: rgba(215, 230, 255, 0.65);
-  background: rgba(212, 175, 55, 0.06);
-}
-
-/* ── Text colour overrides ───────────────────────────────────────────────── */
-/* Selectors outside @layer override Tailwind's @layer utilities cascade.     */
-
-/* Primary dark ink → light */
-.planetarium .text-\[\#1E2A3A\]             { color: rgba(215, 230, 255, 0.92) !important; }
-.planetarium .text-\[\#1E2A3A\]\/68         { color: rgba(215, 230, 255, 0.68) !important; }
-.planetarium .text-\[\#1E2A3A\]\/62         { color: rgba(215, 230, 255, 0.62) !important; }
-.planetarium .text-\[\#1E2A3A\]\/60         { color: rgba(215, 230, 255, 0.60) !important; }
-.planetarium .text-\[\#1E2A3A\]\/55         { color: rgba(215, 230, 255, 0.55) !important; }
-.planetarium .text-\[\#1E2A3A\]\/52         { color: rgba(215, 230, 255, 0.52) !important; }
-.planetarium .text-\[\#1E2A3A\]\/48         { color: rgba(215, 230, 255, 0.48) !important; }
-.planetarium .text-\[\#1E2A3A\]\/45         { color: rgba(215, 230, 255, 0.45) !important; }
-.planetarium .text-\[\#1E2A3A\]\/42         { color: rgba(215, 230, 255, 0.42) !important; }
-.planetarium .text-\[\#1E2A3A\]\/40         { color: rgba(215, 230, 255, 0.40) !important; }
-.planetarium .text-\[\#1E2A3A\]\/38         { color: rgba(215, 230, 255, 0.38) !important; }
-.planetarium .text-\[\#1E2A3A\]\/35         { color: rgba(215, 230, 255, 0.35) !important; }
-.planetarium .text-\[\#1E2A3A\]\/30         { color: rgba(215, 230, 255, 0.30) !important; }
-
-/* Gold → brighter gold on dark */
-.planetarium .text-\[\#8B6914\]             { color: #D4AF37 !important; }
-.planetarium .text-\[\#8B6914\]\/70         { color: rgba(212, 175, 55, 0.70) !important; }
-.planetarium .text-\[\#8B6914\]\/65         { color: rgba(212, 175, 55, 0.65) !important; }
-.planetarium .text-\[\#8B6914\]\/55         { color: rgba(212, 175, 55, 0.55) !important; }
-.planetarium .text-\[\#8B6914\]\/50         { color: rgba(212, 175, 55, 0.50) !important; }
-.planetarium .text-\[\#8B6914\]\/45         { color: rgba(212, 175, 55, 0.45) !important; }
-
-/* Border overrides */
-.planetarium .border-\[\#8B6914\]\/10       { border-color: rgba(70, 130, 220, 0.18) !important; }
-.planetarium .border-\[\#8B6914\]\/15       { border-color: rgba(70, 130, 220, 0.22) !important; }
-.planetarium .border-\[\#8B6914\]\/20       { border-color: rgba(70, 130, 220, 0.28) !important; }
-
-/* Prose markdown in interpretation — Planetarium override */
-.planetarium .morning-card .prose,
-.planetarium .morning-card .prose * {
-  color: rgba(215, 230, 255, 0.68) !important;
-}
-.planetarium .morning-card .prose :is(h1,h2,h3,h4,h5,h6) {
-  color: rgba(215, 230, 255, 0.92) !important;
-}
-.planetarium .morning-card .prose strong {
-  color: rgba(212, 175, 55, 0.90) !important;
-}
-.planetarium .morning-card .prose hr {
-  border-color: rgba(70, 130, 220, 0.22) !important;
-}
-.planetarium .morning-card .prose a {
-  color: #D4AF37 !important;
-}
-/* Also override direct text colour on card heading */
-.planetarium .morning-card h3,
-.planetarium .morning-card h2 {
-  color: rgba(215, 230, 255, 0.92) !important;
-}
-/* Card sub-text */
-.planetarium .morning-card p,
-.planetarium .morning-card span {
-  color: inherit;
-}
-
-/* Button overrides */
-.planetarium button.border-\[\#8B6914\]\/25 {
-  border-color: rgba(70, 130, 220, 0.30) !important;
-}
-.planetarium button:hover.hover\:bg-\[\#8B6914\]\/10 {
-  background: rgba(212, 175, 55, 0.10) !important;
-}
-
-/* Global text override — all text inside .planetarium should be light */
+/* ── Typography Override ────────────────────────────────────────────────── */
 .planetarium h1,
 .planetarium h2,
 .planetarium h3 {
-  color: rgba(215, 230, 255, 0.92) !important;
+  color: rgba(255, 255, 255, 0.95) !important;
 }
+
 .planetarium p {
-  color: rgba(215, 230, 255, 0.60) !important;
-}
-.planetarium button {
-  color: inherit;
-}
-/* Restore specific gold colours */
-.planetarium .text-\[\#8B6914\],
-.planetarium [class*="text-[#8B6914]"] {
-  color: #D4AF37 !important;
-}
-
-/* Mobile bottom nav */
-.planetarium nav.fixed.bottom-0,
-.planetarium nav.fixed {
-  background: rgba(3, 8, 25, 0.88) !important;
-  border-top-color: rgba(70, 130, 220, 0.18) !important;
-}
-
-/* Legal footer — planetarium dark overrides */
-.planetarium footer {
-  border-top-color: rgba(70, 130, 220, 0.12) !important;
-}
-.planetarium footer .text-\[\#1E2A3A\]\/30,
-.planetarium footer .text-\[\#1E2A3A\]\/20,
-.planetarium footer .text-\[\#1E2A3A\]\/10 {
-  color: rgba(215, 230, 255, 0.20) !important;
-}
-.planetarium footer button {
-  color: rgba(215, 230, 255, 0.20) !important;
-}
-.planetarium footer button:hover {
-  color: rgba(212, 175, 55, 0.55) !important;
-}
-.planetarium footer .bg-white\/40 {
-  background: rgba(8, 16, 42, 0.70) !important;
-  border-color: rgba(70, 130, 220, 0.18) !important;
-}
-.planetarium footer .text-\[\#1E2A3A\]\/40 {
-  color: rgba(215, 230, 255, 0.35) !important;
-}
-.planetarium footer .text-\[\#8B6914\]\/50 {
-  color: rgba(212, 175, 55, 0.50) !important;
-}
-
-/* Planetarium toggle button active state glow */
-.planetarium-toggle-active {
-  color: #D4AF37 !important;
-  text-shadow: 0 0 8px rgba(212, 175, 55, 0.45);
+  color: rgba(255, 255, 255, 0.7) !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -687,23 +376,19 @@ h1, h2, h3 { letter-spacing: 0.1em; }
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .font-landing-display {
-  font-family: 'Montserrat', 'Sora', sans-serif;
+  font-family: var(--font-sans);
 }
 
 .landing-hero-root {
   background: radial-gradient(circle at top, #050b1a 0%, #020617 100%);
   color: #f8f9fa;
-  font-family: 'Sora', ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-sans);
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
-  cursor: none;
   min-height: 100vh;
 }
 
-@media (pointer: coarse) {
-  .landing-hero-root { cursor: auto; }
-  .landing-cursor { display: none !important; }
-}
+/* ... rest of the file ... */
 
 /* ── Noise Overlay ───────────────────────────────────────────────── */
 .landing-noise {

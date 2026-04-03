@@ -9,7 +9,7 @@ import {
   type RingEffectType,
 } from '@/src/components/fusion-ring-website/FusionRingWebsiteCanvas';
 import FusionRingCanvasV2 from '@/src/components/fusion-ring-website/FusionRingCanvasV2';
-import { soulprintToNatalWeights, soulprintToDimensionWeights } from '@/src/components/fusion-ring-website/signatur-bridge';
+import { toDimensionWeightsOrUndefined, toNatalWeightsOrUndefined } from '@/src/lib/signatur/weight-utils';
 import { isFeatureEnabled } from '@/src/lib/feature-flags';
 import type { DissonanceResult } from '../../lib/fusion-ring/dissonance';
 import type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
@@ -32,7 +32,6 @@ export type FusionRing3DLabels = {
 type FusionRing3DProps = {
   userId: string;
   isInteractive?: boolean;
-  onSpikeClick?: (sector: number) => void;
   labels: FusionRing3DLabels;
   quizWeights?: Record<string, number>;
   effectTrigger?: { type: string; color?: string; timestamp: number; intensity?: number } | null;
@@ -68,7 +67,7 @@ const pickLatestEvent = (events: TransitEvent[]): TransitEvent | null => {
   if (!events.length) return null;
   return [...events]
     .sort((a, b) => (a.timestamp ?? 0) - (b.timestamp ?? 0))
-    .at(-1) ?? events[events.length - 1] ?? null;
+    .at(-1) ?? null;
 };
 
 export const FusionRing3D = ({
@@ -87,12 +86,12 @@ export const FusionRing3D = ({
   const { kpIndex } = useSpaceWeather();
 
   const v2NatalWeights = useMemo(
-    () => signalData?.baseSignals ? soulprintToNatalWeights(signalData.baseSignals) : undefined,
+    () => toNatalWeightsOrUndefined(signalData?.baseSignals),
     [signalData?.baseSignals]
   );
 
   const v3DimensionWeights = useMemo(
-    () => signalData?.baseSignals ? soulprintToDimensionWeights(signalData.baseSignals) : undefined,
+    () => toDimensionWeightsOrUndefined(signalData?.baseSignals),
     [signalData?.baseSignals]
   );
 

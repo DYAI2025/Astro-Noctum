@@ -41,6 +41,17 @@ interface BirthFormProps {
   isLoading: boolean;
 }
 
+/** Detect user's local timezone from the browser. Falls back to null if unavailable. */
+function detectBrowserTimezone(): string | null {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (tz && tz.includes("/")) return tz;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
   const { t } = useLanguage();
   const [submitting, setSubmitting] = useState(false);
@@ -49,8 +60,8 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
   const [time, setTime] = useState("12:00");
   const [timeUnknown, setTimeUnknown] = useState(false);
   const [coordinates, setCoordinates] = useState("52.520000, 13.405000");
-  const [tz, setTz] = useState("Europe/Berlin");
-  const [formErrors, setFormErrors] = useState<{ date?: string; coords?: string; tz?: string }>({});
+  const [tz, setTz] = useState(() => detectBrowserTimezone() ?? "Europe/Berlin");
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [placeName, setPlaceName] = useState("");
   const [showMap, setShowMap] = useState(false);
   const [mapCenter, setMapCenter] = useState<{ lat: number; lon: number } | undefined>(undefined);
@@ -104,28 +115,30 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
     e.preventDefault();
     if (submitting) return;
 
+    const newErrors: Record<string, string> = {};
+
     if (date > today) {
-      setFormErrors({ date: t("form.futureDate") });
-      setStep(1);
-      return;
+      newErrors.date = t("form.futureDate");
     }
 
     const [latStr, lonStr] = coordinates.split(",").map((s) => s.trim());
     const parsedLat = parseFloat(latStr);
     const parsedLon = parseFloat(lonStr);
 
-    if (isNaN(parsedLat) || isNaN(parsedLon)) {
-      setFormErrors({ coords: t("form.validCoords") });
-      return;
+    if (!coordinates || isNaN(parsedLat) || isNaN(parsedLon)) {
+      newErrors.coordinates = t("form.validCoords");
+    } else if (parsedLat < -90 || parsedLat > 90 || parsedLon < -180 || parsedLon > 180) {
+      newErrors.coordinates = t("form.coordsRange");
     }
-    if (parsedLat < -90 || parsedLat > 90 || parsedLon < -180 || parsedLon > 180) {
-      setFormErrors({ coords: t("form.coordsRange") });
-      return;
-    }
+
     try {
       Intl.DateTimeFormat(undefined, { timeZone: tz });
     } catch {
-      setFormErrors({ tz: t("form.invalidTz") });
+      newErrors.tz = t("form.invalidTz");
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
@@ -160,12 +173,34 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
   const inputCls =
     "w-full bg-white/60 border border-[#8B6914]/15 p-4 rounded-lg focus:outline-none focus:border-[#8B6914]/40 text-sm text-[#1E2A3A] placeholder:text-[#1E2A3A]/35 transition";
 
+  const inputErrorCls = "w-full bg-white/60 border border-red-400/50 p-4 rounded-lg focus:outline-none text-sm text-[#1E2A3A] transition";
+
+  const showError = (field: string) => errors[field]
+    ? <p className="mt-1.5 text-[11px] text-red-500">{errors[field]}</p>
+    : null;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="max-w-xl mx-auto px-6 py-12 w-full"
     >
+      {/* ── Step Indicator ─────────────────────────────────────────── */}
+      <div className="flex items-center gap-3 mb-8">
+        <div className="flex items-center gap-2">
+          <span className={`text-[10px] uppercase tracking-[0.25em] ${step === 1 ? "text-[#8B6914]" : "text-[#1E2A3A]/30"}`}>
+            {t("form.step1Label") || "Geburtsdatum"}
+          </span>
+          <div className={`w-6 h-px ${step === 1 ? "bg-[#8B6914]/30" : "bg-[#8B6914]"}`} />
+          <span className={`text-[10px] uppercase tracking-[0.25em] ${step === 2 ? "text-[#8B6914]" : "text-[#1E2A3A]/30"}`}>
+            {t("form.step2Label") || "Geburtsort"}
+          </span>
+        </div>
+        <span className="ml-auto text-[9px] uppercase tracking-[0.2em] text-[#1E2A3A]/30">
+          {step}/2
+        </span>
+      </div>
+
       <form onSubmit={handleSubmit}>
 
         {/* ── Step 1: Date & Time ──────────────────────────────────── */}
@@ -190,12 +225,10 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
                   required
                   max={today}
                   value={date}
-                  onChange={(e) => { setDate(e.target.value); setFormErrors((prev) => ({ ...prev, date: undefined })); }}
-                  className={`${inputCls} ${formErrors.date ? 'border-red-400/60' : ''}`}
+                  onChange={(e) => { setDate(e.target.value); setErrors((e2) => ({ ...e2, date: "" })); }}
+                  className={errors.date ? inputErrorCls : inputCls}
                 />
-                {formErrors.date && (
-                  <p className="text-xs text-red-500 mt-1">{formErrors.date}</p>
-                )}
+                {showError("date")}
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -242,15 +275,15 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
             <button
               type="button"
               onClick={() => {
-                if (!date) {
-                  setFormErrors({ date: t("form.invalidDate") });
+                const stepErrors: Record<string, string> = {};
+                if (!date) stepErrors.date = t("form.invalidDate");
+                if (Object.keys(stepErrors).length > 0) { setErrors(stepErrors); return; }
+                if (!time && !timeUnknown) {
+                  const ok = window.confirm(t("form.noTime"));
+                  if (ok) { setTime("12:00"); setTimeUnknown(true); setErrors({}); setStep(2); }
                   return;
                 }
-                if (!time && !timeUnknown) {
-                  setTime("12:00");
-                  setTimeUnknown(true);
-                }
-                setFormErrors({});
+                setErrors({});
                 setStep(2);
               }}
               className="w-full md:w-auto px-12 py-4 border border-[#8B6914]/30 text-[#8B6914] text-[10px] uppercase tracking-[0.3em] hover:bg-[#8B6914]/08 transition-colors rounded"
@@ -374,10 +407,11 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
                       <input
                         type="text"
                         value={coordinates}
-                        onChange={(e) => { setCoordinates(e.target.value); setFormErrors((prev) => ({ ...prev, coords: undefined })); }}
-                        className={`${inputCls} ${formErrors.coords ? 'border-red-400/60' : ''}`}
+                        onChange={(e) => { setCoordinates(e.target.value); setErrors((e2) => ({ ...e2, coordinates: "" })); }}
+                        className={errors.coordinates ? inputErrorCls : inputCls}
                         placeholder="52.520000, 13.405000"
                       />
+                      {showError("coordinates")}
                     </div>
                   </details>
                 </>
@@ -397,13 +431,11 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
                   type="text"
                   required
                   value={tz}
-                  onChange={(e) => { setTz(e.target.value); setFormErrors((prev) => ({ ...prev, tz: undefined })); }}
-                  className={`${inputCls} ${formErrors.tz ? 'border-red-400/60' : ''}`}
+                  onChange={(e) => { setTz(e.target.value); setErrors((e2) => ({ ...e2, tz: "" })); }}
+                  className={errors.tz ? inputErrorCls : inputCls}
                   placeholder="Europe/Berlin"
                 />
-                {formErrors.tz && (
-                  <p className="text-xs text-red-500 mt-1">{formErrors.tz}</p>
-                )}
+                {showError("tz")}
               </div>
             </div>
 

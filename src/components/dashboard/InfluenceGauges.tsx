@@ -20,18 +20,14 @@ function Gauge({ label, value, color = "bg-white", tooltip }: GaugeProps) {
       tabIndex={tooltip ? 0 : undefined}
     >
       <div className="flex justify-between items-end">
-        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em] group-hover:text-zinc-400 transition-colors">
+        <span className="text-[10px] font-sans font-bold uppercase tracking-[0.2em] transition-colors" style={{ color: 'var(--tile-text-secondary)' }}>
           {label}
         </span>
-        <span className="text-[10px] font-mono text-zinc-400">
+        <span className="text-[10px] font-sans" style={{ color: 'var(--tile-text-secondary)', opacity: 0.7 }}>
           {percent}%
         </span>
       </div>
-      <div className="h-[6px] w-full bg-zinc-900/50 rounded-full overflow-hidden border border-white/5 relative">
-        <div
-          className="absolute inset-y-0 left-0 bg-white/10 blur-[4px]"
-          style={{ width: `${percent}%` }}
-        />
+      <div className="influence-track">
         <div
           className={`h-full ${color} transition-all duration-1000 ease-out relative z-10`}
           style={{ width: `${percent}%` }}
@@ -89,12 +85,10 @@ export default function InfluenceGauges({ weights }: { weights?: Record<string, 
   const isLive = weights !== undefined;
 
   return (
-    <div className="bg-zinc-900/40 border border-zinc-800 p-6 rounded-[2rem] space-y-8">
+    <div className="cosmic-tile p-6 rounded-[2rem] space-y-8">
       <div className="flex justify-between items-center">
-        <h2 className="text-[10px] font-bold tracking-[0.2em] text-zinc-500 uppercase">{t('dashboard.influences.sectionTitle')}</h2>
-        <div className={`text-[8px] font-mono ${isLive ? 'text-emerald-500' : 'text-zinc-600'}`}>
-          {isLive ? t('dashboard.influences.liveLabel') : t('dashboard.influences.noDataLabel')}
-        </div>
+        <h2 className="text-[10px] font-sans font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--tile-text-secondary)' }}>{t('dashboard.influences.sectionTitle')}</h2>
+        <div className="text-[8px] font-sans" style={{ color: 'var(--tile-text-secondary)', opacity: 0.5 }}>TRANSIT</div>
       </div>
 
       <div className={`grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12 transition-opacity duration-300 ${isLive ? '' : 'opacity-40'}`}>
