@@ -482,7 +482,7 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | TASK-weekly-area-explainability | Add "Warum?" per area referencing Signatur sector + transit | P1 | Done | [REQ-F-explainability-layer](../1-objectives/requirements/REQ-F-explainability-layer.md) | TASK-weekly-insights-page | 2026-03-30 | | [REQ-F-explainability-layer](../1-objectives/requirements/REQ-F-explainability-layer.md) | TASK-weekly-insights-page | 2026-03-30 | |
 | TASK-weekly-route | Add `/weekly` route to router.tsx, lazy-loaded, add nav entry | P1 | Done | [REQ-F-weekly-insights-engine](../1-objectives/requirements/REQ-F-weekly-insights-engine.md) | TASK-weekly-insights-page | 2026-03-30 | | [REQ-F-weekly-insights-engine](../1-objectives/requirements/REQ-F-weekly-insights-engine.md) | TASK-weekly-insights-page | 2026-03-30 | |
 | TASK-transparency-audit | Audit all UI screens for unexplained numbers | P1 | Done | [REQ-F-transparency-rule](../1-objectives/requirements/REQ-F-transparency-rule.md) | - | 2026-03-30 | 4 BARE + 3 PARTIAL fixed, 0 remaining | [REQ-F-transparency-rule](../1-objectives/requirements/REQ-F-transparency-rule.md) | - | 2026-03-30 | | [REQ-F-transparency-rule](../1-objectives/requirements/REQ-F-transparency-rule.md) | - | 2026-03-30 | Dashboard, Vibes, Weekly, Signatur, Wu-Xing, space weather |
-| TASK-transparency-tooltips | Add tooltips/labels for all numerical values found in audit | P1 | Todo | [REQ-F-transparency-rule](../1-objectives/requirements/REQ-F-transparency-rule.md) | TASK-transparency-audit | 2026-03-30 | |
+| TASK-transparency-tooltips | Add tooltips/labels for all numerical values found in audit | P1 | Todo | [REQ-F-transparency-rule](../1-objectives/requirements/REQ-F-transparency-rule.md) | TASK-transparency-audit | 2026-04-04 | Personalization scope extended by S-DASH-UX TASK-influence-tooltips-personalized + TASK-cosmic-values-explained |
 | TASK-mobile-readability-vibes | Optimize VibesModal for 375px: Level 1+2 above fold, ≥14px, ≥1.5 line-height | P1 | Todo | [REQ-USA-mobile-first-readability](../1-objectives/requirements/REQ-USA-mobile-first-readability.md) | TASK-vibes-result-modal | 2026-03-30 | |
 | TASK-mobile-readability-weekly | Optimize WeeklyInsightsPage for 375px: top-3 above fold | P1 | Todo | [REQ-USA-mobile-first-readability](../1-objectives/requirements/REQ-USA-mobile-first-readability.md) | TASK-weekly-insights-page | 2026-03-30 | |
 
@@ -591,6 +591,84 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | TASK-fluidity-tier-6 | Full fluidity at 6 clusters: gesture-based nav + spatial depth as primary interaction mode | P1 | Todo | [REQ-F-progressive-ui-fluidity](../1-objectives/requirements/REQ-F-progressive-ui-fluidity.md) | TASK-fluidity-tier-1 | 2026-04-02 | |
 | TASK-fluidity-reduced-motion | prefers-reduced-motion: force conventional UI for all cluster levels | P1 | Todo | [REQ-F-progressive-ui-fluidity](../1-objectives/requirements/REQ-F-progressive-ui-fluidity.md) | TASK-fluidity-tier-0 | 2026-04-02 | |
 | TASK-s-ux-depth-manual-testing | Create runbook: depth transition scenarios, fluidity tier progression test at 0/1/6 clusters | P1 | Todo | - | TASK-fluidity-tier-6, TASK-depth-nav-back | 2026-04-02 | |
+
+---
+
+## Sprint S-DASH-UX: Dashboard UX Polish & Card Redesign
+
+**Sprint Goal:** Dashboard komplett neuordnen: Planetarium an oberste Position, Informationshierarchie korrigieren, Theme-Konsistenz (Bright/Dark), Identity-Kacheln vertikal+Accordion, Signatur-Label fix, Planetarium-Proportionen, Agent-Gruppierung, Tooltip-Personalisierung, Naming-Konsistenz, einheitliches Spacing.
+
+### Cluster A — Theme & Card Consistency
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-cosmic-influence-bright-audit | Audit + fix CosmicInfluenceSection + InfluenceGauges bright mode inconsistencies — ensure all cards use CSS vars, no hardcoded dark colors | P1 | Todo | - | - | 2026-04-04 | cosmic-tile class is used but inline gradient styles may override |
+| TASK-card-titles-centered | Center card section titles horizontally and increase font size for visual hierarchy | P3 | Todo | - | - | 2026-04-04 | Affects DashboardTagesEnergie, InfluenceGauges, CosmicInfluenceSection headers |
+
+### Cluster B — Identity Cards Redesign
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-identity-vertical-stack | Convert DashboardBigFourCard from horizontal grid to left-aligned vertical stack | P3 | Todo | [REQ-F-dashboard-identity-cards](../1-objectives/requirements/REQ-F-dashboard-identity-cards.md) | - | 2026-04-04 | Per DEC-identity-card-accordion |
+| TASK-identity-accordion | Add single-open accordion behavior: click card → expand downward with contextual description | P3 | Todo | [REQ-F-dashboard-identity-cards](../1-objectives/requirements/REQ-F-dashboard-identity-cards.md) | TASK-identity-vertical-stack | 2026-04-04 | Per DEC-identity-card-accordion; 300ms ease-out, prefers-reduced-motion |
+| TASK-identity-accordion-content | Write per-sign/element/animal description texts (DE+EN) for all 5 accordion panels | P3 | Todo | [REQ-F-dashboard-identity-cards](../1-objectives/requirements/REQ-F-dashboard-identity-cards.md) | TASK-identity-accordion | 2026-04-04 | Content must be specific to user's actual sign, not generic |
+
+### Cluster C — Signatur Tile
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-signatur-label-rename | Rename "deine Form" / "Your Form" to "deine Signatur" / "Your Signature" in MiniSignature label | P1 | Todo | - | - | 2026-04-04 | translations.ts miniSignature.label |
+| TASK-signatur-tile-expandable | Make MiniSignature tile expandable: click opens detail view or navigates to /signatur with transition | P3 | Todo | - | TASK-signatur-label-rename | 2026-04-04 | Already has onExpand → navigate('/signatur'); evaluate if inline expand is better |
+
+### Cluster D — Daily Pulse & Influence Interpretation
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-cosmic-weather-rename | Rename "Cosmic Weather" / "Kosmoswetter" section title to "Daily Pulse" / "Tagesimpuls" | P2 | Todo | - | - | 2026-04-04 | Per DEC-daily-pulse-naming; CosmicWeatherCard title + DashboardTagesEnergie kosmoswetter label |
+| TASK-influence-tooltips-personalized | Replace generic planet tooltips with user-specific interpretations: explain what current % means for user's chart | P2 | Todo | [REQ-F-transparency-rule](../1-objectives/requirements/REQ-F-transparency-rule.md) | - | 2026-04-04 | Extends scope of TASK-transparency-tooltips; needs Gemini or template-based text per planet+value range |
+| TASK-cosmic-values-explained | Add interpretation text to geomagnetisch/Solardruck values: low/medium/high label + user-relevant meaning | P2 | Todo | [REQ-F-transparency-rule](../1-objectives/requirements/REQ-F-transparency-rule.md) | - | 2026-04-04 | CosmicInfluenceSection already has tooltips — need richer content |
+
+### Cluster E — Planetarium Proportions
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-planetarium-height-fix | Restore proper window-like aspect ratio for BirthChartOrrery: increase height from thin strip to ~16:10 | P1 | Done | - | - | 2026-04-04 | .orrery-canvas-container CSS + aspect-[16/10] + min-h-[360px]; 3 tests |
+| TASK-planetarium-fullscreen-fix | Fix fullscreen mode showing only horizon strip — ensure full viewport is used with correct camera/viewport scaling | P1 | Todo | - | TASK-planetarium-height-fix | 2026-04-04 | Check Three.js camera aspect ratio update on resize |
+
+### Cluster F — Astro-Agents Grouping
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-agents-parent-container | Wrap agent grid in cosmic-tile parent card with "Astro-Agents" section title | P3 | Todo | - | - | 2026-04-04 | Currently raw grid in Dashboard.tsx:413 |
+| TASK-agents-intro-text | Add explanatory intro text below title: agents help with Tageshoroskop, Signatur, Planetenstände, Kosmoswetter, Fusion-Profil | P3 | Todo | - | TASK-agents-parent-container | 2026-04-04 | DE+EN i18n keys |
+| TASK-agents-dark-mode-hierarchy | Improve Dark Mode agent card differentiation: subtle tone variation between cards for visual hierarchy | P2 | Todo | - | - | 2026-04-04 | AgentSection uses cosmic-tile but inline gradient styles override theme |
+
+### Cluster G — Dashboard Section Order & Information Hierarchy
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-dashboard-reorder | Reorder Dashboard.tsx sections: Planetarium → Identity+Signatur → Daily Pulse → Influences → Sun/BaZi/WuXing cards → Blueprint → Agents → Interpretation | P1 | Done | - | - | 2026-04-04 | gap-20→gap-12; Influences grouped with gap-6; 5 order tests |
+| TASK-planetarium-top | Move Planetarium/BirthChartOrrery to top of Dashboard as the visual entry point; extract from DashboardAstroSection into standalone section | P1 | Done | - | TASK-planetarium-height-fix | 2026-04-04 | Extracted Orrery+SkyModeToggle from AstroSection into Dashboard.tsx; 3 tests |
+| TASK-identity-signatur-row | Place Identity accordion (left) + MiniSignature (right) as second section below Planetarium | P2 | Todo | [REQ-F-dashboard-identity-cards](../1-objectives/requirements/REQ-F-dashboard-identity-cards.md) | TASK-identity-vertical-stack, TASK-dashboard-reorder | 2026-04-04 | Keep current grid-cols-[1fr_auto] layout |
+| TASK-daily-pulse-cluster | Group Daily Pulse + InfluenceGauges + CosmicInfluence as one cohesive section (subsections, not isolated blocks) | P2 | Todo | - | TASK-cosmic-weather-rename | 2026-04-04 | Reduced spacing between sub-blocks; shared parent or tighter visual grouping |
+| TASK-astro-three-cards | Render Sonnenzeichen/BaZi/WuXing as three equal-width horizontal cards in a row below Daily Pulse cluster | P2 | Todo | - | TASK-dashboard-reorder | 2026-04-04 | Currently combined in DashboardAstroSection; needs split or restructure |
+| TASK-blueprint-position | Place Kosmischer Blueprint section directly below the three astro cards | P2 | Todo | - | TASK-astro-three-cards | 2026-04-04 | Currently part of DashboardAstroSection at arbitrary position |
+| TASK-daily-pulse-naming-resolve | Resolve naming inconsistency: use "Daily Pulse"/"Tagesimpuls" as canonical title; sub-modes (Trace) as subtitle only | P2 | Todo | - | - | 2026-04-04 | Per DEC-daily-pulse-naming; three names currently mixed in codebase |
+
+### Cluster H — Global Spacing & Alignment
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-dashboard-spacing-system | Define and apply consistent vertical spacing rhythm: reduce gap-20 to tighter system (e.g. gap-12 between sections, gap-6 within clusters) | P2 | Done | - | TASK-dashboard-reorder | 2026-04-04 | gap-20→gap-12 main; Influences cluster gap-6; done as part of TASK-dashboard-reorder |
+| TASK-dashboard-width-alignment | Ensure all sections share the same max-width and horizontal flush — no module narrower or offset from the main column | P2 | Todo | - | TASK-dashboard-reorder | 2026-04-04 | Some sections have max-w-3xl, others max-w-4xl, others max-w-6xl |
+| TASK-card-inner-spacing | Unify card inner padding: same padding for all cosmic-tile cards across Dashboard (p-5 or p-6, not mixed) | P3 | Todo | - | - | 2026-04-04 | Currently mixed p-5, p-6, p-8 across cards |
+
+### Cluster I — BaZi / WuXing / Vier Säulen Polish
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-bazi-wuxing-bright-audit | Audit BaZi Four Pillars + WuXing element bars for bright mode consistency — ensure text contrast and card backgrounds match design system | P2 | Todo | - | - | 2026-04-04 | Area behind PremiumGate; check BaZiFourPillars + WuXing bar section |
+| TASK-bazi-section-card-harmony | Ensure BaZi/WuXing section cards match the three-card row style when extracted from DashboardAstroSection | P3 | Todo | - | TASK-astro-three-cards | 2026-04-04 | Depends on Cluster G restructure |
 
 ---
 
