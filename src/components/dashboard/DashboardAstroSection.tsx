@@ -277,7 +277,7 @@ export function DashboardAstroSection({
               {t("dashboard.wuxing.sectionDesc")}
             </p>
 
-            <div className="morning-card p-5 md:p-6 max-w-2xl">
+            <div className="cosmic-tile p-5 md:p-6 max-w-2xl">
               <div className="space-y-4">
                 {WUXING_ELEMENTS.map((el) => {
                   const count = Number(wuxingCounts[el.key] ?? wuxingCounts[el.name.de] ?? 0);
@@ -319,7 +319,7 @@ export function DashboardAstroSection({
           </div>
 
           {/* Block D: Interpretation */}
-          <div className="morning-card p-6 md:p-8">
+          <div className="cosmic-tile p-6 md:p-8">
             <BaZiInterpretation
               animal={yearAnimal}
               element={yearEl}

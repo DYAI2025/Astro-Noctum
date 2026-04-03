@@ -77,7 +77,7 @@ export function CosmicWeatherCard({
 
   if (loading && !horoscope) {
     return (
-      <div className="w-full max-w-md mx-auto morning-card rounded-2xl border border-[#8B6914]/20 p-5">
+      <div className="w-full max-w-md mx-auto cosmic-tile rounded-2xl border border-[#8B6914]/20 p-5">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-[#8B6914]/5 animate-pulse" />
           <div className="flex-1 space-y-2">
@@ -114,7 +114,7 @@ export function CosmicWeatherCard({
       transition={{ duration: 0.6, ease: 'easeOut' }}
       className="w-full max-w-lg mx-auto"
     >
-      <div className="morning-card rounded-2xl border border-[#8B6914]/25 overflow-hidden shadow-[0_2px_20px_rgba(139,105,20,0.06)]">
+      <div className="cosmic-tile rounded-2xl border border-[#8B6914]/25 overflow-hidden shadow-[0_2px_20px_rgba(139,105,20,0.06)]">
         {/* Header — hero-grade Day Pulse */}
         <button
           onClick={() => setExpanded(!expanded)}

@@ -38,7 +38,7 @@ export function DashboardInterpretationSection({
   `;
 
   return (
-    <div className="morning-card p-5 sm:p-8 md:col-span-2 max-w-4xl mx-auto">
+    <div className="cosmic-tile p-5 sm:p-8 md:col-span-2 max-w-4xl mx-auto">
       <h3 className="font-serif text-2xl text-[#1E2A3A] mb-5">
         {t('dashboard.interpretation.sectionTitle')}
       </h3>

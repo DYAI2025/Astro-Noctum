@@ -109,7 +109,7 @@ export default function WuXingPage() {
 
         {/* Empty state when BAFE data unavailable */}
         {!hasWuxingData && (
-          <div className="morning-card p-10 text-center mb-12">
+          <div className="cosmic-tile p-10 text-center mb-12">
             <p className="text-sm text-[#1E2A3A]/50">
               {t('wuxing.dataUnavailable')}
             </p>
@@ -126,7 +126,7 @@ export default function WuXingPage() {
         {hasWuxingData && (<><div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
           {/* Pentagon View */}
           <motion.div 
-            className="morning-card p-8 flex flex-col items-center"
+            className="cosmic-tile p-8 flex flex-col items-center"
             {...fadeIn}
             transition={{ ...fadeIn.transition, delay: 0.1 }}
           >
@@ -143,7 +143,7 @@ export default function WuXingPage() {
 
           {/* Cycle Wheel View */}
           <motion.div 
-            className="morning-card p-8 flex flex-col items-center"
+            className="cosmic-tile p-8 flex flex-col items-center"
             {...fadeIn}
             transition={{ ...fadeIn.transition, delay: 0.2 }}
           >
@@ -161,7 +161,7 @@ export default function WuXingPage() {
 
         {/* Distribution List */}
         <motion.section 
-          className="morning-card p-6 md:p-10 mb-12"
+          className="cosmic-tile p-6 md:p-10 mb-12"
           {...fadeIn}
           transition={{ ...fadeIn.transition, delay: 0.3 }}
         >
