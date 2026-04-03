@@ -178,6 +178,14 @@ body[data-element="Water"] .cosmic-tile:not(:is(.planetarium *)) { --tile-glow: 
   opacity: 0.6;
 }
 
+/* ── Orrery Canvas Container ──────────────────────────────────────── */
+.orrery-canvas-container {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  min-height: 360px;
+  max-height: 70vh;
+}
+
 /* ── Morning theme — logged-in main app ────────────────────────────────── */
 
 .morning-bg {

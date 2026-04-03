@@ -191,7 +191,7 @@ export function BirthChartOrrery({
   // Planetarium
   const planGroupRef      = useRef<THREE.Group | null>(null);
   const starObjectsRef    = useRef<Record<string, THREE.Object3D>>({});
-  const conLinesRef       = useRef<THREE.Line[]>([]);
+  const conSegmentsRef    = useRef<THREE.LineSegments | null>(null);
   const conNameSpritesRef = useRef<Record<string, THREE.Sprite>>({});
   const planetSkyRef      = useRef<Record<string, THREE.Mesh>>({});
   const eclipticLineRef   = useRef<THREE.Line | null>(null);
@@ -557,17 +557,22 @@ export function BirthChartOrrery({
       planetSkyRef.current[key] = mesh;
     });
 
-    // Constellation Lines — Zodiac golden, others blue
-    CON_LINE_META.forEach(meta => {
-      const color = meta.zodiac ? '#C8930A' : '#1E4488';
-      const line  = new THREE.Line(
-        new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]),
-        new THREE.LineBasicMaterial({ color, transparent: true, opacity: meta.zodiac ? 0.50 : 0.35 }),
-      );
-      line.visible = false;
-      planGroup.add(line);
-      conLinesRef.current.push(line);
+    // Constellation Lines — Single draw call optimization
+    const conColors: number[] = [];
+    const conGeo = new THREE.BufferGeometry();
+    conGeo.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(CON_LINE_META.length * 2 * 3), 3));
+    CON_LINE_META.forEach((meta) => {
+      const color = new THREE.Color(meta.zodiac ? '#C8930A' : '#1E4488');
+      conColors.push(color.r, color.g, color.b, color.r, color.g, color.b);
     });
+    conGeo.setAttribute('color', new THREE.Float32BufferAttribute(conColors, 3));
+    const conSegments = new THREE.LineSegments(
+      conGeo,
+      new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.45 })
+    );
+    conSegments.visible = false;
+    planGroup.add(conSegments);
+    conSegmentsRef.current = conSegments;
 
     // Constellation name sprites
     Object.keys(CONSTELLATION_NAMES).forEach(conKey => {
@@ -761,20 +766,33 @@ export function BirthChartOrrery({
           obj.position.set(p.x, p.y, p.z);
         });
 
-        // Constellation lines
-        CON_LINE_META.forEach((meta, i) => {
-          const line = conLinesRef.current[i];
-          if (!line) return;
-          const o1 = starObjectsRef.current[meta.star1];
-          const o2 = starObjectsRef.current[meta.star2];
-          if (!o1?.visible || !o2?.visible) { line.visible = false; return; }
-          line.visible = showConRef.current;
-          const arr = new Float32Array([
-            o1.position.x, o1.position.y, o1.position.z,
-            o2.position.x, o2.position.y, o2.position.z,
-          ]);
-          line.geometry.setAttribute('position', new THREE.Float32BufferAttribute(arr, 3));
-        });
+        // Constellation lines — Unified update
+        if (conSegmentsRef.current) {
+          const seg = conSegmentsRef.current;
+          const posAttr = seg.geometry.getAttribute('position') as THREE.BufferAttribute;
+          const positions = posAttr.array as Float32Array;
+          let visibleCount = 0;
+
+          CON_LINE_META.forEach((meta, i) => {
+            const o1 = starObjectsRef.current[meta.star1];
+            const o2 = starObjectsRef.current[meta.star2];
+            if (o1?.visible && o2?.visible && showConRef.current) {
+              positions[i * 6 + 0] = o1.position.x;
+              positions[i * 6 + 1] = o1.position.y;
+              positions[i * 6 + 2] = o1.position.z;
+              positions[i * 6 + 3] = o2.position.x;
+              positions[i * 6 + 4] = o2.position.y;
+              positions[i * 6 + 5] = o2.position.z;
+              visibleCount++;
+            } else {
+              // Hide segment by collapsing it
+              positions[i * 6 + 0] = 0; positions[i * 6 + 1] = 0; positions[i * 6 + 2] = 0;
+              positions[i * 6 + 3] = 0; positions[i * 6 + 4] = 0; positions[i * 6 + 5] = 0;
+            }
+          });
+          posAttr.needsUpdate = true;
+          seg.visible = visibleCount > 0;
+        }
 
         // Constellation names
         Object.entries(CONSTELLATION_LINES).forEach(([conKey, pairs]) => {
@@ -1001,7 +1019,7 @@ export function BirthChartOrrery({
   // Static fallback when WebGL fails (no crash, just a placeholder)
   if (renderFailed) {
     return (
-      <div className="relative w-full rounded-2xl overflow-hidden border border-[#8B6914]/15 bg-[#0a1628]/90 shadow-[0_4px_32px_rgba(0,20,60,0.15)] orrery-canvas-container flex items-center justify-center">
+      <div className="relative w-full aspect-[16/10] rounded-2xl overflow-hidden border border-[#8B6914]/15 bg-[#0a1628]/90 shadow-[0_4px_32px_rgba(0,20,60,0.15)] orrery-canvas-container flex items-center justify-center">
         <div className="text-center pointer-events-none select-none">
           <p className="text-[#8B6914]/60 text-[8px] uppercase tracking-[0.4em] mb-2">
             {t('dashboard.orrery.solarSystem')}
@@ -1103,7 +1121,7 @@ export function BirthChartOrrery({
       {/* Three.js Canvas — height via .orrery-canvas-container in index.css */}
       <div
         ref={containerRef}
-        className="orrery-canvas-container"
+        className="orrery-canvas-container aspect-[16/10]"
         style={{
           cursor: hoveredObject && !planetariumMode
             ? 'pointer'

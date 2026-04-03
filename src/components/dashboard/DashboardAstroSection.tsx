@@ -24,12 +24,6 @@ import { IconOrbit } from "../animated-icons";
 // Static data
 // ─────────────────────────────────────────────────────────────────────────────
 
-const WESTERN_EMOJIS: Record<string, string> = {
-  Aries: "\u2648", Taurus: "\u2649", Gemini: "\u264A", Cancer: "\u264B",
-  Leo: "\u264C", Virgo: "\u264D", Libra: "\u264E", Scorpio: "\u264F",
-  Sagittarius: "\u2650", Capricorn: "\u2651", Aquarius: "\u2652", Pisces: "\u2653",
-};
-
 const ZODIAC_SIGNS_LIST = [
   "Aries","Taurus","Gemini","Cancer","Leo","Virgo",
   "Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces",
@@ -186,7 +180,7 @@ export function DashboardAstroSection({
       {/* ═══ 3D ORRERY ════════════════════════════════════════════════ */}
       <div id="section-western" />
       <motion.div className="mb-14 -mx-4 md:-mx-6" {...fadeIn(0.1)}>
-        <Suspense fallback={<div className="w-full aspect-square bg-[#0A0A14] rounded-2xl animate-pulse" />}>
+        <Suspense fallback={<div className="w-full aspect-[16/10] min-h-[360px] bg-[#0A0A14] rounded-2xl animate-pulse" />}>
           <BirthChartOrrery
             birthDate={orreryDate}
             planetariumMode={planetariumMode}
@@ -242,7 +236,7 @@ export function DashboardAstroSection({
           <SectionDivider
             label={t("dashboard.bazi.sectionLabel")}
             title={t("dashboard.bazi.sectionTitleFull")}
-            icon={<IconOrbit className="w-5 h-5 text-[#8B6914] inline-block mr-2 align-middle" />}
+            icon={<IconOrbit className="w-6 h-6 text-[#8B6914] inline-block mr-3 align-middle" />}
           />
 
           {/* Block B: Four Pillars */}
