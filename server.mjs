@@ -2314,7 +2314,17 @@ REGELN:
       weeklyCache.set(cacheKey, { data: fallbackPayload });
       return res.status(200).json(fallbackPayload);
     }
-    const geminiAreas = Array.isArray(parsed.areas) ? parsed.areas : [];
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || !Array.isArray(parsed.areas)) {
+      console.warn('[weekly] Model JSON shape invalid, returning fallback');
+      const fallbackPayload = {
+        week: isoWeek,
+        areas: buildWeeklyFallbackAreas(areaScores),
+        meta: { engine_version: 'v1-gemini-weekly', cached: false },
+      };
+      weeklyCache.set(cacheKey, { data: fallbackPayload });
+      return res.status(200).json(fallbackPayload);
+    }
+    const geminiAreas = parsed.areas;
 
     // Merge Gemini output with computed scores
     const mergedAreas = areaScores.map((area) => {
