@@ -46,9 +46,9 @@ Manual test scenarios for the Day-Pulse "Vibe abrufen" feature covering generati
 
 1. Complete a vibe generation (scenario 2)
 2. Navigate away from Dashboard (e.g. `/signatur`) and return to `/`
-3. Tap "Vibe abrufen" again innerhalb des aktiven Cool-down-Fensters
-   - Free Tier: 4 Stunden
-   - Premium Tier: 2 Stunden
+3. Tap "Vibe abrufen" again within the active cooldown window
+   - Free Tier: 4 hours
+   - Premium Tier: 2 hours
 4. Verify result appears instantly (no loading skeleton, no network request)
 5. Output is identical to the first generation
 
