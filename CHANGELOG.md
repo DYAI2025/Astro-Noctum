@@ -1,5 +1,47 @@
 # Changelog
 
+## [Unreleased] - 2026-04-03
+
+### Features
+
+- **Z-axis depth navigation** — `useNavigationDepth()` hook tracks Surface (Dashboard) / Mid (Signatur) / Core (Wu-Xing, Weekly, Sky, Wissen, FAQ) depth layers. `AnimatePresence` + `motion.div` in `AppRoutes` applies inward (scale 1.04→1) / outward (scale 0.97→1) / lateral (fade) transitions at 400ms ease. `prefers-reduced-motion` falls back to opacity-only. 14 new tests in `depth-navigation.test.tsx`. Wireframe spec at `docs/wireframes/depth-navigation-v1.md`.
+- **S-DASH-LIVE: Live influence gauges** — `InfluenceGauges` now accepts `weights?: Record<string, number>` from transit state; renders LIVE / KEINE DATEN badge (i18n: `dashboard.influences.liveLabel / noDataLabel`), dims grid when no data available.
+- **S-DASH-LIVE: Cosmic weather card** — `CosmicWeatherCard` and `CosmicInfluenceSection` wired to live space weather data.
+- **S-DASH-LIVE: Inline form validation** — `BirthForm` validates all fields inline (date, coordinates, timezone) without `alert()`. Future-date error navigates back to step 1 automatically.
+- **Signatur DevUI** — `src/debug/` module: `DebugPanel`, `debug-injection.ts`, `presets.ts`, `useDebugPanel` hook. Enables in-browser manipulation of bipolar engine state for development/QA. Gated — does not ship to users.
+- **SettingsMenu** — extracted to `src/components/navigation/SettingsMenu.tsx` with close-on-navigate, escape key, accessible aria-labels.
+
+### Bug Fixes
+
+- **React #310 production crash** (PR #245) — hook-order violation causing `useState` in invalid context. App was down on `bazodiac.space`. Fixed via `codex/investigate-and-resolve-loading-errors` branch.
+- **CSP: FundingChoices blocked** — `worklet-src` + Google FundingChoices script now allowed in `server.mjs` Content-Security-Policy.
+- **BirthForm: stale `formErrors` refs** — `formErrors.coords`, `setFormErrors({})` (×2) were `ReferenceError` at runtime. Renamed to `errors.coordinates` / `setErrors({})` throughout. 10 tests were failing; all now pass.
+- **InfluenceGauges: static TRANSIT label** — replaced hardcoded "TRANSIT" with i18n-driven LIVE / KEINE DATEN badge.
+- **Router: scale exit animations no-op** — `display: contents` on `motion.div` prevented Framer Motion from applying `transform: scale()` on exit. Replaced with `className="w-full"`.
+- **CSS: duplicate `:root`/`.planetarium` blocks** — `--color-text-bright-dim` was declared in a stray second `:root` block; merged into canonical declarations.
+- **Dashboard bright mode** — `text-white`, `bg-black/*`, `text-zinc-*`, `font-mono` violations across `DashboardTagesEnergie`, `InfluenceGauges`, `CosmicWeatherCard`, `DashboardAstroSection` replaced with CSS variable tokens (`--tile-text-primary`, `--tile-accent`, `font-sans`).
+- **HeroNav group hover** — inline `style={{ opacity }}` was defeating `group-hover:opacity-*` Tailwind utilities; moved to Tailwind classes.
+- **Tailwind v4: `@apply cosmic-tile` build failure** — replaced with explicit selector grouping (`.cosmic-tile, .morning-card, .bright-card`).
+
+### Code Quality
+
+- `LATERAL_VARIANTS` + `REDUCED_VARIANTS` merged into single `FADE_VARIANTS` constant in `router.tsx` (were byte-for-byte duplicates).
+- ISO date string comparison in `BirthForm.handleSubmit` documented with inline comment.
+
+### Tests
+
+- **1155 passing / 1 server-only skip** (was 1041 at last CHANGELOG entry; +114)
+- New: `depth-navigation.test.tsx` (14), `influence-gauges-live.test.tsx` (7), `birthform-inline-validation.test.tsx` (8), `birthform-double-submit.test.tsx` (1), `daily-cache-key.test.ts`, `cosmic-influence-section.test.tsx`, `bipolar-engine-debug.test.ts`, `debug-injection.test.ts`, `debug-panel.test.ts`, `fusion-ring-canvas-v2-debug.test.ts`
+
+### SDLC
+
+- **TASK-bloom-solar-coupling** → Done (already implemented in V2 bloom + V3 solarFadeMod)
+- **TASK-depth-navigation** → Done (wireframe `docs/wireframes/depth-navigation-v1.md`)
+- **TASK-depth-nav-implement** → Done (router.tsx + useNavigationDepth.ts)
+- New decisions: `DEC-navigation-shell.md` — depth layer map, AnimatePresence pattern, ROUTE_DEPTH as single source of truth
+- New requirements: `REQ-F-depth-navigation`, `REQ-F-dashboard-identity-cards`, `REQ-F-dashboard-live-daily-signals`, `REQ-F-navigation-shell`
+- Fix handoffs documented: `docs/fix-handoffs/` (birthform-inline-validation, dashboard-daily-widgets-static, dashboard-signatur-status-stuck, dashboard-theme-parity-defects, mobile-nav-utility-parity, planetarium-current-sky-toggle)
+
 ## [Unreleased] - 2026-03-31
 
 ### Design System
