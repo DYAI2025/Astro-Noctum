@@ -2291,8 +2291,13 @@ REGELN:
 
     if (!jsonStr) {
       console.error('[weekly] Empty response text from model, falling back');
-      const fallbackAreas = buildWeeklyFallbackAreas(areaScores);
-      return res.json({ week: isoWeek, areas: fallbackAreas, meta: { engine_version: 'v1-gemini-weekly', cached: false } });
+      const fallbackPayload = {
+        week: isoWeek,
+        areas: buildWeeklyFallbackAreas(areaScores),
+        meta: { engine_version: 'v1-gemini-weekly', cached: false },
+      };
+      weeklyCache.set(cacheKey, { data: fallbackPayload });
+      return res.status(200).json(fallbackPayload);
     }
 
     jsonStr = extractJsonPayload(jsonStr);
