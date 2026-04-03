@@ -83,7 +83,9 @@ body {
 
 /* ── Unified Tile Design ────────────────────────────────────────────────── */
 
-.cosmic-tile {
+.cosmic-tile,
+.morning-card,
+.bright-card {
   background: var(--tile-bg);
   border: 1px solid var(--tile-border);
   border-radius: var(--radius-card);
@@ -94,7 +96,9 @@ body {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
 }
 
-.cosmic-tile:hover {
+.cosmic-tile:hover,
+.morning-card:hover,
+.bright-card:hover {
   border-color: var(--tile-accent);
   box-shadow: 0 8px 30px var(--tile-glow);
   transform: translateY(-2px);
@@ -162,19 +166,11 @@ body {
   .morning-bg { background-attachment: scroll; }
 }
 
-.morning-card {
-  @apply cosmic-tile;
-}
-
 .gold-glow {
   box-shadow: 0 0 20px rgba(212, 175, 55, 0.08), 0 0 60px rgba(212, 175, 55, 0.04);
 }
 
 /* ── Design System V2 — Bright Mode Cards ──────────────────────────────── */
-
-.bright-card {
-  @apply cosmic-tile;
-}
 
 /* Element-coded card (left border stripe) */
 .card-element {
