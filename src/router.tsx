@@ -1,6 +1,8 @@
 import { lazy, Suspense, type ReactNode } from 'react';
-import { Routes, Route, Link, Navigate } from 'react-router-dom';
+import { Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { useLanguage } from './contexts/LanguageContext';
+import { useNavigationDepth, type TransitionDirection } from './hooks/useNavigationDepth';
 import type { OnboardingPageProps } from './pages/OnboardingPage';
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
@@ -13,6 +15,41 @@ const OnboardingPage = lazy(() => import('./pages/OnboardingPage'));
 const SkyPage = lazy(() => import('./pages/SkyPage'));
 const FaqPage = lazy(() => import('./pages/FaqPage'));
 const WeeklyInsightsPage = lazy(() => import('./pages/WeeklyInsightsPage'));
+
+// ── Transition variants (per docs/wireframes/depth-navigation-v1.md) ─────────
+
+const INWARD_VARIANTS = {
+  initial: { scale: 1.04, opacity: 0 },
+  animate: { scale: 1,    opacity: 1 },
+  exit:    { scale: 0.97, opacity: 0 },
+};
+
+const OUTWARD_VARIANTS = {
+  initial: { scale: 0.97, opacity: 0 },
+  animate: { scale: 1,    opacity: 1 },
+  exit:    { scale: 1.03, opacity: 0 },
+};
+
+const LATERAL_VARIANTS = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit:    { opacity: 0 },
+};
+
+// When prefers-reduced-motion is active: only opacity, no scale
+const REDUCED_VARIANTS = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit:    { opacity: 0 },
+};
+
+function getVariants(direction: TransitionDirection) {
+  if (direction === 'inward') return INWARD_VARIANTS;
+  if (direction === 'outward') return OUTWARD_VARIANTS;
+  return LATERAL_VARIANTS;
+}
+
+// ── Sub-components ────────────────────────────────────────────────────────────
 
 function PageLoader() {
   return (
@@ -37,43 +74,59 @@ function NotFound() {
   );
 }
 
+// ── AppRoutes ─────────────────────────────────────────────────────────────────
+
 type AppRoutesProps = {
   hasCompleteProfile: boolean;
   onboardingProps: OnboardingPageProps;
 };
 
 export function AppRoutes({ hasCompleteProfile, onboardingProps }: AppRoutesProps) {
+  const location = useLocation();
+  const { direction } = useNavigationDepth();
+  const prefersReducedMotion = useReducedMotion();
+
+  const variants = prefersReducedMotion ? REDUCED_VARIANTS : getVariants(direction);
+
   return (
-    <Suspense fallback={<PageLoader />}>
-      <Routes>
-        <Route
-          path="/"
-          element={hasCompleteProfile ? <DashboardPage /> : <Navigate to="/onboarding" replace />}
-        />
-        <Route path="/signatur" element={<FuRingPage />} />
-        <Route path="/fu-ring" element={<FuRingPage />} />
-        <Route path="/signatur/quizzes" element={<SignaturQuizzesPage />} />
-        <Route path="/wu-xing" element={<WuXingPage />} />
-        <Route path="/wissen" element={<WissenPage />} />
-        <Route path="/wissen/:slug" element={<ArtikelPage />} />
-        <Route
-          path="/onboarding"
-          element={
-            // During active onboarding (phase !== 'form'), always render
-            // OnboardingPage — even if BAFE finished and hasCompleteProfile
-            // is true. OnboardingPage handles its own navigation via useEffect.
-            // Only redirect at router level for returning users who already
-            // completed everything (phase stayed 'form' but profile exists).
-            hasCompleteProfile && onboardingProps.onboardingPhase === 'form' && !onboardingProps.isLoading
-              ? <Navigate to="/" replace />
-              : <OnboardingPage {...onboardingProps} />
-          }
-        />
-        <Route path="/weekly" element={<WeeklyInsightsPage />} />
-        <Route path="/faq" element={<FaqPage />} />
-        <Route path="/sky" element={<SkyPage />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Suspense>
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={location.key}
+        variants={variants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+        // Use `contents` display so the wrapper div doesn't break flex/grid layouts
+        style={{ display: 'contents' }}
+      >
+        <Suspense fallback={<PageLoader />}>
+          <Routes location={location}>
+            <Route
+              path="/"
+              element={hasCompleteProfile ? <DashboardPage /> : <Navigate to="/onboarding" replace />}
+            />
+            <Route path="/signatur" element={<FuRingPage />} />
+            <Route path="/fu-ring" element={<FuRingPage />} />
+            <Route path="/signatur/quizzes" element={<SignaturQuizzesPage />} />
+            <Route path="/wu-xing" element={<WuXingPage />} />
+            <Route path="/wissen" element={<WissenPage />} />
+            <Route path="/wissen/:slug" element={<ArtikelPage />} />
+            <Route
+              path="/onboarding"
+              element={
+                hasCompleteProfile && onboardingProps.onboardingPhase === 'form' && !onboardingProps.isLoading
+                  ? <Navigate to="/" replace />
+                  : <OnboardingPage {...onboardingProps} />
+              }
+            />
+            <Route path="/weekly" element={<WeeklyInsightsPage />} />
+            <Route path="/faq" element={<FaqPage />} />
+            <Route path="/sky" element={<SkyPage />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </motion.div>
+    </AnimatePresence>
   );
 }

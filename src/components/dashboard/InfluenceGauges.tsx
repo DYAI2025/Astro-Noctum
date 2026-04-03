@@ -88,7 +88,9 @@ export default function InfluenceGauges({ weights }: { weights?: Record<string, 
     <div className="cosmic-tile p-6 rounded-[2rem] space-y-8">
       <div className="flex justify-between items-center">
         <h2 className="text-[10px] font-sans font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--tile-text-secondary)' }}>{t('dashboard.influences.sectionTitle')}</h2>
-        <div className="text-[8px] font-sans" style={{ color: 'var(--tile-text-secondary)', opacity: 0.5 }}>TRANSIT</div>
+        <div className={`text-[8px] font-sans ${isLive ? 'opacity-80' : 'opacity-40'}`} style={{ color: isLive ? 'var(--tile-accent)' : 'var(--tile-text-secondary)' }}>
+          {isLive ? t('dashboard.influences.liveLabel') : t('dashboard.influences.noDataLabel')}
+        </div>
       </div>
 
       <div className={`grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12 transition-opacity duration-300 ${isLive ? '' : 'opacity-40'}`}>
