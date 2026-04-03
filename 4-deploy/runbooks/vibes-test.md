@@ -46,7 +46,9 @@ Manual test scenarios for the Day-Pulse "Vibe abrufen" feature covering generati
 
 1. Complete a vibe generation (scenario 2)
 2. Navigate away from Dashboard (e.g. `/signatur`) and return to `/`
-3. Tap "Vibe abrufen" again within 30 minutes
+3. Tap "Vibe abrufen" again within the active cooldown window
+   - Free Tier: 4 hours
+   - Premium Tier: 2 hours
 4. Verify result appears instantly (no loading skeleton, no network request)
 5. Output is identical to the first generation
 
@@ -76,8 +78,8 @@ Manual test scenarios for the Day-Pulse "Vibe abrufen" feature covering generati
 
 1. Complete a vibe generation and note the exact Kurzsignal text + Treiber pills
 2. Hard-refresh the page (Cmd+Shift+R)
-3. Tap "Vibe abrufen" again within the same 30-minute window
-4. Verify output is identical to the first run (same text, same pills, same order)
+3. Tap "Vibe abrufen" again within the same active cooldown window
+4. Verify output is identical to the first run (same text, same pills, same order) while still in cooldown
 
 ## Verification Checklist
 
@@ -88,9 +90,9 @@ Manual test scenarios for the Day-Pulse "Vibe abrufen" feature covering generati
 - [ ] Treiber shows 3-5 pill tags
 - [ ] "Warum sehe ich das?" expands/collapses explanation panel
 - [ ] Explanation references signatur + transit context
-- [ ] Cached result returns instantly on second tap within 30 min
+- [ ] Cached result returns instantly on second tap within active cooldown (Free: 4h, Premium: 2h)
 - [ ] Gemini block produces element-based fallback (no error)
 - [ ] Mobile 375px: content above fold, no horizontal overflow
 - [ ] No bare numbers or unexplained scores in output
-- [ ] Same user in same window produces identical output
+- [ ] Same user in same cooldown window produces identical output
 - [ ] No console errors (warnings acceptable)
