@@ -449,7 +449,7 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 |----|------|----------|--------|-----|--------------|---------|-------|
 | TASK-stripe-webhook-secret | Configure `STRIPE_WEBHOOK_SECRET` on Railway; verify webhook signature validation | P0 | Done | - | - | 2026-03-28 | 5-min config task, only remaining Stripe blocker |
 | TASK-bafe-determinism-test | Add contract test: identical birth data → identical BAFE responses across runs | P1 | Done | [REQ-F-natal-chart-calculation](../1-objectives/requirements/REQ-F-natal-chart-calculation.md) | - | 2026-03-28 | Covers determinism Success Criterion |
-| TASK-depth-navigation | Design Z-axis depth navigation concept (surface → core metaphor replacing horizontal scroll) | P1 | Todo | - | - | 2026-03-28 | Design-first: wireframe before code |
+| TASK-depth-navigation | Design Z-axis depth navigation concept (surface → core metaphor replacing horizontal scroll) | P1 | Done | - | - | 2026-04-03 | docs/wireframes/depth-navigation-v1.md — 3-layer Z-axis concept, Framer Motion variant specs, route depth map, mobile drawer pattern |
 
 ## Frontend
 
@@ -467,7 +467,7 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | ~~TASK-v3-dissonance-visual~~ | ~~Duplicate of S-SIG TASK-v3-dissonance-wiring~~ | - | Done | - | - | 2026-03-29 | Superseded by S-SIG sprint |
 | ~~TASK-v3-feature-flag~~ | ~~Duplicate of S-SIG TASK-v3-feature-flag~~ | - | Done | - | - | 2026-03-29 | Superseded by S-SIG sprint |
 | TASK-bloom-fine-tuning | Reduce glow, increase color saturation per user feedback (V2+V3) | P2 | Deferred | [REQ-F-fusion-ring-visualization](../1-objectives/requirements/REQ-F-fusion-ring-visualization.md) | - | 2026-03-28 | After live test |
-| TASK-bloom-solar-coupling | Couple Bloom intensity to solar activity via computeRingModulation | P2 | Todo | [REQ-F-space-weather-modulation](../1-objectives/requirements/REQ-F-space-weather-modulation.md) | - | 2026-03-28 | Needs decision |
+| TASK-bloom-solar-coupling | Couple Bloom intensity to solar activity via computeRingModulation | P2 | Done | [REQ-F-space-weather-modulation](../1-objectives/requirements/REQ-F-space-weather-modulation.md) | - | 2026-04-03 | Implemented: V2 bloomPass.strength *= solarMod (FusionRingCanvasV2.tsx:922-926); V3 solarFadeMod reduces canvas clear alpha during solar activity (SignaturV3Canvas.tsx:342-343) |
 | TASK-sbridge-engine-consume | `bipolar-engine.ts`: `DimensionDef`+`DIMENSION_DEFS` aus Shared Package importieren; lokale Defs entfernen | P1 | Done | [REQ-F-signatur-shared-bridge](../1-objectives/requirements/REQ-F-signatur-shared-bridge.md) | TASK-sbridge-shared-index | 2026-03-29 | |
 | TASK-sbridge-web-bridge-consume | `signatur-bridge.ts` (web): lokale `soulprintToDimensionWeights` durch Shared-Import ersetzen | P1 | Done | [REQ-F-signatur-shared-bridge](../1-objectives/requirements/REQ-F-signatur-shared-bridge.md) | TASK-sbridge-engine-consume | 2026-03-29 | |
 | TASK-sbridge-test-imports | `signatur-v3-engine.test.ts`: `DIMENSIONS` aus Shared Package importieren; alle 15 Tests grün | P1 | Done | [REQ-F-signatur-shared-bridge](../1-objectives/requirements/REQ-F-signatur-shared-bridge.md) | TASK-sbridge-web-bridge-consume | 2026-03-29 | |
