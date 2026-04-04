@@ -183,7 +183,7 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
       
       let composer: any;
       let bloomPass: any;
-      if (EffectComposer) {
+      if (EffectComposer && RenderPass && UnrealBloomPass) {
         composer = new EffectComposer(renderer);
         const renderPass = new RenderPass(scene, camera);
         composer.addPass(renderPass);

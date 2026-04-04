@@ -1,4 +1,5 @@
 // src/components/dashboard/AstroDetailModal.tsx
+import type { ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { getZodiacSign } from '../../lib/astro-data/zodiacSigns';
@@ -6,6 +7,8 @@ import { getStemByCharacter } from '../../lib/astro-data/heavenlyStems';
 import { getWuxingByKey } from '../../lib/astro-data/wuxing';
 import { getBranchByAnimal } from '../../lib/astro-data/earthlyBranches';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { ZodiacIcon, WuXingIcon, BaZiAnimalIcon } from '../animated-icons/CosmicSymbols';
+import { IconSun, IconOrbit } from '../animated-icons';
 import type { ApiData } from '../../types/bafe';
 import type { TileTexts } from '../../types/interpretation';
 
@@ -58,7 +61,7 @@ export function AstroDetailModal({ activeId, onClose, apiData, tileTexts }: Astr
 
   type TileConfig = {
     title: string;
-    icon: string;
+    icon: ReactNode;
     headline: string;
     description: string;
     subRows: Array<{ label: string; value: string; description?: string }>;
@@ -67,7 +70,7 @@ export function AstroDetailModal({ activeId, onClose, apiData, tileTexts }: Astr
   const configs: Record<AstroDetailId, TileConfig> = {
     western: {
       title: t('astroAccordion.sunSign'),
-      icon: '☀️',
+      icon: <IconSun className="w-10 h-10 text-gold" />,
       headline: sunData ? sunData.name[lang] : sunSignKey || '—',
       description: sunData?.sun[lang] || tileTexts.sun || '',
       subRows: [
@@ -85,9 +88,9 @@ export function AstroDetailModal({ activeId, onClose, apiData, tileTexts }: Astr
     },
     bazi: {
       title: t('astroAccordion.yearAnimal'),
-      icon: '🏯',
+      icon: <IconOrbit className="w-10 h-10 text-gold" />,
       headline: yearAnimal
-        ? `${yearAnimal.emoji} ${yearAnimal.animal[lang]}`
+        ? yearAnimal.animal[lang]
         : apiData.bazi?.zodiac_sign || '—',
       description: yearAnimal?.description[lang] || tileTexts.yearAnimal || '',
       subRows: [
@@ -110,7 +113,7 @@ export function AstroDetailModal({ activeId, onClose, apiData, tileTexts }: Astr
     },
     wuxing: {
       title: 'Wu Xing',
-      icon: dominantEl?.emoji || '🔥',
+      icon: <WuXingIcon element={apiData.wuxing?.dominant_element || ''} className="w-10 h-10" />,
       headline: dominantEl ? dominantEl.name[lang] : (apiData.wuxing?.dominant_element || '—'),
       description: dominantEl?.description[lang] || tileTexts.dominantWuXing || '',
       subRows: sortedElements.length > 0
@@ -180,7 +183,12 @@ export function AstroDetailModal({ activeId, onClose, apiData, tileTexts }: Astr
                 <p className="text-[9px] uppercase tracking-[0.45em] text-[#D4AF37]/40 mb-1">
                   {config.title}
                 </p>
-                <h2 className="font-serif text-2xl text-white/90">{config.headline}</h2>
+                <div className="flex items-center gap-4 mb-2">
+                  <div className="w-12 h-12 flex items-center justify-center shrink-0">
+                    {config.icon}
+                  </div>
+                  <h2 className="font-serif text-2xl text-white/90 leading-tight">{config.headline}</h2>
+                </div>
                 {config.description && (
                   <p className="text-sm text-white/55 leading-relaxed mt-2">{config.description}</p>
                 )}

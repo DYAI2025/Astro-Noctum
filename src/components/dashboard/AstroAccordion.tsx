@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { AstroAccordionTile } from './AstroAccordionTile';
 import { useLanguage } from '@/src/contexts/LanguageContext';
 import { getZodiacSign } from '@/src/lib/astro-data/zodiacSigns';
+import { IconSun, IconOrbit } from '../animated-icons';
+import { WuXingIcon } from '../animated-icons/CosmicSymbols';
 import type { ApiData } from '@/src/types/bafe';
 import type { TileTexts } from '@/src/types/interpretation';
 
@@ -24,10 +26,12 @@ export function AstroAccordion({ apiData, tileTexts }: AstroAccordionProps) {
   const moonData = getZodiacSign(moonSignKey);
   const ascData = getZodiacSign(ascSignKey);
 
+  const dominantEl = apiData.wuxing?.dominant_element || '';
+
   const tiles = [
     {
       id: 'western',
-      icon: '☀️',
+      icon: <IconSun className="w-5 h-5 text-gold" />,
       title: t('astroAccordion.sunSign'),
       value: sunData ? sunData.name[lang] : sunSignKey || '—',
       description: sunData?.sun[lang] || tileTexts.sun || '',
@@ -46,7 +50,7 @@ export function AstroAccordion({ apiData, tileTexts }: AstroAccordionProps) {
     },
     {
       id: 'bazi',
-      icon: '🏯',
+      icon: <IconOrbit className="w-5 h-5 text-gold" />,
       title: 'BaZi',
       value: apiData.bazi?.zodiac_sign || '—',
       description: tileTexts.dayMaster || '',
@@ -72,7 +76,7 @@ export function AstroAccordion({ apiData, tileTexts }: AstroAccordionProps) {
     },
     {
       id: 'wuxing',
-      icon: '🔥',
+      icon: <WuXingIcon element={dominantEl} className="w-5 h-5" />,
       title: 'Wu Xing',
       value: apiData.wuxing?.dominant_element || '—',
       description: tileTexts.dominantWuXing || '',

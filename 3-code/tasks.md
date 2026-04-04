@@ -617,7 +617,7 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 
 | ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
 |----|------|----------|--------|-----|--------------|---------|-------|
-| TASK-signatur-label-rename | Rename "deine Form" / "Your Form" to "deine Signatur" / "Your Signature" in MiniSignature label | P1 | Todo | - | - | 2026-04-04 | translations.ts miniSignature.label |
+| TASK-signatur-label-rename | Rename "deine Form" / "Your Form" to "deine Signatur" / "Your Signature" in MiniSignature label | P1 | Done | - | - | 2026-04-04 | DE: "Deine Signatur", EN: "Your Signature" |
 | TASK-signatur-tile-expandable | Make MiniSignature tile expandable: click opens detail view or navigates to /signatur with transition | P3 | Todo | - | TASK-signatur-label-rename | 2026-04-04 | Already has onExpand → navigate('/signatur'); evaluate if inline expand is better |
 
 ### Cluster D — Daily Pulse & Influence Interpretation

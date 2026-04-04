@@ -56,7 +56,7 @@ export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: 
         <Suspense fallback={<div className="w-full h-full bg-[#010409]" />}>
           {useV3 ? (
             <SignaturV3Canvas
-              natalWeights={revealProgress > 0 ? dimensionWeights : neutralDimensionWeights}
+              natalWeights={(revealProgress > 0 ? dimensionWeights : neutralDimensionWeights) || neutralDimensionWeights}
               quizWeights={{}}
               width={200}
               height={200}

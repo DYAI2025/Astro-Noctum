@@ -100,13 +100,13 @@ export function DebugPanel({ isOpen, onClose }: DebugPanelProps) {
         <ToggleButton
           label="Force Consonance (d=0)"
           description="Alle Dissonanzen auf 0 — harmonisches Muster"
-          active={state?.overrides.forceConsonance}
+          active={state?.overrides.forceConsonance ?? false}
           onToggle={(v) => updateOverride('forceConsonance', v)}
         />
         <ToggleButton
           label="Force Dissonance (d=1)"
           description="Alle Dissonanzen auf 1 — maximale Spannung"
-          active={state?.overrides.forceDissonance}
+          active={state?.overrides.forceDissonance ?? false}
           onToggle={(v) => updateOverride('forceDissonance', v)}
         />
         <Slider
@@ -159,13 +159,13 @@ export function DebugPanel({ isOpen, onClose }: DebugPanelProps) {
         <ToggleButton
           label="Disable Additive Blend"
           description="Normal Blending statt Additive — für Farb-Debugging"
-          active={state?.overrides.disableAdditiveBlend}
+          active={state?.overrides.disableAdditiveBlend ?? false}
           onToggle={(v) => updateOverride('disableAdditiveBlend', v)}
         />
         <ToggleButton
           label="Show Density Field"
           description="Heatmap-Overlay für Emergence-Analyse"
-          active={state?.overrides.showDensityField}
+          active={state?.overrides.showDensityField ?? false}
           onToggle={(v) => updateOverride('showDensityField', v)}
         />
         {state?.overrides.showDensityField && (
@@ -184,7 +184,7 @@ export function DebugPanel({ isOpen, onClose }: DebugPanelProps) {
         <ToggleButton
           label="⏸️ Freeze Time"
           description="Animation anhalten"
-          active={state?.overrides.timeFreeze}
+          active={state?.overrides.timeFreeze ?? false}
           onToggle={(v) => updateOverride('timeFreeze', v)}
         />
         <Slider
@@ -221,7 +221,7 @@ export function DebugPanel({ isOpen, onClose }: DebugPanelProps) {
         <ToggleButton
           label="Space Weather Modulation"
           description="Ring-Modulation durch Space Weather"
-          active={state?.overrides.spaceWeatherModulation}
+          active={state?.overrides.spaceWeatherModulation ?? false}
           onToggle={(v) => updateOverride('spaceWeatherModulation', v)}
         />
       </Section>

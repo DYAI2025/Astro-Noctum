@@ -22,7 +22,7 @@
     },
     "allowImportingTsExtensions": true,
     "noEmit": true,
-    "strict": false
+    "strict": true,
   },
   "include": ["src"],
   "exclude": [

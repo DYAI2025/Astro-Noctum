@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronRight } from 'lucide-react';
@@ -9,7 +10,7 @@ export interface SubTile {
 }
 
 interface AstroAccordionTileProps {
-  icon: string;
+  icon: ReactNode;
   title: string;
   value: string;
   description?: string;
@@ -30,7 +31,9 @@ export function AstroAccordionTile({
         className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gold/5 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <span className="text-lg">{icon}</span>
+          <div className="w-6 h-6 flex items-center justify-center shrink-0">
+            {icon}
+          </div>
           <span className="text-[10px] font-sans uppercase tracking-[0.2em] text-gold/70">{title}</span>
         </div>
         <div className="flex items-center gap-3">

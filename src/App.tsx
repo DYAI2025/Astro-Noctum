@@ -26,6 +26,14 @@ import { LEGAL_CONTENT } from "./components/LegalFooter";
 import { DebugPanel, useDebugPanel } from "./debug";
 import { useElementTheme } from "./hooks/useElementTheme";
 
+import type { ApiData } from "./types/bafe";
+
+const EMPTY_API_DATA: ApiData = {
+  bazi: { day_master: "", zodiac_sign: "" },
+  western: { houses: {} },
+  wuxing: { elements: {}, dominant_element: "" },
+};
+
 /**
  * Returns true when the bootstrap response contains fallback/synthetic soulprint data.
  * Used to show a non-blocking hint in SignatureReveal.
@@ -288,7 +296,7 @@ export default function App() {
         <AppLayoutProvider value={{
           interpretation: interpretation!,
           tileTexts,
-          apiData,
+          apiData: apiData || EMPTY_API_DATA,
           userId: user.id,
           birthDate: birthDateStr,
           onReset: handleReset,

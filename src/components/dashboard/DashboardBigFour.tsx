@@ -8,9 +8,10 @@
  */
 
 import type { ReactNode } from 'react';
-import { Sun, Moon, ArrowUp, Rabbit, Layers } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { getWuxingByKey } from '../../lib/astro-data/wuxing';
+import { ZodiacIcon, WuXingIcon, BaZiAnimalIcon } from '../animated-icons/CosmicSymbols';
+import { IconMoon, IconOrbit } from '../animated-icons';
 
 export interface DashboardBigFourProps {
   sunSign: string;
@@ -31,15 +32,12 @@ interface IdentityItem {
 function wuxingColorClasses(element: string): string {
   const el = getWuxingByKey(element);
   if (!el) return 'bg-white/8 text-white/50';
-  // Map element key to design-system-v2 element colors via Tailwind arbitrary values
-  // getWuxingByKey normalises German API aliases to English .key, so only
-  // the English keys are ever looked up here. German variants are dead code.
   const map: Record<string, string> = {
     Wood:  'bg-[#3D8B37]/15 text-[#3D8B37]',
-    Fire:  'bg-[#D63B0F]/15 text-[#D63B0F]',
-    Earth: 'bg-[#FF9800]/15 text-[#FF9800]',
-    Metal: 'bg-[#9E9E9E]/15 text-[#9E9E9E]',
-    Water: 'bg-[#2196F3]/15 text-[#2196F3]',
+    Fire:  'bg-[#C53030]/15 text-[#C53030]',
+    Earth: 'bg-[#D69E2E]/15 text-[#D69E2E]',
+    Metal: 'bg-[#718096]/15 text-[#718096]',
+    Water: 'bg-[#2B6CB0]/15 text-[#2B6CB0]',
   };
   return map[el.key] ?? 'bg-white/8 text-white/50';
 }
@@ -55,31 +53,31 @@ export function DashboardBigFour({
 
   const items: IdentityItem[] = [
     {
-      icon: <Sun className="w-4 h-4" />,
+      icon: <ZodiacIcon sign={sunSign} className="w-5 h-5" />,
       labelKey: 'dashboard.bigFour.sunSign',
       value: sunSign,
       colorClasses: 'bg-[#D4AF37]/15 text-[#D4AF37]',
     },
     {
-      icon: <Moon className="w-4 h-4" />,
+      icon: <IconMoon className="w-5 h-5" />,
       labelKey: 'dashboard.bigFour.moonSign',
       value: moonSign,
-      colorClasses: 'bg-[#a0b4cc]/15 text-[#a0b4cc]',
+      colorClasses: 'bg-[#718096]/15 text-[#718096]',
     },
     {
-      icon: <ArrowUp className="w-4 h-4" />,
+      icon: <IconOrbit className="w-5 h-5" />,
       labelKey: 'dashboard.bigFour.ascendant',
       value: ascendant,
-      colorClasses: 'bg-emerald-500/15 text-emerald-400',
+      colorClasses: 'bg-[#3D8B37]/15 text-[#3D8B37]',
     },
     {
-      icon: <Rabbit className="w-4 h-4" />,
+      icon: <BaZiAnimalIcon animal={baziAnimal} className="w-5 h-5" />,
       labelKey: 'dashboard.bigFour.baziAnimal',
       value: baziAnimal,
-      colorClasses: 'bg-amber-400/15 text-amber-400',
+      colorClasses: 'bg-[#D69E2E]/15 text-[#D69E2E]',
     },
     {
-      icon: <Layers className="w-4 h-4" />,
+      icon: <WuXingIcon element={wuxingElement} className="w-5 h-5" showColor={false} />,
       labelKey: 'dashboard.bigFour.wuxingElement',
       value: wuxingElement,
       colorClasses: wuxingColorClasses(wuxingElement),
@@ -94,7 +92,7 @@ export function DashboardBigFour({
           className="cosmic-tile px-4 py-3 flex items-center gap-3"
         >
           <div
-            className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${colorClasses}`}
+            className={`shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${colorClasses}`}
           >
             {icon}
           </div>
