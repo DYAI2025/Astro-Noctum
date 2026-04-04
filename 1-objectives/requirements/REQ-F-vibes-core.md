@@ -24,11 +24,14 @@ must produce the same result.
 
 The system refreshes every 2 hours so that newly available chart context, cosmic weather, and contribution events can produce an updated result for the next window. Significant geomagnetic / magnetic-storm conditions must be surfaced explicitly when they materially influence the Vibe.
 
+The Vibe feature is **premium-only** — free-tier users see the CTA but are gated by `PremiumGate`. No free-tier cooldown or degraded version exists.
+
 The computation reuses existing Fusion / Signatur logic — no new astrological engine.
 
 ## Acceptance Criteria
 
-- Given an authenticated user with a completed astro profile, when they tap "Vibe abrufen", then a personalized Vibe insight is generated within 2 seconds
+- Given an authenticated premium user with a completed astro profile, when they tap "Vibe abrufen", then a personalized Vibe insight is generated within 2 seconds
+- Given a free-tier user, when the Vibe section is rendered, then the CTA is visible but gated behind PremiumGate with an upgrade prompt
 - Given the Vibe computation runs, when it builds the result, then it combines the user's soulprint sectors, quiz contributions, current transit state, space weather, and relevant contribution events into a short-horizon interpretation
 - Given identical user data and the same 2-hour refresh window, when the Vibe is computed twice, then the results are identical
 - Given a user requests a Vibe again within the same 2-hour refresh window, when no new window has started, then the system returns the cached current-window result together with the next refresh timestamp
