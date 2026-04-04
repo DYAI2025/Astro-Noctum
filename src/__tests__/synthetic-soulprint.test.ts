@@ -28,4 +28,11 @@ describe('syntheticSoulprintFromSign', () => {
     const result = syntheticSoulprintFromSign('NotASign');
     expect(result).toEqual(Array(12).fill(0.5));
   });
+
+  it('syntheticSoulprintFromSign returns structurally equal but referentially distinct arrays', () => {
+    const a = syntheticSoulprintFromSign('Cancer');
+    const b = syntheticSoulprintFromSign('Cancer');
+    expect(a).toEqual(b);
+    expect(a).not.toBe(b);
+  });
 });

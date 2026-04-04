@@ -394,6 +394,12 @@ const translationsEn: DeepStringRecord = {
       closeLabel: "Close",
       emptyContent: "Your Vibe is being prepared — please try again shortly.",
     },
+    vibesSection: {
+      premiumTeaser: "Your personal Vibe — Premium only",
+      buttonLabel: "Get Vibe",
+      cooldownPrefix: "Next vibe in ",
+      fetchError: "Could not load vibe. Please try again.",
+    },
     cosmicWeatherCard: {
       leviLabel: "Levi",
       tierPremium: "LEVI PREMIUM",
@@ -844,6 +850,12 @@ const translationsDe: DeepStringRecord = {
       transitLabel: "Aktuelle Phase:",
       closeLabel: "Schliessen",
       emptyContent: "Dein Vibe wird vorbereitet — bitte versuche es gleich nochmal.",
+    },
+    vibesSection: {
+      premiumTeaser: "Dein persönlicher Vibe — nur für Premium",
+      buttonLabel: "Vibe abrufen",
+      cooldownPrefix: "Nächster Vibe in ",
+      fetchError: "Vibe konnte nicht geladen werden. Versuche es erneut.",
     },
     cosmicWeatherCard: {
       leviLabel: "Levi",

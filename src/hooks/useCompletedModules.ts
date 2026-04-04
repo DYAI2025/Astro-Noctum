@@ -2,12 +2,15 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/src/lib/supabase';
 import { useAuth } from '@/src/contexts/AuthContext';
 
-const STORAGE_KEY = 'bazodiac_completed_quizzes';
+const STORAGE_KEY_PREFIX = 'bazodiac_completed_quizzes';
+function storageKey(userId: string): string {
+  return `${STORAGE_KEY_PREFIX}_${userId}`;
+}
 
 /** Read completed module IDs from localStorage (survives reload). */
-function getLocalCompleted(): Set<string> {
+function getLocalCompleted(userId: string): Set<string> {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey(userId));
     if (!raw) return new Set();
     const arr = JSON.parse(raw);
     return Array.isArray(arr) ? new Set(arr as string[]) : new Set();
@@ -17,11 +20,11 @@ function getLocalCompleted(): Set<string> {
 }
 
 /** Persist a module ID to localStorage. */
-function addLocalCompleted(moduleId: string): void {
+function addLocalCompleted(userId: string, moduleId: string): void {
   try {
-    const existing = getLocalCompleted();
+    const existing = getLocalCompleted(userId);
     existing.add(moduleId);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([...existing]));
+    localStorage.setItem(storageKey(userId), JSON.stringify([...existing]));
   } catch {
     // localStorage full or unavailable — ignore
   }
@@ -53,7 +56,7 @@ export function useCompletedModules() {
 
         // Merge Supabase (cluster-gated contributions) + localStorage (individual completions)
         const fromDb = data ? new Set(data.map(r => r.module_id)) : new Set<string>();
-        const fromLocal = getLocalCompleted();
+        const fromLocal = getLocalCompleted(user.id);
         const merged = new Set([...fromDb, ...fromLocal]);
 
         setCompletedModuleIds(merged);
@@ -66,9 +69,10 @@ export function useCompletedModules() {
   }, [user]);
 
   const addModule = useCallback((moduleId: string) => {
-    addLocalCompleted(moduleId);
+    if (!user) return;
+    addLocalCompleted(user.id, moduleId);
     setCompletedModuleIds(prev => new Set([...prev, moduleId]));
-  }, []);
+  }, [user]);
 
   return { completedModuleIds, loading, addModule };
 }

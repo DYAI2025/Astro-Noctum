@@ -267,8 +267,11 @@ export function Dashboard({
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
 
   // ── Effective soulprint: DB value or synthetic fallback from BAFE zodiac sign ──
-  const effectiveSoulprint = profileMeta.soulprintSectors
-    ?? syntheticSoulprintFromSign(apiData?.western?.zodiac_sign || '');
+  const effectiveSoulprint = useMemo(
+    () => profileMeta.soulprintSectors
+      ?? syntheticSoulprintFromSign(apiData?.western?.zodiac_sign || ''),
+    [profileMeta.soulprintSectors, apiData?.western?.zodiac_sign],
+  );
 
   const { dailyData, dayHarmonic, handleClose: handleDailyClose } = useFirstRunDaily(
     userId,

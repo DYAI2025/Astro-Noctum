@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 
-const STORAGE_KEY = 'bazodiac_completed_quizzes';
+const STORAGE_KEY = 'bazodiac_completed_quizzes_test-user-123';
 
 beforeEach(() => localStorage.clear());
 
@@ -74,5 +74,18 @@ describe('localStorage persistence for quiz completions', () => {
     const set = new Set(arr);
     expect(set.size).toBe(2);
     expect(set.has('quiz.krafttier.v1')).toBe(true);
+  });
+
+  it('uses user-scoped localStorage key', () => {
+    const KEY_A = 'bazodiac_completed_quizzes_user-a';
+    const KEY_B = 'bazodiac_completed_quizzes_user-b';
+    localStorage.setItem(KEY_A, JSON.stringify(['quiz.aura_colors.v1']));
+    localStorage.setItem(KEY_B, JSON.stringify(['quiz.eq.v1']));
+    const aData = JSON.parse(localStorage.getItem(KEY_A)!);
+    const bData = JSON.parse(localStorage.getItem(KEY_B)!);
+    expect(aData).toContain('quiz.aura_colors.v1');
+    expect(aData).not.toContain('quiz.eq.v1');
+    expect(bData).toContain('quiz.eq.v1');
+    expect(bData).not.toContain('quiz.aura_colors.v1');
   });
 });

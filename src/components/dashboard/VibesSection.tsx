@@ -16,7 +16,7 @@ interface VibesSectionProps {
 // ── Component ────────────────────────────────────────────────────────
 
 export function VibesSection({ userId }: VibesSectionProps) {
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [vibesData, setVibesData] = useState<VibesResponse | null>(null);
@@ -35,11 +35,7 @@ export function VibesSection({ userId }: VibesSectionProps) {
       setShowModal(true);
     } catch (err) {
       console.error('[VibesSection] Fetch failed:', err);
-      setError(
-        lang === 'de'
-          ? 'Vibe konnte nicht geladen werden. Versuche es erneut.'
-          : 'Could not load vibe. Please try again.',
-      );
+      setError(t('vibesSection.fetchError'));
     } finally {
       setLoading(false);
       fetchingRef.current = false;
@@ -52,15 +48,13 @@ export function VibesSection({ userId }: VibesSectionProps) {
 
   const isCooldown = vibesData?.cooldown?.active;
   const cooldownLabel = isCooldown
-    ? lang === 'de'
-      ? `Nächster Vibe in ${formatCooldown(vibesData.cooldown!.remaining_ms, lang)}`
-      : `Next vibe in ${formatCooldown(vibesData.cooldown!.remaining_ms, lang)}`
+    ? `${t('vibesSection.cooldownPrefix')}${formatCooldown(vibesData.cooldown!.remaining_ms, lang)}`
     : null;
-  const buttonLabel = lang === 'de' ? 'Vibe abrufen' : 'Get Vibe';
+  const buttonLabel = t('vibesSection.buttonLabel');
 
   return (
     <>
-      <PremiumGate teaser={lang === 'de' ? 'Dein persönlicher Vibe — nur für Premium' : 'Your personal Vibe — Premium only'}>
+      <PremiumGate teaser={t('vibesSection.premiumTeaser')}>
       <div className="flex flex-col items-center gap-2">
         <button
           onClick={handleFetch}
