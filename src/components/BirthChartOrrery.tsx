@@ -669,9 +669,12 @@ export function BirthChartOrrery({
       const dt = clock.getDelta();
       elapsedRef.current += dt;
 
-      // Current sky: override simTime with "now" (J2000 epoch days)
+      // Current sky: lock simTime to "now" every frame — overrides time-lapse
       if (currentSkyRef.current) {
         simTimeRef.current = daysSinceJ2000(new Date());
+      } else if (isPlayingRef.current) {
+        // Time-lapse only when NOT in current-sky mode
+        simTimeRef.current += dt * speedRef.current / 86400;
       }
 
       updateMaterials(dt, sunMaterialRef.current ?? undefined);
@@ -679,11 +682,6 @@ export function BirthChartOrrery({
       // Earth Day/Night
       if (earthMatRef.current && planetMeshesRef.current['earth']) {
         updateEarthSunDirection(earthMatRef.current, planetMeshesRef.current['earth'].position);
-      }
-
-      // Time simulation
-      if (isPlayingRef.current) {
-        simTimeRef.current += dt * speedRef.current / 86400;
       }
 
       // Update planet positions

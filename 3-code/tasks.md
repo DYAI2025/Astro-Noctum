@@ -267,7 +267,7 @@
 
 | ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
 |----|------|----------|--------|-----|--------------|---------|-------|
-| TASK-current-sky-delta-fix | Fix birth sky vs current sky: ensure switching modes uses distinct simTime + observer coordinates so the orrery shows materially different output | P1 | Todo | - | - | 2026-04-04 | BUG-15; check BirthChartOrrery simTime sync + currentSky useEffect |
+| TASK-current-sky-delta-fix | Fix birth sky vs current sky: ensure switching modes uses distinct simTime + observer coordinates so the orrery shows materially different output | P1 | Done | - | - | 2026-04-04 | BUG-15; fixed isPlaying time-lapse overriding currentSky — now else-if pattern; 3 tests |
 | TASK-current-sky-live-location | Use browser Geolocation API for current sky observer position; fallback: last granted → profile location → birth location | P1 | Todo | - | TASK-current-sky-delta-fix | 2026-04-04 | BUG-16; needs permission prompt + fallback UI; REQ-F-dashboard-live-current-location-sky (Draft) |
 
 ### Cluster B — Missing Data/Text
@@ -282,7 +282,7 @@
 
 | ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
 |----|------|----------|--------|-----|--------------|---------|-------|
-| TASK-quiz-completion-persist-fix | Fix quiz completion state not surviving page reload — check contribution_events upsert + cluster completion gate hydration | P1 | Todo | - | - | 2026-04-04 | BUG-20; check useQuizContribution + ClusterEnergySystem rehydration |
+| TASK-quiz-completion-persist-fix | Fix quiz completion state not surviving page reload — check contribution_events upsert + cluster completion gate hydration | P1 | Done | - | - | 2026-04-04 | BUG-20; localStorage persistence for individual completions; merged with Supabase on hydration; 7 tests |
 | TASK-quiz-result-latency-fix | Fix 3-4 minute quiz result latency — check /api/contribute pipeline, Gemini timeout, cache hit path | P2 | Todo | - | - | 2026-04-04 | BUG-21; expected: seconds via cached/deterministic path |
 | TASK-quiz-placeholder-headings-fix | Audit + fix all 22 quiz title/subtitle i18n keys — replace remaining placeholders with final DE/EN copy | P2 | Todo | - | - | 2026-04-04 | BUG-22; audit quiz definitions in packages/shared + components/quizzes |
 
