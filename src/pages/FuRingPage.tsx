@@ -29,6 +29,7 @@ import type { ContributionEvent } from '@/src/lib/lme/types';
 import { eventToSectorSignals } from '@/src/lib/fusion-ring/test-signal';
 import { useCoustoAudio } from '@/src/hooks/useCoustoAudio';
 import { useCosmicResonance } from '@/src/hooks/useCosmicResonance';
+import { useFluidityLevel } from '@/src/hooks/useFluidityLevel';
 import { SpaceWeatherPanel } from '@/src/components/signatur/SpaceWeatherPanel';
 
 export default function FuRingPage() {
@@ -36,6 +37,7 @@ export default function FuRingPage() {
   const { userId, apiData } = useAppLayout();
   const { isPremium } = usePremium();
   const { completedModuleIds, addModule } = useCompletedModules();
+  const { tier: fluidityTier } = useFluidityLevel(completedModuleIds);
   const suggestedModule = useQuizSuggestion(completedModuleIds);
   const quizContribution = useQuizContribution(completedModuleIds);
   const spaceWeather = useSpaceWeather();
@@ -166,11 +168,15 @@ export default function FuRingPage() {
         <header className="flex items-center justify-between gap-4">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/40 px-3 py-1.5 text-xs uppercase tracking-[0.2em] text-white/70 transition hover:border-[#D4AF37]/60 hover:text-[#D4AF37]"
+            className={`inline-flex items-center gap-2 rounded-full border bg-black/40 transition hover:border-[#D4AF37]/60 hover:text-[#D4AF37] ${
+              fluidityTier >= 1
+                ? 'border-white/8 px-2 py-1 text-[10px] text-white/40'
+                : 'border-white/15 px-3 py-1.5 text-xs text-white/70'
+            } uppercase tracking-[0.2em]`}
             aria-label={t('furing3d.back')}
           >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            {t('furing3d.back')}
+            <ArrowLeft className={fluidityTier >= 1 ? 'h-3 w-3' : 'h-3.5 w-3.5'} />
+            {fluidityTier >= 1 ? null : t('furing3d.back')}
           </Link>
 
           <div className="flex items-center gap-3">
@@ -252,7 +258,11 @@ export default function FuRingPage() {
           </div>
 
           {/* Ring — intuitive side */}
-          <div className="min-w-0 flex-1">
+          <motion.div
+            className="min-w-0 flex-1"
+            animate={fluidityTier >= 1 ? { scale: [1, 1.005, 1] } : undefined}
+            transition={fluidityTier >= 1 ? { duration: 6, repeat: Infinity, ease: 'easeInOut' } : undefined}
+          >
             <FusionRing3D
               userId={userId}
               quizWeights={liveQuizWeights}
@@ -274,7 +284,7 @@ export default function FuRingPage() {
                 eventAnnouncePrefix: t('furing3d.eventAnnouncePrefix'),
               }}
             />
-          </div>
+          </motion.div>
 
           {/* Space Weather Panel — scientific side (desktop: right column, mobile: below ring) */}
           <div className="w-full shrink-0 md:w-64 lg:w-72">
