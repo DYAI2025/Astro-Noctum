@@ -37,6 +37,7 @@ export function ShareCard({ sunSign, moonSign }: { sunSign: string; moonSign: st
             const u = await handleShare();
             u && shareToWhatsApp(u, shareText);
           }}
+          aria-label={t('dashboard.share.whatsappAria')}
           className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition-colors"
         >
           WhatsApp
@@ -47,6 +48,7 @@ export function ShareCard({ sunSign, moonSign }: { sunSign: string; moonSign: st
             const u = await handleShare();
             u && shareToTwitter(u, shareText);
           }}
+          aria-label={t('dashboard.share.twitterAria')}
           className="px-4 py-2 bg-sky-500 text-white rounded-lg text-sm hover:bg-sky-600 transition-colors"
         >
           X / Twitter
@@ -57,6 +59,7 @@ export function ShareCard({ sunSign, moonSign }: { sunSign: string; moonSign: st
             const u = await handleShare();
             u && shareToLinkedIn(u);
           }}
+          aria-label={t('dashboard.share.linkedinAria')}
           className="px-4 py-2 bg-blue-700 text-white rounded-lg text-sm hover:bg-blue-800 transition-colors"
         >
           LinkedIn
@@ -71,6 +74,7 @@ export function ShareCard({ sunSign, moonSign }: { sunSign: string; moonSign: st
               setTimeout(() => setCopied(false), 2000);
             }
           }}
+          aria-label={t('dashboard.share.copyAria')}
           className="px-4 py-2 bg-ash text-dawn rounded-lg text-sm hover:bg-ash/80 transition-colors"
         >
           {copied ? t('dashboard.share.copied') : t('dashboard.share.copyLink')}

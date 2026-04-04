@@ -99,7 +99,7 @@ function GaugeBar({ label, percent, barClass, tooltip, badge }: GaugeBarProps) {
     <Tooltip content={tooltip} wide dark>
       <div className="space-y-3 group cursor-help" tabIndex={0}>
         <div className="flex justify-between items-end">
-          <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-[0.2em] group-hover:text-zinc-300 transition-colors">
+          <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-[0.2em] group-hover:text-zinc-100 transition-colors">
             {label}
           </span>
           <div className="flex items-center gap-1.5">

@@ -93,9 +93,7 @@ export function CosmicWeatherCard({
     return (
       <div className="w-full max-w-md mx-auto rounded-2xl border border-red-200 bg-red-50/50 p-4">
         <p className="text-xs text-red-600/70">
-          {lang === 'de'
-            ? 'Tageshoroskop konnte nicht geladen werden. Bitte versuche es erneut.'
-            : 'Daily horoscope could not be loaded. Please try again.'}
+          {t('dashboard.cosmicWeatherCard.errorMessage')}
         </p>
       </div>
     );
@@ -130,7 +128,7 @@ export function CosmicWeatherCard({
               </span>
               {isPremium && (
                 <span className="text-[7px] uppercase tracking-wider text-[#D4AF37] bg-[#D4AF37]/10 px-1.5 py-0.5 rounded-full">
-                  Levi
+                  {t('dashboard.cosmicWeatherCard.leviLabel')}
                 </span>
               )}
             </div>
@@ -181,7 +179,7 @@ export function CosmicWeatherCard({
                 {/* Refresh + timestamp */}
                 <div className="flex items-center justify-between pt-1">
                   <span className="text-[8px] text-[var(--color-text-bright-dim)] font-sans tracking-wider">
-                    {horoscope.tier === 'premium' ? 'LEVI PREMIUM' : 'FREEMIUM'}
+                    {horoscope.tier === 'premium' ? t('dashboard.cosmicWeatherCard.tierPremium') : t('dashboard.cosmicWeatherCard.tierFreemium')}
                   </span>
 
                   {onRefresh && (
@@ -191,7 +189,7 @@ export function CosmicWeatherCard({
                         onRefresh();
                       }}
                       className="text-[var(--color-text-bright-dim)] hover:text-[#8B6914] transition-colors p-1"
-                      title={lang === 'de' ? 'Aktualisieren' : 'Refresh'}
+                      title={t('dashboard.cosmicWeatherCard.refreshLabel')}
                     >
                       <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
                     </button>

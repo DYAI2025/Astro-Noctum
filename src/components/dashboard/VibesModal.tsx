@@ -15,7 +15,7 @@ interface VibesModalProps {
 // ── Component ────────────────────────────────────────────────────────
 
 export function VibesModal({ data, onClose }: VibesModalProps) {
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
   const [explainOpen, setExplainOpen] = useState(false);
   const hasTrackedRef = useRef(false);
 
@@ -51,9 +51,9 @@ export function VibesModal({ data, onClose }: VibesModalProps) {
     setExplainOpen((prev) => !prev);
   };
 
-  const whyLabel = lang === 'de' ? 'Warum sehe ich das?' : 'Why am I seeing this?';
-  const signaturLabel = lang === 'de' ? 'Deine Signatur:' : 'Your Signature:';
-  const transitLabel = lang === 'de' ? 'Aktuelle Phase:' : 'Current Phase:';
+  const whyLabel = t('dashboard.vibesModal.whyLabel');
+  const signaturLabel = t('dashboard.vibesModal.signaturLabel');
+  const transitLabel = t('dashboard.vibesModal.transitLabel');
 
   return (
       <motion.div
@@ -83,7 +83,7 @@ export function VibesModal({ data, onClose }: VibesModalProps) {
             <button
               onClick={handleClose}
               className="absolute top-4 right-4 text-white/40 hover:text-white/80 transition-colors"
-              aria-label={lang === 'de' ? 'Schliessen' : 'Close'}
+              aria-label={t('dashboard.vibesModal.closeLabel')}
             >
               <X size={18} />
             </button>
