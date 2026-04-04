@@ -3709,6 +3709,402 @@ app.post("/api/agent/conversation", async (req, res) => {
   res.json({ status: "saved" });
 });
 
+// ── GET /api/agent/daily/:userId — Daily horoscope for ElevenLabs agent ──
+app.get("/api/agent/daily/:userId", async (req, res) => {
+  const authHeader = req.headers.authorization || "";
+  const token = authHeader.replace("Bearer ", "").trim();
+
+  if (!ELEVENLABS_TOOL_SECRET || token !== ELEVENLABS_TOOL_SECRET) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  if (!supabaseServer) {
+    return res.status(500).json({ error: "Supabase not configured on server" });
+  }
+
+  const { userId } = req.params;
+
+  // 1. Fetch user astro profile
+  const { data: profile, error: profileErr } = await supabaseServer
+    .from("astro_profiles")
+    .select("*")
+    .eq("user_id", userId)
+    .single();
+
+  if (profileErr) {
+    if (profileErr.code === "PGRST116") {
+      return res.status(404).json({ error: "Profile not found" });
+    }
+    console.error("[agent/daily] profile error:", profileErr);
+    return res.status(500).json({ error: profileErr.message });
+  }
+
+  // 2. Build daily request payload for FuFirE
+  const today = new Date().toISOString().slice(0, 10);
+  const birthTime = profile.birth_time || "12:00:00";
+  const birthTimeFormatted = birthTime.length === 5 ? `${birthTime}:00` : birthTime;
+
+  const soulprintSectors = Array.isArray(profile.soulprint_sectors) && profile.soulprint_sectors.length === 12
+    ? profile.soulprint_sectors
+    : new Array(12).fill(1 / 12);
+
+  const quizSectors = Array.isArray(profile.quiz_sectors) && profile.quiz_sectors.length === 12
+    ? profile.quiz_sectors
+    : soulprintSectors;
+
+  const dailyPayload = {
+    birth: {
+      date: profile.birth_date,
+      time: birthTimeFormatted,
+      tz: profile.iana_time_zone || "Europe/Berlin",
+      lat: profile.birth_lat || 52.52,
+      lon: profile.birth_lng || 13.405,
+      place_label: profile.birth_place_name || null,
+    },
+    soulprint_sectors: soulprintSectors,
+    quiz_sectors: quizSectors,
+    target_date: today,
+    locale: "de-DE",
+  };
+
+  // 3. Call FuFirE /experience/daily
+  const bafeUrl = BAFE_INTERNAL_URL || BAFE_PUBLIC_URL;
+  try {
+    const dailyRes = await fetchWithRetry(`${bafeUrl}/experience/daily`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dailyPayload),
+      signal: AbortSignal.timeout(12000),
+    });
+
+    if (!dailyRes.ok) {
+      const errBody = await dailyRes.text().catch(() => "");
+      console.error(`[agent/daily] FuFirE error ${dailyRes.status}:`, errBody);
+      return res.status(502).json({ error: "Daily horoscope calculation failed", detail: errBody });
+    }
+
+    const dailyData = await dailyRes.json();
+
+    // 4. Compute day_mode from harmony if not present in fusion
+    const fusionData = dailyData.fusion || {};
+    const harmonyRaw = fusionData.harmony_index ?? 0.5;
+    const dayMode = fusionData.day_mode || (harmonyRaw < 0.5 ? "pulse" : "trace");
+
+    // 5. Build agent-friendly response
+    res.json({
+      date: dailyData.date || today,
+      day_mode: dayMode,
+      harmony_index: harmonyRaw,
+      western: {
+        summary: dailyData.western?.summary || "",
+        themes: dailyData.western?.themes || [],
+        caution: dailyData.western?.caution || "",
+        opportunity: dailyData.western?.opportunity || "",
+      },
+      eastern: {
+        summary: dailyData.eastern?.summary || "",
+        themes: dailyData.eastern?.themes || [],
+        caution: dailyData.eastern?.caution || "",
+        opportunity: dailyData.eastern?.opportunity || "",
+        day_master_relation: dailyData.eastern?.evidence?.relation_to_day_master || null,
+        daily_pillar: dailyData.eastern?.evidence?.daily_pillar || null,
+      },
+      fusion: {
+        summary: fusionData.summary || "",
+        synthesis: fusionData.synthesis || "",
+        action: fusionData.action || "",
+      },
+      user_context: {
+        sun_sign: profile.sun_sign,
+        moon_sign: profile.moon_sign,
+        ascendant: profile.asc_sign,
+        day_master: (profile.astro_json?.bafe?.bazi?.day_master) || (profile.astro_json?.bazi?.day_master) || null,
+      },
+    });
+  } catch (fetchErr) {
+    console.error("[agent/daily] fetch error:", fetchErr.message);
+    return res.status(502).json({ error: "Could not reach calculation engine" });
+  }
+});
+
+// ── POST /api/agent/match — Partner match analysis for ElevenLabs agent ──
+app.post("/api/agent/match", async (req, res) => {
+  const authHeader = req.headers.authorization || "";
+  const token = authHeader.replace("Bearer ", "").trim();
+
+  if (!ELEVENLABS_TOOL_SECRET || token !== ELEVENLABS_TOOL_SECRET) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  if (!supabaseServer) {
+    return res.status(500).json({ error: "Supabase not configured on server" });
+  }
+
+  const {
+    user_id,
+    partner_birth_date,
+    partner_birth_time,
+    partner_birth_place,
+    partner_time_known = true,
+    agent_type = "eve",
+  } = req.body;
+
+  if (!user_id || !partner_birth_date || !partner_birth_place) {
+    return res.status(400).json({
+      error: "Missing required fields: user_id, partner_birth_date, partner_birth_place",
+    });
+  }
+
+  // 1. Fetch user profile
+  const { data: userProfile, error: userErr } = await supabaseServer
+    .from("astro_profiles")
+    .select("*")
+    .eq("user_id", user_id)
+    .single();
+
+  if (userErr) {
+    if (userErr.code === "PGRST116") {
+      return res.status(404).json({ error: "User profile not found" });
+    }
+    return res.status(500).json({ error: userErr.message });
+  }
+
+  const bafeUrl = BAFE_INTERNAL_URL || BAFE_PUBLIC_URL;
+  const birthTime = partner_birth_time || "12:00";
+
+  // 2. Compute partner's full chart via FuFirE /api/webhooks/chart
+  let partnerChart;
+  try {
+    const chartRes = await fetchWithRetry(`${bafeUrl}/api/webhooks/chart`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": ELEVENLABS_TOOL_SECRET,
+      },
+      body: JSON.stringify({
+        birthDate: partner_birth_date,
+        birthTime: birthTime,
+        birthPlace: partner_birth_place,
+        ambiguousTime: "earlier",
+        nonexistentTime: "shift_forward",
+      }),
+      signal: AbortSignal.timeout(15000),
+    });
+
+    if (!chartRes.ok) {
+      const errBody = await chartRes.text().catch(() => "");
+      console.error(`[agent/match] FuFirE chart error ${chartRes.status}:`, errBody);
+      return res.status(502).json({ error: "Partner chart calculation failed", detail: errBody });
+    }
+
+    partnerChart = await chartRes.json();
+  } catch (fetchErr) {
+    console.error("[agent/match] partner chart fetch error:", fetchErr.message);
+    return res.status(502).json({ error: "Could not compute partner chart" });
+  }
+
+  // 3. Extract user's chart data from stored profile
+  const raw = userProfile.astro_json || {};
+  const bafe = raw.bafe || raw;
+  const userBazi = bafe.bazi || {};
+  const userWuxing = bafe.wuxing || {};
+
+  const userChartSummary = {
+    sun_sign: userProfile.sun_sign,
+    moon_sign: userProfile.moon_sign,
+    ascendant: userProfile.asc_sign,
+    day_master: userBazi.day_master || null,
+    bazi_pillars: userBazi.pillars
+      ? Object.fromEntries(
+          Object.entries(userBazi.pillars).map(([k, v]) => [
+            k,
+            {
+              stem: v.stem || "?",
+              branch: v.branch || "?",
+              animal: v.animal || null,
+              element: v.element || null,
+            },
+          ])
+        )
+      : null,
+    wuxing_balance: userWuxing.element_percentages || userWuxing.balance || null,
+  };
+
+  // 4. Extract partner's chart data from FuFirE response
+  const partnerSummary = {
+    sun_sign: partnerChart.western?.sunSign || null,
+    moon_sign: partnerChart.western?.moonSign || null,
+    ascendant: partnerChart.western?.ascendantSign || null,
+    day_master: partnerChart.eastern?.dayMaster || null,
+    bazi_pillars: {
+      year: { animal: partnerChart.eastern?.yearAnimal || null, element: partnerChart.eastern?.yearElement || null },
+      month: { animal: partnerChart.eastern?.monthAnimal || null, element: partnerChart.eastern?.monthElement || null },
+      day: { animal: partnerChart.eastern?.dayAnimal || null, element: partnerChart.eastern?.dayElement || null },
+      hour: { animal: partnerChart.eastern?.hourAnimal || null, element: partnerChart.eastern?.hourElement || null },
+    },
+    wuxing_balance: partnerChart.fusion?.wuXingBazi || null,
+  };
+
+  // 5. Compute matching analysis
+  const matchAnalysis = computeMatchAnalysis(userChartSummary, partnerSummary, partnerChart);
+
+  // 6. Return structured response
+  res.json({
+    user_profile: userChartSummary,
+    partner_profile: partnerSummary,
+    match_analysis: matchAnalysis,
+    meta: {
+      partner_time_known: partner_time_known,
+      uncertainty_note: partner_time_known
+        ? null
+        : "Geburtszeit des Partners unbekannt — Aszendent und Stundensaeule sind approximiert (12:00 Mittag).",
+      agent_type: agent_type,
+    },
+  });
+});
+
+/**
+ * Compute match analysis between two chart profiles.
+ * Pure logic — no DB calls, no external APIs.
+ */
+function computeMatchAnalysis(userChart, partnerChart, partnerRawChart) {
+  const ZODIAC_ORDER = [
+    "Widder", "Stier", "Zwillinge", "Krebs", "Loewe", "Jungfrau",
+    "Waage", "Skorpion", "Schuetze", "Steinbock", "Wassermann", "Fische",
+  ];
+
+  function signIndex(sign) {
+    if (!sign) return -1;
+    const normalized = sign.replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ä/g, "ae");
+    return ZODIAC_ORDER.findIndex((z) => z.toLowerCase() === normalized.toLowerCase());
+  }
+
+  function aspectBetween(sign1, sign2) {
+    const i1 = signIndex(sign1);
+    const i2 = signIndex(sign2);
+    if (i1 < 0 || i2 < 0) return { aspect: "unbekannt", quality: "neutral", description: "Daten unvollstaendig." };
+
+    const diff = Math.abs(i1 - i2);
+    const arc = Math.min(diff, 12 - diff);
+    const aspectMap = {
+      0: { aspect: "Konjunktion", quality: "intensiv", description: "Gleiche Grundenergie — Verstaerkung und Spiegelung." },
+      1: { aspect: "Halbsextil", quality: "neutral", description: "Leichte Reibung, die zur Anpassung einlaedt." },
+      2: { aspect: "Sextil", quality: "harmonisch", description: "Natuerlicher Austausch und gegenseitige Unterstuetzung." },
+      3: { aspect: "Quadrat", quality: "spannungsgeladen", description: "Produktive Reibung — Wachstum durch Herausforderung." },
+      4: { aspect: "Trigon", quality: "harmonisch", description: "Tiefe Resonanz und muehehloser Energiefluss." },
+      5: { aspect: "Quinkunx", quality: "justierend", description: "Unterschiedliche Wellenlaengen, die kreative Loesungen erfordern." },
+      6: { aspect: "Opposition", quality: "polar", description: "Anziehung der Gegensaetze — Ergaenzung und Spannung zugleich." },
+    };
+    return aspectMap[arc] || { aspect: "unbekannt", quality: "neutral", description: "" };
+  }
+
+  const sunSun = aspectBetween(userChart.sun_sign, partnerChart.sun_sign);
+  const moonMoon = aspectBetween(userChart.moon_sign, partnerChart.moon_sign);
+  const sunMoonCross = aspectBetween(userChart.sun_sign, partnerChart.moon_sign);
+  const ascAsc = aspectBetween(userChart.ascendant, partnerChart.ascendant);
+
+  // Eastern Compatibility
+  const STEM_ELEMENTS = {
+    "\u7532": "Holz", "\u4E59": "Holz", "\u4E19": "Feuer", "\u4E01": "Feuer",
+    "\u620A": "Erde", "\u5DF1": "Erde", "\u5E9A": "Metall", "\u8F9B": "Metall",
+    "\u58EC": "Wasser", "\u7678": "Wasser",
+  };
+  const SHENG_CYCLE = { "Holz": "Feuer", "Feuer": "Erde", "Erde": "Metall", "Metall": "Wasser", "Wasser": "Holz" };
+  const KE_CYCLE = { "Holz": "Erde", "Feuer": "Metall", "Erde": "Wasser", "Metall": "Holz", "Wasser": "Feuer" };
+
+  function dayMasterRelation(dm1, dm2) {
+    const e1 = STEM_ELEMENTS[dm1];
+    const e2 = STEM_ELEMENTS[dm2];
+    if (!e1 || !e2) return { relation: "unbekannt", description: "Daten unvollstaendig." };
+    if (e1 === e2) return { relation: "Geschwister (比肩/劫财)", description: `Beide ${e1} — Gleichgesinnte, die um Raum konkurrieren koennen.` };
+    if (SHENG_CYCLE[e1] === e2) return { relation: "Naehrend (生)", description: `${e1} naehrt ${e2} — natuerliche Unterstuetzung und Ressourcenfluss.` };
+    if (SHENG_CYCLE[e2] === e1) return { relation: "Genaehrt (被生)", description: `${e2} naehrt ${e1} — Empfangen und Aufnehmen von Unterstuetzung.` };
+    if (KE_CYCLE[e1] === e2) return { relation: "Regulierend (克)", description: `${e1} reguliert ${e2} — Formgebung, aber potenziell Kontrolldruck.` };
+    if (KE_CYCLE[e2] === e1) return { relation: "Reguliert (被克)", description: `${e2} reguliert ${e1} — Herausforderung, die Disziplin erzwingt.` };
+    return { relation: "neutral", description: "Keine direkte Sheng/Ke-Beziehung zwischen den Day Mastern." };
+  }
+
+  const dmRelation = dayMasterRelation(userChart.day_master, partnerChart.day_master);
+
+  // Year pillar harmony (Liu-He / Liu-Chong)
+  const LIU_HE = {
+    "Ratte": "Rind", "Rind": "Ratte", "Tiger": "Schwein", "Schwein": "Tiger",
+    "Hase": "Hund", "Hund": "Hase", "Drache": "Hahn", "Hahn": "Drache",
+    "Schlange": "Affe", "Affe": "Schlange", "Pferd": "Schaf", "Schaf": "Pferd",
+  };
+  const LIU_CHONG = {
+    "Ratte": "Pferd", "Pferd": "Ratte", "Rind": "Schaf", "Schaf": "Rind",
+    "Tiger": "Affe", "Affe": "Tiger", "Hase": "Hahn", "Hahn": "Hase",
+    "Drache": "Hund", "Hund": "Drache", "Schlange": "Schwein", "Schwein": "Schlange",
+  };
+
+  function yearPillarMatch(userPillars, partnerPillars) {
+    const ua = userPillars?.year?.animal;
+    const pa = partnerPillars?.year?.animal;
+    if (!ua || !pa) return { harmony: "unbekannt", description: "Daten unvollstaendig." };
+    if (LIU_HE[ua] === pa) return { harmony: "Liu-He (六合)", description: `${ua} und ${pa} bilden eine der sechs Harmonien — natuerliche Anziehung.` };
+    if (LIU_CHONG[ua] === pa) return { harmony: "Liu-Chong (六冲)", description: `${ua} und ${pa} stehen im Clash — intensive Spannung, die Transformation erzwingen kann.` };
+    return { harmony: "neutral", description: `${ua} und ${pa} haben keine direkte Harmonie- oder Clash-Beziehung.` };
+  }
+
+  const yearMatch = yearPillarMatch(userChart.bazi_pillars, partnerChart.bazi_pillars);
+
+  // WuXing overlay
+  function computeWuxingOverlay(userWuxing, partnerWuxing) {
+    if (!userWuxing || !partnerWuxing) return { shared_strengths: [], complementary_gaps: [], friction_points: [] };
+    const ELEMENTS = ["Holz", "Feuer", "Erde", "Metall", "Wasser"];
+    const shared = [], complementary = [], friction = [];
+    for (const elem of ELEMENTS) {
+      const u = userWuxing[elem] || 0, p = partnerWuxing[elem] || 0;
+      if (u > 0.25 && p > 0.25) shared.push(`${elem} ist bei beiden stark — gemeinsame Ressource.`);
+      else if ((u > 0.25 && p < 0.15) || (p > 0.25 && u < 0.15)) {
+        complementary.push(`${elem}: ${u > p ? "User" : "Partner"} bringt Staerke, die dem anderen fehlt.`);
+      }
+      if (u < 0.12 && p < 0.12) friction.push(`${elem} fehlt beiden — gemeinsames Defizit.`);
+    }
+    return { shared_strengths: shared, complementary_gaps: complementary, friction_points: friction };
+  }
+
+  const wuxinOverlay = computeWuxingOverlay(userChart.wuxing_balance, partnerChart.wuxing_balance);
+
+  // Fusion score
+  const qualityScores = { harmonisch: 0.85, intensiv: 0.7, polar: 0.6, justierend: 0.5, spannungsgeladen: 0.45, neutral: 0.6, unbekannt: 0.5 };
+  const westernAspects = [sunSun, moonMoon, sunMoonCross, ascAsc];
+  const westernScore = westernAspects.reduce((sum, a) => sum + (qualityScores[a.quality] || 0.5), 0) / westernAspects.length;
+  const dmScore = dmRelation.relation.includes("Naehrend") || dmRelation.relation.includes("Genaehrt") ? 0.85
+    : dmRelation.relation.includes("Geschwister") ? 0.7
+    : dmRelation.relation.includes("Regulierend") || dmRelation.relation.includes("Reguliert") ? 0.5 : 0.6;
+  const yearScore = yearMatch.harmony.includes("Liu-He") ? 0.9 : yearMatch.harmony.includes("Liu-Chong") ? 0.4 : 0.6;
+  const harmonyScore = Math.round((westernScore * 0.4 + dmScore * 0.35 + yearScore * 0.25) * 100) / 100;
+
+  const resonanceAnchors = [], growthEdges = [];
+  for (const a of westernAspects) {
+    if (a.quality === "harmonisch") resonanceAnchors.push(a.description);
+    if (a.quality === "spannungsgeladen" || a.quality === "polar") growthEdges.push(a.description);
+  }
+  if (dmRelation.relation.includes("Naehrend") || dmRelation.relation.includes("Genaehrt")) resonanceAnchors.push(dmRelation.description);
+  if (dmRelation.relation.includes("Regulierend") || dmRelation.relation.includes("Reguliert")) growthEdges.push(dmRelation.description);
+  if (yearMatch.harmony.includes("Liu-He")) resonanceAnchors.push(yearMatch.description);
+  if (yearMatch.harmony.includes("Liu-Chong")) growthEdges.push(yearMatch.description);
+  wuxinOverlay.shared_strengths.forEach((s) => resonanceAnchors.push(s));
+  wuxinOverlay.friction_points.forEach((f) => growthEdges.push(f));
+
+  return {
+    western_compatibility: { sun_sun: sunSun, moon_moon: moonMoon, sun_moon_cross: sunMoonCross, asc_asc: ascAsc },
+    eastern_compatibility: { day_master_relation: dmRelation, year_pillar_match: yearMatch, wuxing_overlay: wuxinOverlay },
+    fusion_match: {
+      harmony_score: harmonyScore,
+      resonance_anchors: resonanceAnchors,
+      growth_edges: growthEdges,
+      fusion_narrative: [
+        resonanceAnchors.length > 0 ? `Anker: ${resonanceAnchors.slice(0, 3).join(" ")}` : "",
+        growthEdges.length > 0 ? `Kanten: ${growthEdges.slice(0, 2).join(" ")}` : "",
+        wuxinOverlay.complementary_gaps.length > 0 ? `Ergaenzungen: ${wuxinOverlay.complementary_gaps.slice(0, 2).join(" ")}` : "",
+      ].filter(Boolean).join(" | "),
+    },
+  };
+}
+
 // ── POST /api/agent/summary — Auto-synthesize user profile from conversations ──
 app.post("/api/agent/summary", requireUserAuth, async (req, res) => {
   if (!supabaseServer) {
