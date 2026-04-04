@@ -42,19 +42,19 @@ export default function MiniSignature({ natalWeights, quizWeights, dayHarmonic, 
       <div className="relative w-full aspect-square rounded-full overflow-hidden" style={{ background: 'var(--tile-border)' }}>
         {!hasData && loading ? (
           <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
-            <p className="text-[10px] opacity-40 uppercase tracking-widest animate-pulse font-sans">
+            <p className="text-[10px] opacity-60 uppercase tracking-widest animate-pulse font-sans">
               {t('dashboard.miniSignature.calculating')}
             </p>
           </div>
         ) : !hasData ? (
           <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
-            <p className="text-[10px] opacity-30 uppercase tracking-widest font-sans">
+            <p className="text-[10px] opacity-60 uppercase tracking-widest font-sans">
               {t('dashboard.miniSignature.unavailable')}
             </p>
           </div>
         ) : paused ? (
           <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-[10px] opacity-30 uppercase tracking-widest font-sans">
+            <p className="text-[10px] opacity-60 uppercase tracking-widest font-sans">
               {t('dashboard.miniSignature.paused')}
             </p>
           </div>
@@ -88,7 +88,7 @@ export default function MiniSignature({ natalWeights, quizWeights, dayHarmonic, 
         <div className="flex items-center gap-2">
           <button
             onClick={(e) => { e.stopPropagation(); togglePause(); }}
-            className="w-6 h-6 rounded-full border border-current opacity-20 flex items-center justify-center hover:opacity-40 transition-opacity"
+            className="w-6 h-6 rounded-full border border-current opacity-50 flex items-center justify-center hover:opacity-70 transition-opacity"
             aria-label={t('dashboard.miniSignature.togglePause')}
           >
             {paused
@@ -96,7 +96,7 @@ export default function MiniSignature({ natalWeights, quizWeights, dayHarmonic, 
               : <Pause className="w-3 h-3" />
             }
           </button>
-          <div className="w-5 h-5 rounded-full border border-current opacity-20 flex items-center justify-center group-hover:opacity-40 transition-opacity">
+          <div className="w-5 h-5 rounded-full border border-current opacity-50 flex items-center justify-center group-hover:opacity-70 transition-opacity">
             <span className="text-[8px]">⤢</span>
           </div>
         </div>

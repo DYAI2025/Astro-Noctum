@@ -166,7 +166,7 @@ export function AgentSection({
       </div>
 
       {/* ── Description ────────────────────────────────────────────── */}
-      <p className="text-sm opacity-60 leading-relaxed font-sans">
+      <p className="text-sm opacity-75 leading-relaxed font-sans">
         {isActive ? activeDesc : description}
       </p>
 

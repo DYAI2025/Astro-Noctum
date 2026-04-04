@@ -43,7 +43,7 @@ function xrayStyle(xrayClass: string): string {
   if (cls === 'X') return 'bg-red-500/15 text-red-400';
   if (cls === 'M') return 'bg-orange-500/15 text-orange-400';
   if (cls === 'C') return 'bg-amber-500/15 text-amber-400';
-  return 'bg-zinc-700/50 text-zinc-400';
+  return 'bg-zinc-700/50 text-zinc-300';
 }
 
 // ── Event pills ──────────────────────────────────────────────────────────────
@@ -99,7 +99,7 @@ function GaugeBar({ label, percent, barClass, tooltip, badge }: GaugeBarProps) {
     <Tooltip content={tooltip} wide dark>
       <div className="space-y-3 group cursor-help" tabIndex={0}>
         <div className="flex justify-between items-end">
-          <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em] group-hover:text-zinc-400 transition-colors">
+          <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-[0.2em] group-hover:text-zinc-300 transition-colors">
             {label}
           </span>
           <div className="flex items-center gap-1.5">
@@ -108,7 +108,7 @@ function GaugeBar({ label, percent, barClass, tooltip, badge }: GaugeBarProps) {
                 {badge.text}
               </span>
             )}
-            <span className="text-[10px] font-mono text-zinc-400">{safePercent}%</span>
+            <span className="text-[10px] font-mono text-zinc-300">{safePercent}%</span>
           </div>
         </div>
         <div className="h-[6px] w-full bg-zinc-900/50 rounded-full overflow-hidden border border-white/5 relative">
@@ -155,7 +155,7 @@ export function CosmicInfluenceSection({ spaceWeather }: CosmicInfluenceSectionP
     <div className="bg-zinc-900/40 border border-zinc-800 p-6 rounded-[2rem] space-y-8">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-[10px] font-bold tracking-[0.2em] text-zinc-500 uppercase">
+        <h2 className="text-[10px] font-bold tracking-[0.2em] text-zinc-300 uppercase">
           {t('dashboard.cosmicInfluence.sectionTitle')}
         </h2>
         <div className={`text-[8px] font-mono ${isLive ? 'text-emerald-500' : 'text-zinc-600'}`}>

@@ -23,7 +23,7 @@ function Gauge({ label, value, color = "bg-white", tooltip }: GaugeProps) {
         <span className="text-[10px] font-sans font-bold uppercase tracking-[0.2em] transition-colors" style={{ color: 'var(--tile-text-secondary)' }}>
           {label}
         </span>
-        <span className="text-[10px] font-sans" style={{ color: 'var(--tile-text-secondary)', opacity: 0.7 }}>
+        <span className="text-[10px] font-sans" style={{ color: 'var(--tile-text-secondary)', opacity: 0.85 }}>
           {percent}%
         </span>
       </div>

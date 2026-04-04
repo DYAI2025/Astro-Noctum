@@ -97,7 +97,7 @@ export function DashboardBigFour({
             {icon}
           </div>
           <div className="min-w-0">
-            <p className="text-[8px] font-sans uppercase tracking-[0.2em] opacity-40">
+            <p className="text-[8px] font-sans uppercase tracking-[0.2em] opacity-65">
               {t(labelKey)}
             </p>
             <p className="text-sm font-serif truncate">
