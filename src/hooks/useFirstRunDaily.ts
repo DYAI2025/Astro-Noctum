@@ -77,8 +77,8 @@ export function useFirstRunDaily(
   const fetchedRef = useRef(false);
 
   useEffect(() => {
-    // Guard: need all inputs
-    if (!userId || !birthData || !soulprintSectors || fetchedRef.current) return;
+    // Guard: need userId + birthData; soulprint can be null (synthetic fallback)
+    if (!userId || !birthData || fetchedRef.current) return;
     fetchedRef.current = true;
 
     let cancelled = false;
@@ -119,7 +119,7 @@ export function useFirstRunDaily(
         setLoading(true);
         const data = await fetchDailyExperience(
           birthData,
-          soulprintSectors,
+          soulprintSectors ?? Array(12).fill(0.5),
           quizSectors,
           todayDate,
         );

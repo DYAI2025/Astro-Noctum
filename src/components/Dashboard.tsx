@@ -29,6 +29,7 @@ import { Card } from "./ui/card";
 import {
   toNatalWeightsOrUndefined,
   toDimensionWeightsOrUndefined,
+  syntheticSoulprintFromSign,
 } from "@/src/lib/signatur/weight-utils";
 import { DashboardBigFour as DashboardBigFourCard } from "./dashboard/DashboardBigFour";
 import MiniSignature from "./dashboard/MiniSignature";
@@ -264,21 +265,27 @@ export function Dashboard({
   // showModal (auto-open) deliberately not used for rendering — wireframe F3:
   // "Modal wird nicht mehr automatisch geöffnet".
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
+
+  // ── Effective soulprint: DB value or synthetic fallback from BAFE zodiac sign ──
+  const effectiveSoulprint = profileMeta.soulprintSectors
+    ?? syntheticSoulprintFromSign(apiData?.western?.zodiac_sign || '');
+
   const { dailyData, dayHarmonic, handleClose: handleDailyClose } = useFirstRunDaily(
     userId,
     profileMeta.birthInput,
-    profileMeta.soulprintSectors,
+    effectiveSoulprint,
     profileMeta.quizSectors,
   );
+
   const natalWeights = useMemo(
-    () => toNatalWeightsOrUndefined(profileMeta.soulprintSectors),
-    [profileMeta.soulprintSectors],
+    () => toNatalWeightsOrUndefined(effectiveSoulprint),
+    [effectiveSoulprint],
   );
 
   // ── Memoised V3 dimension weights for MiniSignature ─────────────────
   const dimensionWeights = useMemo(
-    () => toDimensionWeightsOrUndefined(profileMeta.soulprintSectors),
-    [profileMeta.soulprintSectors],
+    () => toDimensionWeightsOrUndefined(effectiveSoulprint),
+    [effectiveSoulprint],
   );
 
   // ── Render ────────────────────────────────────────────────────────────

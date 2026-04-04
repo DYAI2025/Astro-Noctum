@@ -392,6 +392,7 @@ const translationsEn: DeepStringRecord = {
       signaturLabel: "Your Signature:",
       transitLabel: "Current Phase:",
       closeLabel: "Close",
+      emptyContent: "Your Vibe is being prepared — please try again shortly.",
     },
     cosmicWeatherCard: {
       leviLabel: "Levi",
@@ -842,6 +843,7 @@ const translationsDe: DeepStringRecord = {
       signaturLabel: "Deine Signatur:",
       transitLabel: "Aktuelle Phase:",
       closeLabel: "Schliessen",
+      emptyContent: "Dein Vibe wird vorbereitet — bitte versuche es gleich nochmal.",
     },
     cosmicWeatherCard: {
       leviLabel: "Levi",

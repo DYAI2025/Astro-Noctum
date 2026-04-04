@@ -94,9 +94,15 @@ export function VibesModal({ data, onClose }: VibesModalProps) {
             </p>
 
             {/* Level 1: Kurzsignal */}
-            <p className="font-serif text-2xl sm:text-3xl text-center leading-snug text-gold max-w-[24ch]">
-              {data.kurzsignal}
-            </p>
+            {data.kurzsignal?.trim() ? (
+              <p className="font-serif text-2xl sm:text-3xl text-center leading-snug text-gold max-w-[24ch]">
+                {data.kurzsignal}
+              </p>
+            ) : (
+              <p className="text-sm text-white/40 text-center italic">
+                {t('dashboard.vibesModal.emptyContent')}
+              </p>
+            )}
 
             {/* Level 2: Treiber pills */}
             <div className="flex flex-wrap justify-center gap-2">

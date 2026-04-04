@@ -5,6 +5,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { fetchVibes, type VibesResponse } from '../../services/vibes';
 import { formatCooldown } from '../../lib/format-cooldown';
 import { VibesModal } from './VibesModal';
+import { PremiumGate } from '../PremiumGate';
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -59,6 +60,7 @@ export function VibesSection({ userId }: VibesSectionProps) {
 
   return (
     <>
+      <PremiumGate teaser={lang === 'de' ? 'Dein persönlicher Vibe — nur für Premium' : 'Your personal Vibe — Premium only'}>
       <div className="flex flex-col items-center gap-2">
         <button
           onClick={handleFetch}
@@ -97,6 +99,7 @@ export function VibesSection({ userId }: VibesSectionProps) {
           </motion.p>
         )}
       </div>
+      </PremiumGate>
 
       {/* Modal */}
       <AnimatePresence>

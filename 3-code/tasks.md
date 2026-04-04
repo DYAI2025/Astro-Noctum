@@ -274,9 +274,9 @@
 
 | ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
 |----|------|----------|--------|-----|--------------|---------|-------|
-| TASK-influence-gauges-zero-fix | Fix InfluenceGauges rendering 0% when natalWeights is undefined — show truthful unavailable state or derive from apiData | P1 | Todo | - | - | 2026-04-04 | BUG-17; check weights prop wiring from Dashboard.tsx |
-| TASK-vibe-text-missing-fix | Fix Vibe result text not showing after successful fetch — check VibesModal render, fetchVibes response mapping, i18n key resolution | P1 | Todo | - | - | 2026-04-04 | BUG-18; VibesSection was unmounted until today — may have response format drift |
-| TASK-daily-pulse-text-missing-fix | Fix Daily Pulse body text not rendering — check DashboardTagesEnergie when dailyData.body/headline is null/empty, fallback path | P1 | Todo | - | - | 2026-04-04 | BUG-19; check useFirstRunDaily → Experience API → dailyData shape |
+| TASK-influence-gauges-zero-fix | Fix InfluenceGauges rendering 0% when natalWeights is undefined — show truthful unavailable state or derive from apiData | P1 | Done | - | - | 2026-04-04 | BUG-17; syntheticSoulprintFromSign fallback in Dashboard.tsx; 5 tests |
+| TASK-vibe-text-missing-fix | Fix Vibe result text not showing after successful fetch — check VibesModal render, fetchVibes response mapping, i18n key resolution | P1 | Done | - | - | 2026-04-04 | BUG-18; empty-content guard in VibesModal + PremiumGate on VibesSection per REQ-F-vibes-core |
+| TASK-daily-pulse-text-missing-fix | Fix Daily Pulse body text not rendering — check DashboardTagesEnergie when dailyData.body/headline is null/empty, fallback path | P1 | Done | - | - | 2026-04-04 | BUG-19; removed soulprint null guard from useFirstRunDaily; pass effectiveSoulprint |
 
 ### Cluster C — Quiz Pipeline
 
