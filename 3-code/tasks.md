@@ -562,7 +562,7 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | TASK-deploy-runbook | Create Railway deploy runbook (build, env vars checklist, rollback steps) | P0 | Done | - | - | 2026-03-28 | |
 | TASK-migration-runbook | Create Supabase migration runbook (SQL Editor workflow, rollback patterns) | P0 | Done | - | - | 2026-03-28 | |
 | TASK-phase-b-manual-testing | Create onboarding runbook: test scenarios for all 7 phases, desktop + mobile, flag on/off | P1 | Done | - | TASK-onboarding-flag-gate | 2026-03-28 | |
-| TASK-phase-e-manual-testing | Update deploy runbook with depth-nav test scenarios and element-adaptation verification | P1 | Todo | - | TASK-engagement-fluidity | 2026-03-28 | |
+| TASK-phase-e-manual-testing | Update deploy runbook with depth-nav test scenarios and element-adaptation verification | P1 | Done | - | TASK-engagement-fluidity | 2026-04-04 | 4-deploy/runbooks/phase-e-autopoietic-ux-test.md — 8 sections, 24 scenarios |
 | TASK-sbridge-manual-testing | Erstelle `docs/runbooks/signatur-s-bridge-verification.md`: vitest grün, MiniSignature rendert, Signatur-Seite rendert, tsc clean | P1 | Done | - | TASK-sbridge-determinism, TASK-sbridge-swift-doc | 2026-03-29 | |
 
 ## Sprint S-DASH-LIVE: Dashboard Live Data, Navigation & Bug Fixes
