@@ -283,8 +283,8 @@
 | ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
 |----|------|----------|--------|-----|--------------|---------|-------|
 | TASK-quiz-completion-persist-fix | Fix quiz completion state not surviving page reload — check contribution_events upsert + cluster completion gate hydration | P1 | Done | - | - | 2026-04-04 | BUG-20; localStorage persistence for individual completions; merged with Supabase on hydration; 7 tests |
-| TASK-quiz-result-latency-fix | Fix 3-4 minute quiz result latency — check /api/contribute pipeline, Gemini timeout, cache hit path | P2 | Todo | - | - | 2026-04-04 | BUG-21; expected: seconds via cached/deterministic path |
-| TASK-quiz-placeholder-headings-fix | Audit + fix all 22 quiz title/subtitle i18n keys — replace remaining placeholders with final DE/EN copy | P2 | Todo | - | - | 2026-04-04 | BUG-22; audit quiz definitions in packages/shared + components/quizzes |
+| TASK-quiz-result-latency-fix | Fix 3-4 minute quiz result latency — check /api/contribute pipeline, Gemini timeout, cache hit path | P2 | Done | - | - | 2026-04-04 | BUG-21; added refresh() to useFusionSignal + 500ms delayed call after quiz completion in FuRingPage |
+| TASK-quiz-placeholder-headings-fix | Audit + fix all 22 quiz title/subtitle i18n keys — replace remaining placeholders with final DE/EN copy | P2 | Done | - | - | 2026-04-04 | BUG-22; audit complete — all 24 quizzes have final DE+EN titles+subtitles; no placeholders found |
 
 ---
 

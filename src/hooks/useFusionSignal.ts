@@ -20,6 +20,8 @@ type FusionSignalState = {
   loading: boolean;
   error: Error | null;
   updateResolution: (nextResolution: number) => void;
+  /** Force an immediate re-fetch of the transit state (e.g. after quiz completion). */
+  refresh: () => void;
 };
 
 const clampTarget = (value: number): number => Math.max(-1, Math.min(2, value));
@@ -183,6 +185,10 @@ export const useFusionSignal = (userId: string): FusionSignalState => {
     setResolution(Math.max(33, Math.min(100, nextResolution)));
   }, []);
 
+  const refresh = useCallback(() => {
+    void fetchTransitState();
+  }, [fetchTransitState]);
+
   return {
     signalData,
     events,
@@ -190,5 +196,6 @@ export const useFusionSignal = (userId: string): FusionSignalState => {
     loading,
     error,
     updateResolution,
+    refresh,
   };
 };

@@ -39,7 +39,7 @@ export default function FuRingPage() {
   const suggestedModule = useQuizSuggestion(completedModuleIds);
   const quizContribution = useQuizContribution(completedModuleIds);
   const spaceWeather = useSpaceWeather();
-  const { signalData } = useFusionSignal(userId);
+  const { signalData, refresh: refreshSignal } = useFusionSignal(userId);
   const { dayHarmonic } = useFirstRunDaily(userId, null, signalData?.baseSignals ?? null, []);
 
   const [activeQuiz, setActiveQuiz] = useState<string | null>(null);
@@ -105,6 +105,8 @@ export default function FuRingPage() {
     const moduleId = event.source?.moduleId;
     if (moduleId) {
       addModule(moduleId);
+      // Trigger immediate transit-state refresh so the ring updates within seconds
+      setTimeout(refreshSignal, 500);
 
       // Check if this completion finishes a cluster
       const cluster = findClusterForModule(moduleId);
@@ -138,7 +140,7 @@ export default function FuRingPage() {
     // Do NOT close the overlay here — the quiz still shows its ResultScreen
     // as a reward/motivation step. The user closes it via the overlay's
     // close button, backdrop click, or Escape key.
-  }, [quizContribution, completedModuleIds, addModule, userId, natalPlanetWeights, dissonance]);
+  }, [quizContribution, completedModuleIds, addModule, userId, natalPlanetWeights, dissonance, refreshSignal]);
 
   const completedClusterDef = justCompletedCluster
     ? CLUSTER_REGISTRY.find(c => c.id === justCompletedCluster) ?? null
