@@ -129,6 +129,7 @@ When an artifact (goal, requirement) is no longer relevant:
 | [REQ-F-dashboard-identity-cards](requirements/REQ-F-dashboard-identity-cards.md) | REQ-F | Should | Draft | Dashboard top identity cards form a coherent 5-card set incl. Wu-Xing element |
 | [REQ-F-dashboard-live-daily-signals](requirements/REQ-F-dashboard-live-daily-signals.md) | REQ-F | Must | Draft | Daily impulse and influence widgets use live date-sensitive data incl. cosmic weather |
 | [REQ-F-navigation-shell](requirements/REQ-F-navigation-shell.md) | REQ-F | Must | Draft | Top bar: 3 primary items (Astro-Agents, Planetarium, Signatur) + Settings with all utility items; mobile responsive |
+| [REQ-F-signatur-live-transit-panels](requirements/REQ-F-signatur-live-transit-panels.md) | REQ-F | Must | Draft | Lower Signatur-page tiles replaced with live transit resonance panels; no static placeholders |
 
 ---
 

@@ -641,6 +641,7 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 |----|------|----------|--------|-----|--------------|---------|-------|
 | TASK-cosmic-influence-bright-audit | Audit + fix CosmicInfluenceSection + InfluenceGauges bright mode inconsistencies — ensure all cards use CSS vars, no hardcoded dark colors | P1 | Todo | - | - | 2026-04-04 | cosmic-tile class is used but inline gradient styles may override |
 | TASK-card-titles-centered | Center card section titles horizontally and increase font size for visual hierarchy | P3 | Todo | - | - | 2026-04-04 | Affects DashboardTagesEnergie, InfluenceGauges, CosmicInfluenceSection headers |
+| TASK-dashboard-brandmark-heading-restyle | Replace dashboard hero heading with single-word brandmark "Bazodiac", remove leading "dein", apply larger Cormorant Garamond styling, gold treatment, ornamental underline | P1 | Todo | - | - | 2026-04-05 | Explicit PO request; brandmark styling as intentional UI identity change |
 
 ### Cluster B — Identity Cards Redesign
 
@@ -689,7 +690,7 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | TASK-identity-signatur-row | Place Identity accordion (left) + MiniSignature (right) as second section below Planetarium | P2 | Todo | [REQ-F-dashboard-identity-cards](../1-objectives/requirements/REQ-F-dashboard-identity-cards.md) | TASK-identity-vertical-stack, TASK-dashboard-reorder | 2026-04-04 | Keep current grid-cols-[1fr_auto] layout |
 | TASK-daily-pulse-cluster | Group Daily Pulse + InfluenceGauges + CosmicInfluence as one cohesive section (subsections, not isolated blocks) | P2 | Todo | - | TASK-cosmic-weather-rename | 2026-04-04 | Reduced spacing between sub-blocks; shared parent or tighter visual grouping |
 | TASK-astro-three-cards | Render Sonnenzeichen/BaZi/WuXing as three equal-width horizontal cards in a row below Daily Pulse cluster | P2 | Todo | - | TASK-dashboard-reorder | 2026-04-04 | Currently combined in DashboardAstroSection; needs split or restructure |
-| TASK-blueprint-position | Place Kosmischer Blueprint section directly below the three astro cards | P2 | Todo | - | TASK-astro-three-cards | 2026-04-04 | Currently part of DashboardAstroSection at arbitrary position |
+| TASK-blueprint-position | Place Kosmischer Blueprint section directly below the three astro cards | P1 | Todo | - | TASK-astro-three-cards | 2026-04-05 | Promoted P2→P1 per PO; dashboard hierarchy restructure in progress |
 | TASK-daily-pulse-naming-resolve | Resolve naming inconsistency: use "Daily Pulse"/"Tagesimpuls" as canonical title; sub-modes (Trace) as subtitle only | P2 | Todo | - | - | 2026-04-04 | Per DEC-daily-pulse-naming; three names currently mixed in codebase |
 
 ### Cluster H — Global Spacing & Alignment
@@ -705,8 +706,25 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
 |----|------|----------|--------|-----|--------------|---------|-------|
 | TASK-bazi-wuxing-bright-audit | Audit BaZi Four Pillars + WuXing element bars for bright mode consistency — ensure text contrast and card backgrounds match design system | P2 | Todo | - | - | 2026-04-04 | Area behind PremiumGate; check BaZiFourPillars + WuXing bar section |
-| TASK-bazi-pillars-clickable | Make Four Pillars cards clickable: each opens contextual explanation specific to user's chart (not just tooltip) | P2 | Todo | - | - | 2026-04-04 | Intake #12; currently tooltip-only; needs per-pillar description from heavenlyStems/earthlyBranches data |
+| TASK-bazi-pillars-clickable | Make Four Pillars cards clickable: each opens contextual explanation specific to user's chart (not just tooltip) | P1 | Todo | - | - | 2026-04-05 | Promoted P2→P1 per PO; functional core request; needs per-pillar description from heavenlyStems/earthlyBranches data |
 | TASK-bazi-section-card-harmony | Ensure BaZi/WuXing section cards match the three-card row style when extracted from DashboardAstroSection | P3 | Todo | - | TASK-astro-three-cards | 2026-04-04 | Depends on Cluster G restructure |
+
+### Cluster J — Signatur Page Transit Panels
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-signatur-live-transit-panel | Replace lower Signatur-page info tiles with live transit resonance panels: show current planetary transits affecting the user's Signatur in real-time | P1 | Todo | [REQ-F-signatur-live-transit-panels](../1-objectives/requirements/REQ-F-signatur-live-transit-panels.md) | - | 2026-04-05 | New requirement track; existing tiles are static placeholders |
+| TASK-signatur-transit-panel-detail | Each transit panel shows planet, aspect, affected pole, resonance direction (amplifying/dampening), and "Warum?" explainability | P1 | Todo | [REQ-F-signatur-live-transit-panels](../1-objectives/requirements/REQ-F-signatur-live-transit-panels.md) | TASK-signatur-live-transit-panel | 2026-04-05 | Every visible tile must provide real functionality |
+| TASK-signatur-remove-redundant-lower-tiles | Remove lower Signatur-page tiles that duplicate cosmic weather or provide no actionable function; keep only live, user-relevant panels | P1 | Todo | [REQ-F-signatur-live-transit-panels](../1-objectives/requirements/REQ-F-signatur-live-transit-panels.md) | TASK-signatur-live-transit-panel | 2026-04-05 | Remove world-weather and accessibility placeholder tiles from this section |
+
+### Cluster K — Reopened Fix Handoffs
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-vibe-visibility-fix | Vibe CTA/tile not reliably reachable on Dashboard — revalidate mount conditions, PremiumGate state, VibesModal result render path, tile placement in current hierarchy | P1 | Todo | [REQ-F-vibes-core](../1-objectives/requirements/REQ-F-vibes-core.md) | - | 2026-04-05 | Reopened: user reports Vibe cannot be meaningfully invoked despite BUG-18 fix; product-level visibility failure |
+| TASK-mini-signature-alignment-fix | MiniSignature visual alignment within Identity row — verify centering, responsive sizing, and canvas aspect ratio at all breakpoints | P1 | Todo | - | - | 2026-04-05 | Reopened fix handoff; check grid-cols-[1fr_auto] layout at 375px and 768px |
+| TASK-current-sky-behavior-fix | Current Sky mode still shows insufficiently different output from birth sky — revalidate simTime calculation, observer coordinates, and constellation rendering | P1 | Todo | - | TASK-current-sky-delta-fix | 2026-04-05 | Reopened; subsumes BUG-15; else-if fix was partial — deeper observer/epoch sync needed |
+| TASK-daily-pulse-influences-live-fix | Daily Pulse and Influence Gauges do not show convincingly live/date-sensitive data — verify transit feed, date-boundary rotation, and gauge label semantics | P1 | Todo | [REQ-F-dashboard-live-daily-signals](../1-objectives/requirements/REQ-F-dashboard-live-daily-signals.md) | - | 2026-04-05 | Reopened; BUG-17/19 fixes addressed null guards but underlying data may still be static/placeholder |
 
 ---
 
