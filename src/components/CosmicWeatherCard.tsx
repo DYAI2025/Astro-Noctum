@@ -126,7 +126,7 @@ export function CosmicWeatherCard({
             <div className="flex items-center gap-2 mb-2">
               <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
               <span className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/75 font-sans font-bold">
-                {t('cosmicWeather.title')}
+                {t('tagesImpuls.sectionLabel')}
               </span>
               {isPremium && (
                 <span className="text-[7px] uppercase tracking-wider text-[#D4AF37] bg-[#D4AF37]/10 px-1.5 py-0.5 rounded-full">
@@ -191,7 +191,7 @@ export function CosmicWeatherCard({
                         onRefresh();
                       }}
                       className="text-[var(--color-text-bright-dim)] hover:text-[#8B6914] transition-colors p-1"
-                      title={t('cosmicWeather.refresh')}
+                      title={lang === 'de' ? 'Aktualisieren' : 'Refresh'}
                     >
                       <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
                     </button>

@@ -546,7 +546,7 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | TASK-signatur-tile-resolve | Fix signature dashboard tile stuck in "wird berechnet": bootstrap failure → truthful fallback state | P1 | Done | [REQ-F-fusion-ring-visualization](../1-objectives/requirements/REQ-F-fusion-ring-visualization.md) | - | 2026-04-03 | MiniSignature: loading prop distinguishes fetch-in-progress from data-unavailable; 5 new tests |
 | TASK-planetarium-sky-wiring | Fix skyMode propagation from PlanetariumContext to BirthChartOrrery currentSky prop | P2 | Done | - | - | 2026-04-04 | Fixed by Planetarium extraction (fe3eaca): Dashboard.tsx now wires skyMode → currentSky directly |
 | TASK-wcag-contrast-audit | Audit and fix WCAG 2.1 AA contrast failures on dark background; document pass/fail per component | P2 | Done | [REQ-USA-wcag-contrast](../1-objectives/requirements/REQ-USA-wcag-contrast.md) | - | 2026-04-04 | 10 fixes across 5 components; docs/wcag-contrast-audit-2026-04-04.md |
-| TASK-s-dash-live-manual-testing | Create runbook: nav shell + Settings items, identity cards, daily live data, bug fix verification scenarios | P1 | Todo | - | TASK-wcag-contrast-audit | 2026-04-02 | |
+| TASK-s-dash-live-manual-testing | Create runbook: nav shell + Settings items, identity cards, daily live data, bug fix verification scenarios | P1 | Done | - | TASK-wcag-contrast-audit | 2026-04-04 | 4-deploy/runbooks/s-dash-live-test.md — 11 sections, 40 scenarios |
 
 ---
 
@@ -624,7 +624,7 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 
 | ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
 |----|------|----------|--------|-----|--------------|---------|-------|
-| TASK-cosmic-weather-rename | Rename "Cosmic Weather" / "Kosmoswetter" section title to "Daily Pulse" / "Tagesimpuls" | P2 | Todo | - | - | 2026-04-04 | Per DEC-daily-pulse-naming; CosmicWeatherCard title + DashboardTagesEnergie kosmoswetter label |
+| TASK-cosmic-weather-rename | Rename "Cosmic Weather" / "Kosmoswetter" section title to "Daily Pulse" / "Tagesimpuls" | P2 | Done | - | - | 2026-04-04 | Per DEC-daily-pulse-naming; EN: "Daily Pulse", DE: "Tagesimpuls"; legacy CosmicWeatherCard updated |
 | TASK-influence-tooltips-personalized | Replace generic planet tooltips with user-specific interpretations: explain what current % means for user's chart | P2 | Todo | [REQ-F-transparency-rule](../1-objectives/requirements/REQ-F-transparency-rule.md) | - | 2026-04-04 | Extends scope of TASK-transparency-tooltips; needs Gemini or template-based text per planet+value range |
 | TASK-cosmic-values-explained | Add interpretation text to geomagnetisch/Solardruck values: low/medium/high label + user-relevant meaning | P2 | Todo | [REQ-F-transparency-rule](../1-objectives/requirements/REQ-F-transparency-rule.md) | - | 2026-04-04 | CosmicInfluenceSection already has tooltips — need richer content |
 
