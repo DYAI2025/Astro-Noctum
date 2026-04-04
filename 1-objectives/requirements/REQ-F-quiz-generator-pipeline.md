@@ -2,7 +2,7 @@
 
 **Type**: Functional
 
-**Status**: Approved
+**Status**: Draft
 
 **Priority**: Must-have
 
@@ -24,10 +24,27 @@ The generator schema defines a formal mapping contract between quiz dimensions a
 
 The pipeline flow is: `QuizGeneratorInput → GeneratedQuiz → { QuizDefinition, AffinityMapEntries, EventConverterSpec, ResultProfiles, AggregationRules }`.
 
+Each generated or maintained quiz result profile must also conform to a canonical result schema with these six user-facing fields:
+
+- **Title**
+- **Dominant Pattern**
+- **Interpretation**
+- **Action**
+- **Impulse**
+- **Signature Reference**
+
+This canonical schema defines what the result means, what the user can do next, and how the result relates back to the user's Signatur.
+
 ## Acceptance Criteria
 
 - Given a valid `QuizGeneratorInput` with topic, pattern category, dimensions (2–6), cluster assignment, and scoring model, when the generator runs, then it produces a complete `GeneratedQuiz` containing all five output artifacts
 - Given a generated `QuizDefinition`, when it is passed to `scoreQuiz()`, then it returns valid dimension scores and assigns a result profile
+- Given a generated quiz result profile, when it is serialized or rendered, then it contains exactly the six canonical fields Title, Dominant Pattern, Interpretation, Action, Impulse, and Signature Reference
+- Given the Dominant Pattern field, when reviewed, then it names the leading pattern without deterministic identity claims or diagnostic labeling
+- Given the Interpretation field, when reviewed, then it explains the meaning of the result in possibility-oriented language
+- Given the Action field, when reviewed, then it provides a concrete, user-actionable next step rather than abstract advice
+- Given the Impulse field, when reviewed, then it provides a short present-focused cue or prompt that can be acted on immediately
+- Given the Signature Reference field, when reviewed, then it explicitly links the result back to the relevant Signatur logic, such as affected sectors, bipolar dimensions, or related Master Signal dimensions
 - Given a generated quiz's `AffinityMapEntry` list, when merged into `src/lib/fusion-ring/affinity-map.ts`, then each marker keyword resolves to a 12-element sector weight vector summing to a non-zero value
 - Given a generated quiz's `EventConverterSpec`, when registered in `quiz-to-event.ts`, then quiz completion produces a `ContributionEvent` with correct markers (format: `marker.{domain}.{keyword}`, weight 0–1)
 - Given a quiz dimension's `fusionMapping.signaturDimension`, when the quiz modulates the Signatur V3, then the specified bipolar dimension's pole radius changes proportionally to the quiz score

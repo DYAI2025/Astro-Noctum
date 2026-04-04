@@ -113,8 +113,8 @@ When an artifact (goal, requirement) is no longer relevant:
 | [REQ-F-signatur-ios-swift](requirements/REQ-F-signatur-ios-swift.md) | REQ-F | Must | Draft | Native Swift/SwiftUI Signatur — ersetzt deprecated expo-gl Ansatz |
 | [REQ-F-signatur-shared-bridge](requirements/REQ-F-signatur-shared-bridge.md) | REQ-F | Must | Implemented | DIMENSION_DEFS als Single Source of Truth in @bazodiac/shared + Swift-Konstanten |
 | [REQ-F-signatur-day-night-pulse](requirements/REQ-F-signatur-day-night-pulse.md) | REQ-F | Must | Draft | Day-Pulse/Trace + Night-Pulse/Trace Modulation der Signatur |
-| [REQ-F-quiz-generator-pipeline](requirements/REQ-F-quiz-generator-pipeline.md) | REQ-F | Must | Approved | Reusable quiz generator with formal mapping to 12-sector zodiac, 6D Signatur V3, 5D Master Signal |
-| [REQ-F-vibes-core](requirements/REQ-F-vibes-core.md) | REQ-F | Must | Approved | On-demand Vibe insight from Signatur + transit (2–3h horizon, deterministic) |
+| [REQ-F-quiz-generator-pipeline](requirements/REQ-F-quiz-generator-pipeline.md) | REQ-F | Must | Draft | Quiz generator with formal fusion mapping and canonical 6-field result schema |
+| [REQ-F-vibes-core](requirements/REQ-F-vibes-core.md) | REQ-F | Must | Draft | On-demand Vibe insight with deterministic 2-hour refresh window and live drivers |
 | [REQ-F-vibes-output-structure](requirements/REQ-F-vibes-output-structure.md) | REQ-F | Must | Approved | 3-level output: Kurzsignal → Treiber → Erklärung |
 | [REQ-F-weekly-insights-engine](requirements/REQ-F-weekly-insights-engine.md) | REQ-F | Must | Approved | Weekly insights across 7 life areas with tendency labels |
 | [REQ-F-weekly-area-prioritization](requirements/REQ-F-weekly-area-prioritization.md) | REQ-F | Should | Approved | Top-3 life area highlighting with additional depth |

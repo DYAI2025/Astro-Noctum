@@ -248,6 +248,43 @@
 | BUG-12 | Levi layer layout/sizing issues | frontend | Done | commit 4152086 + 57426d3 |
 | BUG-13 | Blueprint DE/EN inconsistency | frontend | Done | S-DP-06 |
 | BUG-14 | "KI-Synthese" heading never specified | frontend | Done | S-DP-04 |
+| BUG-15 | Planetarium: current sky shows no visible difference from birth sky when switching modes | frontend | Todo | Regression — TASK-planetarium-sky-wiring prop fix was insufficient; simTime/observer sync may be the root cause |
+| BUG-16 | Planetarium: current sky does not use live device location (uses birth coords) | frontend | Todo | Needs Geolocation API + permission-aware fallback; see REQ refinement |
+| BUG-17 | Influence Gauges render 0% / placeholder values instead of live transit data | frontend | Todo | Data wiring: natalWeights may be undefined when soulprint_sectors is null |
+| BUG-18 | Vibe text not visible after "Vibe abrufen" — CTA triggers but result text missing | frontend | Todo | Check VibesModal render path + fetchVibes response mapping |
+| BUG-19 | Daily Pulse / Day Trace body text not visible despite dailyData being fetched | frontend | Todo | Check DashboardTagesEnergie render when dailyData.body is empty/null |
+| BUG-20 | Quiz completion state resets on page reload — completed quiz appears uncompleted | frontend, api-server | Todo | Check contribution_events persistence + useQuizContribution hydration |
+| BUG-21 | Quiz result generation latency 3-4 minutes (expected: seconds) | api-server | Todo | Gemini timeout or missing cache hit; check /api/contribute → transit-state pipeline |
+| BUG-22 | Quiz headings contain DE/EN placeholder text instead of final copy | frontend | Todo | Audit all 22 quiz title/subtitle keys in translations + quiz definitions |
+
+---
+
+## Sprint S-BUGFIX: Dashboard & Signatur Data Bugs (2026-04-04)
+
+**Sprint Goal:** Fix 8 data/rendering bugs blocking production quality: Planetarium sky regression, zero-value gauges, missing Vibe/Daily Pulse text, quiz completion persistence, quiz latency, placeholder headings.
+
+### Cluster A — Planetarium Sky Regression
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-current-sky-delta-fix | Fix birth sky vs current sky: ensure switching modes uses distinct simTime + observer coordinates so the orrery shows materially different output | P1 | Todo | - | - | 2026-04-04 | BUG-15; check BirthChartOrrery simTime sync + currentSky useEffect |
+| TASK-current-sky-live-location | Use browser Geolocation API for current sky observer position; fallback: last granted → profile location → birth location | P1 | Todo | - | TASK-current-sky-delta-fix | 2026-04-04 | BUG-16; needs permission prompt + fallback UI; REQ-F-dashboard-live-current-location-sky (Draft) |
+
+### Cluster B — Missing Data/Text
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-influence-gauges-zero-fix | Fix InfluenceGauges rendering 0% when natalWeights is undefined — show truthful unavailable state or derive from apiData | P1 | Todo | - | - | 2026-04-04 | BUG-17; check weights prop wiring from Dashboard.tsx |
+| TASK-vibe-text-missing-fix | Fix Vibe result text not showing after successful fetch — check VibesModal render, fetchVibes response mapping, i18n key resolution | P1 | Todo | - | - | 2026-04-04 | BUG-18; VibesSection was unmounted until today — may have response format drift |
+| TASK-daily-pulse-text-missing-fix | Fix Daily Pulse body text not rendering — check DashboardTagesEnergie when dailyData.body/headline is null/empty, fallback path | P1 | Todo | - | - | 2026-04-04 | BUG-19; check useFirstRunDaily → Experience API → dailyData shape |
+
+### Cluster C — Quiz Pipeline
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-quiz-completion-persist-fix | Fix quiz completion state not surviving page reload — check contribution_events upsert + cluster completion gate hydration | P1 | Todo | - | - | 2026-04-04 | BUG-20; check useQuizContribution + ClusterEnergySystem rehydration |
+| TASK-quiz-result-latency-fix | Fix 3-4 minute quiz result latency — check /api/contribute pipeline, Gemini timeout, cache hit path | P2 | Todo | - | - | 2026-04-04 | BUG-21; expected: seconds via cached/deterministic path |
+| TASK-quiz-placeholder-headings-fix | Audit + fix all 22 quiz title/subtitle i18n keys — replace remaining placeholders with final DE/EN copy | P2 | Todo | - | - | 2026-04-04 | BUG-22; audit quiz definitions in packages/shared + components/quizzes |
 
 ---
 
@@ -625,8 +662,8 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
 |----|------|----------|--------|-----|--------------|---------|-------|
 | TASK-cosmic-weather-rename | Rename "Cosmic Weather" / "Kosmoswetter" section title to "Daily Pulse" / "Tagesimpuls" | P2 | Done | - | - | 2026-04-04 | Per DEC-daily-pulse-naming; EN: "Daily Pulse", DE: "Tagesimpuls"; legacy CosmicWeatherCard updated |
-| TASK-influence-tooltips-personalized | Replace generic planet tooltips with user-specific interpretations: explain what current % means for user's chart | P2 | Todo | [REQ-F-transparency-rule](../1-objectives/requirements/REQ-F-transparency-rule.md) | - | 2026-04-04 | Extends scope of TASK-transparency-tooltips; needs Gemini or template-based text per planet+value range |
-| TASK-cosmic-values-explained | Add interpretation text to geomagnetisch/Solardruck values: low/medium/high label + user-relevant meaning | P2 | Todo | [REQ-F-transparency-rule](../1-objectives/requirements/REQ-F-transparency-rule.md) | - | 2026-04-04 | CosmicInfluenceSection already has tooltips — need richer content |
+| TASK-influence-tooltips-personalized | Replace generic planet tooltips with user-specific interpretations: explain what current % means for user's chart | P2 | Todo | [REQ-F-transparency-rule](../1-objectives/requirements/REQ-F-transparency-rule.md) | - | 2026-04-04 | Extends TASK-transparency-tooltips; NEEDS REFINEMENT: define whether % = intensity/relevance/tension/resonance (intake #15) |
+| TASK-cosmic-values-explained | Add interpretation text to geomagnetisch/Solardruck values: low/medium/high label + user-relevant meaning + link to Signatur impact | P2 | Todo | [REQ-F-transparency-rule](../1-objectives/requirements/REQ-F-transparency-rule.md) | - | 2026-04-04 | NEEDS REFINEMENT: how cosmic values affect Signatur (intake #16); CosmicInfluenceSection has tooltips but content is technical |
 
 ### Cluster E — Planetarium Proportions
 
@@ -668,6 +705,7 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
 |----|------|----------|--------|-----|--------------|---------|-------|
 | TASK-bazi-wuxing-bright-audit | Audit BaZi Four Pillars + WuXing element bars for bright mode consistency — ensure text contrast and card backgrounds match design system | P2 | Todo | - | - | 2026-04-04 | Area behind PremiumGate; check BaZiFourPillars + WuXing bar section |
+| TASK-bazi-pillars-clickable | Make Four Pillars cards clickable: each opens contextual explanation specific to user's chart (not just tooltip) | P2 | Todo | - | - | 2026-04-04 | Intake #12; currently tooltip-only; needs per-pillar description from heavenlyStems/earthlyBranches data |
 | TASK-bazi-section-card-harmony | Ensure BaZi/WuXing section cards match the three-card row style when extracted from DashboardAstroSection | P3 | Todo | - | TASK-astro-three-cards | 2026-04-04 | Depends on Cluster G restructure |
 
 ---
