@@ -162,8 +162,8 @@ export function BirthChartOrrery({
 
   // Sync external observer coordinates (from Dashboard profile/geolocation)
   useEffect(() => {
-    if (propObsLat !== undefined) setCustomLat(String(propObsLat));
-    if (propObsLon !== undefined) setCustomLon(String(propObsLon));
+    if (propObsLat !== undefined && isFinite(propObsLat)) setCustomLat(String(propObsLat));
+    if (propObsLon !== undefined && isFinite(propObsLon)) setCustomLon(String(propObsLon));
   }, [propObsLat, propObsLon, setCustomLat, setCustomLon]);
 
   // Sync planetariumMode prop → hook viewMode

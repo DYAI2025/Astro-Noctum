@@ -30,7 +30,6 @@ import {
   toNatalWeightsOrUndefined,
   toDimensionWeightsOrUndefined,
   syntheticSoulprintFromSign,
-  isSyntheticSoulprint,
 } from "@/src/lib/signatur/weight-utils";
 import { DashboardBigFour as DashboardBigFourCard } from "./dashboard/DashboardBigFour";
 import MiniSignature from "./dashboard/MiniSignature";
@@ -115,7 +114,7 @@ export function Dashboard({
   // ── Dashboard tour ────────────────────────────────────────────
   const { tourStep, next: tourNext, skip: tourSkip } = useDashboardTour(userId);
   const { setPlanetariumMode, planetariumMode, skyMode } = usePlanetarium();
-  const deviceLocation = useDeviceLocation();
+  const deviceLocation = useDeviceLocation(skyMode === 'current');
   const [tourPrevPlanetariumMode, setTourPrevPlanetariumMode] = useState<boolean | null>(null);
 
   // Scroll-triggered tour: step 1 only shows when astro section is visible
@@ -445,7 +444,7 @@ export function Dashboard({
       <div className="flex flex-col gap-6">
         <motion.div {...fadeIn(0.15)}>
           <SectionErrorBoundary name="InfluenceGauges">
-            <InfluenceGauges weights={natalWeights} isSynthetic={isSyntheticSoulprint(effectiveSoulprint)} />
+            <InfluenceGauges weights={natalWeights} isSynthetic={profileMeta.soulprintSectors === null} />
           </SectionErrorBoundary>
         </motion.div>
 

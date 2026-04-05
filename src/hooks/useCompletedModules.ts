@@ -74,14 +74,18 @@ export function useCompletedModules() {
     setCompletedModuleIds(prev => new Set([...prev, moduleId]));
 
     // Also persist individual completion to Supabase (fire-and-forget)
-    // This ensures completions survive cross-device / incognito scenarios
+    // This ensures completions survive cross-device / incognito scenarios.
+    // Schema: contribution_events has event_id (UNIQUE NOT NULL), occurred_at (NOT NULL),
+    // payload (JSONB NOT NULL). sector_weights lives inside payload.
+    const eventId = `${moduleId}:${user.id}:individual`;
     supabase
       .from('contribution_events')
       .upsert({
         user_id: user.id,
+        event_id: eventId,
         module_id: moduleId,
-        sector_weights: Array(12).fill(0),
-        confidence: 0,
+        occurred_at: new Date().toISOString(),
+        payload: { sector_weights: Array(12).fill(0), confidence: 0 },
       }, { onConflict: 'user_id,module_id' })
       .then(({ error }) => {
         if (error) console.warn('[useCompletedModules] Individual persist failed:', error.message);

@@ -89,7 +89,10 @@ export default function InfluenceGauges({ weights, isSynthetic = false }: { weig
       <div className="flex justify-between items-center">
         <h2 className="text-[10px] font-sans font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--tile-text-secondary)' }}>{t('dashboard.influences.sectionTitle')}</h2>
         <div className={`text-[8px] font-sans ${isLive ? 'opacity-80' : 'opacity-40'}`} style={{ color: isLive ? 'var(--tile-accent)' : 'var(--tile-text-secondary)' }}>
-          {isLive ? t('dashboard.influences.liveLabel') : isSynthetic ? t('dashboard.influences.estimatedLabel') : t('dashboard.influences.noDataLabel')}
+          {isLive
+            ? t('dashboard.influences.liveLabel')
+            : (isSynthetic ? t('dashboard.influences.estimatedLabel') : t('dashboard.influences.noDataLabel'))
+          }
         </div>
       </div>
 

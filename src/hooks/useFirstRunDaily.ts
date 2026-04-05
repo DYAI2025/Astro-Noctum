@@ -175,7 +175,8 @@ export function useFirstRunDaily(
         console.warn('[useFirstRunDaily] Error occurred, using local fallback:', err);
         if (!cancelled) {
           const fallback = buildFallbackDaily();
-          setCachedDaily(fallback);
+          // Do NOT cache the fallback — next page load should retry the real API.
+          // setCachedDaily(fallback) would prevent recovery for the rest of the day.
           setDailyData(fallback);
           setShowModal(true);
         }

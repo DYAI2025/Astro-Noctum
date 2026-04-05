@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { syntheticSoulprintFromSign, isSyntheticSoulprint } from '../lib/signatur/weight-utils';
 
+/**
+ * Note: Dashboard.tsx uses the explicit `profileMeta.soulprintSectors === null` check
+ * instead of this heuristic. isSyntheticSoulprint is kept as a utility for other
+ * consumers that don't have access to the profile metadata.
+ */
 describe('isSyntheticSoulprint', () => {
   it('returns true for synthetic soulprint from known sign', () => {
     const synthetic = syntheticSoulprintFromSign('Leo');
