@@ -268,7 +268,7 @@
 | ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
 |----|------|----------|--------|-----|--------------|---------|-------|
 | TASK-current-sky-delta-fix | Fix birth sky vs current sky: ensure switching modes uses distinct simTime + observer coordinates so the orrery shows materially different output | P1 | Done | - | - | 2026-04-04 | BUG-15; fixed isPlaying time-lapse overriding currentSky — now else-if pattern; 3 tests |
-| TASK-current-sky-live-location | Use browser Geolocation API for current sky observer position; fallback: last granted → profile location → birth location | P1 | Todo | - | TASK-current-sky-delta-fix | 2026-04-04 | BUG-16; needs permission prompt + fallback UI; REQ-F-dashboard-live-current-location-sky (Draft) |
+| TASK-current-sky-live-location | Use browser Geolocation API for current sky observer position; fallback: last granted → profile location → birth location | P1 | Done | - | TASK-current-sky-delta-fix | 2026-04-06 | BUG-16; implemented in commit 9a4a776 — useDeviceLocation hook + Dashboard fallback wiring; no dedicated test file yet |
 
 ### Cluster B — Missing Data/Text
 
@@ -589,27 +589,39 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 
 ## Sprint S-SIG-MORPH: Signatur Behavior — Dissonance, Quiz Morphing, Night Pulse
 
-**Sprint Goal:** V3 Bipolar Engine erhält vollständige Dissonanz-Logik (Phase 1), kontinuierliches Quiz-Morphing, Night-Pulse/Trace-Implementierung und den DashboardTagesEnergie Hero-Card mit Kosmoswetter-Strip.
+**Sprint Goal:** V3 Bipolar Engine erhält vollständige Dissonanz-Visualisierung (d_natal Wiring, Lissajous-Blend-Tuning, Elemental Vibration, Pole Glow), kontinuierliches Quiz-Morphing mit morphTo() API + Trail-Blend + Queue, Night-Pulse/Trace mit Premium-Gate, und Verifikation der bereits implementierten DashboardTagesEnergie Hero-Card.
+
+**Code-Analyse (2026-04-05):** `computeV3Dissonance`, `updatePoles` (Lissajous/symmetric blend), `computeVisualModulation`, `lerpModulation`, `dissonanceEase`, `morphDuration`, `DashboardTagesEnergie` (Hero-Card, Kosmoswetter-Strip, Resonanz) sind bereits implementiert. Fehlend: d_natal Wiring aus echten Quiz-Weights, morphTo() API, Trail-Blend, Queue, Night-Pulse, Pole Glow.
+
+### Phase 1 — Dissonance Visual Wiring
 
 | ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
 |----|------|----------|--------|-----|--------------|---------|-------|
-| TASK-dissonance-d-natal-calc | Implement d_natal per dimension: normalized diff between natal_weight and quiz_weight | P1 | Todo | [REQ-F-signatur-dissonance-model](../1-objectives/requirements/REQ-F-signatur-dissonance-model.md) | - | 2026-04-02 | |
-| TASK-dissonance-lissajous-blend | Implement lerp(symmetric_orbit, lissajous_pattern, clamp(d×2, 0, 1)) in V3 pole movement | P1 | Todo | [REQ-F-signatur-dissonance-model](../1-objectives/requirements/REQ-F-signatur-dissonance-model.md) | TASK-dissonance-d-natal-calc | 2026-04-02 | ab d=0.5 reines Lissajous |
-| TASK-dissonance-elemental-vibration | Implement d_elemental vibration texture: Ke (12Hz, crystalline) vs Sheng (3Hz, organic) with elemental_quality scalar | P1 | Todo | [REQ-F-signatur-dissonance-model](../1-objectives/requirements/REQ-F-signatur-dissonance-model.md) | TASK-dissonance-d-natal-calc | 2026-04-02 | |
-| TASK-dissonance-pole-glow-scale | Scale pole head glow radius 8px (d=0) → 20px (d=1) based on d_natal | P1 | Todo | [REQ-F-signatur-dissonance-model](../1-objectives/requirements/REQ-F-signatur-dissonance-model.md) | TASK-dissonance-d-natal-calc | 2026-04-02 | Radial gradient |
-| TASK-dissonance-d-accumulated-stub | Add d_accumulated channel as neutral stub (no visible effect) — architecture-ready for Phase 2 | P1 | Todo | [REQ-F-signatur-dissonance-model](../1-objectives/requirements/REQ-F-signatur-dissonance-model.md) | TASK-dissonance-lissajous-blend | 2026-04-02 | Phase 2 hook point |
-| TASK-quiz-morph-engine-api | Add morphTo(newWeights) to V3 engine: ~2s gradual transition, continuous loop, no cuts or snapshot resets | P1 | Todo | [REQ-F-signatur-quiz-morph](../1-objectives/requirements/REQ-F-signatur-quiz-morph.md) | TASK-dissonance-d-natal-calc | 2026-04-02 | |
-| TASK-quiz-morph-trail-blend | Old trail fades as new geometry writes in during morph (organic overlay, no hard reset) | P1 | Todo | [REQ-F-signatur-quiz-morph](../1-objectives/requirements/REQ-F-signatur-quiz-morph.md) | TASK-quiz-morph-engine-api | 2026-04-02 | |
-| TASK-quiz-morph-queue | Queue rapid weight updates (<2s apart); apply sequentially without skipping | P1 | Todo | [REQ-F-signatur-quiz-morph](../1-objectives/requirements/REQ-F-signatur-quiz-morph.md) | TASK-quiz-morph-engine-api | 2026-04-02 | |
-| TASK-quiz-morph-reduced-motion | prefers-reduced-motion: instant weight update, no ringbuffer-flush visual jump | P1 | Todo | [REQ-F-signatur-quiz-morph](../1-objectives/requirements/REQ-F-signatur-quiz-morph.md) | TASK-quiz-morph-engine-api | 2026-04-02 | |
-| TASK-quiz-morph-contribution-wiring | Wire useQuizContribution → V3 morphTo() on quiz completion | P1 | Todo | [REQ-F-signatur-quiz-morph](../1-objectives/requirements/REQ-F-signatur-quiz-morph.md) | TASK-quiz-morph-trail-blend | 2026-04-02 | |
-| TASK-night-pulse-h-calc | Implement Night-Pulse H calculation: Moon position + BaZi night pillar as data basis | P1 | Todo | [REQ-F-signatur-day-night-pulse](../1-objectives/requirements/REQ-F-signatur-day-night-pulse.md) | - | 2026-04-02 | Server-side computation |
-| TASK-night-pulse-visual | Night-pulse visual modulation: same trail persistence ±% logic as day at 50% intensity ceiling | P1 | Todo | [REQ-F-signatur-day-night-pulse](../1-objectives/requirements/REQ-F-signatur-day-night-pulse.md) | TASK-night-pulse-h-calc | 2026-04-02 | |
-| TASK-night-pulse-premium-gate | Daily night access behind Premium; all users on weekends | P1 | Todo | [REQ-F-signatur-day-night-pulse](../1-objectives/requirements/REQ-F-signatur-day-night-pulse.md) | TASK-night-pulse-visual | 2026-04-02 | |
-| TASK-tagesenergie-hero-card | Build DashboardTagesEnergie hero card: always fully visible (no accordion); order: Element icon+headline, body narrative, Kosmoswetter strip, Resonanz-Indikator; fusion.action behind PremiumGate | P1 | Todo | [REQ-F-signatur-day-night-pulse](../1-objectives/requirements/REQ-F-signatur-day-night-pulse.md) | - | 2026-04-02 | Kein Collapse, kein Expand |
-| TASK-kosmoswetter-strip | Implement Kosmoswetter icon pill strip: Magnetsturm/Flare/CME/HSS/Proton/Transit — suppress G0/A-class noise | P1 | Todo | [REQ-F-signatur-day-night-pulse](../1-objectives/requirements/REQ-F-signatur-day-night-pulse.md) | TASK-tagesenergie-hero-card | 2026-04-02 | |
-| TASK-resonanz-indikator | Implement Resonanz-Indikator: resonance = clamp(harmonyIndex×0.65 + solarPressure×0.35, 0, 1) with 4-level German label copy | P1 | Todo | [REQ-F-signatur-day-night-pulse](../1-objectives/requirements/REQ-F-signatur-day-night-pulse.md) | TASK-tagesenergie-hero-card | 2026-04-02 | |
-| TASK-s-sig-morph-manual-testing | Create runbook: dissonance visual verification, quiz morph test scenarios, night pulse weekend/premium test | P1 | Todo | - | TASK-resonanz-indikator, TASK-quiz-morph-contribution-wiring | 2026-04-02 | |
+| TASK-dissonance-d-natal-calc | Wire d_natal per dimension: normalized diff natal_weight vs quiz_weight into computeV3Dissonance; ensure FuRingPage passes both weight sets | P1 | Todo | [REQ-F-signatur-dissonance-model](../1-objectives/requirements/REQ-F-signatur-dissonance-model.md) | - | 2026-04-05 | computeV3Dissonance exists but needs real quiz weights as input |
+| TASK-dissonance-lissajous-blend | Verify+tune Lissajous blend in updatePoles: per-dimension d from TASK-dissonance-d-natal-calc feeds clamp(d×2) amplification; ab d=0.5 reines Lissajous | P1 | Todo | [REQ-F-signatur-dissonance-model](../1-objectives/requirements/REQ-F-signatur-dissonance-model.md) | TASK-dissonance-d-natal-calc | 2026-04-05 | updatePoles already has symmetric/lissajous blend — tune amplification curve |
+| TASK-dissonance-elemental-vibration | Wire d_elemental → renderer vibration texture: Ke 12Hz angular vs Sheng 3Hz organic using computeVisualModulation output in V3 canvas | P1 | Todo | [REQ-F-signatur-dissonance-model](../1-objectives/requirements/REQ-F-signatur-dissonance-model.md) | TASK-dissonance-d-natal-calc | 2026-04-05 | computeVisualModulation exists — wire output to Three.js particle shader |
+| TASK-dissonance-pole-glow-scale | Scale pole head glow radius 8px (d=0) → 20px (d=1) as radial gradient per dimension based on d_natal | P1 | Todo | [REQ-F-signatur-dissonance-model](../1-objectives/requirements/REQ-F-signatur-dissonance-model.md) | TASK-dissonance-d-natal-calc | 2026-04-05 | New visual — not yet in engine |
+| TASK-dissonance-d-accumulated-stub | Add d_accumulated channel as neutral stub (value=0, no visible effect) — architecture-ready for Phase 2 density field | P1 | Todo | [REQ-F-signatur-dissonance-model](../1-objectives/requirements/REQ-F-signatur-dissonance-model.md) | TASK-dissonance-lissajous-blend | 2026-04-05 | Phase 2 hook point |
+
+### Phase 2 — Quiz Morphing
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-quiz-morph-engine-api | Add morphTo(newWeights) to V3 bipolar-engine: ~2s transition using lerpModulation + dissonanceEase, continuous animation loop, no cuts/snapshot resets | P1 | Todo | [REQ-F-signatur-quiz-morph](../1-objectives/requirements/REQ-F-signatur-quiz-morph.md) | TASK-dissonance-d-natal-calc | 2026-04-05 | lerpModulation/dissonanceEase/morphDuration exist in dissonance-morph.ts |
+| TASK-quiz-morph-trail-blend | Old trail fades (alpha decay) while new geometry writes in during morph — organic overlay, no hard reset | P1 | Todo | [REQ-F-signatur-quiz-morph](../1-objectives/requirements/REQ-F-signatur-quiz-morph.md) | TASK-quiz-morph-engine-api | 2026-04-05 | Trail alpha blending in V3 canvas renderer |
+| TASK-quiz-morph-queue | Queue rapid weight updates (<2s apart); apply sequentially via promise chain, never skip | P1 | Todo | [REQ-F-signatur-quiz-morph](../1-objectives/requirements/REQ-F-signatur-quiz-morph.md) | TASK-quiz-morph-engine-api | 2026-04-05 | |
+| TASK-quiz-morph-reduced-motion | prefers-reduced-motion: instant weight update, skip transition animation, no ringbuffer-flush visual jump | P1 | Todo | [REQ-F-signatur-quiz-morph](../1-objectives/requirements/REQ-F-signatur-quiz-morph.md) | TASK-quiz-morph-engine-api | 2026-04-05 | |
+| TASK-quiz-morph-contribution-wiring | Wire useQuizContribution → V3 morphTo() on quiz completion in FuRingPage; verify single quiz = subtle shift (≤15%), full cluster = deutliche Verschiebung | P1 | Todo | [REQ-F-signatur-quiz-morph](../1-objectives/requirements/REQ-F-signatur-quiz-morph.md) | TASK-quiz-morph-trail-blend | 2026-04-05 | |
+
+### Phase 3 — Night-Pulse + Hero Card Verification
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-night-pulse-h-calc | Night-Pulse H calculation: Moon position + BaZi night pillar as data basis — server-side in /api/experience/daily endpoint | P1 | Todo | [REQ-F-signatur-day-night-pulse](../1-objectives/requirements/REQ-F-signatur-day-night-pulse.md) | - | 2026-04-05 | New server-side computation in server.mjs |
+| TASK-night-pulse-visual | Night-pulse visual modulation: same trail persistence ±% as day, 50% intensity ceiling; voice register softer, introspective | P1 | Todo | [REQ-F-signatur-day-night-pulse](../1-objectives/requirements/REQ-F-signatur-day-night-pulse.md) | TASK-night-pulse-h-calc | 2026-04-05 | |
+| TASK-night-pulse-premium-gate | Night access: daily Premium, weekends all users — gate in useFirstRunDaily + DashboardTagesEnergie conditional | P1 | Todo | [REQ-F-signatur-day-night-pulse](../1-objectives/requirements/REQ-F-signatur-day-night-pulse.md) | TASK-night-pulse-visual | 2026-04-05 | |
+| TASK-tagesenergie-verify-done | Verify existing DashboardTagesEnergie meets all REQ-F-signatur-day-night-pulse acceptance criteria: hero card always visible, element icon+headline, body narrative, Kosmoswetter strip, Resonanz, PremiumGate on action, no auto-modal | P1 | Todo | [REQ-F-signatur-day-night-pulse](../1-objectives/requirements/REQ-F-signatur-day-night-pulse.md) | - | 2026-04-05 | Code exists (452 lines) — verify against acceptance criteria, mark sub-items Done |
+| TASK-s-sig-morph-manual-testing | Create runbook: dissonance visual verification (d=0 symmetric, d=1 lissajous), quiz morph test scenarios (single+cluster+rapid), night pulse weekend/premium gate test | P1 | Todo | - | TASK-quiz-morph-contribution-wiring, TASK-night-pulse-premium-gate | 2026-04-05 | |
 
 ---
 
@@ -721,7 +733,7 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 
 | ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
 |----|------|----------|--------|-----|--------------|---------|-------|
-| TASK-vibe-visibility-fix | Vibe CTA/tile not reliably reachable on Dashboard — revalidate mount conditions, PremiumGate state, VibesModal result render path, tile placement in current hierarchy | P1 | Todo | [REQ-F-vibes-core](../1-objectives/requirements/REQ-F-vibes-core.md) | - | 2026-04-05 | Reopened: user reports Vibe cannot be meaningfully invoked despite BUG-18 fix; product-level visibility failure |
+| TASK-vibe-visibility-fix | Vibe CTA/tile not reliably reachable on Dashboard — revalidate mount conditions, PremiumGate state, VibesModal result render path, tile placement in current hierarchy | P1 | Done | [REQ-F-vibes-core](../1-objectives/requirements/REQ-F-vibes-core.md) | - | 2026-04-06 | Fixed: VibesSection wrapped in cosmic-tile card with section title + subtitle; visual weight matches other Dashboard sections |
 | TASK-mini-signature-alignment-fix | MiniSignature visual alignment within Identity row — verify centering, responsive sizing, and canvas aspect ratio at all breakpoints | P1 | Todo | - | - | 2026-04-05 | Reopened fix handoff; check grid-cols-[1fr_auto] layout at 375px and 768px |
 | TASK-current-sky-behavior-fix | Current Sky mode still shows insufficiently different output from birth sky — revalidate simTime calculation, observer coordinates, and constellation rendering | P1 | Todo | - | TASK-current-sky-delta-fix | 2026-04-05 | Reopened; subsumes BUG-15; else-if fix was partial — deeper observer/epoch sync needed |
 | TASK-daily-pulse-influences-live-fix | Daily Pulse and Influence Gauges do not show convincingly live/date-sensitive data — verify transit feed, date-boundary rotation, and gauge label semantics | P1 | Todo | [REQ-F-dashboard-live-daily-signals](../1-objectives/requirements/REQ-F-dashboard-live-daily-signals.md) | - | 2026-04-05 | Reopened; BUG-17/19 fixes addressed null guards but underlying data may still be static/placeholder |

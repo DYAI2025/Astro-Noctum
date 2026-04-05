@@ -54,52 +54,61 @@ export function VibesSection({ userId }: VibesSectionProps) {
 
   return (
     <>
-      <PremiumGate teaser={t('vibesSection.premiumTeaser')}>
-      <div className="flex flex-col items-center gap-2">
-        <button
-          onClick={handleFetch}
-          disabled={loading}
-          className="relative bg-gold/10 text-gold rounded-xl px-6 py-3 hover:bg-gold/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium"
-        >
-          {loading ? (
-            <>
-              <span className="inline-block w-4 h-4 rounded-full bg-gold/30 animate-pulse" />
-              <span className="inline-block w-20 h-4 rounded bg-gold/20 animate-pulse" />
-            </>
-          ) : (
-            <>
-              <Sparkles size={16} className="opacity-70" />
-              <span>{buttonLabel}</span>
-            </>
-          )}
-        </button>
+      <div className="cosmic-tile p-5 sm:p-6 rounded-[2rem] max-w-md mx-auto text-center">
+        <h3 className="font-serif text-lg text-gold/90 mb-1">
+          {t('vibesSection.sectionTitle')}
+        </h3>
+        <p className="text-xs text-white/40 mb-4">
+          {t('vibesSection.sectionSubtitle')}
+        </p>
 
-        {/* Cooldown indicator */}
-        {cooldownLabel && (
-          <p className="flex items-center gap-1 text-[10px] text-gold/40">
-            <Clock size={10} />
-            <span>{cooldownLabel}</span>
-          </p>
-        )}
-
-        {/* Error message + retry */}
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center gap-1"
-          >
-            <p className="text-xs text-red-400/80">{error}</p>
+        <PremiumGate teaser={t('vibesSection.premiumTeaser')}>
+          <div className="flex flex-col items-center gap-2">
             <button
               onClick={handleFetch}
-              className="text-[10px] text-gold/60 hover:text-gold/90 underline transition-colors"
+              disabled={loading}
+              className="relative bg-gold/10 text-gold rounded-xl px-6 py-3 hover:bg-gold/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium"
             >
-              {t('vibesSection.retryLabel')}
+              {loading ? (
+                <>
+                  <span className="inline-block w-4 h-4 rounded-full bg-gold/30 animate-pulse" />
+                  <span className="inline-block w-20 h-4 rounded bg-gold/20 animate-pulse" />
+                </>
+              ) : (
+                <>
+                  <Sparkles size={16} className="opacity-70" />
+                  <span>{buttonLabel}</span>
+                </>
+              )}
             </button>
-          </motion.div>
-        )}
+
+            {/* Cooldown indicator */}
+            {cooldownLabel && (
+              <p className="flex items-center gap-1 text-[10px] text-gold/40">
+                <Clock size={10} />
+                <span>{cooldownLabel}</span>
+              </p>
+            )}
+
+            {/* Error message + retry */}
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col items-center gap-1"
+              >
+                <p className="text-xs text-red-400/80">{error}</p>
+                <button
+                  onClick={handleFetch}
+                  className="text-[10px] text-gold/60 hover:text-gold/90 underline transition-colors"
+                >
+                  {t('vibesSection.retryLabel')}
+                </button>
+              </motion.div>
+            )}
+          </div>
+        </PremiumGate>
       </div>
-      </PremiumGate>
 
       {/* Modal */}
       <AnimatePresence>

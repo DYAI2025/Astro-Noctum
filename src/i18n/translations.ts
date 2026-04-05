@@ -396,6 +396,8 @@ const translationsEn: DeepStringRecord = {
       emptyContent: "Your Vibe is being prepared — please try again shortly.",
     },
     vibesSection: {
+      sectionTitle: "Your Vibe",
+      sectionSubtitle: "Personalized insight for the next few hours",
       premiumTeaser: "Your personal Vibe — Premium only",
       buttonLabel: "Get Vibe",
       cooldownPrefix: "Next vibe in ",
@@ -855,6 +857,8 @@ const translationsDe: DeepStringRecord = {
       emptyContent: "Dein Vibe wird vorbereitet — bitte versuche es gleich nochmal.",
     },
     vibesSection: {
+      sectionTitle: "Dein Vibe",
+      sectionSubtitle: "Persönlicher Impuls für die nächsten Stunden",
       premiumTeaser: "Dein persönlicher Vibe — nur für Premium",
       buttonLabel: "Vibe abrufen",
       cooldownPrefix: "Nächster Vibe in ",
