@@ -264,7 +264,7 @@ export function Dashboard({
 
   // ── Daily horoscope modal ───────────────────────────────────────────
   // isDayModalOpen: on-demand via "vertiefen →" in DashboardTagesEnergie.
-  // showModal (auto-open) deliberately not used for rendering — wireframe F3:
+  // showModal (auto-open) deliberately not used for rendering - wireframe F3:
   // "Modal wird nicht mehr automatisch geöffnet".
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
 
@@ -332,18 +332,22 @@ export function Dashboard({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
       >
-        {/* Left: title + subtitle */}
+        {/* Left: brandmark + subtitle */}
         <div>
-          <div className="w-8 h-px mb-4" style={{ background: 'var(--tile-accent)', opacity: 0.4 }} />
-          <p className="text-[9px] uppercase tracking-[0.5em] mb-2" style={{ color: 'var(--tile-accent)', opacity: 0.75 }}>
-            {t("dashboard.welcome")}
-          </p>
-          <h1 className="font-serif text-5xl sm:text-6xl leading-tight" style={{ color: 'var(--tile-text-primary)' }}>
-            {t("dashboard.title")}
+          <h1
+            className="font-serif text-6xl sm:text-7xl leading-none tracking-tight"
+            style={{ color: 'var(--color-gold)' }}
+          >
+            Bazodiac
           </h1>
+          {/* Ornamental underline */}
+          <div
+            className="mt-2 mb-3 h-[2px] w-20 rounded-full"
+            style={{ background: 'linear-gradient(90deg, var(--color-gold) 0%, transparent 100%)' }}
+          />
           {birthDate && (
-            <p className="mt-1.5 text-xs tracking-wide" style={{ color: 'var(--tile-text-secondary)' }}>
-              {t("dashboard.birthDate")}{": "}
+            <p className="text-xs tracking-wide" style={{ color: 'var(--tile-text-secondary)' }}>
+              {t("dashboard.birthDate")}{":\u00a0"}
               <span style={{ color: 'var(--tile-text-secondary)' }}>{birthDate}</span>
             </p>
           )}
@@ -384,7 +388,7 @@ export function Dashboard({
         </motion.div>
       )}
 
-      {/* ═══ IDENTITY — Big Four + MiniSignature (F1+F2) ════════════════════ */}
+      {/* ═══ IDENTITY - Big Four + MiniSignature (F1+F2) ════════════════════ */}
       <motion.div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 items-start" {...fadeIn(0.05)}>
         <SectionErrorBoundary name="BigFour">
           <DashboardBigFourCard
@@ -409,7 +413,7 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
-      {/* ═══ TAGES-IMPULS — Hero-Sektion (immer vollständig sichtbar) ══════ */}
+      {/* ═══ TAGES-IMPULS - Hero-Sektion (immer vollständig sichtbar) ══════ */}
       <motion.div {...fadeIn(0.1)}>
         <SectionErrorBoundary name="TagesImpuls">
           {dailyData ? (
@@ -470,7 +474,7 @@ export function Dashboard({
       {/* ── Tour sentinel: step 2 triggers when Levi/interpretation area scrolls into view ── */}
       <div ref={leviSentinelRef} className="h-px" aria-hidden="true" />
 
-      {/* ═══ VOICE AGENTS — Multi-Agent Section ═══════════════════════ */}
+      {/* ═══ VOICE AGENTS - Multi-Agent Section ═══════════════════════ */}
       <motion.div {...fadeIn(0.4)}>
         <SectionErrorBoundary name="Agents">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
@@ -491,7 +495,7 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
-      {/* ═══ UPGRADE BANNER (freemium only, nach Agenten — F4) ════════════ */}
+      {/* ═══ UPGRADE BANNER (freemium only, nach Agenten - F4) ════════════ */}
       {!isPremium && (
         <Card variant="gold" className="w-full max-w-6xl p-6 flex items-center justify-between gap-4"
           {...fadeIn(0.42)}
