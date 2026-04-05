@@ -132,7 +132,7 @@ export const FusionRing3D = ({
           <Suspense fallback={<div className="h-full w-full bg-black/20" />}>
             <SignaturV3Canvas
               natalWeights={v3DimensionWeights}
-              quizWeights={quizWeights ?? {}}
+              quizWeights={quizWeights ?? v3DimensionWeights ?? {}}
               dayHarmonic={dayHarmonic ?? undefined}
               externalDissonance={externalDissonance}
               solarModulation={solarModulation != null ? { ringModulation: solarModulation, triggerEffect: kpIndex >= 5, kpIndex } : undefined}

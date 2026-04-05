@@ -114,6 +114,16 @@ describe('Signatur V3 Engine', () => {
       expect(d.dAccumulated).toBe(0);
     });
 
+    it('natal weights as quiz fallback produce zero d_natal (pristine state)', () => {
+      // When no quiz data is available, FusionRing3D uses natal weights as quiz fallback.
+      // quiz == natal → d_natal = 0 for every dimension → pure consonant/symmetric orbit.
+      const d = computeV3Dissonance(NATAL, NATAL);
+      expect(d.dNatal).toBe(0);
+      for (const dim of DIMENSIONS) {
+        expect(d.dimensional.get(dim.id)).toBe(0);
+      }
+    });
+
     it('dissonant weights produce high dNatal', () => {
       const d = computeV3Dissonance(NATAL, QUIZ_DISSONANT);
       expect(d.dNatal).toBeGreaterThan(0.5);
