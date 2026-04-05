@@ -324,6 +324,7 @@ const translationsEn: DeepStringRecord = {
       saturnTooltip: "Saturn embodies structure, discipline, and responsibility. A low Saturn focus suggests a phase with fewer external constraints and more creative freedom.",
       noDataLabel: "NO DATA",
       liveLabel: "LIVE",
+      estimatedLabel: "ESTIMATED",
     },
     cosmicInfluence: {
       sectionTitle: "Cosmic Influence",
@@ -399,6 +400,7 @@ const translationsEn: DeepStringRecord = {
       buttonLabel: "Get Vibe",
       cooldownPrefix: "Next vibe in ",
       fetchError: "Could not load vibe. Please try again.",
+      retryLabel: "Retry",
     },
     cosmicWeatherCard: {
       leviLabel: "Levi",
@@ -781,6 +783,7 @@ const translationsDe: DeepStringRecord = {
       saturnTooltip: "Saturn verkörpert Struktur, Disziplin und Verantwortung. Ein niedriger Saturn-Fokus deutet auf eine Phase mit weniger äußeren Beschränkungen und mehr Gestaltungsfreiheit hin.",
       noDataLabel: "KEINE DATEN",
       liveLabel: "LIVE",
+      estimatedLabel: "GESCHÄTZT",
     },
     cosmicInfluence: {
       sectionTitle: "Kosmischer Einfluss",
@@ -856,6 +859,7 @@ const translationsDe: DeepStringRecord = {
       buttonLabel: "Vibe abrufen",
       cooldownPrefix: "Nächster Vibe in ",
       fetchError: "Vibe konnte nicht geladen werden. Versuche es erneut.",
+      retryLabel: "Erneut versuchen",
     },
     cosmicWeatherCard: {
       leviLabel: "Levi",

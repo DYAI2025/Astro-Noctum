@@ -33,6 +33,8 @@ export interface UseCelestialOrreryReturn {
   currentDate: Date;
   observerLat: number;
   observerLon: number;
+  setCustomLat: (lat: string) => void;
+  setCustomLon: (lon: string) => void;
   sceneRef: React.MutableRefObject<THREE.Scene | null>;
   cameraRef: React.MutableRefObject<THREE.Camera | null>;
   rendererRef: React.MutableRefObject<THREE.WebGLRenderer | null>;
@@ -135,6 +137,7 @@ export function useCelestialOrrery(
     setViewMode, setShowOrbits, setShowConstellations, setShowConstellationNames,
     setSimTime, setSpeed, setIsPlaying, setSelectedCity, setHoveredObject,
     currentDate, observerLat, observerLon,
+    setCustomLat, setCustomLon,
     sceneRef, cameraRef, rendererRef,
     api,
   };

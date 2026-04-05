@@ -63,6 +63,47 @@ function setCachedDaily(data: DailyResponse): void {
   }
 }
 
+// ── Local fallback ────────────────────────────────────────────────────
+
+/**
+ * Local fallback daily data when FuFirE/Gemini is unreachable.
+ * Provides a deterministic day-mode signal so DashboardTagesEnergie always renders.
+ */
+export function buildFallbackDaily(locale: string = 'de'): DailyResponse {
+  const today = todayKey();
+  const dateHash = today.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  const harmony = 0.3 + (dateHash % 40) / 100;
+  const mode: 'pulse' | 'trace' = harmony >= 0.50 ? 'trace' : 'pulse';
+
+  const synthesisDe = mode === 'pulse'
+    ? 'Heute fließt deine Energie ruhig und gleichmäßig. Ein guter Tag, um innezuhalten und zu beobachten.'
+    : 'Die kosmischen Linien kreuzen sich heute \u2014 etwas bewegt sich. Sei aufmerksam für unerwartete Impulse.';
+  const synthesisEn = mode === 'pulse'
+    ? 'Your energy flows calmly today. A good day to pause and observe.'
+    : 'Cosmic lines cross today \u2014 something is stirring. Stay alert for unexpected impulses.';
+
+  const text = locale.startsWith('en') ? synthesisEn : synthesisDe;
+  const action = locale.startsWith('en') ? 'Take a moment of stillness.' : 'Nimm dir einen Moment der Stille.';
+
+  const emptySection = { summary: '', themes: [] as string[], caution: '', opportunity: '', evidence: {} };
+
+  return {
+    date: today,
+    western: emptySection,
+    eastern: emptySection,
+    fusion: {
+      summary: text,
+      synthesis: text,
+      action,
+      pushworthy: false,
+      push_text: '',
+      harmony_index: harmony,
+      day_mode: mode,
+    },
+    meta: { engine_version: 'v1-local-fallback' },
+  } as DailyResponse;
+}
+
 // ── Hook ──────────────────────────────────────────────────────────────
 
 export function useFirstRunDaily(
@@ -130,10 +171,12 @@ export function useFirstRunDaily(
         setDailyData(data);
         setShowModal(true);
       } catch (err) {
-        // Graceful fallback: on any error, show the modal anyway
-        // This ensures the modal appears even if the DB column is missing
-        console.warn('[useFirstRunDaily] Error occurred, showing modal:', err);
+        // Graceful fallback: use local deterministic daily so DashboardTagesEnergie always renders
+        console.warn('[useFirstRunDaily] Error occurred, using local fallback:', err);
         if (!cancelled) {
+          const fallback = buildFallbackDaily();
+          setCachedDaily(fallback);
+          setDailyData(fallback);
           setShowModal(true);
         }
       } finally {

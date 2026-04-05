@@ -82,15 +82,21 @@ export function VibesSection({ userId }: VibesSectionProps) {
           </p>
         )}
 
-        {/* Error message */}
+        {/* Error message + retry */}
         {error && (
-          <motion.p
+          <motion.div
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-xs text-red-400/80"
+            className="flex flex-col items-center gap-1"
           >
-            {error}
-          </motion.p>
+            <p className="text-xs text-red-400/80">{error}</p>
+            <button
+              onClick={handleFetch}
+              className="text-[10px] text-gold/60 hover:text-gold/90 underline transition-colors"
+            >
+              {t('vibesSection.retryLabel')}
+            </button>
+          </motion.div>
         )}
       </div>
       </PremiumGate>

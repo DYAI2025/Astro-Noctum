@@ -30,6 +30,7 @@ import {
   toNatalWeightsOrUndefined,
   toDimensionWeightsOrUndefined,
   syntheticSoulprintFromSign,
+  isSyntheticSoulprint,
 } from "@/src/lib/signatur/weight-utils";
 import { DashboardBigFour as DashboardBigFourCard } from "./dashboard/DashboardBigFour";
 import MiniSignature from "./dashboard/MiniSignature";
@@ -38,6 +39,7 @@ import { CosmicInfluenceSection } from "./dashboard/CosmicInfluenceSection";
 import { TourOverlay } from "./dashboard/TourOverlay";
 import { useDashboardTour } from "@/src/hooks/useDashboardTour";
 import { usePlanetarium } from "@/src/contexts/PlanetariumContext";
+import { useDeviceLocation } from "@/src/hooks/useDeviceLocation";
 import { VibesSection } from "./dashboard/VibesSection";
 import { SkyModeToggle } from "./dashboard/SkyModeToggle";
 import { getConstellationForSign } from "../lib/astro-data/constellationFromSign";
@@ -113,6 +115,7 @@ export function Dashboard({
   // ── Dashboard tour ────────────────────────────────────────────
   const { tourStep, next: tourNext, skip: tourSkip } = useDashboardTour(userId);
   const { setPlanetariumMode, planetariumMode, skyMode } = usePlanetarium();
+  const deviceLocation = useDeviceLocation();
   const [tourPrevPlanetariumMode, setTourPrevPlanetariumMode] = useState<boolean | null>(null);
 
   // Scroll-triggered tour: step 1 only shows when astro section is visible
@@ -361,6 +364,16 @@ export function Dashboard({
             birthConstellation={birthConstellationKey}
             autoPlay={isFirstReading}
             currentSky={skyMode === 'current'}
+            observerLat={
+              skyMode === 'current'
+                ? (deviceLocation?.lat ?? profileMeta.birthInput?.lat)
+                : profileMeta.birthInput?.lat
+            }
+            observerLon={
+              skyMode === 'current'
+                ? (deviceLocation?.lon ?? profileMeta.birthInput?.lon)
+                : profileMeta.birthInput?.lon
+            }
           />
         </Suspense>
       </motion.div>
@@ -432,7 +445,7 @@ export function Dashboard({
       <div className="flex flex-col gap-6">
         <motion.div {...fadeIn(0.15)}>
           <SectionErrorBoundary name="InfluenceGauges">
-            <InfluenceGauges weights={natalWeights} />
+            <InfluenceGauges weights={natalWeights} isSynthetic={isSyntheticSoulprint(effectiveSoulprint)} />
           </SectionErrorBoundary>
         </motion.div>
 

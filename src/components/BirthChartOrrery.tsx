@@ -128,6 +128,10 @@ interface BirthChartOrreryProps {
   autoPlay?: boolean;
   /** When true, override simTime to "now" (current sky) instead of birth date */
   currentSky?: boolean;
+  /** Observer latitude override (default: Berlin 52.52) */
+  observerLat?: number;
+  /** Observer longitude override (default: Berlin 13.405) */
+  observerLon?: number;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -140,6 +144,8 @@ export function BirthChartOrrery({
   birthConstellation,
   autoPlay = false,
   currentSky = false,
+  observerLat: propObsLat,
+  observerLon: propObsLon,
 }: BirthChartOrreryProps) {
   const { lang, t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -151,7 +157,14 @@ export function BirthChartOrrery({
     sceneRef, cameraRef, rendererRef,
     setViewMode, setSimTime, isPlaying, speed,
     setIsPlaying, currentDate, setHoveredObject, hoveredObject,
+    setCustomLat, setCustomLon,
   } = hook;
+
+  // Sync external observer coordinates (from Dashboard profile/geolocation)
+  useEffect(() => {
+    if (propObsLat !== undefined) setCustomLat(String(propObsLat));
+    if (propObsLon !== undefined) setCustomLon(String(propObsLon));
+  }, [propObsLat, propObsLon, setCustomLat, setCustomLon]);
 
   // Sync planetariumMode prop → hook viewMode
   const viewModeRef = useRef<ViewMode>(planetariumMode ? 'planetarium' : 'orrery');

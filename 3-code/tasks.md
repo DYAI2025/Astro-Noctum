@@ -248,12 +248,12 @@
 | BUG-12 | Levi layer layout/sizing issues | frontend | Done | commit 4152086 + 57426d3 |
 | BUG-13 | Blueprint DE/EN inconsistency | frontend | Done | S-DP-06 |
 | BUG-14 | "KI-Synthese" heading never specified | frontend | Done | S-DP-04 |
-| BUG-15 | Planetarium: current sky shows no visible difference from birth sky when switching modes | frontend | Todo | Regression — TASK-planetarium-sky-wiring prop fix was insufficient; simTime/observer sync may be the root cause |
-| BUG-16 | Planetarium: current sky does not use live device location (uses birth coords) | frontend | Todo | Needs Geolocation API + permission-aware fallback; see REQ refinement |
-| BUG-17 | Influence Gauges render 0% / placeholder values instead of live transit data | frontend | Todo | Data wiring: natalWeights may be undefined when soulprint_sectors is null |
-| BUG-18 | Vibe text not visible after "Vibe abrufen" — CTA triggers but result text missing | frontend | Todo | Check VibesModal render path + fetchVibes response mapping |
-| BUG-19 | Daily Pulse / Day Trace body text not visible despite dailyData being fetched | frontend | Todo | Check DashboardTagesEnergie render when dailyData.body is empty/null |
-| BUG-20 | Quiz completion state resets on page reload — completed quiz appears uncompleted | frontend, api-server | Todo | Check contribution_events persistence + useQuizContribution hydration |
+| BUG-15 | Planetarium: current sky shows no visible difference from birth sky when switching modes | frontend | Done | Fixed: BirthChartOrrery now receives birth/device observer coords via props; birth sky uses profile lat/lon, current sky uses Geolocation API |
+| BUG-16 | Planetarium: current sky does not use live device location (uses birth coords) | frontend | Done | Fixed: useDeviceLocation hook uses Geolocation API with 5s timeout + graceful fallback to birth coords |
+| BUG-17 | Influence Gauges render 0.00% everywhere instead of live transit data | frontend | Done | Fixed: isSyntheticSoulprint detection + 'GESCHÄTZT' label; gauges show estimated data from synthetic soulprint instead of misleading 0% |
+| BUG-18 | Vibe text not visible — CTA/tile not reachable or result text missing despite prior fix | frontend | Done | Fixed: VibesSection error state now shows retry button; server fallback produces valid kurzsignal |
+| BUG-19 | Tagesimpuls / Day Trace body text not visible despite prior fix | frontend | Done | Fixed: buildFallbackDaily provides local deterministic daily data when FuFirE/Gemini unreachable; DashboardTagesEnergie always renders |
+| BUG-20 | Quiz completion state resets on page reload — completed quiz appears uncompleted | frontend, api-server | Done | Fixed: addModule now persists individual completions to Supabase (fire-and-forget upsert), not just localStorage |
 | BUG-21 | Quiz result generation latency 3-4 minutes (expected: seconds) | api-server | Todo | Gemini timeout or missing cache hit; check /api/contribute → transit-state pipeline |
 | BUG-22 | Quiz headings contain DE/EN placeholder text instead of final copy | frontend | Todo | Audit all 22 quiz title/subtitle keys in translations + quiz definitions |
 

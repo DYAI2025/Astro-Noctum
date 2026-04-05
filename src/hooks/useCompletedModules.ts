@@ -8,7 +8,7 @@ function storageKey(userId: string): string {
 }
 
 /** Read completed module IDs from localStorage (survives reload). */
-function getLocalCompleted(userId: string): Set<string> {
+export function getLocalCompleted(userId: string): Set<string> {
   try {
     const raw = localStorage.getItem(storageKey(userId));
     if (!raw) return new Set();
@@ -20,7 +20,7 @@ function getLocalCompleted(userId: string): Set<string> {
 }
 
 /** Persist a module ID to localStorage. */
-function addLocalCompleted(userId: string, moduleId: string): void {
+export function addLocalCompleted(userId: string, moduleId: string): void {
   try {
     const existing = getLocalCompleted(userId);
     existing.add(moduleId);
@@ -72,6 +72,20 @@ export function useCompletedModules() {
     if (!user) return;
     addLocalCompleted(user.id, moduleId);
     setCompletedModuleIds(prev => new Set([...prev, moduleId]));
+
+    // Also persist individual completion to Supabase (fire-and-forget)
+    // This ensures completions survive cross-device / incognito scenarios
+    supabase
+      .from('contribution_events')
+      .upsert({
+        user_id: user.id,
+        module_id: moduleId,
+        sector_weights: Array(12).fill(0),
+        confidence: 0,
+      }, { onConflict: 'user_id,module_id' })
+      .then(({ error }) => {
+        if (error) console.warn('[useCompletedModules] Individual persist failed:', error.message);
+      });
   }, [user]);
 
   return { completedModuleIds, loading, addModule };

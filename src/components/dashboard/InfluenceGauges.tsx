@@ -79,17 +79,17 @@ function useInfluences(weights?: Record<string, number>): InfluenceData[] {
   ], [t, weights]);
 }
 
-export default function InfluenceGauges({ weights }: { weights?: Record<string, number> }) {
+export default function InfluenceGauges({ weights, isSynthetic = false }: { weights?: Record<string, number>; isSynthetic?: boolean }) {
   const { t } = useLanguage();
   const items = useInfluences(weights);
-  const isLive = weights !== undefined;
+  const isLive = weights !== undefined && !isSynthetic;
 
   return (
     <div className="cosmic-tile p-6 rounded-[2rem] space-y-8">
       <div className="flex justify-between items-center">
         <h2 className="text-[10px] font-sans font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--tile-text-secondary)' }}>{t('dashboard.influences.sectionTitle')}</h2>
         <div className={`text-[8px] font-sans ${isLive ? 'opacity-80' : 'opacity-40'}`} style={{ color: isLive ? 'var(--tile-accent)' : 'var(--tile-text-secondary)' }}>
-          {isLive ? t('dashboard.influences.liveLabel') : t('dashboard.influences.noDataLabel')}
+          {isLive ? t('dashboard.influences.liveLabel') : isSynthetic ? t('dashboard.influences.estimatedLabel') : t('dashboard.influences.noDataLabel')}
         </div>
       </div>
 
