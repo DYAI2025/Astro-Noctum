@@ -21,7 +21,7 @@ import {
 import {
   getPlanetPosition, solveKepler, daysSinceJ2000,
   equatorialToHorizontal, horizontalTo3D, eclipticToEquatorial,
-  dateToJD, getLST,
+  getLST,
 } from '../lib/astronomy/calculations';
 import {
   createSunMaterial, createPlanetMaterial, createAtmosphereShader,
@@ -763,7 +763,10 @@ export function BirthChartOrrery({
 
       // ── Planetarium Sky ─────────────────────────────────────────────────
       if (tE > 0.32) {
-        const jd  = dateToJD(currentDate);
+        // Use simTimeRef (mutated every frame by animation loop) instead of
+        // stale `currentDate` (derived from React state, never updated in loop).
+        // J2000 epoch = JD 2451545.0; simTimeRef is days since J2000.
+        const jd  = 2451545.0 + simTimeRef.current;
         const lst = getLST(jd, obsLonRef.current);
 
         // Stars
@@ -935,7 +938,7 @@ export function BirthChartOrrery({
         if (hits.length > 0) {
           const obj = hits[0].object;
           const sp  = obj.position.clone().project(camera);
-          const jd  = dateToJD(currentDate);
+          const jd  = 2451545.0 + simTimeRef.current;
           const lst = getLST(jd, obsLonRef.current);
           const horiz = equatorialToHorizontal(
             obj.userData.ra ?? 0, obj.userData.dec ?? 0, obsLatRef.current, lst,

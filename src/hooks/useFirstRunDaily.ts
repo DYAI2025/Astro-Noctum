@@ -126,12 +126,12 @@ export function useFirstRunDaily(
 
     (async () => {
       const todayDate = todayKey();
+      // Declared outside try so catch block can access it.
+      // Controls ONLY the auto-open modal — dailyData is ALWAYS loaded
+      // because the inline DashboardTagesEnergie section needs it regardless.
+      let alreadySeen = false;
 
       try {
-        // 1. Check if user already dismissed the modal today
-        // Graceful fallback: if query fails (e.g. column doesn't exist),
-        // assume modal was NOT seen and show it
-        let alreadySeen = false;
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('daily_modal_seen_date')
@@ -146,17 +146,16 @@ export function useFirstRunDaily(
         }
 
         if (cancelled) return;
-        if (alreadySeen) return;
 
-        // 2. Check localStorage cache
+        // 2. Check localStorage cache — serves BOTH inline display and modal
         const cached = getCachedDaily();
         if (cached) {
           setDailyData(cached);
-          setShowModal(true);
+          if (!alreadySeen) setShowModal(true);
           return;
         }
 
-        // 3. Fetch fresh daily experience
+        // 3. Fetch fresh daily experience — needed for inline TagesEnergie
         setLoading(true);
         const data = await fetchDailyExperience(
           birthData,
@@ -169,16 +168,15 @@ export function useFirstRunDaily(
 
         setCachedDaily(data);
         setDailyData(data);
-        setShowModal(true);
+        if (!alreadySeen) setShowModal(true);
       } catch (err) {
         // Graceful fallback: use local deterministic daily so DashboardTagesEnergie always renders
         console.warn('[useFirstRunDaily] Error occurred, using local fallback:', err);
         if (!cancelled) {
           const fallback = buildFallbackDaily();
           // Do NOT cache the fallback — next page load should retry the real API.
-          // setCachedDaily(fallback) would prevent recovery for the rest of the day.
           setDailyData(fallback);
-          setShowModal(true);
+          if (!alreadySeen) setShowModal(true);
         }
       } finally {
         if (!cancelled) setLoading(false);
