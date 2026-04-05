@@ -13,9 +13,7 @@ Bazodiac (Astro-Noctum) — a fusion astrology web + mobile app combining Wester
 
 ### Current State
 
-**Phase:** Code (active development)
-
-6 goals (4 Approved, 2 Draft). 39 requirements: 15 Implemented, 9 Approved, 14 Draft, 1 Deprecated. 5 constraints. 4 assumptions. 16 decisions (incl. DEC-identity-card-accordion, DEC-daily-pulse-naming). 3 components (frontend, api-server, mobile). Sprints S-BRIDGE, S-DAUP, S-DASH-POLISH, S-SIG, S-DASH-LIVE complete. S-BUGFIX active (7/8 Done). S-DASH-UX active (7/28). V3 Bipolar Trail engine is default Signatur renderer (PR #225). Vibes V1 + Weekly V2 shipped. Vibe now premium-only (REQ-F-vibes-core revised). Phase E: 5/5 Done (complete: depth-nav, element-adaptation, engagement-fluidity, manual testing runbook). Dashboard reordered: Planetarium at top, gap-20→gap-12, section hierarchy corrected. Synthetic soulprint fallback (DEC-synthetic-soulprint-fallback) enables Dashboard to render when FuFirE/bootstrap is down. strict:true enabled in tsconfig. 9 deploy runbooks. Total: 173 of 250 tasks Done (69%). 6 partnership OQs pending. Updated 2026-04-04.
+Run `/SDLC-status` or check `3-code/tasks.md` + `git log` for live project state. Do not rely on hardcoded counts in this file.
 
 ---
 
@@ -62,34 +60,6 @@ You are Claude, co-working as Product Owner for Bazodiac alongside Ben (the foun
 - When surfacing a risk or blocker, always present: (1) what the problem is, (2) why it matters now, (3) two or three options, (4) your recommendation.
 - Use `SDLC-status` to get a quick project health check before any planning session.
 - When Ben says "klären wir das" or equivalent, gather context, then present a concrete proposal — do not ask open-ended questions.
-
-### Key product context (current as of 2026-03-26)
-
-- **Live features:** Fusion Ring V2 (spirograph, 28K particles), BaZi + Western + Wu-Xing calculation via BAFE, 22 quizzes, Levi voice agent, space weather modulation, premium paywall (Stripe — partially wired)
-- **In-progress:** Dashboard layout redesign, onboarding flow, FuFirE Experience API wiring
-- **Blocked:** Stripe checkout endpoint missing; STRIPE_WEBHOOK_SECRET not set; 3 silent-fail bugs (BUG-04/05/06)
-- **Partnership features:** 18 tasks blocked on 6 open decisions (house system, synastry consent, orb tolerance, minor aspects, narrative generation, synastry signal type)
-- **Monetization:** Stripe is the payment provider; `is_premium` flag in Supabase `profiles` table; `PremiumGate` component wraps gated features
-
----
-
-## Project Overview
-
-### Current State
-
-Project is in the Code phase. S-SIG sprint complete (28/28 tasks; Phase 3 Mobile cancelled — iOS in separate Swift repo). Current sprint: S-DAUP (Dashboard Aufräumen, 5/5 Done).
-
-Objectives artifacts: 5 goals (2 Approved, 3 Draft), 23 requirements (12 Implemented, 2 Approved, 1 Deprecated, 8 Draft), 1 assumption (Verified), 2 constraints (Active). No user stories (waived — solo founder).
-
-Signatur V3 Architektur-Vision (2026-03-29): SIGNATUR_V3_VISION.md als Single Source of Truth definiert. 2 neue Goals (GOAL-signatur-phase2-density, GOAL-signatur-phase3-matching). 7 neue Requirements (dissonance-model, quiz-morph, determinism, density-field, ios-swift, shared-bridge, day-night-pulse). GOAL-fusion-astrology auf Draft zurückgesetzt und mit Cymatics-Prinzip geschärft. REQ-F-signatur-rendering-engine und REQ-F-signatur-data-pipeline auf V3 aktualisiert. REQ-F-signatur-mobile-native deprecated → ersetzt durch REQ-F-signatur-ios-swift.
-
-Implementierungsplan S-BRIDGE erstellt (2026-03-29): 3 Phasen, 12 Tasks — DIMENSION_DEFS Single Source of Truth, Determinismus-Test-Suite, Swift-Konstanten-Referenz. S-BRIDGE abgeschlossen (2026-03-29): 12/12 Tasks Done. DIMENSION_DEFS aus bipolar-engine.ts in packages/shared/src/signatur/dimension-defs.ts extrahiert + Object.freeze; 44 neue Tests (signatur-shared-bridge.test.ts + signatur-v3-engine.test.ts determinism); SWIFT_CONSTANTS.md erstellt; Runbook: docs/runbooks/signatur-s-bridge-verification.md. Nächster Sprint: S-MORPH (Quiz-Morphing) oder S-DENSITY (Density Field Phase 2).
-
-Gap analysis (2026-04-01): 4 Critical, 4 Important resolved — GOAL-fusion-astrology approved; 2 goals + 7 requirements + 2 new REQs added to indexes; 5 stale statuses fixed; 2 assumptions verified; WCAG REQ added.
-
-Completeness assessment (2026-04-02): 5 Critical, 4 Important, 3 Minor — all resolved in design-completeness sprint (docs/plans/2026-04-01-design-completeness-sprint.md). architecture.md extended with Vibes/Weekly/Transparency/Mobile/MultiAgent/QuizGen sections; DEC-vibes-gemini-strategy created; CLAUDE.design.md trigger table complete (13 decisions).
-
-9 Draft requirements pending approval sprint (/SDLC-elicit): signatur-dissonance-model, signatur-quiz-morph, signatur-density-field, signatur-ios-swift, signatur-day-night-pulse, orbital-signatur-visualization (blocked on ASM-ued-metrics-available), depth-navigation, progressive-ui-fluidity, wcag-contrast.
 
 ---
 
@@ -198,6 +168,10 @@ npm run clean      # Remove dist/
 npm run test       # Run Vitest test suite (once)
 npm run test:watch # Vitest in watch mode
 npm run test:coverage # Vitest with coverage
+npm run typecheck      # Full monorepo typecheck (src + shared + mobile)
+npm run typecheck:src  # CI typecheck for src/ only (stricter, used in CI)
+npm run storybook      # Storybook dev server on :6006
+npm run check:text-integrity  # Verify German UI text consistency
 npx vitest run src/__tests__/fusion-ring.test.ts  # Run a single test file
 
 # Full local dev (needs both):
@@ -303,40 +277,21 @@ FusionRing3D → baseSignals[12] → soulprintToNatalWeights() → natalWeights{
 | `src/lib/3d/materials.ts` | Custom GLSL shaders (sun corona, atmospheric Fresnel glow, Saturn rings with Cassini division) |
 | `server.mjs` | Production Express server: BAFE proxy with fallback chain, Master Signal JS port (bootstrap/delta compute locally instead of FuFirE proxy), `/api/contribute` endpoint, `/api/space-weather/extended` (5-min cached NOAA+DONKI aggregation), `/api/contribution/space-weather` (POST), Supabase admin auth, ElevenLabs tool endpoints (V2 data: soulprint sectors + natal weights), Stripe checkout + webhook + customer portal |
 | `src/lib/fusion-ring/` | Fusion Ring engine — signal computation, BaZi/Western/Wu-Xing layers, transit math, canvas draw utilities |
-| `src/contexts/FusionRingContext.tsx` | React context providing Fusion Ring state to the whole app |
-| `src/hooks/useFusionRing.ts` | Hook that combines BAFE data + transit data into FusionRing signal |
 | `src/hooks/useFusionSignal.ts` | Polls `/api/transit-state/:userId`, parses via Zod `TransitStateSchema`, computes `FusionSignalData` (targetSignals, baseSignals, thirtyDayAvg, transitIntensity) |
 | `src/hooks/useQuizContribution.ts` | Quiz `onComplete` handler: converts `ContributionEvent` → sector weights, checks cluster gate, fire-and-forget POSTs to `/api/contribute` |
-| `src/services/contribute.ts` | Client-side fire-and-forget service: gets Supabase JWT, POSTs sector weights to `/api/contribute` |
 | `src/lib/schemas/transit-state.ts` | Zod schemas for `TransitState`, `TransitEvent`, `FusionSignalData` — shared contract between server and client |
-| `src/hooks/usePremium.ts` | Reads `profiles.is_premium` from Supabase; re-fetches on tab focus (for Stripe redirect return) |
-| `src/components/PremiumGate.tsx` | Wrapper that locks content behind premium; triggers Stripe checkout via `/api/checkout` |
-| `src/data/articles.ts` | SEO article content (6 articles, full German text, TypeScript) |
-| `src/components/QuizOverlay.tsx` | Modal overlay that hosts the quiz system. Mounted on FuRingPage with `useQuizContribution` as `onComplete` handler. Controlled by `activeQuiz` state from `ClusterSidebar` |
-| `src/lib/lme/types.ts` | Lifecycle Mapping Engine event types — `ContributionEvent`, `Marker`, `TraitScore`, `Tag`. Typed contract between quizzes and the Fusion Ring; quizzes emit `ContributionEvent`s, `useFusionRing` consumes them |
-| `src/components/quizzes/` | 22 quiz components (14 regular + 4 Kinky + 4 PartnerMatch); results feed into Fusion Ring via `src/lib/fusion-ring/quiz-to-event.ts` |
-| `src/components/quizzes/Kinky/` | Kinky quiz series (multi-part, premium) |
-| `src/components/quizzes/PartnerMatch/` | PartnerMatch quiz series including `ConversationAnalysisQuiz` |
-| `src/components/ClusterEnergySystem.tsx` | Renders quiz-result "energy clusters" on the Dashboard |
-| `src/components/dashboard/InfluenceGauges.tsx` | "Heutige Einflüsse" gauge section — Mars/Jupiter/Venus/Saturn static defaults, accepts `influences` prop |
-| `src/components/dashboard/DayModeModal.tsx` | Day-Pulse / Day-Trace modal — replaces legacy DailyHoroscopeModal, feature-flagged via `daily_modal_v1` |
-| `src/components/dashboard/DashboardLeviSection.tsx` | Levi voice agent section — ElevenLabs widget mount, premium gate |
+| `src/components/QuizOverlay.tsx` | Master quiz router — maps quiz IDs to lazy-loaded components via `QUIZ_MAP`. Mounted on FuRingPage, controlled by `activeQuiz` state |
+| `src/lib/lme/types.ts` | Lifecycle Mapping Engine — `ContributionEvent`, `Marker`, `TraitScore`, `Tag`. Typed contract between quizzes and the Fusion Ring |
+| `src/components/quizzes/` | 22 quiz components; all share props `{ onComplete: (event: ContributionEvent) => void, onClose: () => void }`. Converters in `quiz-to-event.ts` |
+| `src/components/dashboard/DayModeModal.tsx` | Day-Pulse / Day-Trace modal — feature-flagged via `daily_modal_v1` |
+| `src/components/dashboard/InfluenceGauges.tsx` | "Heutige Einflüsse" gauges — Mars/Jupiter/Venus/Saturn static defaults, accepts `influences` prop |
 | `src/lib/fusion-ring/day-harmonic.ts` | DayHarmonicState extraction — computes day-mode ring modulation from transit data |
-| `src/components/fusion-ring-3d/FusionRing3D.tsx` | Three.js 3D Fusion Ring — used on `/fu-ring` page |
-| `src/components/fusion-ring-website/bazodiac-engine.ts` | V2 Signatur engine (891 lines) — Cousto-frequency spirograph math, 7 planet definitions with Hz/color/zodiac, 4-tier particle generation (glow→curve→fractal→subfractal), kaleidoscope folding, emergence/pattern-jump detection. Pure TypeScript, no framework deps |
-| `src/components/fusion-ring-website/FusionRingCanvasV2.tsx` | V2 Three.js renderer (1699 lines) — consumes `natalWeights` (7 planets) + `quizWeights` (6 dimensions) props, renders 28K spirograph particles with bloom postprocessing. Has built-in config panel, audio integration, effect system. Replaces V1 when `signature_engine_v2` flag is enabled |
-| `src/components/fusion-ring-website/signatur-bridge.ts` | Adapter: `soulprintToNatalWeights()` converts 12-sector soulprint → 7 planet weights via zodiac affinity mapping (Sun→Leo, Moon→Cancer, etc.). `quizSectorsToQuizWeights()` converts 12-sector quiz data → 6 quiz dimensions |
-| `src/components/fusion-ring-website/FusionRingWebsiteCanvas.tsx` | V1 canvas-based Fusion Ring (kept as fallback). Accepts `soulProfile` prop (12 sectors) which is interpolated to 32 ring points and fed to `soulNoise()` via module-level `_activeSoulProfile`. Falls back to `DEFAULT_SOUL_PROFILE` when no prop provided |
-| `src/hooks/useSpaceWeather.ts` | Polls `/api/space-weather/extended` every 5 min, computes solar pressure score + ring modulation + visual intensity via Zod-validated response. Triggers ring effects during G3+ storms |
-| `src/hooks/useAmbientePlayer.ts` | Ambient audio playback control |
-| `src/contexts/PlanetariumContext.tsx` | Context for the 3D orrery/planetarium state |
-| `src/contexts/LanguageContext.tsx` | i18n context (German UI default) |
-| `src/contexts/AppLayoutContext.tsx` | Layout/sidebar state shared across pages |
-| `src/types/bafe.ts` | TypeScript types for raw BAFE API responses (characterization-based; see BAFE mapping gotcha) |
-| `src/lib/master-signal/` | Master Signal engine — GCB (Grand Cosmic Blueprint) builder, natal/quiz/ring projections, cross-referencing, narrative generation. Combines all astrological layers into a single unified signal |
-| `src/lib/master-signal/master-signal-builder.ts` | Orchestrates GCB → dimensional scores → projections pipeline |
-| `src/lib/master-signal/gcb-builder.ts` | Builds GCB from raw BAFE data (BaZi pillars + Western planets + Wu-Xing elements) |
-| `src/types/interpretation.ts` | Types for Gemini AI interpretation results |
+| `src/components/fusion-ring-website/bazodiac-engine.ts` | V2 Signatur engine — Cousto-frequency spirograph math, 7 planet defs, 4-tier particle generation, kaleidoscope folding. Pure TypeScript |
+| `src/components/fusion-ring-website/FusionRingCanvasV2.tsx` | V2 Three.js renderer — `natalWeights` (7 planets) + `quizWeights` (6 dimensions), 28K particles, bloom. Replaces V1 when `signature_engine_v2` enabled |
+| `src/components/fusion-ring-website/signatur-bridge.ts` | Adapter: `soulprintToNatalWeights()` (12-sector → 7 planet weights), `quizSectorsToQuizWeights()` (12-sector → 6 quiz dimensions) |
+| `src/components/fusion-ring-website/FusionRingWebsiteCanvas.tsx` | V1 fallback ring. `soulProfile` prop (12 sectors) → 32 ring points → `soulNoise()`. Falls back to `DEFAULT_SOUL_PROFILE` |
+| `src/hooks/useSpaceWeather.ts` | Polls `/api/space-weather/extended` every 5 min, computes solar pressure score + ring modulation. Triggers effects during G3+ storms |
+| `src/lib/master-signal/` | Master Signal engine — GCB builder, dimensional scores, projections pipeline. Combines all astrological layers into a unified signal |
 
 ### Experience API & Onboarding Signatur
 
@@ -380,12 +335,9 @@ NASA DONKI (CME, SEP, HSS, Alerts) ───┘           ↓
 
 | Path | Purpose |
 |------|---------|
-| `src/lib/space-weather/types.ts` | Shared types: `KpReading`, `F107Reading`, `XrayFluxReading`, `ProtonFluxReading`, `SpaceWeatherSeverity` (G0–G5, S1–S5, R1–R5), `SpaceWeatherContribution` (schema `sp.contribution.v1` with mandatory `expires_at`) |
-| `src/lib/space-weather/noaa-adapter.ts` | Versioned NOAA SWPC JSON fetcher — `createNoaaAdapter()` factory returns composite adapter trying v2 keys first, falling back to v1 via `withFallback(primary, fallback, emptyValue)` pattern |
-| `src/lib/space-weather/donki-extended.ts` | NASA DONKI extended: earthbound CME detection (via `enlilList.isEarthTargeted`), SEP events, HSS events, Warning/Watch alerts. Parallel `Promise.allSettled` for all 4 endpoints |
-| `src/lib/space-weather/solar-pressure.ts` | `computeSolarPressureScore(kp, xrayFlux, protonFlux)` → 0–1 weighted blend. `computeRingModulation(solarPressure, maxEventWeight)` → 1.0 (calm) to 1.5 (extreme). `kpToVisualIntensity(kp)` → G-scale with `intensityBoost` and `triggerEffect` |
-| `src/lib/space-weather/geometry-gating.ts` | `isSignificantGeometryEvent()` — gating function that only emits contribution events when geometry (conjunction/opposition/equinox/solstice) coincides with solar disturbance (Kp >= 5, CME, or Jieqi transition) |
-| `src/lib/schemas/space-weather.ts` | Zod schemas: `SpaceWeatherContributionSchema`, `SpaceWeatherExtendedSchema` |
+| `src/lib/space-weather/noaa-adapter.ts` | Versioned NOAA SWPC fetcher — `createNoaaAdapter()` factory with v2→v1 fallback via `withFallback()` pattern |
+| `src/lib/space-weather/solar-pressure.ts` | `computeSolarPressureScore()` → 0–1 blend. `computeRingModulation()` → 1.0–1.5. `kpToVisualIntensity()` → G-scale |
+| `src/lib/space-weather/geometry-gating.ts` | `isSignificantGeometryEvent()` — only emits events when geometry coincides with solar disturbance (Kp >= 5, CME, or Jieqi) |
 
 **Rate limiting note**: NASA DEMO_KEY allows 30 req/hour. With 4 DONKI endpoints per call and 5-min server cache, sustained polling stays within limits. Set `NASA_API_KEY` env var for production.
 
@@ -445,14 +397,10 @@ Six clusters in `src/lib/fusion-ring/clusters.ts`: naturkind (4 quizzes), mental
 
 | Path | Purpose |
 |------|---------|
-| `src/fusion-ring/signal.ts` | `computeFusionSignal()` — 12-sector weighted blend of western/bazi/wuxing/quiz vectors with opposition smoothing |
-| `src/fusion-ring/constants.ts` | Sector definitions, opposition pairs, weight factors |
-| `src/quizzes/schema.ts` | Unified `QuizDefinition` type covering all 3 scoring models (multi-dimension, categorical, profile-driven) |
-| `src/quizzes/scoring.ts` | `scoreQuiz()` — universal scoring engine that handles any `QuizDefinition` |
-| `src/quizzes/definitions/` | All 22 quiz definitions extracted as TypeScript objects (+ ConversationAnalysis) |
-| `src/experience/` | `BootstrapResponse` and related types for the Experience API |
-| `src/transit/` | Transit state types shared between server and clients |
-| `src/i18n/` | Shared i18n strings |
+| `src/fusion-ring/signal.ts` | `computeFusionSignal()` — 12-sector weighted blend with opposition smoothing |
+| `src/quizzes/schema.ts` | Unified `QuizDefinition` type covering 3 scoring models (multi-dimension, categorical, profile-driven) |
+| `src/quizzes/scoring.ts` | `scoreQuiz()` — universal scoring engine for any `QuizDefinition` |
+| `src/quizzes/definitions/` | All 22 quiz definitions as TypeScript objects (+ ConversationAnalysis) |
 
 ### Mobile App (`apps/mobile/`)
 
@@ -469,26 +417,15 @@ Six clusters in `src/lib/fusion-ring/clusters.ts`: naturkind (4 quizzes), mental
 - `VoiceScreen` — ElevenLabs agent via WebView (native SDK integration planned)
 
 **Key mobile-specific modules:**
-- `src/lib/experience.ts` — `fetchBootstrap()` client for Experience API
-- `src/hooks/useBootstrapSignatur.ts` — Fetches soulprint via Experience API, caches in AsyncStorage
-- `src/hooks/useDailyHoroscope.ts` — Daily horoscope fetch + cache
 - `src/lib/offlineQueue.ts` — AsyncStorage-based contribution queue with auto-flush
-- `src/lib/device.ts` — Device identity via SecureStore
 - `src/components/QuizRenderer.tsx` — Universal quiz renderer driven by `QuizDefinition` from shared package
-- `src/components/SignaturCanvas.tsx` — Native 3D particle ring via expo-gl + three.js (6k ring + 800 corona particles, custom GLSL shaders, pan/pinch gesture orbit). **Currently not mounted** — FuRingScreen uses the 2D bootstrap view instead
-- `src/theme.ts` — COLORS constant (bg, card, border, gold, text, textDim)
+- `src/components/SignaturCanvas.tsx` — Native 3D particle ring via expo-gl + three.js. **Currently not mounted** — FuRingScreen uses the 2D bootstrap view instead
 
 **App config:** `app.json` — bundle ID `space.bazodiac.mobile`, deep linking via `bazodiac://` scheme, EAS project ID `3dc5ff64-329b-4fcf-bb89-34eb0132cfec`.
 
 ### `features/plan/` Directory
 
-Planning artefacts that are **not part of the main app build** and are excluded from Railway nixpacks. Do not import from them into `src/`.
-
-- `QuizzMe-main/` — separate Next.js project, design reference for quiz system
-- `allquizzes/` — HTML/JSON prototype quizzes + `quizzme-module-loader.ts` (has a **pre-existing TSC error at line 298** — Tag type mismatch — do not fix unless working on this file)
-- `Fu-Ring/` — Fusion Ring design assets
-- `Implementation-plan/` — implementation planning docs
-- `LeanDeep-annotator-main/` — annotation tool artefact
+Planning artefacts — **not part of the build**, excluded from Railway nixpacks. Do not import from them into `src/`. Contains design reference projects (QuizzMe, Fu-Ring) and prototype quizzes. Note: `allquizzes/quizzme-module-loader.ts` has a **pre-existing TSC error at line 298** — do not fix unless working on this file.
 
 ### Naming: "Signatur" (formerly "Fusion Ring" / "Fu-Ring")
 
