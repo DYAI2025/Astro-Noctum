@@ -43,7 +43,7 @@ function xrayStyle(xrayClass: string): string {
   if (cls === 'X') return 'bg-red-500/15 text-red-400';
   if (cls === 'M') return 'bg-orange-500/15 text-orange-400';
   if (cls === 'C') return 'bg-amber-500/15 text-amber-400';
-  return 'bg-zinc-700/50 text-zinc-300';
+  return 'bg-zinc-700/50 text-zinc-300 dark:bg-zinc-700/50 dark:text-zinc-300';
 }
 
 // ── Event pills ──────────────────────────────────────────────────────────────
@@ -99,7 +99,7 @@ function GaugeBar({ label, percent, barClass, tooltip, badge }: GaugeBarProps) {
     <Tooltip content={tooltip} wide dark>
       <div className="space-y-3 group cursor-help" tabIndex={0}>
         <div className="flex justify-between items-end">
-          <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-[0.2em] group-hover:text-zinc-100 transition-colors">
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] transition-colors" style={{ color: 'var(--tile-text-secondary)' }}>
             {label}
           </span>
           <div className="flex items-center gap-1.5">
@@ -108,13 +108,13 @@ function GaugeBar({ label, percent, barClass, tooltip, badge }: GaugeBarProps) {
                 {badge.text}
               </span>
             )}
-            <span className="text-[10px] font-mono text-zinc-300">{safePercent}%</span>
+            <span className="text-[10px] font-mono" style={{ color: 'var(--tile-text-secondary)' }}>{safePercent}%</span>
           </div>
         </div>
-        <div className="h-[6px] w-full bg-zinc-900/50 rounded-full overflow-hidden border border-white/5 relative">
+        <div className="influence-track h-[6px] relative">
           <div
-            className="absolute inset-y-0 left-0 bg-white/10 blur-[4px]"
-            style={{ width: `${safePercent}%` }}
+            className="absolute inset-y-0 left-0 blur-[4px]"
+            style={{ background: 'var(--tile-border)', width: `${safePercent}%` }}
           />
           <div
             className={`h-full ${barClass} transition-all duration-1000 ease-out relative z-10`}
@@ -152,13 +152,13 @@ export function CosmicInfluenceSection({ spaceWeather }: CosmicInfluenceSectionP
   );
 
   return (
-    <div className="bg-zinc-900/40 border border-zinc-800 p-6 rounded-[2rem] space-y-8">
+    <div className="cosmic-tile p-6 rounded-[2rem] space-y-8">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-[10px] font-bold tracking-[0.2em] text-zinc-300 uppercase">
+        <h2 className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--tile-text-secondary)' }}>
           {t('dashboard.cosmicInfluence.sectionTitle')}
         </h2>
-        <div className={`text-[8px] font-mono ${isLive ? 'text-emerald-500' : 'text-zinc-600'}`}>
+        <div className={`text-[8px] font-mono`} style={{ color: isLive ? 'var(--tile-accent)' : 'var(--tile-text-secondary)', opacity: isLive ? 0.8 : 0.4 }}>
           {isLive ? t('dashboard.cosmicInfluence.liveLabel') : t('dashboard.cosmicInfluence.noDataLabel')}
         </div>
       </div>
@@ -191,7 +191,7 @@ export function CosmicInfluenceSection({ spaceWeather }: CosmicInfluenceSectionP
               ))}
             </div>
           ) : (
-            <p className="text-[9px] text-zinc-600 uppercase tracking-[0.2em]">
+            <p className="text-[9px] uppercase tracking-[0.2em]" style={{ color: 'var(--tile-text-secondary)', opacity: 0.5 }}>
               {t('dashboard.cosmicInfluence.noEventsLabel')}
             </p>
           )}

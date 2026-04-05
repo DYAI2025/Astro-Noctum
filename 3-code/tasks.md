@@ -639,7 +639,7 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 
 | ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
 |----|------|----------|--------|-----|--------------|---------|-------|
-| TASK-cosmic-influence-bright-audit | Audit + fix CosmicInfluenceSection + InfluenceGauges bright mode inconsistencies — ensure all cards use CSS vars, no hardcoded dark colors | P1 | Todo | - | - | 2026-04-04 | cosmic-tile class is used but inline gradient styles may override |
+| TASK-cosmic-influence-bright-audit | Audit + fix CosmicInfluenceSection + InfluenceGauges bright mode inconsistencies — ensure all cards use CSS vars, no hardcoded dark colors | P1 | Done | - | - | 2026-04-05 | cosmic-tile class is used but inline gradient styles may override |
 | TASK-card-titles-centered | Center card section titles horizontally and increase font size for visual hierarchy | P3 | Todo | - | - | 2026-04-04 | Affects DashboardTagesEnergie, InfluenceGauges, CosmicInfluenceSection headers |
 | TASK-dashboard-brandmark-heading-restyle | Replace dashboard hero heading with single-word brandmark "Bazodiac", remove leading "dein", apply larger Cormorant Garamond styling, gold treatment, ornamental underline | P1 | Todo | - | - | 2026-04-05 | Explicit PO request; brandmark styling as intentional UI identity change |
 
