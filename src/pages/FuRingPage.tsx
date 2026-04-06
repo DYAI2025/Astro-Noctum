@@ -48,6 +48,8 @@ export default function FuRingPage() {
   const [justCompletedCluster, setJustCompletedCluster] = useState<string | null>(null);
   const [liveQuizWeights, setLiveQuizWeights] = useState<Record<string, number> | undefined>();
   const [liveQuizSectors, setLiveQuizSectors] = useState<number[] | null>(null);
+  // Cleared when transit state refreshes — lets cumulative v3DimensionWeights take over as a second morph
+  const pendingLiveWeightsClearRef = useRef(false);
   const [premiumCluster, setPremiumCluster] = useState<string | null>(null);
   const [ringEffect, setRingEffect] = useState<{ type: string; color?: string; timestamp: number; intensity?: number } | null>(null);
 
@@ -60,6 +62,16 @@ export default function FuRingPage() {
     }
     return () => { if (clusterDismissRef.current) clearTimeout(clusterDismissRef.current); };
   }, [justCompletedCluster]);
+
+  // When signalData refreshes after a quiz, clear liveQuizWeights so the cumulative
+  // v3DimensionWeights take over and queue a second morph to the accurate final state.
+  // This gives full-cluster completions a "deutliche Verschiebung" after the transit refresh.
+  useEffect(() => {
+    if (pendingLiveWeightsClearRef.current) {
+      setLiveQuizWeights(undefined);
+      pendingLiveWeightsClearRef.current = false;
+    }
+  }, [signalData?.baseSignals]);
 
   // Natal planet weights from birth chart soulprint
   const natalPlanetWeights = useMemo(
@@ -120,12 +132,15 @@ export default function FuRingPage() {
         }
       }
 
-      // Compute live quizWeights for immediate ring reactivity
+      // Compute live quizWeights for immediate ring reactivity (first morph: quiz event weights).
+      // pendingLiveWeightsClearRef ensures a second morph fires when transit state refreshes,
+      // transitioning to the cumulative state — giving full-cluster completions their full shift.
       const sectors = eventToSectorSignals(event);
       if (sectors && sectors.length === 12) {
         const normalized = sectors.map(s => (s + 1) / 2);
         setLiveQuizWeights(toQuizWeightsOrUndefined(normalized));
         setLiveQuizSectors(normalized);
+        pendingLiveWeightsClearRef.current = true;
       }
 
       // Persist dissonance snapshot — fire and forget
