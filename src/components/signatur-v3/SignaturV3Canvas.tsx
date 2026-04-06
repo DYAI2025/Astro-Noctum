@@ -12,6 +12,7 @@
  */
 
 import { useRef, useEffect, useCallback, useMemo, useState } from 'react';
+import { useReducedMotion } from 'motion/react';
 import {
   type PoleState,
   type SignaturV3Config,
@@ -246,9 +247,12 @@ export default function SignaturV3Canvas({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const animRef = useRef<number>(0);
+  const prefersReducedMotion = useReducedMotion();
   const polesRef = useRef<PoleState[] | null>(null);
   const dissonanceRef = useRef<V3DissonanceState | null>(null);
   const morphRef = useRef<V3MorphState | null>(null);
+  // Queue of pending morph targets — applied sequentially after active morph completes
+  const morphQueueRef = useRef<V3DissonanceState[]>([]);
   const dayHarmonicRef = useRef<DayHarmonicState | undefined>(dayHarmonic);
   const solarRef = useRef<SolarModulation | undefined>(solarModulation);
   const timeRef = useRef(0);
@@ -313,7 +317,9 @@ export default function SignaturV3Canvas({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config, natalMap]);
 
-  // Morph dissonance state when quiz weights change — continuous transition, no pole reset
+  // Morph dissonance state when quiz weights change — continuous transition, no pole reset.
+  // prefers-reduced-motion: apply instantly (no animation).
+  // Rapid updates (<2s): queue behind the active morph; never skip a completion.
   useEffect(() => {
     if (!polesRef.current || !dissonanceRef.current) return;
     const newTarget = computeV3Dissonance(
@@ -321,9 +327,24 @@ export default function SignaturV3Canvas({
       quizMap,
       externalDissonanceMorphRef.current,
     );
-    morphRef.current = createV3Morph(dissonanceRef.current, newTarget, 2.0);
+
+    if (prefersReducedMotion) {
+      // Instant update — no transition, no ringbuffer flush
+      dissonanceRef.current = newTarget;
+      morphRef.current = null;
+      morphQueueRef.current = [];
+      return;
+    }
+
+    if (morphRef.current?.active) {
+      // Another morph is running — queue this target for sequential playback
+      morphQueueRef.current.push(newTarget);
+    } else {
+      morphRef.current = createV3Morph(dissonanceRef.current, newTarget, 2.0);
+      morphQueueRef.current = [];
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quizMap, externalDissonance]);
+  }, [quizMap, externalDissonance, prefersReducedMotion]);
 
   // Pause when tab hidden, resume on visible
   useEffect(() => {
@@ -369,9 +390,15 @@ export default function SignaturV3Canvas({
     lastFrameRef.current = now;
     timeRef.current += dt;
 
-    // Advance morph if active — smoothly interpolates dissonance toward new quiz weights
+    // Advance morph if active — smoothly interpolates dissonance toward new quiz weights.
+    // When a morph completes, drain the queue and start the next pending morph.
     if (morphRef.current?.active) {
       dissonanceRef.current = tickV3Morph(morphRef.current, dt);
+      if (!morphRef.current.active && morphQueueRef.current.length > 0) {
+        // Previous morph just finished — start next queued target
+        const next = morphQueueRef.current.shift()!;
+        morphRef.current = createV3Morph(dissonanceRef.current, next, 2.0);
+      }
     }
 
     // Apply day-harmonic config modulation (trail persistence etc.)
@@ -387,7 +414,15 @@ export default function SignaturV3Canvas({
     // Semi-transparent clear — trails persist through partial fade
     // Solar storms increase fade rate slightly (more energy = brighter trails)
     const solarFadeMod = solarRef.current ? (solarRef.current.ringModulation - 1.0) * 0.01 : 0;
-    ctx.fillStyle = `rgba(8, 5, 15, ${0.02 + dissonanceRef.current.dNatal * 0.03 - solarFadeMod})`;
+    // During morph: accelerate trail fade so old geometry gives way to new geometry organically.
+    // Uses a bell-curve envelope peaking at 50% morph progress for a symmetrical crossfade.
+    const morphFade = (() => {
+      const m = morphRef.current;
+      if (!m?.active) return 0;
+      const p = m.duration > 0 ? m.elapsed / m.duration : 0;
+      return 4 * p * (1 - p) * 0.018; // bell curve: 0 at start/end, 0.018 at midpoint
+    })();
+    ctx.fillStyle = `rgba(8, 5, 15, ${0.02 + dissonanceRef.current.dNatal * 0.03 - solarFadeMod + morphFade})`;
     ctx.fillRect(0, 0, effectiveW, effectiveH);
 
     // Dimension axes (very subtle guide lines)
