@@ -338,6 +338,74 @@ describe('Signatur V3 Engine', () => {
     });
   });
 
+  describe('Accumulated dissonance stub (d_accumulated)', () => {
+    it('d_accumulated = 0 produces no visible effect: positions identical to stub-off baseline', () => {
+      // REQ Phase 1: d_accumulated = 0 must be neutral — no jitter, no artefacts.
+      // The guard `dAccumulated > 0.1` ensures this. Verify by comparing a state with
+      // dAccumulated=0 against a state with dAccumulated=0.05 (both below threshold).
+      const stubOff: V3DissonanceState = {
+        dimensional: new Map(DIMENSIONS.map(dim => [dim.id, 0.3])),
+        dNatal: 0.6,
+        dAccumulated: 0,
+        elementalQuality: 0,
+      };
+      const stubLow: V3DissonanceState = {
+        ...stubOff,
+        dAccumulated: 0.05, // below 0.1 threshold — must also be neutral
+      };
+
+      const polesOff = initializePoles(DEFAULT_CONFIG, NATAL, NATAL);
+      const polesLow = initializePoles(DEFAULT_CONFIG, NATAL, NATAL);
+
+      for (let frame = 0; frame < 30; frame++) {
+        const t = frame * 0.016;
+        updatePoles(polesOff, stubOff, DEFAULT_CONFIG, t);
+        updatePoles(polesLow, stubLow, DEFAULT_CONFIG, t);
+      }
+
+      // Both states are below the jitter threshold → positions must be identical
+      for (let i = 0; i < polesOff.length; i++) {
+        expect(polesOff[i]!.x).toBeCloseTo(polesLow[i]!.x, 10);
+        expect(polesOff[i]!.y).toBeCloseTo(polesLow[i]!.y, 10);
+      }
+    });
+
+    it('d_accumulated above threshold activates trail jitter (Phase 2 hook point)', () => {
+      // Verify the hook point works: above 0.1, jitter IS applied.
+      // This ensures Phase 2 can activate the channel without engine changes.
+      const stubActive: V3DissonanceState = {
+        dimensional: new Map(DIMENSIONS.map(dim => [dim.id, 0.0])),
+        dNatal: 0,
+        dAccumulated: 0.5, // above threshold
+        elementalQuality: 0,
+      };
+      const stubNeutral: V3DissonanceState = {
+        ...stubActive,
+        dAccumulated: 0,
+      };
+
+      const polesActive  = initializePoles(DEFAULT_CONFIG, NATAL, NATAL);
+      const polesNeutral = initializePoles(DEFAULT_CONFIG, NATAL, NATAL);
+
+      for (let frame = 1; frame < 30; frame++) {
+        const t = frame * 0.016;
+        updatePoles(polesActive,  stubActive,  DEFAULT_CONFIG, t);
+        updatePoles(polesNeutral, stubNeutral, DEFAULT_CONFIG, t);
+      }
+
+      // At least one pole must have diverged due to accumulated jitter
+      let anyDivergence = false;
+      for (let i = 0; i < polesActive.length; i++) {
+        if (Math.abs(polesActive[i]!.x - polesNeutral[i]!.x) > 0.0001
+          || Math.abs(polesActive[i]!.y - polesNeutral[i]!.y) > 0.0001) {
+          anyDivergence = true;
+          break;
+        }
+      }
+      expect(anyDivergence).toBe(true);
+    });
+  });
+
   describe('Day harmonic modulation', () => {
     it('pulse mode increases trail persistence', () => {
       const dh = computeDayHarmonic(0.3); // low harmony → pulse
