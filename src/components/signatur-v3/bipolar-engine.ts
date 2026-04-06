@@ -304,6 +304,75 @@ export function modulateConfig(
 }
 
 // ═══════════════════════════════════════
+//  DISSONANCE MORPH (Quiz-Completion Transitions)
+// ═══════════════════════════════════════
+
+/**
+ * Active morph transition between two dissonance states.
+ * Created by createV3Morph, advanced by tickV3Morph each render frame.
+ */
+export interface V3MorphState {
+  from: V3DissonanceState;
+  to: V3DissonanceState;
+  /** Total duration in seconds (default 2.0) */
+  duration: number;
+  /** Elapsed time in seconds — mutated by tickV3Morph */
+  elapsed: number;
+  /** Whether the morph is still in progress */
+  active: boolean;
+}
+
+/** Smooth S-curve easing for organic quiz-morph transitions (smoothstep) */
+function morphEase(t: number): number {
+  return t * t * (3 - 2 * t);
+}
+
+/**
+ * Linearly interpolate between two V3DissonanceStates at position t ∈ [0,1].
+ * Used internally by tickV3Morph; exported for testing.
+ */
+export function lerpV3DissonanceState(
+  from: V3DissonanceState,
+  to: V3DissonanceState,
+  t: number,
+): V3DissonanceState {
+  const dimensional = new Map<string, number>();
+  for (const [k, vFrom] of from.dimensional) {
+    dimensional.set(k, lerp(vFrom, to.dimensional.get(k) ?? vFrom, t));
+  }
+  return {
+    dimensional,
+    dNatal: lerp(from.dNatal, to.dNatal, t),
+    dAccumulated: lerp(from.dAccumulated, to.dAccumulated, t),
+    elementalQuality: lerp(from.elementalQuality, to.elementalQuality, t),
+  };
+}
+
+/**
+ * Create a new morph transition from `from` → `to` over `durationSeconds` seconds.
+ * Default 2.0s matches REQ-F-signatur-quiz-morph (~2 seconds gradual transition).
+ */
+export function createV3Morph(
+  from: V3DissonanceState,
+  to: V3DissonanceState,
+  durationSeconds = 2.0,
+): V3MorphState {
+  return { from, to, duration: durationSeconds, elapsed: 0, active: true };
+}
+
+/**
+ * Advance the morph by `dt` seconds and return the current interpolated dissonance state.
+ * Mutates morph.elapsed and morph.active in-place.
+ * When the morph completes, morph.active is set to false and the final state (morph.to) is returned.
+ */
+export function tickV3Morph(morph: V3MorphState, dt: number): V3DissonanceState {
+  morph.elapsed = Math.min(morph.elapsed + dt, morph.duration);
+  const rawT = morph.duration > 0 ? morph.elapsed / morph.duration : 1;
+  morph.active = rawT < 1;
+  return lerpV3DissonanceState(morph.from, morph.to, morphEase(rawT));
+}
+
+// ═══════════════════════════════════════
 //  MOVEMENT UPDATE (per frame)
 // ═══════════════════════════════════════
 

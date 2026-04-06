@@ -5,6 +5,9 @@ import {
   computeDissonance,
   updatePoles,
   modulateConfig,
+  lerpV3DissonanceState,
+  createV3Morph,
+  tickV3Morph,
   type SignaturV3Config,
   type V3DissonanceState,
 } from '../components/signatur-v3/bipolar-engine';
@@ -502,5 +505,97 @@ describe('Signatur V3 Float-Determinismus (TASK-sbridge-determinism)', () => {
     // Object.freeze throws in strict mode on frozen-property assignment.
     // This test FAILS without Object.freeze — it is not mode-independent.
     expect(DIMENSIONS[0]!.hz).toBe(originalHz);
+  });
+});
+
+describe('Quiz-morph engine API (V3MorphState)', () => {
+  const stateA: V3DissonanceState = {
+    dimensional: new Map(DIMENSIONS.map((d, i) => [d.id, i * 0.1])),
+    dNatal: 0.2,
+    dAccumulated: 0,
+    elementalQuality: -0.5,
+  };
+  const stateB: V3DissonanceState = {
+    dimensional: new Map(DIMENSIONS.map((d, i) => [d.id, 1 - i * 0.1])),
+    dNatal: 0.8,
+    dAccumulated: 0,
+    elementalQuality: 0.5,
+  };
+
+  describe('lerpV3DissonanceState', () => {
+    it('at t=0 returns from state', () => {
+      const result = lerpV3DissonanceState(stateA, stateB, 0);
+      expect(result.dNatal).toBeCloseTo(stateA.dNatal);
+      expect(result.elementalQuality).toBeCloseTo(stateA.elementalQuality);
+      for (const [k, v] of stateA.dimensional) {
+        expect(result.dimensional.get(k)).toBeCloseTo(v);
+      }
+    });
+
+    it('at t=1 returns to state', () => {
+      const result = lerpV3DissonanceState(stateA, stateB, 1);
+      expect(result.dNatal).toBeCloseTo(stateB.dNatal);
+      expect(result.elementalQuality).toBeCloseTo(stateB.elementalQuality);
+    });
+
+    it('at t=0.5 returns midpoint', () => {
+      const result = lerpV3DissonanceState(stateA, stateB, 0.5);
+      expect(result.dNatal).toBeCloseTo((stateA.dNatal + stateB.dNatal) / 2);
+      expect(result.elementalQuality).toBeCloseTo(
+        (stateA.elementalQuality + stateB.elementalQuality) / 2,
+      );
+    });
+  });
+
+  describe('createV3Morph', () => {
+    it('creates morph with active=true, elapsed=0', () => {
+      const morph = createV3Morph(stateA, stateB);
+      expect(morph.active).toBe(true);
+      expect(morph.elapsed).toBe(0);
+      expect(morph.duration).toBe(2.0);
+    });
+
+    it('accepts custom duration', () => {
+      const morph = createV3Morph(stateA, stateB, 0.5);
+      expect(morph.duration).toBe(0.5);
+    });
+  });
+
+  describe('tickV3Morph', () => {
+    it('advances elapsed and returns interpolated state', () => {
+      const morph = createV3Morph(stateA, stateB, 2.0);
+      const result = tickV3Morph(morph, 1.0); // halfway
+      expect(morph.elapsed).toBeCloseTo(1.0);
+      expect(morph.active).toBe(true);
+      // smoothstep(0.5) = 0.5 → midpoint
+      expect(result.dNatal).toBeCloseTo((stateA.dNatal + stateB.dNatal) / 2, 1);
+    });
+
+    it('marks morph inactive when duration elapsed', () => {
+      const morph = createV3Morph(stateA, stateB, 2.0);
+      tickV3Morph(morph, 2.0);
+      expect(morph.active).toBe(false);
+      expect(morph.elapsed).toBeCloseTo(2.0);
+    });
+
+    it('at completion returns to state exactly', () => {
+      const morph = createV3Morph(stateA, stateB, 2.0);
+      const result = tickV3Morph(morph, 2.0);
+      expect(result.dNatal).toBeCloseTo(stateB.dNatal);
+      expect(result.elementalQuality).toBeCloseTo(stateB.elementalQuality);
+    });
+
+    it('does not exceed duration (clamped)', () => {
+      const morph = createV3Morph(stateA, stateB, 1.0);
+      tickV3Morph(morph, 5.0); // overshoot
+      expect(morph.elapsed).toBeCloseTo(1.0);
+    });
+
+    it('sequential ticks sum correctly', () => {
+      const morph = createV3Morph(stateA, stateB, 2.0);
+      tickV3Morph(morph, 0.5);
+      tickV3Morph(morph, 0.5);
+      expect(morph.elapsed).toBeCloseTo(1.0);
+    });
   });
 });

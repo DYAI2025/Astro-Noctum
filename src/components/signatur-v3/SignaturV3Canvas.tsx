@@ -16,11 +16,14 @@ import {
   type PoleState,
   type SignaturV3Config,
   type V3DissonanceState,
+  type V3MorphState,
   type DayHarmonicState,
   type SolarModulation,
   DIMENSIONS,
   initializePoles,
   computeV3Dissonance,
+  createV3Morph,
+  tickV3Morph,
   updatePoles,
   modulateConfig,
 } from './bipolar-engine';
@@ -245,6 +248,7 @@ export default function SignaturV3Canvas({
   const animRef = useRef<number>(0);
   const polesRef = useRef<PoleState[] | null>(null);
   const dissonanceRef = useRef<V3DissonanceState | null>(null);
+  const morphRef = useRef<V3MorphState | null>(null);
   const dayHarmonicRef = useRef<DayHarmonicState | undefined>(dayHarmonic);
   const solarRef = useRef<SolarModulation | undefined>(solarModulation);
   const timeRef = useRef(0);
@@ -294,11 +298,32 @@ export default function SignaturV3Canvas({
     return m;
   }, [quizWeights]);
 
-  // Initialize poles when weights change
+  // Refs for morph: hold latest natal/external values without triggering re-init
+  const natalMapMorphRef = useRef(natalMap);
+  natalMapMorphRef.current = natalMap;
+  const externalDissonanceMorphRef = useRef(externalDissonance);
+  externalDissonanceMorphRef.current = externalDissonance;
+
+  // Re-initialize poles only when canvas config or natal chart changes.
+  // Quiz weight changes do NOT reset poles — they trigger a morph instead.
   useEffect(() => {
     polesRef.current = initializePoles(config, natalMap, quizMap);
     dissonanceRef.current = computeV3Dissonance(natalMap, quizMap, externalDissonance);
-  }, [config, natalMap, quizMap, externalDissonance]);
+    morphRef.current = null; // clear any active morph on hard re-init
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config, natalMap]);
+
+  // Morph dissonance state when quiz weights change — continuous transition, no pole reset
+  useEffect(() => {
+    if (!polesRef.current || !dissonanceRef.current) return;
+    const newTarget = computeV3Dissonance(
+      natalMapMorphRef.current,
+      quizMap,
+      externalDissonanceMorphRef.current,
+    );
+    morphRef.current = createV3Morph(dissonanceRef.current, newTarget, 2.0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quizMap, externalDissonance]);
 
   // Pause when tab hidden, resume on visible
   useEffect(() => {
@@ -319,8 +344,7 @@ export default function SignaturV3Canvas({
 
     const canvas = canvasRef.current;
     const poles = polesRef.current;
-    const dissonance = dissonanceRef.current;
-    if (!canvas || !poles || !dissonance) return;
+    if (!canvas || !poles || !dissonanceRef.current) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -345,20 +369,25 @@ export default function SignaturV3Canvas({
     lastFrameRef.current = now;
     timeRef.current += dt;
 
+    // Advance morph if active — smoothly interpolates dissonance toward new quiz weights
+    if (morphRef.current?.active) {
+      dissonanceRef.current = tickV3Morph(morphRef.current, dt);
+    }
+
     // Apply day-harmonic config modulation (trail persistence etc.)
     const activeConfig = dayHarmonicRef.current
       ? modulateConfig(config, dayHarmonicRef.current)
       : config;
 
     // Update pole positions
-    updatePoles(poles, dissonance, activeConfig, timeRef.current, dayHarmonicRef.current, solarRef.current);
+    updatePoles(poles, dissonanceRef.current, activeConfig, timeRef.current, dayHarmonicRef.current, solarRef.current);
 
     // === RENDER ===
 
     // Semi-transparent clear — trails persist through partial fade
     // Solar storms increase fade rate slightly (more energy = brighter trails)
     const solarFadeMod = solarRef.current ? (solarRef.current.ringModulation - 1.0) * 0.01 : 0;
-    ctx.fillStyle = `rgba(8, 5, 15, ${0.02 + dissonance.dNatal * 0.03 - solarFadeMod})`;
+    ctx.fillStyle = `rgba(8, 5, 15, ${0.02 + dissonanceRef.current.dNatal * 0.03 - solarFadeMod})`;
     ctx.fillRect(0, 0, effectiveW, effectiveH);
 
     // Dimension axes (very subtle guide lines)
@@ -366,7 +395,7 @@ export default function SignaturV3Canvas({
       drawDimensionAxis(ctx, dim, config, cx, cy);
     }
 
-    const { elementalQuality } = dissonance;
+    const { elementalQuality } = dissonanceRef.current;
 
     // Draw all trails
     ctx.globalCompositeOperation = 'lighter'; // additive blending — overlapping trails brighten
@@ -382,7 +411,7 @@ export default function SignaturV3Canvas({
       const pole = poles[i]!;
       const dimIdx = Math.floor(i / 2);
       const dim = DIMENSIONS[dimIdx]!;
-      const d = dissonance.dimensional.get(dim.id) ?? 0;
+      const d = dissonanceRef.current.dimensional.get(dim.id) ?? 0;
       drawPoleHead(ctx, pole, dim, cx, cy, d, elementalQuality);
     }
     ctx.globalCompositeOperation = 'source-over';
