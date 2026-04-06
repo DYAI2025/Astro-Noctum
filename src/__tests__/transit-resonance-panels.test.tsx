@@ -77,6 +77,11 @@ describe('TransitResonancePanels', () => {
     expect(screen.getByText('Opposition')).toBeInTheDocument();
   });
 
+  it('displays correct aspect name for sextile', () => {
+    render(<TransitResonancePanels birthSign="Aries" />);
+    expect(screen.getByText('Sextil')).toBeInTheDocument();
+  });
+
   it('shows "Verstärkend" for resonant aspects', () => {
     render(<TransitResonancePanels birthSign="Aries" />);
     // Mars has trine (resonant)

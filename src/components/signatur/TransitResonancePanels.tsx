@@ -125,8 +125,7 @@ function poleInsight(dimensionId: string, isResonant: boolean): string {
     empathy:    { resonant: 'tiefes Mitgefühl und emotionale Verbindung', tension: 'gesunde Grenzen und Selbstfürsorge' },
     intuition:  { resonant: 'Weitblick und expansives Denken', tension: 'das Wesentliche klar zu erfassen' },
     discipline: { resonant: 'nachhaltige Strukturen und Verlässlichkeit', tension: 'neue Freiräume durch bewusstes Loslassen' },
-    creativity: { resonant: 'schöpferischen Ausdruck und Lebensfreude', tension: 'tiefes Erneuerung durch Neuerfindung' },
-    logic:      { resonant: 'analytische Klarheit und Präzision', tension: 'ganzheitliche Synthese statt Einzelteile' },
+    // creativity and logic: reserved for future Sun/Mercury transit tracking
   };
   const dim = insights[dimensionId];
   if (!dim) return 'neue Möglichkeiten';
