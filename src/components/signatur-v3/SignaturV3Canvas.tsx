@@ -79,6 +79,22 @@ export function buildConfig(width: number, height: number, quality: 'high' | 'me
 //  RENDER HELPERS
 // ═══════════════════════════════════════
 
+/**
+ * Shift RGB color toward cool (Ke) or warm (Sheng) based on elemental quality.
+ * elementalQuality: -1 = Ke (cool/crystalline), +1 = Sheng (warm/organic)
+ */
+function applyColorTemp(r: number, g: number, b: number, elementalQuality: number): [number, number, number] {
+  const strength = Math.abs(elementalQuality) * 0.2; // max 20% shift
+  if (elementalQuality < 0) {
+    // Ke: shift toward cool blue (crystalline)
+    return [Math.max(r - strength, 0), g, Math.min(b + strength * 0.8, 1)];
+  } else if (elementalQuality > 0) {
+    // Sheng: shift toward warm gold (organic)
+    return [Math.min(r + strength * 0.4, 1), Math.min(g + strength * 0.15, 1), Math.max(b - strength * 0.3, 0)];
+  }
+  return [r, g, b];
+}
+
 function drawPoleTrail(
   ctx: CanvasRenderingContext2D,
   pole: PoleState,
@@ -86,11 +102,12 @@ function drawPoleTrail(
   config: SignaturV3Config,
   centerX: number,
   centerY: number,
+  elementalQuality: number,
 ): void {
   if (pole.trailLength < 2) return;
 
-  const color = pole.pole === 'A' ? dim.colorA : dim.colorB;
-  const [r, g, b] = color;
+  const baseColor = pole.pole === 'A' ? dim.colorA : dim.colorB;
+  const [r, g, b] = applyColorTemp(baseColor[0], baseColor[1], baseColor[2], elementalQuality);
 
   // Draw trail as connected line segments with fading opacity
   ctx.beginPath();
@@ -146,9 +163,10 @@ function drawPoleHead(
   centerX: number,
   centerY: number,
   dissonance: number,
+  elementalQuality: number,
 ): void {
-  const color = pole.pole === 'A' ? dim.colorA : dim.colorB;
-  const [r, g, b] = color;
+  const baseColor = pole.pole === 'A' ? dim.colorA : dim.colorB;
+  const [r, g, b] = applyColorTemp(baseColor[0], baseColor[1], baseColor[2], elementalQuality);
   const px = centerX + pole.x;
   const py = centerY + pole.y;
 
@@ -348,13 +366,15 @@ export default function SignaturV3Canvas({
       drawDimensionAxis(ctx, dim, config, cx, cy);
     }
 
+    const { elementalQuality } = dissonance;
+
     // Draw all trails
     ctx.globalCompositeOperation = 'lighter'; // additive blending — overlapping trails brighten
     for (let i = 0; i < poles.length; i++) {
       const pole = poles[i]!;
       const dimIdx = Math.floor(i / 2);
       const dim = DIMENSIONS[dimIdx]!;
-      drawPoleTrail(ctx, pole, dim, activeConfig, cx, cy);
+      drawPoleTrail(ctx, pole, dim, activeConfig, cx, cy, elementalQuality);
     }
 
     // Draw pole heads (the moving points)
@@ -363,7 +383,7 @@ export default function SignaturV3Canvas({
       const dimIdx = Math.floor(i / 2);
       const dim = DIMENSIONS[dimIdx]!;
       const d = dissonance.dimensional.get(dim.id) ?? 0;
-      drawPoleHead(ctx, pole, dim, cx, cy, d);
+      drawPoleHead(ctx, pole, dim, cx, cy, d, elementalQuality);
     }
     ctx.globalCompositeOperation = 'source-over';
 

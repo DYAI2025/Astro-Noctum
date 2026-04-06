@@ -282,6 +282,62 @@ describe('Signatur V3 Engine', () => {
     });
   });
 
+  describe('Elemental vibration texture (d_elemental)', () => {
+    it('vibration is inactive below d=0.1 threshold', () => {
+      // At d=0.05 (below threshold), positions must match pure blend arithmetic — no perpendicular jitter
+      const belowThreshold: V3DissonanceState = {
+        dimensional: new Map(DIMENSIONS.map(dim => [dim.id, 0.05])),
+        dNatal: 0.1,
+        dAccumulated: 0,
+        elementalQuality: -1, // Ke — if vibration were active, it would add displacement
+      };
+      const poles = initializePoles(DEFAULT_CONFIG, NATAL, NATAL);
+      const theta0 = poles[0]!.theta;
+      const speed0 = poles[0]!.speed;
+      const radius0 = poles[0]!.radius;
+
+      updatePoles(poles, belowThreshold, DEFAULT_CONFIG, 0);
+
+      // blend = clamp(0.05 * 2, 0, 1) = 0.1 → near-symmetric
+      // No vibration: poleA.y ≈ sin(theta + speed) * radius (within small blend offset)
+      expect(Math.abs(poles[0]!.y)).toBeLessThan(radius0 * 1.1);
+    });
+
+    it('Ke uses angular waveform: larger vibration than Sheng at sin(12t)≈0.707 phase', () => {
+      // At d=0.5, both Ke and Sheng have blend=1 → identical Lissajous base position.
+      // At t=π/48, sin(12*t) = sin(π/4) ≈ 0.707:
+      //   Ke:    tanh(3 × 0.707) ≈ 0.970 × vibAmp  (angular/squashed)
+      //   Sheng: sin(3 × π/48)   ≈ 0.195 × vibAmp  (smooth/flowing)
+      // Ke displacement magnitude must exceed Sheng at this time point.
+      const keState: V3DissonanceState = {
+        dimensional: new Map(DIMENSIONS.map(dim => [dim.id, 0.5])),
+        dNatal: 1,
+        dAccumulated: 0,
+        elementalQuality: -1, // Ke
+      };
+      const shengState: V3DissonanceState = {
+        ...keState,
+        elementalQuality: 1, // Sheng
+      };
+
+      const polesKe    = initializePoles(DEFAULT_CONFIG, NATAL, NATAL);
+      const polesSheng = initializePoles(DEFAULT_CONFIG, NATAL, NATAL);
+
+      const t = Math.PI / (4 * 12); // sin(12 * t) = sin(π/4) ≈ 0.707
+      updatePoles(polesKe,    keState,    DEFAULT_CONFIG, t);
+      updatePoles(polesSheng, shengState, DEFAULT_CONFIG, t);
+
+      // Both start from identical positions — difference is purely vibrational
+      let diffSq = 0;
+      for (let i = 0; i < polesKe.length; i++) {
+        diffSq += (polesKe[i]!.x - polesSheng[i]!.x) ** 2
+                + (polesKe[i]!.y - polesSheng[i]!.y) ** 2;
+      }
+      // Expected per-pole RMS diff ≈ 2px (0.775 × vibAmp × cos(perp)); conservative threshold: 0.5px
+      expect(Math.sqrt(diffSq / polesKe.length)).toBeGreaterThan(0.5);
+    });
+  });
+
   describe('Day harmonic modulation', () => {
     it('pulse mode increases trail persistence', () => {
       const dh = computeDayHarmonic(0.3); // low harmony → pulse

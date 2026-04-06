@@ -422,7 +422,12 @@ export function updatePoles(
       const vibFreq = dissonance.elementalQuality < 0
         ? 12.0  // Ke: high-frequency angular vibration
         : 3.0;  // Sheng: slow organic pulse
-      const vib = Math.sin(effectiveTime * vibFreq + dim.baseAngle) * vibAmp;
+      const rawWave = Math.sin(effectiveTime * vibFreq + dim.baseAngle);
+      // Ke: tanh(3x) squashes the sine toward a square wave → angular/crystalline feel
+      // Sheng: plain sine → smooth/organic/flowing
+      const vib = (dissonance.elementalQuality < 0
+        ? Math.tanh(3 * rawWave)
+        : rawWave) * vibAmp;
 
       // Apply perpendicular to movement direction
       const perpA = poleA.theta + Math.PI / 2;
