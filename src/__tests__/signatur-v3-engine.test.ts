@@ -6,6 +6,7 @@ import {
   updatePoles,
   modulateConfig,
   type SignaturV3Config,
+  type V3DissonanceState,
 } from '../components/signatur-v3/bipolar-engine';
 // DIMENSION_DEFS is now the canonical export from @bazodiac/shared
 import { DIMENSION_DEFS as DIMENSIONS } from '@/packages/shared/src/signatur/dimension-defs';
@@ -160,6 +161,124 @@ describe('Signatur V3 Engine', () => {
       };
       const d = computeV3Dissonance(NATAL, QUIZ_ALIGNED, external);
       expect(d.elementalQuality).toBeCloseTo(0.5); // Sheng → positive
+    });
+  });
+
+  describe('Lissajous blend mechanics', () => {
+    function makeDissonanceState(d: number): V3DissonanceState {
+      return {
+        dimensional: new Map(DIMENSIONS.map(dim => [dim.id, d])),
+        dNatal: Math.min(d * 2, 1),
+        dAccumulated: 0,
+        elementalQuality: 0,
+      };
+    }
+
+    it('blend amplification: displacement from symmetric scales as 2×d, not 1×d (engine)', () => {
+      // Behavioral test: drives updatePoles with d=0.05 (blend=0.1) and d=0.1 (blend=0.2).
+      // Both are below the vibration threshold (d > 0.1), so positions are pure blend arithmetic.
+      // Verifies that clamp(d*2, 0, 1) is applied — a 1:1 formula would give ratio 1, not 2.
+      const s0 = makeDissonanceState(0);
+      const s05 = makeDissonanceState(0.05);  // blend = clamp(0.05 * 2, 0, 1) = 0.1
+      const s10 = makeDissonanceState(0.1);   // blend = clamp(0.1  * 2, 0, 1) = 0.2
+
+      const p0  = initializePoles(DEFAULT_CONFIG, NATAL, NATAL);
+      const p05 = initializePoles(DEFAULT_CONFIG, NATAL, NATAL);
+      const p10 = initializePoles(DEFAULT_CONFIG, NATAL, NATAL);
+
+      // 10 frames: enough for theta to accumulate a measurable Lissajous Y difference
+      for (let frame = 0; frame < 10; frame++) {
+        const t = frame * 0.016;
+        updatePoles(p0,  s0,  DEFAULT_CONFIG, t);
+        updatePoles(p05, s05, DEFAULT_CONFIG, t);
+        updatePoles(p10, s10, DEFAULT_CONFIG, t);
+      }
+
+      // For each poleA (even indices): displacement ratio must be 2:1 where measurable
+      let ratioChecked = false;
+      for (let i = 0; i < p0.length; i += 2) {
+        const disp05 = p05[i]!.y - p0[i]!.y;  // blend=0.1 → 10% of (lissajous - symmetric)
+        const disp10 = p10[i]!.y - p0[i]!.y;  // blend=0.2 → 20% of (lissajous - symmetric)
+        if (Math.abs(disp05) > 0.001) {
+          expect(disp10 / disp05).toBeCloseTo(2.0, 1);
+          ratioChecked = true;
+        }
+      }
+      // Guard: at least one dimension must have a measurable displacement
+      expect(ratioChecked).toBe(true);
+    });
+
+    it('d=0 → pure symmetric orbit: poleA.y = sin(theta + speed) × radius', () => {
+      // With blend=0 and no vibration (d < 0.1 threshold), position is purely circular
+      const consonantState = makeDissonanceState(0);
+      const poles = initializePoles(DEFAULT_CONFIG, NATAL, NATAL);
+      const theta0 = poles[0]!.theta;
+      const speed0 = poles[0]!.speed;
+      const radius0 = poles[0]!.radius;
+
+      updatePoles(poles, consonantState, DEFAULT_CONFIG, 0);
+
+      expect(poles[0]!.y).toBeCloseTo(Math.sin(theta0 + speed0) * radius0, 10);
+    });
+
+    it('d=0.5 produces different pole positions than d=0 (Lissajous blend active)', () => {
+      // d=0.5 → blend=1 → Lissajous Y frequency ratio applied
+      // Both start from identical initial state but diverge after N frames
+      const consonantState = makeDissonanceState(0);
+      const dissonantState = makeDissonanceState(0.5);
+
+      const polesConsonant = initializePoles(DEFAULT_CONFIG, NATAL, NATAL);
+      const polesDissonant = initializePoles(DEFAULT_CONFIG, NATAL, NATAL);
+
+      for (let frame = 0; frame < 60; frame++) {
+        const t = frame * 0.016;
+        updatePoles(polesConsonant, consonantState, DEFAULT_CONFIG, t);
+        updatePoles(polesDissonant, dissonantState, DEFAULT_CONFIG, t);
+      }
+
+      // At least one pole pair must have diverged in Y (different freqRatio applied)
+      let anyYDiverged = false;
+      for (let i = 0; i < polesConsonant.length; i++) {
+        if (Math.abs(polesConsonant[i]!.y - polesDissonant[i]!.y) > 0.01) {
+          anyYDiverged = true;
+          break;
+        }
+      }
+      expect(anyYDiverged).toBe(true);
+    });
+
+    it('d=0.25 interpolates: Y is between symmetric and full-Lissajous', () => {
+      // blend=0.5 → intermediate position between the two orbit modes
+      const consonantState = makeDissonanceState(0);
+      const halfState = makeDissonanceState(0.25);
+      const dissonantState = makeDissonanceState(0.5);
+
+      const polesConsonant = initializePoles(DEFAULT_CONFIG, NATAL, NATAL);
+      const polesHalf = initializePoles(DEFAULT_CONFIG, NATAL, NATAL);
+      const polesDissonant = initializePoles(DEFAULT_CONFIG, NATAL, NATAL);
+
+      // Single step at time=0 (no vibration for d=0; vibration for d>0.1)
+      // For polesConsonant: d=0, no vibration → clean symmetric position
+      // For polesHalf: d=0.25 > 0.1, vibration applied — but Y is still bounded by lerp
+      updatePoles(polesConsonant, consonantState, DEFAULT_CONFIG, 0);
+      updatePoles(polesHalf, halfState, DEFAULT_CONFIG, 0);
+      updatePoles(polesDissonant, dissonantState, DEFAULT_CONFIG, 0);
+
+      // For each dimension pair, if symmetric and lissajous differ, intermediate is between them
+      for (let i = 0; i < polesConsonant.length; i += 2) {
+        const yC = polesConsonant[i]!.y;
+        const yH = polesHalf[i]!.y;
+        const yF = polesDissonant[i]!.y;
+        // Only assert when the two extremes differ visibly
+        if (Math.abs(yF - yC) > 1.0) {
+          const lo = Math.min(yC, yF);
+          const hi = Math.max(yC, yF);
+          // Half must be within the [lo, hi] range (with small tolerance for vibration offset)
+          const tolerance = DEFAULT_CONFIG.maxR * 0.015; // ≤ 1.5% of maxR — 2× actual max vibration (0.25 × maxR × 0.03 = 1.5px)
+          expect(yH).toBeGreaterThanOrEqual(lo - tolerance);
+          expect(yH).toBeLessThanOrEqual(hi + tolerance);
+        }
+      }
     });
   });
 
