@@ -55,7 +55,7 @@ const PLANET_CONFIG: Record<string, PlanetConfig> = {
 
 interface AspectInfo {
   name: string;
-  /** Short quality label for the badge */
+  /** Short quality label e.g. "Fluss", "Spannung" — used by TASK-signatur-transit-panel-detail as panel subtitle */
   quality: string;
   /** Badge color class */
   colorClass: string;
