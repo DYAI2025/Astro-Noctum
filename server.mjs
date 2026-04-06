@@ -303,6 +303,13 @@ function sanitizeCheckoutReturnUrl(rawUrl, fallbackUrl) {
 // Primary URL for logging
 const BAFE_BASE_URL = BAFE_INTERNAL_URL || BAFE_PUBLIC_URL;
 
+/** Returns headers for direct BAFE/FuFirE fetch calls (includes X-API-Key when configured). */
+function bafeDirectHeaders(extra = {}) {
+  const h = { "Content-Type": "application/json", ...extra };
+  if (process.env.BAFE_API_KEY) h["X-API-Key"] = process.env.BAFE_API_KEY;
+  return h;
+}
+
 // ── BAFE Response Cache (24h TTL) ────────────────────────────────────
 const bafeCache = new Map(); // key → { body, contentType, status, timestamp }
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
@@ -359,7 +366,7 @@ async function proxyToBafeWithFallback(targetUrls, req, res) {
 
         const upstream = await fetch(targetUrl, {
           method: req.method,
-          headers: { "Content-Type": "application/json" },
+          headers: bafeDirectHeaders(),
           body: reqBody != null ? JSON.stringify(reqBody) : undefined,
           signal: controller.signal,
         });
@@ -1001,7 +1008,7 @@ app.get("/api/transit-state/:userId", requireUserAuth, async (req, res) => {
 
     const fufireRes = await fetch(`${bafePrimaryUrl}/transit/state`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: bafeDirectHeaders(),
       body: JSON.stringify({
         soulprint_sectors: soulprintSectors,
         quiz_sectors: quizSectors,
@@ -1046,6 +1053,16 @@ app.get("/api/transit-state/:userId", requireUserAuth, async (req, res) => {
 // On-demand with 24h cache per user.
 const horoscopeCache = new Map(); // userId:dateStr → { horoscope, timestamp }
 const HOROSCOPE_CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
+
+// ── Gemini output guard ─────────────────────────────────────────────
+// Detects bare numbers (percentages or decimal scores) in Gemini text fields.
+// Returns true when the text contains unexplained numerical values that would
+// violate CON-no-unexplained-numbers (REQ-F-transparency-rule).
+function containsBareNumbers(text) {
+  if (typeof text !== 'string' || !text) return false;
+  // Match: bare percentages (72%) or decimal scores (0.85, 3.4)
+  return /\d+\s*%|\b\d+[.,]\d+\b/.test(text);
+}
 
 // ── Vibes cache (L1 in-memory) ──────────────────────────────────────
 const vibesCache = new Map(); // vibes:userId → { data, timestamp }
@@ -1337,7 +1354,7 @@ app.get("/api/horoscope/daily/:userId", async (req, res) => {
 
         const fufireRes = await fetch(`${bafePrimaryUrl}/transit/state`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: bafeDirectHeaders(),
           body: JSON.stringify({ soulprint_sectors: soulprintSectors, quiz_sectors: Array(12).fill(0.5) }),
           signal: controller.signal,
         });
@@ -1453,7 +1470,7 @@ app.post('/api/experience/bootstrap', requireUserAuth, async (req, res) => {
       `${BAFE_BASE_URL}/chart`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: bafeDirectHeaders(),
         body: JSON.stringify({
           birthDate: birth.date,
           birthTime: birth.time,
@@ -1580,6 +1597,67 @@ app.post('/api/experience/signature-delta', requireUserAuth, async (req, res) =>
   }
 });
 
+// ── Night-Pulse H computation ────────────────────────────────────────────────
+// Datenbasis: current Moon zodiac sign + current BaZi hour branch element.
+// Same cosine-similarity formula as Day-Pulse H, different input vectors.
+
+/** Moon zodiac sign index (0=Aries … 11=Pisces) from approximate ecliptic longitude */
+function approxMoonSignIndex(date = new Date()) {
+  const msPerDay = 86400000;
+  const d = (date.getTime() - Date.UTC(2000, 0, 1, 12, 0, 0)) / msPerDay;
+  const toRad = (deg) => deg * Math.PI / 180;
+  const L = ((218.316 + 13.176396 * d) % 360 + 360) % 360;
+  const M = ((134.963 + 13.064993 * d) % 360 + 360) % 360;
+  const sunM = ((357.529 + 0.985600 * d) % 360 + 360) % 360;
+  const lam = L
+    + 6.289 * Math.sin(toRad(M))
+    - 1.274 * Math.sin(toRad(2 * L - M))
+    + 0.658 * Math.sin(toRad(2 * L))
+    - 0.186 * Math.sin(toRad(sunM));
+  return Math.floor(((lam % 360 + 360) % 360) / 30); // 0–11
+}
+
+// Zodiac sector index → Wu-Xing element (same mapping as DashboardTagesEnergie / SECTOR_ELEMENT)
+const NIGHT_ZODIAC_ELEMENT = ['Fire','Earth','Metal','Water','Wood','Fire','Earth','Metal','Water','Wood','Fire','Earth'];
+
+/** Current BaZi hour-branch Wu-Xing element from UTC hour (each 2h slot = 1 branch) */
+function hourBranchElement(utcHour) {
+  // Zi(23/0)=Water, Chou(1-2)=Earth, Yin(3-4)=Wood, Mao(5-6)=Wood,
+  // Chen(7-8)=Earth, Si(9-10)=Fire, Wu(11-12)=Fire, Wei(13-14)=Earth,
+  // Shen(15-16)=Metal, You(17-18)=Metal, Xu(19-20)=Earth, Hai(21-22)=Water
+  const BRANCH_ELEM = ['Water','Earth','Wood','Wood','Earth','Fire','Fire','Earth','Metal','Metal','Earth','Water'];
+  const branchIdx = utcHour === 23 ? 0 : Math.floor((utcHour + 1) / 2);
+  return BRANCH_ELEM[branchIdx % 12];
+}
+
+/** Night-Pulse H: cosine similarity between Moon-element 5D vector and hour-branch 5D vector */
+function computeNightHarmonyIndex(date = new Date()) {
+  const moonEl = NIGHT_ZODIAC_ELEMENT[approxMoonSignIndex(date)];
+  const hourEl = hourBranchElement(date.getUTCHours());
+  const moonVec = ELEMENT_DIMENSION_MAP[moonEl];
+  const hourVec = ELEMENT_DIMENSION_MAP[hourEl];
+  if (!moonVec || !hourVec) return 0.45;
+  let dot = 0, magM = 0, magH = 0;
+  for (const k of DIMENSION_KEYS) {
+    const m = moonVec[k] ?? 0;
+    const h = hourVec[k] ?? 0;
+    dot += m * h;
+    magM += m * m;
+    magH += h * h;
+  }
+  if (magM < 1e-9 || magH < 1e-9) return 0.45;
+  return Math.min(1, Math.max(0, dot / (Math.sqrt(magM) * Math.sqrt(magH))));
+}
+
+/** Append night_harmony_index + night_mode to a DailyResponse fusion object (mutates in place) */
+function appendNightHarmony(parsedData, date = new Date()) {
+  if (!parsedData?.fusion) return;
+  if (parsedData.fusion.night_harmony_index !== undefined) return; // already present (cached)
+  const nightH = Math.round(computeNightHarmonyIndex(date) * 1000) / 1000;
+  parsedData.fusion.night_harmony_index = nightH;
+  parsedData.fusion.night_mode = nightH >= 0.50 ? 'trace' : 'pulse';
+}
+
 app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
   try {
     const userId = req.userId;
@@ -1613,10 +1691,12 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
     const targetDate = target_date || new Date().toISOString().slice(0, 10);
     const cacheKeyD = `daily:${userId}:${targetDate}:${lang}`;
 
+    const now = new Date();
     if (horoscopeCache.has(cacheKeyD)) {
       const cached = horoscopeCache.get(cacheKeyD);
       if (Date.now() - cached.timestamp < HOROSCOPE_CACHE_TTL) {
-         return res.json(cached.data);
+        appendNightHarmony(cached.data, now);
+        return res.json(cached.data);
       }
     }
 
@@ -1632,6 +1712,7 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
           .maybeSingle();
 
         if (dbCached?.payload_json) {
+          appendNightHarmony(dbCached.payload_json, now);
           horoscopeCache.set(cacheKeyD, { data: dbCached.payload_json, timestamp: Date.now() });
           return res.json(dbCached.payload_json);
         }
@@ -1644,7 +1725,7 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
       console.warn('[experience/daily] Gemini API key missing, falling back to proxy');
       const resp = await fetch(`${BAFE_BASE_URL}/experience/daily`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: bafeDirectHeaders(),
         body: bodyStr,
         signal: AbortSignal.timeout(20000),
       });
@@ -1657,6 +1738,7 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
         if (data.fusion.day_mode === undefined) {
           data.fusion.day_mode = data.fusion.harmony_index >= 0.50 ? 'trace' : 'pulse';
         }
+        appendNightHarmony(data, now);
       }
       if (resp.ok && supabaseServer) {
         // Persist to L2 (fire-and-forget)
@@ -1678,7 +1760,7 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
     // Call BAFE for natal data to feed Gemini
     const bafeRes = await fetch(`${BAFE_BASE_URL}/chart`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: bafeDirectHeaders(),
       body: JSON.stringify({
         birthDate: birth.date,
         birthTime: birth.time,
@@ -1792,6 +1874,7 @@ NEVER use in synthesis: "weil", "da heute", planet names (Mars, Venus etc.), "di
       if (parsedData.fusion.day_mode === undefined) {
         parsedData.fusion.day_mode = parsedData.fusion.harmony_index >= 0.50 ? 'trace' : 'pulse';
       }
+      appendNightHarmony(parsedData, now);
     }
 
     horoscopeCache.set(cacheKeyD, { data: parsedData, timestamp: Date.now() });
@@ -2086,16 +2169,36 @@ REGELN:
       return res.status(200).json(fallbackPayload);
     }
 
+    // ── Guard: reject Gemini text fields containing bare numbers ────────
+    const fb = VIBES_FALLBACK[dominantElement] || VIBES_FALLBACK.Fire;
+    const rawKurzsignal = parsed.kurzsignal || fb.kurzsignal || '';
+    const rawErklaerung = parsed.erklaerung || fb.erklaerung || '';
+    const rawSignaturCtx = parsed.explain?.signatur_context || `Dominantes Element: ${dominantElement}`;
+    const rawTransitCtx = parsed.explain?.transit_context || spaceWeatherSummary;
+
+    if (containsBareNumbers(rawKurzsignal)) {
+      console.warn('[vibes] Guard: bare numbers in kurzsignal, substituting fallback');
+    }
+    if (containsBareNumbers(rawErklaerung)) {
+      console.warn('[vibes] Guard: bare numbers in erklaerung, substituting fallback');
+    }
+    if (containsBareNumbers(rawSignaturCtx)) {
+      console.warn('[vibes] Guard: bare numbers in signatur_context, substituting fallback');
+    }
+    if (containsBareNumbers(rawTransitCtx)) {
+      console.warn('[vibes] Guard: bare numbers in transit_context, substituting fallback');
+    }
+
     // Assemble full payload with envelope
     const vibesPayload = {
       timestamp: new Date().toISOString(),
       horizon: '2-3h',
-      kurzsignal: parsed.kurzsignal || VIBES_FALLBACK[dominantElement]?.kurzsignal || '',
-      treiber: Array.isArray(parsed.treiber) ? parsed.treiber.slice(0, 5) : VIBES_FALLBACK[dominantElement]?.treiber || [],
-      erklaerung: parsed.erklaerung || VIBES_FALLBACK[dominantElement]?.erklaerung || '',
+      kurzsignal: containsBareNumbers(rawKurzsignal) ? fb.kurzsignal : rawKurzsignal,
+      treiber: Array.isArray(parsed.treiber) ? parsed.treiber.slice(0, 5) : fb.treiber || [],
+      erklaerung: containsBareNumbers(rawErklaerung) ? fb.erklaerung : rawErklaerung,
       explain: {
-        signatur_context: parsed.explain?.signatur_context || `Dominantes Element: ${dominantElement}`,
-        transit_context: parsed.explain?.transit_context || spaceWeatherSummary,
+        signatur_context: containsBareNumbers(rawSignaturCtx) ? `Dominantes Element: ${dominantElement}` : rawSignaturCtx,
+        transit_context: containsBareNumbers(rawTransitCtx) ? spaceWeatherSummary : rawTransitCtx,
       },
       meta: { engine_version: 'v1-gemini-vibes', cached: false },
     };
@@ -2327,20 +2430,33 @@ REGELN:
     }
     const geminiAreas = parsed.areas;
 
-    // Merge Gemini output with computed scores
+    // Merge Gemini output with computed scores (guard: reject bare numbers)
     const mergedAreas = areaScores.map((area) => {
       const geminiArea = geminiAreas.find(g => g.key === area.key);
       const tpl = WEEKLY_FALLBACK_TEMPLATES[area.key] || WEEKLY_FALLBACK_TEMPLATES.alltag;
+
+      const rawStatement = geminiArea?.statement || tpl.statement;
+      const rawExplain = geminiArea?.explain
+        || (area.isHighlighted ? tpl.explain : 'Diese Tendenz entsteht aus der aktuellen Konstellation in Verbindung mit deiner persönlichen Struktur.');
+
+      if (containsBareNumbers(rawStatement)) {
+        console.warn(`[weekly] Guard: bare numbers in statement for area "${area.key}", substituting fallback`);
+      }
+      if (containsBareNumbers(rawExplain)) {
+        console.warn(`[weekly] Guard: bare numbers in explain for area "${area.key}", substituting fallback`);
+      }
+
       return {
         key: area.key,
         label: area.label,
-        statement: geminiArea?.statement || tpl.statement,
+        statement: containsBareNumbers(rawStatement) ? tpl.statement : rawStatement,
         tendency: geminiArea?.tendency || tpl.tendency,
         score: area.score,
         rank: area.rank,
         isHighlighted: area.isHighlighted,
-        explain: geminiArea?.explain
-          || (area.isHighlighted ? tpl.explain : 'Diese Tendenz entsteht aus der aktuellen Konstellation in Verbindung mit deiner persönlichen Struktur.'),
+        explain: containsBareNumbers(rawExplain)
+          ? (area.isHighlighted ? tpl.explain : 'Diese Tendenz entsteht aus der aktuellen Konstellation in Verbindung mit deiner persönlichen Struktur.')
+          : rawExplain,
       };
     });
 
@@ -3399,7 +3515,7 @@ if (process.env.NODE_ENV !== "production") {
       try {
         const r = await fetch(url, {
           method,
-          headers: method === "POST" ? { "Content-Type": "application/json" } : {},
+          headers: method === "POST" ? bafeDirectHeaders() : {},
           body: method === "POST" ? testBody : undefined,
         });
         const text = await r.text();
@@ -3772,7 +3888,7 @@ app.get("/api/agent/daily/:userId", async (req, res) => {
   try {
     const dailyRes = await fetchWithRetry(`${bafeUrl}/experience/daily`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: bafeDirectHeaders(),
       body: JSON.stringify(dailyPayload),
       signal: AbortSignal.timeout(12000),
     });

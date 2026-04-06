@@ -159,7 +159,7 @@ function CompactAreaCard({ area, lang }: { area: WeeklyArea; lang: 'de' | 'en' }
           {area.tendency}
         </span>
       </div>
-      <p className="mt-2 text-xs text-white/50 leading-relaxed line-clamp-2">
+      <p className="mt-2 text-sm text-white/50 leading-relaxed line-clamp-2">
         {area.statement}
       </p>
     </motion.div>

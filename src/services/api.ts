@@ -123,9 +123,10 @@ async function postCalculation<T = unknown>(
         // Try parsing as JSON (BAFE Problem+JSON or Express error format)
         try {
           const parsed = JSON.parse(text);
-          if (parsed.detail) detail = parsed.detail;
-          else if (parsed.title) detail = parsed.title;
-          else if (parsed.error) detail = parsed.error;   // Express format
+          const coerce = (v: unknown) => typeof v === 'string' ? v : JSON.stringify(v);
+          if (parsed.detail) detail = coerce(parsed.detail);
+          else if (parsed.title) detail = coerce(parsed.title);
+          else if (parsed.error) detail = coerce(parsed.error);   // Express format
         } catch {
           // Not JSON — use raw text (e.g. plain "Service Unavailable" from proxy)
         }

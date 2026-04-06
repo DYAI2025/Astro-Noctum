@@ -17,8 +17,11 @@ export default defineConfig(({mode}) => {
       hmr: process.env.DISABLE_HMR !== 'true',
       proxy: {
         '/api/calculate': {
-          target: env.VITE_BAFE_BASE_URL || 'https://bafe.vercel.app',
+          // Railway deployment serves at /calculate/* (no /api prefix).
+          // The old Vercel deployment (bafe.vercel.app) is no longer available.
+          target: env.VITE_BAFE_BASE_URL || 'https://bafe-production.up.railway.app',
           changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/calculate/, '/calculate'),
         },
         '/api/auth': {
           target: 'http://localhost:3001',

@@ -93,9 +93,9 @@ export function VibesModal({ data, onClose }: VibesModalProps) {
               {data.horizon}
             </p>
 
-            {/* Level 1: Kurzsignal */}
+            {/* Level 1: Kurzsignal — leading-normal (1.5) satisfies REQ-USA-mobile-first-readability */}
             {data.kurzsignal?.trim() ? (
-              <p className="font-serif text-2xl sm:text-3xl text-center leading-snug text-gold max-w-[24ch]">
+              <p className="font-serif text-2xl sm:text-3xl text-center leading-normal text-gold max-w-[24ch]">
                 {data.kurzsignal}
               </p>
             ) : (
@@ -104,12 +104,12 @@ export function VibesModal({ data, onClose }: VibesModalProps) {
               </p>
             )}
 
-            {/* Level 2: Treiber pills */}
+            {/* Level 2: Treiber pills — text-sm (14px) satisfies ≥14px readability requirement */}
             <div className="flex flex-wrap justify-center gap-2">
               {data.treiber.map((tag) => (
                 <span
                   key={tag}
-                  className="bg-gold/10 text-gold/80 rounded-full px-3 py-1 text-xs"
+                  className="bg-gold/10 text-gold/80 rounded-full px-3 py-1 text-sm"
                 >
                   {tag}
                 </span>

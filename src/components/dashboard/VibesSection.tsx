@@ -54,7 +54,7 @@ export function VibesSection({ userId }: VibesSectionProps) {
 
   return (
     <>
-      <div className="cosmic-tile p-5 sm:p-6 rounded-[2rem] max-w-md mx-auto text-center">
+      <div className="cosmic-tile p-5 sm:p-6 rounded-[2rem] text-center">
         <h3 className="font-serif text-lg text-gold/90 mb-1">
           {t('vibesSection.sectionTitle')}
         </h3>

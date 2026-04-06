@@ -174,7 +174,7 @@ export function DayModeModal({ data, dayHarmonic, onClose }: Props) {
   const intensity = dayHarmonic?.intensity ??
     Math.abs((data.fusion.harmony_index - 0.45) / 0.55);
   const isTrace = mode === 'trace';
-  const modeLabel = isTrace ? 'DAY-TRACE' : 'DAY-PULSE';
+  const modeLabel = isTrace ? 'Day-Trace' : 'Day-Pulse';
   const dateLabel = formatDate(data.date);
   const text = data.fusion.synthesis || data.fusion.summary;
 
@@ -212,14 +212,25 @@ export function DayModeModal({ data, dayHarmonic, onClose }: Props) {
               <X size={18} />
             </button>
 
-            {/* Mode label */}
-            <div className="text-center">
-              <p
-                className="font-serif text-2xl tracking-widest"
-                style={{ color: isTrace ? '#D4AF37' : '#a0b4cc' }}
-              >
-                {modeLabel}
+            {/* Section title + mode badge */}
+            <div className="text-center flex flex-col items-center gap-1.5">
+              <p className="text-[9px] font-sans uppercase tracking-[0.3em] text-white/40">
+                Daily Pulse
               </p>
+              <span
+                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-sans uppercase tracking-wider font-bold"
+                style={{
+                  background: isTrace ? 'rgba(212,175,55,0.12)' : 'rgba(160,180,204,0.10)',
+                  color: isTrace ? '#D4AF37' : '#a0b4cc',
+                  border: `1px solid ${isTrace ? 'rgba(212,175,55,0.25)' : 'rgba(160,180,204,0.18)'}`,
+                }}
+              >
+                <span
+                  className="w-1 h-1 rounded-full"
+                  style={{ background: isTrace ? '#D4AF37' : '#a0b4cc' }}
+                />
+                {modeLabel}
+              </span>
               <p className="text-white/40 text-sm mt-0.5">{dateLabel}</p>
             </div>
 

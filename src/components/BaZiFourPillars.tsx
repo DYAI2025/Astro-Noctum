@@ -1,9 +1,9 @@
-import { useMemo } from "react";
-import { motion } from "motion/react";
+import { useMemo, useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { getCoinAsset } from "../lib/astro-data/coinAssets";
 import { getBranchByAnimal } from "../lib/astro-data/earthlyBranches";
 import { getWuxingByKey } from "../lib/astro-data/wuxing";
-import { Tooltip } from "./Tooltip";
+import { getStemByCharacter } from "../lib/astro-data/heavenlyStems";
 import type { MappedPillar } from "@/src/types/bafe";
 import { useLanguage } from "../contexts/LanguageContext";
 
@@ -53,8 +53,10 @@ const PILLAR_META: Record<string, { label: { en: string; de: string }; chinese: 
   },
 };
 
-export function BaZiFourPillars({ pillars, lang, planetariumMode }: BaZiFourPillarsProps) {
+export function BaZiFourPillars({ pillars, lang, planetariumMode: _planetariumMode }: BaZiFourPillarsProps) {
   const { t } = useLanguage();
+  const [selectedPillar, setSelectedPillar] = useState<string | null>(null);
+
   const pillarEntries = useMemo(() => {
     if (!pillars) return [];
     return (["year", "month", "day", "hour"] as const).map((key) => ({
@@ -65,101 +67,195 @@ export function BaZiFourPillars({ pillars, lang, planetariumMode }: BaZiFourPill
 
   if (pillarEntries.length === 0) return null;
 
+  const selectedEntry = selectedPillar ? pillarEntries.find((e) => e.key === selectedPillar) : null;
+
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-      {pillarEntries.map(({ key, pillar }, i) => {
-        const meta = PILLAR_META[key];
-        const isDayMaster = key === "day";
-        const branch = pillar?.animal ? getBranchByAnimal(pillar.animal) : null;
-        const elData = pillar?.element ? getWuxingByKey(pillar.element) : null;
-        const coinSrc = pillar?.animal ? getCoinAsset(pillar.animal) : undefined;
-        const isUnavailable = !pillar || (!pillar.stem && !pillar.animal);
+    <div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        {pillarEntries.map(({ key, pillar }, i) => {
+          const meta = PILLAR_META[key];
+          const isDayMaster = key === "day";
+          const branch = pillar?.animal ? getBranchByAnimal(pillar.animal) : null;
+          const elData = pillar?.element ? getWuxingByKey(pillar.element) : null;
+          const coinSrc = pillar?.animal ? getCoinAsset(pillar.animal) : undefined;
+          const isUnavailable = !pillar || (!pillar.stem && !pillar.animal);
+          const isSelected = selectedPillar === key;
 
-        return (
-          <motion.div
-            key={key}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: i * 0.1 }}
-          >
-            <Tooltip content={meta.desc[lang]} wide dark={planetariumMode}>
-              <div
-                className={`morning-stele group cursor-help w-full relative ${
-                  isDayMaster
-                    ? "ring-1 ring-[#D4AF37]/30 shadow-[0_0_20px_rgba(212,175,55,0.08)]"
-                    : ""
-                }`}
+          return (
+            <motion.div
+              key={key}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+            >
+              <button
+                type="button"
+                className="w-full text-left focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#D4AF37]/50 rounded-xl"
+                onClick={() => setSelectedPillar(isSelected ? null : key)}
+                aria-expanded={isSelected}
+                aria-label={`${meta.label[lang]} — ${isSelected ? (lang === 'de' ? 'schließen' : 'collapse') : (lang === 'de' ? 'öffnen' : 'expand')}`}
               >
-                {/* Day Master badge */}
-                {isDayMaster && (
-                  <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[#D4AF37]/15 border border-[#D4AF37]/25 rounded-full px-2.5 py-0.5 text-[7px] uppercase tracking-[0.3em] text-[#D4AF37] whitespace-nowrap">
-                    Day Master
-                  </div>
-                )}
+                <div
+                  className={`morning-stele group w-full relative transition-shadow ${
+                    isDayMaster
+                      ? "ring-1 ring-[#D4AF37]/30 shadow-[0_0_20px_rgba(212,175,55,0.08)]"
+                      : ""
+                  } ${isSelected ? "ring-1 ring-[#D4AF37]/40 shadow-[0_0_16px_rgba(212,175,55,0.1)]" : "hover:ring-1 hover:ring-[#8B6914]/20"}`}
+                >
+                  {/* Day Master badge */}
+                  {isDayMaster && (
+                    <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[#D4AF37]/15 border border-[#D4AF37]/25 rounded-full px-2.5 py-0.5 text-[7px] uppercase tracking-[0.3em] text-[#D4AF37] whitespace-nowrap">
+                      Day Master
+                    </div>
+                  )}
 
-                {/* Chinese pillar label */}
-                <div className="text-[8px] uppercase tracking-[0.3em] text-[#8B6914]/55 mb-3 group-hover:text-[#8B6914] transition-colors">
-                  {meta.label[lang]}
+                  {/* Chinese pillar label */}
+                  <div className="text-[8px] uppercase tracking-[0.3em] text-[#8B6914]/55 mb-3 group-hover:text-[#8B6914] transition-colors">
+                    {meta.label[lang]}
+                  </div>
+                  <div className="text-xs text-[#8B6914]/40 mb-4">{meta.chinese}</div>
+
+                  {isUnavailable ? (
+                    <div className="text-center py-6">
+                      <p className="text-xs italic" style={{ color: 'var(--tile-text-secondary)', opacity: 0.5 }}>
+                        {t("dashboard.bazi.birthTimeNotProvided")}
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Coin */}
+                      {coinSrc && (
+                        <div className="flex justify-center mb-3">
+                          <img
+                            src={coinSrc}
+                            alt={pillar.animal}
+                            className={`w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] object-contain rounded-full ${
+                              isDayMaster ? "ring-2 ring-[#D4AF37]/20" : ""
+                            }`}
+                            loading="lazy"
+                          />
+                        </div>
+                      )}
+
+                      {/* Stem */}
+                      <div className="font-serif text-2xl mb-1" style={{ color: 'var(--tile-text-primary)' }}>
+                        {pillar.stem || "—"}
+                      </div>
+
+                      {/* Branch */}
+                      <div className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--tile-text-secondary)', opacity: 0.5 }}>
+                        {pillar.branch || ""}
+                      </div>
+
+                      {/* Animal */}
+                      {pillar.animal && (
+                        <div className="text-[9px] text-[#8B6914]/50 mt-1.5 tracking-wide">
+                          {branch ? branch.animal[lang] : pillar.animal}
+                        </div>
+                      )}
+
+                      {/* Element */}
+                      {elData && (
+                        <div className="mt-2 flex items-center justify-center gap-1">
+                          <span className="font-serif text-sm" style={{ color: elData.color }}>
+                            {elData.chinese}
+                          </span>
+                          <span className="text-[9px]" style={{ color: 'var(--tile-text-secondary)', opacity: 0.6 }}>
+                            {elData.name[lang]}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Expand hint */}
+                      <div className={`mt-3 text-[8px] tracking-[0.2em] uppercase transition-colors ${
+                        isSelected ? "text-[#D4AF37]/70" : "text-[#8B6914]/35 group-hover:text-[#8B6914]/55"
+                      }`}>
+                        {isSelected
+                          ? (lang === 'de' ? 'schließen' : 'close')
+                          : (lang === 'de' ? 'details' : 'details')}
+                      </div>
+                    </>
+                  )}
                 </div>
-                <div className="text-xs text-[#8B6914]/40 mb-4">{meta.chinese}</div>
+              </button>
+            </motion.div>
+          );
+        })}
+      </div>
 
-                {isUnavailable ? (
-                  <div className="text-center py-6">
-                    <p className="text-xs text-[#1E2A3A]/30 italic">
-                      {t("dashboard.bazi.birthTimeNotProvided")}
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    {/* Coin */}
-                    {coinSrc && (
-                      <div className="flex justify-center mb-3">
-                        <img
-                          src={coinSrc}
-                          alt={pillar.animal}
-                          className={`w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] object-contain rounded-full ${
-                            isDayMaster ? "ring-2 ring-[#D4AF37]/20" : ""
-                          }`}
-                          loading="lazy"
-                        />
-                      </div>
-                    )}
-
-                    {/* Stem */}
-                    <div className="font-serif text-2xl mb-1 text-[#1E2A3A]">
-                      {pillar.stem || "—"}
-                    </div>
-
-                    {/* Branch */}
-                    <div className="text-[10px] text-[#1E2A3A]/35 uppercase tracking-widest">
-                      {pillar.branch || ""}
-                    </div>
-
-                    {/* Animal */}
-                    {pillar.animal && (
-                      <div className="text-[9px] text-[#8B6914]/50 mt-1.5 tracking-wide">
-                        {branch ? branch.animal[lang] : pillar.animal}
-                      </div>
-                    )}
-
-                    {/* Element */}
-                    {elData && (
-                      <div className="mt-2 flex items-center justify-center gap-1">
-                        <span className="font-serif text-sm" style={{ color: elData.color }}>
-                          {elData.chinese}
-                        </span>
-                        <span className="text-[9px] text-[#1E2A3A]/35">
-                          {elData.name[lang]}
-                        </span>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </Tooltip>
+      {/* ── Expandable detail panel ────────────────────────────────── */}
+      <AnimatePresence>
+        {selectedEntry && selectedEntry.pillar && (
+          <motion.div
+            key={selectedEntry.key}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="overflow-hidden"
+          >
+            <PillarDetail
+              pillarKey={selectedEntry.key}
+              pillar={selectedEntry.pillar}
+              lang={lang}
+            />
           </motion.div>
-        );
-      })}
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ── Detail panel ──────────────────────────────────────────────────────────────
+
+interface PillarDetailProps {
+  pillarKey: string;
+  pillar: MappedPillar;
+  lang: "en" | "de";
+}
+
+function PillarDetail({ pillarKey, pillar, lang }: PillarDetailProps) {
+  const meta = PILLAR_META[pillarKey];
+  const stemData = pillar.stem ? getStemByCharacter(pillar.stem) : null;
+  const branchData = pillar.animal ? getBranchByAnimal(pillar.animal) : null;
+  const isDayMaster = pillarKey === "day";
+  const stemContext = isDayMaster ? stemData?.dayMaster : stemData?.monthStem;
+
+  return (
+    <div className="mt-4 cosmic-tile p-5 border border-[#D4AF37]/15 space-y-4">
+      {/* Pillar description */}
+      <div>
+        <p className="text-[8px] uppercase tracking-[0.3em] text-[#8B6914]/60 mb-1.5">
+          {meta.label[lang]} · {meta.chinese}
+        </p>
+        <p className="text-xs leading-relaxed" style={{ color: 'var(--tile-text-secondary)' }}>
+          {meta.desc[lang]}
+        </p>
+      </div>
+
+      {/* Stem description */}
+      {stemData && stemContext && (
+        <div className="border-t border-[#8B6914]/10 pt-4">
+          <p className="text-[8px] uppercase tracking-[0.3em] text-[#8B6914]/60 mb-1.5">
+            {stemData.name[lang]} · {stemData.chinese}
+          </p>
+          <p className="text-xs leading-relaxed" style={{ color: 'var(--tile-text-secondary)' }}>
+            {stemContext[lang]}
+          </p>
+        </div>
+      )}
+
+      {/* Animal description */}
+      {branchData && (
+        <div className="border-t border-[#8B6914]/10 pt-4">
+          <p className="text-[8px] uppercase tracking-[0.3em] text-[#8B6914]/60 mb-1.5">
+            {branchData.animal[lang]} · {branchData.chinese}
+          </p>
+          <p className="text-xs leading-relaxed" style={{ color: 'var(--tile-text-secondary)' }}>
+            {branchData.description[lang]}
+          </p>
+        </div>
+      )}
     </div>
   );
 }

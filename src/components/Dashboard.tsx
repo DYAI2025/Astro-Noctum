@@ -275,12 +275,22 @@ export function Dashboard({
     [profileMeta.soulprintSectors, apiData?.western?.zodiac_sign],
   );
 
-  const { dailyData, dayHarmonic, handleClose: handleDailyClose } = useFirstRunDaily(
+  const { dailyData, dayHarmonic, nightHarmonic, handleClose: handleDailyClose } = useFirstRunDaily(
     userId,
     profileMeta.birthInput,
     effectiveSoulprint,
     profileMeta.quizSectors,
   );
+
+  // Night-Pulse gate: weekends → all users; weekdays → Premium only.
+  const activeDayHarmonic = useMemo(() => {
+    if (!nightHarmonic) return dayHarmonic;
+    const now = new Date();
+    const hour = now.getHours();
+    if (hour < 21 && hour >= 6) return dayHarmonic;
+    const isWeekend = now.getDay() === 0 || now.getDay() === 6;
+    return (isWeekend || isPremium) ? nightHarmonic : dayHarmonic;
+  }, [dayHarmonic, nightHarmonic, isPremium]);
 
   const natalWeights = useMemo(
     () => toNatalWeightsOrUndefined(effectiveSoulprint),
@@ -405,7 +415,7 @@ export function Dashboard({
             <MiniSignature
               natalWeights={natalWeights}
               quizWeights={{}}
-              dayHarmonic={dayHarmonic}
+              dayHarmonic={activeDayHarmonic}
               loading={metaLoading}
               onExpand={() => navigate('/signatur')}
             />
@@ -413,13 +423,14 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
-      {/* ═══ TAGES-IMPULS - Hero-Sektion (immer vollständig sichtbar) ══════ */}
-      <motion.div {...fadeIn(0.1)}>
+      {/* ═══ DAILY PULSE CLUSTER (Tagesimpuls + InfluenceGauges + CosmicInfluence) ═══ */}
+      {/* Grouped as subsections of one Daily Pulse area — tighter internal spacing */}
+      <motion.div className="flex flex-col gap-4" {...fadeIn(0.1)}>
         <SectionErrorBoundary name="TagesImpuls">
           {dailyData ? (
             <DashboardTagesEnergie
               daily={dailyData}
-              dayHarmonic={dayHarmonic}
+              dayHarmonic={activeDayHarmonic}
               spaceWeather={spaceWeather}
               onOpenDayModal={dailyEnabled ? () => setIsDayModalOpen(true) : undefined}
             />
@@ -435,29 +446,26 @@ export function Dashboard({
             />
           )}
         </SectionErrorBoundary>
+
+        <SectionErrorBoundary name="InfluenceGauges">
+          <InfluenceGauges
+            birthSign={apiData?.western?.zodiac_sign || undefined}
+            weights={natalWeights}
+            isSynthetic={profileMeta.soulprintSectors === null}
+          />
+        </SectionErrorBoundary>
+
+        <SectionErrorBoundary name="CosmicInfluence">
+          <CosmicInfluenceSection spaceWeather={spaceWeather} />
+        </SectionErrorBoundary>
       </motion.div>
 
       {/* ═══ VIBE CTA ═══════════════════════════════════════════════ */}
-      <motion.div className="flex justify-center" {...fadeIn(0.12)}>
+      <motion.div className="flex justify-center" {...fadeIn(0.2)}>
         <SectionErrorBoundary name="Vibes">
           <VibesSection userId={userId} />
         </SectionErrorBoundary>
       </motion.div>
-
-      {/* ═══ INFLUENCES CLUSTER (Daily Pulse context) ════════════════ */}
-      <div className="flex flex-col gap-6">
-        <motion.div {...fadeIn(0.15)}>
-          <SectionErrorBoundary name="InfluenceGauges">
-            <InfluenceGauges weights={natalWeights} isSynthetic={profileMeta.soulprintSectors === null} />
-          </SectionErrorBoundary>
-        </motion.div>
-
-        <motion.div {...fadeIn(0.2)}>
-          <SectionErrorBoundary name="CosmicInfluence">
-            <CosmicInfluenceSection spaceWeather={spaceWeather} />
-          </SectionErrorBoundary>
-        </motion.div>
-      </div>
 
       {/* ── Tour sentinel: step 1 triggers when astro section scrolls into view ── */}
       <div ref={astroSentinelRef} className="h-px" aria-hidden="true" />
@@ -477,20 +485,28 @@ export function Dashboard({
       {/* ═══ VOICE AGENTS - Multi-Agent Section ═══════════════════════ */}
       <motion.div {...fadeIn(0.4)}>
         <SectionErrorBoundary name="Agents">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            {AGENTS.map(agent => (
-              <AgentSection
-                key={agent.id}
-                agent={agent}
-                isPremium={isPremium}
-                userId={userId}
-                onStopAudio={onStopAudio}
-                onResumeAudio={onResumeAudio}
-                sunSign={apiData?.western?.zodiac_sign || ''}
-                zodiacAnimal={apiData?.bazi?.zodiac_sign || ''}
-                dominantEl={apiData?.wuxing?.dominant_element || ''}
-              />
-            ))}
+          <div className="cosmic-tile p-6 rounded-[2rem] space-y-5">
+            <h2 className="text-xs font-bold tracking-[0.2em] uppercase text-center" style={{ color: 'var(--tile-text-secondary)' }}>
+              {t('dashboard.astroAgents')}
+            </h2>
+            <p className="text-[11px] text-center leading-relaxed" style={{ color: 'var(--tile-text-secondary)', opacity: 0.6 }}>
+              {t('dashboard.astroAgentsIntro')}
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {AGENTS.map(agent => (
+                <AgentSection
+                  key={agent.id}
+                  agent={agent}
+                  isPremium={isPremium}
+                  userId={userId}
+                  onStopAudio={onStopAudio}
+                  onResumeAudio={onResumeAudio}
+                  sunSign={apiData?.western?.zodiac_sign || ''}
+                  zodiacAnimal={apiData?.bazi?.zodiac_sign || ''}
+                  dominantEl={apiData?.wuxing?.dominant_element || ''}
+                />
+              ))}
+            </div>
           </div>
         </SectionErrorBoundary>
       </motion.div>
@@ -544,7 +560,7 @@ export function Dashboard({
         {dailyEnabled && isDayModalOpen && dailyData && (
           <DayModeModal
             data={dailyData}
-            dayHarmonic={dayHarmonic}
+            dayHarmonic={activeDayHarmonic}
             onClose={() => {
               setIsDayModalOpen(false);
               handleDailyClose(); // marks daily_modal_seen_date in Supabase

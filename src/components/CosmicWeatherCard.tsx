@@ -77,7 +77,7 @@ export function CosmicWeatherCard({
 
   if (loading && !horoscope) {
     return (
-      <div className="w-full max-w-md mx-auto cosmic-tile rounded-2xl border border-[#8B6914]/20 p-5">
+      <div className="w-full cosmic-tile rounded-2xl border border-[#8B6914]/20 p-6">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-[#8B6914]/5 animate-pulse" />
           <div className="flex-1 space-y-2">

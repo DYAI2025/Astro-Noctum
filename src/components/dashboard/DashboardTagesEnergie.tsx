@@ -316,12 +316,12 @@ export function DashboardTagesEnergie({
     >
       <div className="tages-impuls-card">
         {/* ── Header ─────────────────────────────────────────── */}
-        <div className="px-5 pt-5 pb-3 flex items-center justify-between gap-3">
-          <span className="text-[9px] font-sans uppercase tracking-[0.3em] font-bold" style={{ color: 'var(--tile-text-secondary)' }}>
+        <div className="px-5 pt-5 pb-3 relative flex items-center justify-center gap-3">
+          <span className="text-xs font-sans uppercase tracking-[0.3em] font-bold text-center" style={{ color: 'var(--tile-text-secondary)' }}>
             {t('dashboard.tagesImpuls.sectionLabel')}
           </span>
           <span
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-sans uppercase tracking-wider font-bold"
+            className="absolute right-5 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-sans uppercase tracking-wider font-bold"
             style={{
               background: isTrace ? 'var(--tile-glow)' : 'rgba(160,180,204,0.12)',
               color: isTrace ? 'var(--tile-accent)' : 'var(--tile-text-secondary)',

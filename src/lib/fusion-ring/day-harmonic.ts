@@ -28,3 +28,18 @@ export function computeDayHarmonic(harmonyIndex: number): DayHarmonicState {
   const intensity = clamp(Math.abs(h - HARMONY_RANDOM_BASELINE) / HARMONY_RANGE, 0, 1);
   return { harmonyIndex: h, mode, intensity };
 }
+
+/**
+ * Same formula as computeDayHarmonic but intensity capped at 50%.
+ * REQ: Night-Pulse/Trace visual = same trail persistence ±% as day, 50% intensity ceiling.
+ */
+export function computeNightHarmonic(nightHarmonyIndex: number): DayHarmonicState {
+  const base = computeDayHarmonic(nightHarmonyIndex);
+  return { ...base, intensity: base.intensity * 0.5 };
+}
+
+/** Returns true when the local clock is in the night window (21:00–06:00). */
+export function isNighttime(now: Date = new Date()): boolean {
+  const hour = now.getHours();
+  return hour >= 21 || hour < 6;
+}

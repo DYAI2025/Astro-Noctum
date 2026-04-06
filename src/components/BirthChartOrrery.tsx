@@ -103,20 +103,33 @@ function makeCardinalSprite(label: string, color: string): THREE.Sprite {
   }));
 }
 
-function makeConNameSprite(text: string): THREE.Sprite {
+function makeConNameSprite(text: string, isBirth = false): THREE.Sprite {
   const C = document.createElement('canvas');
   C.width = 256; C.height = 64;
   const ctx = C.getContext('2d')!;
-  ctx.font = '20px sans-serif';
-  ctx.fillStyle = 'rgba(120,165,230,0.9)';
+  ctx.font = isBirth ? 'bold 22px sans-serif' : '20px sans-serif';
+  ctx.fillStyle = isBirth ? 'rgba(212,175,55,0.95)' : 'rgba(120,165,230,0.9)';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(text.toUpperCase(), 128, 32);
   const spr = new THREE.Sprite(new THREE.SpriteMaterial({
-    map: new THREE.CanvasTexture(C), transparent: true, opacity: 0.75, depthWrite: false,
+    map: new THREE.CanvasTexture(C), transparent: true,
+    opacity: isBirth ? 0.95 : 0.75, depthWrite: false,
   }));
-  spr.scale.set(16, 4, 1);
+  spr.scale.set(isBirth ? 20 : 16, isBirth ? 5 : 4, 1);
   return spr;
+}
+
+function makeConNameTexture(text: string, isBirth: boolean): THREE.CanvasTexture {
+  const C = document.createElement('canvas');
+  C.width = 256; C.height = 64;
+  const ctx = C.getContext('2d')!;
+  ctx.font = isBirth ? 'bold 22px sans-serif' : '20px sans-serif';
+  ctx.fillStyle = isBirth ? 'rgba(212,175,55,0.95)' : 'rgba(120,165,230,0.9)';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text.toUpperCase(), 128, 32);
+  return new THREE.CanvasTexture(C);
 }
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -224,6 +237,9 @@ export function BirthChartOrrery({
   const showOrbitsRef  = useRef(true);
   const isPlayingRef   = useRef(false);
   const speedRef       = useRef(speed);
+  const birthConstellationRef = useRef(birthConstellation);
+  // Whether the camera has been auto-aimed at the birth constellation for this session
+  const hasCenteredOnBirthConRef = useRef(false);
 
   // Camera
   const sph  = useRef({ theta: Math.PI / 4, phi: Math.PI / 3, radius: 160 });
@@ -258,12 +274,29 @@ export function BirthChartOrrery({
       const d = document as unknown as Record<string, unknown>;
       const fs = !!(d.fullscreenElement || d.webkitFullscreenElement);
       setIsFullscreen(fs);
-      // Adjust FOV: wider in fullscreen = see more sky
-      const cam = cameraRef.current as THREE.PerspectiveCamera | null;
-      if (cam) {
-        cam.fov = fs ? 90 : 60;
+
+      // The browser needs a tick to settle fullscreen dimensions before
+      // reading the element's new clientWidth/clientHeight.
+      // Use requestAnimationFrame (not setTimeout 0) so the renderer
+      // update is synchronised with the next paint cycle.
+      requestAnimationFrame(() => {
+        const cam      = cameraRef.current as THREE.PerspectiveCamera | null;
+        const renderer = rendererRef.current;
+        const el       = containerRef.current;
+        if (!cam || !renderer || !el) return;
+
+        // In fullscreen the browser sets the element to viewport size;
+        // outside fullscreen it reverts to its CSS dimensions.
+        const w = el.clientWidth  || window.innerWidth;
+        const h = el.clientHeight || window.innerHeight;
+
+        cam.fov    = fs ? 90 : 60;
+        cam.aspect = w / h;
         cam.updateProjectionMatrix();
-      }
+
+        renderer.setSize(w, h);
+        composerRef.current?.setSize(w, h);
+      });
     };
     const events = ['fullscreenchange', 'webkitfullscreenchange'];
     events.forEach(e => document.addEventListener(e, handler));
@@ -300,6 +333,23 @@ export function BirthChartOrrery({
   useEffect(() => { isPlayingRef.current  = isPlaying; },        [isPlaying]);
   useEffect(() => { speedRef.current      = speed; },            [speed]);
   useEffect(() => { currentSkyRef.current = currentSky; },       [currentSky]);
+
+  // Re-style constellation sprite when birthConstellation prop arrives (apiData may load after mount)
+  useEffect(() => {
+    birthConstellationRef.current = birthConstellation;
+    if (!birthConstellation) return;
+    const spr = conNameSpritesRef.current[birthConstellation];
+    if (!spr) return;
+    const oldTex = (spr.material as THREE.SpriteMaterial).map;
+    const newTex = makeConNameTexture(CONSTELLATION_NAMES[birthConstellation] ?? birthConstellation, true);
+    (spr.material as THREE.SpriteMaterial).map = newTex;
+    (spr.material as THREE.SpriteMaterial).opacity = 0.95;
+    (spr.material as THREE.SpriteMaterial).needsUpdate = true;
+    spr.scale.set(20, 5, 1);
+    oldTex?.dispose();
+    // Reset auto-aim flag so camera will re-center on birth constellation next transition
+    hasCenteredOnBirthConRef.current = false;
+  }, [birthConstellation]);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // THREE.JS INIT
@@ -587,9 +637,10 @@ export function BirthChartOrrery({
     planGroup.add(conSegments);
     conSegmentsRef.current = conSegments;
 
-    // Constellation name sprites
+    // Constellation name sprites — birth constellation rendered in gold
     Object.keys(CONSTELLATION_NAMES).forEach(conKey => {
-      const spr = makeConNameSprite(CONSTELLATION_NAMES[conKey]);
+      const isBirth = conKey === birthConstellationRef.current;
+      const spr = makeConNameSprite(CONSTELLATION_NAMES[conKey], isBirth);
       spr.visible = false;
       planGroup.add(spr);
       conNameSpritesRef.current[conKey] = spr;
@@ -760,6 +811,33 @@ export function BirthChartOrrery({
       // Orbit line visibility
       Object.values(orbitLinesRef.current).forEach(l => { if (l) l.visible = showOrbitsRef.current && tE < 0.55; });
       Object.values(orbitTrailsRef.current).forEach(l => { if (l) l.visible = tE < 0.55; });
+
+      // ── Auto-aim camera at birth constellation on first planetarium entry ──
+      if (
+        tE >= 0.95 &&
+        !hasCenteredOnBirthConRef.current &&
+        birthConstellationRef.current &&
+        CONSTELLATION_LINES[birthConstellationRef.current]
+      ) {
+        const conKey = birthConstellationRef.current;
+        const jd0 = 2451545.0 + simTimeRef.current;
+        const lst0 = getLST(jd0, obsLonRef.current);
+        // Collect star names for this constellation
+        const starNames = new Set<string>();
+        (CONSTELLATION_LINES[conKey] as [string, string][]).forEach(([s1, s2]) => {
+          starNames.add(s1); starNames.add(s2);
+        });
+        // Compute centroid in horizontal coords
+        let sumAz = 0, sumAlt = 0, count = 0;
+        STARS.filter(s => starNames.has(s.name)).forEach(s => {
+          const h = equatorialToHorizontal(s.ra, s.dec, obsLatRef.current, lst0);
+          if (h.altitude > 5) { sumAz += h.azimuth; sumAlt += h.altitude; count++; }
+        });
+        if (count >= 2) {
+          planLook.current = { azimuth: sumAz / count, altitude: Math.min(sumAlt / count, 60) };
+        }
+        hasCenteredOnBirthConRef.current = true;
+      }
 
       // ── Planetarium Sky ─────────────────────────────────────────────────
       if (tE > 0.32) {

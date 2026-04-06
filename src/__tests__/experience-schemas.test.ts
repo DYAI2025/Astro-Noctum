@@ -54,4 +54,37 @@ describe('Experience API Schemas', () => {
     };
     expect(DailyResponseSchema.safeParse(data).success).toBe(true);
   });
+
+  it('validates daily response with night_harmony_index + night_mode', () => {
+    const data = {
+      date: '2026-04-06',
+      western: { summary: 'test', themes: [], caution: 'test', opportunity: 'test', evidence: {} },
+      eastern: { summary: 'test', themes: [], caution: 'test', opportunity: 'test', evidence: {} },
+      fusion: { summary: 'test', synthesis: 'test', action: 'test', pushworthy: false, harmony_index: 0.45, day_mode: 'pulse', night_harmony_index: 0.612, night_mode: 'trace' },
+      meta: { engine_version: 'v1-gemini-daily' }
+    };
+    expect(DailyResponseSchema.safeParse(data).success).toBe(true);
+  });
+
+  it('validates daily response without night fields (backward compat — optional)', () => {
+    const data = {
+      date: '2026-04-06',
+      western: { summary: 'test', themes: [], caution: 'test', opportunity: 'test', evidence: {} },
+      eastern: { summary: 'test', themes: [], caution: 'test', opportunity: 'test', evidence: {} },
+      fusion: { summary: 'test', synthesis: 'test', action: 'test', pushworthy: false, harmony_index: 0.45, day_mode: 'pulse' },
+      meta: { engine_version: 'v1-gemini-daily' }
+    };
+    expect(DailyResponseSchema.safeParse(data).success).toBe(true);
+  });
+
+  it('rejects daily response with out-of-range night_harmony_index', () => {
+    const data = {
+      date: '2026-04-06',
+      western: { summary: 'test', themes: [], caution: 'test', opportunity: 'test', evidence: {} },
+      eastern: { summary: 'test', themes: [], caution: 'test', opportunity: 'test', evidence: {} },
+      fusion: { summary: 'test', synthesis: 'test', action: 'test', pushworthy: false, harmony_index: 0.45, day_mode: 'pulse', night_harmony_index: 1.5, night_mode: 'trace' },
+      meta: { engine_version: 'v1-gemini-daily' }
+    };
+    expect(DailyResponseSchema.safeParse(data).success).toBe(false);
+  });
 });

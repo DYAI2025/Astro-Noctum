@@ -65,7 +65,7 @@ export function DashboardLeviSection({
   const handleHangUp = () => { setLeviActive(false); onResumeAudio(); };
 
   return (
-    <div ref={leviSectionRef} className={`cosmic-tile p-5 flex flex-col items-center gap-4 max-w-xs mx-auto relative text-center ${leviActive ? 'z-[99999]' : 'z-10'}`} style={{ overflow: 'visible' }}>
+    <div ref={leviSectionRef} className={`cosmic-tile p-6 flex flex-col items-center gap-4 max-w-xs mx-auto relative text-center ${leviActive ? 'z-[99999]' : 'z-10'}`} style={{ overflow: 'visible' }}>
       {/* ── Badge (with inline status dot) + Description ───────── */}
       <div className="flex flex-col items-center gap-1.5">
         <div className="flex items-center gap-2">

@@ -47,7 +47,7 @@ function SectionDivider({ label, title, icon }: { label: string; title: string; 
   return (
     <div className="border-b border-[#8B6914]/15 pb-3 sm:pb-4 mb-6 sm:mb-8">
       <p className="text-[#8B6914]/75 text-[8px] uppercase tracking-[0.45em] mb-1">{label}</p>
-      <h2 className="font-serif text-xl sm:text-2xl text-[#1E2A3A]">{icon}{title}</h2>
+      <h2 className="font-serif text-xl sm:text-2xl" style={{ color: 'var(--tile-text-primary)' }}>{icon}{title}</h2>
     </div>
   );
 }
@@ -202,7 +202,7 @@ export function DashboardAstroSection({
                         <div className="w-24 sm:w-28 md:w-36 shrink-0 flex items-center gap-2 sm:gap-2.5">
                           <WuXingIcon element={el.key} className="w-6 h-6" />
                           <div className="min-w-0">
-                            <div className="text-xs font-medium text-[#1E2A3A] truncate">{el.name[lang]}</div>
+                            <div className="text-xs font-medium truncate" style={{ color: 'var(--tile-text-primary)' }}>{el.name[lang]}</div>
                             <div className="text-[10px] text-[var(--color-text-bright-dim)]">{el.pinyin}</div>
                           </div>
                         </div>
@@ -231,7 +231,7 @@ export function DashboardAstroSection({
           </div>
 
           {/* Block D: Interpretation */}
-          <div className="cosmic-tile p-6 md:p-8">
+          <div className="cosmic-tile p-6">
             <BaZiInterpretation
               animal={yearAnimal}
               element={yearEl}

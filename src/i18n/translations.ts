@@ -33,6 +33,7 @@ const translationsEn: DeepStringRecord = {
     pauseAudioTitle: "Pause ambient music",
     playAudioTitle: "Play ambient music",
     astroAgents: "Astro-Agents",
+    astroAgentsIntro: "Your personal AI agents — ask about your daily horoscope, Signatur, planetary positions, cosmic weather, and fusion profile.",
     planetarium: "Planetarium",
     settings: "Settings",
     settingsDarkMode: "Dark Mode",
@@ -269,6 +270,7 @@ const translationsEn: DeepStringRecord = {
       label: "Your Signature",
       paused: "Paused",
       togglePause: "Pause signature",
+      expandLabel: "Open Signatur — full view",
     },
     levi: {
       ready: "Levi Bazi — Ready",
@@ -494,6 +496,7 @@ const translationsDe: DeepStringRecord = {
     pauseAudioTitle: "Ambient-Musik pausieren",
     playAudioTitle: "Ambient-Musik abspielen",
     astroAgents: "Astro-Agents",
+    astroAgentsIntro: "Deine persönlichen KI-Agenten — frag nach Tageshoroskop, Signatur, Planetenständen, Kosmoswetter und deinem Fusion-Profil.",
     planetarium: "Planetarium",
     settings: "Einstellungen",
     settingsDarkMode: "Dunkel-Modus",
@@ -730,6 +733,7 @@ const translationsDe: DeepStringRecord = {
       label: "Deine Signatur",
       paused: "Pausiert",
       togglePause: "Signatur pausieren",
+      expandLabel: "Signatur öffnen — Vollansicht",
     },
     levi: {
       ready: "Levi Bazi Bereit",

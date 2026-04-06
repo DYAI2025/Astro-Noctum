@@ -136,12 +136,12 @@ export function AgentSection({
   return (
     <div
       ref={sectionRef}
-      className={`relative cosmic-tile p-6 sm:p-8 flex flex-col gap-5 overflow-visible ${
+      className={`relative cosmic-tile p-6 flex flex-col gap-5 overflow-visible ${
         isActive ? 'z-[99999]' : 'z-10'
       }`}
       style={{
-        background: `linear-gradient(135deg, var(--tile-bg) 0%, ${agent.gradientFrom}15 100%)`,
-        borderColor: isActive ? agent.accentColor : 'var(--tile-border)',
+        background: `linear-gradient(135deg, var(--tile-bg) 0%, ${agent.accentColor}18 100%)`,
+        borderColor: isActive ? agent.accentColor : `${agent.accentColor}30`,
         boxShadow: isActive ? `0 8px 32px ${agent.accentColor}25` : 'var(--tile-shadow)',
       }}
     >

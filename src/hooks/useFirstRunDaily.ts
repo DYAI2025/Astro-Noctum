@@ -5,6 +5,7 @@ import type { DailyResponse } from '../lib/schemas/experience';
 import {
   type DayHarmonicState,
   computeDayHarmonic,
+  computeNightHarmonic,
 } from '../lib/fusion-ring/day-harmonic';
 
 // ── Types ─────────────────────────────────────────────────────────────
@@ -20,6 +21,8 @@ interface BirthInput {
 interface UseFirstRunDailyResult {
   dailyData: DailyResponse | null;
   dayHarmonic: DayHarmonicState | null;
+  /** Night harmonic at 50% intensity — present when night_harmony_index is available in fusion data */
+  nightHarmonic: DayHarmonicState | null;
   showModal: boolean;
   loading: boolean;
   handleClose: () => void;
@@ -207,5 +210,10 @@ export function useFirstRunDaily(
     return h !== undefined ? computeDayHarmonic(h) : null;
   }, [dailyData]);
 
-  return { dailyData, dayHarmonic, showModal, loading, handleClose };
+  const nightHarmonic = useMemo<DayHarmonicState | null>(() => {
+    const nh = dailyData?.fusion?.night_harmony_index;
+    return nh !== undefined ? computeNightHarmonic(nh) : null;
+  }, [dailyData]);
+
+  return { dailyData, dayHarmonic, nightHarmonic, showModal, loading, handleClose };
 }

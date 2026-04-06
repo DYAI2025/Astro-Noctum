@@ -154,11 +154,11 @@ export function CosmicInfluenceSection({ spaceWeather }: CosmicInfluenceSectionP
   return (
     <div className="cosmic-tile p-6 rounded-[2rem] space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--tile-text-secondary)' }}>
+      <div className="relative flex items-center justify-center">
+        <h2 className="text-xs font-bold tracking-[0.2em] uppercase text-center" style={{ color: 'var(--tile-text-secondary)' }}>
           {t('dashboard.cosmicInfluence.sectionTitle')}
         </h2>
-        <div className={`text-[8px] font-mono`} style={{ color: isLive ? 'var(--tile-accent)' : 'var(--tile-text-secondary)', opacity: isLive ? 0.8 : 0.4 }}>
+        <div className="absolute right-0 text-[8px] font-mono" style={{ color: isLive ? 'var(--tile-accent)' : 'var(--tile-text-secondary)', opacity: isLive ? 0.8 : 0.4 }}>
           {isLive ? t('dashboard.cosmicInfluence.liveLabel') : t('dashboard.cosmicInfluence.noDataLabel')}
         </div>
       </div>

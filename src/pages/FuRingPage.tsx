@@ -42,7 +42,18 @@ export default function FuRingPage() {
   const quizContribution = useQuizContribution(completedModuleIds);
   const spaceWeather = useSpaceWeather();
   const { signalData, refresh: refreshSignal } = useFusionSignal(userId);
-  const { dayHarmonic } = useFirstRunDaily(userId, null, signalData?.baseSignals ?? null, []);
+  const { dayHarmonic, nightHarmonic } = useFirstRunDaily(userId, null, signalData?.baseSignals ?? null, []);
+
+  // Night-Pulse gate: weekend (Sat/Sun) → all users; weekday → Premium only.
+  const activeHarmonic = useMemo(() => {
+    if (!nightHarmonic) return dayHarmonic;
+    const now = new Date();
+    const hour = now.getHours();
+    if (hour < 21 && hour >= 6) return dayHarmonic; // daytime → always use day
+    const isWeekend = now.getDay() === 0 || now.getDay() === 6;
+    const nightEligible = isWeekend || isPremium;
+    return nightEligible ? nightHarmonic : dayHarmonic;
+  }, [dayHarmonic, nightHarmonic, isPremium]);
 
   const [activeQuiz, setActiveQuiz] = useState<string | null>(null);
   const [justCompletedCluster, setJustCompletedCluster] = useState<string | null>(null);
@@ -285,7 +296,7 @@ export default function FuRingPage() {
               solarModulation={spaceWeather.ringModulation}
               dissonanceModulation={dissonanceModulation}
               externalDissonance={dissonance}
-              dayHarmonic={dayHarmonic}
+              dayHarmonic={activeHarmonic}
               labels={{
                 regionLabel: t('furing3d.a11y.regionLabel'),
                 loading: t('furing3d.loading'),
