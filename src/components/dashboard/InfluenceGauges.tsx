@@ -69,7 +69,7 @@ export interface InfluenceData {
   tooltip?: string;
 }
 
-function useInfluences(birthSign?: string, natalWeights?: Record<string, number>): {
+function useInfluences(birthSign?: string, natalWeights?: Record<string, number>, simTime?: number): {
   items: InfluenceData[];
   isLive: boolean;
 } {
@@ -77,7 +77,7 @@ function useInfluences(birthSign?: string, natalWeights?: Record<string, number>
 
   return useMemo(() => {
     // Attempt live planetary computation when birth sign is known
-    const live = birthSign ? computeTodayPlanetInfluences(birthSign) : null;
+    const live = birthSign ? computeTodayPlanetInfluences(birthSign, simTime) : null;
 
     const isLive = live !== null;
 
@@ -113,7 +113,7 @@ function useInfluences(birthSign?: string, natalWeights?: Record<string, number>
     ];
 
     return { items, isLive };
-  }, [t, birthSign, natalWeights]);
+  }, [t, birthSign, natalWeights, simTime]);
 }
 
 // ── Component ─────────────────────────────────────────────────────────────
@@ -122,13 +122,15 @@ export default function InfluenceGauges({
   birthSign,
   weights,
   isSynthetic = false,
+  simTime,
 }: {
   birthSign?: string;
   weights?: Record<string, number>;
   isSynthetic?: boolean;
+  simTime?: number;
 }) {
   const { t } = useLanguage();
-  const { items, isLive } = useInfluences(birthSign, weights);
+  const { items, isLive } = useInfluences(birthSign, weights, simTime);
   const showLive = isLive && !isSynthetic;
 
   return (

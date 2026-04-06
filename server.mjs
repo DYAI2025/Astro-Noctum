@@ -1835,7 +1835,7 @@ NEVER use in synthesis: "weil", "da heute", planet names (Mars, Venus etc.), "di
 
     const model = geminiClient.models;
     const result = await model.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.0-flash",
       contents: prompt,
       config: {
         temperature: 0.7,
@@ -2115,7 +2115,7 @@ REGELN:
 
     const model = geminiClient.models;
     const result = await model.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-2.0-flash',
       contents: prompt,
       config: {
         temperature: 0.8,
@@ -2377,10 +2377,10 @@ REGELN:
 
     const model = geminiClient.models;
     const result = await model.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-2.0-flash',
       contents: prompt,
       config: {
-        temperature: 0.7,
+        temperature: 0.75,
         responseMimeType: 'application/json',
       },
     });

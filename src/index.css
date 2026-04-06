@@ -47,16 +47,16 @@
 /* ── CSS Custom Properties ─────────────────────────────────────────────── */
 
 :root {
-  /* Default: Morning (Light) Tile Settings */
-  --tile-bg: rgba(255, 255, 255, 0.85);
-  --tile-border: rgba(30, 41, 59, 0.12);
-  --tile-text-primary: #1E293B;
-  --tile-text-secondary: rgba(30, 41, 59, 0.6);
+  /* Default: Morning (Light) Tile Settings — Refined Readability */
+  --tile-bg: rgba(255, 255, 255, 0.95);
+  --tile-border: rgba(30, 41, 59, 0.15);
+  --tile-text-primary: #0F172A;
+  --tile-text-secondary: rgba(30, 41, 59, 0.7);
   /* --element-accent is overridden per-user by useElementTheme when element data loads */
   --element-accent: #92400E;
   --tile-accent: var(--element-accent);
-  --tile-glow: rgba(146, 64, 14, 0.10);
-  --color-text-bright-dim: rgba(30, 41, 59, 0.45);
+  --tile-glow: rgba(146, 64, 14, 0.15);
+  --color-text-bright-dim: rgba(30, 41, 59, 0.50);
   /* UI transition physics — overridden per-element by useElementTheme */
   --ui-transition-duration: 0.3s;
   --ui-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
@@ -67,17 +67,20 @@
 }
 
 .planetarium {
-  /* Planetarium (Dark) Tile Settings */
-  --tile-bg: rgba(13, 15, 20, 0.85);
-  --tile-border: rgba(212, 175, 55, 0.15);
-  --tile-text-primary: rgba(255, 255, 255, 0.92);
-  --tile-text-secondary: rgba(255, 255, 255, 0.6);
+  /* Planetarium (Dark) Tile Settings — Improved Contrast & Readability */
+  --tile-bg: rgba(20, 24, 32, 0.92);
+  --tile-border: rgba(212, 175, 55, 0.3);
+  --tile-text-primary: #FFFFFF;
+  --tile-text-secondary: rgba(255, 255, 255, 0.75);
   --tile-accent: #D4AF37;
-  --tile-glow: rgba(212, 175, 55, 0.08);
-  --color-text-bright-dim: rgba(255, 255, 255, 0.40);
+  --tile-glow: rgba(212, 175, 55, 0.15);
+  --color-text-bright-dim: rgba(255, 255, 255, 0.50);
+
+  /* Constant golden glow for tiles in dark mode */
+  --tile-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 12px rgba(212, 175, 55, 0.1);
 
   /* Adapt Tailwind tokens in Planetarium mode */
-  --color-ink: rgba(255, 255, 255, 0.92);
+  --color-ink: #FFFFFF;
   --color-gold-deep: #D4AF37;
   --color-dawn: #020617;
 }
@@ -92,6 +95,33 @@ body {
   font-family: var(--font-sans);
 }
 
+/* ── Dashboard Identity Icons ────────────────────────────────────────── */
+
+[data-identity-id="sunSign"] { --icon-bg: rgba(212, 175, 55, 0.15); --icon-color: #92400E; }
+[data-identity-id="moonSign"] { --icon-bg: rgba(113, 128, 150, 0.15); --icon-color: #475569; }
+[data-identity-id="ascendant"] { --icon-bg: rgba(61, 139, 55, 0.15); --icon-color: #166534; }
+[data-identity-id="baziAnimal"] { --icon-bg: rgba(214, 158, 46, 0.15); --icon-color: #854D0E; }
+[data-identity-id="wuxing-Wood"] { --icon-bg: rgba(61, 139, 55, 0.15); --icon-color: #166534; }
+[data-identity-id="wuxing-Fire"] { --icon-bg: rgba(197, 48, 48, 0.15); --icon-color: #991B1B; }
+[data-identity-id="wuxing-Earth"] { --icon-bg: rgba(214, 158, 46, 0.15); --icon-color: #854D0E; }
+[data-identity-id="wuxing-Metal"] { --icon-bg: rgba(113, 128, 150, 0.15); --icon-color: #475569; }
+[data-identity-id="wuxing-Water"] { --icon-bg: rgba(43, 108, 176, 0.15); --icon-color: #1E40AF; }
+
+.planetarium [data-identity-id="sunSign"] { --icon-bg: rgba(212, 175, 55, 0.25); --icon-color: #FDE047; }
+.planetarium [data-identity-id="moonSign"] { --icon-bg: rgba(113, 128, 150, 0.25); --icon-color: #CBD5E1; }
+.planetarium [data-identity-id="ascendant"] { --icon-bg: rgba(61, 139, 55, 0.25); --icon-color: #4ADE80; }
+.planetarium [data-identity-id="baziAnimal"] { --icon-bg: rgba(214, 158, 46, 0.25); --icon-color: #FBBF24; }
+.planetarium [data-identity-id="wuxing-Wood"] { --icon-bg: rgba(61, 139, 55, 0.25); --icon-color: #4ADE80; }
+.planetarium [data-identity-id="wuxing-Fire"] { --icon-bg: rgba(197, 48, 48, 0.25); --icon-color: #F87171; }
+.planetarium [data-identity-id="wuxing-Earth"] { --icon-bg: rgba(214, 158, 46, 0.25); --icon-color: #FBBF24; }
+.planetarium [data-identity-id="wuxing-Metal"] { --icon-bg: rgba(113, 128, 150, 0.25); --icon-color: #94A3B8; }
+.planetarium [data-identity-id="wuxing-Water"] { --icon-bg: rgba(43, 108, 176, 0.25); --icon-color: #60A5FA; }
+
+.identity-icon-wrapper {
+  background: var(--icon-bg);
+  color: var(--icon-color);
+}
+
 /* ── Unified Tile Design ────────────────────────────────────────────────── */
 
 .cosmic-tile,
@@ -103,7 +133,7 @@ body {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   transition: all var(--ui-transition-duration, 0.4s) var(--ui-transition-easing, cubic-bezier(0.16, 1, 0.3, 1));
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--tile-shadow, 0 4px 24px rgba(0, 0, 0, 0.04));
 }
 
 /* Element-tinted card glow — bright mode only (excluded inside .planetarium dark mode) */

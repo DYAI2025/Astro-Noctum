@@ -114,22 +114,24 @@ export function useFirstRunDaily(
   birthData: BirthInput | null,
   soulprintSectors: number[] | null,
   quizSectors: number[],
+  customDate?: string, // YYYY-MM-DD
 ): UseFirstRunDailyResult {
   const [dailyData, setDailyData] = useState<DailyResponse | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const fetchedRef = useRef(false);
+  const lastFetchedDateRef = useRef<string | null>(null);
 
   useEffect(() => {
-    // Guard: need userId + birthData; soulprint can be null (synthetic fallback)
-    if (!userId || !birthData || fetchedRef.current) return;
-    fetchedRef.current = true;
+    const targetDate = customDate || todayKey();
+
+    // Guard: need userId + birthData; soulprint can be null (synthetic fallback).
+    // Also avoid re-fetching the same date.
+    if (!userId || !birthData || targetDate === lastFetchedDateRef.current) return;
+    lastFetchedDateRef.current = targetDate;
 
     let cancelled = false;
 
     (async () => {
-      const todayDate = todayKey();
-      // Declared outside try so catch block can access it.
       // Controls ONLY the auto-open modal — dailyData is ALWAYS loaded
       // because the inline DashboardTagesEnergie section needs it regardless.
       let alreadySeen = false;
@@ -144,18 +146,22 @@ export function useFirstRunDaily(
         if (profileError) {
           console.warn('[useFirstRunDaily] Profile query failed, showing modal:', profileError.message);
           alreadySeen = false;
-        } else if (profile?.daily_modal_seen_date === todayDate) {
+        } else if (profile?.daily_modal_seen_date === targetDate) {
           alreadySeen = true;
         }
 
         if (cancelled) return;
 
-        // 2. Check localStorage cache — serves BOTH inline display and modal
-        const cached = getCachedDaily();
-        if (cached) {
-          setDailyData(cached);
-          if (!alreadySeen) setShowModal(true);
-          return;
+        // 2. Check localStorage cache — serves BOTH inline display and modal.
+        // Only cache for today's date.
+        const isToday = targetDate === todayKey();
+        if (isToday) {
+          const cached = getCachedDaily();
+          if (cached) {
+            setDailyData(cached);
+            if (!alreadySeen) setShowModal(true);
+            return;
+          }
         }
 
         // 3. Fetch fresh daily experience — needed for inline TagesEnergie
@@ -164,12 +170,12 @@ export function useFirstRunDaily(
           birthData,
           soulprintSectors ?? Array(12).fill(0.5),
           quizSectors,
-          todayDate,
+          targetDate,
         );
 
         if (cancelled) return;
 
-        setCachedDaily(data);
+        if (isToday) setCachedDaily(data);
         setDailyData(data);
         if (!alreadySeen) setShowModal(true);
       } catch (err) {
@@ -177,7 +183,8 @@ export function useFirstRunDaily(
         console.warn('[useFirstRunDaily] Error occurred, using local fallback:', err);
         if (!cancelled) {
           const fallback = buildFallbackDaily();
-          // Do NOT cache the fallback — next page load should retry the real API.
+          // Adjust fallback date to target
+          fallback.date = targetDate;
           setDailyData(fallback);
           if (!alreadySeen) setShowModal(true);
         }
@@ -189,7 +196,7 @@ export function useFirstRunDaily(
     return () => {
       cancelled = true;
     };
-  }, [userId, birthData, soulprintSectors, quizSectors]);
+  }, [userId, birthData, soulprintSectors, quizSectors, customDate]);
 
   const handleClose = useCallback(() => {
     setShowModal(false);

@@ -71,8 +71,7 @@ export default function MiniSignature({ natalWeights, quizWeights, dayHarmonic, 
                 dayHarmonic={dayHarmonic ?? undefined}
                 externalDissonance={externalDissonance}
                 solarModulation={solarModulation}
-                width={240}
-                height={240}
+                className="w-full h-full"
               />
             </Suspense>
           </div>

@@ -88,14 +88,17 @@ const INFLUENCE_PLANETS = {
 /**
  * Compute today's planet influences for a birth sign.
  * Returns null for each planet if `birthSign` is unrecognised.
+ * @param birthSign — The user's western zodiac sign
+ * @param customSimTime — Optional days since J2000 (e.g. from planetarium)
  */
 export function computeTodayPlanetInfluences(
   birthSign: string,
+  customSimTime?: number,
 ): Record<string, PlanetInfluence> | null {
   const birthSector = zodiacSignToIndex(birthSign);
   if (birthSector === -1) return null;
 
-  const t = daysSinceJ2000(new Date());
+  const t = customSimTime ?? daysSinceJ2000(new Date());
   const result: Record<string, PlanetInfluence> = {};
 
   for (const [key, planet] of Object.entries(INFLUENCE_PLANETS)) {

@@ -31,6 +31,7 @@ import { useCoustoAudio } from '@/src/hooks/useCoustoAudio';
 import { useCosmicResonance } from '@/src/hooks/useCosmicResonance';
 import { useFluidityLevel } from '@/src/hooks/useFluidityLevel';
 import { SpaceWeatherPanel } from '@/src/components/signatur/SpaceWeatherPanel';
+import { TransitResonancePanels } from '@/src/components/signatur/TransitResonancePanels';
 
 export default function FuRingPage() {
   const { t, lang } = useLanguage();
@@ -332,30 +333,8 @@ export default function FuRingPage() {
           </div>
         </div>
 
-        {/* Info cards */}
-        <div className="grid gap-3 md:grid-cols-3">
-          <article className="rounded-2xl border border-white/10 bg-black/35 p-4">
-            <div className="mb-2 inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-white/60">
-              <Sparkles className="h-3 w-3 text-[#D4AF37]" />
-              {t('furing3d.cards.resonanceTitle')}
-            </div>
-            <p className="text-sm text-white/75">{t('furing3d.cards.resonanceText')}</p>
-          </article>
-
-          <article className="rounded-2xl border border-white/10 bg-black/35 p-4">
-            <div className="mb-2 text-[10px] uppercase tracking-[0.2em] text-white/60">
-              {t('furing3d.cards.spaceWeatherTitle')}
-            </div>
-            <p className="text-sm text-white/75">{t('furing3d.cards.spaceWeatherText')}</p>
-          </article>
-
-          <article className="rounded-2xl border border-white/10 bg-black/35 p-4">
-            <div className="mb-2 text-[10px] uppercase tracking-[0.2em] text-white/60">
-              {t('furing3d.cards.accessibilityTitle')}
-            </div>
-            <p className="text-sm text-white/75">{t('furing3d.cards.accessibilityText')}</p>
-          </article>
-        </div>
+        {/* Live transit resonance panels */}
+        <TransitResonancePanels birthSign={sunSign} />
       </section>
 
       {/* Quiz overlay */}

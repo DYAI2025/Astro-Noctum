@@ -280,6 +280,7 @@ export function Dashboard({
     profileMeta.birthInput,
     effectiveSoulprint,
     profileMeta.quizSectors,
+    skyMode === 'current' ? currentDate.toISOString().split('T')[0] : undefined
   );
 
   // Night-Pulse gate: weekends → all users; weekdays → Premium only.
@@ -423,7 +424,7 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
-      {/* ═══ DAILY PULSE CLUSTER (Tagesimpuls + InfluenceGauges + CosmicInfluence) ═══ */}
+      {/* ═══ DAILY PULSE CLUSTER (Tagesimpuls + Vibes + InfluenceGauges + CosmicInfluence) ═══ */}
       {/* Grouped as subsections of one Daily Pulse area — tighter internal spacing */}
       <motion.div className="flex flex-col gap-4" {...fadeIn(0.1)}>
         <SectionErrorBoundary name="TagesImpuls">
@@ -447,23 +448,24 @@ export function Dashboard({
           )}
         </SectionErrorBoundary>
 
+        {/* Vibe insight (on-demand Tile) */}
+        <SectionErrorBoundary name="Vibes">
+          <div className="flex justify-center md:justify-start">
+            <VibesSection userId={userId} />
+          </div>
+        </SectionErrorBoundary>
+
         <SectionErrorBoundary name="InfluenceGauges">
           <InfluenceGauges
             birthSign={apiData?.western?.zodiac_sign || undefined}
             weights={natalWeights}
             isSynthetic={profileMeta.soulprintSectors === null}
+            simTime={skyMode === 'current' ? simTime : undefined}
           />
         </SectionErrorBoundary>
 
         <SectionErrorBoundary name="CosmicInfluence">
           <CosmicInfluenceSection spaceWeather={spaceWeather} />
-        </SectionErrorBoundary>
-      </motion.div>
-
-      {/* ═══ VIBE CTA ═══════════════════════════════════════════════ */}
-      <motion.div className="flex justify-center" {...fadeIn(0.2)}>
-        <SectionErrorBoundary name="Vibes">
-          <VibesSection userId={userId} />
         </SectionErrorBoundary>
       </motion.div>
 

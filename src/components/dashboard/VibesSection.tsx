@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, Clock } from 'lucide-react';
+import { Sparkles, Clock, ChevronRight } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { fetchVibes, type VibesResponse } from '../../services/vibes';
 import { formatCooldown } from '../../lib/format-cooldown';
@@ -40,7 +40,7 @@ export function VibesSection({ userId }: VibesSectionProps) {
       setLoading(false);
       fetchingRef.current = false;
     }
-  }, [userId, lang]);
+  }, [userId, lang, t]);
 
   const handleCloseModal = useCallback(() => {
     setShowModal(false);
@@ -54,61 +54,51 @@ export function VibesSection({ userId }: VibesSectionProps) {
 
   return (
     <>
-      <div className="cosmic-tile p-5 sm:p-6 rounded-[2rem] text-center">
-        <h3 className="font-serif text-lg text-gold/90 mb-1">
-          {t('vibesSection.sectionTitle')}
-        </h3>
-        <p className="text-xs text-white/40 mb-4">
-          {t('vibesSection.sectionSubtitle')}
-        </p>
-
-        <PremiumGate teaser={t('vibesSection.premiumTeaser')}>
-          <div className="flex flex-col items-center gap-2">
-            <button
-              onClick={handleFetch}
-              disabled={loading}
-              className="relative bg-gold/10 text-gold rounded-xl px-6 py-3 hover:bg-gold/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium"
-            >
-              {loading ? (
-                <>
-                  <span className="inline-block w-4 h-4 rounded-full bg-gold/30 animate-pulse" />
-                  <span className="inline-block w-20 h-4 rounded bg-gold/20 animate-pulse" />
-                </>
-              ) : (
-                <>
-                  <Sparkles size={16} className="opacity-70" />
-                  <span>{buttonLabel}</span>
-                </>
-              )}
-            </button>
-
-            {/* Cooldown indicator */}
-            {cooldownLabel && (
-              <p className="flex items-center gap-1 text-[10px] text-gold/40">
-                <Clock size={10} />
-                <span>{cooldownLabel}</span>
-              </p>
-            )}
-
-            {/* Error message + retry */}
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col items-center gap-1"
-              >
-                <p className="text-xs text-red-400/80">{error}</p>
-                <button
-                  onClick={handleFetch}
-                  className="text-[10px] text-gold/60 hover:text-gold/90 underline transition-colors"
-                >
-                  {t('vibesSection.retryLabel')}
-                </button>
-              </motion.div>
-            )}
+      <PremiumGate teaser={t('vibesSection.premiumTeaser')}>
+        <button
+          onClick={handleFetch}
+          disabled={loading}
+          className="w-full max-w-sm group relative"
+        >
+          <div className="cosmic-tile p-4 flex items-center justify-between gap-4 group-hover:border-gold/30 transition-all duration-300">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center text-gold group-hover:scale-110 transition-transform">
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
+                ) : (
+                  <Sparkles size={20} />
+                )}
+              </div>
+              <div className="text-left">
+                <p className="text-[10px] font-sans font-bold uppercase tracking-[0.2em] opacity-60">
+                  {t('vibesSection.sectionTitle')}
+                </p>
+                <p className="text-sm font-serif text-gold/90">
+                  {buttonLabel}
+                </p>
+                {cooldownLabel && (
+                  <p className="flex items-center gap-1 text-[9px] text-gold/40 mt-0.5">
+                    <Clock size={8} />
+                    <span>{cooldownLabel}</span>
+                  </p>
+                )}
+              </div>
+            </div>
+            <ChevronRight size={16} className="text-gold/30 group-hover:text-gold/60 transition-colors" />
           </div>
-        </PremiumGate>
-      </div>
+
+          {/* Error message inline */}
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="absolute -bottom-6 left-0 right-0 text-center"
+            >
+              <p className="text-[10px] text-red-400/80">{error}</p>
+            </motion.div>
+          )}
+        </button>
+      </PremiumGate>
 
       {/* Modal */}
       <AnimatePresence>

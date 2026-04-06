@@ -265,18 +265,30 @@ export default function SignaturV3Canvas({
 
   useEffect(() => {
     if (!isResponsive) {
-      setContainerSize({ w: width || 500, h: height || 500 });
+      const w = width || 500;
+      const h = height || 500;
+      if (w !== containerSize.w || h !== containerSize.h) {
+        setContainerSize({ w, h });
+      }
       return;
     }
     const el = containerRef.current;
     if (!el) return;
     const observer = new ResizeObserver(entries => {
       const entry = entries[0];
-      if (entry) setContainerSize({ w: entry.contentRect.width, h: entry.contentRect.height });
+      if (entry) {
+        const newW = Math.round(entry.contentRect.width);
+        const newH = Math.round(entry.contentRect.height);
+        // Only update if change is significant (>2px) to avoid jitter during layout/hydration
+        setContainerSize(prev => {
+          if (Math.abs(prev.w - newW) <= 2 && Math.abs(prev.h - newH) <= 2) return prev;
+          return { w: newW, h: newH };
+        });
+      }
     });
     observer.observe(el);
     return () => observer.disconnect();
-  }, [isResponsive, width, height]);
+  }, [isResponsive, width, height, containerSize.w, containerSize.h]);
 
   const effectiveW = containerSize.w;
   const effectiveH = containerSize.h;
@@ -308,14 +320,25 @@ export default function SignaturV3Canvas({
   const externalDissonanceMorphRef = useRef(externalDissonance);
   externalDissonanceMorphRef.current = externalDissonance;
 
-  // Re-initialize poles only when canvas config or natal chart changes.
-  // Quiz weight changes do NOT reset poles — they trigger a morph instead.
+  // Re-initialize poles ONLY when natal chart changes or trail buffer size changes.
+  // Resizing the canvas (maxR change) should NOT reset the trails.
+  const lastMaxTrailLengthRef = useRef(config.maxTrailLength);
+  const lastNatalWeightsRef = useRef(JSON.stringify(natalWeights));
+
   useEffect(() => {
-    polesRef.current = initializePoles(config, natalMap, quizMap);
-    dissonanceRef.current = computeV3Dissonance(natalMap, quizMap, externalDissonance);
-    morphRef.current = null; // clear any active morph on hard re-init
+    const natalStr = JSON.stringify(natalWeights);
+    const natalChanged = natalStr !== lastNatalWeightsRef.current;
+    const trailSizeChanged = config.maxTrailLength !== lastMaxTrailLengthRef.current;
+
+    if (!polesRef.current || natalChanged || trailSizeChanged) {
+      polesRef.current = initializePoles(config, natalMap, quizMap);
+      dissonanceRef.current = computeV3Dissonance(natalMap, quizMap, externalDissonance);
+      morphRef.current = null;
+      lastMaxTrailLengthRef.current = config.maxTrailLength;
+      lastNatalWeightsRef.current = natalStr;
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [config, natalMap]);
+  }, [config.maxTrailLength, natalWeights]);
 
   // Morph dissonance state when quiz weights change — continuous transition, no pole reset.
   // prefers-reduced-motion: apply instantly (no animation).

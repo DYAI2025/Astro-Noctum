@@ -6,6 +6,7 @@ import { createContext, useContext, useState, type ReactNode } from "react";
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const PLANETARIUM_STORAGE_KEY = "bazodiac-planetarium";
+export const SKY_MODE_STORAGE_KEY = "bazodiac-skymode";
 
 interface PlanetariumContextType {
   planetariumMode: boolean;
@@ -33,21 +34,33 @@ export function PlanetariumProvider({ children }: { children: ReactNode }) {
     }
   });
 
+  const [skyMode, setSkyModeRaw] = useState<'birth' | 'current'>(() => {
+    try {
+      const stored = localStorage.getItem(SKY_MODE_STORAGE_KEY);
+      return (stored === 'birth' || stored === 'current') ? stored : 'birth';
+    } catch {
+      return 'birth';
+    }
+  });
+
   const setPlanetariumMode = (value: boolean) => {
     setPlanetariumModeRaw(value);
     try {
       localStorage.setItem(PLANETARIUM_STORAGE_KEY, String(value));
     } catch {
-      // localStorage unavailable (private browsing, etc.) — ignore
+      // ignore
     }
   };
 
-  const [skyMode, setSkyModeRaw] = useState<'birth' | 'current'>('birth');
-
-  function setSkyMode(mode: 'birth' | 'current') {
+  const setSkyMode = (mode: 'birth' | 'current') => {
     setSkyModeRaw(mode);
+    try {
+      localStorage.setItem(SKY_MODE_STORAGE_KEY, mode);
+    } catch {
+      // ignore
+    }
     if (mode === 'current') setPlanetariumMode(true);
-  }
+  };
 
   const togglePlanetarium = () => {
     setPlanetariumModeRaw((prev) => {
