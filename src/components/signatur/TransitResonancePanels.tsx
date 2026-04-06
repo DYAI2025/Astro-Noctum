@@ -209,9 +209,14 @@ function TransitPanel({ data }: { data: TransitPanelData }) {
             <div className="text-[10px] uppercase tracking-[0.18em] text-white/45">{config.poleName}</div>
           </div>
         </div>
-        <span className={`mt-0.5 shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.12em] ${aspectInfo.colorClass}`}>
-          {aspectInfo.name}
-        </span>
+        <div className="flex shrink-0 flex-col items-end gap-0.5">
+          <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.12em] ${aspectInfo.colorClass}`}>
+            {aspectInfo.name}
+          </span>
+          <span className="text-[9px] uppercase tracking-[0.14em] text-white/35">
+            {aspectInfo.quality}
+          </span>
+        </div>
       </div>
 
       {/* Strength + direction row */}

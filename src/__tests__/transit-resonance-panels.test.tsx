@@ -149,6 +149,24 @@ describe('TransitResonancePanels', () => {
     expect(screen.getByRole('region', { name: 'Aktive Planetentransits' })).toBeInTheDocument();
   });
 
+  it('shows quality label beneath aspect badge (Fluss for Trigon)', () => {
+    render(<TransitResonancePanels birthSign="Aries" />);
+    // Mars has Trigon (aspectDeg=120) → quality="Fluss"
+    expect(screen.getByText('Fluss')).toBeInTheDocument();
+  });
+
+  it('shows quality label for tension aspect (Spannung for Quadrat)', () => {
+    render(<TransitResonancePanels birthSign="Aries" />);
+    // Venus has Quadrat (aspectDeg=90) → quality="Spannung"
+    expect(screen.getByText('Spannung')).toBeInTheDocument();
+  });
+
+  it('shows quality label for Opposition (Gegenüber)', () => {
+    render(<TransitResonancePanels birthSign="Aries" />);
+    // Saturn has Opposition (aspectDeg=180) → quality="Gegenüber"
+    expect(screen.getByText('Gegenüber')).toBeInTheDocument();
+  });
+
   it('does NOT show Live badge when birthSign is set but compute returns null', () => {
     mockCompute.mockReturnValue(null);
     render(<TransitResonancePanels birthSign="Capricorn" />);
