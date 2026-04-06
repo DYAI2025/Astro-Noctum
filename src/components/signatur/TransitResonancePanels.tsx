@@ -258,12 +258,14 @@ function TransitPanel({ data }: { data: TransitPanelData }) {
 
 // ── Empty state ────────────────────────────────────────────────────────────
 
-function TransitEmptyState() {
+function TransitEmptyState({ hasBirthSign }: { hasBirthSign: boolean }) {
   return (
     <div className="col-span-full rounded-2xl border border-white/8 bg-black/20 px-6 py-8 text-center">
       <p className="mb-1 text-sm text-white/50">Keine Transit-Daten verfügbar</p>
       <p className="text-[11px] text-white/30">
-        Geburtszeichen wird benötigt, um aktive Planetentransits zu berechnen.
+        {hasBirthSign
+          ? 'Planetenposition konnte nicht berechnet werden.'
+          : 'Geburtszeichen wird benötigt, um aktive Planetentransits zu berechnen.'}
       </p>
     </div>
   );
@@ -288,7 +290,7 @@ export function TransitResonancePanels({ birthSign }: TransitResonancePanelsProp
         <span className="text-[10px] uppercase tracking-[0.22em] text-white/40">
           Aktive Einflüsse
         </span>
-        {birthSign && (
+        {panels.length > 0 && (
           <span className="rounded-full border border-[#D4AF37]/20 bg-[#D4AF37]/8 px-2 py-0.5 text-[9px] uppercase tracking-[0.18em] text-[#D4AF37]/70">
             Live
           </span>
@@ -298,7 +300,7 @@ export function TransitResonancePanels({ birthSign }: TransitResonancePanelsProp
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
         {panels.length > 0
           ? panels.map(data => <TransitPanel key={data.planetKey} data={data} />)
-          : <TransitEmptyState />}
+          : <TransitEmptyState hasBirthSign={!!birthSign} />}
       </div>
     </section>
   );
