@@ -103,11 +103,9 @@ const ZODIAC_DE: Record<string, string> = {
 };
 
 function buildExplanation(
-  planetKey: string,
   config: PlanetConfig,
   influence: PlanetInfluence,
   birthSign: string,
-  aspectName: string,
 ): string {
   const { isResonant, aspectDeg } = influence;
   const birthSignDe = ZODIAC_DE[birthSign] ?? birthSign;
@@ -155,7 +153,7 @@ function buildPanels(birthSign: string): TransitPanelData[] {
     .map(([key, influence]) => {
       const config = PLANET_CONFIG[key]!;
       const aspectInfo = getAspectInfo(influence.aspectDeg, influence.isResonant);
-      const explanation = buildExplanation(key, config, influence, birthSign, aspectInfo.name);
+      const explanation = buildExplanation(config, influence, birthSign);
       return { planetKey: key, config, influence, aspectInfo, explanation };
     });
 }
