@@ -1658,6 +1658,79 @@ function appendNightHarmony(parsedData, date = new Date()) {
   parsedData.fusion.night_mode = nightH >= 0.50 ? 'trace' : 'pulse';
 }
 
+/**
+ * Compute deterministic resonance badges from real-time inputs.
+ * Pure JS — called inside /api/experience/daily for every request.
+ *
+ * @param {object} opts
+ * @param {Array} opts.transitInfluences - [{planet, aspectDeg, fieldStrength, isResonant}]
+ * @param {object|null} opts.spaceWeather - spaceWeatherCache?.payload
+ * @param {number[]|null} opts.soulprintSectors - 12-element array from astro_profiles
+ * @param {string} opts.lang - 'de' | 'en'
+ * @returns {Array} badges
+ */
+function computeResonanceBadgesServer({ transitInfluences, spaceWeather, soulprintSectors, lang = 'de' }) {
+  const badges = [];
+
+  // ── Transit badge — strongest planet by fieldStrength ─────────────────
+  if (Array.isArray(transitInfluences) && transitInfluences.length > 0) {
+    const strongest = transitInfluences.reduce(
+      (best, p) => ((p.fieldStrength ?? 0) > (best.fieldStrength ?? 0) ? p : best),
+      transitInfluences[0],
+    );
+    const ASPECT_NAMES_DE = { 0: 'Konjunktion', 60: 'Sextil', 90: 'Quadrat', 120: 'Trigon', 180: 'Opposition' };
+    const ASPECT_NAMES_EN = { 0: 'Conjunction', 60: 'Sextile', 90: 'Square', 120: 'Trine', 180: 'Opposition' };
+    const aspectNames = lang === 'de' ? ASPECT_NAMES_DE : ASPECT_NAMES_EN;
+    const aspectName = aspectNames[strongest.aspectDeg] ?? `${strongest.aspectDeg}°`;
+    const resonanceLabel = lang === 'de'
+      ? (strongest.isResonant ? 'Verstärkend' : 'Schärfend')
+      : (strongest.isResonant ? 'Amplifying' : 'Sharpening');
+    const intensity = strongest.fieldStrength >= 0.80 ? 'hoch' : strongest.fieldStrength >= 0.60 ? 'mittel' : 'niedrig';
+    badges.push({
+      type: 'transit',
+      label: `${strongest.planet} ${aspectName} · ${resonanceLabel}`,
+      sublabel: `${Math.round(strongest.fieldStrength * 100)}%`,
+      intensity,
+      color: strongest.isResonant ? '#D4AF37' : '#E87040',
+    });
+  }
+
+  // ── Space weather badge — from Kp index ───────────────────────────────
+  if (spaceWeather) {
+    const kp = spaceWeather.kp_index ?? spaceWeather.kp ?? 0;
+    const gScale = kp >= 8 ? 'G5' : kp >= 6 ? 'G4' : kp >= 5 ? 'G3' : kp >= 4 ? 'G2' : kp >= 3 ? 'G1' : null;
+    const intensity = kp >= 5 ? 'hoch' : kp >= 3 ? 'mittel' : 'niedrig';
+    const labelDe = gScale ? `Kp ${kp.toFixed(1)} · ${gScale} Sturm` : `Kp ${kp.toFixed(1)} · Ruhig`;
+    const labelEn = gScale ? `Kp ${kp.toFixed(1)} · ${gScale} Storm` : `Kp ${kp.toFixed(1)} · Calm`;
+    badges.push({
+      type: 'space_weather',
+      label: lang === 'de' ? labelDe : labelEn,
+      sublabel: lang === 'de' ? 'Kosmisches Wetter' : 'Space Weather',
+      intensity,
+      color: kp >= 5 ? '#E04040' : kp >= 3 ? '#E87040' : '#4CAF50',
+    });
+  }
+
+  // ── Sektor badge — top soulprint sector ───────────────────────────────
+  if (Array.isArray(soulprintSectors) && soulprintSectors.length === 12) {
+    const ZODIAC_DE = ['Widder','Stier','Zwillinge','Krebs','Löwe','Jungfrau','Waage','Skorpion','Schütze','Steinbock','Wassermann','Fische'];
+    const ZODIAC_EN = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+    const ZODIAC_SYM = ['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
+    const maxIdx = soulprintSectors.reduce((best, v, i) => v > soulprintSectors[best] ? i : best, 0);
+    const signs = lang === 'de' ? ZODIAC_DE : ZODIAC_EN;
+    const intensity = soulprintSectors[maxIdx] >= 0.7 ? 'hoch' : soulprintSectors[maxIdx] >= 0.4 ? 'mittel' : 'niedrig';
+    badges.push({
+      type: 'sektor',
+      label: `${ZODIAC_SYM[maxIdx]} ${signs[maxIdx]}`,
+      sublabel: lang === 'de' ? 'Dein Leitsystem' : 'Your Lead System',
+      intensity,
+      color: '#8B6CD4',
+    });
+  }
+
+  return badges;
+}
+
 app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
   try {
     const userId = req.userId;
@@ -1666,7 +1739,7 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
       return res.status(413).json({ error: 'payload_too_large' });
     }
 
-    const { birth, target_date, locale } = req.body || {};
+    const { birth, target_date, locale, transit_influences, birth_sign } = req.body || {};
     if (!birth || typeof birth !== 'object') {
       return res.status(400).json({
         error: 'invalid_birth',
@@ -1692,10 +1765,37 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
     const cacheKeyD = `daily:${userId}:${targetDate}:${lang}`;
 
     const now = new Date();
+
+    // Helper: append resonance badges to any response object (always fresh, not cached)
+    const appendBadges = (responseData, soulprintSectors) => {
+      responseData.resonance_badges = computeResonanceBadgesServer({
+        transitInfluences: transit_influences ?? [],
+        spaceWeather: spaceWeatherCache?.payload ?? null,
+        soulprintSectors: soulprintSectors ?? null,
+        lang,
+      });
+    };
+
+    // Load soulprint sectors early — needed for badge computation in ALL paths
+    let soulprintSectorsForBadge = null;
+    if (supabaseServer) {
+      try {
+        const { data: soulprintProfile } = await supabaseServer
+          .from('astro_profiles')
+          .select('soulprint_sectors')
+          .eq('user_id', userId)
+          .maybeSingle();
+        soulprintSectorsForBadge = soulprintProfile?.soulprint_sectors ?? null;
+      } catch (e) {
+        console.warn('[daily] soulprint load failed, skipping sektor badge:', e?.message);
+      }
+    }
+
     if (horoscopeCache.has(cacheKeyD)) {
       const cached = horoscopeCache.get(cacheKeyD);
       if (Date.now() - cached.timestamp < HOROSCOPE_CACHE_TTL) {
         appendNightHarmony(cached.data, now);
+        appendBadges(cached.data, soulprintSectorsForBadge);
         return res.json(cached.data);
       }
     }
@@ -1714,6 +1814,7 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
         if (dbCached?.payload_json) {
           appendNightHarmony(dbCached.payload_json, now);
           horoscopeCache.set(cacheKeyD, { data: dbCached.payload_json, timestamp: Date.now() });
+          appendBadges(dbCached.payload_json, soulprintSectorsForBadge);
           return res.json(dbCached.payload_json);
         }
       } catch (e) {
@@ -1754,6 +1855,7 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
           .then(({ error }) => { if (error) console.warn('[daily] DB cache upsert failed:', error.message); })
           .catch((e) => { console.warn('[daily] DB cache upsert threw:', e?.message || e); });
       }
+      appendBadges(data, soulprintSectorsForBadge);
       return res.status(resp.status).json(data);
     }
 
@@ -1771,11 +1873,43 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
     });
     const bafeData = bafeRes.ok ? await bafeRes.json() : {};
 
+    // Build transit context for the enriched Gemini prompt
+    const transitContextStr = Array.isArray(transit_influences) && transit_influences.length > 0
+      ? transit_influences.map(t => {
+          const ASPECT_DE = { 0: 'Konjunktion', 60: 'Sextil', 90: 'Quadrat', 120: 'Trigon', 180: 'Opposition' };
+          const aspectName = ASPECT_DE[t.aspectDeg] ?? `${t.aspectDeg}°`;
+          return `- ${t.planet}: ${aspectName} (${t.aspectDeg}°), Stärke ${Math.round((t.fieldStrength ?? 0) * 100)}%, ${t.isResonant ? 'verstärkend' : 'schärfend'}`;
+        }).join('\n')
+      : 'Keine Transit-Daten verfügbar.';
+
+    const spaceWeatherStr = (() => {
+      const sw = spaceWeatherCache?.payload;
+      if (!sw) return 'Keine Weltraumwetter-Daten.';
+      const kp = sw.kp_index ?? sw.kp ?? 0;
+      return `Kp-Index: ${kp}, Solar-Druck: ${(sw.solar_pressure_score ?? 0).toFixed(2)}`;
+    })();
+
+    const soulprintTopStr = (() => {
+      if (!Array.isArray(soulprintSectorsForBadge) || soulprintSectorsForBadge.length !== 12) return '';
+      const ZODIAC_DE = ['Widder','Stier','Zwillinge','Krebs','Löwe','Jungfrau','Waage','Skorpion','Schütze','Steinbock','Wassermann','Fische'];
+      const maxIdx = soulprintSectorsForBadge.reduce((best, v, i) => v > soulprintSectorsForBadge[best] ? i : best, 0);
+      return `Stärkster Soulprint-Sektor: ${ZODIAC_DE[maxIdx]} (Wert: ${soulprintSectorsForBadge[maxIdx].toFixed(2)})`;
+    })();
+
     const prompt = `
 You are Bazodiac's fusion astrologer. You write in "Poetic Realism" — worldly images, not astro-lectures.
-Write a daily horoscope for today (${targetDate}) based on the user's birth chart:
+Write a daily horoscope for today (${targetDate}) based on the user's birth chart AND today's real planetary transits:
+
+GEBURTSHOROSKOP:
 ${JSON.stringify(bafeData, null, 2)}
 
+PLANETENTRANSITS HEUTE:
+${transitContextStr}
+
+KOSMISCHES WETTER:
+${spaceWeatherStr}
+
+${soulprintTopStr ? soulprintTopStr + '\n' : ''}
 Respond with STRICT JSON matching this EXACT structure (No markdown code blocks, just raw JSON).
 {
   "date": "${targetDate}",
@@ -1809,7 +1943,7 @@ RULES:
 - Language: ${lang === 'de' ? 'German' : 'English'}
 - The output MUST be valid parsing JSON.
 - DO NOT wrap the response in \`\`\`json ... \`\`\`. Start directly with {.
-- harmony_index: number between 0.0 and 1.0 — cosine similarity between Western and BaZi Wu-Xing vectors. 0.45 = random baseline. >= 0.50 = convergence day.
+- harmony_index: number between 0.0 and 1.0 — real measure of today's planetary alignment. 0.45 = baseline. >= 0.50 = convergence day.
 - day_mode: if harmony_index >= 0.50 set "trace" (poles converge, something happens today), else "pulse" (symmetric, calm day).
 
 DAY-MODE VOICE — the "synthesis" field MUST follow the voice rules for the computed day_mode:
@@ -1880,7 +2014,7 @@ NEVER use in synthesis: "weil", "da heute", planet names (Mars, Venus etc.), "di
     horoscopeCache.set(cacheKeyD, { data: parsedData, timestamp: Date.now() });
 
     if (supabaseServer) {
-      // Persist to L2 (fire-and-forget)
+      // Persist to L2 (fire-and-forget) — badges not cached (computed fresh each request)
       supabaseServer
         .from('daily_horoscope_cache')
         .upsert({
@@ -1899,6 +2033,9 @@ NEVER use in synthesis: "weil", "da heute", planet names (Mars, Venus etc.), "di
           console.error('[daily] DB cache upsert rejected:', err);
         });
     }
+
+    // Append resonance badges (deterministic — always fresh, not cached)
+    appendBadges(parsedData, soulprintSectorsForBadge);
 
     res.status(200).json(parsedData);
   } catch (err) {
