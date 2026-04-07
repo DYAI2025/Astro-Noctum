@@ -794,13 +794,17 @@ div:has([data-agent-widget] elevenlabs-convai) {
   z-index: 99999 !important;
 }
 
-/* Body-level overlays appended by the ElevenLabs SDK                    */
+/* Body-level overlays appended by the ElevenLabs SDK.
+   These are often transparent backdrops — force pointer-events: none so
+   they never block clicks on underlying UI.
+   The interactive convai element is handled via its own rule above.     */
 body > div[class*="eleven"],
 body > div[id*="eleven"],
 body > div[class*="convai"],
 body > div[id*="convai"] {
   z-index: 999999 !important;
   position: fixed !important;
+  pointer-events: none !important;
 }
 
 /* ── Reduced Motion ──────────────────────────────────────────────── */
