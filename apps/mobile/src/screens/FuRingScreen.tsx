@@ -2,54 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { QuizDefinition } from '@bazodiac/shared';
+import { useIsFocused } from '@react-navigation/native';
 import { useAppState } from '../contexts/AppStateContext';
 import { useBootstrapSignatur } from '../hooks/useBootstrapSignatur';
 import { useQuizOfTheDay } from '../hooks/useQuizOfTheDay';
 import QuizRenderer from '../components/QuizRenderer';
 import { COLORS } from '../theme';
-import SignaturVisual from '../components/SignaturVisual';
-import { useSpaceWeather } from '../hooks/useSpaceWeather';
-
-// Convert soulprint sectors OR WuXing elements to 7-planet natal weights
-function profileToNatalWeights(profile: any, sectors: number[]): Map<string, number> {
-  const map = new Map<string, number>();
-
-  // Try to get weights from WuXing element distribution first (more meaningful)
-  const wuxing = profile?.astro_json?.wuxing?.elements || {};
-  const w = {
-    wood:  Number(wuxing.Wood || wuxing.Holz || 0),
-    fire:  Number(wuxing.Fire || wuxing.Feuer || 0),
-    earth: Number(wuxing.Earth || wuxing.Erde || 0),
-    metal: Number(wuxing.Metal || wuxing.Metall || 0),
-    water: Number(wuxing.Water || wuxing.Wasser || 0),
-  };
-  const total = w.wood + w.fire + w.earth + w.metal + w.water;
-
-  if (total > 0) {
-    // Planet-Element associations (Hans Cousto cosmic octave):
-    // Sun→Fire, Moon→Water, Mercury→Earth, Venus→Metal,
-    // Mars→Fire, Jupiter→Wood, Saturn→Earth
-    const norm = (v: number) => Math.max(0.1, v / total);
-    map.set('Sun',     0.3 + norm(w.fire) * 0.7);
-    map.set('Moon',    0.3 + norm(w.water) * 0.7);
-    map.set('Mercury', 0.2 + norm(w.earth) * 0.6 + norm(w.metal) * 0.2);
-    map.set('Venus',   0.2 + norm(w.metal) * 0.5 + norm(w.water) * 0.3);
-    map.set('Mars',    0.2 + norm(w.fire) * 0.6 + norm(w.wood) * 0.2);
-    map.set('Jupiter', 0.3 + norm(w.wood) * 0.7);
-    map.set('Saturn',  0.2 + norm(w.earth) * 0.5 + norm(w.metal) * 0.3);
-  } else {
-    // Fallback: use soulprint sectors (zodiac → planet mapping)
-    map.set('Sun',     Math.max(0.2, sectors[4] ?? 0.5));
-    map.set('Moon',    Math.max(0.2, sectors[3] ?? 0.5));
-    map.set('Mercury', Math.max(0.2, sectors[2] ?? 0.5));
-    map.set('Venus',   Math.max(0.2, sectors[1] ?? 0.5));
-    map.set('Mars',    Math.max(0.2, sectors[0] ?? 0.5));
-    map.set('Jupiter', Math.max(0.2, sectors[8] ?? 0.5));
-    map.set('Saturn',  Math.max(0.2, sectors[9] ?? 0.5));
-  }
-
-  return map;
-}
+import { SignaturCanvas } from '../components/SignaturCanvas';
 
 const SECTOR_LABELS = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
@@ -86,9 +45,9 @@ function generateFallbackSectors(profile: any): number[] {
 }
 
 export function FuRingScreen() {
+  const isFocused = useIsFocused();
   const { profile, userId, tier } = useAppState();
   const { bootstrap, loading } = useBootstrapSignatur(profile);
-  const { kpIndex } = useSpaceWeather();
 
   // ---- Quiz des Tages state ----
   const [completed, setCompleted] = useState<Record<string, boolean>>({});
@@ -172,13 +131,12 @@ export function FuRingScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Signatur Visualization */}
+      {/* Signatur Visualization — expo-gl/three.js 3D particle ring.
+          Deferred until sectors are ready so onContextCreate sees real soulprint data. */}
       <View style={styles.engineContainer}>
-        <SignaturVisual
-          weights={Array.from(profileToNatalWeights(profile, soulprintSectors).values())}
-          kpIndex={kpIndex}
-          size={300}
-        />
+        {soulprintSectors && (
+          <SignaturCanvas sectors={soulprintSectors} paused={!isFocused} />
+        )}
       </View>
 
       {/* Profile summary */}
@@ -272,7 +230,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   engineContainer: {
-    alignItems: 'center',
+    height: 320,
     marginVertical: 8,
   },
   center: {
