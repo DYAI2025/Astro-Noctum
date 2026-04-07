@@ -788,7 +788,7 @@ body > div[class*="convai"],
 body > div[id*="convai"] {
   z-index: 999999 !important;
   position: fixed !important;
-  /* pointer-events intentionally omitted: SDK injects interactive call UI here (BUG-23) */
+  pointer-events: auto !important; /* SDK injects interactive call UI here — must not be suppressed (BUG-23) */
 }
 
 /* ── Reduced Motion ──────────────────────────────────────────────── */
