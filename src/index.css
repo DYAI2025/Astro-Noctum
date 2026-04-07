@@ -778,16 +778,17 @@ div[class*="elevenlabs"] {
 }
 
 /* Body-level overlays appended by the ElevenLabs SDK.
-   These are often transparent backdrops — force pointer-events: none so
-   they never block clicks on underlying UI.
-   The interactive convai element is handled via its own rule above.     */
+   z-index and position are forced so the widget always floats above page content.
+   pointer-events is intentionally NOT set here — the SDK injects interactive
+   call UI (buttons, inputs) into these divs; suppressing pointer-events would
+   break the call controls (BUG-23).                                           */
 body > div[class*="eleven"],
 body > div[id*="eleven"],
 body > div[class*="convai"],
 body > div[id*="convai"] {
   z-index: 999999 !important;
   position: fixed !important;
-  pointer-events: none !important;
+  /* pointer-events intentionally omitted: SDK injects interactive call UI here (BUG-23) */
 }
 
 /* ── Reduced Motion ──────────────────────────────────────────────── */
