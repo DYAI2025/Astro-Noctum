@@ -90,11 +90,24 @@ const DailyFusionSchema = z.object({
   night_mode: z.enum(['pulse', 'trace']).optional(),
 });
 
+export const ResonanceBadgeSchema = z.object({
+  type: z.enum(['transit', 'space_weather', 'sektor']),
+  label: z.string(),
+  sublabel: z.string().optional(),
+  intensity: z.enum(['hoch', 'mittel', 'niedrig']),
+  color: z.string(),
+});
+export type ResonanceBadge = z.infer<typeof ResonanceBadgeSchema>;
+
 export const DailyResponseSchema = z.object({
   date: z.string(),
   western: DailySectionSchema,
   eastern: DailySectionSchema,
   fusion: DailyFusionSchema,
   meta: MetaInfoSchema,
+  // Real-time resonance badges (server-computed, premium display)
+  resonance_badges: z.array(ResonanceBadgeSchema).optional(),
+  space_weather_score: z.number().optional(),
+  top_sector: z.object({ sign: z.string(), value: z.number() }).optional(),
 });
 export type DailyResponse = z.infer<typeof DailyResponseSchema>;
