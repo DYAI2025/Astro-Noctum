@@ -444,6 +444,7 @@ export function Dashboard({
               dayHarmonic={activeDayHarmonic}
               spaceWeather={spaceWeather}
               onOpenDayModal={dailyEnabled ? () => setIsDayModalOpen(true) : undefined}
+              isPremium={isPremium}
             />
           ) : (
             // Legacy fallback: CosmicWeatherCard while dailyData is not yet loaded

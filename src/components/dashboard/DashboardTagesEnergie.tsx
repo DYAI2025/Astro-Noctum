@@ -38,6 +38,8 @@ import type { DayHarmonicState } from '@/src/lib/fusion-ring/day-harmonic';
 import type { SpaceWeatherState } from '@/src/hooks/useSpaceWeather';
 import type { SpaceWeatherExtended } from '@/src/lib/schemas/space-weather';
 import { PremiumGate } from '../PremiumGate';
+import { ResonanzSnapshot } from './ResonanzSnapshot';
+import { isFeatureEnabled } from '../../lib/feature-flags';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -47,6 +49,7 @@ export interface DashboardTagesEnergieProps {
   spaceWeather: SpaceWeatherState;
   loading?: boolean;
   onOpenDayModal?: () => void;
+  isPremium?: boolean;
 }
 
 type WeatherEvent = SpaceWeatherExtended['events'][number];
@@ -271,6 +274,7 @@ export function DashboardTagesEnergie({
   spaceWeather,
   loading = false,
   onOpenDayModal,
+  isPremium = false,
 }: DashboardTagesEnergieProps) {
   const { t } = useLanguage();
   // Must be called before any conditional return (Rules of Hooks).
@@ -384,6 +388,18 @@ export function DashboardTagesEnergie({
             </div>
           </PremiumGate>
         </div>
+
+        {/* ── Resonanz-Snapshot badges (daily_fusion_hero_v1) ─── */}
+        {isFeatureEnabled('daily_fusion_hero_v1') &&
+          daily.resonance_badges &&
+          daily.resonance_badges.length > 0 && (
+            <div className="px-5 pb-2">
+              <ResonanzSnapshot
+                badges={daily.resonance_badges}
+                isPremium={isPremium}
+              />
+            </div>
+          )}
 
         {/* ── Kosmoswetter Strip ──────────────────────────────── */}
         {weatherPills.length > 0 && (
