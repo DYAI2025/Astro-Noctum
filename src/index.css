@@ -762,10 +762,6 @@ elevenlabs-convai {
   overflow: visible !important;
 }
 
-elevenlabs-convai * {
-  z-index: 99999 !important;
-}
-
 /* Catch any ElevenLabs-injected iframes or global overlays */
 elevenlabs-convai iframe,
 div[id^="elevenlabs"],
@@ -779,19 +775,6 @@ div[class*="elevenlabs"] {
   position: relative;
   z-index: 99999 !important;
   overflow: visible !important;
-}
-
-/* When the widget is active, break its parent cosmic-tile out of any
-   stacking context that would otherwise clip/trap the popup.
-   The active-state class z-[99999] is set in React; here we additionally
-   ensure backdrop-filter (which creates a stacking context) is removed
-   so the child z-index actually reaches the viewport layer.             */
-.cosmic-tile:has(elevenlabs-convai),
-div:has([data-agent-widget] elevenlabs-convai) {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  overflow: visible !important;
-  z-index: 99999 !important;
 }
 
 /* Body-level overlays appended by the ElevenLabs SDK.
