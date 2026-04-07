@@ -1,10 +1,52 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Phone, PhoneOff, Minimize2, Maximize2, Lock } from 'lucide-react';
 import { useAgent } from '../contexts/AgentContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { AGENTS } from '@/packages/shared/src/agents/config';
 import type { AgentId } from '@/packages/shared/src/agents/config';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ElevenLabs portal — rendered at document.body level to escape all
+// transform/backdrop-filter ancestors that would trap Shadow DOM popups.
+// ─────────────────────────────────────────────────────────────────────────────
+function ElevenLabsPortal({
+  agentId,
+  userId,
+  sunSign,
+  zodiacAnimal,
+  dominantEl,
+}: {
+  agentId: string;
+  userId: string;
+  sunSign: string;
+  zodiacAnimal: string;
+  dominantEl: string;
+}) {
+  return createPortal(
+    <div
+      style={{
+        position: 'fixed',
+        bottom: 0,
+        right: 0,
+        zIndex: 99999,
+        pointerEvents: 'none',
+      }}
+    >
+      <div style={{ pointerEvents: 'auto' }}>
+        <elevenlabs-convai
+          agent-id={agentId}
+          dynamic-variables={JSON.stringify({
+            user_id: userId,
+            chart_context: `${sunSign} / ${zodiacAnimal} / ${dominantEl}`,
+          })}
+        />
+      </div>
+    </div>,
+    document.body,
+  );
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // AgentFloatingWidget — Global floating voice agent pill
@@ -76,10 +118,11 @@ export function AgentFloatingWidget({
   };
 
   return (
+    <>
     <div
       className="fixed z-[99999] transition-all duration-300 ease-out"
       style={{
-        bottom: widgetExpanded ? '24px' : '80px',
+        bottom: widgetExpanded ? '88px' : '80px',
         right: '16px',
       }}
     >
@@ -96,9 +139,6 @@ export function AgentFloatingWidget({
               borderColor: `${agent.accentColor}33`,
               background:
                 'linear-gradient(180deg, rgba(15,12,8,0.95) 0%, rgba(25,20,12,0.97) 100%)',
-              // backdrop-filter creates a stacking context that traps
-              // the ElevenLabs popup z-index — disable it during a call
-              ...(isActive ? {} : { backdropFilter: 'blur(24px)' }),
             }}
           >
             {/* Header */}
@@ -173,18 +213,6 @@ export function AgentFloatingWidget({
                 </button>
               )}
 
-              {/* ElevenLabs widget — single instance, high z-index for mobile */}
-              {isPremium && isActive && elevenLabsAgentId && (
-                <div className="w-full flex justify-center mt-2 relative z-[99999]">
-                  <elevenlabs-convai
-                    agent-id={elevenLabsAgentId}
-                    dynamic-variables={JSON.stringify({
-                      user_id: userId,
-                      chart_context: `${sunSign} / ${zodiacAnimal} / ${dominantEl}`,
-                    })}
-                  />
-                </div>
-              )}
             </div>
           </motion.div>
         ) : (
@@ -228,5 +256,16 @@ export function AgentFloatingWidget({
         )}
       </AnimatePresence>
     </div>
+
+    {isPremium && isActive && elevenLabsAgentId && (
+      <ElevenLabsPortal
+        agentId={elevenLabsAgentId}
+        userId={userId}
+        sunSign={sunSign}
+        zodiacAnimal={zodiacAnimal}
+        dominantEl={dominantEl}
+      />
+    )}
+    </>
   );
 }
