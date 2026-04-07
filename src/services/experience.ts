@@ -32,12 +32,21 @@ export async function signatureDelta(
   return SignatureDeltaResponseSchema.parse(await resp.json());
 }
 
+export interface TransitInfluenceInput {
+  planet: string;
+  aspectDeg: number;
+  fieldStrength: number;
+  isResonant: boolean;
+}
+
 export async function fetchDailyExperience(
   birth: { date: string; time: string; tz: string; lat: number; lon: number },
   soulprintSectors: number[],
   quizSectors: number[],
   targetDate: string,
   locale = 'de-DE',
+  transitInfluences: TransitInfluenceInput[] = [],
+  birthSign = '',
 ): Promise<DailyResponse> {
   const resp = await authedFetch('/api/experience/daily', {
     method: 'POST',
@@ -48,6 +57,8 @@ export async function fetchDailyExperience(
       quiz_sectors: quizSectors,
       target_date: targetDate,
       locale,
+      transit_influences: transitInfluences,
+      birth_sign: birthSign,
     }),
   });
   if (!resp.ok) throw new Error(`Daily horoscope failed: ${resp.status}`);
