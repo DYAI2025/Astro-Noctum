@@ -28,8 +28,11 @@ function ElevenLabsPortal({
     <div
       style={{
         position: 'fixed',
-        bottom: 0,
-        right: 0,
+        // Match the panel's visual position so the web component's own internal
+        // button/popup anchors itself relative to the correct corner.
+        // calc() accounts for the iOS home indicator (env(safe-area-inset-bottom)).
+        bottom: 'calc(88px + env(safe-area-inset-bottom))',
+        right: '16px',
         zIndex: 99999,
         pointerEvents: 'none',
       }}
@@ -122,7 +125,11 @@ export function AgentFloatingWidget({
     <div
       className="fixed z-[99999] transition-all duration-300 ease-out"
       style={{
-        bottom: widgetExpanded ? '88px' : '80px',
+        // calc() accounts for the iOS home indicator (env(safe-area-inset-bottom)).
+        // Minimised: 80px clears the 64px nav. Expanded: 88px = nav + 24px gap.
+        bottom: widgetExpanded
+          ? 'calc(88px + env(safe-area-inset-bottom))'
+          : 'calc(80px + env(safe-area-inset-bottom))',
         right: '16px',
       }}
     >

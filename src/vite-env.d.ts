@@ -16,6 +16,8 @@ declare module '*.glsl?raw' {
   export default shaderSource;
 }
 
+// NOTE: React 19 will remove the global JSX namespace in favour of React.JSX.
+// When upgrading @types/react to v19, move this to `declare module 'react' { namespace JSX { ... } }`.
 declare namespace JSX {
   interface IntrinsicElements {
     'elevenlabs-convai': React.DetailedHTMLProps<
