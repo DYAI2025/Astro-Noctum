@@ -6,7 +6,13 @@ echo "Running TypeScript check (src/)..."
 TMP_OUTPUT="$(mktemp)"
 trap 'rm -f "$TMP_OUTPUT"' EXIT
 
-npx tsc --noEmit 2>&1 | tee "$TMP_OUTPUT" || true
+npx tsc --noEmit 2>&1 | tee "$TMP_OUTPUT"
+TS_EXIT=${PIPESTATUS[0]}
+
+if [ "$TS_EXIT" -eq 0 ]; then
+  echo "No TypeScript errors in src/"
+  exit 0
+fi
 
 if rg -q '^src/' "$TMP_OUTPUT"; then
   echo "TypeScript errors in src/:"
@@ -14,4 +20,6 @@ if rg -q '^src/' "$TMP_OUTPUT"; then
   exit 2
 fi
 
-echo "No TypeScript errors in src/"
+echo "TypeScript check failed outside src/ (configuration/dependency error)."
+cat "$TMP_OUTPUT"
+exit "$TS_EXIT"
