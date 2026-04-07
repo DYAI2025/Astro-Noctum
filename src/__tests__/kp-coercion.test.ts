@@ -27,6 +27,15 @@ describe('kp badge label — NOAA string input', () => {
 
   it('handles missing kp gracefully', () => {
     expect(() => computeKpBadgeLabel({})).not.toThrow();
+
+    // default language is German
     expect(computeKpBadgeLabel({})).toBe('Kp 0.0 · Ruhig');
+
+    // explicit English label for missing Kp
+    expect(computeKpBadgeLabel({ lang: 'en' })).toBe('Kp 0.0 · Quiet');
+  });
+
+  it('formats correctly in English', () => {
+    expect(computeKpBadgeLabel({ kp_index: 5.1, lang: 'en' })).toBe('Kp 5.1 · G3 storm');
   });
 });
