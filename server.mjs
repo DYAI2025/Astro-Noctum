@@ -1697,7 +1697,7 @@ function computeResonanceBadgesServer({ transitInfluences, spaceWeather, soulpri
 
   // ── Space weather badge — from Kp index ───────────────────────────────
   if (spaceWeather) {
-    const kp = spaceWeather.kp_index ?? spaceWeather.kp ?? 0;
+    const kp = Number(spaceWeather.kp_index ?? spaceWeather.kp ?? 0);
     const gScale = kp >= 8 ? 'G5' : kp >= 6 ? 'G4' : kp >= 5 ? 'G3' : kp >= 4 ? 'G2' : kp >= 3 ? 'G1' : null;
     const intensity = kp >= 5 ? 'hoch' : kp >= 3 ? 'mittel' : 'niedrig';
     const labelDe = gScale ? `Kp ${kp.toFixed(1)} · ${gScale} Sturm` : `Kp ${kp.toFixed(1)} · Ruhig`;
@@ -1885,7 +1885,7 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
     const spaceWeatherStr = (() => {
       const sw = spaceWeatherCache?.payload;
       if (!sw) return 'Keine Weltraumwetter-Daten.';
-      const kp = sw.kp_index ?? sw.kp ?? 0;
+      const kp = Number(sw.kp_index ?? sw.kp ?? 0);
       return `Kp-Index: ${kp}, Solar-Druck: ${(sw.solar_pressure_score ?? 0).toFixed(2)}`;
     })();
 
@@ -2176,7 +2176,7 @@ app.post('/api/vibes', requireUserAuth, async (req, res) => {
     let spaceWeatherSummary = 'Keine aktuelle Weltraumwetter-Daten verfügbar.';
     if (spaceWeatherCache?.payload) {
       const sw = spaceWeatherCache.payload;
-      const kp = sw.kp_index ?? sw.kp ?? 0;
+      const kp = Number(sw.kp_index ?? sw.kp ?? 0);
       spaceWeatherSummary = `Kp-Index: ${kp}, Quelle: ${sw.source || 'NOAA'}`;
       if (sw.xray_class) spaceWeatherSummary += `, Röntgen-Klasse: ${sw.xray_class}`;
       if (sw.f107) spaceWeatherSummary += `, F10.7: ${sw.f107}`;
