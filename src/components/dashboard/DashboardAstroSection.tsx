@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "motion/react";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, BarChart2, MessageSquare, LayoutGrid } from "lucide-react";
 import { PremiumGate } from "../PremiumGate";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { WUXING_ELEMENTS } from "../../lib/astro-data/wuxing";
@@ -21,16 +21,6 @@ import { IconOrbit } from "../animated-icons";
 // Static data
 // ─────────────────────────────────────────────────────────────────────────────
 
-const ZODIAC_SIGNS_LIST = [
-  "Aries","Taurus","Gemini","Cancer","Leo","Virgo",
-  "Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces",
-] as const;
-
-function signFromIndex(idx: number | undefined | null): string {
-  if (idx == null || idx < 0 || idx > 11) return "";
-  return ZODIAC_SIGNS_LIST[idx];
-}
-
 // ── Animation helper ──────────────────────────────────────────────────────
 
 function fadeIn(delay = 0) {
@@ -43,11 +33,14 @@ function fadeIn(delay = 0) {
 
 // ── Section sub-components ────────────────────────────────────────────────
 
-function SectionDivider({ label, title, icon }: { label: string; title: string; icon?: React.ReactNode }) {
+function CardHeader({ label, title, icon }: { label: string; title: string; icon?: React.ReactNode }) {
   return (
-    <div className="border-b border-[#8B6914]/15 pb-3 sm:pb-4 mb-6 sm:mb-8">
-      <p className="text-[#8B6914]/75 text-[8px] uppercase tracking-[0.45em] mb-1">{label}</p>
-      <h2 className="font-serif text-xl sm:text-2xl" style={{ color: 'var(--tile-text-primary)' }}>{icon}{title}</h2>
+    <div className="mb-6">
+      <div className="flex items-center gap-2 mb-1.5 opacity-60">
+        {icon}
+        <p className="text-[8px] uppercase tracking-[0.35em]" style={{ color: 'var(--tile-accent)' }}>{label}</p>
+      </div>
+      <h3 className="font-serif text-lg leading-tight" style={{ color: 'var(--tile-text-primary)' }}>{title}</h3>
     </div>
   );
 }
@@ -102,16 +95,6 @@ export function DashboardAstroSection({
     [wuxingCounts],
   );
 
-  // Development-only WuXing data verification
-  useEffect(() => {
-    if (import.meta.env.DEV && Object.keys(wuxingCounts).length > 0) {
-      console.log("[WuXing Verify] Raw API elements:", apiData.wuxing?.elements);
-      console.log("[WuXing Verify] Mapped counts:", wuxingCounts);
-      console.log("[WuXing Verify] Total:", totalCount, "Max:", maxCount, "Has data:", hasWuxingData);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps — dev-only logging, no need to re-run on every dep change
-  }, [wuxingCounts]);
-
   // BaZi section computed data
   const wuxingBalance = useMemo(() => {
     const raw = apiData.wuxing?.elements || apiData.wuxing?.element_counts || {};
@@ -145,99 +128,119 @@ export function DashboardAstroSection({
         tileTexts={tileTexts || {}}
       />
 
-      {/* ═══ BAZI & WUXING DEEP SECTION ═══════════════════════════════ */}
+      {/* ═══ BAZI & WUXING DEEP SECTION — Card Harmony Cluster ════════ */}
       <div id="section-bazi" />
       <div id="section-wuxing" />
+      
       <PremiumGate teaser={t("dashboard.premium.teaserPillars")}>
-        <motion.div className="mb-12" {...fadeIn(0.3)}>
-          {/* Block A: Header */}
-          <SectionDivider
-            label={t("dashboard.bazi.sectionLabel")}
-            title={t("dashboard.bazi.sectionTitleFull")}
-            icon={<IconOrbit className="w-6 h-6 text-[#8B6914] inline-block mr-3 align-middle" />}
-          />
-
-          {/* Block B: Four Pillars */}
-          {apiData.bazi?.pillars && (
-            <div className="mb-10">
-              <p className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/70 mb-4">
-                {t("dashboard.bazi.fourPillarsShort")}
-              </p>
-              <BaZiFourPillars
-                pillars={apiData.bazi.pillars}
-                lang={lang}
-                planetariumMode={planetariumMode}
-              />
-            </div>
-          )}
-
-          {/* Block C: Element Balance */}
-          <div className="mb-10">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-[9px] uppercase tracking-[0.3em] text-[#8B6914]/70">
-                WuXing {"\u4E94\u884C"}
-              </p>
-              <Link
-                to="/wu-xing"
-                className="text-[9px] uppercase tracking-[0.2em] text-[#8B6914]/60 hover:text-[#8B6914] transition-colors flex items-center gap-1.5"
-              >
-                <span>{lang === "de" ? "Detailansicht" : "Detailed view"}</span>
-                <ArrowUp className="w-3 h-3 rotate-45" />
-              </Link>
-            </div>
-            <p className="text-xs text-[var(--color-text-bright-dim)] mb-6 leading-relaxed max-w-2xl">
-              {t("dashboard.wuxing.sectionDesc")}
-            </p>
-
-            <div className="cosmic-tile p-5 md:p-6 max-w-2xl">
-              <div className="space-y-4">
-                {WUXING_ELEMENTS.map((el) => {
-                  const count = Number(wuxingCounts[el.key] ?? wuxingCounts[el.name.de] ?? 0);
-                  const pctLabel = totalCount > 0 ? Math.round((count / totalCount) * 100) : 0;
-                  const pctBar = hasWuxingData ? (count / maxCount) * 100 : 0;
-                  const isDom = el.key === dominantEl || el.name.de === dominantEl;
-                  return (
-                    <Tooltip key={el.key} content={el.description[lang]} wide dark={planetariumMode}>
-                      <div className="flex items-center gap-2 sm:gap-4 cursor-help group">
-                        <div className="w-24 sm:w-28 md:w-36 shrink-0 flex items-center gap-2 sm:gap-2.5">
-                          <WuXingIcon element={el.key} className="w-6 h-6" />
-                          <div className="min-w-0">
-                            <div className="text-xs font-medium truncate" style={{ color: 'var(--tile-text-primary)' }}>{el.name[lang]}</div>
-                            <div className="text-[10px] text-[var(--color-text-bright-dim)]">{el.pinyin}</div>
-                          </div>
-                        </div>
-                        <div className="flex-1 wuxing-bar-track">
-                          {hasWuxingData ? (
-                            <div
-                              className="wuxing-bar-fill"
-                              style={{ backgroundColor: el.color, width: `${Math.max(pctBar, pctBar > 0 ? 2 : 0)}%` }}
-                            />
-                          ) : (
-                            <div className="h-full rounded-full" style={{ backgroundColor: el.color + "20", width: "100%" }} />
-                          )}
-                        </div>
-                        <div className="w-12 shrink-0 text-right flex items-center justify-end gap-1">
-                          {hasWuxingData && pctLabel > 0 && (
-                            <span className="text-[10px] text-[var(--color-text-bright-dim)] font-sans" style={{ fontVariantNumeric: 'tabular-nums' }}>{pctLabel}%</span>
-                          )}
-                          {isDom && <span className="text-sm" style={{ color: el.color }}>{"\u2605"}</span>}
-                        </div>
-                      </div>
-                    </Tooltip>
-                  );
-                })}
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 items-stretch" 
+          {...fadeIn(0.3)}
+        >
+          {/* Card 1: BaZi Four Pillars */}
+          <div className="cosmic-tile p-6 flex flex-col h-full">
+            <CardHeader 
+              label="BaZi" 
+              title={t("dashboard.bazi.fourPillarsShort")}
+              icon={<LayoutGrid size={12} style={{ color: 'var(--tile-accent)' }} />}
+            />
+            {apiData.bazi?.pillars ? (
+              <div className="flex-1 overflow-visible">
+                <BaZiFourPillars
+                  pillars={apiData.bazi.pillars}
+                  lang={lang}
+                  planetariumMode={planetariumMode}
+                />
               </div>
-            </div>
+            ) : (
+              <div className="flex-1 flex items-center justify-center py-12">
+                <p className="text-xs italic opacity-40">
+                  {t("dashboard.bazi.birthTimeNotProvided")}
+                </p>
+              </div>
+            )}
           </div>
 
-          {/* Block D: Interpretation */}
-          <div className="cosmic-tile p-6">
-            <BaZiInterpretation
-              animal={yearAnimal}
-              element={yearEl}
-              balance={wuxingBalance}
-              lang={lang}
+          {/* Card 2: Element Balance */}
+          <div className="cosmic-tile p-6 flex flex-col h-full">
+            <div className="flex items-center justify-between mb-0">
+              <CardHeader 
+                label="WuXing" 
+                title={lang === "de" ? "Elemente-Balance" : "Element Balance"}
+                icon={<BarChart2 size={12} style={{ color: 'var(--tile-accent)' }} />}
+              />
+              <Link
+                to="/wu-xing"
+                className="opacity-40 hover:opacity-100 transition-opacity p-2 -mt-8 -mr-2"
+                title={lang === "de" ? "Detailansicht" : "Detailed view"}
+              >
+                <ArrowUp className="w-4 h-4 rotate-45" />
+              </Link>
+            </div>
+            
+            <div className="flex-1 space-y-4">
+              {WUXING_ELEMENTS.map((el) => {
+                const count = Number(wuxingCounts[el.key] ?? wuxingCounts[el.name.de] ?? 0);
+                const pctLabel = totalCount > 0 ? Math.round((count / totalCount) * 100) : 0;
+                const pctBar = hasWuxingData ? (count / maxCount) * 100 : 0;
+                const isDom = el.key === dominantEl || el.name.de === dominantEl;
+                
+                return (
+                  <Tooltip key={el.key} content={el.description[lang]} wide dark={planetariumMode}>
+                    <div className="flex items-center gap-3 cursor-help group">
+                      <div className="w-8 shrink-0 flex items-center justify-center">
+                        <WuXingIcon element={el.key} className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-end mb-1">
+                          <span className="text-[10px] font-medium truncate" style={{ color: 'var(--tile-text-primary)' }}>
+                            {el.name[lang]}
+                          </span>
+                          {hasWuxingData && pctLabel > 0 && (
+                            <span className="text-[9px] opacity-50 font-sans tabular-nums">{pctLabel}%</span>
+                          )}
+                        </div>
+                        <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                          {hasWuxingData ? (
+                            <div
+                              className="h-full rounded-full transition-all duration-1000"
+                              style={{ backgroundColor: el.color, width: `${Math.max(pctBar, pctBar > 0 ? 4 : 0)}%` }}
+                            />
+                          ) : (
+                            <div className="h-full w-full bg-white/10 rounded-full animate-pulse" />
+                          )}
+                        </div>
+                      </div>
+                      {isDom && (
+                        <div className="w-2 shrink-0 flex items-center justify-center">
+                          <span className="text-[10px]" style={{ color: el.color }}>●</span>
+                        </div>
+                      )}
+                    </div>
+                  </Tooltip>
+                );
+              })}
+            </div>
+            <p className="mt-6 text-[10px] leading-relaxed opacity-50 italic">
+              {t("dashboard.wuxing.sectionDesc").split('.')[0]}.
+            </p>
+          </div>
+
+          {/* Card 3: Interpretation */}
+          <div className="cosmic-tile p-6 flex flex-col h-full">
+            <CardHeader 
+              label={t("dashboard.bazi.sectionLabel")}
+              title={lang === "de" ? "Dein BaZi-Potenzial" : "Your BaZi Potential"}
+              icon={<MessageSquare size={12} style={{ color: 'var(--tile-accent)' }} />}
             />
+            <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar">
+              <BaZiInterpretation
+                animal={yearAnimal}
+                element={yearEl}
+                balance={wuxingBalance}
+                lang={lang}
+              />
+            </div>
           </div>
         </motion.div>
       </PremiumGate>
