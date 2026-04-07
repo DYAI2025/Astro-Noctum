@@ -779,16 +779,15 @@ div[class*="elevenlabs"] {
 
 /* Body-level overlays appended by the ElevenLabs SDK.
    z-index and position are forced so the widget always floats above page content.
-   pointer-events is intentionally NOT set here — the SDK injects interactive
-   call UI (buttons, inputs) into these divs; suppressing pointer-events would
-   break the call controls (BUG-23).                                           */
+   pointer-events is intentionally NOT set here — the SDK manages interactivity
+   dynamically, and overriding it can block page interaction in non-interactive
+   overlay states.                                                              */
 body > div[class*="eleven"],
 body > div[id*="eleven"],
 body > div[class*="convai"],
 body > div[id*="convai"] {
   z-index: 999999 !important;
   position: fixed !important;
-  pointer-events: auto !important; /* SDK injects interactive call UI here — must not be suppressed (BUG-23) */
 }
 
 /* ── Reduced Motion ──────────────────────────────────────────────── */
@@ -914,4 +913,3 @@ html, body {
     animation-duration: 3s; /* slower = fewer repaints */
   }
 }
-
