@@ -29,4 +29,15 @@ describe('BUG-23 regression — ElevenLabs overlay pointer-events', () => {
       'Found pointer-events:none on body > div[*eleven] — will break ElevenLabs call UI (BUG-23)',
     ).toBe(false);
   });
+
+  it('body-level SDK selector block must declare pointer-events:auto', () => {
+    // Affirmative guard: the block must actively permit pointer events.
+    // A negative-only check (no "none") passes if the rule is deleted entirely.
+    const requiredPattern =
+      /body\s*>\s*div\[[^\]]*eleven[^\]]*\][^{]*\{[^}]*pointer-events\s*:\s*auto/s;
+    expect(
+      requiredPattern.test(css),
+      'Missing pointer-events:auto on body > div[*eleven] — ElevenLabs SDK interactive overlays may be suppressed (BUG-23)',
+    ).toBe(true);
+  });
 });
