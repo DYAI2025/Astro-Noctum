@@ -145,6 +145,8 @@ interface BirthChartOrreryProps {
   observerLat?: number;
   /** Observer longitude override (default: Berlin 13.405) */
   observerLon?: number;
+  /** Optional shared orrery hook from parent (e.g. Dashboard) for sync */
+  orreryHook?: ReturnType<typeof useCelestialOrrery>;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -159,11 +161,13 @@ export function BirthChartOrrery({
   currentSky = false,
   observerLat: propObsLat,
   observerLon: propObsLon,
+  orreryHook,
 }: BirthChartOrreryProps) {
   const { lang, t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const hook = useCelestialOrrery(CITIES[0], birthDate);
+  const internalHook = useCelestialOrrery(CITIES[0], birthDate);
+  const hook = orreryHook || internalHook;
   const {
     viewMode, simTime, observerLat, observerLon,
     showConstellations, showConstellationNames,
