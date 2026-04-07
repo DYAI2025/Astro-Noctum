@@ -43,7 +43,7 @@ export default function FuRingPage() {
   const quizContribution = useQuizContribution(completedModuleIds);
   const spaceWeather = useSpaceWeather();
   const { signalData, refresh: refreshSignal } = useFusionSignal(userId);
-  const { dayHarmonic, nightHarmonic } = useFirstRunDaily(userId, null, signalData?.baseSignals ?? null, []);
+  const { dayHarmonic, nightHarmonic } = useFirstRunDaily(userId, null, signalData?.baseSignals ?? null, [], null);
 
   // Night-Pulse gate: weekend (Sat/Sun) → all users; weekday → Premium only.
   const activeHarmonic = useMemo(() => {

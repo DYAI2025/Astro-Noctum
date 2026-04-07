@@ -42,6 +42,8 @@ import { useDeviceLocation } from "@/src/hooks/useDeviceLocation";
 import { VibesSection } from "./dashboard/VibesSection";
 import { SkyModeToggle } from "./dashboard/SkyModeToggle";
 import { getConstellationForSign } from "../lib/astro-data/constellationFromSign";
+import { useCelestialOrrery } from "../hooks/useCelestialOrrery";
+import { CITIES } from "../lib/astronomy/data";
 
 const BirthChartOrrery = lazy(() => import("./BirthChartOrrery").then(m => ({ default: m.BirthChartOrrery })));
 
@@ -110,6 +112,17 @@ export function Dashboard({
   // ── Daily horoscope (CosmicWeatherCard data) ─────────────────
   const { horoscope, loading: horoscopeLoading, error: horoscopeError, refresh: horoscopeRefresh } =
     useDailyHoroscope(userId, apiData, quizEvents, birthYear, lang);
+
+  // ── Planetarium data ──────────────────────────────────────────────
+  const orreryDate = useMemo(() => {
+    if (!birthDate) return new Date();
+    const d = new Date(birthDate);
+    return isNaN(d.getTime()) ? new Date() : d;
+  }, [birthDate]);
+
+  // Main Celestial hook — owned by Dashboard to sync all live sections (Pulse, Gauges, Orrery)
+  const orreryHook = useCelestialOrrery(CITIES[0], orreryDate);
+  const { simTime, currentDate, isPlaying, setIsPlaying } = orreryHook;
 
   // ── Dashboard tour ────────────────────────────────────────────
   const { tourStep, next: tourNext, skip: tourSkip } = useDashboardTour(userId);
@@ -243,13 +256,6 @@ export function Dashboard({
     return () => { cancelled = true; };
   }, [userId]);
 
-  // ── Planetarium data ──────────────────────────────────────────────
-  const orreryDate = useMemo(() => {
-    if (!birthDate) return new Date();
-    const d = new Date(birthDate);
-    return isNaN(d.getTime()) ? new Date() : d;
-  }, [birthDate]);
-
   const sunSign = apiData?.western?.zodiac_sign || '';
   const birthConstellationKey = useMemo(
     () => getConstellationForSign(sunSign)?.key,
@@ -275,11 +281,14 @@ export function Dashboard({
     [profileMeta.soulprintSectors, apiData?.western?.zodiac_sign],
   );
 
+  const birthSign = apiData?.western?.zodiac_sign ?? null;
+
   const { dailyData, dayHarmonic, nightHarmonic, handleClose: handleDailyClose } = useFirstRunDaily(
     userId,
     profileMeta.birthInput,
     effectiveSoulprint,
     profileMeta.quizSectors,
+    birthSign,
     skyMode === 'current' ? currentDate.toISOString().split('T')[0] : undefined
   );
 
@@ -388,6 +397,7 @@ export function Dashboard({
                 ? (deviceLocation?.lon ?? profileMeta.birthInput?.lon)
                 : profileMeta.birthInput?.lon
             }
+            orreryHook={orreryHook}
           />
         </Suspense>
       </motion.div>

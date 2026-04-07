@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { fetchDailyExperience } from '../services/experience';
+import type { TransitInfluenceInput } from '../services/experience';
 import type { DailyResponse } from '../lib/schemas/experience';
+import { computeTodayPlanetInfluences } from '../lib/astro-data/planetInfluences';
 import {
   type DayHarmonicState,
   computeDayHarmonic,
@@ -114,6 +116,7 @@ export function useFirstRunDaily(
   birthData: BirthInput | null,
   soulprintSectors: number[] | null,
   quizSectors: number[],
+  birthSign: string | null,
   customDate?: string, // YYYY-MM-DD
 ): UseFirstRunDailyResult {
   const [dailyData, setDailyData] = useState<DailyResponse | null>(null);
@@ -165,12 +168,26 @@ export function useFirstRunDaily(
         }
 
         // 3. Fetch fresh daily experience — needed for inline TagesEnergie
+        // Compute today's transit influences (client-side ephemeris)
+        const rawInfluences = birthSign ? computeTodayPlanetInfluences(birthSign) : null;
+        const transitInfluences: TransitInfluenceInput[] = rawInfluences
+          ? Object.entries(rawInfluences).map(([planet, inf]) => ({
+              planet,
+              aspectDeg: inf.aspectDeg,
+              fieldStrength: inf.fieldStrength,
+              isResonant: inf.isResonant,
+            }))
+          : [];
+
         setLoading(true);
         const data = await fetchDailyExperience(
           birthData,
           soulprintSectors ?? Array(12).fill(0.5),
           quizSectors,
           targetDate,
+          'de-DE',
+          transitInfluences,
+          birthSign ?? '',
         );
 
         if (cancelled) return;
@@ -196,7 +213,7 @@ export function useFirstRunDaily(
     return () => {
       cancelled = true;
     };
-  }, [userId, birthData, soulprintSectors, quizSectors, customDate]);
+  }, [userId, birthData, soulprintSectors, quizSectors, birthSign, customDate]);
 
   const handleClose = useCallback(() => {
     setShowModal(false);
