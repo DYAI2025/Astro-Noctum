@@ -73,22 +73,7 @@ export function AgentSection({
     return val === key ? 'Coming Soon' : val;
   })();
 
-  // ── Load ElevenLabs widget script (once globally) ──────────────────────
-
-  useEffect(() => {
-    if (import.meta.env.MODE === 'test') return;
-    if (
-      !document.querySelector(
-        'script[src="https://unpkg.com/@elevenlabs/convai-widget-embed"]',
-      )
-    ) {
-      const s = document.createElement('script');
-      s.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed';
-      s.async = true;
-      s.type = 'text/javascript';
-      document.body.appendChild(s);
-    }
-  }, []);
+  // Script loaded globally in index.html — no lazy loading needed.
 
   // ── Handlers ───────────────────────────────────────────────────────────
 
@@ -170,7 +155,7 @@ export function AgentSection({
         {isActive ? activeDesc : description}
       </p>
 
-      {/* ── CTA Button ───────────────────────────────────────────── */}
+      {/* ── CTA ──────────────────────────────────────────────────── */}
       {!isAvailable ? (
         <Badge variant="secondary" className="opacity-70 self-start font-sans">
           {comingSoonLabel}
