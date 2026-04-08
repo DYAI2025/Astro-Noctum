@@ -52,9 +52,6 @@ function useElevenLabsWidget(agentId: string | undefined, dynamicVars: string) {
 
 interface AgentFloatingWidgetProps {
   userId: string;
-  sunSign: string;
-  zodiacAnimal: string;
-  dominantEl: string;
   isPremium: boolean;
   onUpgrade: () => void;
   onStopAudio: () => void;
@@ -63,9 +60,6 @@ interface AgentFloatingWidgetProps {
 
 export function AgentFloatingWidget({
   userId,
-  sunSign,
-  zodiacAnimal,
-  dominantEl,
   isPremium,
   onUpgrade,
   onStopAudio,
@@ -89,10 +83,7 @@ export function AgentFloatingWidget({
     isPremium && isActive && activeAgentConfig
       ? (import.meta.env[activeAgentConfig.envKey] as string | undefined)
       : undefined;
-  const dynamicVars = JSON.stringify({
-    user_id: userId,
-    chart_context: `${sunSign} / ${zodiacAnimal} / ${dominantEl}`,
-  });
+  const dynamicVars = JSON.stringify({ user_id: userId });
   useElevenLabsWidget(widgetAgentId, dynamicVars);
 
   // Script is loaded globally in index.html — no lazy loading needed here.
