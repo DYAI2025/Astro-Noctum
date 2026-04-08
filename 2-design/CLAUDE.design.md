@@ -31,6 +31,8 @@ This phase defines **how** we're building the system. Focus on architecture, dat
 | [DEC-top-3-weekly-focus](decisions/DEC-top-3-weekly-focus.md) | Weekly Insights highlights exactly 3 life areas as focus | When designing the Weekly Insights layout or prioritization algorithm |
 | [DEC-design-system-v2](decisions/DEC-design-system-v2.md) | Unified design system with dark/bright mode tokens | When creating or modifying any UI component, color, spacing, or typography |
 | [DEC-spiritual-tech-interactions](decisions/DEC-spiritual-tech-interactions.md) | Spiritual Tech interaction philosophy (transitions, errors, loading) | When writing error handling UI, adding animations, designing loading states |
+| [DEC-dashboard-volatile-first](decisions/DEC-dashboard-volatile-first.md) | Dashboard section ordering: volatile/live content above static natal data | When modifying Dashboard.tsx render order or adding a new Dashboard section |
+| [DEC-fusion-bazi-sheng-ke](decisions/DEC-fusion-bazi-sheng-ke.md) | Planet-to-Wu-Xing mapping + Sheng/Ke resonance algorithm (locked) | When implementing or modifying fusion-bazi/resonance.ts or any planet-element mapping |
 | [DEC-vibes-gemini-strategy](decisions/DEC-vibes-gemini-strategy.md) | Gemini for Vibes and Weekly Insights generation with two-level caching | When modifying Vibes/Weekly generation logic, model, prompts, or cache strategy |
 | [DEC-navigation-shell](decisions/DEC-navigation-shell.md) | Top bar: 3 primary items + Settings menu; horizontal bar preserved; mobile responsive | When adding nav items, implementing top bar or Settings, or making mobile layout decisions |
 

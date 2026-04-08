@@ -395,6 +395,32 @@ V3 engine tasks (pole system, trail renderer, dissonance wiring, feature flag) w
 4. TASK-engagement-fluidity
 5. TASK-phase-e-manual-testing
 
+### Phase H: Dashboard Live Signals & BaZi Fusion
+
+**Capabilities delivered:**
+- Dashboard renders volatile content first: Day Pulse events (verbatim from BAFE) always expanded at top
+- Every planet card shows live Western ephemeris data (degree, sign, retrograde) AND a BaZi fusion block (Wu-Xing element, Sheng/Ke resonance, German interpretation) — no hardcoded values anywhere
+- Geomagnetic storm card appears automatically when Kp ≥ 4
+- Static natal data (Western chart, BaZi pillars, Wu-Xing) moved to collapsed section at bottom
+- `InfluenceGauges.tsx` and `transit.ts` dead code deleted
+- Core brand promise fulfilled: Western + BaZi fused at render time, not shown in silos
+
+**Tasks:**
+1. TASK-fusion-bazi-resonance-module
+2. TASK-fusion-bazi-resonance-tests
+3. TASK-transit-now-hook
+4. TASK-transit-state-hook
+5. TASK-daily-transit-hook
+6. TASK-transit-dead-code-delete
+7. TASK-influence-gauges-delete
+8. TASK-day-pulse-expanded
+9. TASK-aktive-einfluesse-fusion
+10. TASK-magnetsturm-karte
+11. TASK-natal-signatur-static
+12. TASK-dashboard-live-reorder
+
+---
+
 ### Phase F: Partnership Features (Blocked)
 
 Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tasks tracked in GitHub Issues (#115, #117, #118, #119, #123, #124, #129, #130, #132, #136). Will be added once OQs are resolved.
@@ -524,6 +550,18 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | TASK-mobile-readability-vibes | Optimize VibesModal for 375px: Level 1+2 above fold, ≥14px, ≥1.5 line-height | P1 | Done | [REQ-USA-mobile-first-readability](../1-objectives/requirements/REQ-USA-mobile-first-readability.md) | TASK-vibes-result-modal | 2026-04-06 | |
 | TASK-mobile-readability-weekly | Optimize WeeklyInsightsPage for 375px: top-3 above fold | P1 | Done | [REQ-USA-mobile-first-readability](../1-objectives/requirements/REQ-USA-mobile-first-readability.md) | TASK-weekly-insights-page | 2026-04-06 | |
 | TASK-vibes-weekly-manual-testing | Create runbook: Vibes + Weekly manual verification — mobile readability, no bare numbers, guard smoke test | P1 | Done | [REQ-USA-mobile-first-readability](../1-objectives/requirements/REQ-USA-mobile-first-readability.md), [REQ-F-transparency-rule](../1-objectives/requirements/REQ-F-transparency-rule.md) | TASK-vibes-weekly-e2e-test, TASK-mobile-readability-weekly | 2026-04-06 | docs/runbooks/vibes-weekly-v3-manual-verification.md |
+| TASK-fusion-bazi-resonance-module | Create `src/lib/fusion-bazi/resonance.ts` — pure function: maps 7 planets to Wu-Xing elements, evaluates Sheng/Ke resonance against user's Day Master stem, returns `ResonanceResult` with type, intensity, German quote | P1 | Todo | [REQ-F-dashboard-bazi-fusion-bridge](../1-objectives/requirements/REQ-F-dashboard-bazi-fusion-bridge.md) | - | 2026-04-08 | DEC-fusion-bazi-sheng-ke: mappings locked. No IO, no side effects. 4 resonance types: gleichklang, naehrung, kontrolle, neutral |
+| TASK-fusion-bazi-resonance-tests | Write unit tests in `src/lib/fusion-bazi/__tests__/resonance.test.ts` covering all 6 resonance branches with concrete planet+stem pairs | P1 | Todo | [REQ-F-dashboard-bazi-fusion-bridge](../1-objectives/requirements/REQ-F-dashboard-bazi-fusion-bridge.md) | TASK-fusion-bazi-resonance-module | 2026-04-08 | Min 6 tests: gleichklang, sheng-fwd, sheng-bwd, ke-fwd, ke-bwd, neutral |
+| TASK-transit-now-hook | Create `src/hooks/useTransitNow.ts` — fetches `GET /transit/now`, returns `sector_intensity[12]`, 5-min in-memory cache | P1 | Todo | [REQ-F-dashboard-live-daily-signals](../1-objectives/requirements/REQ-F-dashboard-live-daily-signals.md) | - | 2026-04-08 | Check if project uses React Query/SWR first; use existing pattern if so |
+| TASK-transit-state-hook | Create `src/hooks/useTransitState.ts` — posts `{soulprint_sectors, quiz_sectors}` to `/transit/state`, returns `events[]` + `transit_contribution`, 15-min cache keyed on input hash | P1 | Todo | [REQ-F-dashboard-live-daily-signals](../1-objectives/requirements/REQ-F-dashboard-live-daily-signals.md) | TASK-transit-now-hook | 2026-04-08 | |
+| TASK-daily-transit-hook | Create `src/hooks/useDailyTransit.ts` — posts today's date + user tz/lat/lon to `/calculate/western`, returns `bodies{}` + `aspects[]`, 1-hour cache keyed on date string | P1 | Todo | [REQ-F-dashboard-live-daily-signals](../1-objectives/requirements/REQ-F-dashboard-live-daily-signals.md) | TASK-transit-state-hook | 2026-04-08 | User tz/lat/lon from AppLayoutContext or browser fallback |
+| TASK-transit-dead-code-delete | Delete `src/lib/fusion-ring/transit.ts` — confirm zero external imports first: `grep -rn "fusion-ring/transit" src/` | P1 | Todo | - | TASK-daily-transit-hook | 2026-04-08 | If any callers found, migrate them to the new hooks before deleting |
+| TASK-day-pulse-expanded | Build `src/components/dashboard/DayPulseExpanded.tsx` — always-expanded section: Day Pulse/Trace mode from `useFusionSignal()`, today's event text from `useTransitState().events[0].description_de` + `.personal_context` verbatim, fallback "Heute keine markanten Ereignisse. Nutze die Ruhe." | P1 | Todo | [REQ-F-dashboard-live-daily-signals](../1-objectives/requirements/REQ-F-dashboard-live-daily-signals.md) | TASK-transit-state-hook | 2026-04-08 | No accordion, no collapse. Brand voice: Du, no Horoskop/Schicksal |
+| TASK-aktive-einfluesse-fusion | Build `src/components/dashboard/AktiveEinfluesseFusion.tsx` — 6 planet cards, each with Western block (degree, sign, retrograde) from `useDailyTransit()` and BaZi block (element, resonance type badge, German quote) from `calculatePlanetBaziResonance()` | P1 | Todo | [REQ-F-dashboard-bazi-fusion-bridge](../1-objectives/requirements/REQ-F-dashboard-bazi-fusion-bridge.md), [REQ-F-dashboard-live-daily-signals](../1-objectives/requirements/REQ-F-dashboard-live-daily-signals.md) | TASK-fusion-bazi-resonance-module, TASK-daily-transit-hook | 2026-04-08 | Source comment above every rendered value. Skeleton when loading. DEC-fusion-bazi-sheng-ke, DEC-no-number-without-explanation |
+| TASK-magnetsturm-karte | Build `src/components/dashboard/MagnetsturmKarte.tsx` — renders only when `useSpaceWeather().kpIndex >= 4`; shows Kp value + G-class, solar wind speed, Bz; G3+ pulse border animation | P1 | Todo | [REQ-F-dashboard-live-daily-signals](../1-objectives/requirements/REQ-F-dashboard-live-daily-signals.md) | TASK-transit-state-hook | 2026-04-08 | Self-hides (returns null) when kp < 4. No placeholder card. |
+| TASK-natal-signatur-static | Build `src/components/dashboard/NatalSignaturStatic.tsx` — collapsed accordion wrapping existing AstroAccordion + BaZiFourPillars + WuXing components; header "Deine Natal-Signatur (statisch)" | P1 | Todo | [REQ-F-dashboard-live-daily-signals](../1-objectives/requirements/REQ-F-dashboard-live-daily-signals.md) | - | 2026-04-08 | No data changes — layout reorganization only |
+| TASK-dashboard-live-reorder | Rewrite `Dashboard.tsx` render order to: DayPulseExpanded → AktiveEinfluesseFusion → MagnetsturmKarte → NatalSignaturStatic; remove InfluenceGauges import | P1 | Todo | [REQ-F-dashboard-live-daily-signals](../1-objectives/requirements/REQ-F-dashboard-live-daily-signals.md) | TASK-day-pulse-expanded, TASK-aktive-einfluesse-fusion, TASK-magnetsturm-karte, TASK-natal-signatur-static, TASK-influence-gauges-delete | 2026-04-08 | DEC-dashboard-volatile-first: ordering is a product contract |
+| TASK-influence-gauges-delete | Delete `src/components/dashboard/InfluenceGauges.tsx` — confirm only Dashboard.tsx imports it before deletion | P1 | Todo | - | TASK-fusion-bazi-resonance-module | 2026-04-08 | `grep -rn "InfluenceGauges" src/` must return only Dashboard.tsx |
 
 ## API Server
 
@@ -532,7 +570,7 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | TASK-fuffire-experience-api | Wire `/experience/bootstrap` + `/experience/signature-delta` in server.mjs; replace direct BAFE calls | P1 | Done | [REQ-F-cosmic-encounter-onboarding](../1-objectives/requirements/REQ-F-cosmic-encounter-onboarding.md) | - | 2026-03-28 | FuFirE live at bafe-production.up.railway.app |
 | TASK-levi-system-prompt | Configure ElevenLabs agent with Signatur V2 knowledge base | P1 | Done | - | - | 2026-03-30 | Enhanced /api/profile with dominant_element, signatur_summary, day_mode, vibes_summary | - | - | 2026-03-28 | See docs/LEVI_SIGNATUR_V2_KNOWLEDGE.md |
 | TASK-levi-auto-summary | Auto-summarize user profile after 3 Levi sessions via /api/agent/summary | P2 | Done | - | TASK-levi-system-prompt | 2026-03-30 | Gemini synthesis + agent_summary column | - | TASK-levi-system-prompt | 2026-03-28 | |
-| TASK-eve-brand-safety-review | Review Eve system prompt for brand safety before production launch | P1 | Todo | [REQ-SEC-eve-brand-safety](../1-objectives/requirements/REQ-SEC-eve-brand-safety.md) | - | 2026-03-29 | Needs Ben's sign-off on persona tone |
+| TASK-eve-brand-safety-review | Review Eve system prompt for brand safety before production launch | P1 | Done | [REQ-SEC-eve-brand-safety](../1-objectives/requirements/REQ-SEC-eve-brand-safety.md) | - | 2026-04-08 | Reviewed + approved by Ben 2026-04-08. 2 minor calibrations applied in ElevenLabs dashboard. docs/eve-brand-safety-checklist.md updated. |
 | TASK-agent-extensibility-verify | Verify adding 3rd agent requires config-only change (no structural code) | P2 | Todo | [REQ-MNT-agent-extensibility](../1-objectives/requirements/REQ-MNT-agent-extensibility.md) | - | 2026-03-29 | Smoke test: add mock agent to config, confirm renders |
 | TASK-vibes-api-endpoint | Create `/api/vibes`: soulprint + transit + space weather → Gemini → 3-level JSON | P1 | Done | [REQ-F-vibes-core](../1-objectives/requirements/REQ-F-vibes-core.md) | - | 2026-03-30 | Implemented in Phase V1 | [REQ-F-vibes-core](../1-objectives/requirements/REQ-F-vibes-core.md) | - | 2026-03-30 | Reuses existing transit-state + space weather data |
 | TASK-vibes-gemini-prompt | Design Gemini prompt: 3-level structure, resource-oriented, no bare numbers, German | P1 | Done | [REQ-F-vibes-output-structure](../1-objectives/requirements/REQ-F-vibes-output-structure.md) | TASK-vibes-api-endpoint | 2026-03-30 | | [REQ-F-vibes-output-structure](../1-objectives/requirements/REQ-F-vibes-output-structure.md) | TASK-vibes-api-endpoint | 2026-03-30 | |

@@ -29,3 +29,4 @@
 - Requirements: [REQ-F-signatur-density-field](../requirements/REQ-F-signatur-density-field.md)
 - Requirements: [REQ-F-signatur-ios-swift](../requirements/REQ-F-signatur-ios-swift.md)
 - Requirements: [REQ-PERF-signatur-performance](../requirements/REQ-PERF-signatur-performance.md)
+- Requirements: [REQ-F-dashboard-bazi-fusion-bridge](../requirements/REQ-F-dashboard-bazi-fusion-bridge.md)
