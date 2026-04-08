@@ -8,6 +8,8 @@ import { beginCheckout } from "../lib/checkout";
 import { authedFetch } from "../lib/api";
 import { useSpaceWeather } from "../hooks/useSpaceWeather";
 import { useDailyHoroscope } from "../hooks/useDailyHoroscope";
+import { useVibes } from "../hooks/useVibes";
+import { useWeeklyInsights } from "../hooks/useWeeklyInsights";
 import type { RootStackParamList } from "../navigation/RootNavigator";
 
 type Navigation = NativeStackNavigationProp<RootStackParamList>;
@@ -19,6 +21,10 @@ export function DashboardScreen() {
   const { daily, loading: dailyLoading } = useDailyHoroscope(profile);
   const [busyCheckout, setBusyCheckout] = useState(false);
   const [busyShare, setBusyShare] = useState(false);
+  const [showVibesLevel3, setShowVibesLevel3] = useState(false);
+  const [showWeekly, setShowWeekly] = useState(false);
+  const vibes = useVibes();
+  const weekly = useWeeklyInsights();
 
   const summary = useMemo(() => {
     const sun = profile?.sun_sign || "-";
@@ -141,6 +147,103 @@ export function DashboardScreen() {
         )}
       </View>
 
+      {/* ── Vibes Card ───────────────────────────────────────────── */}
+      <View style={styles.card}>
+        <Text style={styles.kicker}>Vibe — Dein Jetzt-Impuls</Text>
+
+        {/* Level 1 + Level 2 always above fold on 375px (REQ-USA-mobile-first-readability) */}
+        {vibes.data ? (
+          <>
+            {/* Source: /api/vibes → level1.text (Kurzsignal) */}
+            <Text style={styles.vibesLevel1}>{vibes.data.level1.text}</Text>
+
+            {/* Source: /api/vibes → level2.text (Treiber) */}
+            <Text style={[styles.body, { marginTop: 4 }]}>{vibes.data.level2.text}</Text>
+
+            {/* Level 3 behind "Warum?" tap */}
+            {vibes.data.level3 && (
+              <Pressable onPress={() => setShowVibesLevel3(v => !v)} style={{ marginTop: 8 }}>
+                <Text style={styles.vibesWhy}>{showVibesLevel3 ? 'Weniger' : 'Warum sehe ich das? →'}</Text>
+              </Pressable>
+            )}
+            {showVibesLevel3 && vibes.data.level3 && (
+              /* Source: /api/vibes → level3.text (Erklärung) */
+              <Text style={[styles.body, styles.vibesLevel3]}>{vibes.data.level3.text}</Text>
+            )}
+
+            {vibes.cooldown && (
+              <Text style={styles.vibesCooldown}>
+                Nächster Vibe ab {new Date(vibes.cooldown).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr
+              </Text>
+            )}
+          </>
+        ) : vibes.error ? (
+          <Text style={styles.errorText}>{vibes.error}</Text>
+        ) : (
+          <Text style={[styles.body, { opacity: 0.5 }]}>Hol dir deinen persönlichen Vibe für die nächsten 2 Stunden.</Text>
+        )}
+
+        <Pressable
+          style={[styles.vibesButton, vibes.loading && { opacity: 0.5 }]}
+          onPress={vibes.fetch}
+          disabled={vibes.loading}
+        >
+          <Text style={styles.vibesButtonText}>
+            {vibes.loading ? 'Analysiere...' : vibes.data ? 'Neu laden' : 'Vibe abrufen'}
+          </Text>
+        </Pressable>
+      </View>
+
+      {/* ── Weekly Insights Card ──────────────────────────────────── */}
+      <View style={styles.card}>
+        <Text style={styles.kicker}>Deine Woche — {weekly.data?.week_label ?? 'Wochenimpulse'}</Text>
+
+        {weekly.data ? (
+          <>
+            {/* Top-3 above fold (REQ-USA-mobile-first-readability) */}
+            {weekly.data.areas
+              .slice(0, showWeekly ? undefined : 3)
+              .map((area, i) => (
+                <View key={area.area} style={[
+                  styles.weeklyArea,
+                  area.isTopThree && styles.weeklyAreaTop,
+                ]}>
+                  {area.isTopThree && (
+                    <Text style={styles.weeklyTopBadge}># {i + 1}</Text>
+                  )}
+                  <Text style={styles.weeklyAreaLabel}>{area.area}</Text>
+                  {/* Source: /api/weekly-insights → areas[].tendency */}
+                  <Text style={styles.weeklyTendency}>{area.tendency}</Text>
+                  {/* Source: /api/weekly-insights → areas[].statement (Gemini) */}
+                  <Text style={[styles.body, { marginTop: 2 }]}>{area.statement}</Text>
+                </View>
+              ))}
+
+            {weekly.data.areas.length > 3 && (
+              <Pressable onPress={() => setShowWeekly(v => !v)} style={{ marginTop: 4 }}>
+                <Text style={styles.vibesWhy}>
+                  {showWeekly ? 'Weniger anzeigen' : `Alle ${weekly.data!.areas.length} Bereiche →`}
+                </Text>
+              </Pressable>
+            )}
+          </>
+        ) : weekly.error ? (
+          <Text style={styles.errorText}>{weekly.error}</Text>
+        ) : (
+          <Text style={[styles.body, { opacity: 0.5 }]}>7 Lebensbereiche — Trends für diese Woche.</Text>
+        )}
+
+        <Pressable
+          style={[styles.vibesButton, weekly.loading && { opacity: 0.5 }]}
+          onPress={weekly.fetch}
+          disabled={weekly.loading}
+        >
+          <Text style={styles.vibesButtonText}>
+            {weekly.loading ? 'Lade Insights...' : weekly.data ? 'Aktualisieren' : 'Woche laden'}
+          </Text>
+        </Pressable>
+      </View>
+
       <Pressable style={styles.signaturButton} onPress={() => navigation.getParent()?.navigate("Signatur")}>
         <Text style={styles.signaturText}>Zur Signatur</Text>
       </Pressable>
@@ -202,6 +305,76 @@ const styles = StyleSheet.create({
     color: "#d0dae8",
     lineHeight: 22,
     fontSize: 14,
+  },
+  // ── Vibes styles ────────────────────────────────────────────────────────
+  vibesLevel1: {
+    color: "#f5f8fd",
+    fontSize: 18,
+    fontWeight: "700",
+    lineHeight: 26,
+  },
+  vibesLevel3: {
+    fontStyle: "italic",
+    opacity: 0.75,
+  },
+  vibesWhy: {
+    color: "#d4af37",
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  vibesCooldown: {
+    color: "#8fa0bc",
+    fontSize: 12,
+    marginTop: 4,
+  },
+  vibesButton: {
+    marginTop: 12,
+    minHeight: 48,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#d4af3755",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  vibesButtonText: {
+    color: "#d4af37",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  // ── Weekly Insights styles ───────────────────────────────────────────
+  weeklyArea: {
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#1a2636",
+    gap: 2,
+  },
+  weeklyAreaTop: {
+    borderLeftWidth: 3,
+    borderLeftColor: "#d4af37",
+    paddingLeft: 10,
+    marginLeft: -2,
+  },
+  weeklyTopBadge: {
+    color: "#d4af37",
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1,
+  },
+  weeklyAreaLabel: {
+    color: "#f5f8fd",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  weeklyTendency: {
+    color: "#8fa0bc",
+    fontSize: 12,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+  },
+  errorText: {
+    color: "#ef4444",
+    fontSize: 13,
+    lineHeight: 20,
   },
   signaturButton: {
     minHeight: 52,

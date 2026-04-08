@@ -334,6 +334,12 @@ setInterval(() => {
 }, 60 * 60 * 1000);
 
 // ── Retry + Timeout constants ────────────────────────────────────────
+// Single source of truth for valid agent IDs.
+// To add a 3rd agent: set AGENT_IDS=levi,eve,oracle in env (REQ-MNT-agent-extensibility).
+const VALID_AGENT_TYPES = process.env.AGENT_IDS
+  ? process.env.AGENT_IDS.split(',').map(s => s.trim()).filter(Boolean)
+  : ['levi', 'eve'];
+
 const RETRY_ATTEMPTS = 3;
 const RETRY_BASE_MS = 200;
 const FETCH_TIMEOUT_MS = 10_000;
@@ -3714,8 +3720,7 @@ app.get("/api/profile/:userId", async (req, res) => {
 
   const { userId } = req.params;
 
-  // Determine which agent is requesting the profile (levi or eve)
-  const VALID_AGENT_TYPES = ['levi', 'eve'];
+  // Determine which agent is requesting the profile — uses global VALID_AGENT_TYPES (REQ-MNT-agent-extensibility)
   const rawAgentType = req.query.agent_type ?? req.query.agent;
   const agentType = rawAgentType === undefined ? 'levi' : String(rawAgentType);
   if (!VALID_AGENT_TYPES.includes(agentType)) {
@@ -3941,8 +3946,7 @@ app.post("/api/agent/conversation", async (req, res) => {
     return res.status(400).json({ error: "user_id and summary are required" });
   }
 
-  // Validate agent_type — default to 'levi' for backward compatibility
-  const VALID_AGENT_TYPES = ['levi', 'eve'];
+  // Validate agent_type — default to 'levi' for backward compatibility. Uses global VALID_AGENT_TYPES.
   const resolvedAgentType = agent_type === undefined ? 'levi' : agent_type;
   if (!VALID_AGENT_TYPES.includes(resolvedAgentType)) {
     return res.status(400).json({ error: 'invalid_agent_type' });
