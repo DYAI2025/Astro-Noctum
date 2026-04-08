@@ -1,28 +1,11 @@
 import { describe, it, expect } from 'vitest';
+import { wuxingToSoulprint } from '../../packages/shared/src/fusion-bazi/soulprint';
 
 /**
- * Unit tests for OnboardingScreen's wuxingToSoulprint pure function.
- * Inlined here to avoid React Native rendering complexity in the web test runner.
  * Tests cover REQ-F-cosmic-encounter-onboarding: mobile onboarding soulprint derivation.
+ * wuxingToSoulprint lives in packages/shared/src/fusion-bazi/soulprint.ts — single source
+ * of truth shared by OnboardingScreen.tsx and this test file.
  */
-function wuxingToSoulprint(elements: {
-  Wood?: number; Fire?: number; Earth?: number; Metal?: number; Water?: number;
-}): number[] {
-  const e = [
-    Number(elements.Wood  || 0),
-    Number(elements.Fire  || 0),
-    Number(elements.Earth || 0),
-    Number(elements.Metal || 0),
-    Number(elements.Water || 0),
-  ];
-  const total = e.reduce((s, v) => s + v, 0) || 1;
-  const sectorMap = [1, 2, 2, 4, 1, 2, 3, 4, 1, 2, 3, 4];
-  return sectorMap.map((elIdx, i) => {
-    const base = e[elIdx] / total;
-    const jitter = 0.05 * Math.sin(i * 2.7);
-    return Math.max(0.05, base + jitter);
-  });
-}
 
 describe('wuxingToSoulprint', () => {
   it('always returns exactly 12 sectors', () => {

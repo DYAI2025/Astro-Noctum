@@ -27,6 +27,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { calculateAll, generateInterpretation } from "../lib/reading";
 import { persistReading } from "../lib/profile";
 import { SignaturCanvas } from "../components/SignaturCanvas";
+import { wuxingToSoulprint } from "@bazodiac/shared";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -35,32 +36,6 @@ type OnboardingPhase = 'birth-input' | 'calculating' | 'ring-reveal';
 type Props = {
   onCompleted: () => Promise<void>;
 };
-
-// ── Soulprint derivation (mirrors FuRingScreen.generateFallbackSectors) ───────
-
-/**
- * Derive 12 soulprint sectors from Wu-Xing element scores.
- * Maps 5 elements → 12 zodiac sectors using traditional element-sign affinity.
- */
-function wuxingToSoulprint(elements: {
-  Wood?: number; Fire?: number; Earth?: number; Metal?: number; Water?: number;
-}): number[] {
-  const e = [
-    Number(elements.Wood  || 0),   // 0 Wood
-    Number(elements.Fire  || 0),   // 1 Fire
-    Number(elements.Earth || 0),   // 2 Earth
-    Number(elements.Metal || 0),   // 3 Metal
-    Number(elements.Water || 0),   // 4 Water
-  ];
-  const total = e.reduce((s, v) => s + v, 0) || 1;
-  // Sector → element affinity (same as generateFallbackSectors in FuRingScreen)
-  const sectorMap = [1, 2, 2, 4, 1, 2, 3, 4, 1, 2, 3, 4];
-  return sectorMap.map((elIdx, i) => {
-    const base = e[elIdx] / total;
-    const jitter = 0.05 * Math.sin(i * 2.7);
-    return Math.max(0.05, base + jitter);
-  });
-}
 
 // ── Animated orb backdrop (CosmicEncounterMobile equivalent) ─────────────────
 
