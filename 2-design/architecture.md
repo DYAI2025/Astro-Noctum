@@ -237,6 +237,9 @@ Individuation thresholds: >= 0.60 strongly individual, >= 0.30 distinctly person
 | Space weather (NASA DONKI) | 15 minutes | In-memory |
 | Space weather extended (NOAA+DONKI) | 5 minutes | In-memory |
 | Transit state | No-store | Fallback to profile-derived data |
+| Transit now (`/transit/now`) | 5 min | In-memory |
+| Transit state (`/transit/state`) | 15 min | In-memory, keyed on soulprint+quiz hash |
+| Daily western transit | 1 hour | In-memory, keyed on date string |
 | Vibes result | Cooldown-based | In-memory (L1) + Supabase vibes_cache (L2) |
 | Weekly Insights | ISO week boundary | In-memory (L1) + Supabase weekly_insights_cache (L2) |
 
@@ -295,6 +298,80 @@ Weekly Insights computes a 7-life-area outlook for the current ISO week. The top
 - Engine version: `v1-gemini-weekly`
 
 **Top-3 determinism**: Area ranking is derived from the soulprint × transit blend score, not randomized. Deterministic: same user + same week → same top-3. (`DEC-top-3-weekly-focus`)
+
+---
+
+## Dashboard Live Signals Architecture
+
+**Requirements**: `REQ-F-dashboard-live-daily-signals`, `REQ-F-dashboard-bazi-fusion-bridge`
+
+The Dashboard renders content in strict volatile-first order. Static natal data (Western chart, BaZi pillars, Wu-Xing balance) is always placed last and collapsed by default (`DEC-dashboard-volatile-first`).
+
+### Content Ordering (top → bottom)
+
+| Position | Section | Visibility rule |
+|----------|---------|-----------------|
+| 1 | `DayPulseExpanded` — today's transit events, Day Pulse/Trace mode | Always visible, always expanded |
+| 2 | `AktiveEinfluesseFusion` — 6 planet cards, each with Western + BaZi block | Always visible |
+| 3 | `MagnetsturmKarte` — geomagnetic storm card | Self-hides when Kp < 4 |
+| 4 | `NatalSignaturStatic` — Western chart, BaZi pillars, Wu-Xing | Collapsed by default |
+
+### New Data Hooks
+
+Three new hooks provide live transit data, all fetching from BAFE endpoints:
+
+| Hook | BAFE source | Cache TTL | Output |
+|------|-------------|-----------|--------|
+| `useTransitNow()` | `GET /transit/now` | 5 min (in-memory) | `sector_intensity[12]` |
+| `useTransitState(soulprint, quiz)` | `POST /transit/state` | 15 min, keyed on input hash | `events[]`, `transit_contribution` |
+| `useDailyTransit(date, tz, lat, lon)` | `POST /calculate/western` with today's date | 1 hour, keyed on date | `bodies{}`, `aspects[]` |
+
+`events[].description_de` and `events[].personal_context` are rendered verbatim — the client must not rewrite or re-template these server-generated texts.
+
+### fusion-bazi/resonance.ts — Pure Module
+
+**Location**: `src/lib/fusion-bazi/resonance.ts` (Layer 1 — Obsidian Core)
+
+Maps each of the 7 traditional planets to a Wu-Xing element and computes resonance against the user's BaZi Day Master stem via the Sheng (generating) and Ke (controlling) cycles (`DEC-fusion-bazi-sheng-ke`). This is the core brand differentiator: Western transit data and BaZi tradition are fused at calculation time, not displayed in parallel silos.
+
+```
+Planet → Wu-Xing element (traditional Chinese astronomy)
+         ↓
+   Sheng/Ke cycle evaluation vs. user's Day Master element
+         ↓
+   ResonanceResult { type, intensity, planetElement, dayMasterElement, quote (DE) }
+```
+
+Properties:
+- **Pure function, no IO, no side effects** — same inputs always produce the same result
+- **Fully tested** — all 5 resonance types have unit test coverage with concrete planet + stem pairs
+- **German quote strings** — brand-voice compliant (no "Sie", "Horoskop", "Schicksal")
+
+### Dashboard Data Flow
+
+```
+useDailyTransit() ─────────────────────────────────┐
+  (POST /calculate/western, date=today)             │
+  → bodies{ planet: {degree, sign, retrograde} }   │
+                                                    ├──> AktiveEinfluesseFusion
+useTransitState(soulprint, quiz) ───────────────────┤    (6 planet cards)
+  (POST /transit/state)                             │
+  → events[], transit_contribution                  │
+         │                                          │
+         └──> DayPulseExpanded                     │
+              (description_de, personal_context)   │
+                                                   │
+apiData.bazi.pillars.day.stem ──> fusion-bazi/ ────┘
+  (Day Master HeavenlyStem)       resonance.ts
+                                  → ResonanceResult
+                                    per planet card
+
+useSpaceWeather() ──────────────> MagnetsturmKarte
+  (kpIndex >= 4 → visible)
+
+apiData.{bazi,western,wuxing} ──> NatalSignaturStatic
+  (static, collapsed by default)
+```
 
 ---
 
@@ -385,5 +462,7 @@ The quiz generator pipeline defines a formal, reusable mapping from quiz answers
 - [`DEC-top-3-weekly-focus`](decisions/DEC-top-3-weekly-focus.md) — Weekly Insights highlights top-3 life areas
 - [`DEC-design-system-v2`](decisions/DEC-design-system-v2.md) — Unified design system with dark/bright mode tokens
 - [`DEC-spiritual-tech-interactions`](decisions/DEC-spiritual-tech-interactions.md) — Spiritual Tech interaction philosophy
+- [`DEC-dashboard-volatile-first`](decisions/DEC-dashboard-volatile-first.md) — Dashboard section ordering: volatile/live content always above static natal data
+- [`DEC-fusion-bazi-sheng-ke`](decisions/DEC-fusion-bazi-sheng-ke.md) — Planet-to-Wu-Xing-element mapping + Sheng/Ke resonance algorithm (locked)
 - [`archive/TRUENORTH.md`](../archive/TRUENORTH.md) — Three-layer autopoietic model and five governing laws
 - `bazodiac_engine/ARCHITECTURE.md` — Signal engine internals and projection modules

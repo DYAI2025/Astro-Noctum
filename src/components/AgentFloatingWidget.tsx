@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Phone, PhoneOff, Minimize2, Maximize2, Lock } from 'lucide-react';
 import { useAgent } from '../contexts/AgentContext';
@@ -8,48 +7,42 @@ import { AGENTS } from '@/packages/shared/src/agents/config';
 import type { AgentId } from '@/packages/shared/src/agents/config';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ElevenLabs portal — rendered at document.body level to escape all
-// transform/backdrop-filter ancestors that would trap Shadow DOM popups.
+// useElevenLabsWidget
+//
+// Mounts <elevenlabs-convai> via direct document.body.appendChild — NOT via
+// React createPortal. This is the only reliable way to escape Framer Motion's
+// will-change:transform stacking context, which was trapping the widget's
+// shadow-DOM fixed overlays (ToC, call screen) behind our own UI.
 // ─────────────────────────────────────────────────────────────────────────────
-function ElevenLabsPortal({
-  agentId,
-  userId,
-  sunSign,
-  zodiacAnimal,
-  dominantEl,
-}: {
-  agentId: string;
-  userId: string;
-  sunSign: string;
-  zodiacAnimal: string;
-  dominantEl: string;
-}) {
-  return createPortal(
-    <div
-      style={{
-        position: 'fixed',
-        // Match the panel's visual position so the web component's own internal
-        // button/popup anchors itself relative to the correct corner.
-        // calc() accounts for the iOS home indicator (env(safe-area-inset-bottom)).
-        bottom: 'calc(88px + env(safe-area-inset-bottom))',
-        right: '16px',
-        zIndex: 99999,
-        pointerEvents: 'none',
-      }}
-    >
-      <div style={{ pointerEvents: 'auto' }}>
-        <elevenlabs-convai
-          agent-id={agentId}
-          dynamic-variables={JSON.stringify({
-            user_id: userId,
-            chart_context: `${sunSign} / ${zodiacAnimal} / ${dominantEl}`,
-          })}
-        />
-      </div>
-    </div>,
-    document.body,
-  );
+// Exact pattern recommended by ElevenLabs support:
+// mount on agentId truthy, unmount on agentId undefined.
+// dynamic-variables updated in-place to avoid remounts.
+function useElevenLabsWidget(agentId: string | undefined, dynamicVars: string) {
+  useEffect(() => {
+    if (!agentId) return;
+
+    const widget = document.createElement('elevenlabs-convai');
+    widget.setAttribute('agent-id', agentId);
+    widget.setAttribute('always-expanded', '');
+    widget.setAttribute('dynamic-variables', dynamicVars);
+    document.body.appendChild(widget);
+
+    return () => {
+      if (document.body.contains(widget)) {
+        document.body.removeChild(widget);
+      }
+    };
+  // dynamicVars excluded: apiData loads async and would cause constant remounts
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agentId]);
+
+  // Update dynamic-variables in-place (no remount needed)
+  useEffect(() => {
+    const el = document.querySelector(`elevenlabs-convai[agent-id="${agentId}"]`) as HTMLElement | null;
+    if (el) el.setAttribute('dynamic-variables', dynamicVars);
+  }, [agentId, dynamicVars]);
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // AgentFloatingWidget — Global floating voice agent pill
@@ -82,30 +75,31 @@ export function AgentFloatingWidget({
     useAgent();
   const { t } = useLanguage();
 
+  // Derive active state early so effects below can reference it
+  const isActive = activeAgent !== null && agentStates[activeAgent]?.active;
+
   // Auto-expand when a call becomes active
   useEffect(() => {
     if (activeAgent !== null) setWidgetExpanded(true);
   }, [activeAgent, setWidgetExpanded]);
 
-  // Load ElevenLabs widget script once globally
-  useEffect(() => {
-    if (
-      !document.querySelector(
-        'script[src="https://unpkg.com/@elevenlabs/convai-widget-embed"]',
-      )
-    ) {
-      const s = document.createElement('script');
-      s.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed';
-      s.async = true;
-      s.type = 'text/javascript';
-      document.body.appendChild(s);
-    }
-  }, []);
+  // Compute agentId: only set when premium + active — this controls mount/unmount.
+  const activeAgentConfig = activeAgent ? AGENTS.find(a => a.id === activeAgent) : undefined;
+  const widgetAgentId =
+    isPremium && isActive && activeAgentConfig
+      ? (import.meta.env[activeAgentConfig.envKey] as string | undefined)
+      : undefined;
+  const dynamicVars = JSON.stringify({
+    user_id: userId,
+    chart_context: `${sunSign} / ${zodiacAnimal} / ${dominantEl}`,
+  });
+  useElevenLabsWidget(widgetAgentId, dynamicVars);
+
+  // Script is loaded globally in index.html — no lazy loading needed here.
 
   // Show the active agent's UI, defaulting to Levi when idle
   const displayId: AgentId = activeAgent ?? 'levi';
   const agent = AGENTS.find((a) => a.id === displayId)!;
-  const isActive = activeAgent !== null && agentStates[activeAgent]?.active;
   const dotColor = isActive ? agent.statusColor.active : agent.statusColor.idle;
   const elevenLabsAgentId = import.meta.env[agent.envKey] as string | undefined;
 
@@ -125,8 +119,6 @@ export function AgentFloatingWidget({
     <div
       className="fixed z-[99999] transition-all duration-300 ease-out"
       style={{
-        // calc() accounts for the iOS home indicator (env(safe-area-inset-bottom)).
-        // Minimised: 80px clears the 64px nav. Expanded: 88px = nav + 24px gap.
         bottom: widgetExpanded
           ? 'calc(88px + env(safe-area-inset-bottom))'
           : 'calc(80px + env(safe-area-inset-bottom))',
@@ -264,15 +256,7 @@ export function AgentFloatingWidget({
       </AnimatePresence>
     </div>
 
-    {isPremium && isActive && elevenLabsAgentId && (
-      <ElevenLabsPortal
-        agentId={elevenLabsAgentId}
-        userId={userId}
-        sunSign={sunSign}
-        zodiacAnimal={zodiacAnimal}
-        dominantEl={dominantEl}
-      />
-    )}
+    {/* Widget is mounted imperatively via useElevenLabsWidget above */}
     </>
   );
 }

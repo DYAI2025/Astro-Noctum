@@ -18,6 +18,10 @@ export const TransitEventSchema = z.object({
   trigger_symbol: z.string().optional().default(''),
   sector_domain: z.string().optional().default(''),
   timestamp: z.number().optional(),
+  // Phase H additions — populated from FuFirE events via mapFufireEvent
+  description_de: z.string().optional().default(''),
+  personal_context: z.string().optional().default(''),
+  priority: z.number().optional().default(0),
 });
 
 export const TransitStateSchema = z.object({

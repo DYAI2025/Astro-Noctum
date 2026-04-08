@@ -756,38 +756,49 @@ h1, h2, h3, h4, h5, h6 {
    inside Shadow DOM *and* sometimes appends overlays to <body>.
    We must ensure nothing in our UI clips or stacks above them.          */
 
+/* ── ElevenLabs ConvAI widget — always on top of EVERYTHING —————————————
+   The widget and its full call-flow UI (ToC, ringing, active call) must
+   never be covered by our own UI elements (panels, overlays, nav bar).
+   z-index: 2147483647 is the browser maximum — nothing can be higher.    */
 elevenlabs-convai {
-  position: relative;
-  z-index: 99999 !important;
+  /* Fixed to viewport bottom-right — widget anchors itself regardless
+     of where in the DOM it sits (appended to body end by React hook) */
+  position: fixed !important;
+  bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+  right: 16px !important;
+  z-index: 2147483647 !important;
   overflow: visible !important;
+  pointer-events: auto !important;
 }
 
-/* Catch any ElevenLabs-injected iframes or global overlays */
+/* Note: the widget exports NO CSS parts (exportedParts=null) —
+   ::part(overlay) has zero effect. z-index on the host element
+   is sufficient since all shadow DOM content renders within
+   the host’s stacking context at z-index 2147483647.         */
+
 elevenlabs-convai iframe,
 div[id^="elevenlabs"],
 div[class*="elevenlabs"] {
-  z-index: 99999 !important;
+  z-index: 2147483647 !important;
   pointer-events: auto !important;
 }
 
 [data-levi-widget],
 [data-agent-widget] {
   position: relative;
-  z-index: 99999 !important;
+  z-index: 2147483647 !important;
   overflow: visible !important;
 }
 
 /* Body-level overlays appended by the ElevenLabs SDK.
-   z-index and position are forced so the widget always floats above page content.
-   pointer-events is intentionally NOT set here — the SDK manages interactivity
-   dynamically, and overriding it can block page interaction in non-interactive
-   overlay states.                                                              */
+   Max z-index + pointer-events:auto. position NOT overridden —
+   the SDK manages its own overlay positioning (BUG-23).               */
 body > div[class*="eleven"],
 body > div[id*="eleven"],
 body > div[class*="convai"],
 body > div[id*="convai"] {
-  z-index: 999999 !important;
-  position: fixed !important;
+  z-index: 2147483647 !important;
+  pointer-events: auto !important;
 }
 
 /* ── Reduced Motion ──────────────────────────────────────────────── */

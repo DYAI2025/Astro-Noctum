@@ -78,5 +78,10 @@
     <!-- Global Film Grain Overlay (decorative, dark-theme splash) -->
     <div class="grain-overlay" style="pointer-events:none;position:fixed;inset:0;z-index:200;opacity:0.03"></div>
     <script type="module" src="/src/main.tsx"></script>
+
+    <!-- ElevenLabs ConvAI Widget — loaded globally so the custom element is
+         defined before any React component tries to mount it.
+         Must be here, NOT in a lazy React useEffect. -->
+    <script src="https://elevenlabs.io/convai-widget/index.js" async type="text/javascript"></script>
   </body>
 </html>

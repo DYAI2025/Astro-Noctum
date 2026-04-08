@@ -95,7 +95,13 @@ const ELEMENT_SENSITIVITY: Record<CosmicElement, {
 //  PLANET → ELEMENT MAPPING
 // ═══════════════════════════════════════
 
-/** Classical planetary rulership elements */
+/**
+ * Classical Western planetary rulership elements (4-element system: fire/water/air/earth).
+ * DISTINCT from the BaZi Wu-Xing mapping in src/lib/fusion-bazi/resonance.ts
+ * (5-element system: wood/fire/earth/metal/water, German planet keys).
+ * DEC-fusion-bazi-sheng-ke restricts *Wu-Xing* inline mappings — this map uses
+ * Western classical elements and English keys, so it is not a DEC violation.
+ */
 const PLANET_ELEMENT: Record<string, CosmicElement> = {
   Sun: 'fire',
   Moon: 'water',

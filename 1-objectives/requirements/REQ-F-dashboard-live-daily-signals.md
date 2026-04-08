@@ -35,8 +35,15 @@ Personal relevance is derived from live intensity in combination with resonance 
 - Given space-weather data is temporarily unavailable, when the Dashboard renders, then the layout remains intact and cosmic weather falls back to a calm or unavailable state without fake event severity
 - Given the daily impulse section and the influence section are rendered, when visually inspected, then typography, color usage, and card styling are consistent with the dashboard design system in both Dark and Bright mode
 
+- Given the Dashboard layout is rendered, when a user sees the first viewport, then the content order from top to bottom is: (1) Day Pulse/Trace section — fully expanded, never collapsed, (2) live planet influence cards (Aktive Einflüsse), (3) space weather card if Kp ≥ 4; static natal content (Western chart, BaZi pillars, Wu-Xing) is placed below this live block and collapsed by default
+- Given the "Aktive Einflüsse" section is rendered, when live transit data is available, then each planet card displays both a Western block (degree, sign, retrograde status, live speed) and a BaZi fusion block (Wu-Xing element, resonance type, German interpretation sentence) — neither block may be omitted when both data sources are available
+- Given the Day Pulse section is rendered for a given day, when transit events from `/transit/state` are available, then the displayed interpretation text is taken verbatim from `events[].description_de` and `events[].personal_context`; the client must not template or rewrite these server-provided texts
+- Given no transit events are returned for a day, when the Day Pulse section is rendered, then a neutral German fallback "Heute keine markanten Ereignisse. Nutze die Ruhe." is shown — the section remains visible and expanded
+- Given any number is rendered on the Dashboard, when a code reviewer inspects the component, then a comment directly above the render site names the source (BAFE endpoint, hook name, or deterministic formula) — no number may appear without a documented origin
+
 ## Related Artifacts
 
 - [REQ-F-signatur-day-night-pulse](REQ-F-signatur-day-night-pulse.md)
 - [REQ-F-space-weather-modulation](REQ-F-space-weather-modulation.md)
+- [REQ-F-dashboard-bazi-fusion-bridge](REQ-F-dashboard-bazi-fusion-bridge.md)
 - [REQ-USA-wcag-contrast](REQ-USA-wcag-contrast.md)
