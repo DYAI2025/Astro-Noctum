@@ -903,11 +903,14 @@ function mapFufireEvent(ev, generatedAt) {
     id: `${ev.type || "event"}:${ev.sector ?? 0}:${generatedAt}`,
     type: ev.type || "resonance_jump",
     sector: ev.sector ?? 0,
-    delta: [0.4, 0.25, 0.15, 0.1][Math.min((ev.priority || 1) - 1, 3)] ?? 0.1,
+    delta: [0.4, 0.25, 0.15, 0.1][Math.min((ev.priority > 0 ? ev.priority : 4) - 1, 3)] ?? 0.1,
     trigger_planet: ev.trigger_planet || "",
     trigger_symbol: "",
     sector_domain: "",
     timestamp: Date.parse(generatedAt) || Date.now(),
+    description_de: typeof ev.description_de === "string" ? ev.description_de : "",
+    personal_context: typeof ev.personal_context === "string" ? ev.personal_context : "",
+    priority: typeof ev.priority === "number" ? ev.priority : 0,
   };
 }
 
