@@ -41,6 +41,7 @@ describe('Dashboard full section order', () => {
       'SECTION: PLANETARIUM',
       'SKY MODE TOGGLE',
       'IDENTITY',
+      'VOLATILE-FIRST LIVE SIGNALS',
       'DAILY PULSE CLUSTER',
       'KOSMISCHER BLUEPRINT',
       'VOICE AGENTS',

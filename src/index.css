@@ -305,6 +305,12 @@ body[data-element="Water"] .cosmic-tile:not(:is(.planetarium *)) { --tile-glow: 
 
 /* ── Shared animations ─────────────────────────────────────────────────── */
 
+/* MagnetsturmKarte G3+ border pulse */
+@keyframes magnetsturm-pulse {
+  0%, 100% { box-shadow: 0 0 0 1px var(--storm-color, #FF8C00)66, 0 0 16px var(--storm-color, #FF8C00)33; }
+  50%       { box-shadow: 0 0 0 2px var(--storm-color, #FF8C00)99, 0 0 28px var(--storm-color, #FF8C00)55; }
+}
+
 @keyframes breathe {
   0%, 100% { opacity: 0.5; transform: scale(1); }
   50%       { opacity: 1;   transform: scale(1.05); }
@@ -392,21 +398,6 @@ h1, h2, h3, h4, h5, h6 {
   border-top-color: rgba(255,255,255,0.06);
 }
 
-/* InfluenceGauges bar track */
-.influence-track {
-  height: 6px;
-  width: 100%;
-  background: var(--tile-border);
-  border: 1px solid rgba(0,0,0,0.04);
-  border-radius: 9999px;
-  overflow: hidden;
-  position: relative;
-}
-
-.planetarium .influence-track {
-  background: rgba(255,255,255,0.06);
-  border-color: rgba(255,255,255,0.05);
-}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    PLANETARIUM MODE OVERRIDES
