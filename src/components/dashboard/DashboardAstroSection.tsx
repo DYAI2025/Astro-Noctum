@@ -133,8 +133,8 @@ export function DashboardAstroSection({
       <div id="section-wuxing" />
       
       <PremiumGate teaser={t("dashboard.premium.teaserPillars")}>
-        <motion.div 
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 items-stretch" 
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12 items-stretch"
           {...fadeIn(0.3)}
         >
           {/* Card 1: BaZi Four Pillars */}

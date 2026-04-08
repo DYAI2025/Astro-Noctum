@@ -759,7 +759,7 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 |----|------|----------|--------|-----|--------------|---------|-------|
 | TASK-bazi-wuxing-bright-audit | Audit BaZi Four Pillars + WuXing element bars for bright mode consistency — ensure text contrast and card backgrounds match design system | P2 | Done | - | - | 2026-04-06 | Replaced hardcoded #1E2A3A (dark-mode-invisible) with var(--tile-text-primary) in BaZiFourPillars (stem, branch, element label, unavailable text) and DashboardAstroSection (section heading, element name) |
 | TASK-bazi-pillars-clickable | Make Four Pillars cards clickable: each opens contextual explanation specific to user's chart (not just tooltip) | P1 | Done | - | - | 2026-04-06 | Promoted P2→P1 per PO; functional core request; needs per-pillar description from heavenlyStems/earthlyBranches data |
-| TASK-bazi-section-card-harmony | Ensure BaZi/WuXing section cards match the three-card row style when extracted from DashboardAstroSection | P3 | Todo | - | TASK-astro-three-cards | 2026-04-04 | Depends on Cluster G restructure |
+| TASK-bazi-section-card-harmony | Ensure BaZi/WuXing section cards match the three-card row style when extracted from DashboardAstroSection | P3 | Done | - | TASK-astro-three-cards | 2026-04-08 | Harmonized gap-6→gap-4 with Hero Nav above for consistent 3-card grid spacing |
 
 ### Cluster J — Signatur Page Transit Panels
 

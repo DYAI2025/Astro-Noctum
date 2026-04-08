@@ -15,7 +15,7 @@ Bazodiac (Astro-Noctum) — a fusion astrology web + mobile app combining Wester
 
 Run `/SDLC-status` or check `3-code/tasks.md` + `git log` for live project state. Do not rely on hardcoded counts in this file.
 
-**Design additions (2026-04-08):** Dashboard Live Signals Architecture section added to `architecture.md` — covers volatile-first layout order, three new transit hooks (`useTransitNow`, `useTransitState`, `useDailyTransit`), and `fusion-bazi/resonance.ts` pure module. Two new decisions recorded: `DEC-dashboard-volatile-first` (layout ordering contract) and `DEC-fusion-bazi-sheng-ke` (planet-element mapping + Sheng/Ke algorithm, locked). Two new requirements elicited: `REQ-F-dashboard-bazi-fusion-bridge` (Must, Draft) and `REQ-F-dashboard-live-daily-signals` expanded with volatile-first + fusion criteria. Phase H added to `tasks.md`: 12 tasks for Dashboard Live Signals & BaZi Fusion. Completeness assessment not yet run — stale.
+**Implementation progress (2026-04-08):** 258/261 tasks Done. Remaining 3 Todo (all P2–P3, requiring stakeholder clarification): TASK-ios-lockscreen-widget (concept), TASK-influence-tooltips-personalized (needs intake #15), TASK-cosmic-values-explained (needs intake #16). Phase H "Dashboard Live Signals & BaZi Fusion" complete (12/12 tasks). Phase G "Mobile Parity" complete (3/4 tasks; TASK-ios-lockscreen-widget deferred to concept phase). All major feature phases done; Phase F "Partnership Features" blocked on 6 open questions.
 
 ---
 
