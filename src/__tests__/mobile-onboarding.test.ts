@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import path from 'path';
 import { wuxingToSoulprint } from '../../packages/shared/src/fusion-bazi/soulprint';
 
 /**
@@ -34,7 +35,7 @@ describe('wuxingToSoulprint', () => {
     const sectors = wuxingToSoulprint({ Water: 100 });
     // Sector 3 and 7 map to element index 4 (Water)
     // sectorMap = [1,2,2,4,1,2,3,4,1,2,3,4] → indices 3 and 7 are element 4 (Water)
-    const waterSectors = [sectors[3], sectors[7]];
+    const waterSectors = [sectors[3], sectors[7], sectors[11]]; // sectorMap[3,7,11] = 4 (Water)
     const woodSectors  = [sectors[0], sectors[4], sectors[8]];
     const avgWater = waterSectors.reduce((s, v) => s + v, 0) / waterSectors.length;
     const avgWood  = woodSectors.reduce((s, v) => s + v, 0)  / woodSectors.length;
@@ -51,7 +52,7 @@ describe('OrbBackdrop stylesheet', () => {
   it('orbGold stylesheet entry does not contain static opacity (animated value is sole authority)', async () => {
     const fs = await import('fs');
     const src = fs.readFileSync(
-      'apps/mobile/src/screens/OnboardingScreen.tsx',
+      path.join(__dirname, '../../apps/mobile/src/screens/OnboardingScreen.tsx'),
       'utf-8'
     );
     const orbGoldMatch = src.match(/orbGold:\s*\{([^}]+)\}/s);
@@ -62,7 +63,7 @@ describe('OrbBackdrop stylesheet', () => {
   it('orbCyan stylesheet entry does not contain static opacity', async () => {
     const fs = await import('fs');
     const src = fs.readFileSync(
-      'apps/mobile/src/screens/OnboardingScreen.tsx',
+      path.join(__dirname, '../../apps/mobile/src/screens/OnboardingScreen.tsx'),
       'utf-8'
     );
     const orbCyanMatch = src.match(/orbCyan:\s*\{([^}]+)\}/s);
@@ -131,7 +132,7 @@ describe('OrbBackdrop animation cleanup', () => {
   it('OrbBackdrop has no early return null — Views stay mounted for opacity animation', () => {
     const fs = require('fs');
     const src = fs.readFileSync(
-      'apps/mobile/src/screens/OnboardingScreen.tsx',
+      path.join(__dirname, '../../apps/mobile/src/screens/OnboardingScreen.tsx'),
       'utf-8'
     );
     // if (!visible) return null unmounts Animated.View nodes before fade-out can run
