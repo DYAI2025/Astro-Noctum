@@ -15,7 +15,7 @@ Bazodiac (Astro-Noctum) — a fusion astrology web + mobile app combining Wester
 
 Run `/SDLC-status` or check `3-code/tasks.md` + `git log` for live project state. Do not rely on hardcoded counts in this file.
 
-**Implementation progress (2026-04-08):** 258/261 tasks Done. Remaining 3 Todo (all P2–P3, requiring stakeholder clarification): TASK-ios-lockscreen-widget (concept), TASK-influence-tooltips-personalized (needs intake #15), TASK-cosmic-values-explained (needs intake #16). Phase H "Dashboard Live Signals & BaZi Fusion" complete (12/12 tasks). Phase G "Mobile Parity" complete (3/4 tasks; TASK-ios-lockscreen-widget deferred to concept phase). All major feature phases done; Phase F "Partnership Features" blocked on 6 open questions.
+**Implementation progress (2026-04-08):** 259/265 tasks Done. TASK-einfluesse-stem-fallback done: AktiveEinfluesseFusion no longer returns null when dayMasterStem absent — renders Western block + "BaZi-Profil nicht verfügbar" notice per REQ-F-dashboard-bazi-fusion-bridge AC 9. 3 Phase H2 P1 tasks remain (resonance-tension, field-strength, ac-tests). Phase F blocked on 6 open questions.
 
 ---
 

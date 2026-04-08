@@ -419,6 +419,20 @@ V3 engine tasks (pole system, trail renderer, dissonance wiring, feature flag) w
 11. TASK-natal-signatur-static
 12. TASK-dashboard-live-reorder
 
+### Phase H2: AktiveEinfluesseFusion — Semantic Field Completion
+
+**Capabilities delivered:**
+- `AktiveEinfluesseFusion` degradiert graceful: when BaZi Day Master is unknown → Western block shown for all planets + "BaZi-Profil nicht verfügbar" notice (no null render)
+- Dual-dimension semantics: resonance (gleichklang/naehrung) → blue card; tension (kontrolle) → red card; neutral → muted gold — continuous resonance/tension color gradient per AC
+- Field-strength indicator on each planet card (qualitative gering/mittel/stark, no raw float) with explanatory label "Feldstärke" per DEC-no-number-without-explanation
+- All remaining REQ-F-dashboard-live-daily-signals and REQ-F-dashboard-bazi-fusion-bridge acceptance criteria covered by Vitest
+
+**Tasks:**
+1. TASK-einfluesse-stem-fallback
+2. TASK-einfluesse-resonance-tension
+3. TASK-einfluesse-field-strength
+4. TASK-einfluesse-ac-tests
+
 ---
 
 ### Phase F: Partnership Features (Blocked)
@@ -778,6 +792,15 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | TASK-current-sky-behavior-fix | Current Sky mode still shows insufficiently different output from birth sky — revalidate simTime calculation, observer coordinates, and constellation rendering | P1 | Done | - | TASK-current-sky-delta-fix | 2026-04-05 | Fixed: skyMode persisted in localStorage; Dashboard correctly wires observer coords and simulation time. |
 | TASK-daily-pulse-influences-live-fix | Daily Pulse and Influence Gauges do not show convincingly live/date-sensitive data — verify transit feed, date-boundary rotation, and gauge label semantics | P1 | Done | [REQ-F-dashboard-live-daily-signals](../1-objectives/requirements/REQ-F-dashboard-live-daily-signals.md) | - | 2026-04-05 | Fixed: Entire dashboard (Pulse + Gauges) now syncs with planetarium's current time in 'Current Sky' mode via lifted orreryHook. |
 | TASK-theme-contrast-fix | Dashboard dark mode tiles too dark; improve contrast and readability; add golden glowing outline | P1 | Done | - | - | 2026-04-05 | Implemented: Lightened dark mode tile bg, boosted text brightness, added constant gold glow (box-shadow); refined bright mode readability. |
+
+### Cluster L — AktiveEinfluesseFusion Semantic Field Completion
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-einfluesse-stem-fallback | `AktiveEinfluesseFusion`: when `dayMasterStem` is missing, render planet cards with Western block only + "BaZi-Profil nicht verfügbar" notice in BaZi slot — instead of returning null | P1 | Done | [REQ-F-dashboard-bazi-fusion-bridge](../1-objectives/requirements/REQ-F-dashboard-bazi-fusion-bridge.md) | - | 2026-04-08 | REQ-F-dashboard-bazi-fusion-bridge AC 9 |
+| TASK-einfluesse-resonance-tension | Planet cards: apply resonance/tension dual-dimension color encoding — gleichklang/naehrung → blue border+bg; kontrolle → red border+bg; neutral → muted gold; removes element-color card styling | P1 | Todo | [REQ-F-dashboard-live-daily-signals](../1-objectives/requirements/REQ-F-dashboard-live-daily-signals.md), [REQ-F-dashboard-bazi-fusion-bridge](../1-objectives/requirements/REQ-F-dashboard-bazi-fusion-bridge.md) | TASK-einfluesse-stem-fallback | 2026-04-08 | REQ-F-dashboard-live-daily-signals AC 4+5; DEC-fusion-bazi-sheng-ke |
+| TASK-einfluesse-field-strength | Add field-strength indicator under resonance badge: small visual bar derived from `resonance.intensity`, labeled "Feldstärke" with three qualitative tiers (gering/mittel/stark) — no raw float, no % | P1 | Todo | [REQ-F-dashboard-live-daily-signals](../1-objectives/requirements/REQ-F-dashboard-live-daily-signals.md) | TASK-einfluesse-resonance-tension | 2026-04-08 | REQ-F-dashboard-live-daily-signals AC 7; DEC-no-number-without-explanation |
+| TASK-einfluesse-ac-tests | Vitest: AC-coverage — stem-fallback renders Western block without BaZi block; resonance-type→blue for gleichklang/naehrung, red for kontrolle, muted for neutral; field-strength renders qualitative tier label for low/mid/high intensity | P1 | Todo | [REQ-F-dashboard-bazi-fusion-bridge](../1-objectives/requirements/REQ-F-dashboard-bazi-fusion-bridge.md), [REQ-F-dashboard-live-daily-signals](../1-objectives/requirements/REQ-F-dashboard-live-daily-signals.md) | TASK-einfluesse-field-strength | 2026-04-08 | |
 
 ---
 

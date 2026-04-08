@@ -11,7 +11,7 @@
  *   BaZi block    — calculatePlanetBaziResonance(germanPlanet, dayMasterStem) — pure function
  *
  * Renders a skeleton while transit data loads.
- * Returns null when dayMasterStem is unavailable (no BaZi data yet).
+ * When dayMasterStem is absent, always renders — planet cards show Western block + "BaZi-Profil nicht verfügbar" notice.
  */
 
 import { useDailyTransit } from '../../hooks/useDailyTransit';
@@ -106,7 +106,8 @@ function isHeavenlyStem(s: string | undefined): s is HeavenlyStem {
 interface AktiveEinfluesseFusionProps {
   /**
    * Day master stem from the user's BaZi chart (apiData.bazi?.day_master).
-   * Required to compute resonance — component returns null when absent.
+   * When absent, planet cards show the Western block only + a "BaZi-Profil
+   * nicht verfügbar" notice in the BaZi slot (REQ-F-dashboard-bazi-fusion-bridge AC 9).
    */
   dayMasterStem: string | undefined;
 }
@@ -139,7 +140,8 @@ function PlanetCard({
   isDe,
 }: {
   planet: PlanetConfig;
-  dayMasterStem: HeavenlyStem;
+  /** null when BaZi profile is incomplete — renders Western block + notice instead of BaZi block */
+  dayMasterStem: HeavenlyStem | null;
   transitBodies: ReturnType<typeof useDailyTransit>['bodies'];
   isDe: boolean;
 }) {
@@ -147,19 +149,10 @@ function PlanetCard({
   const body = transitBodies?.[planet.bafeKey];
 
   // Source: calculatePlanetBaziResonance() — pure, locked by DEC-fusion-bazi-sheng-ke
-  const resonance = calculatePlanetBaziResonance(planet.baziName, dayMasterStem);
-
-  const elementLabel = isDe
-    ? ELEMENT_LABEL[resonance.planetElement].de
-    : ELEMENT_LABEL[resonance.planetElement].en;
-
-  const elementColor = ELEMENT_COLOR[resonance.planetElement];
-
-  const resonanceLabel = isDe
-    ? RESONANCE_LABEL[resonance.type].de
-    : RESONANCE_LABEL[resonance.type].en;
-
-  const badgeColor = RESONANCE_BADGE_COLOR[resonance.type];
+  // Only computed when a valid Day Master stem is available.
+  const resonance = dayMasterStem
+    ? calculatePlanetBaziResonance(planet.baziName, dayMasterStem)
+    : null;
 
   // Source: TransitBody.zodiac_sign — 0-based index from BAFE /calculate/western
   const signName = isDe
@@ -172,10 +165,17 @@ function PlanetCard({
   // Source: TransitBody.is_retrograde — speed < 0, computed in useDailyTransit mapBody()
   const isRetrograde = body?.is_retrograde ?? false;
 
+  const cardBg = resonance
+    ? `${ELEMENT_COLOR[resonance.planetElement]}0A`
+    : 'rgba(255,255,255,0.03)';
+  const cardBorder = resonance
+    ? `2px solid ${ELEMENT_COLOR[resonance.planetElement]}55`
+    : '2px solid rgba(255,255,255,0.08)';
+
   return (
     <div
       className="rounded-xl p-4 space-y-3"
-      style={{ background: `${elementColor}0A`, borderLeft: `2px solid ${elementColor}55` }}
+      style={{ background: cardBg, borderLeft: cardBorder }}
       data-planet={planet.bafeKey}
     >
       {/* ── Planet header ──────────────────────────────────────────── */}
@@ -215,33 +215,54 @@ function PlanetCard({
         </div>
       )}
 
-      {/* ── BaZi block ─────────────────────────────────────────────── */}
-      <div className="space-y-1.5">
-        {/* Source: PLANET_ELEMENT (DEC-fusion-bazi-sheng-ke locked mapping) */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span
-            className="text-[9px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded"
-            style={{ background: `${elementColor}22`, color: elementColor }}
-          >
-            {elementLabel}
-          </span>
-          {/* Source: calculatePlanetBaziResonance() resonance type */}
-          <span
-            className="text-[9px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded"
-            style={{ background: `${badgeColor}18`, color: badgeColor }}
-          >
-            {resonanceLabel}
-          </span>
-        </div>
+      {/* ── BaZi block or unavailability notice ────────────────────── */}
+      {resonance ? (
+        <div className="space-y-1.5">
+          {/* Source: PLANET_ELEMENT (DEC-fusion-bazi-sheng-ke locked mapping) */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span
+              className="text-[9px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded"
+              style={{
+                background: `${ELEMENT_COLOR[resonance.planetElement]}22`,
+                color: ELEMENT_COLOR[resonance.planetElement],
+              }}
+            >
+              {isDe
+                ? ELEMENT_LABEL[resonance.planetElement].de
+                : ELEMENT_LABEL[resonance.planetElement].en}
+            </span>
+            {/* Source: calculatePlanetBaziResonance() resonance type */}
+            <span
+              className="text-[9px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded"
+              style={{
+                background: `${RESONANCE_BADGE_COLOR[resonance.type]}18`,
+                color: RESONANCE_BADGE_COLOR[resonance.type],
+              }}
+            >
+              {isDe
+                ? RESONANCE_LABEL[resonance.type].de
+                : RESONANCE_LABEL[resonance.type].en}
+            </span>
+          </div>
 
-        {/* Source: ResonanceResult.quote — brand-voice German quote, ≤80 chars */}
+          {/* Source: ResonanceResult.quote — brand-voice German quote, ≤80 chars */}
+          <p
+            className="text-[11px] leading-relaxed italic"
+            style={{ color: 'var(--tile-text-secondary)', opacity: 0.65 }}
+          >
+            {resonance.quote}
+          </p>
+        </div>
+      ) : (
+        /* REQ-F-dashboard-bazi-fusion-bridge AC 9: neutral notice when profile incomplete */
         <p
-          className="text-[11px] leading-relaxed italic"
-          style={{ color: 'var(--tile-text-secondary)', opacity: 0.65 }}
+          className="text-[10px] italic"
+          style={{ color: 'var(--tile-text-secondary)', opacity: 0.4 }}
+          data-testid="bazi-unavailable-notice"
         >
-          {resonance.quote}
+          {isDe ? 'BaZi-Profil nicht verfügbar' : 'BaZi profile unavailable'}
         </p>
-      </div>
+      )}
     </div>
   );
 }
@@ -254,12 +275,10 @@ export function AktiveEinfluesseFusion({ dayMasterStem }: AktiveEinfluesseFusion
 
   const { bodies, loading } = useDailyTransit();
 
-  // Cannot compute resonance without a valid day master stem
-  if (!isHeavenlyStem(dayMasterStem)) return null;
-
   if (loading && !bodies) return <Skeleton />;
 
-  const stem = dayMasterStem;
+  // null when stem is absent — planet cards show Western block + notice (REQ-F-dashboard-bazi-fusion-bridge AC 9)
+  const stem: HeavenlyStem | null = isHeavenlyStem(dayMasterStem) ? dayMasterStem : null;
 
   return (
     <div
@@ -275,7 +294,7 @@ export function AktiveEinfluesseFusion({ dayMasterStem }: AktiveEinfluesseFusion
       </h3>
 
       {/* ── 6 planet cards ───────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" data-testid="planet-card-grid">
         {PLANETS.map((planet) => (
           <PlanetCard
             key={planet.bafeKey}
