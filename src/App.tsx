@@ -311,9 +311,6 @@ export default function App() {
           {hasCompleteProfile && (
             <AgentFloatingWidget
               userId={user.id}
-              sunSign={apiData?.western?.zodiac_sign || ''}
-              zodiacAnimal={apiData?.bazi?.zodiac_sign || ''}
-              dominantEl={apiData?.wuxing?.dominant_element || ''}
               isPremium={premium.isPremium}
               onUpgrade={handleLeviUpgrade}
               onStopAudio={ambiente.pause}

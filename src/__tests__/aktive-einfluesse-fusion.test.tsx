@@ -34,14 +34,31 @@ beforeEach(() => {
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('AktiveEinfluesseFusion', () => {
-  it('renders null when dayMasterStem is undefined', () => {
-    const { container } = render(<AktiveEinfluesseFusion dayMasterStem={undefined} />);
-    expect(container.firstChild).toBeNull();
+  // REQ-F-dashboard-bazi-fusion-bridge AC 9: when stem is absent, show Western block + notice
+  it('still renders the section when dayMasterStem is undefined (no null return)', () => {
+    render(<AktiveEinfluesseFusion dayMasterStem={undefined} />);
+    expect(screen.getByTestId('aktive-einfluesse-fusion')).toBeInTheDocument();
   });
 
-  it('renders null when dayMasterStem is invalid', () => {
-    const { container } = render(<AktiveEinfluesseFusion dayMasterStem="InvalidStem" />);
-    expect(container.firstChild).toBeNull();
+  it('shows BaZi-unavailable notice for each planet when dayMasterStem is undefined', () => {
+    render(<AktiveEinfluesseFusion dayMasterStem={undefined} />);
+    const notices = screen.getAllByTestId('bazi-unavailable-notice');
+    expect(notices).toHaveLength(6);
+    notices.forEach((n) => expect(n).toHaveTextContent('BaZi-Profil nicht verfügbar'));
+  });
+
+  it('shows BaZi-unavailable notice when dayMasterStem is invalid', () => {
+    render(<AktiveEinfluesseFusion dayMasterStem="NotAStem" />);
+    expect(screen.getByTestId('aktive-einfluesse-fusion')).toBeInTheDocument();
+    const notices = screen.getAllByTestId('bazi-unavailable-notice');
+    expect(notices).toHaveLength(6);
+  });
+
+  it('still renders planet labels (Western block) when stem is absent', () => {
+    render(<AktiveEinfluesseFusion dayMasterStem={undefined} />);
+    ['Mond', 'Merkur', 'Venus', 'Mars', 'Jupiter', 'Saturn'].forEach((label) => {
+      expect(screen.getByText(label)).toBeInTheDocument();
+    });
   });
 
   it('renders the section for a valid dayMasterStem', () => {

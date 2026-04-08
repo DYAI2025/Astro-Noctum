@@ -419,6 +419,20 @@ V3 engine tasks (pole system, trail renderer, dissonance wiring, feature flag) w
 11. TASK-natal-signatur-static
 12. TASK-dashboard-live-reorder
 
+### Phase H2: AktiveEinfluesseFusion — Semantic Field Completion
+
+**Capabilities delivered:**
+- `AktiveEinfluesseFusion` degradiert graceful: when BaZi Day Master is unknown → Western block shown for all planets + "BaZi-Profil nicht verfügbar" notice (no null render)
+- Dual-dimension semantics: resonance (gleichklang/naehrung) → blue card; tension (kontrolle) → red card; neutral → muted gold — continuous resonance/tension color gradient per AC
+- Field-strength indicator on each planet card (qualitative gering/mittel/stark, no raw float) with explanatory label "Feldstärke" per DEC-no-number-without-explanation
+- All remaining REQ-F-dashboard-live-daily-signals and REQ-F-dashboard-bazi-fusion-bridge acceptance criteria covered by Vitest
+
+**Tasks:**
+1. TASK-einfluesse-stem-fallback
+2. TASK-einfluesse-resonance-tension
+3. TASK-einfluesse-field-strength
+4. TASK-einfluesse-ac-tests
+
 ---
 
 ### Phase F: Partnership Features (Blocked)
@@ -591,7 +605,7 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 |----|------|----------|--------|-----|--------------|---------|-------|
 | TASK-mobile-signatur-3d | Mount SignaturCanvas on FuRingScreen (currently unused expo-gl + three.js component) | P2 | Done | [REQ-F-fusion-ring-visualization](../1-objectives/requirements/REQ-F-fusion-ring-visualization.md) | - | 2026-04-07 | SignaturCanvas (expo-gl/three.js, 6K particles, pan+pinch) replaces SignaturVisual; paused={!isFocused} halts render loop when tab not active; soulprintSectors passed directly |
 | TASK-mobile-offline-e2e | End-to-end test: offline quiz → queue → flush on reconnect | P2 | Done | [REQ-F-quiz-contribution-system](../1-objectives/requirements/REQ-F-quiz-contribution-system.md) | - | 2026-03-28 | |
-| TASK-mobile-onboarding | Port onboarding flow to mobile (CosmicEncounterMobile fallback) | P2 | Todo | [REQ-F-cosmic-encounter-onboarding](../1-objectives/requirements/REQ-F-cosmic-encounter-onboarding.md) | TASK-onboarding-route | 2026-03-28 | |
+| TASK-mobile-onboarding | Port onboarding flow to mobile (CosmicEncounterMobile fallback) | P2 | Done | [REQ-F-cosmic-encounter-onboarding](../1-objectives/requirements/REQ-F-cosmic-encounter-onboarding.md) | TASK-onboarding-route | 2026-04-08 | 3-phase state machine (birth-input → calculating → ring-reveal); animated gold+cyan orb backdrop (native equiv of CosmicEncounterMobile); SignaturCanvas ring-reveal via wuxingToSoulprint; 6 tests |
 | TASK-ios-lockscreen-widget | Concept + prototype for daily Signatur widget on iOS Lock Screen | P2 | Todo | - | - | 2026-03-28 | Idea phase |
 | TASK-mobile-vibes-integration | Add Vibes button + Weekly link to mobile app (same API, adapted layout) | P1 | Done | [REQ-USA-mobile-first-readability](../1-objectives/requirements/REQ-USA-mobile-first-readability.md) | TASK-vibes-api-endpoint, TASK-weekly-api-endpoint | 2026-03-30 | |
 
@@ -759,7 +773,7 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 |----|------|----------|--------|-----|--------------|---------|-------|
 | TASK-bazi-wuxing-bright-audit | Audit BaZi Four Pillars + WuXing element bars for bright mode consistency — ensure text contrast and card backgrounds match design system | P2 | Done | - | - | 2026-04-06 | Replaced hardcoded #1E2A3A (dark-mode-invisible) with var(--tile-text-primary) in BaZiFourPillars (stem, branch, element label, unavailable text) and DashboardAstroSection (section heading, element name) |
 | TASK-bazi-pillars-clickable | Make Four Pillars cards clickable: each opens contextual explanation specific to user's chart (not just tooltip) | P1 | Done | - | - | 2026-04-06 | Promoted P2→P1 per PO; functional core request; needs per-pillar description from heavenlyStems/earthlyBranches data |
-| TASK-bazi-section-card-harmony | Ensure BaZi/WuXing section cards match the three-card row style when extracted from DashboardAstroSection | P3 | Todo | - | TASK-astro-three-cards | 2026-04-04 | Depends on Cluster G restructure |
+| TASK-bazi-section-card-harmony | Ensure BaZi/WuXing section cards match the three-card row style when extracted from DashboardAstroSection | P3 | Done | - | TASK-astro-three-cards | 2026-04-08 | Harmonized gap-6→gap-4 with Hero Nav above for consistent 3-card grid spacing |
 
 ### Cluster J — Signatur Page Transit Panels
 
@@ -778,6 +792,15 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | TASK-current-sky-behavior-fix | Current Sky mode still shows insufficiently different output from birth sky — revalidate simTime calculation, observer coordinates, and constellation rendering | P1 | Done | - | TASK-current-sky-delta-fix | 2026-04-05 | Fixed: skyMode persisted in localStorage; Dashboard correctly wires observer coords and simulation time. |
 | TASK-daily-pulse-influences-live-fix | Daily Pulse and Influence Gauges do not show convincingly live/date-sensitive data — verify transit feed, date-boundary rotation, and gauge label semantics | P1 | Done | [REQ-F-dashboard-live-daily-signals](../1-objectives/requirements/REQ-F-dashboard-live-daily-signals.md) | - | 2026-04-05 | Fixed: Entire dashboard (Pulse + Gauges) now syncs with planetarium's current time in 'Current Sky' mode via lifted orreryHook. |
 | TASK-theme-contrast-fix | Dashboard dark mode tiles too dark; improve contrast and readability; add golden glowing outline | P1 | Done | - | - | 2026-04-05 | Implemented: Lightened dark mode tile bg, boosted text brightness, added constant gold glow (box-shadow); refined bright mode readability. |
+
+### Cluster L — AktiveEinfluesseFusion Semantic Field Completion
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-einfluesse-stem-fallback | `AktiveEinfluesseFusion`: when `dayMasterStem` is missing, render planet cards with Western block only + "BaZi-Profil nicht verfügbar" notice in BaZi slot — instead of returning null | P1 | Done | [REQ-F-dashboard-bazi-fusion-bridge](../1-objectives/requirements/REQ-F-dashboard-bazi-fusion-bridge.md) | - | 2026-04-08 | REQ-F-dashboard-bazi-fusion-bridge AC 9 |
+| TASK-einfluesse-resonance-tension | Planet cards: apply resonance/tension dual-dimension color encoding — gleichklang/naehrung → blue border+bg; kontrolle → red border+bg; neutral → muted gold; removes element-color card styling | P1 | Todo | [REQ-F-dashboard-live-daily-signals](../1-objectives/requirements/REQ-F-dashboard-live-daily-signals.md), [REQ-F-dashboard-bazi-fusion-bridge](../1-objectives/requirements/REQ-F-dashboard-bazi-fusion-bridge.md) | TASK-einfluesse-stem-fallback | 2026-04-08 | REQ-F-dashboard-live-daily-signals AC 4+5; DEC-fusion-bazi-sheng-ke |
+| TASK-einfluesse-field-strength | Add field-strength indicator under resonance badge: small visual bar derived from `resonance.intensity`, labeled "Feldstärke" with three qualitative tiers (gering/mittel/stark) — no raw float, no % | P1 | Todo | [REQ-F-dashboard-live-daily-signals](../1-objectives/requirements/REQ-F-dashboard-live-daily-signals.md) | TASK-einfluesse-resonance-tension | 2026-04-08 | REQ-F-dashboard-live-daily-signals AC 7; DEC-no-number-without-explanation |
+| TASK-einfluesse-ac-tests | Vitest: AC-coverage — stem-fallback renders Western block without BaZi block; resonance-type→blue for gleichklang/naehrung, red for kontrolle, muted for neutral; field-strength renders qualitative tier label for low/mid/high intensity | P1 | Todo | [REQ-F-dashboard-bazi-fusion-bridge](../1-objectives/requirements/REQ-F-dashboard-bazi-fusion-bridge.md), [REQ-F-dashboard-live-daily-signals](../1-objectives/requirements/REQ-F-dashboard-live-daily-signals.md) | TASK-einfluesse-field-strength | 2026-04-08 | |
 
 ---
 
