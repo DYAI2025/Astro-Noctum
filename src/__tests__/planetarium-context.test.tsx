@@ -22,13 +22,13 @@ describe('PlanetariumContext skyMode', () => {
 
   it('switches to current sky', async () => {
     render(<PlanetariumProvider><TestConsumer /></PlanetariumProvider>);
-    await act(async () => { fireEvent.click(screen.getByText('current')); });
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'current' })); });
     expect(screen.getByTestId('sky-mode').textContent).toBe('current');
   });
 
   it('switching to current sky enables planetariumMode', async () => {
     render(<PlanetariumProvider><TestConsumer /></PlanetariumProvider>);
-    await act(async () => { fireEvent.click(screen.getByText('current')); });
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'current' })); });
     expect(screen.getByTestId('planetarium').textContent).toBe('true');
   });
 });

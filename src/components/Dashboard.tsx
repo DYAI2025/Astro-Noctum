@@ -33,9 +33,13 @@ import {
 } from "@/src/lib/signatur/weight-utils";
 import { DashboardBigFour as DashboardBigFourCard } from "./dashboard/DashboardBigFour";
 import MiniSignature from "./dashboard/MiniSignature";
-import InfluenceGauges from "./dashboard/InfluenceGauges";
 import { CosmicInfluenceSection } from "./dashboard/CosmicInfluenceSection";
 import { TourOverlay } from "./dashboard/TourOverlay";
+import { DayPulseExpanded } from "./dashboard/DayPulseExpanded";
+import { AktiveEinfluesseFusion } from "./dashboard/AktiveEinfluesseFusion";
+import { MagnetsturmKarte } from "./dashboard/MagnetsturmKarte";
+import { NatalSignaturStatic } from "./dashboard/NatalSignaturStatic";
+import { useFusionSignal } from "../hooks/useFusionSignal";
 import { useDashboardTour } from "@/src/hooks/useDashboardTour";
 import { usePlanetarium } from "@/src/contexts/PlanetariumContext";
 import { useDeviceLocation } from "@/src/hooks/useDeviceLocation";
@@ -268,6 +272,9 @@ export function Dashboard({
   // ── Space weather (für DashboardTagesEnergie Resonanz + Kosmoswetter) ──
   const spaceWeather = useSpaceWeather();
 
+  // ── Transit signal — provides events[] for DayPulseExpanded (DEC-dashboard-volatile-first pos 1) ──
+  const { events: transitEvents, loading: transitLoading } = useFusionSignal(userId);
+
   // ── Daily horoscope modal ───────────────────────────────────────────
   // isDayModalOpen: on-demand via "vertiefen →" in DashboardTagesEnergie.
   // showModal (auto-open) deliberately not used for rendering - wireframe F3:
@@ -434,9 +441,40 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
-      {/* ═══ DAILY PULSE CLUSTER (Tagesimpuls + Vibes + InfluenceGauges + CosmicInfluence) ═══ */}
-      {/* Grouped as subsections of one Daily Pulse area — tighter internal spacing */}
+      {/* ═══════════════════════════════════════════════════════════════════
+           VOLATILE-FIRST LIVE SIGNALS (DEC-dashboard-volatile-first)
+           Order: DayPulseExpanded → AktiveEinfluesseFusion → MagnetsturmKarte → NatalSignaturStatic
+           ═══════════════════════════════════════════════════════════════════ */}
       <motion.div className="flex flex-col gap-4" {...fadeIn(0.1)}>
+
+        {/* ── Pos 1: DayPulseExpanded — always-visible, transit event text ── */}
+        {/* Source: useFusionSignal(userId).events + dailyData.fusion.day_mode */}
+        <SectionErrorBoundary name="DayPulseExpanded">
+          <DayPulseExpanded
+            events={transitEvents}
+            dayMode={dailyData?.fusion?.day_mode ?? 'pulse'}
+            loading={transitLoading && transitEvents.length === 0}
+          />
+        </SectionErrorBoundary>
+
+        {/* ── Pos 2: AktiveEinfluesseFusion — 6 planet cards, Western+BaZi ── */}
+        {/* Source: useDailyTransit() (internal) + calculatePlanetBaziResonance() */}
+        <SectionErrorBoundary name="AktiveEinfluesseFusion">
+          <AktiveEinfluesseFusion
+            dayMasterStem={apiData?.bazi?.day_master}
+          />
+        </SectionErrorBoundary>
+
+        {/* ── Pos 3: MagnetsturmKarte — self-hides when Kp < 4 ──────────── */}
+        {/* Source: useSpaceWeather() (internal) */}
+        <SectionErrorBoundary name="MagnetsturmKarte">
+          <MagnetsturmKarte />
+        </SectionErrorBoundary>
+
+      </motion.div>
+
+      {/* ═══ DAILY PULSE CLUSTER (Tagesimpuls + Vibes + CosmicInfluence) ═══ */}
+      <motion.div className="flex flex-col gap-4" {...fadeIn(0.15)}>
         <SectionErrorBoundary name="TagesImpuls">
           {dailyData ? (
             <DashboardTagesEnergie
@@ -466,15 +504,6 @@ export function Dashboard({
           </div>
         </SectionErrorBoundary>
 
-        <SectionErrorBoundary name="InfluenceGauges">
-          <InfluenceGauges
-            birthSign={apiData?.western?.zodiac_sign || undefined}
-            weights={natalWeights}
-            isSynthetic={profileMeta.soulprintSectors === null}
-            simTime={skyMode === 'current' ? simTime : undefined}
-          />
-        </SectionErrorBoundary>
-
         <SectionErrorBoundary name="CosmicInfluence">
           <CosmicInfluenceSection spaceWeather={spaceWeather} />
         </SectionErrorBoundary>
@@ -483,13 +512,15 @@ export function Dashboard({
       {/* ── Tour sentinel: step 1 triggers when astro section scrolls into view ── */}
       <div ref={astroSentinelRef} className="h-px" aria-hidden="true" />
 
-      {/* ═══ SECTION 7: KOSMISCHER BLUEPRINT (Accordion: Westlich/BaZi/Wu-Xing/Orrery) ═══ */}
-      <SectionErrorBoundary name="Astro">
-        <DashboardAstroSection
-          apiData={apiData}
-          isPremium={isPremium}
-          tileTexts={tileTexts}
-        />
+      {/* ═══ KOSMISCHER BLUEPRINT / NatalSignaturStatic — collapsed accordion ══ */}
+      <SectionErrorBoundary name="NatalSignaturStatic">
+        <NatalSignaturStatic>
+          <DashboardAstroSection
+            apiData={apiData}
+            isPremium={isPremium}
+            tileTexts={tileTexts}
+          />
+        </NatalSignaturStatic>
       </SectionErrorBoundary>
 
       {/* ── Tour sentinel: step 2 triggers when Levi/interpretation area scrolls into view ── */}

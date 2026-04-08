@@ -1,4 +1,7 @@
-export type AgentId = 'levi' | 'eve';
+// AgentId is derived from the AGENTS array — adding a new entry here
+// automatically extends the type without touching any other file.
+export const AGENT_IDS = ['levi', 'eve'] as const;
+export type AgentId = typeof AGENT_IDS[number];
 
 export interface AgentConfig {
   id: AgentId;
@@ -53,5 +56,5 @@ export function getAgent(id: AgentId): AgentConfig {
 }
 
 export function isValidAgentType(value: string): value is AgentId {
-  return value === 'levi' || value === 'eve';
+  return (AGENT_IDS as readonly string[]).includes(value);
 }
