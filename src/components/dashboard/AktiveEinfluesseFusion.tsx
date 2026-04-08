@@ -17,6 +17,7 @@
 import { useDailyTransit } from '../../hooks/useDailyTransit';
 import {
   calculatePlanetBaziResonance,
+  STEM_ELEMENT,
   type PlanetName,
   type HeavenlyStem,
   type WuXingElement,
@@ -96,12 +97,8 @@ function signNameEn(idx: number | undefined): string | null {
 
 // ── Valid HeavenlyStem guard ──────────────────────────────────────────────────
 
-const VALID_STEMS = new Set<string>([
-  'Jia', 'Yi', 'Bing', 'Ding', 'Wu', 'Ji', 'Geng', 'Xin', 'Ren', 'Gui',
-]);
-
 function isHeavenlyStem(s: string | undefined): s is HeavenlyStem {
-  return s != null && VALID_STEMS.has(s);
+  return s != null && s in STEM_ELEMENT;
 }
 
 // ── Props ─────────────────────────────────────────────────────────────────────
@@ -125,7 +122,7 @@ function Skeleton() {
           <div key={i} className="rounded-xl p-4 space-y-2" style={{ background: 'rgba(255,255,255,0.04)' }}>
             <div className="h-3 w-16 rounded bg-white/10" />
             <div className="h-4 w-24 rounded bg-white/10" />
-            <div className="h-3 w-32 rounded bg-white/8" />
+            <div className="h-3 w-32 rounded bg-white/10" />
           </div>
         ))}
       </div>

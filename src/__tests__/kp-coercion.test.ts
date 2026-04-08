@@ -5,11 +5,12 @@ import { describe, it, expect } from 'vitest';
  * We test the pure coercion logic in isolation.
  */
 function computeKpBadgeLabel(spaceWeather: Record<string, unknown>, lang = 'de'): string {
+  const effectiveLang = typeof spaceWeather.lang === 'string' ? spaceWeather.lang : lang;
   const kp = Number(spaceWeather.kp_index ?? spaceWeather.kp ?? 0);
   const gScale = kp >= 8 ? 'G5' : kp >= 6 ? 'G4' : kp >= 5 ? 'G3' : kp >= 4 ? 'G2' : kp >= 3 ? 'G1' : null;
   const labelDe = gScale ? `Kp ${kp.toFixed(1)} · ${gScale} Sturm` : `Kp ${kp.toFixed(1)} · Ruhig`;
-  const labelEn = gScale ? `Kp ${kp.toFixed(1)} · ${gScale} Storm` : `Kp ${kp.toFixed(1)} · Calm`;
-  return lang === 'de' ? labelDe : labelEn;
+  const labelEn = gScale ? `Kp ${kp.toFixed(1)} · ${gScale} storm` : `Kp ${kp.toFixed(1)} · Quiet`;
+  return effectiveLang === 'de' ? labelDe : labelEn;
 }
 
 describe('kp badge label — NOAA string input', () => {

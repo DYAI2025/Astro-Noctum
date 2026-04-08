@@ -322,9 +322,8 @@ Three new hooks provide live transit data, all fetching from BAFE endpoints:
 
 | Hook | BAFE source | Cache TTL | Output |
 |------|-------------|-----------|--------|
-| `useTransitNow()` | `GET /transit/now` | 5 min (in-memory) | `sector_intensity[12]` |
-| `useTransitState(soulprint, quiz)` | `POST /transit/state` | 15 min, keyed on input hash | `events[]`, `transit_contribution` |
-| `useDailyTransit(date, tz, lat, lon)` | `POST /calculate/western` with today's date | 1 hour, keyed on date | `bodies{}`, `aspects[]` |
+| `useFusionSignal(userId)` | `GET /api/transit-state/:userId` (server proxy to FuFirE) | 800ms poll, exponential backoff | `events[]`, `baseSignals[12]`, `transitIntensity` |
+| `useDailyTransit(date, tz, lat, lon)` | `GET /api/calculate/western` with today's date (noon UTC) | session-scoped, keyed on date | `bodies{}` with `degree_in_sign`, `is_retrograde` |
 
 `events[].description_de` and `events[].personal_context` are rendered verbatim — the client must not rewrite or re-template these server-generated texts.
 
@@ -354,9 +353,9 @@ useDailyTransit() ────────────────────�
   (POST /calculate/western, date=today)             │
   → bodies{ planet: {degree, sign, retrograde} }   │
                                                     ├──> AktiveEinfluesseFusion
-useTransitState(soulprint, quiz) ───────────────────┤    (6 planet cards)
-  (POST /transit/state)                             │
-  → events[], transit_contribution                  │
+useFusionSignal(userId) ─────────────────────────────┤    (6 planet cards)
+  (GET /api/transit-state/:userId)                  │
+  → events[], baseSignals[12], transitIntensity      │
          │                                          │
          └──> DayPulseExpanded                     │
               (description_de, personal_context)   │

@@ -254,9 +254,9 @@
 | BUG-18 | Vibe text not visible — CTA/tile not reachable or result text missing despite prior fix | frontend | Done | Fixed: VibesSection error state now shows retry button; server fallback produces valid kurzsignal |
 | BUG-19 | Tagesimpuls / Day Trace body text not visible despite prior fix | frontend | Done | Fixed: buildFallbackDaily provides local deterministic daily data when FuFirE/Gemini unreachable; DashboardTagesEnergie always renders |
 | BUG-20 | Quiz completion state resets on page reload — completed quiz appears uncompleted | frontend, api-server | Done | Fixed: addModule now persists individual completions to Supabase (fire-and-forget upsert), not just localStorage |
-| BUG-21 | Quiz result generation latency 3-4 minutes (expected: seconds) | api-server | Todo | Gemini timeout or missing cache hit; check /api/contribute → transit-state pipeline |
-| BUG-22 | Quiz headings contain DE/EN placeholder text instead of final copy | frontend | Todo | Audit all 22 quiz title/subtitle keys in translations + quiz definitions |
-| BUG-23 | UI layer covers ElevenLabs widget — agents cannot be selected/clicked | frontend | Todo | An overlay/layer (likely high z-index or pointer-events:auto on a transparent div) sits above the ElevenLabs widget on Dashboard; check DashboardLeviSection, grain-overlay, and any full-viewport absolute/fixed layers for z-index stacking context conflicts |
+| BUG-21 | Quiz result generation latency 3-4 minutes (expected: seconds) | api-server | Done | Fixed via TASK-quiz-result-latency-fix: refresh() + 500ms delay after quiz completion. Closed 2026-04-08. |
+| BUG-22 | Quiz headings contain DE/EN placeholder text instead of final copy | frontend | Done | Audit complete — all 24 quizzes have final DE+EN titles+subtitles (TASK-quiz-placeholder-headings-fix 2026-04-04). Closed 2026-04-08. |
+| BUG-23 | UI layer covers ElevenLabs widget — agents cannot be selected/clicked | frontend | Done | Fixed 2026-04-08: script global in index.html, widget via document.body.appendChild, position:fixed CSS, z-index:2147483647. Widget fully visible bottom-right. |
 
 ---
 
@@ -571,7 +571,7 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | TASK-levi-system-prompt | Configure ElevenLabs agent with Signatur V2 knowledge base | P1 | Done | - | - | 2026-03-30 | Enhanced /api/profile with dominant_element, signatur_summary, day_mode, vibes_summary | - | - | 2026-03-28 | See docs/LEVI_SIGNATUR_V2_KNOWLEDGE.md |
 | TASK-levi-auto-summary | Auto-summarize user profile after 3 Levi sessions via /api/agent/summary | P2 | Done | - | TASK-levi-system-prompt | 2026-03-30 | Gemini synthesis + agent_summary column | - | TASK-levi-system-prompt | 2026-03-28 | |
 | TASK-eve-brand-safety-review | Review Eve system prompt for brand safety before production launch | P1 | Done | [REQ-SEC-eve-brand-safety](../1-objectives/requirements/REQ-SEC-eve-brand-safety.md) | - | 2026-04-08 | Reviewed + approved by Ben 2026-04-08. 2 minor calibrations applied in ElevenLabs dashboard. docs/eve-brand-safety-checklist.md updated. |
-| TASK-agent-extensibility-verify | Verify adding 3rd agent requires config-only change (no structural code) | P2 | Todo | [REQ-MNT-agent-extensibility](../1-objectives/requirements/REQ-MNT-agent-extensibility.md) | - | 2026-03-29 | Smoke test: add mock agent to config, confirm renders |
+| TASK-agent-extensibility-verify | Verify adding 3rd agent requires config-only change (no structural code) | P2 | Done | [REQ-MNT-agent-extensibility](../1-objectives/requirements/REQ-MNT-agent-extensibility.md) | - | 2026-03-29 | Smoke test: add mock agent to config, confirm renders |
 | TASK-vibes-api-endpoint | Create `/api/vibes`: soulprint + transit + space weather → Gemini → 3-level JSON | P1 | Done | [REQ-F-vibes-core](../1-objectives/requirements/REQ-F-vibes-core.md) | - | 2026-03-30 | Implemented in Phase V1 | [REQ-F-vibes-core](../1-objectives/requirements/REQ-F-vibes-core.md) | - | 2026-03-30 | Reuses existing transit-state + space weather data |
 | TASK-vibes-gemini-prompt | Design Gemini prompt: 3-level structure, resource-oriented, no bare numbers, German | P1 | Done | [REQ-F-vibes-output-structure](../1-objectives/requirements/REQ-F-vibes-output-structure.md) | TASK-vibes-api-endpoint | 2026-03-30 | | [REQ-F-vibes-output-structure](../1-objectives/requirements/REQ-F-vibes-output-structure.md) | TASK-vibes-api-endpoint | 2026-03-30 | |
 | TASK-vibes-deterministic-cache | Deterministic cache: same user + same 30-min window = same result (L1 + L2 Supabase) | P1 | Done | [REQ-F-vibes-core](../1-objectives/requirements/REQ-F-vibes-core.md) | TASK-vibes-api-endpoint | 2026-03-30 | | [REQ-F-vibes-core](../1-objectives/requirements/REQ-F-vibes-core.md) | TASK-vibes-api-endpoint | 2026-03-30 | |
@@ -590,10 +590,10 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
 |----|------|----------|--------|-----|--------------|---------|-------|
 | TASK-mobile-signatur-3d | Mount SignaturCanvas on FuRingScreen (currently unused expo-gl + three.js component) | P2 | Done | [REQ-F-fusion-ring-visualization](../1-objectives/requirements/REQ-F-fusion-ring-visualization.md) | - | 2026-04-07 | SignaturCanvas (expo-gl/three.js, 6K particles, pan+pinch) replaces SignaturVisual; paused={!isFocused} halts render loop when tab not active; soulprintSectors passed directly |
-| TASK-mobile-offline-e2e | End-to-end test: offline quiz → queue → flush on reconnect | P2 | Todo | [REQ-F-quiz-contribution-system](../1-objectives/requirements/REQ-F-quiz-contribution-system.md) | - | 2026-03-28 | |
+| TASK-mobile-offline-e2e | End-to-end test: offline quiz → queue → flush on reconnect | P2 | In Progress | [REQ-F-quiz-contribution-system](../1-objectives/requirements/REQ-F-quiz-contribution-system.md) | - | 2026-03-28 | |
 | TASK-mobile-onboarding | Port onboarding flow to mobile (CosmicEncounterMobile fallback) | P2 | Todo | [REQ-F-cosmic-encounter-onboarding](../1-objectives/requirements/REQ-F-cosmic-encounter-onboarding.md) | TASK-onboarding-route | 2026-03-28 | |
 | TASK-ios-lockscreen-widget | Concept + prototype for daily Signatur widget on iOS Lock Screen | P2 | Todo | - | - | 2026-03-28 | Idea phase |
-| TASK-mobile-vibes-integration | Add Vibes button + Weekly link to mobile app (same API, adapted layout) | P1 | Todo | [REQ-USA-mobile-first-readability](../1-objectives/requirements/REQ-USA-mobile-first-readability.md) | TASK-vibes-api-endpoint, TASK-weekly-api-endpoint | 2026-03-30 | |
+| TASK-mobile-vibes-integration | Add Vibes button + Weekly link to mobile app (same API, adapted layout) | P1 | Done | [REQ-USA-mobile-first-readability](../1-objectives/requirements/REQ-USA-mobile-first-readability.md) | TASK-vibes-api-endpoint, TASK-weekly-api-endpoint | 2026-03-30 | |
 
 ## Deploy & Operations
 
