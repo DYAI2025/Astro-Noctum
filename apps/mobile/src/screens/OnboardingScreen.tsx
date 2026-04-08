@@ -121,6 +121,14 @@ function OrbBackdrop({ visible }: { visible: boolean }) {
 
 // ── Birth input form ──────────────────────────────────────────────────────────
 
+function isValidDate(s: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(s);
+}
+
+function isValidTime(s: string): boolean {
+  return /^\d{2}:\d{2}$/.test(s);
+}
+
 function formatDateForApi(date: string, time: string): string {
   return `${date}T${time}:00`;
 }
@@ -205,6 +213,19 @@ export function OnboardingScreen({ onCompleted }: Props) {
       const message = "Längengrad muss zwischen -180 und 180 liegen.";
       setError(message);
       Alert.alert("Ungültiger Längengrad", message);
+      return;
+    }
+
+    if (!isValidDate(date)) {
+      const message = "Bitte gib das Datum im Format JJJJ-MM-TT ein.";
+      setError(message);
+      Alert.alert("Ungültiges Datum", message);
+      return;
+    }
+    if (!timeUnknown && !isValidTime(time)) {
+      const message = "Bitte gib die Uhrzeit im Format HH:MM ein.";
+      setError(message);
+      Alert.alert("Ungültige Uhrzeit", message);
       return;
     }
 

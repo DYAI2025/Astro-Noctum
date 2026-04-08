@@ -88,6 +88,62 @@ describe('OrbBackdrop stylesheet', () => {
   });
 });
 
+// ── isValidDate / isValidTime (inlined from OnboardingScreen) ────────────────
+
+function isValidDate(s: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(s);
+}
+
+function isValidTime(s: string): boolean {
+  return /^\d{2}:\d{2}$/.test(s);
+}
+
+describe('isValidDate', () => {
+  it('accepts valid ISO date', () => {
+    expect(isValidDate('1990-01-15')).toBe(true);
+  });
+
+  it('rejects date with slashes', () => {
+    expect(isValidDate('1990/01/15')).toBe(false);
+  });
+
+  it('rejects partial date', () => {
+    expect(isValidDate('1990-01')).toBe(false);
+  });
+
+  it('rejects empty string', () => {
+    expect(isValidDate('')).toBe(false);
+  });
+
+  it('rejects date with letters', () => {
+    expect(isValidDate('YYYY-MM-DD')).toBe(false);
+  });
+});
+
+describe('isValidTime', () => {
+  it('accepts valid HH:MM time', () => {
+    expect(isValidTime('12:00')).toBe(true);
+    expect(isValidTime('23:59')).toBe(true);
+    expect(isValidTime('00:00')).toBe(true);
+  });
+
+  it('rejects time with seconds', () => {
+    expect(isValidTime('12:00:00')).toBe(false);
+  });
+
+  it('rejects empty string', () => {
+    expect(isValidTime('')).toBe(false);
+  });
+
+  it('rejects time with letters', () => {
+    expect(isValidTime('HH:MM')).toBe(false);
+  });
+
+  it('rejects single-digit hour', () => {
+    expect(isValidTime('9:00')).toBe(false);
+  });
+});
+
 describe('OrbBackdrop animation cleanup', () => {
   it('cleanup ref is populated once entrance animation starts', () => {
     // Simulate the pattern: ref holds the loop so cleanup can stop it
