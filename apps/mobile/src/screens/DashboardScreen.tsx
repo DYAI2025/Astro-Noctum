@@ -158,11 +158,11 @@ export function DashboardScreen() {
             <Text style={styles.vibesLevel1}>{vibes.data.level1.text}</Text>
 
             {/* Source: /api/vibes → level2.text (Treiber) */}
-            <Text style={[styles.body, { marginTop: 4 }]}>{vibes.data.level2.text}</Text>
+            <Text style={[styles.body, styles.mt4]}>{vibes.data.level2.text}</Text>
 
             {/* Level 3 behind "Warum?" tap */}
             {vibes.data.level3 && (
-              <Pressable onPress={() => setShowVibesLevel3(v => !v)} style={{ marginTop: 8 }}>
+              <Pressable onPress={() => setShowVibesLevel3(v => !v)} style={styles.mt8}>
                 <Text style={styles.vibesWhy}>{showVibesLevel3 ? 'Weniger' : 'Warum sehe ich das? →'}</Text>
               </Pressable>
             )}
@@ -180,11 +180,11 @@ export function DashboardScreen() {
         ) : vibes.error ? (
           <Text style={styles.errorText}>{vibes.error}</Text>
         ) : (
-          <Text style={[styles.body, { opacity: 0.5 }]}>Hol dir deinen persönlichen Vibe für die nächsten 2 Stunden.</Text>
+          <Text style={[styles.body, styles.dimmed]}>Hol dir deinen persönlichen Vibe für die nächsten 2 Stunden.</Text>
         )}
 
         <Pressable
-          style={[styles.vibesButton, vibes.loading && { opacity: 0.5 }]}
+          style={[styles.vibesButton, vibes.loading && styles.dimmed]}
           onPress={vibes.fetch}
           disabled={vibes.loading}
         >
@@ -215,14 +215,14 @@ export function DashboardScreen() {
                   {/* Source: /api/weekly-insights → areas[].tendency */}
                   <Text style={styles.weeklyTendency}>{area.tendency}</Text>
                   {/* Source: /api/weekly-insights → areas[].statement (Gemini) */}
-                  <Text style={[styles.body, { marginTop: 2 }]}>{area.statement}</Text>
+                  <Text style={[styles.body, styles.mt2]}>{area.statement}</Text>
                 </View>
               ))}
 
             {weekly.data.areas.length > 3 && (
-              <Pressable onPress={() => setShowWeekly(v => !v)} style={{ marginTop: 4 }}>
+              <Pressable onPress={() => setShowWeekly(v => !v)} style={styles.mt4}>
                 <Text style={styles.vibesWhy}>
-                  {showWeekly ? 'Weniger anzeigen' : `Alle ${weekly.data!.areas.length} Bereiche →`}
+                  {showWeekly ? 'Weniger anzeigen' : `Alle ${weekly.data.areas.length} Bereiche →`}
                 </Text>
               </Pressable>
             )}
@@ -230,11 +230,11 @@ export function DashboardScreen() {
         ) : weekly.error ? (
           <Text style={styles.errorText}>{weekly.error}</Text>
         ) : (
-          <Text style={[styles.body, { opacity: 0.5 }]}>7 Lebensbereiche — Trends für diese Woche.</Text>
+          <Text style={[styles.body, styles.dimmed]}>7 Lebensbereiche — Trends für diese Woche.</Text>
         )}
 
         <Pressable
-          style={[styles.vibesButton, weekly.loading && { opacity: 0.5 }]}
+          style={[styles.vibesButton, weekly.loading && styles.dimmed]}
           onPress={weekly.fetch}
           disabled={weekly.loading}
         >
@@ -371,6 +371,10 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 0.8,
   },
+  mt2: { marginTop: 2 },
+  mt4: { marginTop: 4 },
+  mt8: { marginTop: 8 },
+  dimmed: { opacity: 0.5 },
   errorText: {
     color: "#ef4444",
     fontSize: 13,
