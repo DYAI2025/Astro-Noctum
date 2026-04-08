@@ -64,6 +64,30 @@ describe('wuxingToSoulprint', () => {
   });
 });
 
+describe('OrbBackdrop stylesheet', () => {
+  it('orbGold stylesheet entry does not contain static opacity (animated value is sole authority)', async () => {
+    const fs = await import('fs');
+    const src = fs.readFileSync(
+      'apps/mobile/src/screens/OnboardingScreen.tsx',
+      'utf-8'
+    );
+    const orbGoldMatch = src.match(/orbGold:\s*\{([^}]+)\}/s);
+    expect(orbGoldMatch).not.toBeNull();
+    expect(orbGoldMatch![1]).not.toMatch(/\bopacity\s*:/);
+  });
+
+  it('orbCyan stylesheet entry does not contain static opacity', async () => {
+    const fs = await import('fs');
+    const src = fs.readFileSync(
+      'apps/mobile/src/screens/OnboardingScreen.tsx',
+      'utf-8'
+    );
+    const orbCyanMatch = src.match(/orbCyan:\s*\{([^}]+)\}/s);
+    expect(orbCyanMatch).not.toBeNull();
+    expect(orbCyanMatch![1]).not.toMatch(/\bopacity\s*:/);
+  });
+});
+
 describe('OrbBackdrop animation cleanup', () => {
   it('cleanup ref is populated once entrance animation starts', () => {
     // Simulate the pattern: ref holds the loop so cleanup can stop it

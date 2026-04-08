@@ -514,7 +514,6 @@ const styles = StyleSheet.create({
     height: 180,
     borderRadius: 90,
     backgroundColor: '#D4AF37',
-    opacity: 0.18,
     top: SCREEN_H * 0.25,
     left: SCREEN_W * 0.05,
     // Soft glow via shadow
@@ -529,7 +528,6 @@ const styles = StyleSheet.create({
     height: 140,
     borderRadius: 70,
     backgroundColor: '#00F5FF',
-    opacity: 0.14,
     top: SCREEN_H * 0.3,
     right: SCREEN_W * 0.05,
     shadowColor: '#00F5FF',
