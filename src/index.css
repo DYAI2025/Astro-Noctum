@@ -761,7 +761,11 @@ h1, h2, h3, h4, h5, h6 {
    never be covered by our own UI elements (panels, overlays, nav bar).
    z-index: 2147483647 is the browser maximum — nothing can be higher.    */
 elevenlabs-convai {
-  position: relative;
+  /* Fixed to viewport bottom-right — widget anchors itself regardless
+     of where in the DOM it sits (appended to body end by React hook) */
+  position: fixed !important;
+  bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+  right: 16px !important;
   z-index: 2147483647 !important;
   overflow: visible !important;
   pointer-events: auto !important;
@@ -787,14 +791,13 @@ div[class*="elevenlabs"] {
 }
 
 /* Body-level overlays appended by the ElevenLabs SDK.
-   z-index and position are forced so the widget always floats above page content.
-   pointer-events:auto ensures SDK overlays remain interactive (BUG-23 fix).     */
+   Max z-index + pointer-events:auto. position NOT overridden —
+   the SDK manages its own overlay positioning (BUG-23).               */
 body > div[class*="eleven"],
 body > div[id*="eleven"],
 body > div[class*="convai"],
 body > div[id*="convai"] {
   z-index: 2147483647 !important;
-  position: fixed !important;
   pointer-events: auto !important;
 }
 
