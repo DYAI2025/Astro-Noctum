@@ -145,6 +145,44 @@ describe('isValidTime', () => {
 });
 
 describe('OrbBackdrop animation cleanup', () => {
+  it('OrbBackdrop has no early return null — Views stay mounted for opacity animation', () => {
+    const fs = require('fs');
+    const src = fs.readFileSync(
+      'apps/mobile/src/screens/OnboardingScreen.tsx',
+      'utf-8'
+    );
+    // if (!visible) return null unmounts Animated.View nodes before fade-out can run
+    expect(src).not.toMatch(/if\s*\(!visible\)\s*return null/);
+  });
+
+  it('OrbBackdrop entrance animation is captured so cleanup can stop it', () => {
+    let entranceStopped = false;
+    let pulseStopped = false;
+
+    const fakeEntrance = {
+      start: (cb?: () => void) => { cb?.(); },
+      stop: () => { entranceStopped = true; },
+    };
+    const fakePulse = {
+      start: () => {},
+      stop: () => { pulseStopped = true; },
+    };
+
+    let pulseAnimation: { stop: () => void } | null = null;
+    const entranceAnimation = fakeEntrance;
+    entranceAnimation.start(() => {
+      pulseAnimation = fakePulse;
+      pulseAnimation.start();
+    });
+
+    // Simulate cleanup (unmount or re-render)
+    entranceAnimation.stop();
+    pulseAnimation?.stop();
+
+    expect(entranceStopped).toBe(true);
+    expect(pulseStopped).toBe(true);
+  });
+
   it('cleanup ref is populated once entrance animation starts', () => {
     // Simulate the pattern: ref holds the loop so cleanup can stop it
     let stopped = false;

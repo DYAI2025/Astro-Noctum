@@ -72,37 +72,35 @@ function OrbBackdrop({ visible }: { visible: boolean }) {
   const goldPulse    = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    let pulseAnimation: Animated.CompositeAnimation | null = null;
+    // When not visible: skip setup — Views remain mounted at opacity 0.
+    // Returning null early would unmount Animated.View nodes before any
+    // exit animation could run. visible is always true at call sites.
+    if (!visible) return;
 
-    if (visible) {
-      Animated.parallel([
-        Animated.spring(goldOpacity, { toValue: 1, useNativeDriver: true, friction: 5 }),
-        Animated.spring(cyanOpacity, { toValue: 1, useNativeDriver: true, friction: 5, delay: 300 }),
-        Animated.spring(goldScale,   { toValue: 1, useNativeDriver: true, friction: 6 }),
-        Animated.spring(cyanScale,   { toValue: 1, useNativeDriver: true, friction: 6, delay: 300 }),
-      ]).start(() => {
-        pulseAnimation = Animated.loop(
-          Animated.sequence([
-            Animated.timing(goldPulse, { toValue: 1.08, duration: 2800, useNativeDriver: true }),
-            Animated.timing(goldPulse, { toValue: 0.94, duration: 2800, useNativeDriver: true }),
-          ])
-        );
-        pulseAnimation.start();
-      });
-    } else {
-      Animated.parallel([
-        Animated.timing(goldOpacity, { toValue: 0, duration: 400, useNativeDriver: true }),
-        Animated.timing(cyanOpacity, { toValue: 0, duration: 400, useNativeDriver: true }),
-      ]).start();
-    }
+    let pulseAnimation: Animated.CompositeAnimation | null = null;
+    const entranceAnimation = Animated.parallel([
+      Animated.spring(goldOpacity, { toValue: 1, useNativeDriver: true, friction: 5 }),
+      Animated.spring(cyanOpacity, { toValue: 1, useNativeDriver: true, friction: 5, delay: 300 }),
+      Animated.spring(goldScale,   { toValue: 1, useNativeDriver: true, friction: 6 }),
+      Animated.spring(cyanScale,   { toValue: 1, useNativeDriver: true, friction: 6, delay: 300 }),
+    ]);
+    entranceAnimation.start(() => {
+      pulseAnimation = Animated.loop(
+        Animated.sequence([
+          Animated.timing(goldPulse, { toValue: 1.08, duration: 2800, useNativeDriver: true }),
+          Animated.timing(goldPulse, { toValue: 0.94, duration: 2800, useNativeDriver: true }),
+        ])
+      );
+      pulseAnimation.start();
+    });
 
     return () => {
+      entranceAnimation.stop();
       pulseAnimation?.stop();
     };
   }, [visible, goldOpacity, cyanOpacity, goldScale, cyanScale, goldPulse]);
 
-  if (!visible) return null;
-
+  // Views stay mounted: opacity starts at 0, entrance animation brings them in.
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
       {/* Gold orb — "Die Form" (left side) */}
