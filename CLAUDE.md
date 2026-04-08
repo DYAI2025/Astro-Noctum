@@ -15,7 +15,7 @@ Bazodiac (Astro-Noctum) — a fusion astrology web + mobile app combining Wester
 
 Run `/SDLC-status` or check `3-code/tasks.md` + `git log` for live project state. Do not rely on hardcoded counts in this file.
 
-**Implementation progress (2026-04-08):** 259/265 tasks Done. TASK-einfluesse-stem-fallback done: AktiveEinfluesseFusion no longer returns null when dayMasterStem absent — renders Western block + "BaZi-Profil nicht verfügbar" notice per REQ-F-dashboard-bazi-fusion-bridge AC 9. 3 Phase H2 P1 tasks remain (resonance-tension, field-strength, ac-tests). Phase F blocked on 6 open questions.
+**Implementation progress (2026-04-09):** 263/269 tasks Done. Cluster M (display_name P0) shipped: BirthForm collects display name (required, ≤50 chars), saved to profiles only — never forwarded to FuFirE (DEC-display-name-db-only). Agent /api/profile returns display_name from profiles. Migration file created. 1469 tests green. REQ-F-onboarding-display-name: Implemented. 3 Phase H2 P1 tasks remain (resonance-tension, field-strength, ac-tests). Phase F blocked on 6 open questions.
 
 ---
 

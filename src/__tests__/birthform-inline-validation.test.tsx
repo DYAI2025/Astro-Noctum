@@ -59,6 +59,12 @@ function renderForm(onSubmit = vi.fn()) {
   render(<BirthForm onSubmit={onSubmit} isLoading={false} />);
 }
 
+function fillName(name = 'Test User') {
+  fireEvent.change(screen.getByPlaceholderText('Wie sollen wir dich nennen?'), {
+    target: { value: name },
+  });
+}
+
 function clickNext() {
   fireEvent.click(screen.getByText('Weiter'));
 }
@@ -79,6 +85,7 @@ describe('BirthForm inline validation', () => {
 
   it('advances to step 2 with default time — no confirm dialog needed', () => {
     renderForm();
+    fillName();
     // time defaults to "12:00", so clicking Next should go to step 2 without any confirm
     clickNext();
     // Step 2 heading is visible; step 1 heading is gone
@@ -107,6 +114,7 @@ describe('BirthForm inline validation', () => {
   it('shows inline error for invalid timezone on submit (step 2)', () => {
     const onSubmit = vi.fn();
     renderForm(onSubmit);
+    fillName();
     clickNext(); // advance to step 2
     const tzInput = screen.getByDisplayValue('Europe/Berlin');
     fireEvent.change(tzInput, { target: { value: 'NotATimezone/Invalid' } });
@@ -117,6 +125,7 @@ describe('BirthForm inline validation', () => {
 
   it('clears timezone error when timezone is edited', () => {
     renderForm();
+    fillName();
     clickNext();
     const tzInput = screen.getByDisplayValue('Europe/Berlin');
     fireEvent.change(tzInput, { target: { value: 'NotATimezone/Invalid' } });
@@ -129,6 +138,7 @@ describe('BirthForm inline validation', () => {
   it('shows inline error for future date on submit and returns to step 1', () => {
     const onSubmit = vi.fn();
     renderForm(onSubmit);
+    fillName();
     const dateInput = screen.getByDisplayValue('1990-01-01');
     fireEvent.change(dateInput, { target: { value: '2099-01-01' } });
     // Next only checks empty date — future date passes through to step 2
@@ -141,9 +151,20 @@ describe('BirthForm inline validation', () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
+  it('shows inline error when display name is empty on submit', () => {
+    const onSubmit = vi.fn();
+    renderForm(onSubmit);
+    // Do NOT fill name — click Next then submit
+    clickNext();
+    fireEvent.click(screen.getByText('Berechnen'));
+    expect(screen.getByText('Bitte gib deinen Namen ein.')).toBeDefined();
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
   it('calls onSubmit with valid data (no alert shown)', () => {
     const onSubmit = vi.fn();
     renderForm(onSubmit);
+    fillName();
     clickNext();
     fireEvent.click(screen.getByText('Berechnen'));
     // Default valid state: date=1990-01-01, time=12:00, coords=52.52, 13.405, tz=Europe/Berlin

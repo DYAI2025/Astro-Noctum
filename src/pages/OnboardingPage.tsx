@@ -22,7 +22,7 @@ type Props = {
   isLoading: boolean;
   error: string | null;
   persistError?: string | null;
-  onSubmitBirth: (formData: { date: string; tz: string; lon: number; lat: number }) => void | Promise<void>;
+  onSubmitBirth: (formData: { date: string; tz: string; lon: number; lat: number; place?: string; displayName?: string }) => void | Promise<void>;
   onSignatureComplete: (delta: SignatureDeltaResponse | null) => void;
   onEncounterComplete?: (delta: SignatureDeltaResponse | null) => void;
   ambientePause?: () => void;

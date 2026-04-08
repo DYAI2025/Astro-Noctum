@@ -15,6 +15,7 @@ import { AgentProvider, useAgent } from "./contexts/AgentContext";
 import { AgentFloatingWidget } from "./components/AgentFloatingWidget";
 import { AppRoutes } from "./router";
 import { bootstrapExperience } from "./services/experience";
+import { saveDisplayName } from "./services/supabase";
 import { BrandedLoader } from "./components/BrandedLoader";
 import { usePremium } from "./hooks/usePremium";
 import { isFeatureEnabled } from "./lib/feature-flags";
@@ -152,8 +153,15 @@ export default function App() {
   };
 
   // ── Onboarding submit: coordinate BAFE flow with bootstrap ──────────
-  const handleOnboardingSubmit = async (formData: { date: string; tz: string; lon: number; lat: number }) => {
+  const handleOnboardingSubmit = async (formData: { date: string; tz: string; lon: number; lat: number; displayName?: string }) => {
     setHasStartedOnboarding(true);
+
+    // Persist display_name to profiles (DB-only, never forwarded to FuFirE — DEC-display-name-db-only)
+    if (user && formData.displayName) {
+      saveDisplayName(user.id, formData.displayName).catch((e) =>
+        console.warn('[onboarding] display_name save failed:', e)
+      );
+    }
 
     // If the signature onboarding feature is disabled, keep the existing
     // behavior: immediately start the BAFE flow and return.

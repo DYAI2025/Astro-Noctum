@@ -28,3 +28,4 @@
 - Requirements: ~~[REQ-F-signatur-mobile-native](../requirements/REQ-F-signatur-mobile-native.md)~~ (Deprecated — replaced by [REQ-F-signatur-ios-swift](../requirements/REQ-F-signatur-ios-swift.md))
 - Requirements: [REQ-F-depth-navigation](../requirements/REQ-F-depth-navigation.md)
 - Requirements: [REQ-F-progressive-ui-fluidity](../requirements/REQ-F-progressive-ui-fluidity.md)
+- Requirements: [REQ-F-onboarding-display-name](../requirements/REQ-F-onboarding-display-name.md)

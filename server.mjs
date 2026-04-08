@@ -3741,6 +3741,19 @@ app.get("/api/profile/:userId", async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 
+  // DEC-display-name-db-only: read display_name from profiles, not from engine response
+  let displayName = null;
+  try {
+    const { data: profileRow } = await supabaseServer
+      .from("profiles")
+      .select("display_name")
+      .eq("id", userId)
+      .single();
+    displayName = profileRow?.display_name || null;
+  } catch (e) {
+    console.warn("[profile] display_name fetch failed:", e.message);
+  }
+
   // Build a concise summary for Levi instead of dumping raw BAFE data.
   // ElevenLabs agents have limited context — send only what's interpretable.
   const raw = data.astro_json || {};
@@ -3881,6 +3894,7 @@ app.get("/api/profile/:userId", async (req, res) => {
 
   res.json({
     user_id: data.user_id,
+    display_name: displayName,
     birth_date: data.birth_date,
     birth_time: data.birth_time,
     timezone: data.iana_time_zone,

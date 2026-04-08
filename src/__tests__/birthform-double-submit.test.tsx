@@ -28,6 +28,10 @@ describe('BirthForm double-submit prevention', () => {
   it('only calls onSubmit once on rapid double-click', () => {
     render(<BirthForm onSubmit={mockSubmit} isLoading={false} />);
 
+    // Fill required name field before advancing
+    const nameInput = screen.getByPlaceholderText('Wie sollen wir dich nennen?');
+    fireEvent.change(nameInput, { target: { value: 'Test User' } });
+
     // Go to step 2 first
     const buttons = screen.getAllByRole('button');
     const nextBtn = buttons.find(b => b.textContent?.includes('form.nextBtn') || b.textContent?.includes('Weiter'));

@@ -802,6 +802,15 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | TASK-einfluesse-field-strength | Add field-strength indicator under resonance badge: small visual bar derived from `resonance.intensity`, labeled "Feldstärke" with three qualitative tiers (gering/mittel/stark) — no raw float, no % | P1 | Todo | [REQ-F-dashboard-live-daily-signals](../1-objectives/requirements/REQ-F-dashboard-live-daily-signals.md) | TASK-einfluesse-resonance-tension | 2026-04-08 | REQ-F-dashboard-live-daily-signals AC 7; DEC-no-number-without-explanation |
 | TASK-einfluesse-ac-tests | Vitest: AC-coverage — stem-fallback renders Western block without BaZi block; resonance-type→blue for gleichklang/naehrung, red for kontrolle, muted for neutral; field-strength renders qualitative tier label for low/mid/high intensity | P1 | Todo | [REQ-F-dashboard-bazi-fusion-bridge](../1-objectives/requirements/REQ-F-dashboard-bazi-fusion-bridge.md), [REQ-F-dashboard-live-daily-signals](../1-objectives/requirements/REQ-F-dashboard-live-daily-signals.md) | TASK-einfluesse-field-strength | 2026-04-08 | |
 
+### Cluster M — Display Name: Onboarding Field + Profile Persistence (P0)
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-display-name-schema | Add `NOT NULL CHECK(char_length <= 50)` to `profiles.display_name`; create migration file; update `supabase-schema.sql` | P0 | Done | [REQ-F-onboarding-display-name](../1-objectives/requirements/REQ-F-onboarding-display-name.md) | - | 2026-04-09 | DEC-display-name-db-only |
+| TASK-display-name-onboarding-field | Add display name input field to BirthForm (required, max 50 chars, German label "Dein Name"); wire into form state + submit | P0 | Done | [REQ-F-onboarding-display-name](../1-objectives/requirements/REQ-F-onboarding-display-name.md) | TASK-display-name-schema | 2026-04-09 | |
+| TASK-display-name-save | Persist display_name to `profiles` table on submit; never include in BAFE/FuFirE payload; add `saveDisplayName()` to supabase.ts | P0 | Done | [REQ-F-onboarding-display-name](../1-objectives/requirements/REQ-F-onboarding-display-name.md) | TASK-display-name-onboarding-field | 2026-04-09 | DEC-display-name-db-only |
+| TASK-display-name-agent | Read `display_name` from `profiles` table in `/api/profile/:userId` handler; include in response as `display_name` field; Agent reads from DB, not engine response | P0 | Done | [REQ-F-onboarding-display-name](../1-objectives/requirements/REQ-F-onboarding-display-name.md) | TASK-display-name-save | 2026-04-09 | DEC-display-name-db-only |
+
 ---
 
 ## Backlog (Not Scheduled)

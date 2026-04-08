@@ -35,6 +35,7 @@ This phase defines **how** we're building the system. Focus on architecture, dat
 | [DEC-fusion-bazi-sheng-ke](decisions/DEC-fusion-bazi-sheng-ke.md) | Planet-to-Wu-Xing mapping + Sheng/Ke resonance algorithm (locked) | When implementing or modifying fusion-bazi/resonance.ts or any planet-element mapping |
 | [DEC-vibes-gemini-strategy](decisions/DEC-vibes-gemini-strategy.md) | Gemini for Vibes and Weekly Insights generation with two-level caching | When modifying Vibes/Weekly generation logic, model, prompts, or cache strategy |
 | [DEC-navigation-shell](decisions/DEC-navigation-shell.md) | Top bar: 3 primary items + Settings menu; horizontal bar preserved; mobile responsive | When adding nav items, implementing top bar or Settings, or making mobile layout decisions |
+| [DEC-display-name-db-only](decisions/DEC-display-name-db-only.md) | display_name stored in DB only — never forwarded to FuFirE or any calculation engine | When designing onboarding endpoint, FuFirE request payloads, or profile-related API contracts |
 
 ---
 
