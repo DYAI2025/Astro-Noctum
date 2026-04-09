@@ -131,6 +131,10 @@ const translationsEn: DeepStringRecord = {
     invalidDate: "Please enter a valid date.",
     futureDate: "Please enter a birth date in the past.",
     noTime: "You have not entered a time. Use 12:00 as default?",
+    nameLabel: "Your name",
+    namePlaceholder: "What should we call you?",
+    nameRequired: "Please enter your name.",
+    nameTooLong: "Name must be 50 characters or fewer.",
   },
   furing3d: {
     back: "Dashboard",
@@ -594,6 +598,10 @@ const translationsDe: DeepStringRecord = {
     invalidDate: "Bitte gib ein gültiges Datum ein.",
     futureDate: "Bitte ein Geburtsdatum in der Vergangenheit angeben.",
     noTime: "Du hast keine Uhrzeit angegeben. Sollen wir 12:00 Uhr als Standard verwenden?",
+    nameLabel: "Dein Name",
+    namePlaceholder: "Wie sollen wir dich nennen?",
+    nameRequired: "Bitte gib deinen Namen ein.",
+    nameTooLong: "Name darf maximal 50 Zeichen lang sein.",
   },
   furing3d: {
     back: "Dashboard",
