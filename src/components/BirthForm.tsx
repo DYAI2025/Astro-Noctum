@@ -36,8 +36,17 @@ function isDst(dateStr: string, tz: string): boolean | null {
   }
 }
 
+export interface OnboardingBirthData {
+  date: string;
+  tz: string;
+  lon: number;
+  lat: number;
+  place?: string;
+  displayName?: string;
+}
+
 interface BirthFormProps {
-  onSubmit: (data: { date: string; tz: string; lon: number; lat: number; place?: string; displayName?: string }) => void;
+  onSubmit: (data: OnboardingBirthData) => void;
   isLoading: boolean;
 }
 
@@ -119,9 +128,9 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
     const newErrors: Record<string, string> = {};
 
     if (!displayName.trim()) {
-      newErrors.displayName = "Bitte gib deinen Namen ein.";
+      newErrors.displayName = t("form.nameRequired");
     } else if (displayName.trim().length > 50) {
-      newErrors.displayName = "Name darf maximal 50 Zeichen lang sein.";
+      newErrors.displayName = t("form.nameTooLong");
     }
 
     // ISO YYYY-MM-DD strings: lexicographic order matches chronological order
@@ -227,7 +236,7 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
             {/* ── Display name ───────────────────────────────────────── */}
             <div className="space-y-2">
               <label className="text-[8px] uppercase tracking-widest text-[#1E2A3A]/50">
-                Dein Name
+                {t("form.nameLabel")}
               </label>
               <input
                 type="text"
@@ -235,7 +244,7 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
                 maxLength={50}
                 value={displayName}
                 onChange={(e) => { setDisplayName(e.target.value); setErrors((e2) => ({ ...e2, displayName: "" })); }}
-                placeholder="Wie sollen wir dich nennen?"
+                placeholder={t("form.namePlaceholder")}
                 className={errors.displayName ? inputErrorCls : inputCls}
               />
               {showError("displayName")}

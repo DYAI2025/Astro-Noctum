@@ -58,6 +58,21 @@ export interface BafeTstResponse {
   [key: string]: unknown;
 }
 
+/** Unified response from BAFE /calculate/chart — all sub-domains in one payload. */
+export interface ChartResponse {
+  bazi?: BafeBaziResponse;
+  /** Western planet bodies — /chart uses "positions", individual /western uses "bodies". */
+  positions?: Record<string, BafeWesternBody>;
+  bodies?: Record<string, BafeWesternBody>;   // fallback alias
+  angles?: { Ascendant?: number; MC?: number; [key: string]: number | undefined };
+  houses?: Record<string, number | string>;
+  wuxing?: BafeWuxingResponse;
+  fusion?: BafeFusionResponse;
+  /** TST data — /chart nests this under time_scales. */
+  time_scales?: BafeTstResponse;
+  [key: string]: unknown;
+}
+
 // ── Mapped shapes (what Dashboard consumes after api.ts transforms) ──
 
 export interface MappedPillar {

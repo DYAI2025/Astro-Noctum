@@ -2,7 +2,7 @@ import { useEffect, useRef, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 
-import { BirthForm } from '@/src/components/BirthForm';
+import { BirthForm, type OnboardingBirthData } from '@/src/components/BirthForm';
 import { SignatureReveal } from '@/src/components/onboarding/SignatureReveal';
 import type { BootstrapResponse, SignatureDeltaResponse } from '@/src/lib/schemas/experience';
 import type { ApiData } from '@/src/types/bafe';
@@ -22,7 +22,7 @@ type Props = {
   isLoading: boolean;
   error: string | null;
   persistError?: string | null;
-  onSubmitBirth: (formData: { date: string; tz: string; lon: number; lat: number; place?: string; displayName?: string }) => void | Promise<void>;
+  onSubmitBirth: (formData: OnboardingBirthData) => void | Promise<void>;
   onSignatureComplete: (delta: SignatureDeltaResponse | null) => void;
   onEncounterComplete?: (delta: SignatureDeltaResponse | null) => void;
   ambientePause?: () => void;

@@ -29,7 +29,7 @@ describe('BirthForm double-submit prevention', () => {
     render(<BirthForm onSubmit={mockSubmit} isLoading={false} />);
 
     // Fill required name field before advancing
-    const nameInput = screen.getByPlaceholderText('Wie sollen wir dich nennen?');
+    const nameInput = screen.getByPlaceholderText('form.namePlaceholder');
     fireEvent.change(nameInput, { target: { value: 'Test User' } });
 
     // Go to step 2 first

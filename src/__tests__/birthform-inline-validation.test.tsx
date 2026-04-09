@@ -32,6 +32,10 @@ vi.mock('../contexts/LanguageContext', () => ({
         'form.manualCoords': 'Koordinaten manuell eingeben',
         'form.mapToggleOpen': 'Karte öffnen',
         'form.mapToggleClose': 'Karte schließen',
+        'form.nameLabel': 'Dein Name',
+        'form.namePlaceholder': 'Wie sollen wir dich nennen?',
+        'form.nameRequired': 'Bitte gib deinen Namen ein.',
+        'form.nameTooLong': 'Name darf maximal 50 Zeichen lang sein.',
       };
       return map[key] ?? key;
     },
@@ -157,7 +161,7 @@ describe('BirthForm inline validation', () => {
     // Do NOT fill name — click Next then submit
     clickNext();
     fireEvent.click(screen.getByText('Berechnen'));
-    expect(screen.getByText('Bitte gib deinen Namen ein.')).toBeDefined();
+    expect(screen.getByText('Bitte gib deinen Namen ein.')).toBeDefined(); // form.nameRequired
     expect(onSubmit).not.toHaveBeenCalled();
   });
 

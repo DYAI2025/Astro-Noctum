@@ -16,6 +16,7 @@ import { MyzeliumNetwork } from './MyzeliumNetwork';
 import { useParallax } from './useParallax';
 import { toNatalWeightsOrUndefined } from '@/src/lib/signatur/weight-utils';
 import type { BootstrapResponse, SignatureDeltaResponse } from '../../lib/schemas/experience';
+import type { OnboardingBirthData } from '../BirthForm';
 
 // Lazy-load heavy ring components
 const FusionRingReveal = lazy(() => import('./FusionRingReveal'));
@@ -48,7 +49,7 @@ const LEVI_TEXTS = {
 // ── Props ────────────────────────────────────────────────────────────
 
 interface CosmicEncounterProps {
-  onSubmitBirth: (data: { date: string; tz: string; lon: number; lat: number; place?: string; displayName?: string }) => void;
+  onSubmitBirth: (data: OnboardingBirthData) => void;
   onComplete: (deltaData: SignatureDeltaResponse | null) => void;
   bootstrapData: BootstrapResponse | null;
   isLoading: boolean;
@@ -151,7 +152,7 @@ export function CosmicEncounter({
   // ── Phase 3→4: birth-input → calculating ─────────────────────────
 
   const handleBirthSubmit = useCallback(
-    (data: { date: string; tz: string; lon: number; lat: number; place?: string; displayName?: string }) => {
+    (data: OnboardingBirthData) => {
       setPhase('calculating');
       setLeviText(LEVI_TEXTS.calculating);
       setLeviVisible(true);
