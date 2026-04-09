@@ -113,4 +113,69 @@ describe('AktiveEinfluesseFusion', () => {
       unmount();
     });
   });
+
+  // ── REQ-F-dashboard-live-daily-signals AC 4+5: dual-dimension color encoding ──
+  //
+  // Stem Jia (Wood) produces known resonance types per DEC-fusion-bazi-sheng-ke:
+  //   Jupiter (Wood)  → gleichklang (same element)         → blue card
+  //   Moon    (Water) → naehrung    (Water generates Wood)  → blue card
+  //   Venus   (Metal) → kontrolle   (Metal controls Wood)   → red card
+  //   Saturn  (Earth) → kontrolle   (Wood controls Earth)   → red card
+
+  it('gleichklang planet card has blue border (resonance dimension)', () => {
+    const { container } = render(<AktiveEinfluesseFusion dayMasterStem="Jia" />);
+    // Jupiter = Wood = gleichklang with Jia (Wood Day Master)
+    const jupiterCard = container.querySelector('[data-planet="Jupiter"]') as HTMLElement;
+    expect(jupiterCard).toBeTruthy();
+    // Blue border: rgba(60, 130, 210, 0.40)
+    expect(jupiterCard.style.borderLeft).toContain('60');
+    expect(jupiterCard.style.borderLeft).toContain('130');
+    expect(jupiterCard.style.borderLeft).toContain('210');
+  });
+
+  it('naehrung planet card has blue border (resonance dimension)', () => {
+    const { container } = render(<AktiveEinfluesseFusion dayMasterStem="Jia" />);
+    // Moon = Water → naehrung with Jia (Water generates Wood)
+    const moonCard = container.querySelector('[data-planet="Moon"]') as HTMLElement;
+    expect(moonCard).toBeTruthy();
+    expect(moonCard.style.borderLeft).toContain('60');
+    expect(moonCard.style.borderLeft).toContain('130');
+    expect(moonCard.style.borderLeft).toContain('210');
+  });
+
+  it('kontrolle planet card has red border (tension dimension)', () => {
+    const { container } = render(<AktiveEinfluesseFusion dayMasterStem="Jia" />);
+    // Venus = Metal → kontrolle with Jia (Metal controls Wood)
+    const venusCard = container.querySelector('[data-planet="Venus"]') as HTMLElement;
+    expect(venusCard).toBeTruthy();
+    // Red border: rgba(200, 80, 80, 0.40)
+    expect(venusCard.style.borderLeft).toContain('200');
+    expect(venusCard.style.borderLeft).toContain('80');
+  });
+
+  it('card background reflects resonance dimension (blue bg for gleichklang)', () => {
+    const { container } = render(<AktiveEinfluesseFusion dayMasterStem="Jia" />);
+    const jupiterCard = container.querySelector('[data-planet="Jupiter"]') as HTMLElement;
+    // Blue bg: rgba(60, 130, 210, 0.07)
+    expect(jupiterCard.style.background).toContain('60');
+    expect(jupiterCard.style.background).toContain('130');
+    expect(jupiterCard.style.background).toContain('210');
+  });
+
+  it('card background reflects tension dimension (red bg for kontrolle)', () => {
+    const { container } = render(<AktiveEinfluesseFusion dayMasterStem="Jia" />);
+    const venusCard = container.querySelector('[data-planet="Venus"]') as HTMLElement;
+    // Red bg: rgba(200, 80, 80, 0.07)
+    expect(venusCard.style.background).toContain('200');
+    expect(venusCard.style.background).toContain('80');
+  });
+
+  it('no-stem card uses neutral fallback (no blue or red border)', () => {
+    const { container } = render(<AktiveEinfluesseFusion dayMasterStem={undefined} />);
+    const moonCard = container.querySelector('[data-planet="Moon"]') as HTMLElement;
+    expect(moonCard).toBeTruthy();
+    // Neutral: rgba(255,255,255,0.08) — not blue, not red
+    expect(moonCard.style.borderLeft).not.toContain('210');
+    expect(moonCard.style.borderLeft).not.toContain('200, 80');
+  });
 });

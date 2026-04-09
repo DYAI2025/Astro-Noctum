@@ -176,6 +176,10 @@ describe('calculateAll', () => {
     const calledUrl = mockFetch.mock.calls[0][0] as string;
     expect(calledUrl).toMatch(/\/api\/chart$/);
     expect(calledUrl).not.toContain('/calculate/');
+
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body as string);
+    expect(body).toHaveProperty('local_datetime');
+    expect(body).not.toHaveProperty('date');
     vi.unstubAllGlobals();
   });
 });

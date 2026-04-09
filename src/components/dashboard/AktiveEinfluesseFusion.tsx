@@ -83,6 +83,25 @@ const RESONANCE_BADGE_COLOR: Record<ResonanceType, string> = {
   neutral:     '#787878',
 };
 
+/**
+ * Dual-dimension card styling — REQ-F-dashboard-live-daily-signals AC 4+5
+ *
+ * Semantic mapping:
+ *   gleichklang / naehrung  → resonance dimension → cool blue
+ *   kontrolle               → tension dimension   → warm red
+ *   neutral                 → no dominant pole    → muted gold
+ *
+ * Element colors (ELEMENT_COLOR) are deliberately NOT used here — the card
+ * background communicates resonance/tension semantics, not Wu-Xing identity.
+ * The element badge inside the card still uses ELEMENT_COLOR.
+ */
+const RESONANCE_CARD_STYLE: Record<ResonanceType, { bg: string; border: string }> = {
+  gleichklang: { bg: 'rgba(60, 130, 210, 0.07)',  border: '2px solid rgba(60, 130, 210, 0.40)' },
+  naehrung:    { bg: 'rgba(60, 130, 210, 0.07)',  border: '2px solid rgba(60, 130, 210, 0.40)' },
+  kontrolle:   { bg: 'rgba(200, 80,  80,  0.07)', border: '2px solid rgba(200, 80,  80,  0.40)' },
+  neutral:     { bg: 'rgba(180, 150, 50,  0.05)', border: '2px solid rgba(180, 150, 50,  0.25)' },
+};
+
 // ── Zodiac sign index → DE name ───────────────────────────────────────────────
 
 function signNameDe(idx: number | undefined): string | null {
@@ -165,17 +184,16 @@ function PlanetCard({
   // Source: TransitBody.is_retrograde — speed < 0, computed in useDailyTransit mapBody()
   const isRetrograde = body?.is_retrograde ?? false;
 
-  const cardBg = resonance
-    ? `${ELEMENT_COLOR[resonance.planetElement]}0A`
-    : 'rgba(255,255,255,0.03)';
-  const cardBorder = resonance
-    ? `2px solid ${ELEMENT_COLOR[resonance.planetElement]}55`
-    : '2px solid rgba(255,255,255,0.08)';
+  // Source: RESONANCE_CARD_STYLE — dual-dimension semantic color encoding
+  // (REQ-F-dashboard-live-daily-signals AC 5; element-color intentionally NOT used here)
+  const cardStyle = resonance
+    ? RESONANCE_CARD_STYLE[resonance.type]
+    : { bg: 'rgba(255,255,255,0.03)', border: '2px solid rgba(255,255,255,0.08)' };
 
   return (
     <div
       className="rounded-xl p-4 space-y-3"
-      style={{ background: cardBg, borderLeft: cardBorder }}
+      style={{ background: cardStyle.bg, borderLeft: cardStyle.border }}
       data-planet={planet.bafeKey}
     >
       {/* ── Planet header ──────────────────────────────────────────── */}
