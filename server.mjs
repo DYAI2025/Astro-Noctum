@@ -3743,15 +3743,16 @@ app.get("/api/profile/:userId", async (req, res) => {
 
   // DEC-display-name-db-only: read display_name from profiles, not from engine response
   let displayName = null;
-  try {
-    const { data: profileRow } = await supabaseServer
-      .from("profiles")
-      .select("display_name")
-      .eq("id", userId)
-      .single();
+  const { data: profileRow, error: displayNameError } = await supabaseServer
+    .from("profiles")
+    .select("display_name")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (displayNameError) {
+    console.warn("[profile] display_name fetch failed:", displayNameError.message);
+  } else {
     displayName = profileRow?.display_name || null;
-  } catch (e) {
-    console.warn("[profile] display_name fetch failed:", e.message);
   }
 
   // Build a concise summary for Levi instead of dumping raw BAFE data.
