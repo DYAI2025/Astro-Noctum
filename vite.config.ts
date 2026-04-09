@@ -23,6 +23,11 @@ export default defineConfig(({mode}) => {
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api\/calculate/, '/calculate'),
         },
+        '/chart': {
+          // calculateAll() calls /chart directly on FuFirE (not under /calculate/).
+          target: env.VITE_BAFE_BASE_URL || 'https://bafe-production.up.railway.app',
+          changeOrigin: true,
+        },
         '/api/auth': {
           target: 'http://localhost:3001',
           changeOrigin: true,
