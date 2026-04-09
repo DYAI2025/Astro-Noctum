@@ -170,6 +170,49 @@ describe('AktiveEinfluesseFusion', () => {
     expect(venusCard.style.background).toContain('80');
   });
 
+  // ── REQ-F-dashboard-live-daily-signals AC 7: Feldstärke qualitative tiers ────
+  //
+  // intensityToTier() thresholds (from DEC-fusion-bazi-sheng-ke intensity ranges):
+  //   gering: intensity < 0.60
+  //   mittel: 0.60 ≤ intensity < 0.75
+  //   stark:  intensity ≥ 0.75
+  //
+  // With Jia (Wood) Day Master:
+  //   Jupiter (Wood) → gleichklang → intensity 0.80–0.90 → stark
+  //   Moon    (Water)→ naehrung    → intensity 0.70–0.80 → mittel/stark
+  //   Venus   (Metal)→ kontrolle   → intensity 0.65–0.75 → mittel/stark
+  //   (neutral is mathematically unreachable — intensity ≤ 0.45 → gering)
+
+  it('renders a Feldstärke bar for each planet with a valid stem', () => {
+    const { container } = render(<AktiveEinfluesseFusion dayMasterStem="Jia" />);
+    const bars = container.querySelectorAll('[data-testid="feldstaerke-bar"]');
+    // One bar per planet card (6 planets)
+    expect(bars.length).toBe(6);
+  });
+
+  it('Feldstärke bar for gleichklang planet shows "stark" tier', () => {
+    const { container } = render(<AktiveEinfluesseFusion dayMasterStem="Jia" />);
+    // Jupiter = Wood = gleichklang with Jia → intensity 0.80–0.90 → stark
+    const jupiterCard = container.querySelector('[data-planet="Jupiter"]') as HTMLElement;
+    const bar = jupiterCard.querySelector('[data-testid="feldstaerke-bar"]') as HTMLElement;
+    expect(bar).toBeTruthy();
+    expect(bar.dataset.tier).toBe('stark');
+    expect(bar.textContent).toMatch(/Stark/i);
+  });
+
+  it('Feldstärke bar shows "Feldstärke" label text', () => {
+    const { container } = render(<AktiveEinfluesseFusion dayMasterStem="Jia" />);
+    const jupiterCard = container.querySelector('[data-planet="Jupiter"]') as HTMLElement;
+    const bar = jupiterCard.querySelector('[data-testid="feldstaerke-bar"]') as HTMLElement;
+    expect(bar.textContent).toContain('Feldstärke');
+  });
+
+  it('no Feldstärke bar when dayMasterStem is absent (no BaZi block)', () => {
+    const { container } = render(<AktiveEinfluesseFusion dayMasterStem={undefined} />);
+    const bars = container.querySelectorAll('[data-testid="feldstaerke-bar"]');
+    expect(bars.length).toBe(0);
+  });
+
   it('no-stem card uses neutral fallback (no blue or red border)', () => {
     const { container } = render(<AktiveEinfluesseFusion dayMasterStem={undefined} />);
     const moonCard = container.querySelector('[data-planet="Moon"]') as HTMLElement;

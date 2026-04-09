@@ -83,6 +83,89 @@ const RESONANCE_BADGE_COLOR: Record<ResonanceType, string> = {
   neutral:     '#787878',
 };
 
+// ── Feldstärke (field-strength) indicator ────────────────────────────────────
+
+/**
+ * Three qualitative tiers derived from resonance.intensity.
+ *
+ * Thresholds derived from DEC-fusion-bazi-sheng-ke intensity ranges:
+ *   gleichklang: 0.80–0.90 → stark
+ *   naehrung:    0.60–0.80 → mittel / stark
+ *   kontrolle:   0.65–0.75 → mittel / stark
+ *   neutral:     ≤ 0.45    → gering
+ *
+ * Intentionally qualitative — no float or % shown (DEC-no-number-without-explanation).
+ */
+type FieldStrengthTier = 'gering' | 'mittel' | 'stark';
+
+function intensityToTier(intensity: number): FieldStrengthTier {
+  if (intensity >= 0.75) return 'stark';
+  if (intensity >= 0.60) return 'mittel';
+  return 'gering';
+}
+
+const FIELD_STRENGTH_LABEL: Record<FieldStrengthTier, { de: string; en: string }> = {
+  gering: { de: 'Gering',  en: 'Low'    },
+  mittel: { de: 'Mittel',  en: 'Medium' },
+  stark:  { de: 'Stark',   en: 'High'   },
+};
+
+/** Number of filled segments (out of 3) per tier */
+const FIELD_STRENGTH_SEGMENTS: Record<FieldStrengthTier, number> = {
+  gering: 1,
+  mittel: 2,
+  stark:  3,
+};
+
+function FeldstaerkeBar({
+  intensity,
+  isDe,
+}: {
+  intensity: number;
+  isDe: boolean;
+}) {
+  const tier = intensityToTier(intensity);
+  const filledCount = FIELD_STRENGTH_SEGMENTS[tier];
+  const label = isDe ? FIELD_STRENGTH_LABEL[tier].de : FIELD_STRENGTH_LABEL[tier].en;
+
+  return (
+    <div
+      className="flex items-center gap-1.5"
+      data-testid="feldstaerke-bar"
+      data-tier={tier}
+      aria-label={`Feldstärke: ${label}`}
+    >
+      <span
+        className="text-[8px] font-bold tracking-[0.12em] uppercase"
+        style={{ color: 'var(--tile-text-secondary)', opacity: 0.5 }}
+      >
+        {isDe ? 'Feldstärke' : 'Field strength'}
+      </span>
+      {/* Source: intensityToTier(resonance.intensity) — qualitative tier, no raw float */}
+      <div className="flex gap-0.5" aria-hidden="true">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={i}
+            className="w-3 h-1.5 rounded-sm"
+            style={{
+              background: i < filledCount
+                ? 'var(--tile-text-secondary)'
+                : 'rgba(255,255,255,0.12)',
+              opacity: i < filledCount ? 0.7 : 1,
+            }}
+          />
+        ))}
+      </div>
+      <span
+        className="text-[8px]"
+        style={{ color: 'var(--tile-text-secondary)', opacity: 0.5 }}
+      >
+        {label}
+      </span>
+    </div>
+  );
+}
+
 /**
  * Dual-dimension card styling — REQ-F-dashboard-live-daily-signals AC 4+5
  *
@@ -262,6 +345,9 @@ function PlanetCard({
                 : RESONANCE_LABEL[resonance.type].en}
             </span>
           </div>
+
+          {/* Source: intensityToTier(resonance.intensity) — qualitative field-strength, REQ-F-dashboard-live-daily-signals AC 7 */}
+          <FeldstaerkeBar intensity={resonance.intensity} isDe={isDe} />
 
           {/* Source: ResonanceResult.quote — brand-voice German quote, ≤80 chars */}
           <p
