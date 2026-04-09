@@ -29,7 +29,8 @@ payload contains only `birth_date`, `birth_time`, and `birth_place`.
 - Given an existing user, when they update their display name, then the change is persisted to
   `profiles.display_name` without triggering a FuFirE recompute
 - Given the `profiles` table schema, then a row with `display_name IS NULL` cannot be inserted —
-  the column is `NOT NULL` with no default
+  the column is `NOT NULL` and currently has a default empty string (`DEFAULT ''`); non-empty
+  input is enforced by the form/backend validation, not by the database default
 
 ## Related Constraints
 
