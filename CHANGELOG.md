@@ -1,5 +1,40 @@
 # Changelog
 
+## [Unreleased] - 2026-04-09
+
+### Features
+
+- **AktiveEinfluesseFusion** — new dashboard section: 6 planet cards (Moon, Mercury, Venus, Mars, Jupiter, Saturn) combining live Western transit positions (`useDailyTransit`) with BaZi Sheng/Ke resonance (`calculatePlanetBaziResonance`). Skeleton while loading; graceful "BaZi-Profil nicht verfügbar" notice when day master stem is absent. Pure `resonance.ts` module locked by `DEC-fusion-bazi-sheng-ke`. 1-hour sessionStorage cache.
+- **DayPulseExpanded + MagnetsturmKarte** — two new dashboard tile components: expanded day-pulse view and magnetic storm card. Both feature-flagged.
+- **Onboarding: display name collection** — `BirthForm` collects a required display name (≤50 chars) as Step 1. Name persisted exclusively to `profiles.display_name` via `saveDisplayName()` — never forwarded to FuFirE. Design decision `DEC-display-name-db-only` recorded. `REQ-F-onboarding-display-name` formalized with 5 acceptance criteria.
+- **`mapChartToApiResults()`** — unified adapter in the shared API layer wrapping all 5 individual BAFE calculate calls. Full test coverage. Individual `calculateBazi/Western/Fusion/WuXing/Tst` functions deprecated in favour of the adapter.
+- **Mobile Vibes/Weekly insights** — `useVibes` and `useWeeklyInsights` hooks integrated into `DashboardScreen`. Agent extensibility extracted to `packages/shared/src/agents/config.ts`.
+- **Mobile onboarding polish** — date/time format validated before phase transition (prevents spinner flash). OrbBackdrop entrance animation captured in cleanup. OrbBackdrop pulse loop stopped on unmount.
+
+### Bug Fixes
+
+- **BUG-23: ElevenLabs widget fully visible** — widget mounted via `document.body.appendChild` (escapes Framer Motion `will-change: transform` stacking context). Global script tag added to `index.html`. `pointer-events: none` removed from body-level SDK overlay rules. `always-expanded` attribute set. `dynamic-variables` updated in-place without remounts.
+- **display_name save non-blocking** — `saveDisplayName` failure no longer aborts onboarding; downgraded from `await + throw` to fire-and-forget `.catch(warn)`.
+- **Schema/migration alignment** — `supabase-schema.sql` now matches migration `20260409_display_name_not_null.sql`: `DEFAULT 'User'`, constraint `btrim BETWEEN 1 AND 50`. Existing installs backfilled with `'User'` placeholder.
+- **Kp coercion** — NOAA returns `kp` as string; `toFixed()` threw at runtime. Coerced to `Number` in fusion-daily-hero layer.
+- **Mobile OrbBackdrop** — Views kept mounted across animation phases; static opacity removed (animated value is sole authority); pulse loop cleaned up on unmount.
+
+### Refactoring
+
+- `wuxingToSoulprint` extracted to `packages/shared` — single source of truth for web and mobile.
+- `AgentFloatingWidget` props simplified: `sunSign`, `zodiacAnimal`, `dominantEl` removed; agent reads profile data from `/api/profile/:userId` (Supabase-sourced) instead.
+- ElevenLabs `dynamic-variables` reduced to `user_id` only — agent pulls full context from the profile endpoint.
+- `DashboardAstroSection` BaZi/WuXing section refactored to 3-column card grid; dev-only `console.log` removed.
+- `OnboardingBirthData` interface extracted to `BirthForm.tsx` and reused across `CosmicEncounter`, `OnboardingPage`, `App.tsx` — eliminates inline type divergence.
+- Display name validation routed through `useLanguage`/`t()` i18n layer (`form.nameLabel`, `form.namePlaceholder`, `form.nameRequired`, `form.nameTooLong`).
+
+### Database
+
+- Migration `20260409_display_name_not_null.sql` — adds `NOT NULL DEFAULT 'User'` + `btrim BETWEEN 1 AND 50` constraint to `profiles.display_name`; backfills blank/null rows.
+- `/api/profile/:userId` (ElevenLabs tool endpoint) now reads `display_name` from `profiles` table, not engine response (`DEC-display-name-db-only`).
+
+---
+
 ## [Unreleased] - 2026-04-03
 
 ### Features
