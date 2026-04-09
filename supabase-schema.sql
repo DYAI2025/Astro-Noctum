@@ -7,7 +7,8 @@
 CREATE TABLE IF NOT EXISTS profiles (
   id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   email TEXT,
-  display_name TEXT NOT NULL DEFAULT '' CHECK (char_length(display_name) <= 50),
+  display_name TEXT NOT NULL DEFAULT '',
+  CONSTRAINT profiles_display_name_length CHECK (char_length(display_name) <= 50),
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
