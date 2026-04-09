@@ -99,8 +99,10 @@ export async function saveDisplayName(userId: string, displayName: string): Prom
   const trimmed = displayName.trim().slice(0, 50);
   const { error } = await supabase
     .from("profiles")
-    .update({ display_name: trimmed })
-    .eq("id", userId);
+    .upsert(
+      { id: userId, display_name: trimmed },
+      { onConflict: "id" },
+    );
 
   if (error) {
     console.error("saveDisplayName error:", error);
