@@ -1,5 +1,19 @@
 # Changelog
 
+## [Unreleased] - 2026-04-10
+
+### Features
+
+- **AktiveEinfluesseFusion: dual-dimension color encoding** — planet cards now use resonance/tension semantics: gleichklang/naehrung → blue border+bg, kontrolle → red border+bg, neutral → muted gold. Element colors no longer used for card backgrounds (REQ-F-dashboard-live-daily-signals AC 4+5).
+- **AktiveEinfluesseFusion: Feldstärke indicator** — 3-segment qualitative bar (gering/mittel/stark) derived from `resonance.intensity` thresholds (0.60/0.75). No raw float displayed per DEC-no-number-without-explanation (REQ-F-dashboard-live-daily-signals AC 7).
+
+### Bug Fixes
+
+- **`/chart` payload field name** — `date` renamed to `local_datetime` in `calculateAll()` POST body to match FuFirE schema (was causing 422 errors on new onboarding).
+- **Vite dev proxy for `/chart`** — local onboarding now correctly routes `/chart` to FuFirE; was returning 404 in dev server.
+
+---
+
 ## [Unreleased] - 2026-04-09
 
 ### Features
