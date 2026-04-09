@@ -73,7 +73,7 @@ const display_name = fuFireResponse.display_name; // ❌ — engine never return
 **Schema:**
 ```sql
 -- profiles table
-display_name TEXT NOT NULL CHECK (char_length(display_name) <= 50)
+display_name TEXT NOT NULL DEFAULT '' CHECK (char_length(display_name) <= 50)
 ```
 
 ### Required checks
