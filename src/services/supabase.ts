@@ -92,6 +92,24 @@ export async function upsertAstroProfile(
   }
 }
 
+// ── Save display_name to profiles (DB-only, never forwarded to FuFirE) ─
+// DEC-display-name-db-only: display_name belongs exclusively in profiles table.
+
+export async function saveDisplayName(userId: string, displayName: string): Promise<void> {
+  const trimmed = displayName.trim().slice(0, 50);
+  const { error } = await supabase
+    .from("profiles")
+    .upsert(
+      { id: userId, display_name: trimmed },
+      { onConflict: "id" },
+    );
+
+  if (error) {
+    console.error("saveDisplayName error:", error);
+    throw error;
+  }
+}
+
 // ── Insert birth_data (write-once per user) ─────────────────────────
 
 export async function insertBirthData(userId: string, birth: BirthInput) {

@@ -48,7 +48,7 @@ const LEVI_TEXTS = {
 // ── Props ────────────────────────────────────────────────────────────
 
 interface CosmicEncounterProps {
-  onSubmitBirth: (data: { date: string; tz: string; lon: number; lat: number }) => void;
+  onSubmitBirth: (data: { date: string; tz: string; lon: number; lat: number; place?: string; displayName?: string }) => void;
   onComplete: (deltaData: SignatureDeltaResponse | null) => void;
   bootstrapData: BootstrapResponse | null;
   isLoading: boolean;
@@ -151,7 +151,7 @@ export function CosmicEncounter({
   // ── Phase 3→4: birth-input → calculating ─────────────────────────
 
   const handleBirthSubmit = useCallback(
-    (data: { date: string; tz: string; lon: number; lat: number }) => {
+    (data: { date: string; tz: string; lon: number; lat: number; place?: string; displayName?: string }) => {
       setPhase('calculating');
       setLeviText(LEVI_TEXTS.calculating);
       setLeviVisible(true);

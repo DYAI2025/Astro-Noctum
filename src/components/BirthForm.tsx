@@ -37,7 +37,7 @@ function isDst(dateStr: string, tz: string): boolean | null {
 }
 
 interface BirthFormProps {
-  onSubmit: (data: { date: string; tz: string; lon: number; lat: number }) => void;
+  onSubmit: (data: { date: string; tz: string; lon: number; lat: number; place?: string; displayName?: string }) => void;
   isLoading: boolean;
 }
 
@@ -55,6 +55,7 @@ function detectBrowserTimezone(): string | null {
 export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
   const { t } = useLanguage();
   const [submitting, setSubmitting] = useState(false);
+  const [displayName, setDisplayName] = useState("");
   const [step, setStep] = useState(1);
   const [date, setDate] = useState("1990-01-01");
   const [time, setTime] = useState("12:00");
@@ -117,6 +118,12 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
 
     const newErrors: Record<string, string> = {};
 
+    if (!displayName.trim()) {
+      newErrors.displayName = "Bitte gib deinen Namen ein.";
+    } else if (displayName.trim().length > 50) {
+      newErrors.displayName = "Name darf maximal 50 Zeichen lang sein.";
+    }
+
     // ISO YYYY-MM-DD strings: lexicographic order matches chronological order
     if (date > today) {
       newErrors.date = t("form.futureDate");
@@ -140,13 +147,13 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      if (newErrors.date) setStep(1);
+      if (newErrors.date || newErrors.displayName) setStep(1);
       return;
     }
 
     setErrors({});
     setSubmitting(true);
-    onSubmit({ date: `${date}T${time}:00`, tz, lat: parsedLat, lon: parsedLon });
+    onSubmit({ date: `${date}T${time}:00`, tz, lat: parsedLat, lon: parsedLon, place: placeName || undefined, displayName: displayName.trim() });
   };
 
   // ── Loading state ─────────────────────────────────────────────────────
@@ -216,6 +223,23 @@ export function BirthForm({ onSubmit, isLoading }: BirthFormProps) {
             <h2 className="font-serif text-3xl leading-snug text-[#1a2434]">
               {t("form.step1Title")}
             </h2>
+
+            {/* ── Display name ───────────────────────────────────────── */}
+            <div className="space-y-2">
+              <label className="text-[8px] uppercase tracking-widest text-[#1E2A3A]/50">
+                Dein Name
+              </label>
+              <input
+                type="text"
+                required
+                maxLength={50}
+                value={displayName}
+                onChange={(e) => { setDisplayName(e.target.value); setErrors((e2) => ({ ...e2, displayName: "" })); }}
+                placeholder="Wie sollen wir dich nennen?"
+                className={errors.displayName ? inputErrorCls : inputCls}
+              />
+              {showError("displayName")}
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
