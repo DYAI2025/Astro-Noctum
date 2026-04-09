@@ -155,6 +155,10 @@ async function postCalculation<T = unknown>(
   );
 }
 
+/**
+ * @deprecated Since API-ONB-CHART-001 — use calculateAll() which calls /chart atomically.
+ * Kept for potential direct use; remove once confirmed unused.
+ */
 export async function calculateBazi(data: BirthData): Promise<MappedBazi> {
   validateBirthData(data);
   const raw = await postCalculation<BafeBaziResponse>("bazi", {
@@ -196,6 +200,10 @@ export async function calculateBazi(data: BirthData): Promise<MappedBazi> {
   };
 }
 
+/**
+ * @deprecated Since API-ONB-CHART-001 — use calculateAll() which calls /chart atomically.
+ * Kept for potential direct use; remove once confirmed unused.
+ */
 export async function calculateWestern(data: BirthData): Promise<MappedWestern> {
   validateBirthData(data);
   const raw = await postCalculation<BafeWesternResponse>("western", {
@@ -236,6 +244,10 @@ export async function calculateWestern(data: BirthData): Promise<MappedWestern> 
   };
 }
 
+/**
+ * @deprecated Since API-ONB-CHART-001 — use calculateAll() which calls /chart atomically.
+ * Kept for potential direct use; remove once confirmed unused.
+ */
 export async function calculateFusion(data: BirthData): Promise<BafeFusionResponse> {
   validateBirthData(data);
   return postCalculation<BafeFusionResponse>("fusion", {
@@ -249,6 +261,10 @@ export async function calculateFusion(data: BirthData): Promise<BafeFusionRespon
   });
 }
 
+/**
+ * @deprecated Since API-ONB-CHART-001 — use calculateAll() which calls /chart atomically.
+ * Kept for potential direct use; remove once confirmed unused.
+ */
 export async function calculateWuxing(data: BirthData): Promise<MappedWuxing> {
   validateBirthData(data);
   const raw = await postCalculation<BafeWuxingResponse>("wuxing", {
@@ -285,6 +301,10 @@ export async function calculateWuxing(data: BirthData): Promise<MappedWuxing> {
   };
 }
 
+/**
+ * @deprecated Since API-ONB-CHART-001 — use calculateAll() which calls /chart atomically.
+ * Kept for potential direct use; remove once confirmed unused.
+ */
 export async function calculateTst(data: BirthData): Promise<BafeTstResponse> {
   validateBirthData(data);
   return postCalculation<BafeTstResponse>("tst", {
