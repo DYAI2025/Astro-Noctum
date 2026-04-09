@@ -159,12 +159,10 @@ export default function App() {
 
     // Persist display_name to profiles (DB-only, never forwarded to FuFirE — DEC-display-name-db-only)
     if (user && formData.displayName) {
-      try {
-        await saveDisplayName(user.id, formData.displayName);
-      } catch (e) {
-        console.error('[onboarding] display_name save failed:', e);
-        throw e;
-      }
+      // Fire-and-forget — a name-save failure must not block birth data submission
+      saveDisplayName(user.id, formData.displayName).catch((e) =>
+        console.warn('[onboarding] display_name save failed — continuing:', e)
+      );
     }
 
     // If the signature onboarding feature is disabled, keep the existing
