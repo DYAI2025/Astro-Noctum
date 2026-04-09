@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { AktiveEinfluesseFusion } from '../components/dashboard/AktiveEinfluesseFusion';
+import {
+  AktiveEinfluesseFusion,
+  intensityToTier,
+  RESONANCE_CARD_STYLE,
+} from '../components/dashboard/AktiveEinfluesseFusion';
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
@@ -220,5 +224,60 @@ describe('AktiveEinfluesseFusion', () => {
     // Neutral: rgba(255,255,255,0.08) — not blue, not red
     expect(moonCard.style.borderLeft).not.toContain('210');
     expect(moonCard.style.borderLeft).not.toContain('200, 80');
+  });
+
+  // ── TASK-einfluesse-ac-tests: neutral resonance color (REQ-F-dashboard-live-daily-signals AC 5) ──
+  //
+  // neutral resonance is mathematically unreachable from real stem+planet inputs (DEC-fusion-bazi-sheng-ke).
+  // RESONANCE_CARD_STYLE is the single source of truth — tested directly here to verify
+  // the neutral pole uses muted gold (not blue, not red).
+
+  it('RESONANCE_CARD_STYLE.neutral uses muted gold (not blue, not red)', () => {
+    // Muted gold: rgba(180, 150, 50, ...) — distinct from resonance blue and tension red
+    expect(RESONANCE_CARD_STYLE.neutral.border).toContain('180');
+    expect(RESONANCE_CARD_STYLE.neutral.border).toContain('150');
+    expect(RESONANCE_CARD_STYLE.neutral.border).toContain('50');
+    expect(RESONANCE_CARD_STYLE.neutral.border).not.toContain('210'); // not blue
+    expect(RESONANCE_CARD_STYLE.neutral.border).not.toContain('200'); // not red
+    expect(RESONANCE_CARD_STYLE.neutral.bg).toContain('180');
+  });
+
+  it('RESONANCE_CARD_STYLE.gleichklang and naehrung share the same blue style', () => {
+    expect(RESONANCE_CARD_STYLE.gleichklang).toEqual(RESONANCE_CARD_STYLE.naehrung);
+    expect(RESONANCE_CARD_STYLE.gleichklang.border).toContain('210');
+  });
+
+  it('RESONANCE_CARD_STYLE.kontrolle uses red (tension dimension)', () => {
+    expect(RESONANCE_CARD_STYLE.kontrolle.border).toContain('200');
+    expect(RESONANCE_CARD_STYLE.kontrolle.border).not.toContain('210');
+  });
+});
+
+// ── intensityToTier unit tests (AC 7 — all three tiers) ─────────────────────
+
+describe('intensityToTier', () => {
+  it('returns gering for intensity below 0.60', () => {
+    expect(intensityToTier(0.00)).toBe('gering');
+    expect(intensityToTier(0.45)).toBe('gering');
+    expect(intensityToTier(0.59)).toBe('gering');
+  });
+
+  it('returns mittel for intensity between 0.60 and 0.74', () => {
+    expect(intensityToTier(0.60)).toBe('mittel');
+    expect(intensityToTier(0.65)).toBe('mittel');
+    expect(intensityToTier(0.74)).toBe('mittel');
+  });
+
+  it('returns stark for intensity 0.75 and above', () => {
+    expect(intensityToTier(0.75)).toBe('stark');
+    expect(intensityToTier(0.85)).toBe('stark');
+    expect(intensityToTier(1.00)).toBe('stark');
+  });
+
+  it('thresholds are exactly at 0.60 and 0.75 (boundary values)', () => {
+    expect(intensityToTier(0.5999)).toBe('gering');
+    expect(intensityToTier(0.6000)).toBe('mittel');
+    expect(intensityToTier(0.7499)).toBe('mittel');
+    expect(intensityToTier(0.7500)).toBe('stark');
   });
 });

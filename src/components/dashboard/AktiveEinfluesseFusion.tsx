@@ -98,7 +98,7 @@ const RESONANCE_BADGE_COLOR: Record<ResonanceType, string> = {
  */
 type FieldStrengthTier = 'gering' | 'mittel' | 'stark';
 
-function intensityToTier(intensity: number): FieldStrengthTier {
+export function intensityToTier(intensity: number): FieldStrengthTier {
   if (intensity >= 0.75) return 'stark';
   if (intensity >= 0.60) return 'mittel';
   return 'gering';
@@ -178,7 +178,7 @@ function FeldstaerkeBar({
  * background communicates resonance/tension semantics, not Wu-Xing identity.
  * The element badge inside the card still uses ELEMENT_COLOR.
  */
-const RESONANCE_CARD_STYLE: Record<ResonanceType, { bg: string; border: string }> = {
+export const RESONANCE_CARD_STYLE: Record<ResonanceType, { bg: string; border: string }> = {
   gleichklang: { bg: 'rgba(60, 130, 210, 0.07)',  border: '2px solid rgba(60, 130, 210, 0.40)' },
   naehrung:    { bg: 'rgba(60, 130, 210, 0.07)',  border: '2px solid rgba(60, 130, 210, 0.40)' },
   kontrolle:   { bg: 'rgba(200, 80,  80,  0.07)', border: '2px solid rgba(200, 80,  80,  0.40)' },
