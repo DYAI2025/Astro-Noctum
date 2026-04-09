@@ -9,6 +9,7 @@ import type {
   MappedWestern,
   MappedWuxing,
   MappedPillar,
+  ChartResponse,
 } from '../types/bafe';
 import { supabase } from '../lib/supabase';
 import { retryWithBackoff } from '../lib/retryWithBackoff';
@@ -296,71 +297,104 @@ export async function calculateTst(data: BirthData): Promise<BafeTstResponse> {
   });
 }
 
-// Fallback data is intentionally empty so the Dashboard shows "—" instead of
-// fake values when the API is unreachable.
-const MOCK_DATA: {
-  bazi: MappedBazi;
-  western: MappedWestern;
-  wuxing: MappedWuxing;
-  fusion: BafeFusionResponse;
-  tst: BafeTstResponse;
-} = {
-  bazi: {
-    day_master: "",
-    zodiac_sign: "",
-    pillars: undefined,
-  },
-  western: {
-    zodiac_sign: "",
-    moon_sign: "",
-    ascendant_sign: "",
-    houses: {},
-  },
-  wuxing: {
-    dominant_element: "",
-    elements: {},
-  },
-  fusion: {},
-  tst: {},
-};
+export function mapChartToApiResults(raw: ChartResponse): Omit<ApiResults, 'issues' | '_reading_id'> {
+  if (!raw.bazi?.pillars) {
+    throw new Error('/chart response missing bazi.pillars');
+  }
+  const bodiesSource = raw.positions || raw.bodies;
+  if (!bodiesSource) {
+    throw new Error('/chart response missing positions/bodies');
+  }
+  if (!raw.wuxing) {
+    throw new Error('/chart response missing wuxing');
+  }
+
+  const mapPillar = (p: BafePillarRaw | undefined): MappedPillar => ({
+    stem:    p?.stamm   || (p as unknown as { stem?: string })?.stem   || '',
+    branch:  p?.zweig   || (p as unknown as { branch?: string })?.branch || '',
+    animal:  p?.tier    || (p as unknown as { animal?: string })?.animal || '',
+    element: p?.element || '',
+  });
+
+  const bazi: MappedBazi = {
+    ...raw.bazi,
+    pillars: {
+      year:  mapPillar(raw.bazi.pillars.year),
+      month: mapPillar(raw.bazi.pillars.month),
+      day:   mapPillar(raw.bazi.pillars.day),
+      hour:  mapPillar(raw.bazi.pillars.hour),
+    },
+    day_master: raw.bazi.chinese?.day_master || raw.bazi.pillars.day?.stamm || '',
+    zodiac_sign: raw.bazi.chinese?.year?.animal || raw.bazi.pillars.year?.tier || '',
+  };
+
+  const sunSign        = signFromIndex(bodiesSource?.Sun?.zodiac_sign);
+  const moonSign       = signFromIndex(bodiesSource?.Moon?.zodiac_sign);
+  const ascendantSign  = signFromDegrees(raw.angles?.Ascendant);
+
+  const normalizedHouses: Record<string, string> = {};
+  if (raw.houses && typeof raw.houses === 'object') {
+    Object.entries(raw.houses).forEach(([key, deg]) => {
+      if (typeof deg === 'number') {
+        normalizedHouses[key] = signFromDegrees(deg) || '';
+      } else if (typeof deg === 'string') {
+        normalizedHouses[key] = deg;
+      }
+    });
+  }
+
+  const western: MappedWestern = {
+    ...raw,
+    bodies: bodiesSource,
+    angles: raw.angles,
+    zodiac_sign:    sunSign,
+    moon_sign:      moonSign,
+    ascendant_sign: ascendantSign,
+    houses:         normalizedHouses,
+  };
+
+  const vec = raw.wuxing.wu_xing_vector || {};
+  const wuxing: MappedWuxing = {
+    ...raw.wuxing,
+    elements: {
+      Wood:   vec.Holz   ?? vec.Wood   ?? 0,
+      Fire:   vec.Feuer  ?? vec.Fire   ?? 0,
+      Earth:  vec.Erde   ?? vec.Earth  ?? 0,
+      Metal:  vec.Metall ?? vec.Metal  ?? 0,
+      Water:  vec.Wasser ?? vec.Water  ?? 0,
+      Holz:   vec.Holz   ?? vec.Wood   ?? 0,
+      Feuer:  vec.Feuer  ?? vec.Fire   ?? 0,
+      Erde:   vec.Erde   ?? vec.Earth  ?? 0,
+      Metall: vec.Metall ?? vec.Metal  ?? 0,
+      Wasser: vec.Wasser ?? vec.Water  ?? 0,
+    },
+    dominant_element: raw.wuxing.dominant_element || '',
+  };
+
+  const fusion: BafeFusionResponse = raw.fusion || {};
+  const tst: BafeTstResponse = raw.time_scales || {};
+
+  return { bazi, western, wuxing, fusion, tst };
+}
 
 export async function calculateAll(data: BirthData): Promise<ApiResults> {
-  const issues: ApiIssue[] = [];
+  validateBirthData(data);
 
-  // Proactively refresh the Supabase token before firing all 5 endpoints.
-  // New users may have a stale cached token after spending time on the birth form.
-  // refreshSession() updates the in-memory cache that getSession() reads,
-  // so the subsequent postCalculation() calls automatically use the fresh token.
   try {
     await supabase.auth.refreshSession();
   } catch (refreshErr) {
-    console.warn("[api] Session refresh failed, proceeding with cached token:", refreshErr);
-    // Non-fatal: postCalculation will use whatever getSession() returns.
-    // If the token is truly dead, each endpoint will fail with 401 → no retry → fallback.
+    console.warn('[api] Session refresh failed, proceeding with cached token:', refreshErr);
   }
 
-  const withFallback = async <T>(
-    endpoint: ApiIssue["endpoint"],
-    fn: () => Promise<T>,
-    fallback: T,
-  ): Promise<T> => {
-    try {
-      return await fn();
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown error";
-      issues.push({ endpoint, message });
-      console.warn(`${endpoint} API failed, using mock data:`, error);
-      return fallback;
-    }
-  };
+  const raw = await postCalculation<ChartResponse>('chart', {
+    date: data.date,
+    tz: data.tz,
+    lon: data.lon,
+    lat: data.lat,
+    ambiguousTime: 'earlier',
+    nonexistentTime: 'error',
+  });
 
-  const [bazi, western, fusion, wuxing, tst] = await Promise.all([
-    withFallback("bazi", () => calculateBazi(data), MOCK_DATA.bazi),
-    withFallback("western", () => calculateWestern(data), MOCK_DATA.western),
-    withFallback("fusion", () => calculateFusion(data), MOCK_DATA.fusion),
-    withFallback("wuxing", () => calculateWuxing(data), MOCK_DATA.wuxing),
-    withFallback("tst", () => calculateTst(data), MOCK_DATA.tst),
-  ]);
-
-  return { bazi, western, fusion, wuxing, tst, issues };
+  const mapped = mapChartToApiResults(raw);
+  return { ...mapped, issues: [] };
 }
