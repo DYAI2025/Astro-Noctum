@@ -157,6 +157,27 @@ describe('calculateAll', () => {
     expect(result.bazi.day_master).toBe('Jia');
     vi.unstubAllGlobals();
   });
+
+  it('calls /api/chart — not /api/calculate/chart', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => MINIMAL_CHART,
+    });
+    vi.stubGlobal('fetch', mockFetch);
+
+    await calculateAll({
+      date: '1990-01-15T12:00:00',
+      tz: 'Europe/Berlin',
+      lon: 13.4,
+      lat: 52.5,
+    });
+
+    const calledUrl = mockFetch.mock.calls[0][0] as string;
+    expect(calledUrl).toMatch(/\/api\/chart$/);
+    expect(calledUrl).not.toContain('/calculate/');
+    vi.unstubAllGlobals();
+  });
 });
 
 describe('no-partial-write guarantee', () => {

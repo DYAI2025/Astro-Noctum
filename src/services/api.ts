@@ -406,15 +406,33 @@ export async function calculateAll(data: BirthData): Promise<ApiResults> {
     console.warn('[api] Session refresh failed, proceeding with cached token:', refreshErr);
   }
 
-  const raw = await postCalculation<ChartResponse>('chart', {
-    date: data.date,
-    tz: data.tz,
-    lon: data.lon,
-    lat: data.lat,
-    ambiguousTime: 'earlier',
-    nonexistentTime: 'error',
+  // Call /chart directly — postCalculation() would prepend /calculate/ yielding
+  // /calculate/chart which FuFirE does not expose.
+  const { data: { session } } = await supabase.auth.getSession();
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (session?.access_token) {
+    headers['Authorization'] = `Bearer ${session.access_token}`;
+  }
+
+  const res = await fetchWithTimeout(`${BASE_URL}/chart`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      date: data.date,
+      tz:   data.tz,
+      lon:  data.lon,
+      lat:  data.lat,
+      ambiguousTime:   'earlier',
+      nonexistentTime: 'error',
+    }),
   });
 
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new ApiError(`Failed to calculate chart: ${res.status} ${text}`, res.status, 'chart');
+  }
+
+  const raw = await res.json() as ChartResponse;
   const mapped = mapChartToApiResults(raw);
   return { ...mapped, issues: [] };
 }
