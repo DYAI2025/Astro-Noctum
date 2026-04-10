@@ -850,8 +850,8 @@ Conversion architecture decided 2026-04-10: [DEC-conversion-tiers](../2-design/d
 | TASK-partner-profile-schema | DB: `partner_profiles` table (user_id FK, birth_date, birth_time, birth_place, birth_lat, birth_lon, display_name) | P1 | Done | - | - | 2026-04-10 | Migration: 20260410_partner_profiles.sql; schema updated |
 | TASK-synastry-endpoint | Server: POST `/api/synastry` — compute aspects via FuFirE using staggered orbs (DEC-aspect-orb-tolerances) | P1 | Done | - | TASK-partner-profile-schema | 2026-04-11 | Premium gate; Placidus; 5 main aspects only |
 | TASK-synastry-narratives | Server: generate template narratives for synastry (Free tier); Gemini narratives (Premium tier) | P1 | Done | - | TASK-synastry-endpoint | 2026-04-11 | DEC-narrative-engine-hybrid; always German; template fallback |
-| TASK-synastry-ui | Frontend: SynastryPage — partner form, aspect grid, narrative display; locked teaser for free users | P2 | Todo | - | TASK-synastry-narratives | 2026-04-10 | DEC-conversion-tiers Tier 2 gate |
-| TASK-premium-gate-component | Reusable PremiumGate component (locked card + upgrade CTA); used across synastry, GCB, composites | P1 | Todo | - | - | 2026-04-10 | DEC-conversion-tiers: no FOMO, introspective tone |
+| TASK-synastry-ui | Frontend: SynastryPage — partner form, aspect grid, narrative display; locked teaser for free users | P2 | Done | - | TASK-synastry-narratives | 2026-04-11 | DEC-conversion-tiers Tier 2 gate |
+| TASK-premium-gate-component | Reusable PremiumGate component (locked card + upgrade CTA); used across synastry, GCB, composites | P1 | Done | - | - | 2026-04-11 | Already implemented (PremiumGate.tsx + usePremium.ts); confirmed in use on WuXingPage and SynastryPage |
 | TASK-tier-enforcement-server | Server-side tier validation middleware — attach `user.tier` from Supabase to all premium-gated endpoints | P1 | Todo | - | - | 2026-04-10 | DEC-conversion-tiers: gates enforced server-side |
 
 ### Sprint-Landing (pending requirements)

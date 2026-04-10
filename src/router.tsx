@@ -15,6 +15,7 @@ const OnboardingPage = lazy(() => import('./pages/OnboardingPage'));
 const SkyPage = lazy(() => import('./pages/SkyPage'));
 const FaqPage = lazy(() => import('./pages/FaqPage'));
 const WeeklyInsightsPage = lazy(() => import('./pages/WeeklyInsightsPage'));
+const SynastryPage = lazy(() => import('./pages/SynastryPage'));
 
 // ── Transition variants (per docs/wireframes/depth-navigation-v1.md) ─────────
 
@@ -115,6 +116,7 @@ export function AppRoutes({ hasCompleteProfile, onboardingProps }: AppRoutesProp
               }
             />
             <Route path="/weekly" element={<WeeklyInsightsPage />} />
+            <Route path="/synastry" element={<SynastryPage />} />
             <Route path="/faq" element={<FaqPage />} />
             <Route path="/sky" element={<SkyPage />} />
             <Route path="*" element={<NotFound />} />

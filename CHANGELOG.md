@@ -1,5 +1,20 @@
 # Changelog
 
+## [Unreleased] - 2026-04-11
+
+### Features
+
+- **Synastry: POST /api/synastry** — premium-gated endpoint fetches two natal charts from FuFirE and computes inter-aspects server-side using staggered orb tolerances (Conj/Opp ±8°, Trine/Square ±6°, Sextile ±4°, DEC-aspect-orb-tolerances). Template narratives for every aspect (German) + Gemini-generated summary for premium users with template fallback (DEC-narrative-engine-hybrid).
+- **Synastry: aspect engine** (`src/lib/synastry/aspects.ts`) — `angularSeparation`, `computeAspects`, `extractLongitudes`; 7 traditional planets; 35 unit tests.
+- **SynastryPage** (`/synastry`) — partner management (add/delete via Nominatim location search), click-to-compute aspect grid with expandable per-aspect narratives, overall summary with AI badge, PremiumGate teaser for free users.
+- **Phase F decisions** — DEC-house-system-placidus, DEC-synastry-architecture, DEC-aspect-orb-tolerances, DEC-narrative-engine-hybrid, DEC-conversion-tiers recorded.
+
+### Database
+
+- **`partner_profiles` table** — multi-partner storage per user; birth_time nullable; RLS policy; migration `supabase-migrations/20260410_partner_profiles.sql`.
+
+---
+
 ## [Unreleased] - 2026-04-10
 
 ### Features
