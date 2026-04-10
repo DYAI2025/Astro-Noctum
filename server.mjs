@@ -493,6 +493,333 @@ app.get("/api/chart", requireUserAuth, (req, res) => {
   proxyToBafeWithFallback(bafeFallbackUrls(suffix), req, res);
 });
 
+// ── /api/synastry ─────────────────────────────────────────────────
+//
+// POST /api/synastry
+// Requires: Bearer auth (premium users only).
+// Body: { partner_id: string }   — UUID from partner_profiles
+//
+// Fetches both natal charts from FuFirE and computes inter-aspects
+// server-side using staggered orb tolerances (DEC-aspect-orb-tolerances).
+// FuFirE has no synastry endpoint; aspect math is done here.
+//
+// Decisions enforced:
+//   DEC-synastry-architecture  : premium gate, separate system
+//   DEC-aspect-orb-tolerances  : Conj/Opp ±8°, Trine/Square ±6°, Sextile ±4°
+//   DEC-house-system-placidus  : house_system: "placidus" passed to FuFirE
+
+const SYNASTRY_ASPECT_DEFS = [
+  { name: 'conjunction', angle: 0,   orb: 8 },
+  { name: 'opposition',  angle: 180, orb: 8 },
+  { name: 'trine',       angle: 120, orb: 6 },
+  { name: 'square',      angle: 90,  orb: 6 },
+  { name: 'sextile',     angle: 60,  orb: 4 },
+];
+const SYNASTRY_PLANETS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
+
+function synastrySeparation(lon1, lon2) {
+  const diff = Math.abs(((lon2 - lon1) % 360 + 360) % 360);
+  return diff > 180 ? 360 - diff : diff;
+}
+
+function synastryExtractLongitudes(bodies) {
+  if (!bodies) return {};
+  const result = {};
+  for (const p of SYNASTRY_PLANETS) {
+    const lon = bodies[p]?.longitude;
+    if (lon != null && isFinite(lon)) result[p] = ((lon % 360) + 360) % 360;
+  }
+  return result;
+}
+
+function synastryComputeAspects(pos1, pos2) {
+  const aspects = [];
+  for (const p1 of SYNASTRY_PLANETS) {
+    const lon1 = pos1[p1];
+    if (lon1 == null) continue;
+    for (const p2 of SYNASTRY_PLANETS) {
+      const lon2 = pos2[p2];
+      if (lon2 == null) continue;
+      const sep = synastrySeparation(lon1, lon2);
+      for (const def of SYNASTRY_ASPECT_DEFS) {
+        const deviation = Math.abs(sep - def.angle);
+        if (deviation <= def.orb) {
+          aspects.push({
+            planet1: p1,
+            planet2: p2,
+            type:    def.name,
+            angle:   def.angle,
+            orb:     Math.round(deviation * 100) / 100,
+            exact:   deviation <= def.orb / 2,
+          });
+          break;
+        }
+      }
+    }
+  }
+  return aspects;
+}
+
+// ── Synastry narrative templates (DEC-narrative-engine-hybrid) ───────
+// JS mirror of src/lib/synastry/templates.ts — server.mjs cannot import TypeScript.
+
+const SYNASTRY_PLANET_DE = {
+  Sun: 'Sonne', Moon: 'Mond', Mercury: 'Merkur',
+  Venus: 'Venus', Mars: 'Mars', Jupiter: 'Jupiter', Saturn: 'Saturn',
+};
+
+const SYNASTRY_ASPECT_DE = {
+  conjunction: 'Konjunktion', opposition: 'Opposition',
+  trine: 'Trigon', square: 'Quadrat', sextile: 'Sextil',
+};
+
+const SYNASTRY_ASPECT_TMPL = {
+  conjunction: (p1, p2, exact) => exact
+    ? `${p1} und ${p2} vereinen sich in exakter Konjunktion — eine intensive Verschmelzung, die gemeinsame Themen zwischen euch stark betont.`
+    : `${p1} und ${p2} stehen in Konjunktion — ihre Energien fließen ineinander und verstärken gemeinsame Themen in dieser Verbindung.`,
+  opposition: (p1, p2, exact) => exact
+    ? `${p1} und ${p2} stehen sich in exakter Opposition gegenüber — ein starkes Spannungsfeld, das zur bewussten Ergänzung einlädt.`
+    : `${p1} und ${p2} befinden sich in Opposition — ein Gegenüber, das Wachstum durch gegenseitige Reflexion ermöglicht.`,
+  trine: (p1, p2, exact) => exact
+    ? `${p1} und ${p2} bilden ein exaktes Trigon — ein harmonischer Fluss, der Resonanz und Leichtigkeit in diese Verbindung bringt.`
+    : `${p1} und ${p2} stehen im Trigon — eine fließende Harmonie, die euch in diesen Bereichen natürlich unterstützt.`,
+  square: (p1, p2, exact) => exact
+    ? `${p1} und ${p2} bilden ein exaktes Quadrat — produktive Spannung, die Wachstum durch bewusste Auseinandersetzung fordert.`
+    : `${p1} und ${p2} stehen im Quadrat — eine reibende Spannung, die zur aktiven Klärung einlädt.`,
+  sextile: (p1, p2, exact) => exact
+    ? `${p1} und ${p2} bilden ein exaktes Sextil — eine sanfte Chance zur Zusammenarbeit, die gegenseitige Neugier stärkt.`
+    : `${p1} und ${p2} stehen im Sextil — ein weicher Kontakt, der Möglichkeiten zur gegenseitigen Bereicherung eröffnet.`,
+};
+
+function synastryAspectNarrative(aspect) {
+  const p1 = SYNASTRY_PLANET_DE[aspect.planet1] ?? aspect.planet1;
+  const p2 = SYNASTRY_PLANET_DE[aspect.planet2] ?? aspect.planet2;
+  const fn = SYNASTRY_ASPECT_TMPL[aspect.type];
+  return fn ? fn(p1, p2, aspect.exact) : `${p1}–${p2} ${SYNASTRY_ASPECT_DE[aspect.type] ?? aspect.type}`;
+}
+
+function synastryTemplateSummary(aspects) {
+  if (!aspects.length) {
+    return 'Die astrologische Analyse ergibt keine signifikanten Hauptaspekte zwischen euren Geburtshoroskopen.';
+  }
+  const sorted = [...aspects].sort((a, b) => {
+    if (a.exact !== b.exact) return a.exact ? -1 : 1;
+    return a.orb - b.orb;
+  });
+  const top = sorted.slice(0, 3).map(a => {
+    const p1 = SYNASTRY_PLANET_DE[a.planet1] ?? a.planet1;
+    const p2 = SYNASTRY_PLANET_DE[a.planet2] ?? a.planet2;
+    return `${p1}–${p2} in ${SYNASTRY_ASPECT_DE[a.type] ?? a.type}`;
+  });
+  const total    = aspects.length;
+  const exact    = aspects.filter(a => a.exact).length;
+  const harmonic = aspects.filter(a => a.type === 'trine' || a.type === 'sextile').length;
+  const tense    = aspects.filter(a => a.type === 'square' || a.type === 'opposition').length;
+  const intro = `Zwischen euren Horoskopen zeigen sich ${total} Hauptaspekte${exact > 0 ? `, davon ${exact} präzise` : ''}.`;
+  const tone = harmonic > tense
+    ? ' Die Verbindung trägt eine überwiegend fließende Qualität — ein natürliches gegenseitiges Verständnis scheint angelegt.'
+    : tense > harmonic
+      ? ' Die Konstellation enthält produktive Spannung — Wachstum durch aktiven Austausch ist ein zentrales Thema.'
+      : ' Die Verbindung vereint harmonische und spannungsreiche Aspekte — eine vielschichtige Begegnung mit Tiefe.';
+  return intro + tone + ` Besonders prägend: ${top.join(', ')}.`;
+}
+
+async function synastryGeminiSummary(aspects, userSunSign, partnerSunSign) {
+  if (!geminiClient) return null;
+  try {
+    const topAspects = [...aspects]
+      .sort((a, b) => (a.exact === b.exact ? a.orb - b.orb : a.exact ? -1 : 1))
+      .slice(0, 7)
+      .map(a => {
+        const p1 = SYNASTRY_PLANET_DE[a.planet1] ?? a.planet1;
+        const p2 = SYNASTRY_PLANET_DE[a.planet2] ?? a.planet2;
+        return `${p1}–${p2} ${SYNASTRY_ASPECT_DE[a.type]}${a.exact ? ' (exakt)' : ''}, Orb ${a.orb}°`;
+      })
+      .join('\n');
+
+    const prompt = `Du bist Bazodiac's Synastrie-Analyst. Schreibe einen prägnanten deutschen Absatz (3-4 Sätze) über die astrologische Verbindung zwischen zwei Menschen.
+
+DATEN:
+- Sonnenzeichen Person 1: ${userSunSign || 'unbekannt'}
+- Sonnenzeichen Person 2: ${partnerSunSign || 'unbekannt'}
+- Relevante Synastrie-Aspekte:
+${topAspects}
+
+REGELN:
+1. Sprache: ausschließlich Deutsch
+2. Ressourcenorientiert: verwende "Tendenz", "kann", "begünstigt", "Phase", "lädt ein" — NIEMALS "wird", "muss", "Schicksal"
+3. Konkret: beziehe dich auf die tatsächlichen Aspekte, keine generischen Liebesaussagen
+4. 3-4 Sätze, fließend formuliert
+5. Kein Markdown, keine Listen, kein JSON — nur reiner Fließtext
+6. Beginne NICHT mit "Diese Verbindung" oder "Zwischen euch"`;
+
+    const model = geminiClient.models;
+    const result = await model.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: prompt,
+      config: { temperature: 0.75 },
+    });
+    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text
+               ?? result?.text
+               ?? '';
+    const trimmed = text.trim();
+    return trimmed.length > 20 ? trimmed : null;
+  } catch (err) {
+    console.warn('[synastry] Gemini narrative failed, using template fallback:', err?.message);
+    return null;
+  }
+}
+
+async function fetchChartForBirth({ birth_date, birth_time, iana_time_zone, birth_lat, birth_lon }) {
+  const dt = birth_time
+    ? `${birth_date}T${birth_time}`
+    : `${birth_date}T12:00`;
+  const body = JSON.stringify({
+    date:             dt,
+    tz:               iana_time_zone || 'UTC',
+    lat:              birth_lat,
+    lon:              birth_lon,
+    ambiguousTime:    'earlier',
+    nonexistentTime:  'error',
+    house_system:     'placidus',
+  });
+  const urls = bafeFallbackUrls('/chart');
+  for (const url of urls) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: bafeDirectHeaders({ 'Content-Type': 'application/json' }),
+        body,
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      if (resp.ok) return resp.json();
+    } catch { /* try next URL */ }
+  }
+  throw new Error('FuFirE /chart unavailable');
+}
+
+app.post('/api/synastry', requireUserAuth, async (req, res) => {
+  if (!supabaseServer) return res.status(503).json({ error: 'Auth service not configured' });
+
+  const userId = req.userId;
+
+  // ── Premium gate ──────────────────────────────────────────────────
+  const { data: profile } = await supabaseServer
+    .from('profiles')
+    .select('tier')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (profile?.tier !== 'premium') {
+    return res.status(403).json({ error: 'premium_required' });
+  }
+
+  // ── Validate request ──────────────────────────────────────────────
+  const { partner_id } = req.body ?? {};
+  if (!partner_id || typeof partner_id !== 'string') {
+    return res.status(400).json({ error: 'partner_id is required' });
+  }
+
+  // ── Load user birth data ──────────────────────────────────────────
+  const { data: userProfile, error: userErr } = await supabaseServer
+    .from('astro_profiles')
+    .select('birth_date, birth_time, iana_time_zone, birth_lat, birth_lng, sun_sign')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (userErr || !userProfile?.birth_date || userProfile?.birth_lat == null) {
+    return res.status(422).json({ error: 'User birth data incomplete' });
+  }
+
+  // ── Load partner birth data ───────────────────────────────────────
+  const { data: partner, error: partnerErr } = await supabaseServer
+    .from('partner_profiles')
+    .select('birth_date, birth_time, iana_time_zone, birth_place, birth_lat, birth_lon, display_name')
+    .eq('id', partner_id)
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (partnerErr || !partner) {
+    return res.status(404).json({ error: 'Partner not found' });
+  }
+  if (!partner.birth_lat || !partner.birth_lon) {
+    return res.status(422).json({ error: 'Partner birth location incomplete' });
+  }
+
+  // ── Fetch both natal charts ───────────────────────────────────────
+  let userChart, partnerChart;
+  try {
+    [userChart, partnerChart] = await Promise.all([
+      fetchChartForBirth({
+        birth_date:    userProfile.birth_date,
+        birth_time:    userProfile.birth_time,
+        iana_time_zone: userProfile.iana_time_zone,
+        birth_lat:     userProfile.birth_lat,
+        birth_lon:     userProfile.birth_lng,
+      }),
+      fetchChartForBirth({
+        birth_date:    partner.birth_date,
+        birth_time:    partner.birth_time,
+        iana_time_zone: partner.iana_time_zone,
+        birth_lat:     partner.birth_lat,
+        birth_lon:     partner.birth_lon,
+      }),
+    ]);
+  } catch (err) {
+    console.error('[synastry] chart fetch failed:', err?.message);
+    return res.status(502).json({ error: 'Chart calculation temporarily unavailable' });
+  }
+
+  // ── Compute aspects ───────────────────────────────────────────────
+  const userBodies    = userChart.positions   || userChart.bodies   || {};
+  const partnerBodies = partnerChart.positions || partnerChart.bodies || {};
+  const userPositions    = synastryExtractLongitudes(userBodies);
+  const partnerPositions = synastryExtractLongitudes(partnerBodies);
+  const rawAspects = synastryComputeAspects(userPositions, partnerPositions);
+
+  // ── Add per-aspect template narratives (always German) ───────────
+  const aspects = rawAspects.map(a => ({
+    ...a,
+    narrative: synastryAspectNarrative(a),
+  }));
+
+  // ── Overall summary narrative (template or Gemini) ────────────────
+  const templateSummary = synastryTemplateSummary(aspects);
+
+  // Sun sign extraction for Gemini prompt context
+  const ZODIAC_EN = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+  const userSunSign   = userProfile.sun_sign   || null;
+  const partnerSunSign = (() => {
+    const bodies = partnerBodies;
+    const sunLon = bodies['Sun']?.longitude ?? bodies['sun']?.longitude;
+    if (sunLon == null) return null;
+    return ZODIAC_EN[Math.floor(((sunLon % 360) + 360) % 360 / 30)] ?? null;
+  })();
+
+  // This endpoint is premium-gated — attempt Gemini summary for all callers.
+  // Template fallback on any Gemini failure (DEC-narrative-engine-hybrid).
+  let synastry_summary = templateSummary;
+  let narrative_source = 'template';
+
+  const geminiSummary = await synastryGeminiSummary(aspects, userSunSign, partnerSunSign);
+  if (geminiSummary) {
+    synastry_summary = geminiSummary;
+    narrative_source = 'gemini';
+  }
+
+  return res.json({
+    partner: { id: partner_id, display_name: partner.display_name, birth_place: partner.birth_place },
+    aspects,
+    synastry_summary,
+    narrative_source,
+    user_positions:    userPositions,
+    partner_positions: partnerPositions,
+  });
+});
+
 // ── /api/create-checkout-session ─────────────────────────────────
 app.post('/api/create-checkout-session', requireUserAuth, async (req, res) => {
   if (!stripe) {
