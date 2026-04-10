@@ -4,6 +4,7 @@ import {
   AktiveEinfluesseFusion,
   intensityToTier,
   RESONANCE_CARD_STYLE,
+  buildResonanceTooltip,
 } from '../components/dashboard/AktiveEinfluesseFusion';
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
@@ -279,5 +280,115 @@ describe('intensityToTier', () => {
     expect(intensityToTier(0.6000)).toBe('mittel');
     expect(intensityToTier(0.7499)).toBe('mittel');
     expect(intensityToTier(0.7500)).toBe('stark');
+  });
+});
+
+// ── buildResonanceTooltip unit tests (TASK-influence-tooltips-personalized) ────
+//
+// Pure function — tested with explicit ResonanceResult fixtures.
+// Covers all 5 meaningful cases: gleichklang, naehrung forward/backward,
+// kontrolle forward/backward.  Neutral is the mathematical safety net.
+
+describe('buildResonanceTooltip', () => {
+  const base = { intensity: 0.85, planetElement: 'wood' as const, dayMasterElement: 'wood' as const };
+
+  it('gleichklang DE — mentions both elements and "Einklang"', () => {
+    const r = { ...base, type: 'gleichklang' as const };
+    const text = buildResonanceTooltip(r, true);
+    expect(text).toContain('Holz');
+    expect(text).toContain('Einklang');
+    expect(text).not.toContain('erzeugt');
+    expect(text).not.toContain('kontrolliert');
+  });
+
+  it('gleichklang EN — mentions both elements and "resonate"', () => {
+    const r = { ...base, type: 'gleichklang' as const };
+    const text = buildResonanceTooltip(r, false);
+    expect(text).toContain('Wood');
+    expect(text).toContain('resonate');
+  });
+
+  it('naehrung forward DE — planet gives to day master ("gibt Energie … ab")', () => {
+    const r = {
+      type: 'naehrung' as const,
+      direction: 'forward' as const,
+      intensity: 0.75,
+      planetElement: 'water' as const,  // Wasser erzeugt Holz
+      dayMasterElement: 'wood' as const,
+    };
+    const text = buildResonanceTooltip(r, true);
+    expect(text).toContain('Wasser');
+    expect(text).toContain('Holz');
+    expect(text).toContain('erzeugt');
+    expect(text).toContain('gestärkt');
+    expect(text).not.toContain('Bedacht');
+  });
+
+  it('naehrung backward DE — day master gives to planet ("gibt Energie weiter")', () => {
+    const r = {
+      type: 'naehrung' as const,
+      direction: 'backward' as const,
+      intensity: 0.65,
+      planetElement: 'fire' as const,  // Jia (Holz) erzeugt Feuer
+      dayMasterElement: 'wood' as const,
+    };
+    const text = buildResonanceTooltip(r, true);
+    expect(text).toContain('Holz');
+    expect(text).toContain('Feuer');
+    expect(text).toContain('erzeugt');
+    expect(text).toContain('Bedacht');
+    expect(text).not.toContain('gestärkt');
+  });
+
+  it('kontrolle forward DE — planet structures day master ("kontrolliert … Mitte")', () => {
+    const r = {
+      type: 'kontrolle' as const,
+      direction: 'forward' as const,
+      intensity: 0.70,
+      planetElement: 'metal' as const,  // Metall kontrolliert Holz
+      dayMasterElement: 'wood' as const,
+    };
+    const text = buildResonanceTooltip(r, true);
+    expect(text).toContain('Metall');
+    expect(text).toContain('Holz');
+    expect(text).toContain('kontrolliert');
+    expect(text).toContain('Mitte');
+    expect(text).not.toContain('gestaltest');
+  });
+
+  it('kontrolle backward DE — day master shapes planet field ("gestaltest")', () => {
+    const r = {
+      type: 'kontrolle' as const,
+      direction: 'backward' as const,
+      intensity: 0.70,
+      planetElement: 'earth' as const,  // Holz kontrolliert Erde
+      dayMasterElement: 'wood' as const,
+    };
+    const text = buildResonanceTooltip(r, true);
+    expect(text).toContain('Holz');
+    expect(text).toContain('Erde');
+    expect(text).toContain('kontrolliert');
+    expect(text).toContain('gestaltest');
+    expect(text).not.toContain('Mitte');
+  });
+
+  it('neutral DE — fallback text without erzeugt/kontrolliert', () => {
+    const r = { ...base, type: 'neutral' as const, planetElement: 'fire' as const };
+    const text = buildResonanceTooltip(r, true);
+    expect(text).toContain('neutral');
+    expect(text).not.toContain('erzeugt');
+    expect(text).not.toContain('kontrolliert');
+  });
+
+  it('resonance badge rendered for each planet when stem is valid', () => {
+    render(<AktiveEinfluesseFusion dayMasterStem="Jia" />);
+    const badges = screen.getAllByTestId('resonance-badge');
+    expect(badges).toHaveLength(6);
+  });
+
+  it('no resonance badge when stem is absent (BaZi unavailable)', () => {
+    render(<AktiveEinfluesseFusion dayMasterStem={undefined} />);
+    const badges = screen.queryAllByTestId('resonance-badge');
+    expect(badges).toHaveLength(0);
   });
 });

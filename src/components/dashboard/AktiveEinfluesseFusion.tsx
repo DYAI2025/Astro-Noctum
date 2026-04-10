@@ -22,9 +22,11 @@ import {
   type HeavenlyStem,
   type WuXingElement,
   type ResonanceType,
+  type ResonanceResult,
 } from '../../lib/fusion-bazi/resonance';
 import { ZODIAC_SIGNS_DATA } from '../../lib/astro-data/zodiacSigns';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { Tooltip } from '../Tooltip';
 
 // ── Planet configuration ──────────────────────────────────────────────────────
 
@@ -185,6 +187,56 @@ export const RESONANCE_CARD_STYLE: Record<ResonanceType, { bg: string; border: s
   neutral:     { bg: 'rgba(180, 150, 50,  0.05)', border: '2px solid rgba(180, 150, 50,  0.25)' },
 };
 
+// ── Personalized resonance tooltip ───────────────────────────────────────────
+//
+// Explains the Wu-Xing relationship between the transiting planet element and
+// the user's day master element in user-centric language (REQ-F-transparency-rule).
+// Exported for unit-testing — pure function, no side effects.
+
+export function buildResonanceTooltip(resonance: ResonanceResult, isDe: boolean): string {
+  const pel = isDe
+    ? ELEMENT_LABEL[resonance.planetElement].de
+    : ELEMENT_LABEL[resonance.planetElement].en;
+  const mel = isDe
+    ? ELEMENT_LABEL[resonance.dayMasterElement].de
+    : ELEMENT_LABEL[resonance.dayMasterElement].en;
+
+  if (resonance.type === 'gleichklang') {
+    return isDe
+      ? `${pel} und dein Tagmeister ${mel} teilen dasselbe Element — ihr schwingst im Einklang. Diese Energie verstärkt sich heute für dich.`
+      : `${pel} and your day master ${mel} share the same element — you resonate as one. This energy amplifies for you today.`;
+  }
+
+  if (resonance.type === 'naehrung') {
+    if (resonance.direction === 'forward') {
+      return isDe
+        ? `${pel} erzeugt ${mel}: der Planet gibt Energie an deinen Tagmeister ab. Du wirst heute gestärkt.`
+        : `${pel} generates ${mel}: the planet feeds your day master. You receive energy today.`;
+    }
+    // backward: day master generates planet
+    return isDe
+      ? `Dein ${mel} erzeugt ${pel}: dein Tagmeister gibt Energie weiter. Handle heute mit Bedacht.`
+      : `Your ${mel} generates ${pel}: your day master feeds this planet. Act thoughtfully today.`;
+  }
+
+  if (resonance.type === 'kontrolle') {
+    if (resonance.direction === 'forward') {
+      return isDe
+        ? `${pel} kontrolliert ${mel}: eine ordnende Kraft wirkt auf deinen Tagmeister. Bleib in deiner Mitte.`
+        : `${pel} controls ${mel}: a structuring force acts on your day master. Stay centered.`;
+    }
+    // backward: day master controls planet
+    return isDe
+      ? `Dein ${mel} kontrolliert ${pel}: du gestaltest dieses Feld. Nutze den Einfluss bewusst.`
+      : `Your ${mel} controls ${pel}: you shape this field. Use your influence mindfully.`;
+  }
+
+  // neutral (mathematically unreachable safety net)
+  return isDe
+    ? `Kein direktes Wu-Xing-Verhältnis zwischen ${pel} und ${mel}. Dieser Planet wirkt heute neutral.`
+    : `No direct Wu-Xing relationship between ${pel} and ${mel}. This planet acts neutrally today.`;
+}
+
 // ── Zodiac sign index → DE name ───────────────────────────────────────────────
 
 function signNameDe(idx: number | undefined): string | null {
@@ -332,18 +384,21 @@ function PlanetCard({
                 ? ELEMENT_LABEL[resonance.planetElement].de
                 : ELEMENT_LABEL[resonance.planetElement].en}
             </span>
-            {/* Source: calculatePlanetBaziResonance() resonance type */}
-            <span
-              className="text-[9px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded"
-              style={{
-                background: `${RESONANCE_BADGE_COLOR[resonance.type]}18`,
-                color: RESONANCE_BADGE_COLOR[resonance.type],
-              }}
-            >
-              {isDe
-                ? RESONANCE_LABEL[resonance.type].de
-                : RESONANCE_LABEL[resonance.type].en}
-            </span>
+            {/* Source: calculatePlanetBaziResonance() resonance type — tooltip explains relationship */}
+            <Tooltip content={buildResonanceTooltip(resonance, isDe)} dark wide>
+              <span
+                className="text-[9px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded cursor-help"
+                style={{
+                  background: `${RESONANCE_BADGE_COLOR[resonance.type]}18`,
+                  color: RESONANCE_BADGE_COLOR[resonance.type],
+                }}
+                data-testid="resonance-badge"
+              >
+                {isDe
+                  ? RESONANCE_LABEL[resonance.type].de
+                  : RESONANCE_LABEL[resonance.type].en}
+              </span>
+            </Tooltip>
           </div>
 
           {/* Source: intensityToTier(resonance.intensity) — qualitative field-strength, REQ-F-dashboard-live-daily-signals AC 7 */}

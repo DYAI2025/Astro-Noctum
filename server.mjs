@@ -4737,7 +4737,7 @@ app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async
     if (!customerId) {
       console.error("[Stripe] subscription.deleted missing customer id on subscription object");
     } else {
-      const [profileResult, astroResult] = await Promise.allSettled([
+      const results = await Promise.allSettled([
         supabaseServer
           .from("profiles")
           .update({
@@ -4745,19 +4745,24 @@ app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async
             subscription_end: periodEnd,
           })
           .eq("stripe_customer_id", customerId),
-        supabaseServer
-          .from("astro_profiles")
-          .update({ tier: stillInGrace ? "premium" : "free" })
-          .eq("user_id", sub.metadata?.userId),
+        // Only update astro_profiles if we have a userId from metadata
+        ...(sub.metadata?.userId
+          ? [supabaseServer
+              .from("astro_profiles")
+              .update({ tier: stillInGrace ? "premium" : "free" })
+              .eq("user_id", sub.metadata.userId)]
+          : []),
       ]);
 
+      const profileResult = results[0];
+      const astroResult = results.length > 1 ? results[1] : null;
       if (profileResult.status === "fulfilled" && profileResult.value.error) {
         console.error("[Stripe] subscription.deleted profiles failed:", profileResult.value.error.message);
       }
-      if (astroResult.status === "fulfilled" && astroResult.value.error) {
+      if (astroResult?.status === "fulfilled" && astroResult.value.error) {
         console.error("[Stripe] subscription.deleted astro_profiles failed:", astroResult.value.error.message);
       }
-      if (!(profileResult.value?.error || astroResult.value?.error)) {
+      if (!profileResult.value?.error && !astroResult?.value?.error) {
         console.log(`[Stripe] Subscription deleted — grace until ${periodEnd}, tier=${stillInGrace ? "premium" : "free"}`);
       }
     }
