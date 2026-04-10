@@ -6,6 +6,8 @@ import type { SpaceWeatherState } from '../hooks/useSpaceWeather';
 vi.mock('../contexts/LanguageContext', () => ({
   useLanguage: () => ({
     lang: 'de',
+    // The mock returns the key itself for unknown keys — lets tier tests
+    // assert which key was selected without depending on exact copy.
     t: (key: string) => {
       const map: Record<string, string> = {
         'dashboard.cosmicInfluence.sectionTitle': 'Kosmischer Einfluss',
@@ -13,8 +15,14 @@ vi.mock('../contexts/LanguageContext', () => ({
         'dashboard.cosmicInfluence.noDataLabel': 'KEINE DATEN',
         'dashboard.cosmicInfluence.kpLabel': 'Geomagnetisch',
         'dashboard.cosmicInfluence.kpTooltip': 'Kp-Index Tooltip',
+        'dashboard.cosmicInfluence.kpTooltipCalm': 'kpTooltipCalm',
+        'dashboard.cosmicInfluence.kpTooltipMild': 'kpTooltipMild',
+        'dashboard.cosmicInfluence.kpTooltipStrong': 'kpTooltipStrong',
         'dashboard.cosmicInfluence.solarPressureLabel': 'Solar-Druck',
         'dashboard.cosmicInfluence.solarPressureTooltip': 'Solar-Druck Tooltip',
+        'dashboard.cosmicInfluence.solarPressureTooltipLow': 'solarPressureTooltipLow',
+        'dashboard.cosmicInfluence.solarPressureTooltipMid': 'solarPressureTooltipMid',
+        'dashboard.cosmicInfluence.solarPressureTooltipHigh': 'solarPressureTooltipHigh',
         'dashboard.cosmicInfluence.noEventsLabel': 'Ruhig — keine aktiven Weltraumereignisse',
         'dashboard.cosmicInfluence.eventCme': 'CME',
         'dashboard.cosmicInfluence.eventFlare': 'Flare',
@@ -29,7 +37,11 @@ vi.mock('../contexts/LanguageContext', () => ({
 }));
 
 vi.mock('../components/Tooltip', () => ({
-  Tooltip: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  // Render content as a hidden data-testid so tier tests can assert which
+  // tooltip key was selected, without depending on exact copy text.
+  Tooltip: ({ children, content }: { children: React.ReactNode; content: string }) => (
+    <div data-tooltip-content={content}>{children}</div>
+  ),
 }));
 
 const liveState: SpaceWeatherState = {
@@ -186,5 +198,62 @@ describe('CosmicInfluenceSection', () => {
     // 0% displayed
     const zeros = screen.getAllByText('0%');
     expect(zeros.length).toBeGreaterThanOrEqual(2);
+  });
+});
+
+// ── Tiered tooltip selection (TASK-cosmic-values-explained) ──────────────────
+//
+// REQ-F-transparency-rule: every numerical value must carry user-relevant meaning.
+// The tooltip must reflect the current tier (calm/mild/strong, low/mid/high)
+// rather than a generic technical description.
+
+describe('CosmicInfluenceSection — tiered tooltip selection', () => {
+  function getTooltipContents(container: HTMLElement): string[] {
+    return Array.from(container.querySelectorAll('[data-tooltip-content]'))
+      .map(el => el.getAttribute('data-tooltip-content') ?? '');
+  }
+
+  it('Kp G0 → uses kpTooltipCalm', () => {
+    const { container } = render(
+      <CosmicInfluenceSection spaceWeather={{ ...liveState, kpIndex: 0, gScale: 'G0' }} />
+    );
+    const tooltips = getTooltipContents(container);
+    expect(tooltips.some(t => t === 'kpTooltipCalm')).toBe(true);
+    expect(tooltips.some(t => t === 'kpTooltipMild' || t === 'kpTooltipStrong')).toBe(false);
+  });
+
+  it('Kp G1 → uses kpTooltipMild', () => {
+    const { container } = render(
+      <CosmicInfluenceSection spaceWeather={{ ...liveState, kpIndex: 4, gScale: 'G1' }} />
+    );
+    expect(getTooltipContents(container).some(t => t === 'kpTooltipMild')).toBe(true);
+  });
+
+  it('Kp G3 → uses kpTooltipStrong', () => {
+    const { container } = render(
+      <CosmicInfluenceSection spaceWeather={{ ...liveState, kpIndex: 7, gScale: 'G3' }} />
+    );
+    expect(getTooltipContents(container).some(t => t === 'kpTooltipStrong')).toBe(true);
+  });
+
+  it('solarPressure 0.1 (10%) → uses solarPressureTooltipLow', () => {
+    const { container } = render(
+      <CosmicInfluenceSection spaceWeather={{ ...liveState, solarPressure: 0.1 }} />
+    );
+    expect(getTooltipContents(container).some(t => t === 'solarPressureTooltipLow')).toBe(true);
+  });
+
+  it('solarPressure 0.5 (50%) → uses solarPressureTooltipMid', () => {
+    const { container } = render(
+      <CosmicInfluenceSection spaceWeather={{ ...liveState, solarPressure: 0.5 }} />
+    );
+    expect(getTooltipContents(container).some(t => t === 'solarPressureTooltipMid')).toBe(true);
+  });
+
+  it('solarPressure 0.8 (80%) → uses solarPressureTooltipHigh', () => {
+    const { container } = render(
+      <CosmicInfluenceSection spaceWeather={{ ...liveState, solarPressure: 0.8 }} />
+    );
+    expect(getTooltipContents(container).some(t => t === 'solarPressureTooltipHigh')).toBe(true);
   });
 });

@@ -15,7 +15,7 @@ Bazodiac (Astro-Noctum) — a fusion astrology web + mobile app combining Wester
 
 Run `/SDLC-status` or check `3-code/tasks.md` + `git log` for live project state. Do not rely on hardcoded counts in this file.
 
-**Implementation progress (2026-04-10):** ~269/272 tasks Done. Phase G (Mobile Parity) complete: TASK-ios-lockscreen-widget cancelled; WidgetKit feasibility spike done (docs/spikes/ios-lockscreen-widget-feasibility.md — defer to Swift app, OQ-widget open). Phase H2 P1 complete. Phase V1 (Vibes Core, P1) Done. TASK-influence-tooltips-personalized Done: buildResonanceTooltip() + Tooltip on resonance badge in AktiveEinfluesseFusion (37 tests green). Next: TASK-cosmic-values-explained (P2, NEEDS REFINEMENT). Phase F blocked on 6 open questions. 1512 tests green.
+**Implementation progress (2026-04-10):** ~270/272 tasks Done. Phase G (Mobile Parity) complete: TASK-ios-lockscreen-widget cancelled; WidgetKit feasibility spike done (docs/spikes/ios-lockscreen-widget-feasibility.md — defer to Swift app, OQ-widget open). Phase H2 P1 complete. Phase V1 (Vibes Core, P1) Done. TASK-influence-tooltips-personalized Done. TASK-cosmic-values-explained Done: tiered Kp/SolarPressure tooltips in DE+EN (G0→calm, G1-G2→mild, G3+→strong; 0-32%→low, 33-65%→mid, 66%+→high). 1518 tests green. Phase F blocked on 6 open questions.
 
 **Objectives gap analysis (2026-04-09):** 0 Critical, 5 Important, 3 Minor. Key I-items: 2 requirements need status update to Implemented (onboarding-display-name, signatur-day-night-pulse); 5/6 goals have no user stories; ~18 requirements not back-linked from goals.
 

@@ -140,6 +140,24 @@ export function CosmicInfluenceSection({ spaceWeather }: CosmicInfluenceSectionP
   const gStyle = gScaleStyle(spaceWeather.gScale);
   const xClass = xrayStyle(spaceWeather.xrayClass);
 
+  // Tiered tooltip keys — give the user a qualitative label + Signatur impact
+  // Kp tier: G0 = calm, G1-G2 = mild, G3+ = strong
+  const gScaleNum = parseInt(spaceWeather.gScale.replace('G', ''), 10) || 0;
+  const kpTooltipKey =
+    gScaleNum >= 3
+      ? 'dashboard.cosmicInfluence.kpTooltipStrong'
+      : gScaleNum >= 1
+        ? 'dashboard.cosmicInfluence.kpTooltipMild'
+        : 'dashboard.cosmicInfluence.kpTooltipCalm';
+
+  // Solar pressure tier: 0–32% = low, 33–65% = mid, 66%+ = high
+  const solarTooltipKey =
+    solarPressurePercent >= 66
+      ? 'dashboard.cosmicInfluence.solarPressureTooltipHigh'
+      : solarPressurePercent >= 33
+        ? 'dashboard.cosmicInfluence.solarPressureTooltipMid'
+        : 'dashboard.cosmicInfluence.solarPressureTooltipLow';
+
   // Active events: filter expired ones using expires_at.
   // new Date() is called inline so expiry is evaluated against the time of
   // each re-render (driven by the 5-min useSpaceWeather poll), not mount time.
@@ -169,14 +187,14 @@ export function CosmicInfluenceSection({ spaceWeather }: CosmicInfluenceSectionP
           label={t('dashboard.cosmicInfluence.kpLabel')}
           percent={kpPercent}
           barClass={gStyle.bar}
-          tooltip={t('dashboard.cosmicInfluence.kpTooltip')}
+          tooltip={t(kpTooltipKey)}
           badge={{ text: spaceWeather.gScale, className: gStyle.badge }}
         />
         <GaugeBar
           label={t('dashboard.cosmicInfluence.solarPressureLabel')}
           percent={solarPressurePercent}
           barClass="bg-gradient-to-r from-amber-500 to-orange-400"
-          tooltip={t('dashboard.cosmicInfluence.solarPressureTooltip')}
+          tooltip={t(solarTooltipKey)}
           badge={{ text: spaceWeather.xrayClass, className: xClass }}
         />
       </div>

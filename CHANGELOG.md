@@ -7,6 +7,7 @@
 - **AktiveEinfluesseFusion: dual-dimension color encoding** — planet cards now use resonance/tension semantics: gleichklang/naehrung → blue border+bg, kontrolle → red border+bg, neutral → muted gold. Element colors no longer used for card backgrounds (REQ-F-dashboard-live-daily-signals AC 4+5).
 - **AktiveEinfluesseFusion: Feldstärke indicator** — 3-segment qualitative bar (gering/mittel/stark) derived from `resonance.intensity` thresholds (0.60/0.75). No raw float displayed per DEC-no-number-without-explanation (REQ-F-dashboard-live-daily-signals AC 7).
 - **AktiveEinfluesseFusion: personalized resonance tooltips** — hovering the resonance type badge (Gleichklang/Nährung/Kontrolle) now shows a contextual tooltip explaining the Wu-Xing relationship in user-centric language: which element feeds/controls which, and whether energy flows toward or from the user's day master. DE+EN. `buildResonanceTooltip()` exported and fully unit-tested (REQ-F-transparency-rule).
+- **CosmicInfluenceSection: tiered user-centric tooltips** — Kp and Solar Pressure gauges now show dynamic tooltips based on the current value: Kp G0 → calm / G1-G2 → mild / G3+ → strong storm; Solar Pressure 0-32% → low / 33-65% → moderate / 66%+ → high — each with user-relevant meaning and explicit Signatur impact. Replaces generic physics descriptions. DE+EN (REQ-F-transparency-rule).
 
 ### Bug Fixes
 
