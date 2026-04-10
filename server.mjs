@@ -3956,6 +3956,9 @@ app.get("/api/agent/daily/:userId", async (req, res) => {
   }
 
   // 2. Build daily request payload for FuFirE
+  if (!profile.birth_date) {
+    return res.status(422).json({ error: "Profile is missing birth_date — cannot compute daily horoscope" });
+  }
   const today = new Date().toISOString().slice(0, 10);
   const birthTime = profile.birth_time || "12:00:00";
   const birthTimeFormatted = birthTime.length === 5 ? `${birthTime}:00` : birthTime;
