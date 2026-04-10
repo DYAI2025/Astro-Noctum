@@ -18,6 +18,10 @@ import type { AgentId } from '@/packages/shared/src/agents/config';
 // mount on agentId truthy, unmount on agentId undefined.
 // dynamic-variables updated in-place to avoid remounts.
 function useElevenLabsWidget(agentId: string | undefined, dynamicVars: string) {
+  // Track the mounted widget via ref — avoids querySelector race condition
+  // when switching agents (old widget removed + new one created in same render).
+  const widgetRef = useRef<HTMLElement | null>(null);
+
   useEffect(() => {
     if (!agentId) return;
 
@@ -26,10 +30,15 @@ function useElevenLabsWidget(agentId: string | undefined, dynamicVars: string) {
     widget.setAttribute('always-expanded', '');
     widget.setAttribute('dynamic-variables', dynamicVars);
     document.body.appendChild(widget);
+    widgetRef.current = widget;
 
     return () => {
       if (document.body.contains(widget)) {
         document.body.removeChild(widget);
+      }
+      // Clear ref so the dynamicVars effect below doesn't write to a detached node
+      if (widgetRef.current === widget) {
+        widgetRef.current = null;
       }
     };
   // dynamicVars excluded: apiData loads async and would cause constant remounts
@@ -38,9 +47,10 @@ function useElevenLabsWidget(agentId: string | undefined, dynamicVars: string) {
 
   // Update dynamic-variables in-place (no remount needed)
   useEffect(() => {
-    const el = document.querySelector(`elevenlabs-convai[agent-id="${agentId}"]`) as HTMLElement | null;
-    if (el) el.setAttribute('dynamic-variables', dynamicVars);
-  }, [agentId, dynamicVars]);
+    if (widgetRef.current) {
+      widgetRef.current.setAttribute('dynamic-variables', dynamicVars);
+    }
+  }, [dynamicVars]);
 }
 
 
