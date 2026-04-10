@@ -3649,8 +3649,7 @@ app.get("/api/profile/:userId", async (req, res) => {
   const authHeader = req.headers.authorization || "";
   const token = authHeader.replace("Bearer ", "").trim();
 
-  // Log auth outcome only, never token values
-  console.log(`[profile] auth check — match: ${!!ELEVENLABS_TOOL_SECRET && token === ELEVENLABS_TOOL_SECRET}`);
+  // Only log auth failures — never log success/token match details in production
 
   if (!ELEVENLABS_TOOL_SECRET || token !== ELEVENLABS_TOOL_SECRET) {
     return res.status(401).json({ error: "Unauthorized" });
