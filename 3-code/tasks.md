@@ -824,21 +824,42 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 
 ---
 
-## Partnership Features (Blocked)
+## Phase F: Partnership Features + Conversion Architecture
 
-Open questions requiring human decision before work can begin:
+Open questions resolved 2026-04-10:
 
-| ID | Question | Status |
-|----|----------|--------|
-| OQ-house-system | House system: Placidus or Koch? | Blocked (Ben's decision) |
-| OQ-synastry-consent | Synastry without partner account? | Blocked (Ben's decision) |
-| OQ-orb-tolerance | Orb tolerance for interaspects? | Blocked (Ben's decision) |
-| OQ-minor-aspects | Minor aspects (Quincunx, Semisextile) or only 5 main? | Blocked (Ben's decision) |
-| OQ-narrative-generation | Partnership narratives: fixed templates or Gemini-generated? | Blocked (Ben's decision) |
-| OQ-synastry-signal | Synastry as 4th signal or separate system? | Blocked (Ben's decision) |
+| ID | Question | Decision | DEC |
+|----|----------|----------|-----|
+| OQ-house-system | House system: Placidus or Koch? | **Placidus** (consistent with FuFirE Natal) | [DEC-house-system-placidus](../2-design/decisions/DEC-house-system-placidus.md) |
+| OQ-synastry-consent | Synastry without partner account? | **Yes** — manual birth data, invitation as upgrade path | [DEC-synastry-architecture](../2-design/decisions/DEC-synastry-architecture.md) |
+| OQ-orb-tolerance | Orb tolerance for interaspects? | **Staggered**: Conj/Opp ±8°, Trine/Square ±6°, Sextile ±4° | [DEC-aspect-orb-tolerances](../2-design/decisions/DEC-aspect-orb-tolerances.md) |
+| OQ-minor-aspects | Minor aspects (Quincunx, Semisextile) or only 5 main? | **V1: 5 main only** — Quincunx as Premium extension later | [DEC-aspect-orb-tolerances](../2-design/decisions/DEC-aspect-orb-tolerances.md) |
+| OQ-narrative-generation | Partnership narratives: fixed templates or Gemini-generated? | **Hybrid**: templates (Free), Gemini (Premium) | [DEC-narrative-engine-hybrid](../2-design/decisions/DEC-narrative-engine-hybrid.md) |
+| OQ-synastry-signal | Synastry as 4th signal or separate system? | **Separate system** — feeds narratives, not Master Signal | [DEC-synastry-architecture](../2-design/decisions/DEC-synastry-architecture.md) |
 
-Partnership implementation tasks (18 items across S08-S11) are tracked in GitHub Issues and will be added here once open questions are resolved.
+Conversion architecture decided 2026-04-10: [DEC-conversion-tiers](../2-design/decisions/DEC-conversion-tiers.md)
+
+### Phase F Task Table
+
+| Task | Description | Priority | Status | Req | Dependencies | Updated | Notes |
+|------|-------------|----------|--------|-----|--------------|---------|-------|
+| TASK-landing-page-shell | Landing page route + layout shell (no-auth, birth data form, veiled signature) | P1 | Blocked | - | - | 2026-04-10 | Deferred to Sprint-Landing; requirements pending |
+| TASK-landing-signature-preview | Render Fusion Signature with 1 sector lit, rest veiled; single CTA | P1 | Blocked | - | TASK-landing-page-shell | 2026-04-10 | Deferred to Sprint-Landing; requirements pending |
+| TASK-landing-sun-activation | Sun sign activation paragraph (DE); server-side via Gemini or template | P1 | Blocked | - | TASK-landing-page-shell | 2026-04-10 | Deferred to Sprint-Landing; requirements pending |
+| TASK-registration-initiation | Registration form styled as initiation — pre-filled from sessionStorage birth data | P1 | Blocked | - | TASK-landing-page-shell | 2026-04-10 | Deferred to Sprint-Landing; requirements pending |
+| TASK-partner-profile-schema | DB: `partner_profiles` table (user_id FK, birth_date, birth_time, birth_place, birth_lat, birth_lon, display_name) | P1 | Done | - | - | 2026-04-10 | Migration: 20260410_partner_profiles.sql; schema updated |
+| TASK-synastry-endpoint | Server: POST `/api/synastry` — compute aspects via FuFirE using staggered orbs (DEC-aspect-orb-tolerances) | P1 | Todo | - | TASK-partner-profile-schema | 2026-04-10 | Premium gate; Placidus; 5 main aspects only |
+| TASK-synastry-narratives | Server: generate template narratives for synastry (Free tier); Gemini narratives (Premium tier) | P1 | Todo | - | TASK-synastry-endpoint | 2026-04-10 | DEC-narrative-engine-hybrid; always German; template fallback |
+| TASK-synastry-ui | Frontend: SynastryPage — partner form, aspect grid, narrative display; locked teaser for free users | P2 | Todo | - | TASK-synastry-narratives | 2026-04-10 | DEC-conversion-tiers Tier 2 gate |
+| TASK-premium-gate-component | Reusable PremiumGate component (locked card + upgrade CTA); used across synastry, GCB, composites | P1 | Todo | - | - | 2026-04-10 | DEC-conversion-tiers: no FOMO, introspective tone |
+| TASK-tier-enforcement-server | Server-side tier validation middleware — attach `user.tier` from Supabase to all premium-gated endpoints | P1 | Todo | - | - | 2026-04-10 | DEC-conversion-tiers: gates enforced server-side |
+
+### Sprint-Landing (pending requirements)
+
+Landing page tasks held here until Ben defines requirements. Architecture decisions already recorded in [DEC-conversion-tiers](../2-design/decisions/DEC-conversion-tiers.md).
+
+Tasks to move here once requirements exist: TASK-landing-page-shell, TASK-landing-signature-preview, TASK-landing-sun-activation, TASK-registration-initiation.
 
 ---
 
-GitHub Issues (#115, #117, #118, #119, #123, #124, #129, #130, #132, #136) remain in GitHub for detailed tracking.
+GitHub Issues (#115, #117, #118, #119, #123, #124, #129, #130, #132, #136) remain in GitHub for detailed tracking once implementation begins.
