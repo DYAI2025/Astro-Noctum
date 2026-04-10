@@ -15,7 +15,7 @@ Bazodiac (Astro-Noctum) — a fusion astrology web + mobile app combining Wester
 
 Run `/SDLC-status` or check `3-code/tasks.md` + `git log` for live project state. Do not rely on hardcoded counts in this file.
 
-**Implementation progress (2026-04-09):** ~266/270 tasks Done. Phase H2 P1 complete: dual-dimension planet card colors (resonance/tension), Feldstärke 3-tier indicator, AC test suite (28 tests, all green). Cluster M (display_name P0) shipped. /chart Vite proxy added. Phase F blocked on 6 open questions. 1496 tests green.
+**Implementation progress (2026-04-10):** ~268/272 tasks Done. Phase G (Mobile Parity) complete: TASK-ios-lockscreen-widget cancelled; WidgetKit feasibility spike done (docs/spikes/ios-lockscreen-widget-feasibility.md — defer to Swift app, OQ-widget open). Phase H2 P1 complete. Phase V1 (Vibes Core, P1) now unblocked. Phase F blocked on 6 open questions. 1503 tests green.
 
 **Objectives gap analysis (2026-04-09):** 0 Critical, 5 Important, 3 Minor. Key I-items: 2 requirements need status update to Implemented (onboarding-display-name, signatur-day-night-pulse); 5/6 goals have no user stories; ~18 requirements not back-linked from goals.
 
