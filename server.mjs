@@ -536,66 +536,8 @@ app.post('/api/create-checkout-session', requireUserAuth, async (req, res) => {
   }
 });
 
-// ── /api/webhook/stripe ─────────────────────────────────────────
-// Must use express.raw() to get the raw body for signature verification
-app.post(
-  '/api/webhook/stripe',
-  express.raw({ type: 'application/json' }),
-  async (req, res) => {
-    if (!stripe) {
-      return res.status(503).json({ error: 'Stripe not configured' });
-    }
-
-    const sig = req.headers['stripe-signature'];
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-    if (!webhookSecret) {
-      console.warn('[stripe] webhook received but STRIPE_WEBHOOK_SECRET not configured');
-      return res.status(400).json({ error: 'Webhook secret not configured' });
-    }
-
-    let event;
-    try {
-      event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
-    } catch (err) {
-      console.error('[stripe] webhook signature verification failed:', err.message);
-      return res.status(400).json({ error: 'Webhook signature verification failed' });
-    }
-
-    try {
-      if (event.type === 'checkout.session.completed') {
-        const session = event.data.object;
-        const userId = session.metadata?.userId;
-
-        if (!userId) {
-          console.warn('[stripe] checkout.session.completed but no userId in metadata');
-          return res.json({ received: true });
-        }
-
-        console.log(`[stripe] checkout.session.completed for user ${userId}`);
-
-        // Update user tier in Supabase
-        if (supabaseServer) {
-          const { error } = await supabaseServer
-            .from('astro_profiles')
-            .update({ tier: 'premium' })
-            .eq('user_id', userId);
-
-          if (error) {
-            console.error('[stripe] failed to update user tier:', error.message);
-          } else {
-            console.log(`[stripe] user ${userId} upgraded to premium`);
-          }
-        }
-      }
-
-      res.json({ received: true });
-    } catch (err) {
-      console.error('[stripe] webhook processing failed:', err.message);
-      res.status(500).json({ error: 'Webhook processing failed' });
-    }
-  }
-);
+// [REMOVED] First /api/webhook/stripe handler — was shadowing the complete
+// lifecycle handler below (line ~4675). See docs/plans/2026-04-09-stripe-webhook-merge-and-match-auth.md
 
 // ── Transit-state helpers ────────────────────────────────────────────
 
