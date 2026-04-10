@@ -233,7 +233,7 @@ const BAFE_INTERNAL_URL = stripTrailingSlash(process.env.BAFE_INTERNAL_URL) || n
 // Railway Public Domain fallback for APP_URL
 const APP_URL = stripTrailingSlash(
   process.env.APP_URL || 
-  (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : "https://bazodiac.com")
+  (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : "https://bazodiac.space")
 );
 
 const APP_ORIGIN = (() => {
