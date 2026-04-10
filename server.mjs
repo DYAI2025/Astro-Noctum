@@ -4640,16 +4640,36 @@ app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async
     const session = event.data.object;
     const userId = session.metadata?.userId;
     if (userId && supabaseServer) {
-      const { error } = await supabaseServer
-        .from("profiles")
-        .update({
-          tier: "premium",
-          stripe_customer_id: session.customer,
-          stripe_subscription_id: session.subscription,
-        })
-        .eq("id", userId);
-      if (error) console.error("[Stripe] checkout.session.completed profile update failed:", error);
-      else console.log(`[Stripe] User ${userId} upgraded to premium (sub: ${session.subscription})`);
+      // Update BOTH tables — profiles stores Stripe metadata, astro_profiles stores tier
+      const [profileResult, astroResult] = await Promise.allSettled([
+        supabaseServer
+          .from("profiles")
+          .update({
+            tier: "premium",
+            stripe_customer_id: session.customer,
+            stripe_subscription_id: session.subscription,
+          })
+          .eq("id", userId),
+        supabaseServer
+          .from("astro_profiles")
+          .update({ tier: "premium" })
+          .eq("user_id", userId),
+      ]);
+
+      if (profileResult.status === "fulfilled" && profileResult.value.error) {
+        console.error("[Stripe] checkout profiles update failed:", profileResult.value.error.message);
+      }
+      if (astroResult.status === "fulfilled" && astroResult.value.error) {
+        console.error("[Stripe] checkout astro_profiles update failed:", astroResult.value.error.message);
+      }
+      const anyError =
+        (profileResult.status === "rejected") ||
+        (astroResult.status === "rejected") ||
+        (profileResult.status === "fulfilled" && profileResult.value.error) ||
+        (astroResult.status === "fulfilled" && astroResult.value.error);
+      if (!anyError) {
+        console.log(`[Stripe] User ${userId} upgraded to premium (sub: ${session.subscription})`);
+      }
     }
 
   // ── Event: subscription updated (renewal, plan change, cancel scheduled) ─
@@ -4671,17 +4691,31 @@ app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async
       sub.status === "trialing" ||
       ((sub.status === "past_due" || sub.status === "unpaid") && stillInGrace);
 
-    const { error } = await supabaseServer
-      .from("profiles")
-      .update({
-        tier: isPremium ? "premium" : "free",
-        stripe_subscription_id: sub.id,
-        subscription_end: periodEnd,
-      })
-      .eq("stripe_customer_id", sub.customer);
+    const [profileResult, astroResult] = await Promise.allSettled([
+      supabaseServer
+        .from("profiles")
+        .update({
+          tier: isPremium ? "premium" : "free",
+          stripe_subscription_id: sub.id,
+          subscription_end: periodEnd,
+        })
+        .eq("stripe_customer_id", sub.customer),
+      // Keep astro_profiles in sync — it may be read by components that don't join profiles
+      supabaseServer
+        .from("astro_profiles")
+        .update({ tier: isPremium ? "premium" : "free" })
+        .eq("user_id", userId),
+    ]);
 
-    if (error) console.error("[Stripe] subscription.updated profile update failed:", error);
-    else console.log(`[Stripe] Subscription ${sub.id} updated — status=${sub.status}, periodEnd=${periodEnd}`);
+    if (profileResult.status === "fulfilled" && profileResult.value.error) {
+      console.error("[Stripe] subscription.updated profiles failed:", profileResult.value.error.message);
+    }
+    if (astroResult.status === "fulfilled" && astroResult.value.error) {
+      console.error("[Stripe] subscription.updated astro_profiles failed:", astroResult.value.error.message);
+    }
+    if (!(profileResult.value?.error || astroResult.value?.error)) {
+      console.log(`[Stripe] Subscription ${sub.id} updated — status=${sub.status}, periodEnd=${periodEnd}`);
+    }
 
   // ── Event: subscription deleted (hard cancel, billing failure after retries) ─
   } else if (event.type === "customer.subscription.deleted") {
@@ -4704,16 +4738,29 @@ app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async
     if (!customerId) {
       console.error("[Stripe] subscription.deleted missing customer id on subscription object");
     } else {
-      const { error } = await supabaseServer
-        .from("profiles")
-        .update({
-          tier: stillInGrace ? "premium" : "free",
-          subscription_end: periodEnd,
-        })
-        .eq("stripe_customer_id", customerId);
+      const [profileResult, astroResult] = await Promise.allSettled([
+        supabaseServer
+          .from("profiles")
+          .update({
+            tier: stillInGrace ? "premium" : "free",
+            subscription_end: periodEnd,
+          })
+          .eq("stripe_customer_id", customerId),
+        supabaseServer
+          .from("astro_profiles")
+          .update({ tier: stillInGrace ? "premium" : "free" })
+          .eq("user_id", sub.metadata?.userId),
+      ]);
 
-      if (error) console.error("[Stripe] subscription.deleted profile update failed:", error);
-      else console.log(`[Stripe] Subscription deleted — grace until ${periodEnd}, tier=${stillInGrace ? "premium" : "free"}`);
+      if (profileResult.status === "fulfilled" && profileResult.value.error) {
+        console.error("[Stripe] subscription.deleted profiles failed:", profileResult.value.error.message);
+      }
+      if (astroResult.status === "fulfilled" && astroResult.value.error) {
+        console.error("[Stripe] subscription.deleted astro_profiles failed:", astroResult.value.error.message);
+      }
+      if (!(profileResult.value?.error || astroResult.value?.error)) {
+        console.log(`[Stripe] Subscription deleted — grace until ${periodEnd}, tier=${stillInGrace ? "premium" : "free"}`);
+      }
     }
   // ── Event: invoice payment succeeded (renewal confirmed) ──────────────
   } else if (event.type === "invoice.payment_succeeded") {
