@@ -4094,10 +4094,7 @@ app.post("/api/agent/match", async (req, res) => {
   try {
     const chartRes = await fetchWithRetry(`${bafeUrl}/api/webhooks/chart`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": ELEVENLABS_TOOL_SECRET,
-      },
+      headers: bafeDirectHeaders(),
       body: JSON.stringify({
         birthDate: partner_birth_date,
         birthTime: birthTime,
