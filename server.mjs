@@ -663,6 +663,12 @@ function synastryTemplateSummary(aspects) {
 async function synastryGeminiSummary(aspects, userSunSign, partnerSunSign) {
   if (!geminiClient) return null;
   try {
+    // Sanitise sun signs against known zodiac values — userSunSign comes from
+    // astro_profiles.sun_sign (DB) and could hold stale or unexpected data.
+    const ZODIAC_EN_SET = new Set(['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces']);
+    const safeUserSign    = userSunSign    && ZODIAC_EN_SET.has(userSunSign)    ? userSunSign    : null;
+    const safePartnerSign = partnerSunSign && ZODIAC_EN_SET.has(partnerSunSign) ? partnerSunSign : null;
+
     const topAspects = [...aspects]
       .sort((a, b) => (a.exact === b.exact ? a.orb - b.orb : a.exact ? -1 : 1))
       .slice(0, 7)
@@ -676,8 +682,8 @@ async function synastryGeminiSummary(aspects, userSunSign, partnerSunSign) {
     const prompt = `Du bist Bazodiac's Synastrie-Analyst. Schreibe einen prägnanten deutschen Absatz (3-4 Sätze) über die astrologische Verbindung zwischen zwei Menschen.
 
 DATEN:
-- Sonnenzeichen Person 1: ${userSunSign || 'unbekannt'}
-- Sonnenzeichen Person 2: ${partnerSunSign || 'unbekannt'}
+- Sonnenzeichen Person 1: ${safeUserSign || 'unbekannt'}
+- Sonnenzeichen Person 2: ${safePartnerSign || 'unbekannt'}
 - Relevante Synastrie-Aspekte:
 ${topAspects}
 
