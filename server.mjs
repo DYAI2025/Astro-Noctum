@@ -467,6 +467,42 @@ async function requireUserAuth(req, res, next) {
   }
 }
 
+// ── Tier middleware ─────────────────────────────────────────────────────────
+//
+// attachUserTier   — fetches profiles.tier for req.userId, attaches req.userTier
+//                    ('free' default). Used by endpoints that need tier info without
+//                    blocking access (e.g. rate-limit differentiation).
+//
+// requirePremium   — chains attachUserTier then enforces tier === 'premium'.
+//                    Apply after requireUserAuth on premium-gated routes.
+//
+// DEC-conversion-tiers: "Tier gates are enforced server-side (not just hidden in UI)"
+
+async function attachUserTier(req, res, next) {
+  if (req.userTier !== undefined) { next(); return; } // already resolved
+  if (!supabaseServer) { req.userTier = 'free'; next(); return; }
+  try {
+    const { data } = await supabaseServer
+      .from('profiles')
+      .select('tier')
+      .eq('id', req.userId)
+      .maybeSingle();
+    req.userTier = data?.tier ?? 'free';
+  } catch {
+    req.userTier = 'free';
+  }
+  next();
+}
+
+async function requirePremium(req, res, next) {
+  await attachUserTier(req, res, async () => {
+    if (req.userTier !== 'premium') {
+      return res.status(403).json({ error: 'premium_required' });
+    }
+    next();
+  });
+}
+
 // ── /calculate/:endpoint  (bazi, western, fusion, wuxing, tst) ──────
 const CALC_ENDPOINTS = ["bazi", "western", "fusion", "wuxing", "tst"];
 
@@ -701,21 +737,10 @@ async function fetchChartForBirth({ birth_date, birth_time, iana_time_zone, birt
   throw new Error('FuFirE /chart unavailable');
 }
 
-app.post('/api/synastry', requireUserAuth, async (req, res) => {
+app.post('/api/synastry', requireUserAuth, requirePremium, async (req, res) => {
   if (!supabaseServer) return res.status(503).json({ error: 'Auth service not configured' });
 
   const userId = req.userId;
-
-  // ── Premium gate ──────────────────────────────────────────────────
-  const { data: profile } = await supabaseServer
-    .from('profiles')
-    .select('tier')
-    .eq('id', userId)
-    .maybeSingle();
-
-  if (profile?.tier !== 'premium') {
-    return res.status(403).json({ error: 'premium_required' });
-  }
 
   // ── Validate request ──────────────────────────────────────────────
   const { partner_id } = req.body ?? {};
@@ -2356,20 +2381,12 @@ function vibesCacheKey(userId) {
   return `vibes:${userId}`;
 }
 
-app.post('/api/vibes', requireUserAuth, async (req, res) => {
+app.post('/api/vibes', requireUserAuth, attachUserTier, async (req, res) => {
   try {
     const userId = req.userId;
 
     // ── Determine cooldown based on premium status ───────────────────
-    let isPremium = false;
-    if (supabaseServer) {
-      const { data: prof } = await supabaseServer
-        .from('profiles')
-        .select('tier')
-        .eq('id', userId)
-        .maybeSingle();
-      isPremium = prof?.tier === 'premium';
-    }
+    const isPremium = req.userTier === 'premium';
     const cooldownMs = isPremium ? VIBES_COOLDOWN_PREMIUM : VIBES_COOLDOWN_FREE;
 
     // ── L1: In-memory cache + cooldown check ────────────────────────
