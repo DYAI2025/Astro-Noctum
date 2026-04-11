@@ -15,9 +15,9 @@ Bazodiac (Astro-Noctum) — a fusion astrology web + mobile app combining Wester
 
 Run `/SDLC-status` or check `3-code/tasks.md` + `git log` for live project state. Do not rely on hardcoded counts in this file.
 
-**Implementation progress (2026-04-10):** ~272/272 prior tasks Done. Phase F (Partnership + Conversion) unblocked 2026-04-10: all 6 OQ-* decisions resolved, 5 new DEC files written, 10 new Phase F tasks added (Todo). Next: TASK-landing-page-shell. 1518 tests green.
+**Implementation progress (2026-04-11):** 275/289 tasks Done (10 Cancelled, 4 Blocked). Phase F (Partnership + Conversion): synastry endpoint, narratives, UI, tier enforcement middleware, premium gate component all Done. 4 Sprint-Landing tasks Blocked (requirements pending from Ben). 1566 tests green.
 
-**Objectives gap analysis (2026-04-09):** 0 Critical, 5 Important, 3 Minor. Key I-items: 2 requirements need status update to Implemented (onboarding-display-name, signatur-day-night-pulse); 5/6 goals have no user stories; ~18 requirements not back-linked from goals.
+**Objectives gap analysis (2026-04-11, refreshed):** 0 Critical, 3 Important, 3 Minor. Two I-items resolved since 2026-04-09: REQ-F-onboarding-display-name and REQ-F-signatur-day-night-pulse updated to Implemented. Remaining I-items: 5/6 goals have no user stories; ~18 requirements not back-linked from goals (traceability). Minor items unchanged.
 
 ---
 
