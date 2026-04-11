@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, Plus, Sparkles, ChevronDown, ChevronUp, Trash2, User } from 'lucide-react';
 import { PremiumGate } from '@/src/components/PremiumGate';
 import { searchNominatim } from '@/src/services/nominatim';
+import { fetchTimezone } from '@/src/services/timezone';
 import {
   getPartners,
   addPartner,
@@ -165,6 +166,8 @@ function AddPartnerForm({ onSave, onCancel }: AddPartnerFormProps) {
   const [placeQuery, setPlaceQuery] = useState('');
   const [placeResults, setPlaceResults] = useState<{ display_name: string; lat: string; lon: string }[]>([]);
   const [selectedPlace, setSelectedPlace] = useState<{ label: string; lat: number; lon: number } | null>(null);
+  const [detectedTz, setDetectedTz]   = useState<string | null>(null);
+  const [tzLoading, setTzLoading]     = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -176,10 +179,18 @@ function AddPartnerForm({ onSave, onCancel }: AddPartnerFormProps) {
   }, []);
 
   const handlePlaceSelect = (r: { display_name: string; lat: string; lon: string }) => {
+    const lat = parseFloat(r.lat);
+    const lon = parseFloat(r.lon);
     const label = r.display_name.split(',').slice(0, 2).join(',').trim();
-    setSelectedPlace({ label, lat: parseFloat(r.lat), lon: parseFloat(r.lon) });
+    setSelectedPlace({ label, lat, lon });
     setPlaceQuery(label);
     setPlaceResults([]);
+    setDetectedTz(null);
+    setTzLoading(true);
+    fetchTimezone(lat, lon)
+      .then(tz => setDetectedTz(tz))
+      .catch(() => setDetectedTz(null))
+      .finally(() => setTzLoading(false));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -190,7 +201,7 @@ function AddPartnerForm({ onSave, onCancel }: AddPartnerFormProps) {
     setSaving(true);
     setError(null);
 
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const tz = detectedTz ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
     const payload: NewPartner = {
       display_name:   name.trim(),
       birth_date:     birthDate,
@@ -275,9 +286,17 @@ function AddPartnerForm({ onSave, onCancel }: AddPartnerFormProps) {
           </ul>
         )}
         {selectedPlace && (
-          <p className="mt-1 text-xs text-gold/60">
-            {selectedPlace.lat.toFixed(4)}, {selectedPlace.lon.toFixed(4)}
-          </p>
+          <div className="mt-1 flex items-center gap-2">
+            <p className="text-xs text-gold/60">
+              {selectedPlace.lat.toFixed(4)}, {selectedPlace.lon.toFixed(4)}
+            </p>
+            {tzLoading && (
+              <span className="text-xs text-dawn/30">Zeitzone wird ermittelt…</span>
+            )}
+            {!tzLoading && detectedTz && (
+              <span className="text-xs text-dawn/40">Zeitzone: {detectedTz}</span>
+            )}
+          </div>
         )}
       </div>
 
@@ -286,10 +305,10 @@ function AddPartnerForm({ onSave, onCancel }: AddPartnerFormProps) {
       <div className="flex gap-3 pt-1">
         <button
           type="submit"
-          disabled={saving}
+          disabled={saving || tzLoading}
           className="flex-1 bg-gold text-obsidian font-semibold py-3 rounded-xl hover:bg-gold/90 transition-colors disabled:opacity-50 disabled:cursor-wait text-sm"
         >
-          {saving ? 'Wird gespeichert…' : 'Speichern'}
+          {saving ? 'Wird gespeichert…' : tzLoading ? 'Zeitzone wird ermittelt…' : 'Speichern'}
         </button>
         <button
           type="button"
