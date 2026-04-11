@@ -76,9 +76,17 @@ export async function addPartner(partner: NewPartner): Promise<PartnerProfile> {
 }
 
 export async function deletePartner(id: string): Promise<void> {
+  // Defence-in-depth: scope the delete to the authenticated user's rows even
+  // though RLS already enforces this server-side (DEC-supabase-backend).
+  // If RLS were ever misconfigured, a bare .eq('id', id) would allow any
+  // authenticated user to delete any partner row by guessing its UUID.
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
+
   const { error } = await supabase
     .from('partner_profiles')
     .delete()
+    .eq('user_id', user.id)
     .eq('id', id);
   if (error) throw new Error(error.message);
 }

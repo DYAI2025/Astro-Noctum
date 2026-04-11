@@ -69,9 +69,11 @@ function AspectCard({
   expanded: boolean;
   onToggle: () => void;
 }) {
+  const stableKey = `${aspect.planet1}-${aspect.type}-${aspect.planet2}`;
   return (
     <motion.div
       layout
+      layoutId={stableKey}
       className="glass-card p-4 cursor-pointer hover:border-gold/20 transition-colors"
       onClick={onToggle}
     >
@@ -362,7 +364,7 @@ function SynastryResults({ result }: { result: SynastryResult }) {
           <div className="space-y-2">
             {sortedAspects.map((aspect, i) => (
               <AspectCard
-                key={i}
+                key={`${aspect.planet1}-${aspect.type}-${aspect.planet2}`}
                 aspect={aspect}
                 expanded={expandedIdx === i}
                 onToggle={() => setExpandedIdx(expandedIdx === i ? null : i)}
