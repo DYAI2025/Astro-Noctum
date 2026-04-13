@@ -27,12 +27,12 @@ import { useFusionRingContext } from "../contexts/FusionRingContext";
 
 import { Card } from "./ui/card";
 import {
-  toNatalWeightsOrUndefined,
-  toDimensionWeightsOrUndefined,
   syntheticSoulprintFromSign,
 } from "@/src/lib/signatur/weight-utils";
 import { DashboardBigFour as DashboardBigFourCard } from "./dashboard/DashboardBigFour";
-import MiniSignature from "./dashboard/MiniSignature";
+// MiniSignature removed from dashboard grid — coherence-first layout.
+// Retained import for future KohaerenzHero integration.
+// import MiniSignature from "./dashboard/MiniSignature";
 import { CosmicInfluenceSection } from "./dashboard/CosmicInfluenceSection";
 import { TourOverlay } from "./dashboard/TourOverlay";
 import { DayPulseExpanded } from "./dashboard/DayPulseExpanded";
@@ -48,6 +48,8 @@ import { SkyModeToggle } from "./dashboard/SkyModeToggle";
 import { getConstellationForSign } from "../lib/astro-data/constellationFromSign";
 import { useCelestialOrrery } from "../hooks/useCelestialOrrery";
 import { CITIES } from "../lib/astronomy/data";
+import { KohaerenzHero } from "./dashboard/KohaerenzHero";
+import { useActiveImpacts } from "../hooks/useActiveImpacts";
 
 const BirthChartOrrery = lazy(() => import("./BirthChartOrrery").then(m => ({ default: m.BirthChartOrrery })));
 
@@ -141,9 +143,11 @@ export function Dashboard({
   const leviSentinelRef = useRef<HTMLDivElement>(null);
   const navHintsSentinelRef = useRef<HTMLDivElement>(null);
 
-  // Map tour steps to their anchor refs
-  const tourAnchorRef = tourStep === 0 ? planetariumSentinelRef
-    : tourStep === 1 ? astroSentinelRef
+  // Map tour steps to their anchor refs (coherence-first layout)
+  // Step 0: anchors at astro/planet section (now near top)
+  // Step 1: anchors at levi/agents section (scrolls into view)
+  const tourAnchorRef = tourStep === 0 ? astroSentinelRef
+    : tourStep === 1 ? leviSentinelRef
     : undefined;
 
   // Step 0 is immediate; step 1 waits for scroll
@@ -153,7 +157,7 @@ export function Dashboard({
   useEffect(() => {
     if (tourStep !== 1) return;
 
-    const sentinel = astroSentinelRef.current;
+    const sentinel = leviSentinelRef.current;
     if (!sentinel) return;
 
     const observer = new IntersectionObserver(
@@ -275,6 +279,9 @@ export function Dashboard({
   // ── Transit signal — provides events[] for DayPulseExpanded (DEC-dashboard-volatile-first pos 1) ──
   const { events: transitEvents, loading: transitLoading } = useFusionSignal(userId);
 
+  // ── Active Impacts — harmony_index + active planets from POST /api/impact/active ──
+  const { harmonyIndex: impactHarmonyIndex, loading: impactLoading } = useActiveImpacts();
+
   // ── Daily horoscope modal ───────────────────────────────────────────
   // isDayModalOpen: on-demand via "vertiefen →" in DashboardTagesEnergie.
   // showModal (auto-open) deliberately not used for rendering - wireframe F3:
@@ -309,16 +316,8 @@ export function Dashboard({
     return (isWeekend || isPremium) ? nightHarmonic : dayHarmonic;
   }, [dayHarmonic, nightHarmonic, isPremium]);
 
-  const natalWeights = useMemo(
-    () => toNatalWeightsOrUndefined(effectiveSoulprint),
-    [effectiveSoulprint],
-  );
-
-  // ── Memoised V3 dimension weights for MiniSignature ─────────────────
-  const dimensionWeights = useMemo(
-    () => toDimensionWeightsOrUndefined(effectiveSoulprint),
-    [effectiveSoulprint],
-  );
+  // natalWeights + dimensionWeights removed — MiniSignature no longer in dashboard grid.
+  // Retained computation in useFirstRunDaily for KohaerenzHero integration later.
 
   // ── Render ────────────────────────────────────────────────────────────
 
@@ -329,9 +328,6 @@ export function Dashboard({
       transition={{ duration: 0.6, ease: "easeOut" }}
       className="w-full max-w-6xl mx-auto px-4 md:px-6 flex flex-col gap-12"
     >
-      {/* ── Tour sentinel: step 0 anchors at the planetarium (top of dashboard) ── */}
-      <div ref={planetariumSentinelRef} className="h-px" aria-hidden="true" />
-
       {/* Issues banner */}
       {(apiIssues.length > 0 || metaError) && (
         <div className="rounded-xl border border-amber-400/40 bg-amber-50 px-4 py-3 text-xs text-amber-800">
@@ -385,70 +381,35 @@ export function Dashboard({
         </div>
       </motion.header>
 
-      {/* ═══ SECTION: PLANETARIUM ═════════════════════════════════════ */}
-      <motion.div className="-mx-4 md:-mx-6" {...fadeIn(0.02)}>
-        <Suspense fallback={<div className="w-full aspect-[16/10] min-h-[360px] bg-[#0A0A14] rounded-2xl animate-pulse" />}>
-          <BirthChartOrrery
-            birthDate={orreryDate}
-            planetariumMode={planetariumMode}
-            birthConstellation={birthConstellationKey}
-            autoPlay={isFirstReading}
-            currentSky={skyMode === 'current'}
-            observerLat={
-              skyMode === 'current'
-                ? (deviceLocation?.lat ?? profileMeta.birthInput?.lat)
-                : profileMeta.birthInput?.lat
-            }
-            observerLon={
-              skyMode === 'current'
-                ? (deviceLocation?.lon ?? profileMeta.birthInput?.lon)
-                : profileMeta.birthInput?.lon
-            }
-            orreryHook={orreryHook}
+      {/* ═══ 1. COHERENCE HERO ════════════════════════════════════════ */}
+      <motion.div {...fadeIn(0.02)}>
+        <SectionErrorBoundary name="CoherenceHero">
+          <KohaerenzHero
+            dayHarmonic={activeDayHarmonic}
+            spaceWeather={spaceWeather}
+            transitEvents={transitEvents}
+            dayMode={dailyData?.fusion?.day_mode ?? 'pulse'}
+            loading={metaLoading || transitLoading}
+            impactHarmonyIndex={impactHarmonyIndex}
+            impactLoading={impactLoading}
           />
-        </Suspense>
-      </motion.div>
-
-      {/* ═══ SKY MODE TOGGLE ═══════════════════════════════════════════ */}
-      {planetariumMode && (
-        <motion.div className="-mt-8" {...fadeIn(0.04)}>
-          <SkyModeToggle />
-        </motion.div>
-      )}
-
-      {/* ═══ IDENTITY - Big Four + MiniSignature (F1+F2) ════════════════════ */}
-      <motion.div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 items-start" {...fadeIn(0.05)}>
-        <SectionErrorBoundary name="BigFour">
-          <DashboardBigFourCard
-            sunSign={apiData?.western?.zodiac_sign || ''}
-            moonSign={apiData?.western?.moon_sign || ''}
-            ascendant={apiData?.western?.ascendant_sign || ''}
-            baziAnimal={apiData?.bazi?.zodiac_sign || ''}
-            wuxingElement={apiData?.wuxing?.dominant_element || ''}
-          />
-        </SectionErrorBoundary>
-
-        <SectionErrorBoundary name="MiniSignature">
-          <div className="w-[200px] md:w-[240px] mx-auto md:mx-0">
-            <MiniSignature
-              natalWeights={natalWeights}
-              quizWeights={{}}
-              dayHarmonic={activeDayHarmonic}
-              loading={metaLoading}
-              onExpand={() => navigate('/signatur')}
-            />
-          </div>
         </SectionErrorBoundary>
       </motion.div>
 
-      {/* ═══════════════════════════════════════════════════════════════════
-           VOLATILE-FIRST LIVE SIGNALS (DEC-dashboard-volatile-first)
-           Order: DayPulseExpanded → AktiveEinfluesseFusion → MagnetsturmKarte → NatalSignaturStatic
-           ═══════════════════════════════════════════════════════════════════ */}
-      <motion.div className="flex flex-col gap-4" {...fadeIn(0.1)}>
+      {/* ── Tour sentinel: step 0 anchors at the planet section ── */}
+      <div ref={astroSentinelRef} className="h-px" aria-hidden="true" />
 
-        {/* ── Pos 1: DayPulseExpanded — always-visible, transit event text ── */}
-        {/* Source: useFusionSignal(userId).events + dailyData.fusion.day_mode */}
+      {/* ═══ 2. ACTIVE PLANET INFLUENCES ══════════════════════════════ */}
+      <motion.div {...fadeIn(0.05)}>
+        <SectionErrorBoundary name="AktiveEinfluesseFusion">
+          <AktiveEinfluesseFusion
+            dayMasterStem={apiData?.bazi?.day_master}
+          />
+        </SectionErrorBoundary>
+      </motion.div>
+
+      {/* ═══ 3. DAY PULSE — transit event text ═══════════════════════ */}
+      <motion.div {...fadeIn(0.08)}>
         <SectionErrorBoundary name="DayPulseExpanded">
           <DayPulseExpanded
             events={transitEvents}
@@ -456,25 +417,10 @@ export function Dashboard({
             loading={transitLoading && transitEvents.length === 0}
           />
         </SectionErrorBoundary>
-
-        {/* ── Pos 2: AktiveEinfluesseFusion — 6 planet cards, Western+BaZi ── */}
-        {/* Source: useDailyTransit() (internal) + calculatePlanetBaziResonance() */}
-        <SectionErrorBoundary name="AktiveEinfluesseFusion">
-          <AktiveEinfluesseFusion
-            dayMasterStem={apiData?.bazi?.day_master}
-          />
-        </SectionErrorBoundary>
-
-        {/* ── Pos 3: MagnetsturmKarte — self-hides when Kp < 4 ──────────── */}
-        {/* Source: useSpaceWeather() (internal) */}
-        <SectionErrorBoundary name="MagnetsturmKarte">
-          <MagnetsturmKarte />
-        </SectionErrorBoundary>
-
       </motion.div>
 
-      {/* ═══ DAILY PULSE CLUSTER (Tagesimpuls + Vibes + CosmicInfluence) ═══ */}
-      <motion.div className="flex flex-col gap-4" {...fadeIn(0.15)}>
+      {/* ═══ 4. DAILY PULSE NARRATIVE (Tagesimpuls) ══════════════════ */}
+      <motion.div {...fadeIn(0.10)}>
         <SectionErrorBoundary name="TagesImpuls">
           {dailyData ? (
             <DashboardTagesEnergie
@@ -485,7 +431,6 @@ export function Dashboard({
               isPremium={isPremium}
             />
           ) : (
-            // Legacy fallback: CosmicWeatherCard while dailyData is not yet loaded
             <CosmicWeatherCard
               horoscope={horoscope}
               loading={horoscopeLoading}
@@ -496,38 +441,22 @@ export function Dashboard({
             />
           )}
         </SectionErrorBoundary>
+      </motion.div>
 
-        {/* Vibe insight (on-demand Tile) */}
+      {/* ═══ 5. VIBES ═════════════════════════════════════════════════ */}
+      <motion.div {...fadeIn(0.12)}>
         <SectionErrorBoundary name="Vibes">
           <div className="flex justify-center md:justify-start">
             <VibesSection userId={userId} />
           </div>
         </SectionErrorBoundary>
-
-        <SectionErrorBoundary name="CosmicInfluence">
-          <CosmicInfluenceSection spaceWeather={spaceWeather} />
-        </SectionErrorBoundary>
       </motion.div>
 
-      {/* ── Tour sentinel: step 1 triggers when astro section scrolls into view ── */}
-      <div ref={astroSentinelRef} className="h-px" aria-hidden="true" />
-
-      {/* ═══ KOSMISCHER BLUEPRINT / NatalSignaturStatic — collapsed accordion ══ */}
-      <SectionErrorBoundary name="NatalSignaturStatic">
-        <NatalSignaturStatic>
-          <DashboardAstroSection
-            apiData={apiData}
-            isPremium={isPremium}
-            tileTexts={tileTexts}
-          />
-        </NatalSignaturStatic>
-      </SectionErrorBoundary>
-
-      {/* ── Tour sentinel: step 2 triggers when Levi/interpretation area scrolls into view ── */}
+      {/* ── Tour sentinel: step 1 triggers when agents scroll into view ── */}
       <div ref={leviSentinelRef} className="h-px" aria-hidden="true" />
 
-      {/* ═══ VOICE AGENTS - Multi-Agent Section ═══════════════════════ */}
-      <motion.div {...fadeIn(0.4)}>
+      {/* ═══ 6. ASTRO AGENTS — interpretation bridge ═════════════════ */}
+      <motion.div {...fadeIn(0.14)}>
         <SectionErrorBoundary name="Agents">
           <div className="cosmic-tile p-6 rounded-[2rem] space-y-5">
             <h2 className="text-xs font-bold tracking-[0.2em] uppercase text-center" style={{ color: 'var(--tile-text-secondary)' }}>
@@ -555,10 +484,80 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
-      {/* ═══ UPGRADE BANNER (freemium only, nach Agenten - F4) ════════════ */}
+      {/* ═══ 7. BLUEPRINT — collapsed natal accordion ════════════════ */}
+      <SectionErrorBoundary name="NatalSignaturStatic">
+        <NatalSignaturStatic>
+          <DashboardAstroSection
+            apiData={apiData}
+            isPremium={isPremium}
+            tileTexts={tileTexts}
+          />
+        </NatalSignaturStatic>
+      </SectionErrorBoundary>
+
+      {/* ═══ 8. STABLE NATAL VALUES — Identity Cards ════════════════ */}
+      <motion.div {...fadeIn(0.18)}>
+        <SectionErrorBoundary name="BigFour">
+          <DashboardBigFourCard
+            sunSign={apiData?.western?.zodiac_sign || ''}
+            moonSign={apiData?.western?.moon_sign || ''}
+            ascendant={apiData?.western?.ascendant_sign || ''}
+            baziAnimal={apiData?.bazi?.zodiac_sign || ''}
+            wuxingElement={apiData?.wuxing?.dominant_element || ''}
+          />
+        </SectionErrorBoundary>
+      </motion.div>
+
+      {/* ═══ 9. PLANETARIUM (Birth Chart Orrery) ═════════════════════ */}
+      <div ref={planetariumSentinelRef} className="h-px" aria-hidden="true" />
+      <motion.div className="-mx-4 md:-mx-6" {...fadeIn(0.20)}>
+        <Suspense fallback={<div className="w-full aspect-[16/10] min-h-[360px] bg-[#0A0A14] rounded-2xl animate-pulse" />}>
+          <BirthChartOrrery
+            birthDate={orreryDate}
+            planetariumMode={planetariumMode}
+            birthConstellation={birthConstellationKey}
+            autoPlay={isFirstReading}
+            currentSky={skyMode === 'current'}
+            observerLat={
+              skyMode === 'current'
+                ? (deviceLocation?.lat ?? profileMeta.birthInput?.lat)
+                : profileMeta.birthInput?.lat
+            }
+            observerLon={
+              skyMode === 'current'
+                ? (deviceLocation?.lon ?? profileMeta.birthInput?.lon)
+                : profileMeta.birthInput?.lon
+            }
+            orreryHook={orreryHook}
+          />
+        </Suspense>
+      </motion.div>
+
+      {/* ═══ SKY MODE TOGGLE ═══════════════════════════════════════════ */}
+      {planetariumMode && (
+        <motion.div className="-mt-8" {...fadeIn(0.22)}>
+          <SkyModeToggle />
+        </motion.div>
+      )}
+
+      {/* ═══ 10. COSMIC INFLUENCE DETAIL ═════════════════════════════ */}
+      <motion.div {...fadeIn(0.24)}>
+        <SectionErrorBoundary name="CosmicInfluence">
+          <CosmicInfluenceSection spaceWeather={spaceWeather} />
+        </SectionErrorBoundary>
+      </motion.div>
+
+      {/* ═══ 11. MAGNETSTURM (self-hides when Kp < 4) ════════════════ */}
+      <motion.div {...fadeIn(0.26)}>
+        <SectionErrorBoundary name="MagnetsturmKarte">
+          <MagnetsturmKarte />
+        </SectionErrorBoundary>
+      </motion.div>
+
+      {/* ═══ UPGRADE BANNER (freemium only) ══════════════════════════ */}
       {!isPremium && (
         <Card variant="gold" className="w-full max-w-6xl p-6 flex items-center justify-between gap-4"
-          {...fadeIn(0.42)}
+          {...fadeIn(0.28)}
         >
           <div>
             <p className="text-sm font-medium text-ink">
@@ -577,10 +576,8 @@ export function Dashboard({
 
       <div id="interpretation-section" />
 
-      {/* ═══ SECTION 8: KI-SYNTHESE (premium) ═════════════════════════ */}
-      <motion.div
-        {...fadeIn(0.35)}
-      >
+      {/* ═══ KI-SYNTHESE (premium) ═══════════════════════════════════ */}
+      <motion.div {...fadeIn(0.30)}>
         <SectionErrorBoundary name="Interpretation">
           <DashboardInterpretationSection
             interpretation={interpretation}
@@ -589,8 +586,8 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
-      {/* ═══ SECTION 9: SHARE CARD + FOOTER ═══════════════════════════ */}
-      <motion.div {...fadeIn(0.4)}>
+      {/* ═══ SHARE CARD + FOOTER ═════════════════════════════════════ */}
+      <motion.div {...fadeIn(0.32)}>
         <ShareCard
           sunSign={apiData?.western?.zodiac_sign || ''}
           moonSign={apiData?.western?.moon_sign || ''}
@@ -599,7 +596,7 @@ export function Dashboard({
 
       <LegalFooter lang={lang} />
 
-      {/* ═══ DAILY HOROSCOPE MODAL ═══════════════════════════════════════ */}
+      {/* ═══ DAILY HOROSCOPE MODAL ═══════════════════════════════════ */}
       <AnimatePresence>
         {dailyEnabled && isDayModalOpen && dailyData && (
           <DayModeModal
@@ -607,13 +604,13 @@ export function Dashboard({
             dayHarmonic={activeDayHarmonic}
             onClose={() => {
               setIsDayModalOpen(false);
-              handleDailyClose(); // marks daily_modal_seen_date in Supabase
+              handleDailyClose();
             }}
           />
         )}
       </AnimatePresence>
 
-      {/* ═══ TOUR OVERLAY (scroll-gated for step 1 only) ════════════════════ */}
+      {/* ═══ TOUR OVERLAY ════════════════════════════════════════════ */}
       {isTourStepVisible && (
         <TourOverlay
           step={tourStep}
