@@ -33,7 +33,7 @@ describe('computeSynastry — request body contract', () => {
   it('sends POST to /api/synastry', async () => {
     mockSupabase.auth.getSession.mockResolvedValue({
       data: { session: { access_token: 'test-token' } },
-    } as ReturnType<typeof supabase.auth.getSession> extends Promise<infer R> ? Promise<R> : never);
+    } as any);
 
     const mockResponse: SynastryResult = {
       partner: { id: 'p1', display_name: 'Luna', birth_place: 'München' },

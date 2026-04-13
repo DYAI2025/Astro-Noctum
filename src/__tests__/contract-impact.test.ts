@@ -9,7 +9,7 @@
  *   - Hook sends the correct URL and method
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   ActiveImpactsSchema,
   ActivePlanetSchema,
@@ -228,21 +228,13 @@ describe('ActiveImpactsSchema — rejections', () => {
 // ── useActiveImpacts — request body contract ──────────────────────────────────
 
 describe('useActiveImpacts — POST contract shape', () => {
-  it('endpoint expects empty JSON object body and POST method', async () => {
-    // useActiveImpacts.ts hardcodes: body: '{}', method: 'POST'
-    // This test locks the contract: /api/impact/active accepts {} (no payload)
-    // and user identity comes from the JWT in the Authorization header.
-    const expectedUrl = '/api/impact/active';
-    const expectedInit = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: '{}',
-    };
+  it('hook source hardcodes /api/impact/active URL and empty {} body', async () => {
+    const fs = await import('fs');
+    const hookSource = fs.readFileSync('src/hooks/useActiveImpacts.ts', 'utf8');
 
-    expect(expectedInit.method).toBe('POST');
-    expect(expectedInit.body).toBe('{}');
-    expect(JSON.parse(expectedInit.body)).toEqual({});
-    expect(expectedUrl).toBe('/api/impact/active');
+    expect(hookSource).toContain("'/api/impact/active'");
+    expect(hookSource).toContain("body: '{}'");
+    expect(hookSource).toContain("method: 'POST'");
   });
 });
 

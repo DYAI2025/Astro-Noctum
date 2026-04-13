@@ -6,7 +6,7 @@
  * These are schema/contract tests — no network calls.
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 
 vi.mock('../lib/supabase', () => ({
   supabase: {
@@ -244,6 +244,8 @@ describe('mapChartToApiResults — missing required fields', () => {
 // ── calculateAll request body contract ───────────────────────────────────────
 
 describe('calculateAll — /api/chart request body contract', () => {
+  afterEach(() => { vi.unstubAllGlobals(); });
+
   it('sends local_datetime (not date) + tz + lon + lat', async () => {
     const { calculateAll } = await import('../services/api');
     const chartPayload: ChartResponse = { ...CHART_BASE, positions: POSITIONS_PAYLOAD };
@@ -263,8 +265,6 @@ describe('calculateAll — /api/chart request body contract', () => {
     expect(body).toHaveProperty('tz', 'Europe/Berlin');
     expect(body).toHaveProperty('lon', 13.4);
     expect(body).toHaveProperty('lat', 52.5);
-
-    vi.unstubAllGlobals();
   });
 
   it('calls /api/chart — not /api/calculate/chart', async () => {
@@ -283,8 +283,6 @@ describe('calculateAll — /api/chart request body contract', () => {
     const calledUrl = mockFetch.mock.calls[0][0] as string;
     expect(calledUrl).toMatch(/\/api\/chart$/);
     expect(calledUrl).not.toContain('/calculate/');
-
-    vi.unstubAllGlobals();
   });
 
   it('returns issues: [] on success', async () => {
@@ -299,7 +297,5 @@ describe('calculateAll — /api/chart request body contract', () => {
 
     const result = await calculateAll({ date: '1990-01-15T12:00:00', tz: 'UTC', lon: 0, lat: 0 });
     expect(result.issues).toEqual([]);
-
-    vi.unstubAllGlobals();
   });
 });
