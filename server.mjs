@@ -1788,135 +1788,145 @@ function impactBaziResonance(planetEN, dayMasterStem) {
 const impactCache = new Map();
 const IMPACT_CACHE_TTL_MS = 15 * 60 * 1000;
 
-app.post('/api/impact/active', requireUserAuth, async (req, res) => {
-  const userId = req.userId;
+/**
+ * Core impact computation — called from both /api/impact/active and /api/experience/daily.
+ * Returns ACTIVE_IMPACTS_v1 object or throws on failure. Uses impactCache internally.
+ */
+async function computeActiveImpactsCore(userId) {
   const dateStr = new Date().toISOString().slice(0, 10);
   const cacheKey = `impact:${userId}:${dateStr}`;
 
   const cached = impactCache.get(cacheKey);
   if (cached && Date.now() - cached.ts < IMPACT_CACHE_TTL_MS) {
-    return res.json({ ...cached.data, meta: { ...cached.data.meta, cached: true } });
+    return { ...cached.data, meta: { ...cached.data.meta, cached: true } };
   }
 
+  if (!supabaseServer) throw new Error('database_unavailable');
+
+  // 1. Load user profile — natal chart + day master + soulprint
+  const { data: profile, error: profileErr } = await supabaseServer
+    .from('astro_profiles')
+    .select('astro_json, soulprint_sectors')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (profileErr || !profile?.astro_json) {
+    throw new Error('profile_incomplete');
+  }
+
+  // Extract natal planet longitudes from stored astro_json
+  const natalBodies = profile.astro_json?.positions || profile.astro_json?.bodies || {};
+  const natalPositions = synastryExtractLongitudes(natalBodies);
+
+  // 2. Get today's transit positions — BAFE /chart at noon UTC, geocentric
+  let transitPositions = {};
   try {
-    if (!supabaseServer) return res.status(503).json({ error: 'database_unavailable' });
+    const transitChart = await fetchChartForBirth({
+      birth_date: dateStr,
+      birth_time: '12:00',
+      iana_time_zone: 'UTC',
+      birth_lat: 0,
+      birth_lon: 0,
+    });
+    const transitBodies = transitChart.positions || transitChart.bodies || {};
+    transitPositions = synastryExtractLongitudes(transitBodies);
+  } catch (err) {
+    console.warn('[impact/active] BAFE transit fetch failed, using empty transits:', err?.message);
+  }
 
-    // 1. Load user profile — natal chart + day master + soulprint
-    const { data: profile, error: profileErr } = await supabaseServer
-      .from('astro_profiles')
-      .select('astro_json, soulprint_sectors')
-      .eq('user_id', userId)
-      .maybeSingle();
-
-    if (profileErr || !profile?.astro_json) {
-      return res.status(422).json({ error: 'profile_incomplete', message: 'Natal chart data not available.' });
-    }
-
-    // Extract natal planet longitudes from stored astro_json
-    const natalBodies = profile.astro_json?.positions || profile.astro_json?.bodies || {};
-    const natalPositions = synastryExtractLongitudes(natalBodies);
-
-    // 2. Get today's transit positions — BAFE /chart at noon UTC, geocentric
-    let transitPositions = {};
-    try {
-      const transitChart = await fetchChartForBirth({
-        birth_date: dateStr,
-        birth_time: '12:00',
-        iana_time_zone: 'UTC',
-        birth_lat: 0,
-        birth_lon: 0,
-      });
-      const transitBodies = transitChart.positions || transitChart.bodies || {};
-      transitPositions = synastryExtractLongitudes(transitBodies);
-    } catch (err) {
-      console.warn('[impact/active] BAFE transit fetch failed, using empty transits:', err?.message);
-    }
-
-    // 3. Compute transit-to-natal aspects — all orbs capped at 8°
-    const rawAspects = [];
-    for (const tp of SYNASTRY_PLANETS) {
-      const tLon = transitPositions[tp];
-      if (tLon == null) continue;
-      for (const np of SYNASTRY_PLANETS) {
-        const nLon = natalPositions[np];
-        if (nLon == null) continue;
-        const sep = synastrySeparation(tLon, nLon);
-        for (const def of SYNASTRY_ASPECT_DEFS) {
-          const deviation = Math.abs(sep - def.angle);
-          if (deviation <= def.orb) {
-            rawAspects.push({ transit_planet: tp, natal_planet: np, aspect_type: def.name, orb: Math.round(deviation * 100) / 100 });
-            break;
-          }
+  // 3. Compute transit-to-natal aspects — staggered orbs per DEC-aspect-orb-tolerances
+  const rawAspects = [];
+  for (const tp of SYNASTRY_PLANETS) {
+    const tLon = transitPositions[tp];
+    if (tLon == null) continue;
+    for (const np of SYNASTRY_PLANETS) {
+      const nLon = natalPositions[np];
+      if (nLon == null) continue;
+      const sep = synastrySeparation(tLon, nLon);
+      for (const def of SYNASTRY_ASPECT_DEFS) {
+        const deviation = Math.abs(sep - def.angle);
+        if (deviation <= def.orb) {
+          rawAspects.push({ transit_planet: tp, natal_planet: np, aspect_type: def.name, orb: Math.round(deviation * 100) / 100 });
+          break;
         }
       }
     }
+  }
 
-    // 4. Build active planets — one entry per transit planet (tightest aspect wins)
-    const dayMaster = profile.astro_json?.bazi?.day_master || null;
-    const planetBest = new Map();
-    for (const a of rawAspects) {
-      const existing = planetBest.get(a.transit_planet);
-      if (!existing || a.orb < existing.orb) planetBest.set(a.transit_planet, a);
-    }
+  // 4. Build active planets — one entry per transit planet (tightest aspect wins)
+  const dayMaster = profile.astro_json?.bazi?.day_master || null;
+  const planetBest = new Map();
+  for (const a of rawAspects) {
+    const existing = planetBest.get(a.transit_planet);
+    if (!existing || a.orb < existing.orb) planetBest.set(a.transit_planet, a);
+  }
 
-    const activePlanets = [];
-    for (const [planet, aspect] of planetBest) {
-      const bazi = dayMaster ? impactBaziResonance(planet, dayMaster) : null;
-      const strength = Math.round((1 - aspect.orb / 8) * 100) / 100;
-      activePlanets.push({
-        planet,
-        strength,
-        aspect_type: aspect.aspect_type,
-        orb: aspect.orb,
-        natal_planet: aspect.natal_planet,
-        bazi_resonance: bazi?.type ?? null,
-        wu_xing_element: bazi?.wu_xing_element ?? null,
-      });
-    }
-    activePlanets.sort((a, b) => b.strength - a.strength);
-
-    // 5. Compute harmony_index (0–100) — blends natal harmony with solar pressure
-    const baseHarmony = profile.astro_json?.fusion?.harmony_index ?? 0.5;
-    const sw = spaceWeatherCache?.payload;
-    const solarPressure = sw?.solar_pressure_score ?? 0;
-    const hWeight = Number(process.env.HARMONY_INDEX_HARMONY_WEIGHT) || 0.65;
-    const sWeight = Number(process.env.HARMONY_INDEX_SOLAR_WEIGHT)   || 0.35;
-    const harmonyIndex = Math.min(100, Math.max(0,
-      Math.round((baseHarmony * hWeight + solarPressure * sWeight) * 100)
-    ));
-
-    // 6. Compute resonance badges (reuse existing server badge logic)
-    const badges = computeResonanceBadgesServer({
-      transitInfluences: activePlanets.map(p => ({
-        planet: p.planet,
-        aspectDeg: SYNASTRY_ASPECT_DEFS.find(d => d.name === p.aspect_type)?.angle ?? 0,
-        fieldStrength: p.strength,
-        isResonant: p.bazi_resonance === 'gleichklang' || p.bazi_resonance === 'naehrung',
-      })),
-      spaceWeather: sw ?? null,
-      soulprintSectors: profile.soulprint_sectors ?? null,
-      lang: 'de',
+  const activePlanets = [];
+  for (const [planet, aspect] of planetBest) {
+    const bazi = dayMaster ? impactBaziResonance(planet, dayMaster) : null;
+    const strength = Math.round((1 - aspect.orb / 8) * 100) / 100;
+    activePlanets.push({
+      planet,
+      strength,
+      aspect_type: aspect.aspect_type,
+      orb: aspect.orb,
+      natal_planet: aspect.natal_planet,
+      bazi_resonance: bazi?.type ?? null,
+      wu_xing_element: bazi?.wu_xing_element ?? null,
     });
+  }
+  activePlanets.sort((a, b) => b.strength - a.strength);
 
-    // 7. Build ACTIVE_IMPACTS_v1 response
-    const response = {
-      schema: 'ACTIVE_IMPACTS_v1',
-      date: dateStr,
-      harmony_index: harmonyIndex,
-      active_planets: activePlanets,
-      resonance_badges: badges,
-      meta: {
-        engine: 'astro-noctum-server',
-        solar_pressure_source: sw ? 'noaa_swpc' : 'unavailable',
-        cached: false,
-      },
-    };
+  // 5. Compute harmony_index (0–100) — blends natal harmony with solar pressure
+  const baseHarmony = profile.astro_json?.fusion?.harmony_index ?? 0.5;
+  const sw = spaceWeatherCache?.payload;
+  const solarPressure = sw?.solar_pressure_score ?? 0;
+  const hWeight = Number(process.env.HARMONY_INDEX_HARMONY_WEIGHT) || 0.65;
+  const sWeight = Number(process.env.HARMONY_INDEX_SOLAR_WEIGHT)   || 0.35;
+  const harmonyIndex = Math.min(100, Math.max(0,
+    Math.round((baseHarmony * hWeight + solarPressure * sWeight) * 100)
+  ));
 
-    impactCache.set(cacheKey, { ts: Date.now(), data: response });
-    res.json(response);
+  // 6. Compute resonance badges (reuse existing server badge logic)
+  const badges = computeResonanceBadgesServer({
+    transitInfluences: activePlanets.map(p => ({
+      planet: p.planet,
+      aspectDeg: SYNASTRY_ASPECT_DEFS.find(d => d.name === p.aspect_type)?.angle ?? 0,
+      fieldStrength: p.strength,
+      isResonant: p.bazi_resonance === 'gleichklang' || p.bazi_resonance === 'naehrung',
+    })),
+    spaceWeather: sw ?? null,
+    soulprintSectors: profile.soulprint_sectors ?? null,
+    lang: 'de',
+  });
+
+  // 7. Build ACTIVE_IMPACTS_v1 response
+  const response = {
+    schema: 'ACTIVE_IMPACTS_v1',
+    date: dateStr,
+    harmony_index: harmonyIndex,
+    active_planets: activePlanets,
+    resonance_badges: badges,
+    meta: {
+      engine: 'astro-noctum-server',
+      solar_pressure_source: sw ? 'noaa_swpc' : 'unavailable',
+      cached: false,
+    },
+  };
+
+  impactCache.set(cacheKey, { ts: Date.now(), data: response });
+  return response;
+}
+
+app.post('/api/impact/active', requireUserAuth, async (req, res) => {
+  try {
+    const result = await computeActiveImpactsCore(req.userId);
+    res.json(result);
   } catch (err) {
+    const status = err.message === 'database_unavailable' ? 503
+      : err.message === 'profile_incomplete' ? 422 : 500;
     console.error('[impact/active] Error:', err?.message || err);
-    res.status(500).json({ error: 'impact_calculation_failed' });
+    res.status(status).json({ error: err.message || 'impact_calculation_failed' });
   }
 });
 
@@ -2220,7 +2230,7 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
       return res.status(413).json({ error: 'payload_too_large' });
     }
 
-    const { birth, target_date, locale, transit_influences, birth_sign } = req.body || {};
+    const { birth, target_date, locale, transit_influences, birth_sign, include } = req.body || {};
     if (!birth || typeof birth !== 'object') {
       return res.status(400).json({
         error: 'invalid_birth',
@@ -2517,6 +2527,45 @@ NEVER use in synthesis: "weil", "da heute", planet names (Mars, Venus etc.), "di
 
     // Append resonance badges (deterministic — always fresh, not cached)
     appendBadges(parsedData, soulprintSectorsForBadge);
+
+    // ── v2: include=["impact"] merges ACTIVE_IMPACTS_v1 into response ───
+    const wantsImpact = Array.isArray(include) && include.includes('impact');
+    if (wantsImpact) {
+      try {
+        const impactData = await computeActiveImpactsCore(userId);
+        parsedData.impact = impactData;
+
+        // Determine user tier for premium gating (DEC-conversion-tiers).
+        // Deliberate: we query tier lazily here instead of using attachUserTier middleware
+        // on the route, because v1 callers (no include param) don't need tier at all —
+        // adding middleware would add a Supabase call to every daily request unnecessarily.
+        let userTier = req.userTier; // may already be set by middleware chain
+        if (userTier === undefined && supabaseServer) {
+          try {
+            const { data: tierRow } = await supabaseServer
+              .from('profiles').select('tier').eq('id', userId).maybeSingle();
+            userTier = tierRow?.tier ?? 'free';
+          } catch { userTier = 'free'; }
+        }
+        const isPremium = userTier === 'premium';
+
+        // Gate fusion.action — free users get teaser with upgrade CTA
+        if (parsedData.fusion && !isPremium) {
+          parsedData.fusion.action = lang === 'de'
+            ? 'Deine persönliche Tagesempfehlung ist Teil von Bazodiac Premium.'
+            : 'Your personal daily recommendation is part of Bazodiac Premium.';
+          parsedData.fusion.action_locked = true;
+        }
+
+        // Gate resonance_badges — free users see empty array when impact requested
+        if (!isPremium) {
+          parsedData.impact.resonance_badges = [];
+        }
+      } catch (impactErr) {
+        console.warn('[experience/daily] Impact computation failed, omitting impact block:', impactErr?.message);
+        // Don't fail the whole response — just omit the impact block
+      }
+    }
 
     res.status(200).json(parsedData);
   } catch (err) {
