@@ -1748,6 +1748,178 @@ setInterval(() => {
   if (expired.length > 0) console.log(`[horoscope-cache] evicted ${expired.length} entries`);
 }, 60 * 60 * 1000);
 
+// ── BaZi resonance helpers (JS port of src/lib/fusion-bazi/resonance.ts) ─────
+// LOCKED by DEC-fusion-bazi-sheng-ke. Do not change mappings without updating that decision.
+
+const IMPACT_PLANET_ELEMENT = {
+  Sun: 'fire', Moon: 'water', Mercury: 'water',
+  Venus: 'metal', Mars: 'fire', Jupiter: 'wood', Saturn: 'earth',
+};
+
+const IMPACT_STEM_ELEMENT = {
+  Jia: 'wood', Yi: 'wood', Bing: 'fire', Ding: 'fire',
+  Wu: 'earth', Ji: 'earth', Geng: 'metal', Xin: 'metal',
+  Ren: 'water', Gui: 'water',
+};
+
+const IMPACT_SHENG_NEXT = { wood: 'fire', fire: 'earth', earth: 'metal', metal: 'water', water: 'wood' };
+const IMPACT_KE_NEXT    = { wood: 'earth', earth: 'water', water: 'fire', fire: 'metal', metal: 'wood' };
+
+function impactBaziResonance(planetEN, dayMasterStem) {
+  const pe = IMPACT_PLANET_ELEMENT[planetEN] ?? 'earth';
+  const de = IMPACT_STEM_ELEMENT[dayMasterStem] ?? 'earth';
+  if (pe === de)                    return { type: 'gleichklang', intensity: 0.85, wu_xing_element: pe };
+  if (IMPACT_SHENG_NEXT[pe] === de) return { type: 'naehrung',    intensity: 0.75, wu_xing_element: pe };
+  if (IMPACT_SHENG_NEXT[de] === pe) return { type: 'naehrung',    intensity: 0.65, wu_xing_element: pe };
+  if (IMPACT_KE_NEXT[pe] === de)    return { type: 'kontrolle',   intensity: 0.70, wu_xing_element: pe };
+  if (IMPACT_KE_NEXT[de] === pe)    return { type: 'kontrolle',   intensity: 0.70, wu_xing_element: pe };
+  return { type: 'neutral', intensity: 0.35, wu_xing_element: pe };
+}
+
+// ── /api/impact/active ──────────────────────────────────────────────────
+// Server-side computation — NOT a FuFirE proxy (ASM-noaa-in-fufre invalidated).
+// Returns ACTIVE_IMPACTS_v1: harmony_index (0–100), active_planets[] (orb ≤ 8°),
+// resonance_badges[]. Cached 15 min keyed on (user_id, date).
+//
+// Decisions enforced:
+//   DEC-fusion-bazi-sheng-ke  : BaZi resonance per planet
+//   DEC-aspect-orb-tolerances : staggered orbs (reused from synastry)
+
+const impactCache = new Map();
+const IMPACT_CACHE_TTL_MS = 15 * 60 * 1000;
+
+app.post('/api/impact/active', requireUserAuth, async (req, res) => {
+  const userId = req.userId;
+  const dateStr = new Date().toISOString().slice(0, 10);
+  const cacheKey = `impact:${userId}:${dateStr}`;
+
+  const cached = impactCache.get(cacheKey);
+  if (cached && Date.now() - cached.ts < IMPACT_CACHE_TTL_MS) {
+    return res.json({ ...cached.data, meta: { ...cached.data.meta, cached: true } });
+  }
+
+  try {
+    if (!supabaseServer) return res.status(503).json({ error: 'database_unavailable' });
+
+    // 1. Load user profile — natal chart + day master + soulprint
+    const { data: profile, error: profileErr } = await supabaseServer
+      .from('astro_profiles')
+      .select('astro_json, soulprint_sectors')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (profileErr || !profile?.astro_json) {
+      return res.status(422).json({ error: 'profile_incomplete', message: 'Natal chart data not available.' });
+    }
+
+    // Extract natal planet longitudes from stored astro_json
+    const natalBodies = profile.astro_json?.positions || profile.astro_json?.bodies || {};
+    const natalPositions = synastryExtractLongitudes(natalBodies);
+
+    // 2. Get today's transit positions — BAFE /chart at noon UTC, geocentric
+    let transitPositions = {};
+    try {
+      const transitChart = await fetchChartForBirth({
+        birth_date: dateStr,
+        birth_time: '12:00',
+        iana_time_zone: 'UTC',
+        birth_lat: 0,
+        birth_lon: 0,
+      });
+      const transitBodies = transitChart.positions || transitChart.bodies || {};
+      transitPositions = synastryExtractLongitudes(transitBodies);
+    } catch (err) {
+      console.warn('[impact/active] BAFE transit fetch failed, using empty transits:', err?.message);
+    }
+
+    // 3. Compute transit-to-natal aspects — all orbs capped at 8°
+    const rawAspects = [];
+    for (const tp of SYNASTRY_PLANETS) {
+      const tLon = transitPositions[tp];
+      if (tLon == null) continue;
+      for (const np of SYNASTRY_PLANETS) {
+        const nLon = natalPositions[np];
+        if (nLon == null) continue;
+        const sep = synastrySeparation(tLon, nLon);
+        for (const def of SYNASTRY_ASPECT_DEFS) {
+          const deviation = Math.abs(sep - def.angle);
+          if (deviation <= def.orb) {
+            rawAspects.push({ transit_planet: tp, natal_planet: np, aspect_type: def.name, orb: Math.round(deviation * 100) / 100 });
+            break;
+          }
+        }
+      }
+    }
+
+    // 4. Build active planets — one entry per transit planet (tightest aspect wins)
+    const dayMaster = profile.astro_json?.bazi?.day_master || null;
+    const planetBest = new Map();
+    for (const a of rawAspects) {
+      const existing = planetBest.get(a.transit_planet);
+      if (!existing || a.orb < existing.orb) planetBest.set(a.transit_planet, a);
+    }
+
+    const activePlanets = [];
+    for (const [planet, aspect] of planetBest) {
+      const bazi = dayMaster ? impactBaziResonance(planet, dayMaster) : null;
+      const strength = Math.round((1 - aspect.orb / 8) * 100) / 100;
+      activePlanets.push({
+        planet,
+        strength,
+        aspect_type: aspect.aspect_type,
+        orb: aspect.orb,
+        natal_planet: aspect.natal_planet,
+        bazi_resonance: bazi?.type ?? null,
+        wu_xing_element: bazi?.wu_xing_element ?? null,
+      });
+    }
+    activePlanets.sort((a, b) => b.strength - a.strength);
+
+    // 5. Compute harmony_index (0–100) — blends natal harmony with solar pressure
+    const baseHarmony = profile.astro_json?.fusion?.harmony_index ?? 0.5;
+    const sw = spaceWeatherCache?.payload;
+    const solarPressure = sw?.solar_pressure_score ?? 0;
+    const hWeight = Number(process.env.HARMONY_INDEX_HARMONY_WEIGHT) || 0.65;
+    const sWeight = Number(process.env.HARMONY_INDEX_SOLAR_WEIGHT)   || 0.35;
+    const harmonyIndex = Math.min(100, Math.max(0,
+      Math.round((baseHarmony * hWeight + solarPressure * sWeight) * 100)
+    ));
+
+    // 6. Compute resonance badges (reuse existing server badge logic)
+    const badges = computeResonanceBadgesServer({
+      transitInfluences: activePlanets.map(p => ({
+        planet: p.planet,
+        aspectDeg: SYNASTRY_ASPECT_DEFS.find(d => d.name === p.aspect_type)?.angle ?? 0,
+        fieldStrength: p.strength,
+        isResonant: p.bazi_resonance === 'gleichklang' || p.bazi_resonance === 'naehrung',
+      })),
+      spaceWeather: sw ?? null,
+      soulprintSectors: profile.soulprint_sectors ?? null,
+      lang: 'de',
+    });
+
+    // 7. Build ACTIVE_IMPACTS_v1 response
+    const response = {
+      schema: 'ACTIVE_IMPACTS_v1',
+      date: dateStr,
+      harmony_index: harmonyIndex,
+      active_planets: activePlanets,
+      resonance_badges: badges,
+      meta: {
+        engine: 'astro-noctum-server',
+        solar_pressure_source: sw ? 'noaa_swpc' : 'unavailable',
+        cached: false,
+      },
+    };
+
+    impactCache.set(cacheKey, { ts: Date.now(), data: response });
+    res.json(response);
+  } catch (err) {
+    console.error('[impact/active] Error:', err?.message || err);
+    res.status(500).json({ error: 'impact_calculation_failed' });
+  }
+});
+
 // ── Experience API proxy ──────────────────────────────────────────
 /**
  * Bootstrap endpoint — 7-step flow:

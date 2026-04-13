@@ -21,5 +21,6 @@
 ## Related Artifacts
 
 - Requirements: [REQ-F-eve-voice-agent](../requirements/REQ-F-eve-voice-agent.md), [REQ-F-agent-dashboard-selection](../requirements/REQ-F-agent-dashboard-selection.md), [REQ-F-agent-conversation-persistence](../requirements/REQ-F-agent-conversation-persistence.md), [REQ-F-agent-architecture-refactor](../requirements/REQ-F-agent-architecture-refactor.md), [REQ-MNT-agent-extensibility](../requirements/REQ-MNT-agent-extensibility.md), [REQ-SEC-eve-brand-safety](../requirements/REQ-SEC-eve-brand-safety.md)
+- User stories: [US-agent-selection](../user-stories/US-agent-selection.md)
 - Assumptions: [ASM-elevenlabs-multi-agent](../assumptions/ASM-elevenlabs-multi-agent.md)
 - Constraints: [CON-german-ui](../constraints/CON-german-ui.md), [CON-dark-luxury-aesthetic](../constraints/CON-dark-luxury-aesthetic.md)

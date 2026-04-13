@@ -20,4 +20,5 @@
 
 - Goals: [GOAL-fusion-astrology](GOAL-fusion-astrology.md)
 - Goals: [GOAL-signatur-phase2-density](GOAL-signatur-phase2-density.md)
+- User stories: [US-signatur-matching](../user-stories/US-signatur-matching.md)
 - Requirements: [REQ-F-signatur-density-field](../requirements/REQ-F-signatur-density-field.md)
