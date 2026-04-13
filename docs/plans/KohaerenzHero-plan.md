@@ -8,7 +8,7 @@ Normalize coherence/impact contracts to prevent frontend/backend divergence and 
 
 - `harmony_index`: normalized float in `[0.0, 1.0]`.
 - `harmony_percent`: optional derived display value (`0` to `100`) computed from `harmony_index`.
-- `day_harmonic_state`: derived client/server semantic state from `harmony_index`; never a separate source domain.
+- `day_mode`: derived client/server semantic state from `harmony_index`; represented in TypeScript by `DayHarmonicState`, and never a separate source domain.
 
 ## Source of truth policy
 
