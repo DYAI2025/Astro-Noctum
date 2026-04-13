@@ -12,9 +12,9 @@ Normalize coherence/impact contracts to prevent frontend/backend divergence and 
 
 ## Source of truth policy
 
-1. Prefer `GET /impact/active` for coherence hero and related impact modules.
-2. Use `GET /experience/daily` only as fallback.
-3. When primary source is present, disable secondary space-weather hooks for the same screen to avoid double-fetching and stale divergence.
+1. Prefer `GET /api/impact/active` when calling through the app proxy; upstream route is `GET /impact/active`, for coherence hero and related impact modules.
+2. Use `POST /api/experience/daily` only as fallback when calling through the app proxy; upstream fallback route is `POST /experience/daily`.
+3. When the primary source is present, disable secondary space-weather hooks for the same screen to avoid double-fetching and stale divergence.
 
 ## Traceability/status guardrail
 
