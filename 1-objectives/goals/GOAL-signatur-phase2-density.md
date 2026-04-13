@@ -20,6 +20,7 @@
 
 - Goals: [GOAL-fusion-astrology](GOAL-fusion-astrology.md)
 - Goals: [GOAL-signatur-phase3-matching](GOAL-signatur-phase3-matching.md)
+- User stories: [US-signatur-density-field](../user-stories/US-signatur-density-field.md)
 - Requirements: [REQ-F-signatur-density-field](../requirements/REQ-F-signatur-density-field.md)
 - Requirements: [REQ-F-signatur-dissonance-model](../requirements/REQ-F-signatur-dissonance-model.md)
 - Requirements: [REQ-F-signatur-determinism](../requirements/REQ-F-signatur-determinism.md)
