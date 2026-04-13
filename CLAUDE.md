@@ -15,7 +15,7 @@ Bazodiac (Astro-Noctum) — a fusion astrology web + mobile app combining Wester
 
 Run `/SDLC-status` or check `3-code/tasks.md` + `git log` for live project state. Do not rely on hardcoded counts in this file.
 
-**Implementation progress (2026-04-13):** 283/296 tasks Done (14 Cancelled, 0 Blocked). All sprints complete. Landing page tasks cancelled — moved to `Landingpage-viteapp` repo (Option C: separate apps, API bridge). 1626 tests green.
+**Implementation progress (2026-04-14):** 290/305 tasks Done (14 Cancelled, 1 Blocked). All sprints complete including S-API-CONTRACT (signatureDelta bug fix + 6 contract test suites + code review fixes). Landing page tasks cancelled — moved to `Landingpage-viteapp` repo (Option C: separate apps, API bridge). 1758 tests green. Single blocked: REQ-F-orbital-signatur-visualization (deferred, blocked on unverified ASM-ued-metrics-available).
 
 **Objectives gap analysis (2026-04-12, fixed 2026-04-13):** All 4 Important + 3 Minor items resolved. I-1: GOAL-synastry-compatibility + 3 USs + 3 REQs created (retroactive spec capture). I-2: 7 user stories created for 5 previously US-less goals. I-3: Sprint S-DAILY added to tasks.md with 7 tasks for Daily Chart requirements. I-4: 11 back-links added to GOAL-fusion-astrology, -autopoietic-ux, -vibes-weekly-insights. m-1: ASM-noaa-in-fufre has verification plan; TASK-daily-verify-noaa gates implementation. m-2: CON-dark-luxury-aesthetic already had derived REQ-USA-wcag-contrast (false positive). m-3: Fixed in prior session. **(fresh — re-run gap analysis before next phase gate)**
 
