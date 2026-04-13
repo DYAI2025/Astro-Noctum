@@ -280,7 +280,7 @@ export function Dashboard({
   const { events: transitEvents, loading: transitLoading } = useFusionSignal(userId);
 
   // ── Active Impacts — harmony_index + active planets from POST /api/impact/active ──
-  const { harmonyIndex: impactHarmonyIndex, loading: impactLoading } = useActiveImpacts();
+  const { harmonyIndex: impactHarmonyIndex, activePlanets: impactPlanets, loading: impactLoading } = useActiveImpacts();
 
   // ── Daily horoscope modal ───────────────────────────────────────────
   // isDayModalOpen: on-demand via "vertiefen →" in DashboardTagesEnergie.
@@ -404,6 +404,8 @@ export function Dashboard({
         <SectionErrorBoundary name="AktiveEinfluesseFusion">
           <AktiveEinfluesseFusion
             dayMasterStem={apiData?.bazi?.day_master}
+            activePlanets={impactPlanets}
+            impactLoading={impactLoading}
           />
         </SectionErrorBoundary>
       </motion.div>
