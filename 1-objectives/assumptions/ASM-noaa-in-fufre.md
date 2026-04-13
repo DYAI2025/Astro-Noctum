@@ -2,7 +2,7 @@
 
 **Category**: Technology
 
-**Status**: Unverified
+**Status**: Invalidated
 
 **Risk if wrong**: Medium — If FuFirE does not have NOAA data, `harmony_index` cannot include the `solar_pressure` component (0.35 weight). The formula would fall back to `harmony * 1.0`, degrading the accuracy of the Kohärenzindex and making `solar_pressure`-driven cosmic weather invisible in the hero section.
 
@@ -14,13 +14,25 @@ FuFirE's backend already ingests NOAA solar pressure data as part of its transit
 
 The Bazodiac frontend already integrates NOAA data via `/api/space-weather/extended` (5-min cached, fetched from NOAA SWPC and NASA DONKI). It is reasonable to assume that FuFirE, as the backend engine, has access to the same or equivalent data given that it computes transit resonance which is inherently sensitive to solar conditions.
 
-## Verification Plan
+## Verification Result (2026-04-13)
 
-1. Review FuFirE's `/impact/active` or transit endpoint documentation (or ask the FuFirE maintainer) for whether `solar_pressure` is already a named internal variable.
-2. Make a test call to FuFirE's impact endpoint and inspect the response for any solar pressure, Kp, or space-weather field.
-3. If absent: assess whether FuFirE can accept `solar_pressure` as an input parameter from the Bazodiac server, rather than computing it internally.
+**Invalidated.** FuFirE does NOT have NOAA solar pressure data or an `/impact/active` endpoint.
 
-**Verify before:** starting implementation of `REQ-F-impact-active-endpoint` or `REQ-F-coherence-hero-impact-datasource`.
+**Evidence:**
+1. `POST https://bafe-production.up.railway.app/impact/active` → **404 Not Found**
+2. FuFirE's documented endpoints are: `/chart`, `/transit/state`, `/experience/bootstrap`, `/experience/daily`, `/experience/signature-delta` — none include solar pressure fields
+3. FuFirE's `harmony_index` (from `/experience/bootstrap`) is purely "cosine similarity between Western and Eastern Wu-Xing vectors" — no solar component
+
+**Mitigation — server-side pass-through approach:**
+Solar pressure data IS available in server.mjs via `spaceWeatherCache.payload.solar_pressure_score` (sourced from NOAA SWPC, 5-min cache). The `/api/impact/active` endpoint will be built entirely in server.mjs (not proxied to FuFirE) by:
+1. Loading the user's natal chart from Supabase `astro_profiles`
+2. Computing transit aspects against natal chart using `/calculate/western` (existing BAFE endpoint)
+3. Filtering to orb ≤ 8°
+4. Reading `solar_pressure_score` from `spaceWeatherCache`
+5. Computing `harmony_index = round((harmony * 0.65 + solar_pressure * 0.35) * 100)` where `harmony` comes from the existing FuFirE bootstrap data and `solar_pressure` from NOAA cache
+6. Returning the `ACTIVE_IMPACTS_v1` schema
+
+This approach reuses existing infrastructure and requires no FuFirE changes.
 
 ## Related Artifacts
 
