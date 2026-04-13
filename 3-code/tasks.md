@@ -866,6 +866,31 @@ GitHub Issues (#115, #117, #118, #119, #123, #124, #129, #130, #132, #136) remai
 
 ---
 
+## Sprint S-API-CONTRACT: API Contract Verification + CI Tests
+
+**Sprint Goal:** Fix 1 confirmed bug (signatureDelta quiz_answer payload mismatch), 1 doc drift (synastry missing from API_REFERENCE.md), and build CI contract tests for all server API endpoints so future drift is caught automatically.
+
+**Context:** An external audit reported 12 potential discrepancies. Verification (2026-04-13) confirmed only 2 are real — the rest were false positives (client mappers already handle both formats, all routes exist, deprecated funcs match deprecated docs).
+
+### Phase 1 — Bug Fixes
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-fix-signature-delta-payload | Fix `signatureDelta()` in `src/services/experience.ts`: change `quiz_answer: { keyword }` to `quiz_answer: [{ id: keyword, weight: 1.0 }]` to match server expectation `Array.isArray(quiz_answer)`. Server silently coerces non-array to `[]` — quiz influence on Signatur ring is currently lost. | P0 | Done | - | - | 2026-04-13 | server.mjs:2052 expects `[{id, weight}]` array; client sends `{keyword}` object |
+| TASK-doc-synastry-api-reference | Add `POST /api/synastry` section to `docs/API_REFERENCE.md`: auth (requireUserAuth + requirePremium), request `{ partner_id }`, response schema (aspects[], narrative, narrative_source), error cases | P1 | Done | - | - | 2026-04-13 | Route exists at server.mjs:746 but is undocumented |
+
+### Phase 2 — API Contract CI Tests
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-contract-test-calculate | Write Vitest contract tests for `/api/calculate/*` proxy routes: verify request body schema forwarded correctly, response field paths match client mapper expectations (`positions\|\|bodies`, `chinese\|\|bazi`, German+English fallbacks) | P0 | Todo | - | - | 2026-04-13 | Validates api.ts mappers against actual BAFE response shapes |
+| TASK-contract-test-chart | Write Vitest contract test for `POST /api/chart` (the canonical atomic endpoint): verify `local_datetime`+`tz` request format, response contains `positions` or `bodies` dict with Sun/Moon/planet entries | P0 | Todo | - | - | 2026-04-13 | Primary calculation path used by calculateAll() |
+| TASK-contract-test-experience | Write Vitest contract tests for all 3 Experience endpoints: bootstrap (birth payload → soulprint+profile), signature-delta (quiz_answer array format → delta response), daily (include=["impact"] v2 contract) | P0 | Todo | TASK-fix-signature-delta-payload | - | 2026-04-13 | Covers the fixed quiz_answer format + v2 impact merge |
+| TASK-contract-test-synastry | Write Vitest contract test for `POST /api/synastry`: verify auth requirement, partner_id payload, response shape (aspects[], narrative, narrative_source) | P1 | Todo | TASK-doc-synastry-api-reference | - | 2026-04-13 | Tests the newly-documented contract |
+| TASK-contract-test-impact | Write Vitest contract test for `POST /api/impact/active`: verify ACTIVE_IMPACTS_v1 schema, harmony_index 0-100, active_planets orb filter, resonance_badges shape | P1 | Todo | - | - | 2026-04-13 | New endpoint from S-DAILY sprint, needs contract lock |
+
+---
+
 ## Sprint S-DAILY: Daily Chart — Kohärenz-geführtes Tageshoroskop
 
 **Sprint Goal:** Dashboard shows Kohärenzindex + Day Mode above the fold on first load. Active planet cards sourced from `/impact/active` (natal-relative, orb ≤ 8°). Planetarium moved below the Daily Chart section. Single `POST /experience/daily?include=impact` replaces multi-hook assembly. Backwards-compatible — existing consumers unaffected.

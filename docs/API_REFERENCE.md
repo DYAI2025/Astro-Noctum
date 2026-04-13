@@ -665,6 +665,128 @@ Synthesizes a user profile from the last 3 conversation sessions using Gemini. R
 
 ---
 
+## 8b. Synastry (Partnership)
+
+### `POST /api/synastry`
+
+Computes interaspects between the authenticated user's natal chart and a partner's natal chart. Returns aspect grid + narrative summary. Premium-gated: requires both user auth and premium tier.
+
+**Auth:** Supabase JWT + Premium tier (`requireUserAuth` + `requirePremium`)
+
+**Request body:**
+```json
+{
+  "partner_id": "uuid-of-partner-profile"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `partner_id` | `string` (UUID) | Yes | ID of a `partner_profiles` row owned by the authenticated user |
+
+**Response (200):**
+```json
+{
+  "partner": {
+    "id": "uuid",
+    "display_name": "Partner Name",
+    "birth_place": "Berlin, Germany"
+  },
+  "aspects": [
+    {
+      "planet1": "Sun",
+      "planet2": "Moon",
+      "type": "conjunction",
+      "angle": 0,
+      "orb": 2.4,
+      "exact": true,
+      "narrative": "Sonne und Mond vereinen sich in exakter Konjunktion..."
+    }
+  ],
+  "synastry_summary": "Zwischen euren Horoskopen zeigen sich 5 Hauptaspekte...",
+  "narrative_source": "gemini",
+  "user_positions": { "Sun": 120.5, "Moon": 45.2 },
+  "partner_positions": { "Sun": 122.1, "Moon": 200.3 }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `aspects[]` | `Array` | Interaspects: 5 main types (conjunction, opposition, trine, square, sextile) with staggered orbs per DEC-aspect-orb-tolerances |
+| `aspects[].narrative` | `string` | Template-generated German narrative per aspect |
+| `synastry_summary` | `string` | Overall compatibility narrative — Gemini-generated (premium) with template fallback |
+| `narrative_source` | `"gemini" \| "template"` | Which engine produced the summary |
+| `user_positions` | `Record<string, number>` | User's natal planet longitudes (ecliptic degrees) |
+| `partner_positions` | `Record<string, number>` | Partner's natal planet longitudes |
+
+**Errors:**
+
+| Status | Error | When |
+|--------|-------|------|
+| 400 | `partner_id is required` | Missing or non-string partner_id |
+| 403 | `premium_required` | User tier is not premium |
+| 404 | `Partner not found` | partner_id doesn't exist or doesn't belong to user |
+| 422 | `User birth data incomplete` | User has no astro_profiles with birth coords |
+| 502 | `Chart calculation temporarily unavailable` | BAFE unreachable |
+
+---
+
+## 8c. Impact (Active Planets)
+
+### `POST /api/impact/active`
+
+Returns structured impact data: harmony_index, natal-relative active planets (orb-filtered), and resonance badges. Server-side computation — no LLM, no FuFirE dependency. Cached 15 min per (user, date).
+
+**Auth:** Supabase JWT (`requireUserAuth`)
+
+**Request body:** `{}` (empty object — user identity from JWT)
+
+**Response (200):**
+```json
+{
+  "schema": "ACTIVE_IMPACTS_v1",
+  "date": "2026-04-13",
+  "harmony_index": 52,
+  "active_planets": [
+    {
+      "planet": "Mars",
+      "strength": 0.85,
+      "aspect_type": "conjunction",
+      "orb": 1.2,
+      "natal_planet": "Sun",
+      "bazi_resonance": "gleichklang",
+      "wu_xing_element": "fire"
+    }
+  ],
+  "resonance_badges": [
+    { "type": "transit", "label": "Mars Konjunktion · Verstärkend", "sublabel": "85%", "intensity": "hoch", "color": "#D4AF37" }
+  ],
+  "meta": {
+    "engine": "astro-noctum-server",
+    "solar_pressure_source": "noaa_swpc",
+    "cached": false
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `harmony_index` | `number (0–100)` | Blended coherence: `round((harmony * 0.65 + solar_pressure * 0.35) * 100)`. Weights configurable via env vars. |
+| `active_planets[]` | `Array` | Transit planets with natal aspects. Only planets with orb within staggered tolerances (Conj/Opp ≤8°, Trine/Square ≤6°, Sextile ≤4°). |
+| `active_planets[].strength` | `number (0–1)` | Inverse of orb: `1 - orb/8`. Tighter aspect = higher strength. |
+| `active_planets[].bazi_resonance` | `string \| null` | `gleichklang`, `naehrung`, `kontrolle`, or `neutral`. Null if no BaZi day master. |
+| `resonance_badges[]` | `Array` | Transit, space weather, and sektor badges. |
+| `meta.cached` | `boolean` | True if served from 15-min in-memory cache. |
+
+**Errors:**
+
+| Status | Error | When |
+|--------|-------|------|
+| 422 | `profile_incomplete` | User has no astro_profiles with astro_json |
+| 503 | `database_unavailable` | Supabase not configured |
+
+---
+
 ## 9. Monetization
 
 ### `POST /api/checkout`
