@@ -1,4 +1,4 @@
-# REQ-F-impact-active-endpoint: Active impact endpoint contract
+# REQ-F-impact-active-endpoint: POST /impact/active Endpoint
 
 **Type**: Functional
 
@@ -6,21 +6,22 @@
 
 **Priority**: Must-have
 
-**Source**: [GOAL-daily-chart-coherence-first](../goals/GOAL-daily-chart-coherence-first.md)
+**Source**: [US-daily-active-planets](../user-stories/US-daily-active-planets.md), [US-daily-impact-only-call](../user-stories/US-daily-impact-only-call.md), [GOAL-daily-chart-coherence-first](../goals/GOAL-daily-chart-coherence-first.md)
 
 **Source stakeholder**: [STK-product-owner](../stakeholders.md)
 
 ## Description
 
-`GET /impact/active` must be the preferred API contract for daily coherence consumption.
-
-Contract clarifications:
-
-- `harmony_index`: float in `[0.0, 1.0]`.
-- `space_weather`: object embedded in endpoint response and treated as canonical when endpoint is available.
-- Any percentage representation must be named `harmony_percent` and derived as `round(harmony_index * 100)`.
+FuFirE exposes a new endpoint `POST /impact/active` that returns structured impact data without any LLM-generated narrative fields. The response schema is `ACTIVE_IMPACTS_v1` and includes: `harmony_index` (0–100), `active_planets[]` (filtered to orb ≤ 8°), `resonance_badges[]`, and per-planet fields: `planet`, `strength` (0–1), `bazi_resonance`, `wu_xing_element`, `aspect_type`, `orb` (degrees).
 
 ## Acceptance Criteria
 
-- Given API documentation for impact endpoints, when reviewed, then `harmony_index` is consistently described as `[0.0, 1.0]`.
-- Given client implementations need percentage display, when transforming data, then they derive `harmony_percent` from `harmony_index` rather than overloading field meaning.
+- Given a valid POST to `/impact/active` with `{ soulprint_sectors, natal_chart }` payload, when the request is processed, then the response matches `ACTIVE_IMPACTS_v1` schema.
+- Given the endpoint response, when `active_planets` is inspected, then all returned planets have `orb ≤ 8.0` degrees.
+- Given the endpoint response, when the response is inspected, then no LLM-generated text fields are present (no `fusion.synthesis`, no `fusion.action`, no `narrative`).
+- Given `harmony_index` in the response, when rendered, then the value is a number in the range 0–100.
+- Given `resonance_badges[]` in the response, when inspected, then each badge has `resonance_type` and `intensity` fields.
+
+## Related Assumptions
+
+- [ASM-noaa-in-fufre](../assumptions/ASM-noaa-in-fufre.md) — harmony_index formula requires solar_pressure from NOAA; assumes FuFirE has this data available.

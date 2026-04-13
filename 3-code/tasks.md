@@ -863,3 +863,29 @@ Tasks to move here once requirements exist: TASK-landing-page-shell, TASK-landin
 ---
 
 GitHub Issues (#115, #117, #118, #119, #123, #124, #129, #130, #132, #136) remain in GitHub for detailed tracking once implementation begins.
+
+---
+
+## Sprint S-DAILY: Daily Chart — Kohärenz-geführtes Tageshoroskop
+
+**Sprint Goal:** Dashboard shows Kohärenzindex + Day Mode above the fold on first load. Active planet cards sourced from `/impact/active` (natal-relative, orb ≤ 8°). Planetarium moved below the Daily Chart section. Single `POST /experience/daily?include=impact` replaces multi-hook assembly. Backwards-compatible — existing consumers unaffected.
+
+**Prerequisite:** Verify ASM-noaa-in-fufre before starting Phase 1 (TASK-daily-verify-noaa is the gate task).
+
+### Phase 1 — Endpoint Integration (server-side)
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-daily-verify-noaa | Make a test POST to FuFirE `/impact/active`; confirm `solar_pressure` field in response or decide pass-through approach; document result in ASM-noaa-in-fufre | P0 | Done | [REQ-F-impact-active-endpoint](../1-objectives/requirements/REQ-F-impact-active-endpoint.md) | - | 2026-04-13 | ASM-noaa-in-fufre **Invalidated**: FuFirE returns 404 for /impact/active. Pass-through adopted: build endpoint in server.mjs using spaceWeatherCache.solar_pressure_score (NOAA) + existing natal/transit data |
+| TASK-daily-impact-proxy | Build `POST /api/impact/active` in server.mjs: requireUserAuth, load natal from Supabase, compute transit aspects via /calculate/western, filter orb≤8°, blend harmony+solar_pressure from spaceWeatherCache, 15-min cache on (user_id,date) | P0 | Done | [REQ-F-impact-active-endpoint](../1-objectives/requirements/REQ-F-impact-active-endpoint.md), [REQ-PERF-impact-active-response-time](../1-objectives/requirements/REQ-PERF-impact-active-response-time.md) | TASK-daily-verify-noaa | 2026-04-13 | NOT a FuFirE proxy — server-side computation per ASM-noaa-in-fufre invalidation. Cache miss ≤800ms p95; cache hit ≤200ms |
+| TASK-daily-experience-v2 | Extend `POST /api/experience/daily` proxy: accept `include: ["impact"]` in request body; merge FuFirE impact block into response; no include = v1-identical response | P0 | Todo | [REQ-F-experience-daily-v2](../1-objectives/requirements/REQ-F-experience-daily-v2.md), [REQ-PERF-daily-experience-response-time](../1-objectives/requirements/REQ-PERF-daily-experience-response-time.md) | TASK-daily-impact-proxy | 2026-04-13 | Backward-compatible; premium gate for fusion.action |
+
+### Phase 2 — Frontend Integration
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-daily-use-active-impacts | Create `src/hooks/useActiveImpacts.ts`: POST to `/api/impact/active`, Zod-parse `ACTIVE_IMPACTS_v1` schema, expose `harmonyIndex` + `activePlanets[]`; independent of `useDailyExperience()` | P0 | Todo | [REQ-F-active-planets-frontend](../1-objectives/requirements/REQ-F-active-planets-frontend.md) | TASK-daily-impact-proxy | 2026-04-13 | |
+| TASK-daily-coherence-hero | Wire `harmonyIndex` from `useActiveImpacts()` to Kohärenzindex display on Dashboard; verify value is above fold at 375px+ viewport | P0 | Todo | [REQ-F-coherence-hero-impact-datasource](../1-objectives/requirements/REQ-F-coherence-hero-impact-datasource.md), [REQ-F-daily-chart-coherence-hero](../1-objectives/requirements/REQ-F-daily-chart-coherence-hero.md) | TASK-daily-use-active-impacts | 2026-04-13 | Label value per CON-no-unexplained-numbers |
+| TASK-daily-dashboard-order | Move Planetarium below Daily Chart section in `Dashboard.tsx`; section order test must pass | P0 | Todo | [REQ-F-daily-chart-dashboard-order](../1-objectives/requirements/REQ-F-daily-chart-dashboard-order.md) | TASK-daily-coherence-hero | 2026-04-13 | |
+| TASK-daily-planet-cards | Replace static 6-planet pool with `activePlanets[]` from `useActiveImpacts()`; each card shows: planet name, strength visual bar, bazi_resonance badge, aspect type + orb (with °) | P1 | Todo | [REQ-F-active-planets-frontend](../1-objectives/requirements/REQ-F-active-planets-frontend.md) | TASK-daily-use-active-impacts | 2026-04-13 | Empty-state for 0 active planets |
+| TASK-daily-manual-testing | Runbook: Kohärenzindex above fold, planet cards orb-filtered, Planetarium below fold, premium badges/fusion.action visible, backward-compat verified | P1 | Todo | - | TASK-daily-planet-cards, TASK-daily-dashboard-order | 2026-04-13 | |

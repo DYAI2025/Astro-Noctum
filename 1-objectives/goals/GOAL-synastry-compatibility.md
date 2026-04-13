@@ -1,19 +1,25 @@
-# GOAL-synastry-compatibility: Synastry compatibility as a first-class feature
+# GOAL-synastry-compatibility: Partnership Compatibility via Synastry Chart
 
-**Description**: Deliver a clear, consistent synastry compatibility experience with deterministic data contracts and documented design decisions.
+**Description**: Users can create partner profiles (manual birth data entry) and see an interaspect synastry analysis comparing both natal charts. The feature bridges Western aspect geometry with the broader Bazodiac experience — structured aspect data for all users, Gemini-generated narratives for premium users. Synastry data feeds partnership narratives but does not influence the personal Master Signal.
 
-**Status**: Approved
+**Status**: Draft
 
-**Priority**: Should-have
+**Priority**: Must-have
 
-**Source stakeholder**: [STK-product-owner](../stakeholders.md)
+**Source stakeholder**: [STK-end-user](../stakeholders.md), [STK-product-owner](../stakeholders.md)
 
 ## Success Criteria
 
-- [ ] Synastry compatibility goal links to all governing architecture decisions with valid relative paths.
-- [ ] Synastry output and interpretation pipeline are documented and implementation-ready.
+- [ ] Users can add, view, and delete partner profiles with birth data (name, date, time, place)
+- [ ] POST /api/synastry computes interaspects using staggered orbs (Conj/Opp ±8°, Trine/Square ±6°, Sextile ±4°) via Placidus house system
+- [ ] Free users see the aspect grid and template-based compatibility summary
+- [ ] Premium users receive a Gemini-generated narrative (always German, resource-oriented framing)
+- [ ] Server-side tier enforcement prevents premium narrative generation for free users
+- [ ] Synastry results do not modify the personal Master Signal or Signatur geometry
 
 ## Related Artifacts
 
-- Requirements: [REQ-F-coherence-hero-impact-datasource](../requirements/REQ-F-coherence-hero-impact-datasource.md), [REQ-F-impact-active-endpoint](../requirements/REQ-F-impact-active-endpoint.md)
-- Decisions: [DEC-synastry-architecture](../../2-design/decisions/DEC-synastry-architecture.md), [DEC-aspect-orb-tolerances](../../2-design/decisions/DEC-aspect-orb-tolerances.md), [DEC-house-system-placidus](../../2-design/decisions/DEC-house-system-placidus.md), [DEC-narrative-engine-hybrid](../../2-design/decisions/DEC-narrative-engine-hybrid.md)
+- Constraints: [CON-german-ui](../constraints/CON-german-ui.md), [CON-resource-oriented-framing](../constraints/CON-resource-oriented-framing.md)
+- User stories: [US-synastry-partner-management](../user-stories/US-synastry-partner-management.md), [US-synastry-aspect-analysis](../user-stories/US-synastry-aspect-analysis.md), [US-synastry-premium-narrative](../user-stories/US-synastry-premium-narrative.md)
+- Requirements: [REQ-F-synastry-partner-management](../requirements/REQ-F-synastry-partner-management.md), [REQ-F-synastry-aspect-analysis](../requirements/REQ-F-synastry-aspect-analysis.md), [REQ-F-synastry-premium-narrative](../requirements/REQ-F-synastry-premium-narrative.md)
+- Decisions: [DEC-synastry-architecture](../2-design/decisions/DEC-synastry-architecture.md), [DEC-aspect-orb-tolerances](../2-design/decisions/DEC-aspect-orb-tolerances.md), [DEC-house-system-placidus](../2-design/decisions/DEC-house-system-placidus.md), [DEC-narrative-engine-hybrid](../2-design/decisions/DEC-narrative-engine-hybrid.md)

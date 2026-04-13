@@ -17,7 +17,7 @@ Run `/SDLC-status` or check `3-code/tasks.md` + `git log` for live project state
 
 **Implementation progress (2026-04-11):** 275/289 tasks Done (10 Cancelled, 4 Blocked). Phase F (Partnership + Conversion): synastry endpoint, narratives, UI, tier enforcement middleware, premium gate component all Done. 4 Sprint-Landing tasks Blocked (requirements pending from Ben). 1566 tests green.
 
-**Objectives gap analysis (2026-04-11, refreshed):** 0 Critical, 3 Important, 3 Minor. Two I-items resolved since 2026-04-09: REQ-F-onboarding-display-name and REQ-F-signatur-day-night-pulse updated to Implemented. Remaining I-items: 5/6 goals have no user stories; ~18 requirements not back-linked from goals (traceability). Minor items unchanged.
+**Objectives gap analysis (2026-04-12, fixed 2026-04-13):** All 4 Important + 3 Minor items resolved. I-1: GOAL-synastry-compatibility + 3 USs + 3 REQs created (retroactive spec capture). I-2: 7 user stories created for 5 previously US-less goals. I-3: Sprint S-DAILY added to tasks.md with 7 tasks for Daily Chart requirements. I-4: 11 back-links added to GOAL-fusion-astrology, -autopoietic-ux, -vibes-weekly-insights. m-1: ASM-noaa-in-fufre has verification plan; TASK-daily-verify-noaa gates implementation. m-2: CON-dark-luxury-aesthetic already had derived REQ-USA-wcag-contrast (false positive). m-3: Fixed in prior session. **(fresh — re-run gap analysis before next phase gate)**
 
 ---
 
