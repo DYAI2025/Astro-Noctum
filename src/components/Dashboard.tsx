@@ -49,6 +49,7 @@ import { getConstellationForSign } from "../lib/astro-data/constellationFromSign
 import { useCelestialOrrery } from "../hooks/useCelestialOrrery";
 import { CITIES } from "../lib/astronomy/data";
 import { KohaerenzHero } from "./dashboard/KohaerenzHero";
+import { DailyChartHero } from "./dashboard/DailyChartHero";
 import { useActiveImpacts } from "../hooks/useActiveImpacts";
 
 const BirthChartOrrery = lazy(() => import("./BirthChartOrrery").then(m => ({ default: m.BirthChartOrrery })));
@@ -280,7 +281,14 @@ export function Dashboard({
   const { events: transitEvents, loading: transitLoading } = useFusionSignal(userId);
 
   // ── Active Impacts — harmony_index + active planets from POST /api/impact/active ──
-  const { harmonyIndex: impactHarmonyIndex, activePlanets: impactPlanets, loading: impactLoading } = useActiveImpacts();
+  const {
+    harmonyIndex: impactHarmonyIndex,
+    baseCoherence: impactBaseCoherence,
+    positiveDailyDelta: impactPositiveDailyDelta,
+    displayedCoherence: impactDisplayedCoherence,
+    activePlanets: impactPlanets,
+    loading: impactLoading,
+  } = useActiveImpacts();
 
   // ── Daily horoscope modal ───────────────────────────────────────────
   // isDayModalOpen: on-demand via "vertiefen →" in DashboardTagesEnergie.
@@ -381,45 +389,24 @@ export function Dashboard({
         </div>
       </motion.header>
 
-      {/* ═══ 1. COHERENCE HERO ════════════════════════════════════════ */}
+      {/* ═══ 1. DAILY CHART HERO (unified volatile hero — DEC-dashboard-volatile-first) ═══ */}
       <motion.div {...fadeIn(0.02)}>
-        <SectionErrorBoundary name="CoherenceHero">
-          <KohaerenzHero
-            dayHarmonic={activeDayHarmonic}
+        <SectionErrorBoundary name="DailyChartHero">
+          <DailyChartHero
+            loading={(metaLoading || transitLoading) && impactHarmonyIndex == null}
+            baseCoherence={impactBaseCoherence}
+            positiveDailyDelta={impactPositiveDailyDelta}
+            displayedCoherence={impactDisplayedCoherence}
             spaceWeather={spaceWeather}
+            activePlanets={impactPlanets}
             transitEvents={transitEvents}
             dayMode={dailyData?.fusion?.day_mode ?? 'pulse'}
-            loading={metaLoading || transitLoading}
-            impactHarmonyIndex={impactHarmonyIndex}
-            impactLoading={impactLoading}
           />
         </SectionErrorBoundary>
       </motion.div>
 
       {/* ── Tour sentinel: step 0 anchors at the planet section ── */}
       <div ref={astroSentinelRef} className="h-px" aria-hidden="true" />
-
-      {/* ═══ 2. ACTIVE PLANET INFLUENCES ══════════════════════════════ */}
-      <motion.div {...fadeIn(0.05)}>
-        <SectionErrorBoundary name="AktiveEinfluesseFusion">
-          <AktiveEinfluesseFusion
-            dayMasterStem={apiData?.bazi?.day_master}
-            activePlanets={impactPlanets}
-            impactLoading={impactLoading}
-          />
-        </SectionErrorBoundary>
-      </motion.div>
-
-      {/* ═══ 3. DAY PULSE — transit event text ═══════════════════════ */}
-      <motion.div {...fadeIn(0.08)}>
-        <SectionErrorBoundary name="DayPulseExpanded">
-          <DayPulseExpanded
-            events={transitEvents}
-            dayMode={dailyData?.fusion?.day_mode ?? 'pulse'}
-            loading={transitLoading && transitEvents.length === 0}
-          />
-        </SectionErrorBoundary>
-      </motion.div>
 
       {/* ═══ 4. DAILY PULSE NARRATIVE (Tagesimpuls) ══════════════════ */}
       <motion.div {...fadeIn(0.10)}>

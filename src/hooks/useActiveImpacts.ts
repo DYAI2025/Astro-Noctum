@@ -80,6 +80,9 @@ export function useActiveImpacts(): ActiveImpactsState {
     if (cachedForUser !== null) {
       setState({
         harmonyIndex: cachedForUser.harmony_index,
+        baseCoherence: cachedForUser.base_coherence ?? null,
+        positiveDailyDelta: cachedForUser.positive_daily_delta ?? null,
+        displayedCoherence: cachedForUser.displayed_coherence ?? null,
         activePlanets: cachedForUser.active_planets,
         resonanceBadges: cachedForUser.resonance_badges,
         loading: false,
@@ -90,6 +93,9 @@ export function useActiveImpacts(): ActiveImpactsState {
 
     setState({
       harmonyIndex: null,
+      baseCoherence: null,
+      positiveDailyDelta: null,
+      displayedCoherence: null,
       activePlanets: [],
       resonanceBadges: [],
       loading: true,

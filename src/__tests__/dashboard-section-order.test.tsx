@@ -1,27 +1,24 @@
 import { describe, it, expect } from 'vitest';
 
 describe('Dashboard section order — coherence-first layout', () => {
-  it('Coherence Hero appears before Planetarium in Dashboard.tsx', async () => {
+  it('Daily Chart Hero appears before Planetarium in Dashboard.tsx', async () => {
     const fs = await import('fs');
     const source = fs.readFileSync('src/components/Dashboard.tsx', 'utf-8');
 
-    const coherenceIdx = source.indexOf('COHERENCE HERO');
+    const heroIdx = source.indexOf('DAILY CHART HERO');
     const planetariumIdx = source.indexOf('PLANETARIUM');
 
-    expect(coherenceIdx, 'COHERENCE HERO marker should exist').toBeGreaterThan(-1);
+    expect(heroIdx, 'DAILY CHART HERO marker should exist').toBeGreaterThan(-1);
     expect(planetariumIdx, 'PLANETARIUM marker should exist').toBeGreaterThan(-1);
-    expect(coherenceIdx, 'COHERENCE HERO should appear before PLANETARIUM').toBeLessThan(planetariumIdx);
+    expect(heroIdx, 'DAILY CHART HERO should appear before PLANETARIUM').toBeLessThan(planetariumIdx);
   });
 
-  it('Active Planet Influences appear before Planetarium', async () => {
+  it('DailyChartHero contains active planets (unified hero)', async () => {
     const fs = await import('fs');
-    const source = fs.readFileSync('src/components/Dashboard.tsx', 'utf-8');
+    const source = fs.readFileSync('src/components/dashboard/DailyChartHero.tsx', 'utf-8');
 
-    const planetsIdx = source.indexOf('ACTIVE PLANET INFLUENCES');
-    const planetariumIdx = source.indexOf('PLANETARIUM');
-
-    expect(planetsIdx, 'ACTIVE PLANET INFLUENCES marker should exist').toBeGreaterThan(-1);
-    expect(planetsIdx, 'Active planets should appear before Planetarium').toBeLessThan(planetariumIdx);
+    expect(source).toContain('activePlanets');
+    expect(source).toContain('active-planets-section');
   });
 
   it('Orrery is NOT rendered inside DashboardAstroSection', async () => {
@@ -48,10 +45,9 @@ describe('Dashboard coherence-first section hierarchy', () => {
 
     // Coherence-first layout: daily chart data above the fold,
     // Planetarium below as a secondary visualization.
+    // DailyChartHero replaces COHERENCE HERO + ACTIVE PLANET INFLUENCES + DAY PULSE
     const markers = [
-      'COHERENCE HERO',
-      'ACTIVE PLANET INFLUENCES',
-      'DAY PULSE',
+      'DAILY CHART HERO',
       'DAILY PULSE NARRATIVE',
       'VIBES',
       'ASTRO AGENTS',
