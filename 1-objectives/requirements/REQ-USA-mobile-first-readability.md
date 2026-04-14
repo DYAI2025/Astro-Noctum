@@ -2,7 +2,7 @@
 
 **Type**: Usability
 
-**Status**: Approved
+**Status**: Implemented
 
 **Priority**: Must-have
 

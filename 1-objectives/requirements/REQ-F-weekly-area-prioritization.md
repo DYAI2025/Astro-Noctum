@@ -2,7 +2,7 @@
 
 **Type**: Functional
 
-**Status**: Approved
+**Status**: Implemented
 
 **Priority**: Should-have
 
