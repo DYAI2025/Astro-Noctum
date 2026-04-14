@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { LogOut, ExternalLink } from "lucide-react";
+import { LogOut, ExternalLink, Moon, Sun } from "lucide-react";
 import { ManageSubscription } from "../ManageSubscription";
 
 interface SettingsMenuProps {
@@ -91,19 +91,36 @@ export function SettingsMenu({
           </div>
         </div>
 
-        {/* Dark / Bright mode */}
-        <button
-          role="menuitem"
-          onClick={() => { togglePlanetarium(); onClose(); }}
-          className="w-full px-4 py-2.5 text-left text-sm text-white/60 hover:text-white hover:bg-[#D4AF37]/08 transition-colors flex items-center justify-between"
-        >
-          <span>
-            {planetariumMode ? t("nav.settingsBrightMode") : t("nav.settingsDarkMode")}
+        {/* Mode toggle — Planetarium (dark luxury) / Solar System (bright) */}
+        <div className="px-4 py-2 flex items-center justify-between">
+          <span className="text-xs text-white/50">
+            {lang === "de" ? "Modus" : "Mode"}
           </span>
-          <span className="text-[10px] text-[#D4AF37]/40">
-            {planetariumMode ? "●" : "○"}
-          </span>
-        </button>
+          <div
+            className="mode-toggle"
+            role="group"
+            aria-label={lang === "de" ? "Anzeigemodus" : "Display mode"}
+          >
+            <button
+              className={planetariumMode ? "active" : ""}
+              onClick={() => { if (!planetariumMode) { togglePlanetarium(); onClose(); } }}
+              aria-pressed={planetariumMode ? "true" : "false"}
+              title="Planetarium — Dark Luxury"
+            >
+              <Moon className="w-3 h-3 shrink-0" aria-hidden="true" />
+              Planetarium
+            </button>
+            <button
+              className={!planetariumMode ? "active" : ""}
+              onClick={() => { if (planetariumMode) { togglePlanetarium(); onClose(); } }}
+              aria-pressed={!planetariumMode ? "true" : "false"}
+              title="Solar System — Bright"
+            >
+              <Sun className="w-3 h-3 shrink-0" aria-hidden="true" />
+              Solar System
+            </button>
+          </div>
+        </div>
 
         {/* Important fix #4: only render subscription section + its dividers for premium users */}
         {isPremium && (

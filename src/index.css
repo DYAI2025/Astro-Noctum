@@ -377,6 +377,37 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
 }
 
+/* ── Mode Toggle (Planetarium / Solar System) ──────────────────────────── */
+
+.mode-toggle {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--tile-border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--tile-bg);
+}
+.mode-toggle button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s;
+  color: var(--tile-text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  line-height: 1;
+}
+.mode-toggle button.active {
+  background: var(--tile-glow);
+  color: var(--tile-accent);
+  font-weight: 600;
+}
+
 /* WuXing balance bar — mode-aware */
 .wuxing-bar-track {
   flex: 1;
@@ -872,9 +903,13 @@ body > div[id*="convai"] {
   .cosmic-tile a {
     min-height: 44px;
   }
-  /* Lang toggle bigger touch targets */
+  /* Lang + mode toggle bigger touch targets */
   .lang-toggle button {
     padding: 8px 14px;
+    font-size: 10px;
+  }
+  .mode-toggle button {
+    padding: 8px 10px;
     font-size: 10px;
   }
 }
