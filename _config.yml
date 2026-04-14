@@ -13,3 +13,5 @@ exclude:
   - features/plan/Implementation-plan/Dev_Brief_BaZi_Dashboard_v2.md
   - features/plan/Implementation-plan/Dev_Brief_BaZi_WuXing_Dashboard.md
   - features/plan/Implementation-plan/Dev_Brief_Fusion_Ring_v2.md
+  - docs
+  - .agents
