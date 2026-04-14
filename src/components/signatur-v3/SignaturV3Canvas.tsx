@@ -174,13 +174,13 @@ function drawPoleHead(
   const px = centerX + pole.x;
   const py = centerY + pole.y;
 
-  // Glow radius scales with dissonance — more tension = bigger glow
-  const glowR = 8 + dissonance * 12;
+  // Glow radius scales with dissonance — reduced from (8 + dissonance * 12) per user feedback
+  const glowR = 5 + dissonance * 8;
 
   // Outer glow
   const gradient = ctx.createRadialGradient(px, py, 0, px, py, glowR);
-  gradient.addColorStop(0, `rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, 0.6)`);
-  gradient.addColorStop(0.4, `rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, 0.15)`);
+  gradient.addColorStop(0, `rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, 0.45)`);
+  gradient.addColorStop(0.4, `rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, 0.1)`);
   gradient.addColorStop(1, `rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, 0)`);
   ctx.fillStyle = gradient;
   ctx.beginPath();
@@ -455,7 +455,8 @@ export default function SignaturV3Canvas({
 
     const { elementalQuality } = dissonanceRef.current;
 
-    // Draw all trails
+    // Draw all trails — saturation boost applied via canvas filter
+    ctx.filter = 'saturate(1.5)';
     ctx.globalCompositeOperation = 'lighter'; // additive blending — overlapping trails brighten
     for (let i = 0; i < poles.length; i++) {
       const pole = poles[i]!;
@@ -473,6 +474,7 @@ export default function SignaturV3Canvas({
       drawPoleHead(ctx, pole, dim, cx, cy, d, elementalQuality);
     }
     ctx.globalCompositeOperation = 'source-over';
+    ctx.filter = 'none';
 
     // Center singularity
     drawCenter(ctx, cx, cy);

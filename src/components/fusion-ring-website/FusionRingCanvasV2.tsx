@@ -188,10 +188,10 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
         const renderPass = new RenderPass(scene, camera);
         composer.addPass(renderPass);
 
-        // Debug-Override für Bloom-Stärke (default: 0.55)
+        // Debug-Override für Bloom-Stärke (default: 0.35 — reduced from 0.55 per user feedback)
         const debugBloomStrength = isDebugMode() && debugOverridesRef.current.glowRadiusOverride
           ? (debugOverridesRef.current.glowRadiusOverride[0] / 30) * 1.2
-          : 0.55;
+          : 0.35;
 
         bloomPass = new UnrealBloomPass(
           new THREE.Vector2(width, height),
@@ -342,18 +342,22 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
             vec2 pt = gl_PointCoord - vec2(0.5);
             float dist = length(pt);
             if (dist > 0.5) discard;
-            
+
             // Dual-Core Glow with HDR Kern
             float core = 1.0 - smoothstep(0.0, 0.12, dist);
             float halo = 1.0 - smoothstep(0.0, 0.5, dist);
             halo = pow(halo, 2.5);
-            
+
             float glow = core * 0.7 + halo * 0.5;
-            
+
             // HDR Boost for centerjump
             float boost = (vLayer == 5.0) ? 2.5 : 1.5;
             vec3 col = vColor * (1.0 + core * boost);
-            
+
+            // Saturation boost — increase vibrancy without overexposing
+            float lum = dot(col, vec3(0.2126, 0.7152, 0.0722));
+            col = mix(vec3(lum), col, 1.5);
+
             gl_FragColor = vec4(col, vAlpha * glow);
           }
         `,
@@ -1007,7 +1011,7 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
             bloomPass.strength = bloomStrengthOverride;
           } else {
             // Normale Berechnung
-            bloomPass.strength = lerp(0.4, 0.9, emergenceVal);
+            bloomPass.strength = lerp(0.25, 0.55, emergenceVal);
 
             // Solar modulation — scale bloom strength by live space weather
             const solarMod = bazStateRef.current?.solarModulation ?? 1.0;
@@ -1150,7 +1154,7 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
           if (bloomPass) {
             // Dynamic bloom pulse based on signature emergence or just time
             const intensityBase = currentSignature?.emergence.emergence || 0.5;
-            bloomPass.strength = 1.2 + Math.sin(t * 0.5) * 0.3 * intensityBase;
+            bloomPass.strength = 0.7 + Math.sin(t * 0.5) * 0.2 * intensityBase;
             bloomPass.threshold = 0.2 + Math.sin(t * 0.3) * 0.1;
           }
           composer.render();
