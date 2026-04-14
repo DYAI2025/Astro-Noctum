@@ -814,6 +814,31 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 
 ---
 
+## Phase: Current Sprint — S-DAILY-CHART-HERO (Unified Daily Chart Hero)
+
+**Sprint Goal:** Replace split volatile dashboard cards (KohaerenzHero + AktiveEinfluesseFusion + DayPulseExpanded) with one unified `DailyChartHero` containing coherence baseline+delta ring, driver strip, active planets with expandable "Warum?", and day-impulse text. Dark+Bright mode compliance. Plan: `docs/plans/2026-04-14-daily-chart-hero.md`.
+
+### Phase 1 — API + Schema Extension
+
+| ID | Task | Component | Req | Status | Dependencies | Updated | Notes |
+|----|------|-----------|-----|--------|--------------|---------|-------|
+| TASK-dch-impact-coherence-split | Extend `/api/impact/active` + Zod schema + hook with `base_coherence`, `positive_daily_delta`, `displayed_coherence` | api-server, frontend | [REQ-F-coherence-hero-impact-datasource](../1-objectives/requirements/REQ-F-coherence-hero-impact-datasource.md), [REQ-F-experience-daily-v2](../1-objectives/requirements/REQ-F-experience-daily-v2.md) | Done | - | 2026-04-14 | Schema + server + hook + 5 new contract tests |
+
+### Phase 2 — Unified Component
+
+| ID | Task | Component | Req | Status | Dependencies | Updated | Notes |
+|----|------|-----------|-----|--------|--------------|---------|-------|
+| TASK-dch-hero-component | Create `DailyChartHero.tsx`: split coherence ring, driver strip, active planet cards with "Warum?", day-impulse text block | frontend | [REQ-F-daily-chart-coherence-hero](../1-objectives/requirements/REQ-F-daily-chart-coherence-hero.md), [REQ-F-active-planets-frontend](../1-objectives/requirements/REQ-F-active-planets-frontend.md), [REQ-F-coherence-hero-impact-datasource](../1-objectives/requirements/REQ-F-coherence-hero-impact-datasource.md) | Todo | TASK-dch-impact-coherence-split | 2026-04-14 | |
+
+### Phase 3 — Dashboard Wiring + Theme Fix
+
+| ID | Task | Component | Req | Status | Dependencies | Updated | Notes |
+|----|------|-----------|-----|--------|--------------|---------|-------|
+| TASK-dch-dashboard-wiring | Wire `DailyChartHero` into `Dashboard.tsx`, replace 3 old SectionErrorBoundary blocks | frontend | [REQ-F-daily-chart-coherence-hero](../1-objectives/requirements/REQ-F-daily-chart-coherence-hero.md) | Todo | TASK-dch-hero-component | 2026-04-14 | DEC-dashboard-volatile-first |
+| TASK-dch-theme-contrast | Fix remaining hardcoded bg-white/text-white across dashboard tiles for dark-mode compliance | frontend | [REQ-USA-daily-chart-responsive-readability](../1-objectives/requirements/REQ-USA-daily-chart-responsive-readability.md) | Todo | TASK-dch-dashboard-wiring | 2026-04-14 | |
+
+---
+
 ## Backlog (Not Scheduled)
 
 | Requirement | Reason |

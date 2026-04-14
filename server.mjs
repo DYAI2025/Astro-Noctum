@@ -1887,6 +1887,14 @@ async function computeActiveImpactsCore(userId) {
     Math.round((baseHarmony * hWeight + solarPressure * sWeight) * 100)
   ));
 
+  // 5b. Coherence split (REQ-F-coherence-hero-impact-datasource)
+  // base_coherence: stable natal baseline — unaffected by today's solar pressure
+  const baseCoherence = Math.min(100, Math.max(0, Math.round(baseHarmony * 100)));
+  // positive_daily_delta: today's solar activation on top of baseline (≥0, never negative)
+  const positiveDailyDelta = Math.max(0, harmonyIndex - baseCoherence);
+  // displayed_coherence: the single value shown in the ring (= harmonyIndex)
+  const displayedCoherence = harmonyIndex;
+
   // 6. Compute resonance badges (reuse existing server badge logic)
   const badges = computeResonanceBadgesServer({
     transitInfluences: activePlanets.map(p => ({
@@ -1905,6 +1913,9 @@ async function computeActiveImpactsCore(userId) {
     schema: 'ACTIVE_IMPACTS_v1',
     date: dateStr,
     harmony_index: harmonyIndex,
+    base_coherence: baseCoherence,
+    positive_daily_delta: positiveDailyDelta,
+    displayed_coherence: displayedCoherence,
     active_planets: activePlanets,
     resonance_badges: badges,
     meta: {

@@ -26,6 +26,10 @@ export const ActiveImpactsSchema = z.object({
   schema: z.literal('ACTIVE_IMPACTS_v1'),
   date: z.string(),
   harmony_index: z.number().min(0).max(100),
+  // Coherence split fields (REQ-F-coherence-hero-impact-datasource)
+  base_coherence: z.number().min(0).max(100).optional(),
+  positive_daily_delta: z.number().min(0).max(100).optional(),
+  displayed_coherence: z.number().min(0).max(100).optional(),
   active_planets: z.array(ActivePlanetSchema),
   resonance_badges: z.array(ResonanceBadgeSchema),
   meta: z.object({

@@ -110,6 +110,25 @@ describe('ActiveImpactsSchema — valid response parsing', () => {
     };
     expect(() => ActiveImpactsSchema.parse(withoutSolarSource)).not.toThrow();
   });
+
+  it('parses coherence split fields when present', () => {
+    const withCoherence = {
+      ...VALID_ACTIVE_IMPACTS,
+      base_coherence: 65,
+      positive_daily_delta: 7,
+      displayed_coherence: 72,
+    };
+    const parsed = ActiveImpactsSchema.parse(withCoherence);
+    expect(parsed.base_coherence).toBe(65);
+    expect(parsed.positive_daily_delta).toBe(7);
+    expect(parsed.displayed_coherence).toBe(72);
+  });
+
+  it('still parses when coherence split fields are absent (backward compat)', () => {
+    expect(() => ActiveImpactsSchema.parse(VALID_ACTIVE_IMPACTS)).not.toThrow();
+    const parsed = ActiveImpactsSchema.parse(VALID_ACTIVE_IMPACTS);
+    expect(parsed.base_coherence).toBeUndefined();
+  });
 });
 
 // ── ActivePlanetSchema ────────────────────────────────────────────────────────
@@ -221,6 +240,21 @@ describe('ActiveImpactsSchema — rejections', () => {
       ...VALID_ACTIVE_IMPACTS,
       active_planets: [{ ...VALID_ACTIVE_IMPACTS.active_planets[0], strength: 1.5 }],
     };
+    expect(() => ActiveImpactsSchema.parse(bad)).toThrow();
+  });
+
+  it('rejects base_coherence > 100', () => {
+    const bad = { ...VALID_ACTIVE_IMPACTS, base_coherence: 101 };
+    expect(() => ActiveImpactsSchema.parse(bad)).toThrow();
+  });
+
+  it('rejects negative positive_daily_delta', () => {
+    const bad = { ...VALID_ACTIVE_IMPACTS, positive_daily_delta: -5 };
+    expect(() => ActiveImpactsSchema.parse(bad)).toThrow();
+  });
+
+  it('rejects displayed_coherence > 100', () => {
+    const bad = { ...VALID_ACTIVE_IMPACTS, displayed_coherence: 150 };
     expect(() => ActiveImpactsSchema.parse(bad)).toThrow();
   });
 });

@@ -22,6 +22,9 @@ import {
 
 export interface ActiveImpactsState {
   harmonyIndex: number | null;
+  baseCoherence: number | null;
+  positiveDailyDelta: number | null;
+  displayedCoherence: number | null;
   activePlanets: ActivePlanet[];
   resonanceBadges: ResonanceBadge[];
   loading: boolean;
@@ -63,6 +66,9 @@ export function useActiveImpacts(): ActiveImpactsState {
   const cached = readCache(userCacheId);
   const [state, setState] = useState<ActiveImpactsState>({
     harmonyIndex: cached?.harmony_index ?? null,
+    baseCoherence: cached?.base_coherence ?? null,
+    positiveDailyDelta: cached?.positive_daily_delta ?? null,
+    displayedCoherence: cached?.displayed_coherence ?? null,
     activePlanets: cached?.active_planets ?? [],
     resonanceBadges: cached?.resonance_badges ?? [],
     loading: cached === null,
@@ -117,6 +123,9 @@ export function useActiveImpacts(): ActiveImpactsState {
         if (!cancelled) {
           setState({
             harmonyIndex: parsed.data.harmony_index,
+            baseCoherence: parsed.data.base_coherence ?? null,
+            positiveDailyDelta: parsed.data.positive_daily_delta ?? null,
+            displayedCoherence: parsed.data.displayed_coherence ?? null,
             activePlanets: parsed.data.active_planets,
             resonanceBadges: parsed.data.resonance_badges,
             loading: false,
