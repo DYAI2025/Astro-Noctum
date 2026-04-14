@@ -96,4 +96,28 @@ describe('usePremium', () => {
     });
     expect(mockSingle.mock.calls.length).toBe(callsWithPolling);
   });
+
+  it('falls back to non-premium when fetch throws (e.g. Failed to fetch)', async () => {
+    mockSingle.mockRejectedValue(new TypeError('Failed to fetch'));
+    mockEq.mockReturnValue({ single: mockSingle });
+    mockSelect.mockReturnValue({ eq: mockEq });
+    mockFrom.mockReturnValue({ select: mockSelect });
+    mockSubscribe.mockImplementation((cb: (s: string) => void) => {
+      cb('SUBSCRIBED');
+      return {};
+    });
+    mockOn.mockReturnValue({ subscribe: mockSubscribe });
+    mockChannel.mockReturnValue({ on: mockOn });
+
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { usePremium } = await import('../hooks/usePremium');
+    const { result } = renderHook(() => usePremium());
+
+    await act(async () => { await Promise.resolve(); });
+
+    expect(result.current.isPremium).toBe(false);
+    expect(result.current.loading).toBe(false);
+    expect(warnSpy).toHaveBeenCalled();
+    warnSpy.mockRestore();
+  });
 });
