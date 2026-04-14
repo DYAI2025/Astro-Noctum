@@ -5,13 +5,14 @@
  * and resonance_badges[]. Operates independently of useDailyExperience() —
  * no shared request dependency.
  *
- * Caches in sessionStorage for 15 min keyed on UTC date (aligned with server cache).
+ * Caches in sessionStorage for 15 min keyed on UTC date + user id.
  *
  * Implements: REQ-F-active-planets-frontend
  */
 
 import { useEffect, useState } from 'react';
 import { authedFetch } from '@/src/lib/authedFetch';
+import { useAuth } from '@/src/contexts/AuthContext';
 import {
   ActiveImpactsSchema,
   type ActiveImpacts,
@@ -29,15 +30,15 @@ export interface ActiveImpactsState {
 
 const CACHE_TTL_MS = 15 * 60 * 1000;
 
-function cacheKey(): string {
+function cacheKey(userId: string): string {
   const now = new Date();
   const d = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-${String(now.getUTCDate()).padStart(2, '0')}`;
-  return `bazodiac_active_impacts:${d}`;
+  return `bazodiac_active_impacts:${userId}:${d}`;
 }
 
-function readCache(): ActiveImpacts | null {
+function readCache(userId: string): ActiveImpacts | null {
   try {
-    const raw = sessionStorage.getItem(cacheKey());
+    const raw = sessionStorage.getItem(cacheKey(userId));
     if (!raw) return null;
     const entry = JSON.parse(raw) as { data: ActiveImpacts; fetchedAt: number };
     if (Date.now() - entry.fetchedAt > CACHE_TTL_MS) return null;
@@ -48,16 +49,18 @@ function readCache(): ActiveImpacts | null {
   }
 }
 
-function writeCache(data: ActiveImpacts): void {
+function writeCache(userId: string, data: ActiveImpacts): void {
   try {
-    sessionStorage.setItem(cacheKey(), JSON.stringify({ data, fetchedAt: Date.now() }));
+    sessionStorage.setItem(cacheKey(userId), JSON.stringify({ data, fetchedAt: Date.now() }));
   } catch {
     // sessionStorage unavailable or quota exceeded — skip silently
   }
 }
 
 export function useActiveImpacts(): ActiveImpactsState {
-  const cached = readCache();
+  const { user } = useAuth();
+  const userCacheId = user?.id ?? 'anonymous';
+  const cached = readCache(userCacheId);
   const [state, setState] = useState<ActiveImpactsState>({
     harmonyIndex: cached?.harmony_index ?? null,
     activePlanets: cached?.active_planets ?? [],
@@ -67,7 +70,25 @@ export function useActiveImpacts(): ActiveImpactsState {
   });
 
   useEffect(() => {
-    if (readCache() !== null) return;
+    const cachedForUser = readCache(userCacheId);
+    if (cachedForUser !== null) {
+      setState({
+        harmonyIndex: cachedForUser.harmony_index,
+        activePlanets: cachedForUser.active_planets,
+        resonanceBadges: cachedForUser.resonance_badges,
+        loading: false,
+        error: null,
+      });
+      return;
+    }
+
+    setState({
+      harmonyIndex: null,
+      activePlanets: [],
+      resonanceBadges: [],
+      loading: true,
+      error: null,
+    });
 
     let cancelled = false;
 
@@ -91,7 +112,7 @@ export function useActiveImpacts(): ActiveImpactsState {
           throw new Error('Impact response schema mismatch');
         }
 
-        writeCache(parsed.data);
+        writeCache(userCacheId, parsed.data);
 
         if (!cancelled) {
           setState({
@@ -115,7 +136,7 @@ export function useActiveImpacts(): ActiveImpactsState {
 
     void fetchImpacts();
     return () => { cancelled = true; };
-  }, []);
+  }, [userCacheId]);
 
   return state;
 }
