@@ -2253,6 +2253,7 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
 
     const lang = locale?.startsWith('en') ? 'en' : 'de';
     const targetDate = target_date || new Date().toISOString().slice(0, 10);
+    const wantsImpact = Array.isArray(include) && include.includes('impact');
     const cacheKeyD = `daily:${userId}:${targetDate}:${lang}`;
 
     const now = new Date();
@@ -2265,6 +2266,60 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
         soulprintSectors: soulprintSectors ?? null,
         lang,
       });
+    };
+
+    const clonePayload = (payload) => {
+      try {
+        return JSON.parse(JSON.stringify(payload));
+      } catch {
+        return payload && typeof payload === 'object' ? { ...payload } : payload;
+      }
+    };
+
+    let resolvedUserTier = req.userTier;
+    const resolveIsPremium = async () => {
+      if (resolvedUserTier === undefined && supabaseServer) {
+        try {
+          const { data: tierRow } = await supabaseServer
+            .from('profiles').select('tier').eq('id', userId).maybeSingle();
+          resolvedUserTier = tierRow?.tier ?? 'free';
+        } catch {
+          resolvedUserTier = 'free';
+        }
+      }
+      return resolvedUserTier === 'premium';
+    };
+
+    const appendImpactAndTierGates = async (responseData) => {
+      if (!wantsImpact) return;
+      try {
+        const impactData = await computeActiveImpactsCore(userId);
+        const impactForResponse = clonePayload(impactData);
+        responseData.impact = impactForResponse;
+
+        const isPremium = await resolveIsPremium();
+
+        if (responseData.fusion && !isPremium) {
+          responseData.fusion.action = lang === 'de'
+            ? 'Deine persönliche Tagesempfehlung ist Teil von Bazodiac Premium.'
+            : 'Your personal daily recommendation is part of Bazodiac Premium.';
+          responseData.fusion.action_locked = true;
+        }
+
+        if (!isPremium && responseData.impact) {
+          responseData.impact.resonance_badges = [];
+        }
+      } catch (impactErr) {
+        console.warn('[experience/daily] Impact computation failed, omitting impact block:', impactErr?.message);
+      }
+    };
+
+    const prepareDailyResponse = async (baseData) => {
+      const responseData = clonePayload(baseData) || {};
+      appendNightHarmony(responseData, now);
+      appendBadges(responseData, soulprintSectorsForBadge);
+      await appendImpactAndTierGates(responseData);
+      return responseData;
     };
 
     // Load soulprint sectors early — needed for badge computation in ALL paths
@@ -2285,9 +2340,8 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
     if (horoscopeCache.has(cacheKeyD)) {
       const cached = horoscopeCache.get(cacheKeyD);
       if (Date.now() - cached.timestamp < HOROSCOPE_CACHE_TTL) {
-        appendNightHarmony(cached.data, now);
-        appendBadges(cached.data, soulprintSectorsForBadge);
-        return res.json(cached.data);
+        const responseData = await prepareDailyResponse(cached.data);
+        return res.json(responseData);
       }
     }
 
@@ -2303,10 +2357,9 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
           .maybeSingle();
 
         if (dbCached?.payload_json) {
-          appendNightHarmony(dbCached.payload_json, now);
           horoscopeCache.set(cacheKeyD, { data: dbCached.payload_json, timestamp: Date.now() });
-          appendBadges(dbCached.payload_json, soulprintSectorsForBadge);
-          return res.json(dbCached.payload_json);
+          const responseData = await prepareDailyResponse(dbCached.payload_json);
+          return res.json(responseData);
         }
       } catch (e) {
         console.warn('[daily] L2 cache read failed, continuing to generation:', e.message);
@@ -2330,7 +2383,6 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
         if (data.fusion.day_mode === undefined) {
           data.fusion.day_mode = data.fusion.harmony_index >= 0.50 ? 'trace' : 'pulse';
         }
-        appendNightHarmony(data, now);
       }
       if (resp.ok && supabaseServer) {
         // Persist to L2 (fire-and-forget)
@@ -2346,8 +2398,8 @@ app.post('/api/experience/daily', requireUserAuth, async (req, res) => {
           .then(({ error }) => { if (error) console.warn('[daily] DB cache upsert failed:', error.message); })
           .catch((e) => { console.warn('[daily] DB cache upsert threw:', e?.message || e); });
       }
-      appendBadges(data, soulprintSectorsForBadge);
-      return res.status(resp.status).json(data);
+      const responseData = await prepareDailyResponse(data);
+      return res.status(resp.status).json(responseData);
     }
 
     // Call BAFE for natal data to feed Gemini
@@ -2525,49 +2577,8 @@ NEVER use in synthesis: "weil", "da heute", planet names (Mars, Venus etc.), "di
         });
     }
 
-    // Append resonance badges (deterministic — always fresh, not cached)
-    appendBadges(parsedData, soulprintSectorsForBadge);
-
-    // ── v2: include=["impact"] merges ACTIVE_IMPACTS_v1 into response ───
-    const wantsImpact = Array.isArray(include) && include.includes('impact');
-    if (wantsImpact) {
-      try {
-        const impactData = await computeActiveImpactsCore(userId);
-        parsedData.impact = impactData;
-
-        // Determine user tier for premium gating (DEC-conversion-tiers).
-        // Deliberate: we query tier lazily here instead of using attachUserTier middleware
-        // on the route, because v1 callers (no include param) don't need tier at all —
-        // adding middleware would add a Supabase call to every daily request unnecessarily.
-        let userTier = req.userTier; // may already be set by middleware chain
-        if (userTier === undefined && supabaseServer) {
-          try {
-            const { data: tierRow } = await supabaseServer
-              .from('profiles').select('tier').eq('id', userId).maybeSingle();
-            userTier = tierRow?.tier ?? 'free';
-          } catch { userTier = 'free'; }
-        }
-        const isPremium = userTier === 'premium';
-
-        // Gate fusion.action — free users get teaser with upgrade CTA
-        if (parsedData.fusion && !isPremium) {
-          parsedData.fusion.action = lang === 'de'
-            ? 'Deine persönliche Tagesempfehlung ist Teil von Bazodiac Premium.'
-            : 'Your personal daily recommendation is part of Bazodiac Premium.';
-          parsedData.fusion.action_locked = true;
-        }
-
-        // Gate resonance_badges — free users see empty array when impact requested
-        if (!isPremium) {
-          parsedData.impact.resonance_badges = [];
-        }
-      } catch (impactErr) {
-        console.warn('[experience/daily] Impact computation failed, omitting impact block:', impactErr?.message);
-        // Don't fail the whole response — just omit the impact block
-      }
-    }
-
-    res.status(200).json(parsedData);
+    const responseData = await prepareDailyResponse(parsedData);
+    res.status(200).json(responseData);
   } catch (err) {
     console.error('[experience/daily] Error:', err.message);
     res.status(502).json({ error: 'experience_unavailable' });
