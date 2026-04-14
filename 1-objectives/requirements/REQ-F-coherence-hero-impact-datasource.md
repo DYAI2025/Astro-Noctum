@@ -25,7 +25,7 @@ The coherence display shown in the Daily Chart hero shall be sourced from struct
 
 ## Related Assumptions
 
-- [ASM-noaa-in-fufre](../assumptions/ASM-noaa-in-fufre.md) — solar_pressure component requires NOAA data; currently provided via server-side spaceWeatherCache pass-through.
+- [ASM-noaa-in-fufre](../assumptions/ASM-noaa-in-fufre.md) — **Invalidated.** FuFirE does not have NOAA data. Resolved: solar_pressure is provided via server-side spaceWeatherCache pass-through (`server.mjs /api/space-weather/extended`).
 
 ## Related Constraints
 
