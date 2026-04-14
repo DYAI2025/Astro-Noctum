@@ -83,7 +83,7 @@ When an artifact (goal, requirement) is no longer relevant:
 | [GOAL-vibes-weekly-insights](goals/GOAL-vibes-weekly-insights.md) | Must | Approved | On-demand Vibes (2–3h) + Weekly Insights (7 life areas) with transparent outputs |
 | [GOAL-signatur-phase2-density](goals/GOAL-signatur-phase2-density.md) | Must | Draft | Density Field (128×128) als numerische Signatur-Repräsentation + vollständiges Drei-Schichten-Dissonanz-Modell |
 | [GOAL-signatur-phase3-matching](goals/GOAL-signatur-phase3-matching.md) | Must | Draft | Dual-Ring Matching, Frequenzkompatibilität, Cousto-Audio-Layer — Signatur als Identitätsprotokoll |
-| [GOAL-daily-chart-coherence-first](goals/GOAL-daily-chart-coherence-first.md) | Must | Draft | Kohärenz-geführtes Daily Chart als primäre Dashboard-Erfahrung — Kohärenzindex + aktive Planeten above the fold |
+| [GOAL-daily-chart-coherence-first](goals/GOAL-daily-chart-coherence-first.md) | Must | Draft | Unified Daily Chart hero als erste Dashboard-Sektion — Kohärenz (Baseline + Tagesaktivierung), aktive Planeten, Daily Impulse, Driver-Strip in einer Karte |
 | [GOAL-synastry-compatibility](goals/GOAL-synastry-compatibility.md) | Must | Draft | Partnership compatibility via synastry interaspect chart — free grid, premium Gemini narrative |
 
 ---
@@ -165,12 +165,13 @@ When an artifact (goal, requirement) is no longer relevant:
 | [REQ-F-signatur-live-transit-panels](requirements/REQ-F-signatur-live-transit-panels.md) | REQ-F | Must | Draft | Lower Signatur-page tiles replaced with live transit resonance panels; no static placeholders |
 | [REQ-F-dashboard-bazi-fusion-bridge](requirements/REQ-F-dashboard-bazi-fusion-bridge.md) | REQ-F | Must | Draft | Western–BaZi planet fusion: Sheng/Ke resonance calculation + German interpretation per planet card |
 | [REQ-F-onboarding-display-name](requirements/REQ-F-onboarding-display-name.md) | REQ-F | Must | Implemented | Onboarding captures display_name; stored in profiles only, never forwarded to FuFirE |
-| [REQ-F-daily-chart-coherence-hero](requirements/REQ-F-daily-chart-coherence-hero.md) | REQ-F | Must | Implemented | Kohärenzindex + Day Mode visible above the fold without scroll |
+| [REQ-F-daily-chart-coherence-hero](requirements/REQ-F-daily-chart-coherence-hero.md) | REQ-F | Must | Draft | Unified Daily Chart hero ersetzt split top-card layout — Kohärenz + Daily Impulse + aktive Planeten + Driver-Strip in einer Karte, Dark/Bright mode contrast-safe |
 | [REQ-F-daily-chart-dashboard-order](requirements/REQ-F-daily-chart-dashboard-order.md) | REQ-F | Must | Implemented | Daily Chart section appears before Planetarium in dashboard layout |
 | [REQ-F-impact-active-endpoint](requirements/REQ-F-impact-active-endpoint.md) | REQ-F | Must | Implemented | POST /impact/active returns ACTIVE_IMPACTS_v1 — structured, no LLM |
-| [REQ-F-experience-daily-v2](requirements/REQ-F-experience-daily-v2.md) | REQ-F | Must | Implemented | POST /experience/daily v2 with include=["impact"] — backwards-compatible |
-| [REQ-F-active-planets-frontend](requirements/REQ-F-active-planets-frontend.md) | REQ-F | Must | Draft | Planet cards from Impact data; only active planets shown |
-| [REQ-F-coherence-hero-impact-datasource](requirements/REQ-F-coherence-hero-impact-datasource.md) | REQ-F | Must | Draft | Kohärenzindex sourced from impact.harmony_index — not a mock |
+| [REQ-F-experience-daily-v2](requirements/REQ-F-experience-daily-v2.md) | REQ-F | Must | Draft | POST /experience/daily mit Unified Daily Chart Contract — one-pass rendering von Kohärenz, Daily Impulse, aktive Planeten, Driver Evidence |
+| [REQ-F-active-planets-frontend](requirements/REQ-F-active-planets-frontend.md) | REQ-F | Must | Draft | Signatur-aligned planet cards im Daily Chart hero — Name, Stärke, "Warum?" expandierbar, höchste Stärke zuerst |
+| [REQ-F-coherence-hero-impact-datasource](requirements/REQ-F-coherence-hero-impact-datasource.md) | REQ-F | Must | Draft | Kohärenz-Darstellung trennt stabilen Baseline von positivem Tages-Delta — base_coherence + positive_daily_delta + Driver-Strip mit echten Werten |
+| [REQ-USA-daily-chart-responsive-readability](requirements/REQ-USA-daily-chart-responsive-readability.md) | REQ-USA | Must | Draft | Daily Chart hero lesbar und scannable auf 375px + Desktop — kein horizontal scroll, WCAG-kontrast in Bright + Dark |
 | [REQ-PERF-impact-active-response-time](requirements/REQ-PERF-impact-active-response-time.md) | REQ-PERF | Must | Implemented | POST /impact/active ≤ 800ms p95 |
 | [REQ-PERF-daily-experience-response-time](requirements/REQ-PERF-daily-experience-response-time.md) | REQ-PERF | Must | Implemented | POST /experience/daily ≤ 2s p95 |
 | [REQ-F-synastry-partner-management](requirements/REQ-F-synastry-partner-management.md) | REQ-F | Must | Implemented | partner_profiles CRUD with user_id RLS + defence-in-depth delete guard |

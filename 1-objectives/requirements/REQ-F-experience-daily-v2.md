@@ -1,29 +1,27 @@
-# REQ-F-experience-daily-v2: POST /experience/daily v2 with Impact Include
+# REQ-F-experience-daily-v2: POST /experience/daily with Unified Daily Chart Contract
 
 **Type**: Functional
 
-**Status**: Implemented
+**Status**: Draft
 
 **Priority**: Must-have
 
-**Source**: [US-daily-single-api-call](../user-stories/US-daily-single-api-call.md), [US-daily-impulse-text](../user-stories/US-daily-impulse-text.md), [US-daily-action-recommendation](../user-stories/US-daily-action-recommendation.md), [US-daily-resonance-badges](../user-stories/US-daily-resonance-badges.md), [GOAL-daily-chart-coherence-first](../goals/GOAL-daily-chart-coherence-first.md)
+**Source**: [US-daily-single-api-call](../user-stories/US-daily-single-api-call.md), [US-daily-impulse-text](../user-stories/US-daily-impulse-text.md), [US-daily-action-recommendation](../user-stories/US-daily-action-recommendation.md), [GOAL-daily-chart-coherence-first](../goals/GOAL-daily-chart-coherence-first.md)
 
 **Source stakeholder**: [STK-product-owner](../stakeholders.md), [STK-end-user](../stakeholders.md)
 
 ## Description
 
-`POST /experience/daily` accepts an optional `include` array in the request body. When `include: ["impact"]` is provided, the response includes the full `ACTIVE_IMPACTS_v1` block alongside the existing narrative fields. Without `include`, the response is identical to the v1 response (backwards-compatible). The response additionally contains `fusion.synthesis` for all users and `fusion.action` for premium users only. Text is in German and follows CON-resource-oriented-framing.
+`POST /experience/daily` shall provide a frontend-ready contract for the unified Daily Chart hero when `include: ["impact"]` is requested. The response shall support one-pass rendering of coherence, daily impulse, active planets, and compact driver evidence.
 
 ## Acceptance Criteria
 
-- Given a POST to `/experience/daily` with `{ include: ["impact"], soulprint_sectors, natal_chart }`, when processed, then the response includes both `fusion` (narrative) and `impact` (structured) blocks.
-- Given a POST to `/experience/daily` without `include`, when processed, then the response schema is identical to the previous v1 response (no breaking change).
-- Given `fusion.synthesis` in the response, when inspected, then it names at least one active planet and its aspect type (e.g., "Mars Konjunktion, orb 2.4°").
-- Given `fusion.synthesis`, when no adjective is used without a corresponding value in `impact` or `evidence`, then the acceptance criterion passes; if an unsupported adjective is present, then it fails.
-- Given a premium user request, when the response is inspected, then `fusion.action` is present and references at least one active planet or driver from the Impact data.
-- Given a free-tier user request, when the response is inspected, then `fusion.action` is either absent or contains a truncated teaser with upgrade CTA.
-- Given `resonance_badges[]` in the response, when the user is premium, then badges are present; when the user is free-tier, then badges are absent or locked.
-- Given any response text field, when inspected for language, then all text is in German.
+- Given a POST to `/experience/daily` with `include: ["impact"]`, when processed, then the response contains both narrative fields and a structured `impact` block sufficient to render the unified Daily Chart hero without additional mandatory calls.
+- Given the `impact` block is returned, when inspected, then it includes coherence fields for baseline, positive daily delta, displayed value, and driver evidence.
+- Given active planets are returned, when inspected, then each planet entry includes a compact display contract and an explanation contract for the expanded "why" state.
+- Given the daily impulse text is returned, when inspected, then it explicitly references current chart/transit/cosmic-weather tendencies rather than decorative horoscope language.
+- Given `fusion.synthesis` or related impulse text contains a tendency statement, when inspected, then at least one referenced tendency can be traced back to a structured impact or evidence field.
+- Given the Vibes feature exists, when the daily response is rendered, then on-demand 2–3h Vibes remain a separate action flow and are not renamed or collapsed into the daily impulse contract.
 
 ## Related Constraints
 

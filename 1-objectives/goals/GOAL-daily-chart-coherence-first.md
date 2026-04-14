@@ -1,6 +1,6 @@
-# GOAL-daily-chart-coherence-first: Coherence-guided Daily Chart as Primary Dashboard Experience
+# GOAL-daily-chart-coherence-first: Unified Daily Chart as the Primary Dashboard Experience
 
-**Description**: Replace the Planetarium as the first dashboard impression with a coherence-guided Daily Chart. Users see their harmony index, personally relevant transiting planets (filtered against their natal chart), and cosmic weather above the fold — all derived from traceable mathematical values. No decorative adjectives without a data source.
+**Description**: Replace the split top-of-dashboard live sections with one unified Daily Chart hero that combines coherence, active planetary influences, daily impulse, and cosmic drivers in a single clearly segmented card. The card must be data-traceable, mobile-readable, and visually scannable in both Bright and Dark mode. The coherence display must communicate a stable personal baseline plus today's positive activation overlay rather than a vague range label.
 
 **Status**: Draft
 
@@ -10,16 +10,18 @@
 
 ## Success Criteria
 
-- [ ] Harmony index (0–100) and Day Mode visible above the fold within 3s of dashboard load on a median device
-- [ ] Every displayed value traces to a calculation parameter in the `evidence` block of the API response (100% traceability)
-- [ ] Active planet cards show only planets with orb ≤ 8° to a natal aspect — not a fixed 6-planet pool
-- [ ] All Daily Chart data loads via a single POST /experience/daily?include=impact call (no multi-hook assembly)
-- [ ] Existing consumers (DashboardTagesEnergie, ResonanzSnapshot, CosmicWeatherCard) continue to work without modification
-- [ ] +15% daily return rate vs. pre-launch baseline (lagging indicator, measured 4 weeks post-launch)
+- [ ] The first dashboard viewport shows one unified Daily Chart card instead of separate top cards for coherence, active influences, and day impulse.
+- [ ] The coherence visualization communicates both a stable baseline and today's positive activation overlay.
+- [ ] Every displayed driver value in the Daily Chart has a user-understandable explanation and a traceable source field.
+- [ ] Active planets are visible at a glance and expandable into evidence-backed "why" text.
+- [ ] The daily impulse text is generated from actual natal-chart context, daily transit data, and cosmic weather rather than placeholder or decorative horoscope language.
+- [ ] The on-demand Vibes feature remains available as a short-horizon action layer for the next 2–3 hours and does not replace the daily impulse.
+- [ ] The Daily Chart remains readable and visually stable on a 375px viewport in both Bright and Dark mode.
+- [ ] Dashboard order after the page header is: (1) Daily Chart hero, (2) agent/context section, (3) lower static dashboard zones.
+- [ ] The legacy dark-mode white-card / white-text failure is removed as part of the same release.
 
 ## Related Artifacts
 
-- Constraints: [CON-no-unexplained-numbers](../constraints/CON-no-unexplained-numbers.md), [CON-resource-oriented-framing](../constraints/CON-resource-oriented-framing.md), [CON-dark-luxury-aesthetic](../constraints/CON-dark-luxury-aesthetic.md)
-- User stories: [US-daily-coherence-visibility](../user-stories/US-daily-coherence-visibility.md), [US-daily-active-planets](../user-stories/US-daily-active-planets.md), [US-daily-planet-transparency](../user-stories/US-daily-planet-transparency.md), [US-daily-cosmic-weather](../user-stories/US-daily-cosmic-weather.md), [US-daily-impulse-text](../user-stories/US-daily-impulse-text.md), [US-daily-resonance-badges](../user-stories/US-daily-resonance-badges.md), [US-daily-action-recommendation](../user-stories/US-daily-action-recommendation.md), [US-daily-single-api-call](../user-stories/US-daily-single-api-call.md), [US-daily-impact-only-call](../user-stories/US-daily-impact-only-call.md)
-- Requirements: [REQ-F-daily-chart-coherence-hero](../requirements/REQ-F-daily-chart-coherence-hero.md), [REQ-F-daily-chart-dashboard-order](../requirements/REQ-F-daily-chart-dashboard-order.md), [REQ-F-impact-active-endpoint](../requirements/REQ-F-impact-active-endpoint.md), [REQ-F-experience-daily-v2](../requirements/REQ-F-experience-daily-v2.md), [REQ-F-active-planets-frontend](../requirements/REQ-F-active-planets-frontend.md), [REQ-F-coherence-hero-impact-datasource](../requirements/REQ-F-coherence-hero-impact-datasource.md), [REQ-PERF-impact-active-response-time](../requirements/REQ-PERF-impact-active-response-time.md), [REQ-PERF-daily-experience-response-time](../requirements/REQ-PERF-daily-experience-response-time.md)
-- Assumptions: [ASM-noaa-in-fufre](../assumptions/ASM-noaa-in-fufre.md)
+- Constraints: [CON-no-unexplained-numbers](../constraints/CON-no-unexplained-numbers.md), [CON-resource-oriented-framing](../constraints/CON-resource-oriented-framing.md), [CON-mobile-first-readability](../constraints/CON-mobile-first-readability.md)
+- User stories: [US-daily-coherence-visibility](../user-stories/US-daily-coherence-visibility.md), [US-daily-active-planets](../user-stories/US-daily-active-planets.md), [US-daily-planet-transparency](../user-stories/US-daily-planet-transparency.md), [US-daily-cosmic-weather](../user-stories/US-daily-cosmic-weather.md), [US-daily-impulse-text](../user-stories/US-daily-impulse-text.md), [US-daily-action-recommendation](../user-stories/US-daily-action-recommendation.md)
+- Requirements: [REQ-F-daily-chart-coherence-hero](../requirements/REQ-F-daily-chart-coherence-hero.md), [REQ-F-active-planets-frontend](../requirements/REQ-F-active-planets-frontend.md), [REQ-F-coherence-hero-impact-datasource](../requirements/REQ-F-coherence-hero-impact-datasource.md), [REQ-F-experience-daily-v2](../requirements/REQ-F-experience-daily-v2.md), [REQ-USA-daily-chart-responsive-readability](../requirements/REQ-USA-daily-chart-responsive-readability.md)

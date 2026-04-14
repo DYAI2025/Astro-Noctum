@@ -1,4 +1,4 @@
-# REQ-F-coherence-hero-impact-datasource: Kohärenzindex Sourced from Impact Data
+# REQ-F-coherence-hero-impact-datasource: Coherence Baseline, Daily Activation, and Driver Evidence
 
 **Type**: Functional
 
@@ -12,18 +12,20 @@
 
 ## Description
 
-The Kohärenzindex displayed in the dashboard hero is derived from `impact.harmony_index`, which is computed server-side using the formula: `harmony_index = round(harmony * 0.65 + solar_pressure * 0.35)`. The weights (0.65 / 0.35) are configurable via environment variable. The value is not a static mock, a random number, or a carry-over from a different data source.
+The coherence display shown in the Daily Chart hero shall be sourced from structured impact data that separates a stable personal baseline from today's positive activation overlay. The displayed coherence value is not a generic label and not an opaque single-score calculation.
 
 ## Acceptance Criteria
 
-- Given the dashboard renders the Kohärenzindex, when the value is inspected, then it equals the `harmony_index` field from the most recent Impact API response for the authenticated user.
-- Given the harmony_index formula, when `solar_pressure` input changes, then the Kohärenzindex changes accordingly on next fetch (no stale cache beyond TTL).
-- Given the environment variable for formula weights is updated, when the server restarts, then the new weights are used — no code change required.
-- Given `harmony_index` is derived from `solar_pressure`, when solar pressure data is unavailable, then the system falls back to `harmony * 1.0` (solar_pressure treated as 0) rather than returning an error.
+- Given the Daily Chart hero renders coherence, when the value is inspected, then the payload exposes `base_coherence`, `positive_daily_delta`, and `displayed_coherence`.
+- Given `base_coherence` is present, when the user views the coherence explanation, then it is described as the user's stable cross-system baseline that today's state cannot undercut within the UI model.
+- Given `positive_daily_delta` is present, when the ring renders, then the additional positive activation is visually distinguished from the baseline segment.
+- Given the driver strip is rendered, when values are shown, then the UI displays the real current values for at least: geomagnetic Kp, solar pressure, transit activity, and day-field state.
+- Given a driver value is displayed, when the user opens the explanation layer, then the UI states what the driver means and how it contributes to today's coherence context.
+- Given any driver is unavailable, when the hero renders, then the UI marks it as unavailable or delayed rather than fabricating a placeholder value.
 
 ## Related Assumptions
 
-- [ASM-noaa-in-fufre](../assumptions/ASM-noaa-in-fufre.md) — solar_pressure component of harmony_index requires NOAA data to be available inside FuFirE.
+- [ASM-noaa-in-fufre](../assumptions/ASM-noaa-in-fufre.md) — solar_pressure component requires NOAA data; currently provided via server-side spaceWeatherCache pass-through.
 
 ## Related Constraints
 

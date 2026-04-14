@@ -1,4 +1,4 @@
-# REQ-F-active-planets-frontend: Planet Cards from Impact Data
+# REQ-F-active-planets-frontend: Signatur-Aligned Active Planet Cards in Daily Chart
 
 **Type**: Functional
 
@@ -12,15 +12,17 @@
 
 ## Description
 
-The dashboard renders planet cards sourced from the `active_planets[]` array returned by the Impact endpoint or the daily experience endpoint (when `include: ["impact"]` is used). Only planets present in the response are displayed — not a static set of 6. Each card shows: planet name, strength (as a visual indicator), BaZi resonance label, Wu-Xing element, aspect type, and orb in degrees.
+The dashboard shall render active planets inside the Daily Chart hero using the same semantic structure and visual language as the Signatur page. Each planet card shall communicate the planet name, the planet's semantic quality, current strength, and an expandable explanation of why the influence is active for this user today.
 
 ## Acceptance Criteria
 
-- Given the Impact endpoint returns 3 active planets, when the dashboard renders, then exactly 3 planet cards are displayed (no static placeholders for inactive planets).
-- Given a planet card, when rendered, then it displays: planet name, strength visual indicator, BaZi resonance label, and aspect type + orb value.
-- Given orb is displayed, when rendered, then it is shown with its unit (e.g., "2.4°") per CON-no-unexplained-numbers.
-- Given the Impact endpoint returns an empty `active_planets[]`, when the dashboard renders, then a meaningful empty state is shown (no broken UI).
-- Given the hook `useActiveImpacts()` fetches from POST `/impact/active`, when it is called, then it operates independently of `useDailyExperience()` (no shared request dependency).
+- Given the response contains active planets, when the Daily Chart hero renders, then each active planet is visible at first glance with its name and current strength state.
+- Given a planet card is rendered, when the compact state is shown, then it displays: planet name, semantic quality label, and strength indicator.
+- Given a planet card is expanded, when the user opens "Warum?", then the UI displays an evidence-backed explanation sentence describing the transit relation to the user's natal chart.
+- Given the API provides planet imagery or a stable local mapping exists, when the card is rendered, then the visual motif aligns with the Signatur page's planet representation rather than a generic placeholder style.
+- Given multiple active planets are returned, when cards are ordered, then higher strength planets appear first.
+- Given no active planets qualify, when the section renders, then a meaningful neutral empty state is shown instead of blank space or fake cards.
+- Given the card is rendered on mobile, when details are collapsed, then the compact card remains readable without horizontal overflow.
 
 ## Related Constraints
 

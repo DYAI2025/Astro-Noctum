@@ -17,7 +17,9 @@ Run `/SDLC-status` or check `3-code/tasks.md` + `git log` for live project state
 
 **Implementation progress (2026-04-14):** 290/305 tasks Done (14 Cancelled, 1 Blocked). All sprints complete including S-API-CONTRACT (signatureDelta bug fix + 6 contract test suites + code review fixes). Landing page tasks cancelled — moved to `Landingpage-viteapp` repo (Option C: separate apps, API bridge). 1758 tests green. Single blocked: REQ-F-orbital-signatur-visualization (deferred, blocked on unverified ASM-ued-metrics-available).
 
-**Objectives gap analysis (2026-04-14, refreshed):** 0 Critical, 0 Important, 2 Minor resolved. m-1: stakeholders.md Goals column updated with 4 newer goals (synastry, phase2-density, phase3-matching, daily-chart-coherence-first). m-2: 11 requirements bumped Approved→Implemented (S-VIBES + S-API-CONTRACT sprint completions). Prior 2026-04-12/13 findings all remain resolved. **(fresh)**
+**Objectives gap analysis (2026-04-14, refreshed):** 0 Critical, 0 Important, 2 Minor resolved. m-1: stakeholders.md Goals column updated with 4 newer goals (synastry, phase2-density, phase3-matching, daily-chart-coherence-first). m-2: 11 requirements bumped Approved→Implemented (S-VIBES + S-API-CONTRACT sprint completions). Prior 2026-04-12/13 findings all remain resolved. **(stale — artifacts changed since)**
+
+**Objectives update (2026-04-14 — Daily Chart coherence-first intake):** GOAL-daily-chart-coherence-first expanded with unified hero success criteria + related artifacts. REQ-F-daily-chart-coherence-hero and REQ-F-experience-daily-v2 reverted Implemented→Draft (contract extended for unified hero). REQ-F-active-planets-frontend + REQ-F-coherence-hero-impact-datasource expanded with new acceptance criteria. REQ-USA-daily-chart-responsive-readability created (new). DEC-dashboard-volatile-first updated from split volatile cards to one unified DailyChartHero. Handoff: dark-mode contrast fix (white-card/white-text regression) identified in `docs/plans/` area — linked to REQ-USA-wcag-contrast + DEC-design-system-v2.
 
 ---
 
