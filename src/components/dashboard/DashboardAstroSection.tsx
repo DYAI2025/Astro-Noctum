@@ -203,7 +203,7 @@ export function DashboardAstroSection({
                         <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
                           {hasWuxingData ? (
                             <div
-                              className="h-full rounded-full transition-all duration-1000"
+                              className="h-full rounded-full transition-[width] duration-1000"
                               style={{ backgroundColor: el.color, width: `${Math.max(pctBar, pctBar > 0 ? 4 : 0)}%` }}
                             />
                           ) : (

@@ -117,7 +117,7 @@ function GaugeBar({ label, percent, barClass, tooltip, badge }: GaugeBarProps) {
             style={{ background: 'var(--tile-border)', width: `${safePercent}%` }}
           />
           <div
-            className={`h-full ${barClass} transition-all duration-1000 ease-out relative z-10`}
+            className={`h-full ${barClass} transition-[height] duration-1000 ease-out relative z-10`}
             style={{ width: `${safePercent}%` }}
           />
         </div>

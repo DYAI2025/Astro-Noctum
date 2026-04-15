@@ -60,7 +60,7 @@ export function VibesSection({ userId }: VibesSectionProps) {
           disabled={loading}
           className="w-full max-w-sm group relative"
         >
-          <div className="cosmic-tile p-4 flex items-center justify-between gap-4 group-hover:border-gold/30 transition-all duration-300">
+          <div className="cosmic-tile p-4 flex items-center justify-between gap-4 group-hover:border-gold/30 transition-[border-color] duration-300">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center text-gold group-hover:scale-110 transition-transform">
                 {loading ? (

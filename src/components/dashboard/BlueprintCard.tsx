@@ -34,7 +34,7 @@ export default function BlueprintCard({
       {/* Background glow effect */}
       <div className="absolute -inset-1 bg-gradient-to-r from-[#D4AF37]/20 via-cyan-500/15 to-purple-500/20 rounded-[2rem] blur opacity-30 group-hover:opacity-70 transition duration-1000 group-hover:duration-200"></div>
 
-      <div className="relative bg-[#0A0A14]/80 backdrop-blur-xl border border-[#D4AF37]/15 p-8 md:p-10 rounded-[2rem] space-y-6 transition-all duration-500 hover:border-[#D4AF37]/35 min-h-[220px]">
+      <div className="relative backdrop-blur-xl border border-[#D4AF37]/15 p-8 md:p-10 rounded-[2rem] space-y-6 transition-[border-color] duration-500 hover:border-[#D4AF37]/35 min-h-[220px]" style={{ background: 'var(--tile-bg)' }}>
         <div className="flex justify-between items-start">
           <h2 className="font-serif text-[14px] font-bold tracking-[0.2em] uppercase" style={{ color: 'rgb(226, 155, 50)' }}>{resolvedTitle}</h2>
           <div className="flex gap-2">

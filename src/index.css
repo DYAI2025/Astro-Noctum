@@ -844,7 +844,8 @@ body > div[id*="convai"] {
 /* ── Reduced Motion ──────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .landing-hero-root *, .landing-hero-root ::before, .landing-hero-root ::after,
-  .enter-screen *, .enter-screen ::before, .enter-screen ::after {
+  .enter-screen *, .enter-screen ::before, .enter-screen ::after,
+  .daily-chart-hero *, .cosmic-tile * {
     animation-delay: -1ms !important;
     animation-duration: 1ms !important;
     animation-iteration-count: 1 !important;

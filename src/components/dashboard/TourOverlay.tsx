@@ -85,7 +85,7 @@ export function TourOverlay(props: TourOverlayProps) {
           </p>
           <button
             onClick={onNext}
-            className="px-8 py-3 rounded-xl bg-gold/15 border border-gold/30 text-gold font-serif text-lg tracking-wide hover:bg-gold/25 hover:border-gold/50 transition-all duration-300"
+            className="px-8 py-3 rounded-xl bg-gold/15 border border-gold/30 text-gold font-serif text-lg tracking-wide hover:bg-gold/25 hover:border-gold/50 transition-colors duration-300"
           >
             {t('tour.next')}
           </button>

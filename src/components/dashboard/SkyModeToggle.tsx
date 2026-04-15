@@ -14,7 +14,7 @@ export function SkyModeToggle() {
         onClick={() => setSkyMode(nextMode)}
         className={[
           'flex items-center gap-2 px-5 py-2.5 rounded-full text-xs uppercase tracking-[0.2em]',
-          'border transition-all duration-300',
+          'border transition-colors duration-300',
           skyMode === 'current'
             ? 'border-[#D4AF37]/50 text-[#D4AF37] bg-[#D4AF37]/5'
             : 'border-white/10 text-white/50 hover:text-white/70 hover:border-white/20',

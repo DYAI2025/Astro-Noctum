@@ -154,7 +154,7 @@ function PlanetCard({ planet, isDe }: { planet: ActivePlanet; isDe: boolean }) {
           {strengthLabel}
         </span>
         <button
-          className="ml-auto flex items-center gap-0.5 text-[9px] uppercase tracking-wide"
+          className="ml-auto flex items-center gap-0.5 text-[9px] uppercase tracking-wide focus-visible:ring-1 focus-visible:ring-current focus-visible:outline-none rounded"
           style={{ color: 'var(--tile-accent)', opacity: 0.7 }}
           onClick={() => setOpen(v => !v)}
           aria-expanded={open}
@@ -162,8 +162,9 @@ function PlanetCard({ planet, isDe }: { planet: ActivePlanet; isDe: boolean }) {
         >
           {isDe ? 'Warum?' : 'Why?'}
           <ChevronDown
-            className="w-3 h-3 transition-transform"
+            className="w-3 h-3 transition-transform duration-200"
             style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
+            aria-hidden="true"
           />
         </button>
       </div>
