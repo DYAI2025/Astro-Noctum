@@ -1877,23 +1877,27 @@ async function computeActiveImpactsCore(userId) {
   }
   activePlanets.sort((a, b) => b.strength - a.strength);
 
-  // 5. Compute harmony_index (0–100) — blends natal harmony with solar pressure
-  const baseHarmony = profile.astro_json?.fusion?.harmony_index ?? 0.5;
+  // 5. Compute coherence (additive: base + solar delta, never below base)
+  const rawHarmony = profile.astro_json?.fusion?.harmony_index;
+  const hasFusionData = rawHarmony !== undefined && rawHarmony !== null;
+  const baseHarmony = rawHarmony ?? 0.5;
   const sw = spaceWeatherCache?.payload;
   const solarPressure = sw?.solar_pressure_score ?? 0;
-  const hWeight = Number(process.env.HARMONY_INDEX_HARMONY_WEIGHT) || 0.65;
-  const sWeight = Number(process.env.HARMONY_INDEX_SOLAR_WEIGHT)   || 0.35;
-  const harmonyIndex = Math.min(100, Math.max(0,
-    Math.round((baseHarmony * hWeight + solarPressure * sWeight) * 100)
-  ));
+  const sWeight = Number(process.env.HARMONY_INDEX_SOLAR_WEIGHT) || 0.35;
 
-  // 5b. Coherence split (REQ-F-coherence-hero-impact-datasource)
-  // base_coherence: stable natal baseline — unaffected by today's solar pressure
-  const baseCoherence = Math.min(100, Math.max(0, Math.round(baseHarmony * 100)));
-  // positive_daily_delta: today's solar activation on top of baseline (≥0, never negative)
-  const positiveDailyDelta = Math.max(0, harmonyIndex - baseCoherence);
-  // displayed_coherence: the single value shown in the ring (= harmonyIndex)
-  const displayedCoherence = harmonyIndex;
+  // base_coherence: null when fusion data absent (triggers "unavailable" UI)
+  const baseCoherence = hasFusionData
+    ? Math.min(100, Math.max(0, Math.round(baseHarmony * 100)))
+    : null;
+  const solarDelta = hasFusionData
+    ? Math.min(100 - baseCoherence, Math.max(0, Math.round(solarPressure * sWeight * 100)))
+    : null;
+  const displayedCoherence = hasFusionData ? baseCoherence + solarDelta : null;
+  const positiveDailyDelta = solarDelta;
+  // harmony_index: always a number for backward compat
+  const harmonyIndex = displayedCoherence ?? Math.min(100, Math.max(0,
+    Math.round((baseHarmony * 0.65 + solarPressure * sWeight) * 100)
+  ));
 
   // 6. Compute resonance badges (reuse existing server badge logic)
   const badges = computeResonanceBadgesServer({

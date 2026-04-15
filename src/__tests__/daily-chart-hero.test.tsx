@@ -276,6 +276,42 @@ describe('DailyChartHero — day impulse', () => {
   });
 });
 
+// ── Error/unavailable state ──────────────────────────────────────────────────
+
+describe('DailyChartHero — error/unavailable state', () => {
+  it('renders unavailable state when all coherence fields are null', () => {
+    renderHero({
+      loading: false,
+      baseCoherence: null,
+      positiveDailyDelta: null,
+      displayedCoherence: null,
+    });
+    expect(screen.getByTestId('coherence-unavailable')).toBeTruthy();
+    expect(screen.queryByTestId('coherence-value')).toBeNull();
+  });
+
+  it('shows "nicht verfügbar" text, not zero', () => {
+    renderHero({
+      loading: false,
+      baseCoherence: null,
+      positiveDailyDelta: null,
+      displayedCoherence: null,
+    });
+    expect(screen.queryByText('0')).toBeNull();
+    expect(screen.getByText(/nicht verfügbar/i)).toBeTruthy();
+  });
+
+  it('still renders driver strip in unavailable state', () => {
+    renderHero({
+      loading: false,
+      baseCoherence: null,
+      positiveDailyDelta: null,
+      displayedCoherence: null,
+    });
+    expect(screen.getByTestId('driver-strip')).toBeTruthy();
+  });
+});
+
 // ── CSS var compliance ────────────────────────────────────────────────────────
 
 describe('DailyChartHero — no hardcoded white classes', () => {

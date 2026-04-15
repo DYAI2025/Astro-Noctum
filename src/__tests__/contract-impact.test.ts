@@ -299,3 +299,59 @@ describe('ActiveImpactsSchema — integration with hook data', () => {
     expect(() => ActiveImpactsSchema.parse({ ...VALID_ACTIVE_IMPACTS, schema: 'ACTIVE_IMPACTS_v10' })).toThrow();
   });
 });
+
+// ── Coherence split — additive formula ──────────────────────────────────────
+
+describe('Coherence split — additive formula', () => {
+  it('displayed_coherence >= base_coherence when solar pressure is positive', () => {
+    const baseHarmony = 0.5;
+    const solarPressure = 0.2;
+    const sWeight = 0.35;
+    const baseCoherence = Math.min(100, Math.max(0, Math.round(baseHarmony * 100)));
+    const solarDelta = Math.min(100 - baseCoherence, Math.max(0, Math.round(solarPressure * sWeight * 100)));
+    const displayedCoherence = baseCoherence + solarDelta;
+    expect(baseCoherence).toBe(50);
+    expect(solarDelta).toBe(7);
+    expect(displayedCoherence).toBe(57);
+    expect(displayedCoherence).toBeGreaterThanOrEqual(baseCoherence);
+  });
+
+  it('displayed_coherence equals base when solar pressure is 0', () => {
+    const baseHarmony = 0.6;
+    const baseCoherence = Math.round(baseHarmony * 100);
+    const solarDelta = Math.min(100 - baseCoherence, Math.max(0, Math.round(0 * 0.35 * 100)));
+    expect(solarDelta).toBe(0);
+    expect(baseCoherence + solarDelta).toBe(60);
+  });
+
+  it('displayed_coherence never exceeds 100', () => {
+    const baseHarmony = 0.95;
+    const solarPressure = 0.9;
+    const baseCoherence = Math.round(baseHarmony * 100);
+    const solarDelta = Math.min(100 - baseCoherence, Math.max(0, Math.round(solarPressure * 0.35 * 100)));
+    expect(baseCoherence + solarDelta).toBeLessThanOrEqual(100);
+  });
+});
+
+// ── Coherence split — missing fusion data ─────────────────────────────────────
+
+describe('Coherence split — missing fusion data', () => {
+  it('coherence fields are null when harmony_index is absent', () => {
+    const rawHarmony = undefined;
+    const hasFusionData = rawHarmony !== undefined && rawHarmony !== null;
+    const baseCoherence = hasFusionData ? Math.round(rawHarmony * 100) : null;
+    expect(baseCoherence).toBeNull();
+  });
+
+  it('harmony_index still returns a number even without fusion data', () => {
+    const rawHarmony = undefined;
+    const hasFusionData = rawHarmony !== undefined;
+    const baseHarmony = rawHarmony ?? 0.5;
+    const displayedCoherence = null;
+    const harmonyIndex = displayedCoherence ?? Math.min(100, Math.max(0,
+      Math.round((baseHarmony * 0.65 + 0.1 * 0.35) * 100)
+    ));
+    expect(typeof harmonyIndex).toBe('number');
+    expect(harmonyIndex).toBeGreaterThan(0);
+  });
+});

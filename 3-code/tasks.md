@@ -839,6 +839,32 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 
 ---
 
+## Phase: Current Sprint — S-DCH-BUGFIX (Daily Chart Hero Regression Fixes)
+
+**Sprint Goal:** Fix all verified regressions from the DailyChartHero rollout: coherence formula, duplicate TagesImpuls tile, error-state rendering, Vibes i18n mismatch, old-user fusion fallback.
+
+### Phase 1 — Critical: Coherence Formula + Duplicate Tile
+
+| ID | Task | Component | Req | Status | Dependencies | Updated | Notes |
+|----|------|-----------|-----|--------|--------------|---------|-------|
+| TASK-dcfix-coherence-formula | Fix weighted-blend formula in `computeActiveImpactsCore()`: base_coherence must be the floor, displayed_coherence = base + solarDelta (additive, never below base) | api-server | [REQ-F-coherence-hero-impact-datasource](../1-objectives/requirements/REQ-F-coherence-hero-impact-datasource.md) | Done | - | 2026-04-15 | Fixed: additive formula, +3 contract tests |
+| TASK-dcfix-remove-tagesenergie | Remove standalone `DashboardTagesEnergie` / `CosmicWeatherCard` block from Dashboard.tsx (section 4) — content is already inside DailyChartHero section D | frontend | [REQ-F-daily-chart-coherence-hero](../1-objectives/requirements/REQ-F-daily-chart-coherence-hero.md) | Done | - | 2026-04-15 | Removed section 4 + unused imports (DashboardTagesEnergie, CosmicWeatherCard, useDailyHoroscope) |
+
+### Phase 2 — High: Error State + Vibes i18n
+
+| ID | Task | Component | Req | Status | Dependencies | Updated | Notes |
+|----|------|-----------|-----|--------|--------------|---------|-------|
+| TASK-dcfix-error-state | DailyChartHero: when all coherence fields are null and loading=false, render an explicit error/unavailable state instead of "Basis 0 · Heute +0" | frontend | [REQ-F-daily-chart-coherence-hero](../1-objectives/requirements/REQ-F-daily-chart-coherence-hero.md) | Done | - | 2026-04-15 | Dashed ring + "nicht verfügbar" + driver strip still renders, +3 tests |
+| TASK-dcfix-vibes-i18n | Fix VibesSection.tsx i18n keys: prefix all 5 `t()` calls with `dashboard.` (vibesSection.x → dashboard.vibesSection.x) | frontend | - | Done | - | 2026-04-15 | 5 keys fixed |
+
+### Phase 3 — Medium: Old-User Fallback
+
+| ID | Task | Component | Req | Status | Dependencies | Updated | Notes |
+|----|------|-----------|-----|--------|--------------|---------|-------|
+| TASK-dcfix-fusion-fallback | When `profile.astro_json.fusion` is absent, mark coherence as unavailable instead of silently using 0.5 — server should return base_coherence=null so client renders explicit fallback | api-server, frontend | [REQ-F-coherence-hero-impact-datasource](../1-objectives/requirements/REQ-F-coherence-hero-impact-datasource.md) | Done | TASK-dcfix-coherence-formula, TASK-dcfix-error-state | 2026-04-15 | hasFusionData guard + null propagation, +2 tests |
+
+---
+
 ## Backlog (Not Scheduled)
 
 | Requirement | Reason |

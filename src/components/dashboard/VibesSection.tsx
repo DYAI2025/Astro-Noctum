@@ -35,7 +35,7 @@ export function VibesSection({ userId }: VibesSectionProps) {
       setShowModal(true);
     } catch (err) {
       console.error('[VibesSection] Fetch failed:', err);
-      setError(t('vibesSection.fetchError'));
+      setError(t('dashboard.vibesSection.fetchError'));
     } finally {
       setLoading(false);
       fetchingRef.current = false;
@@ -48,13 +48,13 @@ export function VibesSection({ userId }: VibesSectionProps) {
 
   const isCooldown = vibesData?.cooldown?.active;
   const cooldownLabel = isCooldown
-    ? `${t('vibesSection.cooldownPrefix')}${formatCooldown(vibesData.cooldown!.remaining_ms, lang)}`
+    ? `${t('dashboard.vibesSection.cooldownPrefix')}${formatCooldown(vibesData.cooldown!.remaining_ms, lang)}`
     : null;
-  const buttonLabel = t('vibesSection.buttonLabel');
+  const buttonLabel = t('dashboard.vibesSection.buttonLabel');
 
   return (
     <>
-      <PremiumGate teaser={t('vibesSection.premiumTeaser')}>
+      <PremiumGate teaser={t('dashboard.vibesSection.premiumTeaser')}>
         <button
           onClick={handleFetch}
           disabled={loading}
@@ -71,7 +71,7 @@ export function VibesSection({ userId }: VibesSectionProps) {
               </div>
               <div className="text-left">
                 <p className="text-[10px] font-sans font-bold uppercase tracking-[0.2em] opacity-60">
-                  {t('vibesSection.sectionTitle')}
+                  {t('dashboard.vibesSection.sectionTitle')}
                 </p>
                 <p className="text-sm font-serif text-gold/90">
                   {buttonLabel}
