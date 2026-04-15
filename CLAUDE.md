@@ -15,9 +15,13 @@ Bazodiac (Astro-Noctum) — a fusion astrology web + mobile app combining Wester
 
 Run `/SDLC-status` or check `3-code/tasks.md` + `git log` for live project state. Do not rely on hardcoded counts in this file.
 
-**Implementation progress (2026-04-13):** 278/296 tasks Done (10 Cancelled, 4 Blocked, 5 Todo). Sprint S-DAILY Phase 1 complete (3/3 Done: verify-noaa, impact-proxy, experience-v2). Phase 2 frontend tasks next (5 Todo). 1596+ tests green.
+**Implementation progress (2026-04-15):** 299/314 tasks Done (14 Cancelled, 1 Blocked). Sprint S-DAILY-CHART-HERO complete. Sprint S-DCH-BUGFIX complete (5/5 — coherence formula, duplicate tile, error state, Vibes i18n, fusion fallback). 1803 tests green. Single blocked: REQ-F-orbital-signatur-visualization (deferred).
 
-**Objectives gap analysis (2026-04-12, fixed 2026-04-13):** All 4 Important + 3 Minor items resolved. I-1: GOAL-synastry-compatibility + 3 USs + 3 REQs created (retroactive spec capture). I-2: 7 user stories created for 5 previously US-less goals. I-3: Sprint S-DAILY added to tasks.md with 7 tasks for Daily Chart requirements. I-4: 11 back-links added to GOAL-fusion-astrology, -autopoietic-ux, -vibes-weekly-insights. m-1: ASM-noaa-in-fufre has verification plan; TASK-daily-verify-noaa gates implementation. m-2: CON-dark-luxury-aesthetic already had derived REQ-USA-wcag-contrast (false positive). m-3: Fixed in prior session. **(fresh — re-run gap analysis before next phase gate)**
+**QA Sprint (2026-04-15):** 25 QA findings from live browser session → 3 new Goals + 3 new Requirements created. GOAL-navigation-app-shell-consistency (nav redesign), GOAL-signatur-realtime-consistency (trigger logic + cluster gate + audio), GOAL-i18n-quiz-ux-integrity (zero raw keys + quiz overlay fixes). Requirements: REQ-F-navigation-redesign, REQ-F-signatur-realtime-triggers, REQ-F-i18n-completeness. All Draft — awaiting decomposition into tasks.
+
+**Objectives gap analysis (2026-04-14, Daily Chart focus):** 0 Critical, 3 Important (all resolved), 3 Minor (2 resolved, 1 deferred). **(stale — artifacts changed since)**
+
+**Objectives update (2026-04-14 — Daily Chart coherence-first intake):** GOAL-daily-chart-coherence-first expanded with unified hero success criteria + related artifacts. REQ-F-daily-chart-coherence-hero and REQ-F-experience-daily-v2 reverted Implemented→Draft (contract extended for unified hero). REQ-F-active-planets-frontend + REQ-F-coherence-hero-impact-datasource expanded with new acceptance criteria. REQ-USA-daily-chart-responsive-readability created (new). DEC-dashboard-volatile-first updated from split volatile cards to one unified DailyChartHero. Handoff: dark-mode contrast fix (white-card/white-text regression) identified in `docs/plans/` area — linked to REQ-USA-wcag-contrast + DEC-design-system-v2.
 
 ---
 

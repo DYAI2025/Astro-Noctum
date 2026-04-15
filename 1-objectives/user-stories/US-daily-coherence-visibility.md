@@ -14,8 +14,8 @@ As a user, I want to see my harmony index immediately when I open the dashboard,
 
 - [ ] KohaerenzHero is the first section after the page header (above all other content)
 - [ ] Harmony index (0–100 integer) is visible in an SVG ring above the fold on a 375px viewport
-- [ ] A neutral label describes the range: "Hohe Übereinstimmung" (70–100), "Mittlere Übereinstimmung" (40–69), "Niedrige Übereinstimmung" (0–39)
-- [ ] A driver strip shows 4 pills (Geomagnetik, Solardruck, Transit-Resonanz, Tagesfeld) with calm/active/tense colour coding
+- [ ] The coherence visualization shows `base_coherence` (stable personal baseline) plus `positive_daily_delta` (today's activation), accompanied by a short explanatory sentence — not a qualitative range label like "Mittlere Übereinstimmung"
+- [ ] A compact driver strip inside the Daily Chart hero shows current values for Geomagnetik (Kp), Solardruck, Transit-Resonanz, and Tagesfeld with calm/active/tense colour coding
 - [ ] A skeleton loader is shown while data is loading (no layout shift)
 - [ ] The component renders correctly in both dark (Planetarium) and light (Morning) mode
 

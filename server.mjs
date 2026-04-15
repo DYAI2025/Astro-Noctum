@@ -142,7 +142,7 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://unpkg.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "blob:", "https:", "https://*.tile.openstreetmap.org"],
-      connectSrc: ["'self'", "https://*.supabase.co", "wss://*.supabase.co", "https://generativelanguage.googleapis.com", "https://bafe-production.up.railway.app", "https://bafe.vercel.app", "https://nominatim.openstreetmap.org", "https://*.tile.openstreetmap.org", "https://elevenlabs.io", "https://*.elevenlabs.io", "wss://elevenlabs.io", "wss://*.elevenlabs.io", "wss://api.elevenlabs.io", "https://*.google-analytics.com", "https://*.analytics.google.com", "https://*.googlesyndication.com", "https://pagead2.googlesyndication.com", "https://*.adtrafficquality.google", "https://www.googletagmanager.com", "https://api.nasa.gov", "https://services.swpc.noaa.gov"],
+      connectSrc: ["'self'", "https://*.supabase.co", "wss://*.supabase.co", "https://generativelanguage.googleapis.com", "https://bafe-production.up.railway.app", "https://bafe.vercel.app", "https://nominatim.openstreetmap.org", "https://*.tile.openstreetmap.org", "https://elevenlabs.io", "https://*.elevenlabs.io", "wss://elevenlabs.io", "wss://*.elevenlabs.io", "wss://api.elevenlabs.io", "https://*.google-analytics.com", "https://*.analytics.google.com", "https://*.googlesyndication.com", "https://pagead2.googlesyndication.com", "https://fundingchoicesmessages.google.com", "https://*.adtrafficquality.google", "https://www.googletagmanager.com", "https://api.nasa.gov", "https://services.swpc.noaa.gov"],
       frameSrc: ["'self'", "https://elevenlabs.io", "https://*.elevenlabs.io", "https://checkout.stripe.com", "https://pagead2.googlesyndication.com", "https://googleads.g.doubleclick.net", "https://fundingchoicesmessages.google.com"],
       mediaSrc: ["'self'", "blob:", "https://elevenlabs.io", "https://*.elevenlabs.io"],
       workerSrc: ["'self'", "blob:", "https://elevenlabs.io", "https://*.elevenlabs.io", "https://unpkg.com"],
@@ -1883,26 +1883,26 @@ async function computeActiveImpactsCore(userId) {
   }
   activePlanets.sort((a, b) => b.strength - a.strength);
 
-  // 5. Compute harmony_index (0–100) — blends natal harmony with solar pressure
-  const baseHarmony = profile.astro_json?.fusion?.harmony_index ?? 0.5;
+  // 5. Compute coherence (additive: base + solar delta, never below base)
+  const rawHarmony = profile.astro_json?.fusion?.harmony_index;
+  const hasFusionData = rawHarmony !== undefined && rawHarmony !== null;
+  const baseHarmony = rawHarmony ?? 0.5;
   const sw = spaceWeatherCache?.payload;
-  const kpValue = sw?.kp_index ?? sw?.kp;
-  const hasSolarPressureScore = sw?.solar_pressure_score != null;
-  const hasKpValue = kpValue != null;
-  const solarPressure = hasSolarPressureScore
-    ? sw.solar_pressure_score
-    : hasKpValue
-      ? deriveSolarPressureFromKp(kpValue)
-      : 0;
-  const solarPressureSource = hasSolarPressureScore
-    ? (sw?.source ?? 'solar_pressure_score')
-    : hasKpValue
-      ? 'kp_derived'
-      : 'unavailable';
-  const hWeight = Number(process.env.HARMONY_INDEX_HARMONY_WEIGHT) || 0.65;
-  const sWeight = Number(process.env.HARMONY_INDEX_SOLAR_WEIGHT)   || 0.35;
-  const harmonyIndex = Math.min(100, Math.max(0,
-    Math.round((baseHarmony * hWeight + solarPressure * sWeight) * 100)
+  const solarPressure = sw?.solar_pressure_score ?? 0;
+  const sWeight = Number(process.env.HARMONY_INDEX_SOLAR_WEIGHT) || 0.35;
+
+  // base_coherence: null when fusion data absent (triggers "unavailable" UI)
+  const baseCoherence = hasFusionData
+    ? Math.min(100, Math.max(0, Math.round(baseHarmony * 100)))
+    : null;
+  const solarDelta = hasFusionData
+    ? Math.min(100 - baseCoherence, Math.max(0, Math.round(solarPressure * sWeight * 100)))
+    : null;
+  const displayedCoherence = hasFusionData ? baseCoherence + solarDelta : null;
+  const positiveDailyDelta = solarDelta;
+  // harmony_index: always a number for backward compat
+  const harmonyIndex = displayedCoherence ?? Math.min(100, Math.max(0,
+    Math.round((baseHarmony * 0.65 + solarPressure * sWeight) * 100)
   ));
 
   // 6. Compute resonance badges (reuse existing server badge logic)
@@ -1923,6 +1923,9 @@ async function computeActiveImpactsCore(userId) {
     schema: 'ACTIVE_IMPACTS_v1',
     date: dateStr,
     harmony_index: harmonyIndex,
+    base_coherence: baseCoherence,
+    positive_daily_delta: positiveDailyDelta,
+    displayed_coherence: displayedCoherence,
     active_planets: activePlanets,
     resonance_badges: badges,
     meta: {

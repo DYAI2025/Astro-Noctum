@@ -21,7 +21,7 @@ export default function LeviOrb({ onActivate, isListening = false }: LeviOrbProp
               <div className="absolute inset-0 rounded-full border border-blue-400/20 group-hover:border-blue-400/40 transition-colors" />
 
               {/* Inner Pulsing Orb */}
-              <div className={`absolute inset-4 rounded-full bg-gradient-to-tr from-blue-600 via-cyan-400 to-white shadow-[0_0_30px_rgba(59,130,246,0.5)] transition-all duration-700 ${isListening ? 'scale-110 blur-[2px]' : 'scale-100'}`} />
+              <div className={`absolute inset-4 rounded-full bg-gradient-to-tr from-blue-600 via-cyan-400 to-white shadow-[0_0_30px_rgba(59,130,246,0.5)] transition-[transform,filter] duration-700 ${isListening ? 'scale-110 blur-[2px]' : 'scale-100'}`} />
 
               {/* Spinning Light Streak */}
               <div className="absolute inset-0 animate-spin" style={{ animationDuration: '4s' }}>

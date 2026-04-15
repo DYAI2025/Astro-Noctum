@@ -16,11 +16,13 @@ The dark luxury aesthetic reinforces the product's positioning as a serious astr
 
 ## Impact
 
-- No light mode is provided; the entire UI assumes a dark background
-- All color choices must be validated against OLED black for contrast and readability
-- Component libraries and third-party UI elements must be themed or replaced to match the palette
-- Accessibility (WCAG contrast ratios) must be verified against the dark background
-- Wu-Xing element colors (Wood, Fire, Earth, Metal, Water) must be defined as design tokens
+- Dark/Planetarium is the primary OLED-first mode; Bright/Solar System is a supported secondary mode
+- All UI components must be themed for both modes using DEC-design-system-v2 tokens
+- Dark mode: OLED black backgrounds, gold/sapphire accents, maximum contrast for bioluminescent elements
+- Bright mode: warm neutral backgrounds (not pure white), muted gold accents — must still convey the luxury aesthetic
+- No component may use hardcoded colors — all color values must come from mode-aware CSS custom properties
+- Accessibility (WCAG contrast ratios) must be verified against both dark and bright backgrounds
+- Wu-Xing element colors (Wood, Fire, Earth, Metal, Water) must be defined as design tokens for both modes
 - Derived requirement: [REQ-USA-wcag-contrast](../requirements/REQ-USA-wcag-contrast.md)
 - Related requirement: [REQ-F-depth-navigation](../requirements/REQ-F-depth-navigation.md) — transition animations must use obsidian/gold palette
 - Related requirement: [REQ-F-progressive-ui-fluidity](../requirements/REQ-F-progressive-ui-fluidity.md) — fluid affordances must use obsidian/gold palette

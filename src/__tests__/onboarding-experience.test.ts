@@ -88,7 +88,8 @@ describe('Experience API Client', () => {
     );
 
     const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-    expect(body.quiz_answer.keyword).toBe('expression');
+    expect(Array.isArray(body.quiz_answer)).toBe(true);
+    expect(body.quiz_answer[0]).toEqual({ id: 'expression', weight: 1.0 });
     expect(result.signature_delta.curvature).toBe(0.1);
   });
 

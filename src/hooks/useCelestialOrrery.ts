@@ -50,7 +50,7 @@ export function useCelestialOrrery(
   const [showConstellations, setShowConstellations] = useState(true);
   const [showConstellationNames, setShowConstellationNames] = useState(true);
   const [simTime, setSimTime] = useState(() => daysSinceJ2000(initialDate || new Date()));
-  const [speed, setSpeed] = useState(86400);
+  const [speed, setSpeed] = useState(21600); // 6h/s — gentle visible motion
   const [isPlaying, setIsPlaying] = useState(true);
   const [selectedCity, setSelectedCity] = useState(initialCity);
   const [customLat, setCustomLat] = useState('');

@@ -122,6 +122,24 @@ body {
   color: var(--icon-color);
 }
 
+/* ── Kohärenz Hero — Coherence-First Dashboard ─────────────────────────── */
+
+.kohaerenz-hero {
+  background: linear-gradient(160deg, rgba(8, 10, 18, 0.96) 0%, rgba(18, 14, 8, 0.92) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 2rem;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.5), 0 0 20px rgba(212, 175, 55, 0.06);
+}
+
+/* Morning (bright) mode override */
+:root:not(.planetarium) .kohaerenz-hero {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.97) 0%, rgba(248, 245, 238, 0.95) 100%);
+  border-color: rgba(212, 175, 55, 0.2);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06), 0 0 12px rgba(212, 175, 55, 0.08);
+}
+
 /* ── Unified Tile Design ────────────────────────────────────────────────── */
 
 .cosmic-tile,
@@ -354,6 +372,37 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1;
 }
 .lang-toggle button.active {
+  background: var(--tile-glow);
+  color: var(--tile-accent);
+  font-weight: 600;
+}
+
+/* ── Mode Toggle (Planetarium / Solar System) ──────────────────────────── */
+
+.mode-toggle {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--tile-border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--tile-bg);
+}
+.mode-toggle button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s;
+  color: var(--tile-text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  line-height: 1;
+}
+.mode-toggle button.active {
   background: var(--tile-glow);
   color: var(--tile-accent);
   font-weight: 600;
@@ -795,7 +844,8 @@ body > div[id*="convai"] {
 /* ── Reduced Motion ──────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .landing-hero-root *, .landing-hero-root ::before, .landing-hero-root ::after,
-  .enter-screen *, .enter-screen ::before, .enter-screen ::after {
+  .enter-screen *, .enter-screen ::before, .enter-screen ::after,
+  .daily-chart-hero *, .cosmic-tile * {
     animation-delay: -1ms !important;
     animation-duration: 1ms !important;
     animation-iteration-count: 1 !important;
@@ -854,9 +904,13 @@ body > div[id*="convai"] {
   .cosmic-tile a {
     min-height: 44px;
   }
-  /* Lang toggle bigger touch targets */
+  /* Lang + mode toggle bigger touch targets */
   .lang-toggle button {
     padding: 8px 14px;
+    font-size: 10px;
+  }
+  .mode-toggle button {
+    padding: 8px 10px;
     font-size: 10px;
   }
 }

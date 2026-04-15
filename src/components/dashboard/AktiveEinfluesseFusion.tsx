@@ -264,6 +264,15 @@ interface AktiveEinfluesseFusionProps {
    * nicht verfügbar" notice in the BaZi slot (REQ-F-dashboard-bazi-fusion-bridge AC 9).
    */
   dayMasterStem: string | undefined;
+  /**
+   * Active planets from POST /api/impact/active (REQ-F-active-planets-frontend).
+   * When provided and non-empty, renders only these planets instead of the static 6-planet pool.
+   * When empty array, shows a meaningful empty state.
+   * When undefined/null, falls back to the static 6-planet rendering.
+   */
+  activePlanets?: import('@/src/lib/schemas/active-impacts').ActivePlanet[] | null;
+  /** True while useActiveImpacts() is loading */
+  impactLoading?: boolean;
 }
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
@@ -426,15 +435,160 @@ function PlanetCard({
   );
 }
 
+// ── Impact-derived planet card ───────────────────────────────────────────────
+
+const PLANET_SYMBOLS: Record<string, string> = {
+  Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀', Mars: '♂', Jupiter: '♃', Saturn: '♄',
+};
+
+const PLANET_LABEL_DE: Record<string, string> = {
+  Sun: 'Sonne', Moon: 'Mond', Mercury: 'Merkur', Venus: 'Venus', Mars: 'Mars', Jupiter: 'Jupiter', Saturn: 'Saturn',
+};
+
+const ASPECT_LABEL: Record<string, { de: string; en: string }> = {
+  conjunction: { de: 'Konjunktion', en: 'Conjunction' },
+  opposition:  { de: 'Opposition',  en: 'Opposition'  },
+  trine:       { de: 'Trigon',      en: 'Trine'       },
+  square:      { de: 'Quadrat',     en: 'Square'      },
+  sextile:     { de: 'Sextil',      en: 'Sextile'     },
+};
+
+function ImpactPlanetCard({
+  planet,
+  isDe,
+}: {
+  planet: import('@/src/lib/schemas/active-impacts').ActivePlanet;
+  isDe: boolean;
+}) {
+  const resonanceType = (planet.bazi_resonance ?? 'neutral') as ResonanceType;
+  const cardStyle = RESONANCE_CARD_STYLE[resonanceType] ?? RESONANCE_CARD_STYLE.neutral;
+  const symbol = PLANET_SYMBOLS[planet.planet] ?? '●';
+  const label = isDe ? (PLANET_LABEL_DE[planet.planet] ?? planet.planet) : planet.planet;
+  const aspectLabel = ASPECT_LABEL[planet.aspect_type]
+    ? (isDe ? ASPECT_LABEL[planet.aspect_type].de : ASPECT_LABEL[planet.aspect_type].en)
+    : planet.aspect_type;
+  const elementLabel = planet.wu_xing_element
+    ? (isDe ? ELEMENT_LABEL[planet.wu_xing_element as WuXingElement]?.de : ELEMENT_LABEL[planet.wu_xing_element as WuXingElement]?.en)
+    : null;
+
+  return (
+    <div
+      className="rounded-xl p-4 space-y-3"
+      style={{ background: cardStyle.bg, borderLeft: cardStyle.border }}
+      data-planet={planet.planet}
+      data-testid="impact-planet-card"
+    >
+      {/* ── Planet header + aspect ──────────────────────────────────── */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <span className="text-base" aria-hidden="true">{symbol}</span>
+          <span className="text-xs font-semibold" style={{ color: 'var(--tile-text-primary)' }}>
+            {label}
+          </span>
+        </div>
+        {/* Source: impact.active_planets[].aspect_type + orb — CON-no-unexplained-numbers: orb shown with ° */}
+        <span
+          className="text-[10px] font-mono tabular-nums"
+          style={{ color: 'var(--tile-text-secondary)', opacity: 0.7 }}
+        >
+          {aspectLabel} {planet.orb}°
+        </span>
+      </div>
+
+      {/* ── Strength bar — visual indicator of transit strength ─────── */}
+      <div className="space-y-1">
+        <div className="flex items-center justify-between">
+          <span
+            className="text-[8px] font-bold tracking-[0.12em] uppercase"
+            style={{ color: 'var(--tile-text-secondary)', opacity: 0.5 }}
+          >
+            {isDe ? 'Stärke' : 'Strength'}
+          </span>
+          <span
+            className="text-[9px] font-mono tabular-nums"
+            style={{ color: 'var(--tile-text-secondary)', opacity: 0.5 }}
+          >
+            {Math.round(planet.strength * 100)}%
+          </span>
+        </div>
+        {/* Source: strength = 1 - orb/8 — tighter aspect = higher strength */}
+        <div className="h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
+          <div
+            className="h-full rounded-full transition-all duration-700"
+            style={{
+              width: `${Math.round(planet.strength * 100)}%`,
+              background: RESONANCE_BADGE_COLOR[resonanceType] ?? 'var(--tile-accent)',
+            }}
+          />
+        </div>
+      </div>
+
+      {/* ── BaZi resonance + element badges ────────────────────────── */}
+      <div className="flex items-center gap-2 flex-wrap">
+        {elementLabel && planet.wu_xing_element && (
+          <span
+            className="text-[9px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded"
+            style={{
+              background: `${ELEMENT_COLOR[planet.wu_xing_element as WuXingElement]}22`,
+              color: ELEMENT_COLOR[planet.wu_xing_element as WuXingElement],
+            }}
+          >
+            {elementLabel}
+          </span>
+        )}
+        {planet.bazi_resonance && (
+          <span
+            className="text-[9px] font-bold tracking-[0.15em] uppercase px-1.5 py-0.5 rounded"
+            style={{
+              background: `${RESONANCE_BADGE_COLOR[resonanceType]}18`,
+              color: RESONANCE_BADGE_COLOR[resonanceType],
+            }}
+            data-testid="resonance-badge"
+          >
+            {isDe
+              ? RESONANCE_LABEL[resonanceType]?.de ?? resonanceType
+              : RESONANCE_LABEL[resonanceType]?.en ?? resonanceType}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Empty state when Impact returns 0 active planets ────────────────────────
+
+function ImpactEmptyState({ isDe }: { isDe: boolean }) {
+  return (
+    <div
+      className="rounded-xl p-6 text-center"
+      style={{ background: 'rgba(255,255,255,0.03)', border: '1px dashed rgba(255,255,255,0.1)' }}
+      data-testid="impact-empty-state"
+    >
+      <p
+        className="text-xs"
+        style={{ color: 'var(--tile-text-secondary)', opacity: 0.5 }}
+      >
+        {isDe
+          ? 'Heute keine starken Transit-Aspekte zu deinem Geburtshoroskop.'
+          : 'No strong transit aspects to your birth chart today.'}
+      </p>
+    </div>
+  );
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
-export function AktiveEinfluesseFusion({ dayMasterStem }: AktiveEinfluesseFusionProps) {
+export function AktiveEinfluesseFusion({ dayMasterStem, activePlanets, impactLoading }: AktiveEinfluesseFusionProps) {
   const { lang } = useLanguage();
   const isDe = lang === 'de';
 
   const { bodies, loading } = useDailyTransit();
 
-  if (loading && !bodies) return <Skeleton />;
+  // Impact data available → use natal-relative active planets (REQ-F-active-planets-frontend)
+  const useImpactMode = activePlanets != null && !impactLoading;
+
+  if (!useImpactMode && loading && !bodies) return <Skeleton />;
+  if (useImpactMode && impactLoading) return <Skeleton />;
 
   // null when stem is absent — planet cards show Western block + notice (REQ-F-dashboard-bazi-fusion-bridge AC 9)
   const stem: HeavenlyStem | null = isHeavenlyStem(dayMasterStem) ? dayMasterStem : null;
@@ -452,28 +606,48 @@ export function AktiveEinfluesseFusion({ dayMasterStem }: AktiveEinfluesseFusion
         {isDe ? 'Aktive Einflüsse' : 'Active Influences'}
       </h3>
 
-      {/* ── 6 planet cards ───────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" data-testid="planet-card-grid">
-        {PLANETS.map((planet) => (
-          <PlanetCard
-            key={planet.bafeKey}
-            planet={planet}
-            dayMasterStem={stem}
-            transitBodies={bodies}
-            isDe={isDe}
-          />
-        ))}
-      </div>
+      {useImpactMode ? (
+        // ── Impact-derived planet cards (natal-relative, orb ≤ 8°) ───
+        activePlanets!.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" data-testid="planet-card-grid">
+            {activePlanets!.map((planet) => (
+              <ImpactPlanetCard
+                key={`${planet.planet}-${planet.aspect_type}-${planet.natal_planet}`}
+                planet={planet}
+                isDe={isDe}
+              />
+            ))}
+          </div>
+        ) : (
+          <ImpactEmptyState isDe={isDe} />
+        )
+      ) : (
+        // ── Static 6-planet fallback (existing behavior) ─────────────
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" data-testid="planet-card-grid">
+          {PLANETS.map((planet) => (
+            <PlanetCard
+              key={planet.bafeKey}
+              planet={planet}
+              dayMasterStem={stem}
+              transitBodies={bodies}
+              isDe={isDe}
+            />
+          ))}
+        </div>
+      )}
 
       {/* ── Data provenance footnote ─────────────────────────────────── */}
-      {/* Source: footnote — no bare numbers, qualitative framing per DEC-no-number-without-explanation */}
       <p
         className="text-[9px] leading-relaxed"
         style={{ color: 'var(--tile-text-secondary)', opacity: 0.35 }}
       >
-        {isDe
-          ? 'Positionen: geozentrisch, Mittag UTC · BaZi-Resonanz: Wu-Xing-Klassik'
-          : 'Positions: geocentric, noon UTC · BaZi resonance: classical Wu-Xing'}
+        {useImpactMode
+          ? (isDe
+              ? 'Transit-Aspekte: natal-relativ · BaZi-Resonanz: Wu-Xing-Klassik'
+              : 'Transit aspects: natal-relative · BaZi resonance: classical Wu-Xing')
+          : (isDe
+              ? 'Positionen: geozentrisch, Mittag UTC · BaZi-Resonanz: Wu-Xing-Klassik'
+              : 'Positions: geocentric, noon UTC · BaZi resonance: classical Wu-Xing')}
       </p>
     </div>
   );

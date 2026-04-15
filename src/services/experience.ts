@@ -25,7 +25,7 @@ export async function signatureDelta(
     body: JSON.stringify({
       soulprint_sectors: soulprintSectors,
       signature_blueprint: signatureBlueprint,
-      quiz_answer: { keyword },
+      quiz_answer: [{ id: keyword, weight: 1.0 }],
     }),
   });
   if (!resp.ok) throw new Error(`Signature delta failed: ${resp.status}`);

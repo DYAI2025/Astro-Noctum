@@ -64,7 +64,7 @@ export function DashboardHeroNav({ sunSign, dominantElement, zodiacAnimal, onTil
             'group relative flex flex-col items-center justify-center',
             'gap-3 py-8 px-6 rounded-2xl w-full cosmic-tile',
             'hover:border-[var(--tile-accent)]',
-            'transition-all duration-300 cursor-pointer',
+            'transition-[background-color,border-color,transform] duration-300 cursor-pointer',
           ].join(' ')}
         >
           {/* Icon */}

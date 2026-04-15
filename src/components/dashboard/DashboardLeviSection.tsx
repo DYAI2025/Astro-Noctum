@@ -96,7 +96,7 @@ export function DashboardLeviSection({
         </Button>
       ) : (
         <Button variant="premium" className="w-full" onClick={handleLeviUpgrade} disabled={leviUpgrading}>
-          {leviUpgrading ? '...' : <><Lock className="w-4 h-4" /> {t('dashboard.premium.cta')}</>}
+          {leviUpgrading ? '…' : <><Lock className="w-4 h-4" /> {t('dashboard.premium.cta')}</>}
         </Button>
       )}
 

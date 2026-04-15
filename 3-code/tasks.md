@@ -544,7 +544,7 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | ~~TASK-v3-trail-renderer~~ | ~~Duplicate of S-SIG TASK-v3-engine-production~~ | - | Done | - | - | 2026-03-29 | Superseded by S-SIG sprint |
 | ~~TASK-v3-dissonance-visual~~ | ~~Duplicate of S-SIG TASK-v3-dissonance-wiring~~ | - | Done | - | - | 2026-03-29 | Superseded by S-SIG sprint |
 | ~~TASK-v3-feature-flag~~ | ~~Duplicate of S-SIG TASK-v3-feature-flag~~ | - | Done | - | - | 2026-03-29 | Superseded by S-SIG sprint |
-| TASK-bloom-fine-tuning | Reduce glow, increase color saturation per user feedback (V2+V3) | P2 | Deferred | [REQ-F-fusion-ring-visualization](../1-objectives/requirements/REQ-F-fusion-ring-visualization.md) | - | 2026-03-28 | After live test |
+| TASK-bloom-fine-tuning | Reduce glow, increase color saturation per user feedback (V2+V3) | P2 | Done | [REQ-F-fusion-ring-visualization](../1-objectives/requirements/REQ-F-fusion-ring-visualization.md) | - | 2026-04-14 | V2: bloomPass.strength 0.55→0.35 (idle), lerp(0.4,0.9)→lerp(0.25,0.55) (dynamic), 1.2→0.7 (reveal); GLSL saturation factor 1.5. V3: glowR (8+d*12)→(5+d*8), glow alpha 0.6→0.45; ctx.filter saturate(1.5) on trail+head draws |
 | TASK-bloom-solar-coupling | Couple Bloom intensity to solar activity via computeRingModulation | P2 | Done | [REQ-F-space-weather-modulation](../1-objectives/requirements/REQ-F-space-weather-modulation.md) | - | 2026-04-03 | Implemented: V2 bloomPass.strength *= solarMod (FusionRingCanvasV2.tsx:922-926); V3 solarFadeMod reduces canvas clear alpha during solar activity (SignaturV3Canvas.tsx:342-343) |
 | TASK-sbridge-engine-consume | `bipolar-engine.ts`: `DimensionDef`+`DIMENSION_DEFS` aus Shared Package importieren; lokale Defs entfernen | P1 | Done | [REQ-F-signatur-shared-bridge](../1-objectives/requirements/REQ-F-signatur-shared-bridge.md) | TASK-sbridge-shared-index | 2026-03-29 | |
 | TASK-sbridge-web-bridge-consume | `signatur-bridge.ts` (web): lokale `soulprintToDimensionWeights` durch Shared-Import ersetzen | P1 | Done | [REQ-F-signatur-shared-bridge](../1-objectives/requirements/REQ-F-signatur-shared-bridge.md) | TASK-sbridge-engine-consume | 2026-03-29 | |
@@ -814,6 +814,57 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 
 ---
 
+## Phase: Current Sprint — S-DAILY-CHART-HERO (Unified Daily Chart Hero)
+
+**Sprint Goal:** Replace split volatile dashboard cards (KohaerenzHero + AktiveEinfluesseFusion + DayPulseExpanded) with one unified `DailyChartHero` containing coherence baseline+delta ring, driver strip, active planets with expandable "Warum?", and day-impulse text. Dark+Bright mode compliance. Plan: `docs/plans/2026-04-14-daily-chart-hero.md`.
+
+### Phase 1 — API + Schema Extension
+
+| ID | Task | Component | Req | Status | Dependencies | Updated | Notes |
+|----|------|-----------|-----|--------|--------------|---------|-------|
+| TASK-dch-impact-coherence-split | Extend `/api/impact/active` + Zod schema + hook with `base_coherence`, `positive_daily_delta`, `displayed_coherence` | api-server, frontend | [REQ-F-coherence-hero-impact-datasource](../1-objectives/requirements/REQ-F-coherence-hero-impact-datasource.md), [REQ-F-experience-daily-v2](../1-objectives/requirements/REQ-F-experience-daily-v2.md) | Done | - | 2026-04-14 | Schema + server + hook + 5 new contract tests |
+
+### Phase 2 — Unified Component
+
+| ID | Task | Component | Req | Status | Dependencies | Updated | Notes |
+|----|------|-----------|-----|--------|--------------|---------|-------|
+| TASK-dch-hero-component | Create `DailyChartHero.tsx`: split coherence ring, driver strip, active planet cards with "Warum?", day-impulse text block | frontend | [REQ-F-daily-chart-coherence-hero](../1-objectives/requirements/REQ-F-daily-chart-coherence-hero.md), [REQ-F-active-planets-frontend](../1-objectives/requirements/REQ-F-active-planets-frontend.md), [REQ-F-coherence-hero-impact-datasource](../1-objectives/requirements/REQ-F-coherence-hero-impact-datasource.md) | Done | TASK-dch-impact-coherence-split | 2026-04-15 | 31 tests covering all 4 sections + empty state + CSS compliance |
+
+### Phase 3 — Dashboard Wiring + Theme Fix
+
+| ID | Task | Component | Req | Status | Dependencies | Updated | Notes |
+|----|------|-----------|-----|--------|--------------|---------|-------|
+| TASK-dch-dashboard-wiring | Wire `DailyChartHero` into `Dashboard.tsx`, replace 3 old SectionErrorBoundary blocks | frontend | [REQ-F-daily-chart-coherence-hero](../1-objectives/requirements/REQ-F-daily-chart-coherence-hero.md) | Done | TASK-dch-hero-component | 2026-04-15 | DEC-dashboard-volatile-first; also fixed hook cached-user early-return + updated section-order tests |
+| TASK-dch-theme-contrast | Fix remaining hardcoded bg-white/text-white across dashboard tiles for dark-mode compliance | frontend | [REQ-USA-daily-chart-responsive-readability](../1-objectives/requirements/REQ-USA-daily-chart-responsive-readability.md) | Done | TASK-dch-dashboard-wiring | 2026-04-15 | Fixed hover:text-white in BlueprintCard+Reveal; removed dead imports + stale comments in Dashboard.tsx |
+
+---
+
+## Phase: Current Sprint — S-DCH-BUGFIX (Daily Chart Hero Regression Fixes)
+
+**Sprint Goal:** Fix all verified regressions from the DailyChartHero rollout: coherence formula, duplicate TagesImpuls tile, error-state rendering, Vibes i18n mismatch, old-user fusion fallback.
+
+### Phase 1 — Critical: Coherence Formula + Duplicate Tile
+
+| ID | Task | Component | Req | Status | Dependencies | Updated | Notes |
+|----|------|-----------|-----|--------|--------------|---------|-------|
+| TASK-dcfix-coherence-formula | Fix weighted-blend formula in `computeActiveImpactsCore()`: base_coherence must be the floor, displayed_coherence = base + solarDelta (additive, never below base) | api-server | [REQ-F-coherence-hero-impact-datasource](../1-objectives/requirements/REQ-F-coherence-hero-impact-datasource.md) | Done | - | 2026-04-15 | Fixed: additive formula, +3 contract tests |
+| TASK-dcfix-remove-tagesenergie | Remove standalone `DashboardTagesEnergie` / `CosmicWeatherCard` block from Dashboard.tsx (section 4) — content is already inside DailyChartHero section D | frontend | [REQ-F-daily-chart-coherence-hero](../1-objectives/requirements/REQ-F-daily-chart-coherence-hero.md) | Done | - | 2026-04-15 | Removed section 4 + unused imports (DashboardTagesEnergie, CosmicWeatherCard, useDailyHoroscope) |
+
+### Phase 2 — High: Error State + Vibes i18n
+
+| ID | Task | Component | Req | Status | Dependencies | Updated | Notes |
+|----|------|-----------|-----|--------|--------------|---------|-------|
+| TASK-dcfix-error-state | DailyChartHero: when all coherence fields are null and loading=false, render an explicit error/unavailable state instead of "Basis 0 · Heute +0" | frontend | [REQ-F-daily-chart-coherence-hero](../1-objectives/requirements/REQ-F-daily-chart-coherence-hero.md) | Done | - | 2026-04-15 | Dashed ring + "nicht verfügbar" + driver strip still renders, +3 tests |
+| TASK-dcfix-vibes-i18n | Fix VibesSection.tsx i18n keys: prefix all 5 `t()` calls with `dashboard.` (vibesSection.x → dashboard.vibesSection.x) | frontend | - | Done | - | 2026-04-15 | 5 keys fixed |
+
+### Phase 3 — Medium: Old-User Fallback
+
+| ID | Task | Component | Req | Status | Dependencies | Updated | Notes |
+|----|------|-----------|-----|--------|--------------|---------|-------|
+| TASK-dcfix-fusion-fallback | When `profile.astro_json.fusion` is absent, mark coherence as unavailable instead of silently using 0.5 — server should return base_coherence=null so client renders explicit fallback | api-server, frontend | [REQ-F-coherence-hero-impact-datasource](../1-objectives/requirements/REQ-F-coherence-hero-impact-datasource.md) | Done | TASK-dcfix-coherence-formula, TASK-dcfix-error-state | 2026-04-15 | hasFusionData guard + null propagation, +2 tests |
+
+---
+
 ## Backlog (Not Scheduled)
 
 | Requirement | Reason |
@@ -843,10 +894,10 @@ Conversion architecture decided 2026-04-10: [DEC-conversion-tiers](../2-design/d
 
 | Task | Description | Priority | Status | Req | Dependencies | Updated | Notes |
 |------|-------------|----------|--------|-----|--------------|---------|-------|
-| TASK-landing-page-shell | Landing page route + layout shell (no-auth, birth data form, veiled signature) | P1 | Blocked | - | - | 2026-04-10 | Deferred to Sprint-Landing; requirements pending |
-| TASK-landing-signature-preview | Render Fusion Signature with 1 sector lit, rest veiled; single CTA | P1 | Blocked | - | TASK-landing-page-shell | 2026-04-10 | Deferred to Sprint-Landing; requirements pending |
-| TASK-landing-sun-activation | Sun sign activation paragraph (DE); server-side via Gemini or template | P1 | Blocked | - | TASK-landing-page-shell | 2026-04-10 | Deferred to Sprint-Landing; requirements pending |
-| TASK-registration-initiation | Registration form styled as initiation — pre-filled from sessionStorage birth data | P1 | Blocked | - | TASK-landing-page-shell | 2026-04-10 | Deferred to Sprint-Landing; requirements pending |
+| TASK-landing-page-shell | Landing page route + layout shell (no-auth, birth data form, veiled signature) | P1 | Cancelled | - | - | 2026-04-13 | Moved to separate repo: Landingpage-viteapp. See integration plan. |
+| TASK-landing-signature-preview | Render Fusion Signature with 1 sector lit, rest veiled; single CTA | P1 | Cancelled | - | TASK-landing-page-shell | 2026-04-13 | Moved to separate repo: Landingpage-viteapp |
+| TASK-landing-sun-activation | Sun sign activation paragraph (DE); server-side via Gemini or template | P1 | Cancelled | - | TASK-landing-page-shell | 2026-04-13 | Moved to separate repo: Landingpage-viteapp |
+| TASK-registration-initiation | Registration form styled as initiation — pre-filled from sessionStorage birth data | P1 | Cancelled | - | TASK-landing-page-shell | 2026-04-13 | Moved to separate repo: Landingpage-viteapp |
 | TASK-partner-profile-schema | DB: `partner_profiles` table (user_id FK, birth_date, birth_time, birth_place, birth_lat, birth_lon, display_name) | P1 | Done | - | - | 2026-04-10 | Migration: 20260410_partner_profiles.sql; schema updated |
 | TASK-synastry-endpoint | Server: POST `/api/synastry` — compute aspects via FuFirE using staggered orbs (DEC-aspect-orb-tolerances) | P1 | Done | - | TASK-partner-profile-schema | 2026-04-11 | Premium gate; Placidus; 5 main aspects only |
 | TASK-synastry-narratives | Server: generate template narratives for synastry (Free tier); Gemini narratives (Premium tier) | P1 | Done | - | TASK-synastry-endpoint | 2026-04-11 | DEC-narrative-engine-hybrid; always German; template fallback |
@@ -854,15 +905,40 @@ Conversion architecture decided 2026-04-10: [DEC-conversion-tiers](../2-design/d
 | TASK-premium-gate-component | Reusable PremiumGate component (locked card + upgrade CTA); used across synastry, GCB, composites | P1 | Done | - | - | 2026-04-11 | Already implemented (PremiumGate.tsx + usePremium.ts); confirmed in use on WuXingPage and SynastryPage |
 | TASK-tier-enforcement-server | Server-side tier validation middleware — attach `user.tier` from Supabase to all premium-gated endpoints | P1 | Done | - | - | 2026-04-11 | DEC-conversion-tiers: gates enforced server-side |
 
-### Sprint-Landing (pending requirements)
+### Sprint-Landing (moved to separate repo)
 
-Landing page tasks held here until Ben defines requirements. Architecture decisions already recorded in [DEC-conversion-tiers](../2-design/decisions/DEC-conversion-tiers.md).
+Landing page development moved to `Landingpage-viteapp` repo (bazodiac.com). Architecture: Option C (separate apps, API bridge). Integration plan: `Landingpage-viteapp/app/2026-04-13-landingpage-fufire-integration-plan.md`.
 
-Tasks to move here once requirements exist: TASK-landing-page-shell, TASK-landing-signature-preview, TASK-landing-sun-activation, TASK-registration-initiation.
+**Astro-Noctum server.mjs work remaining:** Two public endpoints (`POST /api/public/chart`, `POST /api/public/match-preview`) will be added here when the Landingpage reaches Phase 2 of the integration plan.
 
 ---
 
 GitHub Issues (#115, #117, #118, #119, #123, #124, #129, #130, #132, #136) remain in GitHub for detailed tracking once implementation begins.
+
+---
+
+## Sprint S-API-CONTRACT: API Contract Verification + CI Tests
+
+**Sprint Goal:** Fix 1 confirmed bug (signatureDelta quiz_answer payload mismatch), 1 doc drift (synastry missing from API_REFERENCE.md), and build CI contract tests for all server API endpoints so future drift is caught automatically.
+
+**Context:** An external audit reported 12 potential discrepancies. Verification (2026-04-13) confirmed only 2 are real — the rest were false positives (client mappers already handle both formats, all routes exist, deprecated funcs match deprecated docs).
+
+### Phase 1 — Bug Fixes
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-fix-signature-delta-payload | Fix `signatureDelta()` in `src/services/experience.ts`: change `quiz_answer: { keyword }` to `quiz_answer: [{ id: keyword, weight: 1.0 }]` to match server expectation `Array.isArray(quiz_answer)`. Server silently coerces non-array to `[]` — quiz influence on Signatur ring is currently lost. | P0 | Done | - | - | 2026-04-13 | server.mjs:2052 expects `[{id, weight}]` array; client sends `{keyword}` object |
+| TASK-doc-synastry-api-reference | Add `POST /api/synastry` section to `docs/API_REFERENCE.md`: auth (requireUserAuth + requirePremium), request `{ partner_id }`, response schema (aspects[], narrative, narrative_source), error cases | P1 | Done | - | - | 2026-04-13 | Route exists at server.mjs:746 but is undocumented |
+
+### Phase 2 — API Contract CI Tests
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-contract-test-calculate | Write Vitest contract tests for `/api/calculate/*` proxy routes: verify request body schema forwarded correctly, response field paths match client mapper expectations (`positions\|\|bodies`, `chinese\|\|bazi`, German+English fallbacks) | P0 | Done | - | - | 2026-04-14 | 32 tests in contract-calculate.test.ts |
+| TASK-contract-test-chart | Write Vitest contract test for `POST /api/chart` (the canonical atomic endpoint): verify `local_datetime`+`tz` request format, response contains `positions` or `bodies` dict with Sun/Moon/planet entries | P0 | Done | - | - | 2026-04-14 | 16 tests in contract-chart.test.ts |
+| TASK-contract-test-experience | Write Vitest contract tests for all 3 Experience endpoints: bootstrap (birth payload → soulprint+profile), signature-delta (quiz_answer array format → delta response), daily (include=["impact"] v2 contract) | P0 | Done | TASK-fix-signature-delta-payload | - | 2026-04-14 | 34 tests in contract-experience.test.ts |
+| TASK-contract-test-synastry | Write Vitest contract test for `POST /api/synastry`: verify auth requirement, partner_id payload, response shape (aspects[], narrative, narrative_source) | P1 | Done | TASK-doc-synastry-api-reference | - | 2026-04-14 | 15 tests in contract-synastry.test.ts |
+| TASK-contract-test-impact | Write Vitest contract test for `POST /api/impact/active`: verify ACTIVE_IMPACTS_v1 schema, harmony_index 0-100, active_planets orb filter, resonance_badges shape | P1 | Done | - | - | 2026-04-14 | 30 tests in contract-impact.test.ts |
 
 ---
 
@@ -886,6 +962,6 @@ GitHub Issues (#115, #117, #118, #119, #123, #124, #129, #130, #132, #136) remai
 |----|------|----------|--------|-----|--------------|---------|-------|
 | TASK-daily-use-active-impacts | Create `src/hooks/useActiveImpacts.ts`: POST to `/api/impact/active`, Zod-parse `ACTIVE_IMPACTS_v1` schema, expose `harmonyIndex` + `activePlanets[]`; independent of `useDailyExperience()` | P0 | Done | [REQ-F-active-planets-frontend](../1-objectives/requirements/REQ-F-active-planets-frontend.md) | TASK-daily-impact-proxy | 2026-04-13 | Note: v2 daily response has two `resonance_badges` arrays — top-level (v1, ungated) and `impact.resonance_badges` (premium-gated). Frontend should consume `impact.resonance_badges` when using the impact block. |
 | TASK-daily-coherence-hero | Wire `harmonyIndex` from `useActiveImpacts()` to Kohärenzindex display on Dashboard; verify value is above fold at 375px+ viewport | P0 | Done | [REQ-F-coherence-hero-impact-datasource](../1-objectives/requirements/REQ-F-coherence-hero-impact-datasource.md), [REQ-F-daily-chart-coherence-hero](../1-objectives/requirements/REQ-F-daily-chart-coherence-hero.md) | TASK-daily-use-active-impacts | 2026-04-13 | Label value per CON-no-unexplained-numbers |
-| TASK-daily-dashboard-order | Move Planetarium below Daily Chart section in `Dashboard.tsx`; section order test must pass | P0 | Todo | [REQ-F-daily-chart-dashboard-order](../1-objectives/requirements/REQ-F-daily-chart-dashboard-order.md) | TASK-daily-coherence-hero | 2026-04-13 | |
-| TASK-daily-planet-cards | Replace static 6-planet pool with `activePlanets[]` from `useActiveImpacts()`; each card shows: planet name, strength visual bar, bazi_resonance badge, aspect type + orb (with °) | P1 | Todo | [REQ-F-active-planets-frontend](../1-objectives/requirements/REQ-F-active-planets-frontend.md) | TASK-daily-use-active-impacts | 2026-04-13 | Empty-state for 0 active planets |
-| TASK-daily-manual-testing | Runbook: Kohärenzindex above fold, planet cards orb-filtered, Planetarium below fold, premium badges/fusion.action visible, backward-compat verified | P1 | Todo | - | TASK-daily-planet-cards, TASK-daily-dashboard-order | 2026-04-13 | |
+| TASK-daily-dashboard-order | Move Planetarium below Daily Chart section in `Dashboard.tsx`; section order test must pass | P0 | Done | [REQ-F-daily-chart-dashboard-order](../1-objectives/requirements/REQ-F-daily-chart-dashboard-order.md) | TASK-daily-coherence-hero | 2026-04-13 | |
+| TASK-daily-planet-cards | Replace static 6-planet pool with `activePlanets[]` from `useActiveImpacts()`; each card shows: planet name, strength visual bar, bazi_resonance badge, aspect type + orb (with °) | P1 | Done | [REQ-F-active-planets-frontend](../1-objectives/requirements/REQ-F-active-planets-frontend.md) | TASK-daily-use-active-impacts | 2026-04-13 | Empty-state for 0 active planets |
+| TASK-daily-manual-testing | Runbook: Kohärenzindex above fold, planet cards orb-filtered, Planetarium below fold, premium badges/fusion.action visible, backward-compat verified | P1 | Done | - | TASK-daily-planet-cards, TASK-daily-dashboard-order | 2026-04-13 | |

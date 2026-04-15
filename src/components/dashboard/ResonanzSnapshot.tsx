@@ -15,7 +15,7 @@ export function ResonanzSnapshot({ badges, isPremium }: ResonanzSnapshotProps) {
         <div
           key={badge.type}
           data-testid={`resonanz-badge-${badge.type}`}
-          className={`relative flex flex-col gap-0.5 px-3 py-2 rounded-xl border text-xs transition-all select-none ${
+          className={`relative flex flex-col gap-0.5 px-3 py-2 rounded-xl border text-xs transition-colors select-none ${
             !isPremium ? 'opacity-60' : ''
           }`}
           style={{

@@ -18,11 +18,8 @@ import { DashboardInterpretationSection } from "./dashboard/DashboardInterpretat
 import { SectionErrorBoundary } from "./dashboard/SectionErrorBoundary";
 import { AgentSection } from "./dashboard/AgentSection";
 import { AGENTS } from "@/packages/shared/src/agents/config";
-import { CosmicWeatherCard } from "./CosmicWeatherCard";
-import { DashboardTagesEnergie } from "./dashboard/DashboardTagesEnergie";
 import { useSpaceWeather } from "../hooks/useSpaceWeather";
 import { isFeatureEnabled } from "../lib/feature-flags";
-import { useDailyHoroscope } from "../hooks/useDailyHoroscope";
 import { useFusionRingContext } from "../contexts/FusionRingContext";
 
 import { Card } from "./ui/card";
@@ -31,12 +28,8 @@ import {
 } from "@/src/lib/signatur/weight-utils";
 import { DashboardBigFour as DashboardBigFourCard } from "./dashboard/DashboardBigFour";
 // MiniSignature removed from dashboard grid — coherence-first layout.
-// Retained import for future KohaerenzHero integration.
-// import MiniSignature from "./dashboard/MiniSignature";
 import { CosmicInfluenceSection } from "./dashboard/CosmicInfluenceSection";
 import { TourOverlay } from "./dashboard/TourOverlay";
-import { DayPulseExpanded } from "./dashboard/DayPulseExpanded";
-import { AktiveEinfluesseFusion } from "./dashboard/AktiveEinfluesseFusion";
 import { MagnetsturmKarte } from "./dashboard/MagnetsturmKarte";
 import { NatalSignaturStatic } from "./dashboard/NatalSignaturStatic";
 import { useFusionSignal } from "../hooks/useFusionSignal";
@@ -48,7 +41,7 @@ import { SkyModeToggle } from "./dashboard/SkyModeToggle";
 import { getConstellationForSign } from "../lib/astro-data/constellationFromSign";
 import { useCelestialOrrery } from "../hooks/useCelestialOrrery";
 import { CITIES } from "../lib/astronomy/data";
-import { KohaerenzHero } from "./dashboard/KohaerenzHero";
+import { DailyChartHero } from "./dashboard/DailyChartHero";
 import { useActiveImpacts } from "../hooks/useActiveImpacts";
 
 const BirthChartOrrery = lazy(() => import("./BirthChartOrrery").then(m => ({ default: m.BirthChartOrrery })));
@@ -111,13 +104,6 @@ export function Dashboard({
   const { isPremium } = usePremium();
   const { user } = useAuth();
   const { events: quizEvents } = useFusionRingContext();
-
-  // ── Parse birth year for horoscope ────────────────────────────
-  const birthYear = birthDate ? new Date(birthDate).getFullYear() : null;
-
-  // ── Daily horoscope (CosmicWeatherCard data) ─────────────────
-  const { horoscope, loading: horoscopeLoading, error: horoscopeError, refresh: horoscopeRefresh } =
-    useDailyHoroscope(userId, apiData, quizEvents, birthYear, lang);
 
   // ── Planetarium data ──────────────────────────────────────────────
   const orreryDate = useMemo(() => {
@@ -273,17 +259,24 @@ export function Dashboard({
   // ── Feature flags ──────────────────────────────────────────────────
   const dailyEnabled = isFeatureEnabled('daily_modal_v1');
 
-  // ── Space weather (für DashboardTagesEnergie Resonanz + Kosmoswetter) ──
+  // ── Space weather (für DailyChartHero + ring modulation) ──
   const spaceWeather = useSpaceWeather();
 
-  // ── Transit signal — provides events[] for DayPulseExpanded (DEC-dashboard-volatile-first pos 1) ──
+  // ── Transit signal — provides events[] for DailyChartHero ──
   const { events: transitEvents, loading: transitLoading } = useFusionSignal(userId);
 
   // ── Active Impacts — harmony_index + active planets from POST /api/impact/active ──
-  const { harmonyIndex: impactHarmonyIndex, loading: impactLoading } = useActiveImpacts();
+  const {
+    harmonyIndex: impactHarmonyIndex,
+    baseCoherence: impactBaseCoherence,
+    positiveDailyDelta: impactPositiveDailyDelta,
+    displayedCoherence: impactDisplayedCoherence,
+    activePlanets: impactPlanets,
+    loading: impactLoading,
+  } = useActiveImpacts();
 
   // ── Daily horoscope modal ───────────────────────────────────────────
-  // isDayModalOpen: on-demand via "vertiefen →" in DashboardTagesEnergie.
+  // isDayModalOpen: on-demand via "vertiefen →" in DailyChartHero.
   // showModal (auto-open) deliberately not used for rendering - wireframe F3:
   // "Modal wird nicht mehr automatisch geöffnet".
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
@@ -317,7 +310,6 @@ export function Dashboard({
   }, [dayHarmonic, nightHarmonic, isPremium]);
 
   // natalWeights + dimensionWeights removed — MiniSignature no longer in dashboard grid.
-  // Retained computation in useFirstRunDaily for KohaerenzHero integration later.
 
   // ── Render ────────────────────────────────────────────────────────────
 
@@ -381,17 +373,19 @@ export function Dashboard({
         </div>
       </motion.header>
 
-      {/* ═══ 1. COHERENCE HERO ════════════════════════════════════════ */}
+      {/* ═══ 1. DAILY CHART HERO (unified volatile hero — DEC-dashboard-volatile-first) ═══ */}
       <motion.div {...fadeIn(0.02)}>
-        <SectionErrorBoundary name="CoherenceHero">
-          <KohaerenzHero
-            dayHarmonic={activeDayHarmonic}
+        <SectionErrorBoundary name="DailyChartHero">
+          <DailyChartHero
+            loading={(metaLoading || transitLoading) && impactHarmonyIndex == null}
+            baseCoherence={impactBaseCoherence}
+            positiveDailyDelta={impactPositiveDailyDelta}
+            displayedCoherence={impactDisplayedCoherence}
             spaceWeather={spaceWeather}
+            activePlanets={impactPlanets}
             transitEvents={transitEvents}
             dayMode={dailyData?.fusion?.day_mode ?? 'pulse'}
-            loading={metaLoading || transitLoading}
-            impactHarmonyIndex={impactHarmonyIndex}
-            impactLoading={impactLoading}
+            onOpenDayModal={dailyEnabled ? () => setIsDayModalOpen(true) : undefined}
           />
         </SectionErrorBoundary>
       </motion.div>
@@ -399,51 +393,7 @@ export function Dashboard({
       {/* ── Tour sentinel: step 0 anchors at the planet section ── */}
       <div ref={astroSentinelRef} className="h-px" aria-hidden="true" />
 
-      {/* ═══ 2. ACTIVE PLANET INFLUENCES ══════════════════════════════ */}
-      <motion.div {...fadeIn(0.05)}>
-        <SectionErrorBoundary name="AktiveEinfluesseFusion">
-          <AktiveEinfluesseFusion
-            dayMasterStem={apiData?.bazi?.day_master}
-          />
-        </SectionErrorBoundary>
-      </motion.div>
-
-      {/* ═══ 3. DAY PULSE — transit event text ═══════════════════════ */}
-      <motion.div {...fadeIn(0.08)}>
-        <SectionErrorBoundary name="DayPulseExpanded">
-          <DayPulseExpanded
-            events={transitEvents}
-            dayMode={dailyData?.fusion?.day_mode ?? 'pulse'}
-            loading={transitLoading && transitEvents.length === 0}
-          />
-        </SectionErrorBoundary>
-      </motion.div>
-
-      {/* ═══ 4. DAILY PULSE NARRATIVE (Tagesimpuls) ══════════════════ */}
-      <motion.div {...fadeIn(0.10)}>
-        <SectionErrorBoundary name="TagesImpuls">
-          {dailyData ? (
-            <DashboardTagesEnergie
-              daily={dailyData}
-              dayHarmonic={activeDayHarmonic}
-              spaceWeather={spaceWeather}
-              onOpenDayModal={dailyEnabled ? () => setIsDayModalOpen(true) : undefined}
-              isPremium={isPremium}
-            />
-          ) : (
-            <CosmicWeatherCard
-              horoscope={horoscope}
-              loading={horoscopeLoading}
-              error={horoscopeError}
-              onRefresh={horoscopeRefresh}
-              lang={lang}
-              isPremium={isPremium}
-            />
-          )}
-        </SectionErrorBoundary>
-      </motion.div>
-
-      {/* ═══ 5. VIBES ═════════════════════════════════════════════════ */}
+      {/* ═══ 2. VIBES ══════════════════════════════════════════════════ */}
       <motion.div {...fadeIn(0.12)}>
         <SectionErrorBoundary name="Vibes">
           <div className="flex justify-center md:justify-start">
@@ -455,15 +405,15 @@ export function Dashboard({
       {/* ── Tour sentinel: step 1 triggers when agents scroll into view ── */}
       <div ref={leviSentinelRef} className="h-px" aria-hidden="true" />
 
-      {/* ═══ 6. ASTRO AGENTS — interpretation bridge ═════════════════ */}
+      {/* ═══ 3. ASTRO AGENTS — interpretation bridge ═════════════════ */}
       <motion.div {...fadeIn(0.14)}>
         <SectionErrorBoundary name="Agents">
           <div className="cosmic-tile p-6 rounded-[2rem] space-y-5">
             <h2 className="text-xs font-bold tracking-[0.2em] uppercase text-center" style={{ color: 'var(--tile-text-secondary)' }}>
-              {t('dashboard.astroAgents')}
+              {t('nav.astroAgents')}
             </h2>
             <p className="text-[11px] text-center leading-relaxed" style={{ color: 'var(--tile-text-secondary)', opacity: 0.6 }}>
-              {t('dashboard.astroAgentsIntro')}
+              {t('nav.astroAgentsIntro')}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {AGENTS.map(agent => (
@@ -484,7 +434,7 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
-      {/* ═══ 7. BLUEPRINT — collapsed natal accordion ════════════════ */}
+      {/* ═══ 4. BLUEPRINT — collapsed natal accordion ════════════════ */}
       <SectionErrorBoundary name="NatalSignaturStatic">
         <NatalSignaturStatic>
           <DashboardAstroSection
@@ -495,7 +445,7 @@ export function Dashboard({
         </NatalSignaturStatic>
       </SectionErrorBoundary>
 
-      {/* ═══ 8. STABLE NATAL VALUES — Identity Cards ════════════════ */}
+      {/* ═══ 5. STABLE NATAL VALUES — Identity Cards ════════════════ */}
       <motion.div {...fadeIn(0.18)}>
         <SectionErrorBoundary name="BigFour">
           <DashboardBigFourCard
@@ -508,7 +458,7 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
-      {/* ═══ 9. PLANETARIUM (Birth Chart Orrery) ═════════════════════ */}
+      {/* ═══ 6. PLANETARIUM (Birth Chart Orrery) ═════════════════════ */}
       <div ref={planetariumSentinelRef} className="h-px" aria-hidden="true" />
       <motion.div className="-mx-4 md:-mx-6" {...fadeIn(0.20)}>
         <Suspense fallback={<div className="w-full aspect-[16/10] min-h-[360px] bg-[#0A0A14] rounded-2xl animate-pulse" />}>
@@ -540,14 +490,14 @@ export function Dashboard({
         </motion.div>
       )}
 
-      {/* ═══ 10. COSMIC INFLUENCE DETAIL ═════════════════════════════ */}
+      {/* ═══ 7. COSMIC INFLUENCE DETAIL ═════════════════════════════ */}
       <motion.div {...fadeIn(0.24)}>
         <SectionErrorBoundary name="CosmicInfluence">
           <CosmicInfluenceSection spaceWeather={spaceWeather} />
         </SectionErrorBoundary>
       </motion.div>
 
-      {/* ═══ 11. MAGNETSTURM (self-hides when Kp < 4) ════════════════ */}
+      {/* ═══ 8. MAGNETSTURM (self-hides when Kp < 4) ════════════════ */}
       <motion.div {...fadeIn(0.26)}>
         <SectionErrorBoundary name="MagnetsturmKarte">
           <MagnetsturmKarte />

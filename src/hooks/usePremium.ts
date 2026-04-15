@@ -10,19 +10,27 @@ export function usePremium() {
   const fetchTier = useCallback(async () => {
     if (!user) { setIsPremium(false); setLoading(false); return; }
 
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('tier')
-      .eq('id', user.id)
-      .single();
-    if (error) {
-      // On network failure, keep the last known state instead of resetting to false
-      console.warn('[premium] fetch failed, keeping last known state:', error.message);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('tier')
+        .eq('id', user.id)
+        .single();
+      if (error) {
+        // On query/network failure, fall back to a safe non-premium default.
+        console.warn('[premium] fetch failed, using safe default:', error.message);
+        setIsPremium(false);
+        setLoading(false);
+        return;
+      }
+      setIsPremium(data?.tier === 'premium');
       setLoading(false);
-      return;
+    } catch (error) {
+      // Handles thrown TypeError cases like "Failed to fetch" (e.g. CSP/network).
+      console.warn('[premium] fetch failed, using safe default:', error);
+      setIsPremium(false);
+      setLoading(false);
     }
-    setIsPremium(data?.tier === 'premium');
-    setLoading(false);
   }, [user]);
 
   // Initial fetch

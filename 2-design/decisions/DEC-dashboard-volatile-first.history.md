@@ -33,3 +33,4 @@ The dashboard's daily-use value depends entirely on showing something different 
 | Date | Change | Involvement |
 |------|--------|-------------|
 | 2026-04-08 | Initial decision | ai-proposed/human-approved |
+| 2026-04-14 | Updated decision from split volatile cards to one unified Daily Chart hero | ai-proposed/human-requested |

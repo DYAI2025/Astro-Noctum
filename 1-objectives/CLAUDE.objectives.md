@@ -83,7 +83,7 @@ When an artifact (goal, requirement) is no longer relevant:
 | [GOAL-vibes-weekly-insights](goals/GOAL-vibes-weekly-insights.md) | Must | Approved | On-demand Vibes (2–3h) + Weekly Insights (7 life areas) with transparent outputs |
 | [GOAL-signatur-phase2-density](goals/GOAL-signatur-phase2-density.md) | Must | Draft | Density Field (128×128) als numerische Signatur-Repräsentation + vollständiges Drei-Schichten-Dissonanz-Modell |
 | [GOAL-signatur-phase3-matching](goals/GOAL-signatur-phase3-matching.md) | Must | Draft | Dual-Ring Matching, Frequenzkompatibilität, Cousto-Audio-Layer — Signatur als Identitätsprotokoll |
-| [GOAL-daily-chart-coherence-first](goals/GOAL-daily-chart-coherence-first.md) | Must | Draft | Kohärenz-geführtes Daily Chart als primäre Dashboard-Erfahrung — Kohärenzindex + aktive Planeten above the fold |
+| [GOAL-daily-chart-coherence-first](goals/GOAL-daily-chart-coherence-first.md) | Must | Draft | Unified Daily Chart hero als erste Dashboard-Sektion — Kohärenz (Baseline + Tagesaktivierung), aktive Planeten, Daily Impulse, Driver-Strip in einer Karte |
 | [GOAL-synastry-compatibility](goals/GOAL-synastry-compatibility.md) | Must | Draft | Partnership compatibility via synastry interaspect chart — free grid, premium Gemini narrative |
 
 ---
@@ -148,13 +148,13 @@ When an artifact (goal, requirement) is no longer relevant:
 | [REQ-F-signatur-day-night-pulse](requirements/REQ-F-signatur-day-night-pulse.md) | REQ-F | Must | Implemented | Day-Pulse/Trace + Night-Pulse/Trace Modulation der Signatur |
 | [REQ-F-quiz-generator-pipeline](requirements/REQ-F-quiz-generator-pipeline.md) | REQ-F | Must | Draft | Quiz generator with formal fusion mapping and canonical 6-field result schema |
 | [REQ-F-vibes-core](requirements/REQ-F-vibes-core.md) | REQ-F | Must | Draft | On-demand Vibe insight with deterministic 2-hour refresh window and live drivers |
-| [REQ-F-vibes-output-structure](requirements/REQ-F-vibes-output-structure.md) | REQ-F | Must | Approved | 3-level output: Kurzsignal → Treiber → Erklärung |
-| [REQ-F-weekly-insights-engine](requirements/REQ-F-weekly-insights-engine.md) | REQ-F | Must | Approved | Weekly insights across 7 life areas with tendency labels |
-| [REQ-F-weekly-area-prioritization](requirements/REQ-F-weekly-area-prioritization.md) | REQ-F | Should | Approved | Top-3 life area highlighting with additional depth |
-| [REQ-F-transparency-rule](requirements/REQ-F-transparency-rule.md) | REQ-F | Must | Approved | System-wide: no number without explanation |
-| [REQ-F-explainability-layer](requirements/REQ-F-explainability-layer.md) | REQ-F | Must | Approved | "Warum sehe ich das?" for every insight |
-| [REQ-USA-mobile-first-readability](requirements/REQ-USA-mobile-first-readability.md) | REQ-USA | Must | Approved | <10s comprehension on mobile, mobile-first layout |
-| [REQ-PERF-vibes-response-time](requirements/REQ-PERF-vibes-response-time.md) | REQ-PERF | Must | Approved | Vibes result <2s p95, Gemini fallback within 1.5s |
+| [REQ-F-vibes-output-structure](requirements/REQ-F-vibes-output-structure.md) | REQ-F | Must | Implemented | 3-level output: Kurzsignal → Treiber → Erklärung |
+| [REQ-F-weekly-insights-engine](requirements/REQ-F-weekly-insights-engine.md) | REQ-F | Must | Implemented | Weekly insights across 7 life areas with tendency labels |
+| [REQ-F-weekly-area-prioritization](requirements/REQ-F-weekly-area-prioritization.md) | REQ-F | Should | Implemented | Top-3 life area highlighting with additional depth |
+| [REQ-F-transparency-rule](requirements/REQ-F-transparency-rule.md) | REQ-F | Must | Implemented | System-wide: no number without explanation |
+| [REQ-F-explainability-layer](requirements/REQ-F-explainability-layer.md) | REQ-F | Must | Implemented | "Warum sehe ich das?" for every insight |
+| [REQ-USA-mobile-first-readability](requirements/REQ-USA-mobile-first-readability.md) | REQ-USA | Must | Implemented | <10s comprehension on mobile, mobile-first layout |
+| [REQ-PERF-vibes-response-time](requirements/REQ-PERF-vibes-response-time.md) | REQ-PERF | Must | Implemented | Vibes result <2s p95, Gemini fallback within 1.5s |
 | [REQ-F-orbital-signatur-visualization](requirements/REQ-F-orbital-signatur-visualization.md) | REQ-F | Should | Draft | Parametric ellipse in Valence×Arousal space — Home-Base orbit + perturbed trajectory |
 | [REQ-F-depth-navigation](requirements/REQ-F-depth-navigation.md) | REQ-F | Must | Draft | Z-axis depth navigation: Dashboard (surface) → Signatur (mid) → detail views (core) |
 | [REQ-F-progressive-ui-fluidity](requirements/REQ-F-progressive-ui-fluidity.md) | REQ-F | Must | Draft | UI fluidity grows with cluster completion; conventional for new users, gesture-driven for engaged users |
@@ -165,14 +165,15 @@ When an artifact (goal, requirement) is no longer relevant:
 | [REQ-F-signatur-live-transit-panels](requirements/REQ-F-signatur-live-transit-panels.md) | REQ-F | Must | Draft | Lower Signatur-page tiles replaced with live transit resonance panels; no static placeholders |
 | [REQ-F-dashboard-bazi-fusion-bridge](requirements/REQ-F-dashboard-bazi-fusion-bridge.md) | REQ-F | Must | Draft | Western–BaZi planet fusion: Sheng/Ke resonance calculation + German interpretation per planet card |
 | [REQ-F-onboarding-display-name](requirements/REQ-F-onboarding-display-name.md) | REQ-F | Must | Implemented | Onboarding captures display_name; stored in profiles only, never forwarded to FuFirE |
-| [REQ-F-daily-chart-coherence-hero](requirements/REQ-F-daily-chart-coherence-hero.md) | REQ-F | Must | Implemented | Kohärenzindex + Day Mode visible above the fold without scroll |
+| [REQ-F-daily-chart-coherence-hero](requirements/REQ-F-daily-chart-coherence-hero.md) | REQ-F | Must | Draft | Unified Daily Chart hero ersetzt split top-card layout — Kohärenz + Daily Impulse + aktive Planeten + Driver-Strip in einer Karte, Dark/Bright mode contrast-safe |
 | [REQ-F-daily-chart-dashboard-order](requirements/REQ-F-daily-chart-dashboard-order.md) | REQ-F | Must | Implemented | Daily Chart section appears before Planetarium in dashboard layout |
-| [REQ-F-impact-active-endpoint](requirements/REQ-F-impact-active-endpoint.md) | REQ-F | Must | Approved | POST /impact/active returns ACTIVE_IMPACTS_v1 — structured, no LLM |
-| [REQ-F-experience-daily-v2](requirements/REQ-F-experience-daily-v2.md) | REQ-F | Must | Approved | POST /experience/daily v2 with include=["impact"] — backwards-compatible |
-| [REQ-F-active-planets-frontend](requirements/REQ-F-active-planets-frontend.md) | REQ-F | Must | Draft | Planet cards from Impact data; only active planets shown |
-| [REQ-F-coherence-hero-impact-datasource](requirements/REQ-F-coherence-hero-impact-datasource.md) | REQ-F | Must | Draft | Kohärenzindex sourced from impact.harmony_index — not a mock |
-| [REQ-PERF-impact-active-response-time](requirements/REQ-PERF-impact-active-response-time.md) | REQ-PERF | Must | Approved | POST /impact/active ≤ 800ms p95 |
-| [REQ-PERF-daily-experience-response-time](requirements/REQ-PERF-daily-experience-response-time.md) | REQ-PERF | Must | Approved | POST /experience/daily ≤ 2s p95 |
+| [REQ-F-impact-active-endpoint](requirements/REQ-F-impact-active-endpoint.md) | REQ-F | Must | Implemented | POST /impact/active returns ACTIVE_IMPACTS_v1 — structured, no LLM |
+| [REQ-F-experience-daily-v2](requirements/REQ-F-experience-daily-v2.md) | REQ-F | Must | Draft | POST /experience/daily mit Unified Daily Chart Contract — one-pass rendering von Kohärenz, Daily Impulse, aktive Planeten, Driver Evidence |
+| [REQ-F-active-planets-frontend](requirements/REQ-F-active-planets-frontend.md) | REQ-F | Must | Draft | Signatur-aligned planet cards im Daily Chart hero — Name, Stärke, "Warum?" expandierbar, höchste Stärke zuerst |
+| [REQ-F-coherence-hero-impact-datasource](requirements/REQ-F-coherence-hero-impact-datasource.md) | REQ-F | Must | Draft | Kohärenz-Darstellung trennt stabilen Baseline von positivem Tages-Delta — base_coherence + positive_daily_delta + Driver-Strip mit echten Werten |
+| [REQ-USA-daily-chart-responsive-readability](requirements/REQ-USA-daily-chart-responsive-readability.md) | REQ-USA | Must | Draft | Daily Chart hero lesbar und scannable auf 375px + Desktop — kein horizontal scroll, WCAG-kontrast in Bright + Dark |
+| [REQ-PERF-impact-active-response-time](requirements/REQ-PERF-impact-active-response-time.md) | REQ-PERF | Must | Implemented | POST /impact/active ≤ 800ms p95 |
+| [REQ-PERF-daily-experience-response-time](requirements/REQ-PERF-daily-experience-response-time.md) | REQ-PERF | Must | Implemented | POST /experience/daily ≤ 2s p95 |
 | [REQ-F-synastry-partner-management](requirements/REQ-F-synastry-partner-management.md) | REQ-F | Must | Implemented | partner_profiles CRUD with user_id RLS + defence-in-depth delete guard |
 | [REQ-F-synastry-aspect-analysis](requirements/REQ-F-synastry-aspect-analysis.md) | REQ-F | Must | Implemented | POST /api/synastry — interaspects with staggered orbs, 5 main aspects, Placidus |
 | [REQ-F-synastry-premium-narrative](requirements/REQ-F-synastry-premium-narrative.md) | REQ-F | Must | Implemented | Hybrid narratives: template (free) + Gemini (premium) with zodiac whitelist guard |
@@ -196,7 +197,7 @@ When an artifact (goal, requirement) is no longer relevant:
 | File | Category | Status | Summary |
 |------|----------|--------|---------|
 | [CON-german-ui](constraints/CON-german-ui.md) | Business | Active | UI text in German; code identifiers and comments in English |
-| [CON-dark-luxury-aesthetic](constraints/CON-dark-luxury-aesthetic.md) | Business | Active | Dark OLED-first design with obsidian/gold palette, Wu-Xing element colors |
+| [CON-dark-luxury-aesthetic](constraints/CON-dark-luxury-aesthetic.md) | Business | Active | Dark OLED-first primary + Bright secondary; obsidian/gold palette, Wu-Xing element tokens, both modes themed |
 | [CON-no-unexplained-numbers](constraints/CON-no-unexplained-numbers.md) | Business | Active | No numerical value in UI without explanation — hard rule |
 | [CON-resource-oriented-framing](constraints/CON-resource-oriented-framing.md) | Business | Active | Possibility-oriented language, no fatalistic framing |
 | [CON-mobile-first-readability](constraints/CON-mobile-first-readability.md) | Business | Active | <10s core comprehension on mobile viewport |

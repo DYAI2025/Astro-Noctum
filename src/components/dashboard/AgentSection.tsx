@@ -180,7 +180,7 @@ export function AgentSection({
           onClick={handleUpgrade}
           disabled={isUpgrading}
         >
-          {isUpgrading ? '...' : (
+          {isUpgrading ? '…' : (
             <><Lock className="w-4 h-4" /> {t('dashboard.premium.cta')}</>
           )}
         </Button>
