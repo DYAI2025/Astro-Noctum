@@ -65,6 +65,7 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
   const [persistError, setPersistError] = useState<string | null>(null);
 
   const profileFetchedForRef = useRef<string | null>(null);
+  const birthInputRef = useRef<{ date: string; tz: string; lat: number; lon: number } | null>(null);
 
   // ── Profile loading ──────────────────────────────────────────────────
   useEffect(() => {
@@ -120,7 +121,14 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
 
           if (profile.birth_date) {
             const time = profile.birth_time || "12:00";
-            setBirthDateStr(`${profile.birth_date}T${time}:00`);
+            const dateStr = `${profile.birth_date}T${time}:00`;
+            setBirthDateStr(dateStr);
+            birthInputRef.current = {
+              date: dateStr,
+              tz: profile.iana_time_zone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+              lat: profile.birth_lat ?? 0,
+              lon: profile.birth_lng ?? 0,
+            };
           }
 
           setProfileState("found");
@@ -133,6 +141,36 @@ export function useAstroProfile(user: User | null, lang: string): AstroProfileRe
         setProfileState("error");
       });
   }, [user]); // lang intentionally excluded — handled by separate lang-change effect below
+
+  // ── Auto-recalc: if profile exists but critical fields are null ──────
+  useEffect(() => {
+    if (profileState !== 'found') return;
+    if (!user) return;
+    // Check if critical fields need backfill
+    const needsRecalc = apiData && (
+      !apiData.western?.zodiac_sign ||
+      !apiData.western?.moon_sign ||
+      !apiData.bazi?.day_master
+    );
+    if (!needsRecalc) return;
+    // Only auto-recalc once per session
+    const recalcKey = `bazodiac_auto_recalc:${user.id}`;
+    if (sessionStorage.getItem(recalcKey)) return;
+    sessionStorage.setItem(recalcKey, '1');
+
+    // Re-trigger calculation with stored birth data
+    const birthInput = birthInputRef.current;
+    if (!birthInput?.date || !birthInput?.tz) return;
+
+    console.info('[useAstroProfile] Auto-recalc: critical fields missing, re-calculating...');
+    calculateAll({ date: birthInput.date, tz: birthInput.tz, lat: birthInput.lat, lon: birthInput.lon })
+      .then(results => {
+        setApiData(results);
+        return upsertAstroProfile(user.id, birthInput, results, interpretation ?? '', tileTexts);
+      })
+      .then(() => console.info('[useAstroProfile] Auto-recalc complete'))
+      .catch(err => console.warn('[useAstroProfile] Auto-recalc failed:', err));
+  }, [profileState, user, apiData, interpretation, tileTexts]);
 
   // ── Onboarding submit ────────────────────────────────────────────────
   const handleSubmit = useCallback(async (data: BirthData) => {
