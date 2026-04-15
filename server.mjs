@@ -347,6 +347,14 @@ const SPACE_WEATHER_CACHE_TTL_MS = 15 * 60 * 1000;
 
 let spaceWeatherCache = null;
 
+const MAX_KP_INDEX = 9;
+
+function deriveSolarPressureFromKp(kpLike) {
+  const kp = Number(kpLike);
+  if (!Number.isFinite(kp)) return 0;
+  return Math.max(0, Math.min(1, kp / MAX_KP_INDEX));
+}
+
 // ── Proxy with fallback chain + cache + retry + timeout ──────────────
 async function proxyToBafeWithFallback(targetUrls, req, res) {
   const reqBody = req.method === "GET" ? undefined : req.body;
@@ -3460,6 +3468,7 @@ app.get("/api/space-weather", async (_req, res) => {
     console.warn("[space-weather] all sources failed — returning neutral Kp=0");
     return res.json({
       kp_index: 0,
+      solar_pressure_score: deriveSolarPressureFromKp(0),
       source: "fallback",
       fetched_at: new Date().toISOString(),
       cache_ttl_seconds: Math.round(SPACE_WEATHER_CACHE_TTL_MS / 1000),
@@ -3468,6 +3477,7 @@ app.get("/api/space-weather", async (_req, res) => {
 
   const payload = {
     ...result,
+    solar_pressure_score: deriveSolarPressureFromKp(result.kp_index ?? result.kp),
     fetched_at: new Date().toISOString(),
     cache_ttl_seconds: Math.round(SPACE_WEATHER_CACHE_TTL_MS / 1000),
   };
