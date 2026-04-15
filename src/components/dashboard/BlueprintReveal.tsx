@@ -68,7 +68,7 @@ export function BlueprintReveal({ content, aspects, elements, onCtaClick }: Blue
             className={[
               'relative font-serif text-sm uppercase tracking-[0.25em]',
               'px-8 py-3 rounded-full border border-[#D4AF37]/40',
-              'text-[#D4AF37] hover:text-white hover:border-[#D4AF37]',
+              'text-[#D4AF37] hover:border-[#D4AF37]',
               'hover:bg-[#D4AF37]/10 transition-all duration-300',
             ].join(' ')}
           >

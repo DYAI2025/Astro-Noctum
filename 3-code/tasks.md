@@ -835,7 +835,7 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 | ID | Task | Component | Req | Status | Dependencies | Updated | Notes |
 |----|------|-----------|-----|--------|--------------|---------|-------|
 | TASK-dch-dashboard-wiring | Wire `DailyChartHero` into `Dashboard.tsx`, replace 3 old SectionErrorBoundary blocks | frontend | [REQ-F-daily-chart-coherence-hero](../1-objectives/requirements/REQ-F-daily-chart-coherence-hero.md) | Done | TASK-dch-hero-component | 2026-04-15 | DEC-dashboard-volatile-first; also fixed hook cached-user early-return + updated section-order tests |
-| TASK-dch-theme-contrast | Fix remaining hardcoded bg-white/text-white across dashboard tiles for dark-mode compliance | frontend | [REQ-USA-daily-chart-responsive-readability](../1-objectives/requirements/REQ-USA-daily-chart-responsive-readability.md) | Todo | TASK-dch-dashboard-wiring | 2026-04-14 | |
+| TASK-dch-theme-contrast | Fix remaining hardcoded bg-white/text-white across dashboard tiles for dark-mode compliance | frontend | [REQ-USA-daily-chart-responsive-readability](../1-objectives/requirements/REQ-USA-daily-chart-responsive-readability.md) | Done | TASK-dch-dashboard-wiring | 2026-04-15 | Fixed hover:text-white in BlueprintCard+Reveal; removed dead imports + stale comments in Dashboard.tsx |
 
 ---
 

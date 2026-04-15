@@ -74,8 +74,8 @@ export default function BlueprintCard({
         {onCtaClick && (
           <button
             onClick={onCtaClick}
-            className="pt-4 font-serif text-sm font-semibold hover:text-white transition-colors duration-300 flex items-center gap-2 group/btn"
-            style={{ color: 'rgb(222, 152, 49)' }}
+            className="pt-4 font-serif text-sm font-semibold transition-colors duration-300 flex items-center gap-2 group/btn"
+            style={{ color: 'var(--tile-accent, rgb(222, 152, 49))' }}
           >
             <span className="tracking-[0.15em] uppercase">{resolvedCtaText}</span>
             <span className="transform group-hover/btn:translate-x-1 transition-transform">→</span>

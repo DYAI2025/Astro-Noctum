@@ -31,12 +31,8 @@ import {
 } from "@/src/lib/signatur/weight-utils";
 import { DashboardBigFour as DashboardBigFourCard } from "./dashboard/DashboardBigFour";
 // MiniSignature removed from dashboard grid — coherence-first layout.
-// Retained import for future KohaerenzHero integration.
-// import MiniSignature from "./dashboard/MiniSignature";
 import { CosmicInfluenceSection } from "./dashboard/CosmicInfluenceSection";
 import { TourOverlay } from "./dashboard/TourOverlay";
-import { DayPulseExpanded } from "./dashboard/DayPulseExpanded";
-import { AktiveEinfluesseFusion } from "./dashboard/AktiveEinfluesseFusion";
 import { MagnetsturmKarte } from "./dashboard/MagnetsturmKarte";
 import { NatalSignaturStatic } from "./dashboard/NatalSignaturStatic";
 import { useFusionSignal } from "../hooks/useFusionSignal";
@@ -48,7 +44,6 @@ import { SkyModeToggle } from "./dashboard/SkyModeToggle";
 import { getConstellationForSign } from "../lib/astro-data/constellationFromSign";
 import { useCelestialOrrery } from "../hooks/useCelestialOrrery";
 import { CITIES } from "../lib/astronomy/data";
-import { KohaerenzHero } from "./dashboard/KohaerenzHero";
 import { DailyChartHero } from "./dashboard/DailyChartHero";
 import { useActiveImpacts } from "../hooks/useActiveImpacts";
 
@@ -277,7 +272,7 @@ export function Dashboard({
   // ── Space weather (für DashboardTagesEnergie Resonanz + Kosmoswetter) ──
   const spaceWeather = useSpaceWeather();
 
-  // ── Transit signal — provides events[] for DayPulseExpanded (DEC-dashboard-volatile-first pos 1) ──
+  // ── Transit signal — provides events[] for DailyChartHero ──
   const { events: transitEvents, loading: transitLoading } = useFusionSignal(userId);
 
   // ── Active Impacts — harmony_index + active planets from POST /api/impact/active ──
@@ -325,7 +320,6 @@ export function Dashboard({
   }, [dayHarmonic, nightHarmonic, isPremium]);
 
   // natalWeights + dimensionWeights removed — MiniSignature no longer in dashboard grid.
-  // Retained computation in useFirstRunDaily for KohaerenzHero integration later.
 
   // ── Render ────────────────────────────────────────────────────────────
 
