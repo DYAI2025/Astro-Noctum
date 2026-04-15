@@ -347,6 +347,12 @@ const SPACE_WEATHER_CACHE_TTL_MS = 15 * 60 * 1000;
 
 let spaceWeatherCache = null;
 
+function deriveSolarPressureFromKp(kpLike) {
+  const kp = Number(kpLike);
+  if (!Number.isFinite(kp)) return 0;
+  return Math.max(0, Math.min(1, kp / 9));
+}
+
 // ── Proxy with fallback chain + cache + retry + timeout ──────────────
 async function proxyToBafeWithFallback(targetUrls, req, res) {
   const reqBody = req.method === "GET" ? undefined : req.body;
@@ -1880,7 +1886,7 @@ async function computeActiveImpactsCore(userId) {
   // 5. Compute harmony_index (0–100) — blends natal harmony with solar pressure
   const baseHarmony = profile.astro_json?.fusion?.harmony_index ?? 0.5;
   const sw = spaceWeatherCache?.payload;
-  const solarPressure = sw?.solar_pressure_score ?? 0;
+  const solarPressure = sw?.solar_pressure_score ?? deriveSolarPressureFromKp(sw?.kp_index ?? sw?.kp);
   const hWeight = Number(process.env.HARMONY_INDEX_HARMONY_WEIGHT) || 0.65;
   const sWeight = Number(process.env.HARMONY_INDEX_SOLAR_WEIGHT)   || 0.35;
   const harmonyIndex = Math.min(100, Math.max(0,
@@ -3445,6 +3451,7 @@ app.get("/api/space-weather", async (_req, res) => {
     console.warn("[space-weather] all sources failed — returning neutral Kp=0");
     return res.json({
       kp_index: 0,
+      solar_pressure_score: deriveSolarPressureFromKp(0),
       source: "fallback",
       fetched_at: new Date().toISOString(),
       cache_ttl_seconds: Math.round(SPACE_WEATHER_CACHE_TTL_MS / 1000),
@@ -3453,6 +3460,7 @@ app.get("/api/space-weather", async (_req, res) => {
 
   const payload = {
     ...result,
+    solar_pressure_score: deriveSolarPressureFromKp(result.kp_index ?? result.kp),
     fetched_at: new Date().toISOString(),
     cache_ttl_seconds: Math.round(SPACE_WEATHER_CACHE_TTL_MS / 1000),
   };
