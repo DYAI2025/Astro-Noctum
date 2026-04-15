@@ -347,10 +347,12 @@ const SPACE_WEATHER_CACHE_TTL_MS = 15 * 60 * 1000;
 
 let spaceWeatherCache = null;
 
+const MAX_KP_INDEX = 9;
+
 function deriveSolarPressureFromKp(kpLike) {
   const kp = Number(kpLike);
   if (!Number.isFinite(kp)) return 0;
-  return Math.max(0, Math.min(1, kp / 9));
+  return Math.max(0, Math.min(1, kp / MAX_KP_INDEX));
 }
 
 // ── Proxy with fallback chain + cache + retry + timeout ──────────────
