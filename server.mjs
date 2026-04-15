@@ -1886,7 +1886,19 @@ async function computeActiveImpactsCore(userId) {
   // 5. Compute harmony_index (0–100) — blends natal harmony with solar pressure
   const baseHarmony = profile.astro_json?.fusion?.harmony_index ?? 0.5;
   const sw = spaceWeatherCache?.payload;
-  const solarPressure = sw?.solar_pressure_score ?? deriveSolarPressureFromKp(sw?.kp_index ?? sw?.kp);
+  const kpValue = sw?.kp_index ?? sw?.kp;
+  const hasSolarPressureScore = sw?.solar_pressure_score != null;
+  const hasKpValue = kpValue != null;
+  const solarPressure = hasSolarPressureScore
+    ? sw.solar_pressure_score
+    : hasKpValue
+      ? deriveSolarPressureFromKp(kpValue)
+      : 0;
+  const solarPressureSource = hasSolarPressureScore
+    ? (sw?.source ?? 'solar_pressure_score')
+    : hasKpValue
+      ? 'kp_derived'
+      : 'unavailable';
   const hWeight = Number(process.env.HARMONY_INDEX_HARMONY_WEIGHT) || 0.65;
   const sWeight = Number(process.env.HARMONY_INDEX_SOLAR_WEIGHT)   || 0.35;
   const harmonyIndex = Math.min(100, Math.max(0,
