@@ -46,9 +46,16 @@ const SIGN_NAMES = [
   "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces",
 ] as const;
 
-function signFromIndex(idx: number | undefined | null): string | undefined {
-  if (idx == null || idx < 0 || idx > 11) return undefined;
-  return SIGN_NAMES[idx];
+function signFromIndex(idx: number | string | undefined | null): string | undefined {
+  if (idx == null) return undefined;
+  // BAFE may return a 0-based number index or an English sign name string
+  if (typeof idx === 'number') {
+    if (idx < 0 || idx > 11) return undefined;
+    return SIGN_NAMES[idx];
+  }
+  // String: check if it's already a known sign name (case-insensitive)
+  const normalized = idx.charAt(0).toUpperCase() + idx.slice(1).toLowerCase();
+  return SIGN_NAMES.includes(normalized as typeof SIGN_NAMES[number]) ? normalized : undefined;
 }
 
 function signFromDegrees(deg: number | undefined | null): string | undefined {
@@ -344,12 +351,18 @@ export function mapChartToApiResults(raw: ChartResponse): Omit<ApiResults, 'issu
       day:   mapPillar(raw.bazi.pillars.day),
       hour:  mapPillar(raw.bazi.pillars.hour),
     },
-    day_master: raw.bazi.chinese?.day_master || raw.bazi.pillars.day?.stamm || '',
+    day_master: raw.bazi.chinese?.day_master || raw.bazi.pillars.day?.stamm || (raw.bazi.pillars.day as unknown as { stem?: string })?.stem || '',
     zodiac_sign: raw.bazi.chinese?.year?.animal || raw.bazi.pillars.year?.tier || '',
   };
 
-  const sunSign        = signFromIndex(bodiesSource?.Sun?.zodiac_sign);
-  const moonSign       = signFromIndex(bodiesSource?.Moon?.zodiac_sign);
+  const sunBody = bodiesSource?.Sun as Record<string, unknown> | undefined;
+  const moonBody = bodiesSource?.Moon as Record<string, unknown> | undefined;
+  const sunSign        = signFromIndex(sunBody?.zodiac_sign as number | string | undefined)
+                      || signFromIndex(sunBody?.sign as number | string | undefined)
+                      || (sunBody?.longitude != null ? signFromDegrees(sunBody.longitude as number) : undefined);
+  const moonSign       = signFromIndex(moonBody?.zodiac_sign as number | string | undefined)
+                      || signFromIndex(moonBody?.sign as number | string | undefined)
+                      || (moonBody?.longitude != null ? signFromDegrees(moonBody.longitude as number) : undefined);
   const ascendantSign  = signFromDegrees(raw.angles?.Ascendant);
 
   const normalizedHouses: Record<string, string> = {};
@@ -373,19 +386,31 @@ export function mapChartToApiResults(raw: ChartResponse): Omit<ApiResults, 'issu
     houses:         normalizedHouses,
   };
 
-  const vec = raw.wuxing.wu_xing_vector || {};
+  // wu_xing_vector is the primary source; fallback: sum from_planets + from_bazi sub-vectors
+  const rawWx = raw.wuxing as Record<string, unknown>;
+  const vec = (raw.wuxing.wu_xing_vector || {}) as Record<string, number>;
+  const fp = (rawWx.from_planets || {}) as Record<string, number>;
+  const fb = (rawWx.from_bazi || {}) as Record<string, number>;
+  const hasVec = Object.values(vec).some(v => typeof v === 'number' && v > 0);
+  const src = hasVec ? vec : {
+    Holz:   (fp.Holz ?? fp.Wood ?? 0) + (fb.Holz ?? fb.Wood ?? 0),
+    Feuer:  (fp.Feuer ?? fp.Fire ?? 0) + (fb.Feuer ?? fb.Fire ?? 0),
+    Erde:   (fp.Erde ?? fp.Earth ?? 0) + (fb.Erde ?? fb.Earth ?? 0),
+    Metall: (fp.Metall ?? fp.Metal ?? 0) + (fb.Metall ?? fb.Metal ?? 0),
+    Wasser: (fp.Wasser ?? fp.Water ?? 0) + (fb.Wasser ?? fb.Water ?? 0),
+  };
   const wuxing: MappedWuxing = {
     ...raw.wuxing,
     elements: {
-      Wood:   vec.Holz   ?? vec.Wood   ?? 0,
-      Fire:   vec.Feuer  ?? vec.Fire   ?? 0,
-      Earth:  vec.Erde   ?? vec.Earth  ?? 0,
-      Metal:  vec.Metall ?? vec.Metal  ?? 0,
-      Water:  vec.Wasser ?? vec.Water  ?? 0,
-      Holz:   vec.Holz   ?? vec.Wood   ?? 0,
-      Feuer:  vec.Feuer  ?? vec.Fire   ?? 0,
-      Erde:   vec.Erde   ?? vec.Earth  ?? 0,
-      Metall: vec.Metall ?? vec.Metal  ?? 0,
+      Wood:   src.Holz   ?? src.Wood   ?? 0,
+      Fire:   src.Feuer  ?? src.Fire   ?? 0,
+      Earth:  src.Erde   ?? src.Earth  ?? 0,
+      Metal:  src.Metall ?? src.Metal  ?? 0,
+      Water:  src.Wasser ?? src.Water  ?? 0,
+      Holz:   src.Holz   ?? src.Wood   ?? 0,
+      Feuer:  src.Feuer  ?? src.Fire   ?? 0,
+      Erde:   src.Erde   ?? src.Earth  ?? 0,
+      Metall: src.Metall ?? src.Metal  ?? 0,
       Wasser: vec.Wasser ?? vec.Water  ?? 0,
     },
     dominant_element: raw.wuxing.dominant_element || '',
