@@ -410,10 +410,10 @@ export function Dashboard({
         <SectionErrorBoundary name="Agents">
           <div className="cosmic-tile p-6 rounded-[2rem] space-y-5">
             <h2 className="text-xs font-bold tracking-[0.2em] uppercase text-center" style={{ color: 'var(--tile-text-secondary)' }}>
-              {t('dashboard.astroAgents')}
+              {t('nav.astroAgents')}
             </h2>
             <p className="text-[11px] text-center leading-relaxed" style={{ color: 'var(--tile-text-secondary)', opacity: 0.6 }}>
-              {t('dashboard.astroAgentsIntro')}
+              {t('nav.astroAgentsIntro')}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {AGENTS.map(agent => (

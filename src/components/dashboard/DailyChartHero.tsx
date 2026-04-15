@@ -277,15 +277,21 @@ export function DailyChartHero({
 
   if (loading) return <DailyChartHeroSkeleton />;
 
-  // Error/unavailable: all coherence fields null means API failed or user has no fusion data
   const isUnavailable = displayedCoherence == null && baseCoherence == null;
-  if (isUnavailable) {
-    return (
-      <div
-        className="daily-chart-hero cosmic-tile p-6 sm:p-8 rounded-[2rem] space-y-5"
-        data-testid="coherence-unavailable"
-      >
-        <div className="flex items-center gap-6 sm:gap-8">
+
+  const modeLabel = isDe ? MODE_LABEL[dayMode].de : MODE_LABEL[dayMode].en;
+  const modeDesc  = isDe ? MODE_DESC[dayMode].de  : MODE_DESC[dayMode].en;
+  const accentColor = dayMode === 'pulse' ? '#D4AF37' : '#9B8EC4';
+  const hasEventText = (primaryEvent?.description_de ?? '').length > 0;
+
+  return (
+    <div
+      className="daily-chart-hero cosmic-tile p-6 sm:p-8 rounded-[2rem] space-y-5"
+      data-testid="daily-chart-hero"
+    >
+      {/* ── A. Coherence Ring + Label ─────────────────────────────────── */}
+      {isUnavailable ? (
+        <div className="flex items-center gap-6 sm:gap-8" data-testid="coherence-unavailable">
           <div className="relative shrink-0 w-[120px] h-[120px] flex items-center justify-center">
             <svg width={120} height={120} className="-rotate-90" aria-hidden="true">
               <circle cx={60} cy={60} r={54} fill="none" strokeWidth={6} stroke="var(--tile-border)" strokeDasharray="8 4" />
@@ -304,62 +310,40 @@ export function DailyChartHero({
             </p>
           </div>
         </div>
-        {/* Driver strip + impulse still render since they come from different sources */}
-        <div className="flex flex-wrap gap-2 pt-4 border-t" style={{ borderColor: 'var(--tile-border)' }} data-testid="driver-strip">
-          {drivers.map(driver => (
-            <div key={driver.label} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[10px] font-mono ${STATE_CLASSES[driver.state]}`}>
-              <span className="opacity-70">{driver.label}</span>
-              <span className="font-semibold">{driver.value}</span>
-            </div>
-          ))}
+      ) : (
+        <div className="flex items-center gap-6 sm:gap-8">
+          <SplitCoherenceRing
+            baseCoherence={base}
+            positiveDailyDelta={delta}
+            displayedCoherence={displayed}
+          />
+          <div className="flex-1 min-w-0 space-y-1">
+            <p
+              className="text-[9px] font-sans uppercase tracking-[0.3em]"
+              style={{ color: 'var(--tile-accent)', opacity: 0.6 }}
+            >
+              {isDe ? 'Kohärenzindex' : 'Coherence index'}
+            </p>
+            <p
+              className="font-serif text-base sm:text-lg leading-snug"
+              style={{ color: 'var(--tile-text-primary)' }}
+              data-testid="coherence-baseline-label"
+            >
+              {isDe
+                ? `Basis ${base} · Heute +${delta}`
+                : `Base ${base} · Today +${delta}`}
+            </p>
+            <p
+              className="text-[10px] leading-relaxed"
+              style={{ color: 'var(--tile-text-secondary)', opacity: 0.65 }}
+            >
+              {isDe
+                ? 'Dein persönlicher Grundwert, heute durch kosmische Aktivierung erhöht.'
+                : 'Your personal baseline, elevated by today\'s cosmic activation.'}
+            </p>
+          </div>
         </div>
-      </div>
-    );
-  }
-
-  const modeLabel = isDe ? MODE_LABEL[dayMode].de : MODE_LABEL[dayMode].en;
-  const modeDesc  = isDe ? MODE_DESC[dayMode].de  : MODE_DESC[dayMode].en;
-  const accentColor = dayMode === 'pulse' ? '#D4AF37' : '#9B8EC4';
-  const hasEventText = (primaryEvent?.description_de ?? '').length > 0;
-
-  return (
-    <div
-      className="daily-chart-hero cosmic-tile p-6 sm:p-8 rounded-[2rem] space-y-5"
-      data-testid="daily-chart-hero"
-    >
-      {/* ── A. Coherence Ring + Label ─────────────────────────────────── */}
-      <div className="flex items-center gap-6 sm:gap-8">
-        <SplitCoherenceRing
-          baseCoherence={base}
-          positiveDailyDelta={delta}
-          displayedCoherence={displayed}
-        />
-        <div className="flex-1 min-w-0 space-y-1">
-          <p
-            className="text-[9px] font-sans uppercase tracking-[0.3em]"
-            style={{ color: 'var(--tile-accent)', opacity: 0.6 }}
-          >
-            {isDe ? 'Kohärenzindex' : 'Coherence index'}
-          </p>
-          <p
-            className="font-serif text-base sm:text-lg leading-snug"
-            style={{ color: 'var(--tile-text-primary)' }}
-            data-testid="coherence-baseline-label"
-          >
-            {isDe
-              ? `Basis ${base} · Heute +${delta}`
-              : `Base ${base} · Today +${delta}`}
-          </p>
-          <p
-            className="text-[10px] leading-relaxed"
-            style={{ color: 'var(--tile-text-secondary)', opacity: 0.65 }}
-          >
-            {isDe
-              ? 'Dein persönlicher Grundwert, heute durch kosmische Aktivierung erhöht.'
-              : 'Your personal baseline, elevated by today\'s cosmic activation.'}
-          </p>
-        </div>
-      </div>
+      )}
 
       {/* ── B. Driver Strip ───────────────────────────────────────────── */}
       <div
