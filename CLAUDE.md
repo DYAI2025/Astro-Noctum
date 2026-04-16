@@ -15,7 +15,7 @@ Bazodiac (Astro-Noctum) — a fusion astrology web + mobile app combining Wester
 
 Run `/SDLC-status` or check `3-code/tasks.md` + `git log` for live project state. Do not rely on hardcoded counts in this file.
 
-**Implementation progress (2026-04-16):** 307/316 tasks Done (15 Cancelled, 2 Blocked). Sprint S-QA-2026-04-15 Phase 1 Complete, Phase 2: 1/9 Done (trigger-contract-doc). Trigger contract at `src/components/fusion-ring-website/README.md` — 4 triggers mapped (transit poll, quiz-cluster, space-weather, audio mute) with current status + gaps.
+**Implementation progress (2026-04-17):** S-QA-2026-04-15: Phase 1 Done (9/9), Phase 2 Done (8/9 — TASK-qa-sig-tests Todo), Phase 3+4 Todo. New sprint **S-CYMATICS** created (2026-04-17): 13 tasks, 4 phases — Canvas2D Chladni/Cymatics engine as new Signatur visualization. GOAL-signatur-cymatics + REQ-F-signatur-cymatics + DEC-cymatics-renderer added to SDLC scaffold.
 
 **QA Sprint (2026-04-15):** 25 QA findings → 3 new Goals + 3 new Requirements + 3 new User Stories with full Goal→US→REQ traceability. All 3 goals **Approved** (2026-04-15). Stakeholders.md updated. Decomposed into Sprint **S-QA-2026-04-15** in `3-code/tasks.md` — 4 phases, 26 tasks (9 navigation incl. decomposed agents-popup, 8 signatur-triggers, 8 i18n/quiz, 1 runbook). Phase 1 in progress.
 
