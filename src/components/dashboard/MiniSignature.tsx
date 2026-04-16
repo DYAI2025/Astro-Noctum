@@ -1,11 +1,10 @@
-import { lazy, Suspense, useState } from 'react';
+import { Suspense, useState } from 'react';
 import { Pause, Play } from 'lucide-react';
 import type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
 import type { DissonanceResult } from '../../lib/fusion-ring/dissonance';
-import type { SolarModulation } from '../signatur-v3/bipolar-engine';
+import { CymanticsSignature } from '../cymantics/CymanticsSignature';
+import type { SolarModulation } from '../cymantics/Cymantics3D';
 import { useLanguage } from '../../contexts/LanguageContext';
-
-const SignaturV3Canvas = lazy(() => import('../signatur-v3/SignaturV3Canvas'));
 
 interface MiniSignatureProps {
   natalWeights?: Record<string, number>;
@@ -65,11 +64,9 @@ export default function MiniSignature({ natalWeights, quizWeights, dayHarmonic, 
         ) : (
           <div className="absolute inset-0 scale-125 group-hover:scale-150 transition-transform duration-1000">
             <Suspense fallback={<div className="w-full h-full opacity-20 rounded-full animate-pulse" />}>
-              <SignaturV3Canvas
+              <CymanticsSignature
                 natalWeights={natalWeights ?? EMPTY_WEIGHTS}
                 quizWeights={quizWeights ?? EMPTY_WEIGHTS}
-                dayHarmonic={dayHarmonic ?? undefined}
-                externalDissonance={externalDissonance}
                 solarModulation={solarModulation}
                 className="w-full h-full"
               />

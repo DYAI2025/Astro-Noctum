@@ -13,8 +13,7 @@ import { toDimensionWeightsOrUndefined, toNatalWeightsOrUndefined } from '@/src/
 import { isFeatureEnabled } from '@/src/lib/feature-flags';
 import type { DissonanceResult } from '../../lib/fusion-ring/dissonance';
 import type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
-
-const SignaturV3Canvas = lazy(() => import('@/src/components/signatur-v3/SignaturV3Canvas'));
+import { CymanticsSignature } from '../cymantics/CymanticsSignature';
 
 export type FusionRing3DLabels = {
   regionLabel: string;
@@ -139,14 +138,11 @@ export const FusionRing3D = ({
               soulProfile={signalData?.baseSignals ?? null}
             />
           }>
-            <SignaturV3Canvas
+            <CymanticsSignature
               natalWeights={v3DimensionWeights}
               quizWeights={quizWeights ?? v3DimensionWeights}
-              dayHarmonic={dayHarmonic ?? undefined}
-              externalDissonance={externalDissonance}
-              solarModulation={solarModulation != null ? { ringModulation: solarModulation, triggerEffect: kpIndex >= 5, kpIndex } : undefined}
+              solarModulation={solarModulation != null ? { ringModulation: solarModulation, flareIntensity: kpIndex >= 5 ? 0.8 : 0.2, kpIndex } : undefined}
               className="h-full w-full"
-              quality="auto"
             />
           </Suspense>
         ) : isFeatureEnabled('signature_engine_v2') && !v2Failed ? (
