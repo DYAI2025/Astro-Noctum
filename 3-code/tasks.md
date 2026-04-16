@@ -865,6 +865,66 @@ Blocked on 6 open questions (OQ-house-system through OQ-synastry-signal). 18 tas
 
 ---
 
+## Phase: Sprint S-QA-I18N — i18n Zero Raw Keys
+
+**Sprint Goal:** Eliminate all raw i18n key strings from the UI. Add automated test to prevent regression. Cover quiz, dashboard, and conversationAnalysis namespaces.
+
+### Phase 1 — Audit + Missing Keys
+
+| ID | Task | Component | Req | Status | Dependencies | Updated | Notes |
+|----|------|-----------|-----|--------|--------------|---------|-------|
+| TASK-i18n-audit-script | Write Vitest that extracts all `t('...')` calls from source and verifies each key exists in both DE/EN translations | frontend | [REQ-F-i18n-completeness](../1-objectives/requirements/REQ-F-i18n-completeness.md) | Todo | - | 2026-04-15 | |
+| TASK-i18n-add-quiz-keys | Add all missing `quiz.*` keys to translations.ts (nQuestions12, startAnalysis, startBtn, clusterNoteLabel, clusterNote, questionProgress, questionProgressShort) | frontend | [REQ-F-i18n-completeness](../1-objectives/requirements/REQ-F-i18n-completeness.md) | Todo | TASK-i18n-audit-script | 2026-04-15 | |
+| TASK-i18n-add-conversation-keys | Add all missing `conversationAnalysis.*` keys (title, pasteLabel, placeholder, analyzeDialogue, aiHint) | frontend | [REQ-F-i18n-completeness](../1-objectives/requirements/REQ-F-i18n-completeness.md) | Todo | TASK-i18n-audit-script | 2026-04-15 | |
+| TASK-i18n-fix-remaining | Run the audit test, fix any remaining mismatched key paths across all components | frontend | [REQ-F-i18n-completeness](../1-objectives/requirements/REQ-F-i18n-completeness.md) | Todo | TASK-i18n-add-quiz-keys, TASK-i18n-add-conversation-keys | 2026-04-15 | |
+
+---
+
+## Phase: Sprint S-QA-QUIZ — Quiz Overlay & Cluster Gate
+
+**Sprint Goal:** Quiz X-Button schliesst zuverlässig. Cluster-Gate enforced: Einzelquiz verändert Ring nicht. Cousto Audio zuverlässig stummschaltbar.
+
+### Phase 2 — Overlay + Gate + Audio
+
+| ID | Task | Component | Req | Status | Dependencies | Updated | Notes |
+|----|------|-----------|-----|--------|--------------|---------|-------|
+| TASK-quiz-overlay-close-fix | Fix QuizOverlay X-Button z-index/clickability — ensure close works regardless of quiz content scroll state | frontend | [REQ-F-i18n-completeness](../1-objectives/requirements/REQ-F-i18n-completeness.md) | Todo | - | 2026-04-15 | QA-11 |
+| TASK-cluster-gate-audit | Audit `useQuizContribution` cluster gate: verify contribution only sent after full cluster completion, add test for single-quiz-no-post | frontend | [REQ-F-signatur-realtime-triggers](../1-objectives/requirements/REQ-F-signatur-realtime-triggers.md) | Todo | - | 2026-04-15 | QA-17 CRITICAL |
+| TASK-cousto-audio-mute-fix | Fix `useCoustoAudio` mute: ensure suspend() stops all oscillators, prevent re-registration of startOnGesture listener after mute toggle | frontend | [REQ-F-signatur-realtime-triggers](../1-objectives/requirements/REQ-F-signatur-realtime-triggers.md) | Todo | - | 2026-04-15 | QA-15 |
+
+---
+
+## Phase: Sprint S-QA-NAV — Navigation Redesign
+
+**Sprint Goal:** Klare, konsistente Navigation auf allen Seiten. Dashboard-Link, Active-Route, Mode-Toggle-Klarheit, Agents-Panel.
+
+### Phase 3 — Navigation
+
+| ID | Task | Component | Req | Status | Dependencies | Updated | Notes |
+|----|------|-----------|-----|--------|--------------|---------|-------|
+| TASK-nav-dashboard-link | Add "Tageschart" nav item that links to `/` — visible on all pages | frontend | [REQ-F-navigation-redesign](../1-objectives/requirements/REQ-F-navigation-redesign.md) | Todo | - | 2026-04-15 | QA-19 |
+| TASK-nav-active-route | Highlight active route in header nav, disable click on current-page tab | frontend | [REQ-F-navigation-redesign](../1-objectives/requirements/REQ-F-navigation-redesign.md) | Todo | TASK-nav-dashboard-link | 2026-04-15 | QA-6, QA-21 |
+| TASK-nav-mode-toggle-clarity | Redesign Planetarium button as explicit theme toggle (icon-based, not navigation-looking) | frontend | [REQ-F-navigation-redesign](../1-objectives/requirements/REQ-F-navigation-redesign.md) | Todo | TASK-nav-active-route | 2026-04-15 | QA-20 |
+| TASK-nav-settings-icons-only | Settings menu mode toggle: remove text labels, keep only Moon/Sun icons | frontend | [REQ-F-navigation-redesign](../1-objectives/requirements/REQ-F-navigation-redesign.md) | Todo | - | 2026-04-15 | QA-16 |
+| TASK-nav-agents-panel | Astro-Agents nav button opens panel showing both Levi and Eve | frontend | [REQ-F-navigation-redesign](../1-objectives/requirements/REQ-F-navigation-redesign.md) | Todo | - | 2026-04-15 | QA-22 |
+
+---
+
+## Phase: Sprint S-QA-SIGNATUR — Signatur Deep Audit
+
+**Sprint Goal:** Ring reagiert sichtbar auf Echtzeit-Inputs. WebGL-Fallback ohne Fehlertext. V2 auf Web+Mobile konsistent. Trigger-Logik dokumentiert.
+
+### Phase 4 — Signatur
+
+| ID | Task | Component | Req | Status | Dependencies | Updated | Notes |
+|----|------|-----------|-----|--------|--------------|---------|-------|
+| TASK-signatur-trigger-doc | Document trigger matrix: which input (transit/weather/quiz) changes what visual aspect of the ring, with expected latency | frontend, shared | [REQ-F-signatur-realtime-triggers](../1-objectives/requirements/REQ-F-signatur-realtime-triggers.md) | Todo | - | 2026-04-15 | Audit first, then fix |
+| TASK-signatur-visual-response | Ensure V2 ring shows perceptible change on transit/weather updates — verify signal data flows from hooks into canvas render params | frontend | [REQ-F-signatur-realtime-triggers](../1-objectives/requirements/REQ-F-signatur-realtime-triggers.md) | Todo | TASK-signatur-trigger-doc | 2026-04-15 | QA-23 |
+| TASK-signatur-webgl-fallback | Replace "Renderer-Fehler. Fallback aktiv." with graceful visual fallback (V3 bipolar canvas or styled placeholder) | frontend | [REQ-F-signatur-realtime-triggers](../1-objectives/requirements/REQ-F-signatur-realtime-triggers.md) | Todo | - | 2026-04-15 | QA-8 |
+| TASK-signatur-mobile-v2-parity | Verify mobile app uses V2 engine, fix feature flag if needed | mobile | [REQ-F-signatur-realtime-triggers](../1-objectives/requirements/REQ-F-signatur-realtime-triggers.md) | Todo | - | 2026-04-15 | QA-24 |
+
+---
+
 ## Backlog (Not Scheduled)
 
 | Requirement | Reason |
@@ -965,3 +1025,55 @@ GitHub Issues (#115, #117, #118, #119, #123, #124, #129, #130, #132, #136) remai
 | TASK-daily-dashboard-order | Move Planetarium below Daily Chart section in `Dashboard.tsx`; section order test must pass | P0 | Done | [REQ-F-daily-chart-dashboard-order](../1-objectives/requirements/REQ-F-daily-chart-dashboard-order.md) | TASK-daily-coherence-hero | 2026-04-13 | |
 | TASK-daily-planet-cards | Replace static 6-planet pool with `activePlanets[]` from `useActiveImpacts()`; each card shows: planet name, strength visual bar, bazi_resonance badge, aspect type + orb (with °) | P1 | Done | [REQ-F-active-planets-frontend](../1-objectives/requirements/REQ-F-active-planets-frontend.md) | TASK-daily-use-active-impacts | 2026-04-13 | Empty-state for 0 active planets |
 | TASK-daily-manual-testing | Runbook: Kohärenzindex above fold, planet cards orb-filtered, Planetarium below fold, premium badges/fusion.action visible, backward-compat verified | P1 | Done | - | TASK-daily-planet-cards, TASK-daily-dashboard-order | 2026-04-13 | |
+
+---
+
+## Sprint S-QA-2026-04-15: QA Remediation (Navigation · Signatur Triggers · i18n)
+
+**Sprint Goal:** Resolve 25 QA findings from the 2026-04-15 live browser session, covering 3 newly-approved Must-have Goals. Navigation becomes consistent across all pages; Signatur visibly reacts to real-time inputs with cluster-gate enforcement; i18n is audited end-to-end and quiz overlays are reliably dismissable. All 3 target requirements currently Draft — they should move to Implemented when their task sets reach Done.
+
+### Phase 1 — Navigation Redesign
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-qa-nav-shell-audit | Audit current nav-shell components (`Header`, `TopNav`, `SettingsMenu`) — document inconsistencies per page (Dashboard, Signatur, Sky, Wu-Xing, Wissen) in a short design note | P1 | Done | [REQ-F-navigation-redesign](../1-objectives/requirements/REQ-F-navigation-redesign.md) | - | 2026-04-15 | Audit delivered at `docs/plans/qa-2026-04-15-nav-shell-audit.md`; nav is global in `src/App.tsx`, not per-page. Raises 2 DEC tensions for Ben (see §Open Questions). |
+| TASK-qa-nav-restructure-zones | Restructure top bar + mobile bottom-nav into 3 zones per DEC-navigation-shell v2: left brand (Bazodiac wordmark, also on mobile), center contextual primary-view links (Dashboard/Signatur/Atlas, showing only those NOT on current route), right symbol-only utilities. Remove `Astro-Agents` + `Planetarium` text-nav buttons from `src/App.tsx` L432-464 and L580-612 | P1 | Done | [REQ-F-navigation-redesign](../1-objectives/requirements/REQ-F-navigation-redesign.md) | TASK-qa-nav-shell-audit | 2026-04-16 | DEC-navigation-shell v2; QA-6, QA-16, QA-19. `src/App.tsx`: 3-zone desktop header + new mobile top bar (wordmark) + restructured bottom nav. Astro-Agents/Planetarium text buttons removed; Sparkles + Moon/Sun icons in right zone. `centerLinks` drives contextual rendering. Added `nav.dashboard` + `nav.themeToggle{Planetarium,Solar}` i18n keys. Atlas stub pending TASK-qa-nav-atlas-flagged-stub. `npm run lint` clean. |
+| TASK-qa-nav-active-route-highlight | Active center-zone link: `aria-current="page"` + `aria-disabled="true"` + `pointer-events-none` + `tabIndex={-1}` + visible focus-ring. No self-navigation on current route. Applies to all 3 primary-view links on desktop and mobile | P1 | Done | [REQ-F-navigation-redesign](../1-objectives/requirements/REQ-F-navigation-redesign.md) | TASK-qa-nav-restructure-zones | 2026-04-16 | QA-20, QA-21. Wordmark (desktop + mobile) renders as disabled `<span>` with aria-current/aria-disabled/tabIndex=-1 on `/`. Non-current primaries get visible focus-ring via `navItemClass`. Center-zone already filters non-current per DEC v2 (no self-nav possible). Signatur/Atlas have no persistent link outside center zone. |
+| TASK-qa-nav-agents-popup-both-premium | Replace Astro-Agents text-button with right-zone Sparkles-icon. Click opens popup with **both** Levi + Eve as selectable tiles. Premium-gated: free users see disabled icon with upgrade-flow on click. Connect to existing widget logic | P1 | Todo | [REQ-F-navigation-redesign](../1-objectives/requirements/REQ-F-navigation-redesign.md) | TASK-qa-nav-restructure-zones | 2026-04-15 | QA-22; needs reading current widget; check `isPremium` from useAuth |
+| TASK-qa-nav-theme-toggle-icon | Moon/Sun icon in right-zone (single icon reflecting current state, `aria-pressed`, no text label). Settings mode-toggle stripped to icons-only (remove inline "Planetarium"/"Solar System" text in `SettingsMenu.tsx` L104-121, keep `aria-label` + `title` for a11y) | P1 | Todo | [REQ-F-navigation-redesign](../1-objectives/requirements/REQ-F-navigation-redesign.md) | TASK-qa-nav-restructure-zones | 2026-04-15 | QA-16; GOAL crit. 4 |
+| TASK-qa-nav-atlas-flagged-stub | Add Atlas (`/atlas`) to center-zone primary-view link logic. Gate behind `atlas_v1` feature flag (default `false` — not visible in prod yet). When flag on: render premium-muted styling + lock-icon for non-premium users; clicking opens upgrade flow. Add `atlas_v1` to `src/lib/feature-flags.ts` | P1 | Todo | [REQ-F-navigation-redesign](../1-objectives/requirements/REQ-F-navigation-redesign.md) | TASK-qa-nav-restructure-zones | 2026-04-15 | Prepares for sprint S-ATLAS; route stub returns 404 until Atlas page exists |
+| TASK-qa-nav-mobile-375 | Verify restructured nav usable at 375px viewport without horizontal scroll. Storybook viewport test + Vitest snapshot for each route variant (Dashboard/Signatur/Atlas/other) | P1 | Todo | [REQ-F-navigation-redesign](../1-objectives/requirements/REQ-F-navigation-redesign.md) | TASK-qa-nav-active-route-highlight, TASK-qa-nav-agents-popup-both-premium, TASK-qa-nav-theme-toggle-icon, TASK-qa-nav-atlas-flagged-stub | 2026-04-15 | CON-mobile-first-readability |
+| TASK-qa-nav-tests | Vitest coverage: contextual link visibility per route, active-route disabled state, Agents popup surfaces both agents + premium gating, theme toggle reflects state, Atlas flag-gate behavior, Settings mode-toggle icons-only | P1 | Todo | [REQ-F-navigation-redesign](../1-objectives/requirements/REQ-F-navigation-redesign.md) | TASK-qa-nav-mobile-375 | 2026-04-15 | Cleanup: also delete unused `NavSidebarA`, `NavVariant{A,B,C}`, `navigation-variants.test.tsx`, `nav.sidebar.*` i18n keys |
+
+### Phase 2 — Signatur Real-Time Triggers & Cluster Gate
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-qa-sig-trigger-contract-doc | Document trigger→effect→latency mapping in `src/components/fusion-ring-website/README.md` (transit poll, quiz-cluster, space-weather, audio mute) | P1 | Todo | [REQ-F-signatur-realtime-triggers](../1-objectives/requirements/REQ-F-signatur-realtime-triggers.md) | - | 2026-04-15 | Source of truth for remaining Phase-2 tasks |
+| TASK-qa-sig-transit-visible-response | Ensure transit-state poll deltas produce a perceptible ring change — tune intensity floor/ceiling in V2 canvas | P1 | Todo | [REQ-F-signatur-realtime-triggers](../1-objectives/requirements/REQ-F-signatur-realtime-triggers.md) | TASK-qa-sig-trigger-contract-doc | 2026-04-15 | QA-8, QA-15 |
+| TASK-qa-sig-cluster-gate-enforcement | Verify soulprint-sector mutation only on full cluster completion — audit `useQuizContribution` + server `/api/contribute` upsert logic, fix any single-quiz leaks | P1 | Todo | [REQ-F-signatur-realtime-triggers](../1-objectives/requirements/REQ-F-signatur-realtime-triggers.md) | TASK-qa-sig-trigger-contract-doc | 2026-04-15 | QA-17, QA-24; spans frontend + api-server |
+| TASK-qa-sig-cluster-transition-animation | Animated ring transition when a cluster-complete contribution applies | P1 | Todo | [REQ-F-signatur-realtime-triggers](../1-objectives/requirements/REQ-F-signatur-realtime-triggers.md) | TASK-qa-sig-cluster-gate-enforcement | 2026-04-15 | |
+| TASK-qa-sig-webgl-fallback | Graceful WebGL failure: render non-3D fallback (2D SVG sector rings) instead of raw error text | P1 | Todo | [REQ-F-signatur-realtime-triggers](../1-objectives/requirements/REQ-F-signatur-realtime-triggers.md) | TASK-qa-sig-trigger-contract-doc | 2026-04-15 | QA-23 |
+| TASK-qa-sig-audio-mute-reliable | Cousto audio mute: verify one-click stop + localStorage persistence across reload | P1 | Todo | [REQ-F-signatur-realtime-triggers](../1-objectives/requirements/REQ-F-signatur-realtime-triggers.md) | TASK-qa-sig-trigger-contract-doc | 2026-04-15 | QA-25 |
+| TASK-qa-sig-mobile-v2-parity | Confirm mobile uses V2 engine by default; log explicit degradation notice if V1 activated (no silent fallback) | P1 | Todo | [REQ-F-signatur-realtime-triggers](../1-objectives/requirements/REQ-F-signatur-realtime-triggers.md) | TASK-qa-sig-trigger-contract-doc | 2026-04-15 | mobile component |
+| TASK-qa-sig-theme-aware | Make Signatur (FuRingPage + `FusionRingCanvasV2` + `FusionRingWebsiteCanvas` fallback) theme-aware: respect global `planetariumMode`. Currently hard-coded dark; add bright-mode background/particle palette so Solar System theme renders correctly on `/signatur` | P1 | Todo | [REQ-F-signatur-realtime-triggers](../1-objectives/requirements/REQ-F-signatur-realtime-triggers.md) | TASK-qa-sig-trigger-contract-doc | 2026-04-15 | DEC-navigation-shell v2 mandates theme parity; QA discovery during nav restructuring |
+| TASK-qa-sig-tests | Vitest/Jest: cluster-gate enforcement, mute persistence across reload, WebGL-fail fallback render, theme-mode parity | P1 | Todo | [REQ-F-signatur-realtime-triggers](../1-objectives/requirements/REQ-F-signatur-realtime-triggers.md) | TASK-qa-sig-cluster-gate-enforcement, TASK-qa-sig-webgl-fallback, TASK-qa-sig-audio-mute-reliable, TASK-qa-sig-theme-aware | 2026-04-15 | |
+
+### Phase 3 — i18n Completeness & Quiz Overlay Dismissal
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-qa-i18n-audit-script | Automated audit test: enumerate all `t('...')` calls in `src/` + `packages/shared/src/` and assert each key exists in DE + EN translation maps | P1 | Todo | [REQ-F-i18n-completeness](../1-objectives/requirements/REQ-F-i18n-completeness.md) | - | 2026-04-15 | Basis for remaining Phase-3 work; frontend + shared |
+| TASK-qa-i18n-fix-missing-keys | Fix all keys flagged by the audit — add missing DE/EN translations | P1 | Todo | [REQ-F-i18n-completeness](../1-objectives/requirements/REQ-F-i18n-completeness.md) | TASK-qa-i18n-audit-script | 2026-04-15 | QA-1, QA-9, QA-18 |
+| TASK-qa-i18n-ci-gate | Wire audit test into `npm run test` so build fails on raw-key regression | P1 | Todo | [REQ-F-i18n-completeness](../1-objectives/requirements/REQ-F-i18n-completeness.md) | TASK-qa-i18n-fix-missing-keys | 2026-04-15 | |
+| TASK-qa-quiz-x-button-reliable | QuizOverlay X-button: ensure reachable and clickable on all 22 quizzes + Conversation Analysis (fix z-index/scroll occlusion) | P1 | Todo | [REQ-F-i18n-completeness](../1-objectives/requirements/REQ-F-i18n-completeness.md) | - | 2026-04-15 | QA-10 |
+| TASK-qa-quiz-escape-dismiss | Escape key dismisses QuizOverlay | P1 | Todo | [REQ-F-i18n-completeness](../1-objectives/requirements/REQ-F-i18n-completeness.md) | TASK-qa-quiz-x-button-reliable | 2026-04-15 | QA-11 |
+| TASK-qa-quiz-backdrop-dismiss | Backdrop click dismisses QuizOverlay | P1 | Todo | [REQ-F-i18n-completeness](../1-objectives/requirements/REQ-F-i18n-completeness.md) | TASK-qa-quiz-x-button-reliable | 2026-04-15 | QA-13 |
+| TASK-qa-quiz-result-translated | Audit quiz result screens + cluster-completion hints — ensure translated strings, not raw keys | P1 | Todo | [REQ-F-i18n-completeness](../1-objectives/requirements/REQ-F-i18n-completeness.md) | TASK-qa-i18n-fix-missing-keys | 2026-04-15 | QA-14 |
+| TASK-qa-quiz-tests | Vitest: Escape + backdrop dismissal, X-button reachability on a sampled quiz, cluster-gate POST behavior | P1 | Todo | [REQ-F-i18n-completeness](../1-objectives/requirements/REQ-F-i18n-completeness.md) | TASK-qa-quiz-escape-dismiss, TASK-qa-quiz-backdrop-dismiss, TASK-qa-quiz-result-translated | 2026-04-15 | |
+
+### Phase 4 — Deploy & Operations
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-qa-sprint-manual-testing | Create `4-deploy/runbooks/qa-sprint-2026-04-15-test.md` with startup + step-by-step manual scenarios (nav consistency, signatur trigger check, i18n audit pass, quiz dismissal) | P1 | Todo | - | TASK-qa-nav-tests, TASK-qa-sig-tests, TASK-qa-quiz-tests, TASK-qa-i18n-ci-gate | 2026-04-15 | Spans frontend, mobile, api-server |

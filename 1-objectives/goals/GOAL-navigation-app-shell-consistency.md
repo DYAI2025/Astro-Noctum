@@ -2,7 +2,7 @@
 
 **Description**: Die App-Shell (Header-Navigation, Mode-Toggle, Routing) soll auf jeder Seite klar, konsistent und selbsterklärend sein. Der User muss jederzeit wissen wo er ist, wie er zum Dashboard kommt, und was jeder Button tut. Der Planetarium-Mode-Toggle darf nicht mit Navigation verwechselt werden. Die aktive Route muss visuell hervorgehoben sein.
 
-**Status**: Draft
+**Status**: Approved
 
 **Priority**: Must-have
 
@@ -19,5 +19,7 @@
 
 ## Related Artifacts
 
+- User Stories: [US-navigation-app-shell](../user-stories/US-navigation-app-shell.md)
+- Requirements: [REQ-F-navigation-redesign](../requirements/REQ-F-navigation-redesign.md)
 - Constraints: [CON-mobile-first-readability](../constraints/CON-mobile-first-readability.md)
 - QA Findings: QA-6, QA-16, QA-19, QA-20, QA-21, QA-22

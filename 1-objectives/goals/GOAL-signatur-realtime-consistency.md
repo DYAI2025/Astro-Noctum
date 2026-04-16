@@ -2,7 +2,7 @@
 
 **Description**: Die Signatur-Visualisierung soll visuell erkennbar auf Echtzeit-Inputs (Transit, Quiz-Completion, Space-Weather) reagieren, die Ring-Geometrie nur nach vollständiger Cluster-Completion verändern (nicht nach einzelnen Quizzes), und auf Web und Mobile dieselbe Engine-Version (V2) nutzen. Der Cousto-Audio-Engine muss zuverlässig stummschaltbar sein.
 
-**Status**: Draft
+**Status**: Approved
 
 **Priority**: Must-have
 
@@ -20,5 +20,6 @@
 ## Related Artifacts
 
 - Goals: [GOAL-fusion-astrology](GOAL-fusion-astrology.md)
-- Requirements: [REQ-F-signatur-shared-bridge](../requirements/REQ-F-signatur-shared-bridge.md), [REQ-F-signatur-determinism](../requirements/REQ-F-signatur-determinism.md)
+- User Stories: [US-signatur-realtime-feedback](../user-stories/US-signatur-realtime-feedback.md)
+- Requirements: [REQ-F-signatur-realtime-triggers](../requirements/REQ-F-signatur-realtime-triggers.md), [REQ-F-signatur-shared-bridge](../requirements/REQ-F-signatur-shared-bridge.md), [REQ-F-signatur-determinism](../requirements/REQ-F-signatur-determinism.md)
 - QA Findings: QA-8, QA-15, QA-17, QA-23, QA-24, QA-25

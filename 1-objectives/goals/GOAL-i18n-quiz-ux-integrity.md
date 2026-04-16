@@ -2,7 +2,7 @@
 
 **Description**: Alle UI-sichtbaren Texte müssen über das i18n-System aufgelöst werden — keine raw Translation-Keys dürfen im UI erscheinen. Quiz-Overlays müssen zuverlässig schließbar sein (X-Button, Escape, Backdrop-Click). Der Cluster-Gate muss korrekt enforced werden: nur abgeschlossene Cluster fließen in die Signatur ein.
 
-**Status**: Draft
+**Status**: Approved
 
 **Priority**: Must-have
 
@@ -19,5 +19,7 @@
 
 ## Related Artifacts
 
+- User Stories: [US-quiz-i18n-integrity](../user-stories/US-quiz-i18n-integrity.md)
+- Requirements: [REQ-F-i18n-completeness](../requirements/REQ-F-i18n-completeness.md)
 - Constraints: [CON-german-ui](../constraints/CON-german-ui.md)
 - QA Findings: QA-1, QA-9, QA-10, QA-11, QA-13, QA-14, QA-18

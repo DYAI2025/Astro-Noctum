@@ -85,6 +85,9 @@ When an artifact (goal, requirement) is no longer relevant:
 | [GOAL-signatur-phase3-matching](goals/GOAL-signatur-phase3-matching.md) | Must | Draft | Dual-Ring Matching, Frequenzkompatibilität, Cousto-Audio-Layer — Signatur als Identitätsprotokoll |
 | [GOAL-daily-chart-coherence-first](goals/GOAL-daily-chart-coherence-first.md) | Must | Draft | Unified Daily Chart hero als erste Dashboard-Sektion — Kohärenz (Baseline + Tagesaktivierung), aktive Planeten, Daily Impulse, Driver-Strip in einer Karte |
 | [GOAL-synastry-compatibility](goals/GOAL-synastry-compatibility.md) | Must | Draft | Partnership compatibility via synastry interaspect chart — free grid, premium Gemini narrative |
+| [GOAL-navigation-app-shell-consistency](goals/GOAL-navigation-app-shell-consistency.md) | Must | Approved | Consistent app-shell navigation across all pages — active-route highlight, Dashboard link, non-confusing mode toggle |
+| [GOAL-signatur-realtime-consistency](goals/GOAL-signatur-realtime-consistency.md) | Must | Approved | Signatur visibly reacts to real-time inputs; cluster-gate enforced; same V2 engine on web + mobile; Cousto mute reliable |
+| [GOAL-i18n-quiz-ux-integrity](goals/GOAL-i18n-quiz-ux-integrity.md) | Must | Approved | Zero raw translation keys in UI; quiz overlays reliably dismissable (X / Esc / backdrop) |
 
 ---
 
@@ -116,6 +119,9 @@ When an artifact (goal, requirement) is no longer relevant:
 | [US-daily-action-recommendation](user-stories/US-daily-action-recommendation.md) | Should | Draft | Premium fusion.action recommendation tied to coherence + active planets |
 | [US-daily-single-api-call](user-stories/US-daily-single-api-call.md) | Must | Draft | POST /experience/daily?include=impact returns all daily data in one call |
 | [US-daily-impact-only-call](user-stories/US-daily-impact-only-call.md) | Should | Draft | POST /impact/active for structured data only — no LLM, fast refresh |
+| [US-navigation-app-shell](user-stories/US-navigation-app-shell.md) | Must | Draft | Consistent app-shell navigation across all pages with active-route highlight and Dashboard link |
+| [US-signatur-realtime-feedback](user-stories/US-signatur-realtime-feedback.md) | Must | Draft | Signatur visibly reacts to transit, space-weather, and cluster-completed quiz contributions |
+| [US-quiz-i18n-integrity](user-stories/US-quiz-i18n-integrity.md) | Must | Draft | No raw translation keys in UI; quiz overlays dismissable via X, Esc, and backdrop |
 
 ---
 
@@ -177,6 +183,9 @@ When an artifact (goal, requirement) is no longer relevant:
 | [REQ-F-synastry-partner-management](requirements/REQ-F-synastry-partner-management.md) | REQ-F | Must | Implemented | partner_profiles CRUD with user_id RLS + defence-in-depth delete guard |
 | [REQ-F-synastry-aspect-analysis](requirements/REQ-F-synastry-aspect-analysis.md) | REQ-F | Must | Implemented | POST /api/synastry — interaspects with staggered orbs, 5 main aspects, Placidus |
 | [REQ-F-synastry-premium-narrative](requirements/REQ-F-synastry-premium-narrative.md) | REQ-F | Must | Implemented | Hybrid narratives: template (free) + Gemini (premium) with zodiac whitelist guard |
+| [REQ-F-navigation-redesign](requirements/REQ-F-navigation-redesign.md) | REQ-F | Must | Draft | App-shell navigation redesign — always-visible Dashboard link, active-route highlight, non-confusing mode toggle, both agents exposed |
+| [REQ-F-signatur-realtime-triggers](requirements/REQ-F-signatur-realtime-triggers.md) | REQ-F | Must | Draft | Signatur real-time trigger contract + cluster-gate enforcement + reliable Cousto audio mute |
+| [REQ-F-i18n-completeness](requirements/REQ-F-i18n-completeness.md) | REQ-F | Must | Draft | Every `t()` call resolves to translated string in DE + EN; automated audit test; quiz overlay dismiss via X / Esc / backdrop |
 
 ---
 

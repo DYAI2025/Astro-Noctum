@@ -43,3 +43,11 @@ Proposed mapping:
 **Verification trigger**: Before sprint S-ORBITAL or any task implementing REQ-F-orbital-signatur-visualization, verify by:
 - (a) Checking if `soulprintToNatalWeights()` output plus transit sector data contains sufficient variance to derive home_base and σ values, or
 - (b) Confirming FuFirE `/transit/state` response includes these fields directly
+
+## Parking Decision (2026-04-15)
+
+Gap analysis flagged this assumption as Critical because `REQ-F-orbital-signatur-visualization` remains Blocked on it. **Decision**: explicitly **parked** — no verification work will be undertaken until sprint S-ORBITAL is prioritized on the roadmap. Both the assumption and its dependent requirement remain in their current Draft/Unverified states by design.
+
+Rationale: the orbital visualization is a Could-have feature that is deferred per CLAUDE.md Current State. Speculative verification (implementing mapping functions without a consuming feature) would be premature, and invalidating the assumption would permanently close the feature without product justification. Parking preserves optionality.
+
+**Re-activation trigger**: when S-ORBITAL enters a sprint plan, re-open this assumption for verification following the plan in the section above.
