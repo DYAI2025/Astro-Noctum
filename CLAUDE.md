@@ -15,7 +15,7 @@ Bazodiac (Astro-Noctum) — a fusion astrology web + mobile app combining Wester
 
 Run `/SDLC-status` or check `3-code/tasks.md` + `git log` for live project state. Do not rely on hardcoded counts in this file.
 
-**Implementation progress (2026-04-16):** 304/316 tasks Done (15 Cancelled, 2 Blocked). Sprint S-QA-2026-04-15 Phase 1: 6/8 Done (shell-audit, restructure-zones, active-route-highlight, theme-toggle-icon, agents-popup-levi-only, atlas-flagged-stub). Remaining Phase 1: mobile-375 + nav-tests. Blocked: REQ-F-orbital-signatur-visualization (deferred); TASK-qa-nav-agents-popup-add-eve (multi-agent infrastructure).
+**Implementation progress (2026-04-16):** 305/316 tasks Done (15 Cancelled, 2 Blocked). Sprint S-QA-2026-04-15 Phase 1: 7/8 Done. Remaining Phase 1: nav-tests. Blocked: REQ-F-orbital-signatur-visualization (deferred); TASK-qa-nav-agents-popup-add-eve (multi-agent infrastructure). Refactored: center-zone link logic + mobile nav item class extracted to `src/lib/navigation.ts` for testability.
 
 **QA Sprint (2026-04-15):** 25 QA findings → 3 new Goals + 3 new Requirements + 3 new User Stories with full Goal→US→REQ traceability. All 3 goals **Approved** (2026-04-15). Stakeholders.md updated. Decomposed into Sprint **S-QA-2026-04-15** in `3-code/tasks.md` — 4 phases, 26 tasks (9 navigation incl. decomposed agents-popup, 8 signatur-triggers, 8 i18n/quiz, 1 runbook). Phase 1 in progress.
 

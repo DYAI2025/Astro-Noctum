@@ -26,6 +26,7 @@ import { IconSparkles as Sparkles, IconOrbit as OrbitIcon } from "./components/a
 import { SettingsMenu } from "./components/navigation/SettingsMenu";
 import { AgentsPopup } from "./components/navigation/AgentsPopup";
 import { LEGAL_CONTENT } from "./components/LegalFooter";
+import { computeCenterLinks, MOBILE_NAV_ITEM_CLASS } from "./lib/navigation";
 import { DebugPanel, useDebugPanel } from "./debug";
 import { useElementTheme } from "./hooks/useElementTheme";
 
@@ -413,24 +414,14 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
   const isSignaturRoute = location.pathname === "/signatur";
   const isOnboardingRoute = location.pathname === "/onboarding";
 
-  // Center-zone contextual primary-view links per DEC-navigation-shell v2.
-  // Shows only the primary views that are NOT the current route.
   const isDashboardActive = location.pathname === "/";
-  const isSignaturActive = location.pathname === "/signatur" || location.pathname === "/fu-ring";
-  const isAtlasActive = location.pathname === "/atlas";
   const showAtlas = isFeatureEnabled("atlas_v1");
-  const centerLinks: Array<{ to: string; label: string; premiumOnly?: boolean }> = [];
-  if (!isDashboardActive) centerLinks.push({ to: "/", label: t("nav.dashboard") });
-  if (!isSignaturActive) centerLinks.push({ to: "/signatur", label: t("nav.signatur") });
-  if (showAtlas && !isAtlasActive) centerLinks.push({ to: "/atlas", label: t("nav.atlas"), premiumOnly: true });
+  const centerLinks = computeCenterLinks(location.pathname, t, showAtlas);
 
   const navItemClass = () =>
     `min-h-[44px] flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] border-b-2 border-transparent text-ink/60 hover:text-gold-deep transition-all duration-300 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-deep/60`;
 
-  const mobileNavItemClass = (active: boolean) =>
-    `flex flex-col items-center justify-center gap-0.5 min-w-[48px] min-h-[48px] p-1 rounded-lg active:bg-gold-deep/10 transition-colors ${
-      active ? "text-gold-deep" : "text-ink/40"
-    }`;
+  const mobileNavItemClass = MOBILE_NAV_ITEM_CLASS;
 
   const themeToggleLabel = planetariumMode ? t("nav.themeToggleSolar") : t("nav.themeTogglePlanetarium");
   const ThemeIcon = planetariumMode ? Sun : Moon;
