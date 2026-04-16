@@ -41,6 +41,8 @@ type FusionRing3DProps = {
   externalDissonance?: DissonanceResult | null;
   /** Day harmonic state for V3 engine */
   dayHarmonic?: DayHarmonicState | null;
+  /** Planetarium (dark) or Solar System (bright) theme. Default: true (dark). */
+  planetariumMode?: boolean;
 };
 
 type QueuedEffect = { id: string; type: RingEffectType };
@@ -80,6 +82,7 @@ export const FusionRing3D = ({
   dissonanceModulation,
   externalDissonance,
   dayHarmonic,
+  planetariumMode = true,
 }: FusionRing3DProps) => {
   const prefersReducedMotion = useReducedMotion();
   const { signalData, events, resolution, loading, error } = useFusionSignal(userId);
@@ -122,7 +125,11 @@ export const FusionRing3D = ({
   return (
     <section
       aria-label={labels.regionLabel}
-      className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#030308] shadow-[0_0_60px_rgba(0,0,0,0.45)]"
+      className={`relative overflow-hidden rounded-3xl border shadow-[0_0_60px_rgba(0,0,0,0.45)] ${
+        planetariumMode
+          ? 'border-white/10 bg-[#030308]'
+          : 'border-slate-200 bg-[#f1f5f9]'
+      }`}
     >
       <div className="relative h-[55vh] min-h-[340px] w-full max-h-[700px] sm:h-[62vh] sm:min-h-[420px] sm:max-h-[760px]">
         {loading && !signalData && (
@@ -137,6 +144,7 @@ export const FusionRing3D = ({
               queuedEffect={queuedEffect}
               className="h-full w-full"
               soulProfile={signalData?.baseSignals ?? null}
+              planetariumMode={planetariumMode}
             />
           }>
             <SignaturV3Canvas
@@ -158,12 +166,14 @@ export const FusionRing3D = ({
             dissonanceModulation={dissonanceModulation}
             className="h-full w-full"
             onFailed={() => setV2Failed(true)}
+            planetariumMode={planetariumMode}
           />
         ) : (
           <FusionRingWebsiteCanvas
             queuedEffect={queuedEffect}
             className="h-full w-full"
             soulProfile={signalData?.baseSignals ?? null}
+            planetariumMode={planetariumMode}
           />
         )}
       </div>

@@ -5,6 +5,7 @@ import { ArrowLeft, Sparkles, Volume2, VolumeX } from 'lucide-react';
 import { useLanguage } from '@/src/contexts/LanguageContext';
 import { useAppLayout } from '@/src/contexts/AppLayoutContext';
 import { FusionRing3D } from '@/src/components/fusion-ring-3d/FusionRing3D';
+import { usePlanetarium } from '@/src/contexts/PlanetariumContext';
 import QuizOverlay from '@/src/components/QuizOverlay';
 import { useQuizContribution } from '@/src/hooks/useQuizContribution';
 import { useCompletedModules } from '@/src/hooks/useCompletedModules';
@@ -36,6 +37,7 @@ import { TransitResonancePanels } from '@/src/components/signatur/TransitResonan
 export default function FuRingPage() {
   const { t, lang } = useLanguage();
   const { userId, apiData } = useAppLayout();
+  const { planetariumMode } = usePlanetarium();
   const { isPremium } = usePremium();
   const { completedModuleIds, addModule } = useCompletedModules();
   const { tier: fluidityTier } = useFluidityLevel(completedModuleIds);
@@ -187,8 +189,13 @@ export default function FuRingPage() {
   }, [spaceWeather.triggerEffect, spaceWeather.kpIndex]);
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-[#020509] text-white">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(0,180,216,0.18),transparent_40%),radial-gradient(circle_at_80%_0%,rgba(212,175,55,0.2),transparent_42%),radial-gradient(circle_at_center,rgba(255,255,255,0.03),transparent_65%)]" />
+    <div className={`relative min-h-screen w-full overflow-hidden ${
+      planetariumMode ? 'bg-[#020509] text-white' : 'bg-transparent text-slate-800'
+    }`}>
+      {/* Radial gradient overlay — dark/Planetarium mode only */}
+      {planetariumMode && (
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(0,180,216,0.18),transparent_40%),radial-gradient(circle_at_80%_0%,rgba(212,175,55,0.2),transparent_42%),radial-gradient(circle_at_center,rgba(255,255,255,0.03),transparent_65%)]" />
+      )}
 
       <section className="relative mx-auto flex w-full max-w-[1400px] flex-col gap-8 px-4 pb-20 pt-10 md:px-10 md:pt-20">
         {/* Header */}
@@ -298,6 +305,7 @@ export default function FuRingPage() {
               dissonanceModulation={dissonanceModulation}
               externalDissonance={dissonance}
               dayHarmonic={activeHarmonic}
+              planetariumMode={planetariumMode}
               labels={{
                 regionLabel: t('furing3d.a11y.regionLabel'),
                 loading: t('furing3d.loading'),

@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { QuizDefinition } from '@bazodiac/shared';
+import { soulprintToNatalWeights } from '@bazodiac/shared';
 import { useIsFocused } from '@react-navigation/native';
 import { useAppState } from '../contexts/AppStateContext';
 import { useBootstrapSignatur } from '../hooks/useBootstrapSignatur';
@@ -9,6 +10,8 @@ import { useQuizOfTheDay } from '../hooks/useQuizOfTheDay';
 import QuizRenderer from '../components/QuizRenderer';
 import { COLORS } from '../theme';
 import { SignaturCanvas } from '../components/SignaturCanvas';
+import SignaturEngine from '../components/SignaturEngine';
+import { MOBILE_FLAGS } from '../lib/mobile-feature-flags';
 
 const SECTOR_LABELS = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
@@ -49,6 +52,14 @@ export function FuRingScreen() {
   const { profile, userId, tier } = useAppState();
   const { bootstrap, loading } = useBootstrapSignatur(profile);
 
+  // V2 engine degradation — set true when SignaturEngine GL context fails
+  const [v2Failed, setV2Failed] = useState(false);
+  const handleV2Failed = useCallback(() => {
+    // Logged inside SignaturEngine, but also record here for observability
+    console.warn('[FuRingScreen] Degraded to V1 SignaturCanvas (V2 GL init failed).');
+    setV2Failed(true);
+  }, []);
+
   // ---- Quiz des Tages state ----
   const [completed, setCompleted] = useState<Record<string, boolean>>({});
   const [activeQuiz, setActiveQuiz] = useState<QuizDefinition | null>(null);
@@ -77,6 +88,13 @@ export function FuRingScreen() {
     if (profile?.astro_json) return generateFallbackSectors(profile);
     return null;
   }, [bootstrap, profile]);
+
+  // Derive V2 engine input: 12-sector soulprint → 7 planet weight Map
+  const natalWeights = useMemo(() => {
+    if (!soulprintSectors) return null;
+    const record = soulprintToNatalWeights(soulprintSectors);
+    return new Map(Object.entries(record));
+  }, [soulprintSectors]);
 
   const profileSummary = useMemo(() => {
     if (bootstrap?.profile) return bootstrap.profile;
@@ -131,11 +149,22 @@ export function FuRingScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Signatur Visualization — expo-gl/three.js 3D particle ring.
-          Deferred until sectors are ready so onContextCreate sees real soulprint data. */}
+      {/* Signatur Visualization — V2 spirograph engine by default (MOBILE_FLAGS.signature_engine_v2).
+          Falls back to V1 torus ring only when V2 GL context explicitly fails. */}
       <View style={styles.engineContainer}>
         {soulprintSectors && (
-          <SignaturCanvas sectors={soulprintSectors} paused={!isFocused} />
+          MOBILE_FLAGS.signature_engine_v2 && natalWeights && !v2Failed
+            ? (
+              <SignaturEngine
+                natalWeights={natalWeights}
+                kpIndex={0}
+                size={320}
+                onFailed={handleV2Failed}
+              />
+            )
+            : (
+              <SignaturCanvas sectors={soulprintSectors} paused={!isFocused} />
+            )
         )}
       </View>
 

@@ -57,8 +57,18 @@ function hash(n: number): number {
   return x - Math.floor(x);
 }
 
-function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject<EffectState | null>; audioRef: React.MutableRefObject<FusionAudioEngine | null> }) {
+// Palette constants for dark / bright theme modes
+const DARK_BG = 0x030308 as const;
+const BRIGHT_BG = 0xf1f5f9 as const;
+
+function ThreeScene({ effectRef, audioRef, planetariumMode = true }: {
+  effectRef: React.MutableRefObject<EffectState | null>;
+  audioRef: React.MutableRefObject<FusionAudioEngine | null>;
+  planetariumMode?: boolean;
+}) {
   const canvasRef = useRef<HTMLDivElement>(null);
+  const rendererRef = useRef<import('three').WebGLRenderer | null>(null);
+  const fogRef = useRef<import('three').Fog | null>(null);
 
   useEffect(() => {
     if (!canvasRef?.current) return;
@@ -83,11 +93,15 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.8;
-      renderer.setClearColor(0x030308);
+      const bgColor = planetariumMode ? DARK_BG : BRIGHT_BG;
+      renderer.setClearColor(bgColor);
+      rendererRef.current = renderer;
       container.appendChild(renderer.domElement);
 
       const scene = new THREE.Scene();
-      scene.fog = new THREE.Fog(0x030308, 16, 40);
+      const fog = new THREE.Fog(bgColor, 16, 40);
+      scene.fog = fog;
+      fogRef.current = fog;
 
       const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
       // Initial position: top-down face view matching HOME constants
@@ -1652,6 +1666,8 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
         window.removeEventListener('touchend', onTouchEnd);
         resizeObserver?.disconnect();
         renderer.dispose();
+        rendererRef.current = null;
+        fogRef.current = null;
         if (canvasRef.current?.contains?.(renderer.domElement)) {
           canvasRef.current.removeChild(renderer.domElement);
         }
@@ -1661,6 +1677,20 @@ function ThreeScene({ effectRef, audioRef }: { effectRef: React.MutableRefObject
     const cleanup = initScene();
     return () => { cleanup?.then?.((fn) => fn?.()); };
   }, []);
+
+  // React to planetariumMode changes — update clearColor and fog reactively
+  useEffect(() => {
+    const bgColor = planetariumMode ? DARK_BG : BRIGHT_BG;
+    if (rendererRef.current) {
+      rendererRef.current.setClearColor(bgColor);
+    }
+    if (fogRef.current) {
+      const THREE_Color = (fogRef.current as any).color;
+      if (THREE_Color && typeof THREE_Color.setHex === 'function') {
+        THREE_Color.setHex(bgColor);
+      }
+    }
+  }, [planetariumMode]);
 
   return <div ref={canvasRef} style={{ width: '100%', height: '100%' }} />;
 }
@@ -1672,10 +1702,12 @@ interface FusionRingWebsiteCanvasProps {
   queuedEffect?: { id: string; type: string } | null;
   className?: string;
   soulProfile?: number[] | null; // 12 sector values [0..1]
+  /** Planetarium (dark) or Solar System (bright) theme. Default: true (dark). */
+  planetariumMode?: boolean;
 }
 
 export function FusionRingWebsiteCanvas(props: FusionRingWebsiteCanvasProps) {
-  const { soulProfile } = props;
+  const { soulProfile, planetariumMode = true } = props;
 
   const effectiveProfile = useMemo(() => {
     if (soulProfile && soulProfile.length === 12) {
@@ -1692,7 +1724,7 @@ export function FusionRingWebsiteCanvas(props: FusionRingWebsiteCanvasProps) {
     return null;
   }, [soulProfile]);
 
-  return <FusionRingCanvasInner className={props.className} soulProfileOverride={effectiveProfile} />;
+  return <FusionRingCanvasInner className={props.className} soulProfileOverride={effectiveProfile} planetariumMode={planetariumMode} />;
 }
 
 export default FusionRingWebsiteCanvas;
@@ -1700,11 +1732,13 @@ export default FusionRingWebsiteCanvas;
 type FusionRingCanvasInnerProps = {
   soulProfileOverride?: number[] | null;
   className?: string;
+  planetariumMode?: boolean;
 };
 
 function FusionRingCanvasInner({
   soulProfileOverride,
   className,
+  planetariumMode = true,
 }: FusionRingCanvasInnerProps) {
   const [mounted, setMounted] = useState(false);
   const [webglSupported, setWebglSupported] = useState(true);
@@ -1740,9 +1774,10 @@ function FusionRingCanvasInner({
     );
   }
 
+  const bgStyle = planetariumMode ? '#030308' : '#f1f5f9';
   return (
-    <div style={{ width: '100vw', height: '100vh', background: '#030308', position: 'relative', overflow: 'hidden' }}>
-      <ThreeScene effectRef={effectRef} audioRef={audioRef} />
+    <div style={{ width: '100vw', height: '100vh', background: bgStyle, position: 'relative', overflow: 'hidden' }}>
+      <ThreeScene effectRef={effectRef} audioRef={audioRef} planetariumMode={planetariumMode} />
     </div>
   );
 }
