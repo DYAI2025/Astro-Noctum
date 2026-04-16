@@ -21,8 +21,8 @@ import { BrandedLoader } from "./components/BrandedLoader";
 import { usePremium } from "./hooks/usePremium";
 import { isFeatureEnabled } from "./lib/feature-flags";
 import type { BootstrapResponse, SignatureDeltaResponse } from "./lib/schemas/experience";
-import { Volume2, VolumeX, Settings, X } from "lucide-react";
-import { IconSparkles as Sparkles, IconTelescope as TelescopeIcon, IconOrbit as OrbitIcon } from "./components/animated-icons";
+import { Volume2, VolumeX, Settings, X, Moon, Sun, Home } from "lucide-react";
+import { IconSparkles as Sparkles, IconOrbit as OrbitIcon } from "./components/animated-icons";
 import { SettingsMenu } from "./components/navigation/SettingsMenu";
 import { LEGAL_CONTENT } from "./components/LegalFooter";
 import { DebugPanel, useDebugPanel } from "./debug";
@@ -401,15 +401,25 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
   const isSignaturRoute = location.pathname === "/signatur";
   const isOnboardingRoute = location.pathname === "/onboarding";
 
-  const navItemClass = (active: boolean) =>
-    `min-h-[44px] flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] border-b-2 transition-all duration-300 ${
-      active ? "text-gold-deep border-current" : "text-ink/60 hover:text-gold-deep border-transparent"
-    }`;
+  // Center-zone contextual primary-view links per DEC-navigation-shell v2.
+  // Shows only the primary views that are NOT the current route.
+  // Atlas stub added separately (TASK-qa-nav-atlas-flagged-stub) behind feature flag.
+  const isDashboardActive = location.pathname === "/";
+  const isSignaturActive = location.pathname === "/signatur" || location.pathname === "/fu-ring";
+  const centerLinks: Array<{ to: string; label: string }> = [];
+  if (!isDashboardActive) centerLinks.push({ to: "/", label: t("nav.dashboard") });
+  if (!isSignaturActive) centerLinks.push({ to: "/signatur", label: t("nav.signatur") });
+
+  const navItemClass = () =>
+    `min-h-[44px] flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] border-b-2 border-transparent text-ink/60 hover:text-gold-deep transition-all duration-300 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-deep/60`;
 
   const mobileNavItemClass = (active: boolean) =>
     `flex flex-col items-center justify-center gap-0.5 min-w-[48px] min-h-[48px] p-1 rounded-lg active:bg-gold-deep/10 transition-colors ${
       active ? "text-gold-deep" : "text-ink/40"
     }`;
+
+  const themeToggleLabel = planetariumMode ? t("nav.themeToggleSolar") : t("nav.themeTogglePlanetarium");
+  const ThemeIcon = planetariumMode ? Sun : Moon;
 
   return (
     <motion.div
@@ -418,54 +428,42 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
       transition={{ duration: 2, ease: "easeOut", delay: 0.3 }}
       className={`morning-bg min-h-screen font-sans selection:bg-gold-deep/20 flex flex-col ${planetariumMode ? "planetarium text-slate-100" : "text-ink"}`}
     >
-      {/* ── Top Nav (Desktop) — 3 primary items + Settings ───────────── */}
+      {/* ── Top Nav (Desktop) — 3 zones per DEC-navigation-shell v2 ───── */}
       {!isOnboardingRoute && (
       <header className="hidden md:flex fixed top-0 w-full h-20 items-center justify-between px-12 z-50 morning-header">
-        <Link
-          to="/"
-          className="font-serif text-xl tracking-widest text-gold-deep cursor-pointer select-none"
-        >
-          Bazodiac
-        </Link>
-
-        {/* 3 primary nav items per DEC-navigation-shell */}
-        <nav className="flex space-x-10 text-[10px] uppercase tracking-[0.3em]" aria-label="Main navigation">
-          <button
-            onClick={() => setWidgetExpanded(true)}
-            className={navItemClass(agentActive)}
-            aria-label={t("nav.astroAgents")}
+        {/* Left zone — wordmark → Dashboard (disabled on current route) */}
+        {isDashboardActive ? (
+          <span
+            className="font-serif text-xl tracking-widest text-gold-deep select-none pointer-events-none"
+            aria-current="page"
+            aria-disabled="true"
+            aria-label={t("nav.dashboard")}
           >
-            <span className="relative inline-flex items-center gap-2">
-              <Sparkles className="w-4 h-4 shrink-0" aria-hidden="true" />
-              {agentActive && (
-                <span className="absolute -top-1 -right-2 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
-              )}
-            </span>
-            {t("nav.astroAgents")}
-          </button>
-
-          <button
-            onClick={togglePlanetarium}
-            aria-pressed={planetariumMode ? "true" : "false"}
-            className={navItemClass(planetariumMode)}
-            aria-label={t("nav.planetarium")}
-          >
-            <TelescopeIcon className="w-4 h-4 shrink-0" aria-hidden="true" />
-            {t("nav.planetarium")}
-          </button>
-
+            Bazodiac
+          </span>
+        ) : (
           <Link
-            to="/signatur"
-            className={navItemClass(location.pathname === "/signatur" || location.pathname === "/fu-ring")}
+            to="/"
+            className="font-serif text-xl tracking-widest text-gold-deep cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-deep/60 rounded-sm"
+            aria-label={t("nav.dashboard")}
           >
-            <OrbitIcon className="w-4 h-4 shrink-0" aria-hidden="true" />
-            {t("nav.signatur")}
+            Bazodiac
           </Link>
+        )}
+
+        {/* Center zone — contextual primary-view links (show only non-current) */}
+        <nav className="flex space-x-10 text-[10px] uppercase tracking-[0.3em]" aria-label="Main navigation">
+          {centerLinks.map((link) => (
+            <Link key={link.to} to={link.to} className={navItemClass()}>
+              {link.to === "/signatur" && <OrbitIcon className="w-4 h-4 shrink-0" aria-hidden="true" />}
+              {link.label}
+            </Link>
+          ))}
         </nav>
 
-        {/* Right side: audio + settings */}
+        {/* Right zone — symbol-only utilities: audio, agents, theme, settings */}
         <div className="flex items-center gap-4">
-          {/* Audio toggle */}
+          {/* Audio toggle (desktop-only per DEC) */}
           <div className="flex items-center gap-2 group/audio">
             <button
               onClick={ambiente.toggle}
@@ -490,21 +488,45 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
 
           <div className="w-px h-4 bg-gold-deep/20" />
 
-          {/* Settings button */}
+          {/* Astro-Agents — icon-only (popup with both agents added by TASK-qa-nav-agents-popup-both-premium) */}
+          <button
+            onClick={() => setWidgetExpanded(true)}
+            className="relative inline-flex items-center justify-center min-w-[44px] min-h-[44px] text-ink/40 hover:text-gold-deep transition-colors"
+            aria-label={t("nav.astroAgents")}
+            title={t("nav.astroAgents")}
+          >
+            <Sparkles className="w-4 h-4 shrink-0" aria-hidden="true" />
+            {agentActive && (
+              <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
+            )}
+          </button>
+
+          {/* Theme toggle — Moon/Sun reflecting current mode */}
+          <button
+            onClick={togglePlanetarium}
+            aria-pressed={planetariumMode ? "true" : "false"}
+            aria-label={themeToggleLabel}
+            title={themeToggleLabel}
+            className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] text-ink/40 hover:text-gold-deep transition-colors"
+          >
+            <ThemeIcon className="w-4 h-4 shrink-0" aria-hidden="true" />
+          </button>
+
+          {/* Settings */}
           <div className="relative">
             <button
               onClick={() => setSettingsOpen((o) => !o)}
               aria-expanded={settingsOpen}
               aria-haspopup="menu"
               aria-label={t("nav.settings")}
-              className={`flex items-center gap-1.5 text-[9px] uppercase tracking-[0.2em] transition-all rounded-md px-2 py-1 min-h-[44px] ${
+              title={t("nav.settings")}
+              className={`inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-md transition-all ${
                 settingsOpen
                   ? "text-gold-deep bg-gold-deep/08 border border-gold-deep/20"
                   : "text-ink/40 hover:text-gold-deep hover:bg-gold-deep/08 border border-transparent"
               }`}
             >
               <Settings className="w-4 h-4 shrink-0" aria-hidden="true" />
-              <span className="hidden lg:inline">{t("nav.settings")}</span>
             </button>
 
             {settingsOpen && (
@@ -525,6 +547,30 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
           </div>
         </div>
       </header>
+      )}
+
+      {/* ── Mobile Top Bar — wordmark (left zone per DEC v2) ──────────── */}
+      {!isOnboardingRoute && (
+      <div className="md:hidden fixed top-0 w-full h-12 flex items-center px-4 z-50 morning-header">
+        {isDashboardActive ? (
+          <span
+            className="font-serif text-lg tracking-widest text-gold-deep select-none pointer-events-none"
+            aria-current="page"
+            aria-disabled="true"
+            aria-label={t("nav.dashboard")}
+          >
+            Bazodiac
+          </span>
+        ) : (
+          <Link
+            to="/"
+            className="font-serif text-lg tracking-widest text-gold-deep cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-deep/60 rounded-sm"
+            aria-label={t("nav.dashboard")}
+          >
+            Bazodiac
+          </Link>
+        )}
+      </div>
       )}
 
       {/* ── Legal modal ───────────────────────────────────────────────── */}
@@ -562,8 +608,8 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
       <main
         className={
           isSignaturRoute
-            ? "flex-grow pt-4 md:pt-24 pb-28 md:pb-20 relative z-10 w-full"
-            : "flex-grow pt-4 md:pt-32 pb-28 md:pb-20 relative z-10 container mx-auto px-3 sm:px-4 flex flex-col items-center justify-center"
+            ? "flex-grow pt-16 md:pt-24 pb-28 md:pb-20 relative z-10 w-full"
+            : "flex-grow pt-16 md:pt-32 pb-28 md:pb-20 relative z-10 container mx-auto px-3 sm:px-4 flex flex-col items-center justify-center"
         }
       >
         {error && (
@@ -574,14 +620,31 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
         <AppRoutes hasCompleteProfile={hasCompleteProfile} onboardingProps={onboardingProps} />
       </main>
 
-      {/* ── Bottom Nav (Mobile) — 3 primary items + Settings ─────────── */}
+      {/* ── Bottom Nav (Mobile) — 3 zones per DEC-navigation-shell v2 ── */}
       {!isOnboardingRoute && (
-      <nav className="md:hidden fixed bottom-0 w-full bg-white/70 backdrop-blur-xl border-t border-gold-deep/15 flex items-center justify-around z-50 h-16 px-2">
-        {/* Astro-Agents */}
+      <nav className="md:hidden fixed bottom-0 w-full bg-white/70 backdrop-blur-xl border-t border-gold-deep/15 flex items-center justify-around z-50 h-16 px-2" aria-label="Main navigation">
+        {/* Center-zone contextual primary-view links */}
+        {centerLinks.map((link) => (
+          <Link
+            key={link.to}
+            to={link.to}
+            className={mobileNavItemClass(false)}
+          >
+            {link.to === "/signatur" ? (
+              <OrbitIcon className="w-5 h-5" aria-hidden="true" />
+            ) : (
+              <Home className="w-5 h-5" aria-hidden="true" />
+            )}
+            <span className="text-[9px] uppercase tracking-tight leading-none">{link.label}</span>
+          </Link>
+        ))}
+
+        {/* Right zone — Astro-Agents (icon-only) */}
         <button
           onClick={() => setWidgetExpanded(true)}
           className={mobileNavItemClass(agentActive)}
           aria-label={t("nav.astroAgents")}
+          title={t("nav.astroAgents")}
         >
           <span className="relative inline-flex">
             <Sparkles className="w-5 h-5" aria-hidden="true" />
@@ -589,29 +652,20 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
               <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
             )}
           </span>
-          <span className="text-[9px] uppercase tracking-tight leading-none">{t("nav.astroAgents")}</span>
         </button>
 
-        {/* Planetarium */}
+        {/* Right zone — theme toggle (Moon/Sun) */}
         <button
           onClick={togglePlanetarium}
           aria-pressed={planetariumMode ? "true" : "false"}
+          aria-label={themeToggleLabel}
+          title={themeToggleLabel}
           className={mobileNavItemClass(planetariumMode)}
         >
-          <TelescopeIcon className="w-5 h-5" aria-hidden="true" />
-          <span className="text-[9px] uppercase tracking-tight leading-none">{t("nav.planetarium")}</span>
+          <ThemeIcon className="w-5 h-5" aria-hidden="true" />
         </button>
 
-        {/* Signatur */}
-        <Link
-          to="/signatur"
-          className={mobileNavItemClass(location.pathname === "/signatur" || location.pathname === "/fu-ring")}
-        >
-          <OrbitIcon className="w-5 h-5" aria-hidden="true" />
-          <span className="text-[9px] uppercase tracking-tight leading-none">{t("nav.signatur")}</span>
-        </Link>
-
-        {/* Settings */}
+        {/* Right zone — Settings */}
         <div className="relative">
           <button
             onClick={() => setSettingsOpen((o) => !o)}
@@ -619,9 +673,9 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
             aria-haspopup="menu"
             className={mobileNavItemClass(settingsOpen)}
             aria-label={t("nav.settings")}
+            title={t("nav.settings")}
           >
             <Settings className="w-5 h-5" aria-hidden="true" />
-            <span className="text-[9px] uppercase tracking-tight leading-none">{t("nav.settings")}</span>
           </button>
 
           {settingsOpen && (

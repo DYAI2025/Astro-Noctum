@@ -22,6 +22,7 @@ const translationsEn: DeepStringRecord = {
     backLink: "Go to Dashboard",
   },
   nav: {
+    dashboard: "Dashboard",
     atlas: "Atlas",
     signatur: "Signatur",
     sky: "Sky",
@@ -32,6 +33,8 @@ const translationsEn: DeepStringRecord = {
     langToggle: "DE",
     pauseAudioTitle: "Pause ambient music",
     playAudioTitle: "Play ambient music",
+    themeTogglePlanetarium: "Switch to Planetarium (dark)",
+    themeToggleSolar: "Switch to Solar System (bright)",
     astroAgents: "Astro-Agents",
     astroAgentsIntro: "Your personal AI agents — ask about your daily horoscope, Signatur, planetary positions, cosmic weather, and fusion profile.",
     planetarium: "Planetarium",
@@ -495,6 +498,7 @@ const translationsDe: DeepStringRecord = {
     backLink: "Zum Dashboard",
   },
   nav: {
+    dashboard: "Tageschart",
     atlas: "Atlas",
     signatur: "Signatur",
     sky: "Sky",
@@ -505,6 +509,8 @@ const translationsDe: DeepStringRecord = {
     langToggle: "EN",
     pauseAudioTitle: "Ambient-Musik pausieren",
     playAudioTitle: "Ambient-Musik abspielen",
+    themeTogglePlanetarium: "Zum Planetarium (dunkel) wechseln",
+    themeToggleSolar: "Zum Solar System (hell) wechseln",
     astroAgents: "Astro-Agents",
     astroAgentsIntro: "Deine persönlichen KI-Agenten — frag nach Tageshoroskop, Signatur, Planetenständen, Kosmoswetter und deinem Fusion-Profil.",
     planetarium: "Planetarium",
