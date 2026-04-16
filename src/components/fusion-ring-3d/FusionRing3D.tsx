@@ -85,10 +85,12 @@ export const FusionRing3D = ({
   const { signalData, events, resolution, loading, error } = useFusionSignal(userId);
   const { kpIndex } = useSpaceWeather();
 
-  const v2NatalWeights = useMemo(
-    () => toNatalWeightsOrUndefined(signalData?.baseSignals),
-    [signalData?.baseSignals]
-  );
+  const v2NatalWeights = useMemo(() => {
+    const sectors = signalData?.targetSignals ?? signalData?.baseSignals;
+    if (!sectors) return undefined;
+    const clamped = sectors.map(v => Math.max(0, Math.min(1, v)));
+    return toNatalWeightsOrUndefined(clamped);
+  }, [signalData?.targetSignals, signalData?.baseSignals]);
 
   const v3DimensionWeights = useMemo(
     () => toDimensionWeightsOrUndefined(signalData?.baseSignals),

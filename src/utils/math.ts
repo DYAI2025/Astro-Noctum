@@ -45,8 +45,8 @@ export const applyGaussSpread = (
 /**
  * Power curve for organic peaks.
  */
-export const applyPowerCurve = (signal: number): number => {
-  return Math.sign(signal) * Math.pow(Math.abs(signal), 1.5);
+export const applyPowerCurve = (signal: number, exponent = 1.2): number => {
+  return Math.sign(signal) * Math.pow(Math.abs(signal), exponent);
 };
 
 /**
