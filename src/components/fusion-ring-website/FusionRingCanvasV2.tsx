@@ -60,6 +60,8 @@ export interface FusionRingCanvasProps {
   className?: string;
   /** Optional dissonance visual modulation from useDissonance() */
   dissonanceModulation?: import('../../lib/fusion-ring/dissonance-visual').VisualModulation | null;
+  /** Called when WebGL is unavailable — caller should render a 2D fallback instead */
+  onFailed?: () => void;
 }
 
 // Simple hash for deterministic pseudo-random
@@ -1281,6 +1283,7 @@ export default function FusionRingCanvas({
   solarModulation = 1.0,
   className,
   dissonanceModulation,
+  onFailed,
 }: FusionRingCanvasProps) {
   const [mounted, setMounted] = useState(false);
   const [webglSupported, setWebglSupported] = useState(true);
@@ -1329,12 +1332,18 @@ export default function FusionRingCanvas({
 
   useEffect(() => {
     setMounted(true);
-    setWebglSupported(isWebGLAvailable());
+    const supported = isWebGLAvailable();
+    setWebglSupported(supported);
+    if (!supported) {
+      onFailed?.();
+    }
     audioRef.current = createFusionAudio();
     return () => {
       audioRef.current?.dispose();
       audioRef.current = null;
     };
+  // onFailed is intentionally excluded — it's a callback ref, stable identity is caller's responsibility
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const triggerEffect = useCallback((
@@ -1374,6 +1383,8 @@ export default function FusionRingCanvas({
   }
 
   if (!webglSupported) {
+    // When a parent registers onFailed it handles the fallback — render nothing here
+    if (onFailed) return null;
     return (
       <div className={`bg-black flex items-center justify-center ${className ?? ''}`}>
         <FallbackRing />

@@ -43,8 +43,8 @@ T4: useCoustoAudio
 
 | Condition | Current Behavior | Target Behavior (TASK-qa-sig-webgl-fallback) |
 |-----------|-----------------|----------------------------------------------|
-| V2 canvas fails to init | Red banner: `labels.renderError` ("Renderer-Fehler. Fallback aktiv.") | 2D SVG sector ring fallback — no error text visible to user |
-| V3 lazy-load fails | Suspense fallback (loading spinner) | Same 2D SVG fallback |
+| V2 canvas fails to init | Red banner: `labels.renderError` ("Renderer-Fehler. Fallback aktiv.") | **Fixed** — `FusionRingCanvasV2.onFailed` → `FusionRing3D` switches to V1 `FusionRingWebsiteCanvas`. Error banner suppressed in production (DEV-only). |
+| V3 lazy-load fails | Suspense fallback (loading spinner) | **Fixed** — Suspense fallback is now `FusionRingWebsiteCanvas` (V1 sector ring) instead of a dark div. |
 | `prefers-reduced-motion` | Reduced motion hint text shown | Acceptable as-is |
 
 ## Theme Awareness

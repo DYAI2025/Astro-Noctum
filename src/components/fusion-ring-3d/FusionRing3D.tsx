@@ -99,6 +99,7 @@ export const FusionRing3D = ({
 
   const [queuedEffect, setQueuedEffect] = useState<QueuedEffect | null>(null);
   const lastEventRef = useRef<string>('');
+  const [v2Failed, setV2Failed] = useState(false);
 
   const latestEvent = useMemo(() => pickLatestEvent(events), [events]);
 
@@ -131,7 +132,13 @@ export const FusionRing3D = ({
         )}
 
         {isFeatureEnabled('signature_engine_v3') && v3DimensionWeights ? (
-          <Suspense fallback={<div className="h-full w-full bg-black/20" />}>
+          <Suspense fallback={
+            <FusionRingWebsiteCanvas
+              queuedEffect={queuedEffect}
+              className="h-full w-full"
+              soulProfile={signalData?.baseSignals ?? null}
+            />
+          }>
             <SignaturV3Canvas
               natalWeights={v3DimensionWeights}
               quizWeights={quizWeights ?? v3DimensionWeights}
@@ -142,7 +149,7 @@ export const FusionRing3D = ({
               quality="auto"
             />
           </Suspense>
-        ) : isFeatureEnabled('signature_engine_v2') ? (
+        ) : isFeatureEnabled('signature_engine_v2') && !v2Failed ? (
           <FusionRingCanvasV2
             natalWeights={v2NatalWeights}
             quizWeights={quizWeights}
@@ -150,6 +157,7 @@ export const FusionRing3D = ({
             solarModulation={solarModulation}
             dissonanceModulation={dissonanceModulation}
             className="h-full w-full"
+            onFailed={() => setV2Failed(true)}
           />
         ) : (
           <FusionRingWebsiteCanvas
@@ -174,8 +182,9 @@ export const FusionRing3D = ({
         </p>
       )}
 
-      {error && (
-        <p className="border-t border-red-400/30 bg-red-950/20 px-4 py-2 text-xs text-red-200">
+      {/* Transit API errors are handled silently — V1 canvas renders with defaults when data is unavailable */}
+      {!!error && import.meta.env.DEV && (
+        <p className="border-t border-yellow-400/20 bg-yellow-950/10 px-4 py-2 text-xs text-yellow-200/60">
           {labels.renderError}
         </p>
       )}
