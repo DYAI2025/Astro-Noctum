@@ -151,7 +151,7 @@ const translationsEn: DeepStringRecord = {
     audioOn: "Audio on",
     audioOff: "Audio off",
     latestEvents: "Latest events",
-    renderError: "Renderer error. Fallback active.",
+    renderError: "[DEV] Transit API unavailable. V1 fallback active.",
     reload: "Reload",
     eventAnnouncePrefix: "Transit event",
     a11y: {
@@ -628,7 +628,7 @@ const translationsDe: DeepStringRecord = {
     audioOn: "Audio an",
     audioOff: "Audio aus",
     latestEvents: "Neueste Events",
-    renderError: "Renderer-Fehler. Fallback aktiv.",
+    renderError: "[DEV] Transit API nicht erreichbar. V1-Fallback aktiv.",
     reload: "Neu laden",
     eventAnnouncePrefix: "Transit-Event",
     a11y: {

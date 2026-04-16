@@ -187,3 +187,46 @@ describe('calculateFusionSignal — clamping', () => {
     expect(result).toBeCloseTo(0.6, 1);
   });
 });
+
+// ── 5. Quiz weights rebuild throttle ──────────────────────────────────
+
+// Mirrors the threshold logic applied in FusionRingCanvasV2 for quiz weights.
+function shouldRebuildQuiz(
+  current: Record<string, number>,
+  prev: Record<string, number> | undefined,
+  threshold = 0.01
+): boolean {
+  if (!prev) return true;
+  return Object.keys(current).some(
+    k => Math.abs((current[k] ?? 0) - (prev[k] ?? 0)) >= threshold
+  );
+}
+
+describe('quiz weights rebuild throttle', () => {
+  it('does NOT rebuild when quiz weights change by less than 0.01', () => {
+    const prev = { assertion: 0.5, empathy: 0.5 };
+    const next = { assertion: 0.505, empathy: 0.499 }; // delta < 0.01
+    expect(shouldRebuildQuiz(next, prev)).toBe(false);
+  });
+
+  it('rebuilds when any quiz weight changes by >= 0.01', () => {
+    const prev = { assertion: 0.5, empathy: 0.5 };
+    const next = { assertion: 0.51, empathy: 0.5 }; // delta = 0.01
+    expect(shouldRebuildQuiz(next, prev)).toBe(true);
+  });
+
+  it('rebuilds on first render (no prev)', () => {
+    expect(shouldRebuildQuiz({ assertion: 0.5 }, undefined)).toBe(true);
+  });
+
+  it('does not rebuild when weights are identical', () => {
+    const weights = { assertion: 0.7, empathy: 0.3, creativity: 0.5 };
+    expect(shouldRebuildQuiz(weights, { ...weights })).toBe(false);
+  });
+
+  it('rebuilds when a new dimension key appears', () => {
+    const prev = { assertion: 0.5 };
+    const next = { assertion: 0.5, empathy: 0.5 }; // new key — prev has no empathy → 0 vs 0.5 = delta 0.5
+    expect(shouldRebuildQuiz(next, prev)).toBe(true);
+  });
+});

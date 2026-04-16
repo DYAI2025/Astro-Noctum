@@ -271,4 +271,15 @@ describe('useQuizContribution — cluster gate enforcement', () => {
       0.75,
     );
   });
+
+  it('does NOT queue to localStorage for standalone quizzes (no cluster)', () => {
+    const completed = new Set<string>();
+    const { result } = renderHook(() => useQuizContribution(completed));
+
+    // quiz.standalone_test.v1 is not in any cluster
+    result.current(makeEvent('quiz.standalone_test.v1'));
+
+    const pending = loadPendingContributions();
+    expect(pending.has('quiz.standalone_test.v1')).toBe(false);
+  });
 });

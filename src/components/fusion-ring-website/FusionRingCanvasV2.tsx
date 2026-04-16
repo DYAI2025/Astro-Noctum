@@ -1300,8 +1300,9 @@ export default function FusionRingCanvas({
   });
 
   const prevNatalRef = useRef<Record<string, number> | undefined>(undefined);
+  const prevQuizRef = useRef<Record<string, number> | undefined>(undefined);
 
-  // Sync props to state ref — skip rebuild when natal weights change by < threshold
+  // Sync props to state ref — skip rebuild when weights change by < threshold
   useEffect(() => {
     let needsRebuild = false;
 
@@ -1317,8 +1318,15 @@ export default function FusionRingCanvas({
       }
     }
     if (quizWeights) {
-      bazStateRef.current.quiz = new Map(Object.entries(quizWeights).map(([k, v]) => [k as QuizDimension, v]));
-      needsRebuild = true;
+      const prevQuiz = prevQuizRef.current;
+      const quizChanged = !prevQuiz || Object.keys(quizWeights).some(
+        k => Math.abs((quizWeights[k] ?? 0) - (prevQuiz[k] ?? 0)) >= 0.01
+      );
+      if (quizChanged) {
+        bazStateRef.current.quiz = new Map(Object.entries(quizWeights).map(([k, v]) => [k as QuizDimension, v]));
+        prevQuizRef.current = quizWeights;
+        needsRebuild = true;
+      }
     }
     bazStateRef.current.solarModulation = solarModulation;
     bazStateRef.current.dissonanceModulation = dissonanceModulation;

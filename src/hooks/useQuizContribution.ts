@@ -11,9 +11,8 @@ import {
 /**
  * Returns a handler for quiz onComplete that:
  * 1. Converts ContributionEvent → sector weights via AFFINITY_MAP
- * 2. Queues the result locally (localStorage)
- * 3. Checks cluster completion gate
- * 4. On full cluster: batch-POSTs all queued weights (fire-and-forget)
+ * 2. For cluster quizzes: queues locally, batch-POSTs on cluster completion
+ * 3. For standalone quizzes: POSTs immediately, no localStorage queue
  *
  * @param completedModuleIds - Set of already-completed module IDs for this user
  */
@@ -27,12 +26,10 @@ export function useQuizContribution(completedModuleIds: Set<string>) {
 
     const normalizedSectorWeights = sectorWeights.map((signal) => (signal + 1) / 2);
 
-    // Always queue locally first
-    queueContribution(moduleId, normalizedSectorWeights, 0.75);
-
-    // Check cluster gate — only POST when entire cluster is complete
     const cluster = findClusterForModule(moduleId);
     if (cluster) {
+      // Queue locally — only POST when entire cluster is complete
+      queueContribution(moduleId, normalizedSectorWeights, 0.75);
       const updatedCompleted = new Set(completedModuleIds);
       updatedCompleted.add(moduleId);
       if (!isClusterComplete(cluster, updatedCompleted)) return;
@@ -45,7 +42,7 @@ export function useQuizContribution(completedModuleIds: Set<string>) {
       return;
     }
 
-    // No cluster (standalone quiz) — POST immediately
+    // No cluster (standalone quiz) — POST immediately, no localStorage queue
     void contributeQuizResult(moduleId, normalizedSectorWeights, 0.75);
   }, [completedModuleIds]);
 }
