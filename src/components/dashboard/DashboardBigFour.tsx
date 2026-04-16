@@ -10,15 +10,16 @@
  * Implements: REQ-F-dashboard-identity-cards
  */
 
-import { useState, type ReactNode } from 'react';
+import { useState, type ReactNode, useMemo } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Zap } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { WUXING_ELEMENTS, getWuxingByKey } from '../../lib/astro-data/wuxing';
+import { WUXING_ELEMENTS } from '../../lib/astro-data/wuxing';
 import { ZODIAC_SIGNS_DATA } from '../../lib/astro-data/zodiacSigns';
 import { EARTHLY_BRANCHES } from '../../lib/astro-data/earthlyBranches';
 import { ZodiacIcon, WuXingIcon, BaZiAnimalIcon } from '../animated-icons/CosmicSymbols';
 import { IconMoon, IconOrbit } from '../animated-icons';
+import { PLANETS } from '../cymantics/planetaryFrequencies';
 
 export interface DashboardBigFourProps {
   sunSign: string;
@@ -37,6 +38,8 @@ interface IdentityItem {
   identityId: string;
   /** Contextual description resolved from astro-data for the user's specific sign */
   description: string;
+  /** Optional frequency display */
+  frequency?: number;
 }
 
 type Lang = 'de' | 'en';
@@ -75,7 +78,7 @@ export function DashboardBigFour({
   const prefersReducedMotion = useReducedMotion();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const items: IdentityItem[] = [
+  const items: IdentityItem[] = useMemo(() => [
     {
       id: 'sunSign',
       icon: <ZodiacIcon sign={sunSign} className="w-5 h-5" />,
@@ -83,6 +86,7 @@ export function DashboardBigFour({
       value: sunSign,
       identityId: 'sunSign',
       description: getZodiacDesc(sunSign, 'sun', resolvedLang),
+      frequency: PLANETS.find(p => p.name === 'Sun')?.baseFrequency,
     },
     {
       id: 'moonSign',
@@ -91,6 +95,7 @@ export function DashboardBigFour({
       value: moonSign,
       identityId: 'moonSign',
       description: getZodiacDesc(moonSign, 'moon', resolvedLang),
+      frequency: PLANETS.find(p => p.name === 'Moon')?.baseFrequency,
     },
     {
       id: 'ascendant',
@@ -116,7 +121,7 @@ export function DashboardBigFour({
       identityId: `wuxing-${wuxingElement}`,
       description: getElementDesc(wuxingElement, resolvedLang),
     },
-  ];
+  ], [sunSign, moonSign, ascendant, baziAnimal, wuxingElement, resolvedLang]);
 
   const handleToggle = (id: string) => {
     setExpandedId((prev) => (prev === id ? null : id));
@@ -155,9 +160,17 @@ export function DashboardBigFour({
                 {icon}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[8px] font-sans uppercase tracking-[0.2em] opacity-65">
-                  {t(labelKey)}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="text-[8px] font-sans uppercase tracking-[0.2em] opacity-65">
+                    {t(labelKey)}
+                  </p>
+                  {items.find(it => it.id === id)?.frequency && (
+                    <span className="flex items-center gap-0.5 text-[7px] text-amber-500/60 font-mono">
+                      <Zap size={6} />
+                      {items.find(it => it.id === id)?.frequency?.toFixed(2)} Hz
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm font-serif truncate">
                   {value || '—'}
                 </p>
