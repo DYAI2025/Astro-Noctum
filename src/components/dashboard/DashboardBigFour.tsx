@@ -128,8 +128,19 @@ export function DashboardBigFour({
         const isOpen = expandedId === id;
         const hasDescription = !!description;
 
+        // Map identityId to Lumina glow color
+        const glowClass = id === 'sunSign' ? 'glow-orange' :
+                         id === 'moonSign' ? 'glow-blue' :
+                         id === 'ascendant' ? 'glow-purple' :
+                         id === 'baziAnimal' ? 'glow-green' :
+                         identityId.includes('Wood') ? 'glow-green' :
+                         identityId.includes('Fire') ? 'glow-orange' :
+                         identityId.includes('Earth') ? 'glow-orange' :
+                         identityId.includes('Metal') ? 'glow-white' :
+                         identityId.includes('Water') ? 'glow-blue' : '';
+
         return (
-          <div key={id} className="cosmic-tile overflow-hidden" data-identity-id={identityId}>
+          <div key={id} className={`cosmic-tile overflow-hidden group ${glowClass}`} data-identity-id={identityId}>
             {/* Card row — clickable if description exists */}
             <button
               className="w-full px-4 py-3 flex items-center gap-3 text-left"

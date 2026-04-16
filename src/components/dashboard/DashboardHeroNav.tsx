@@ -54,19 +54,30 @@ export function DashboardHeroNav({ sunSign, dominantElement, zodiacAnimal, onTil
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: 'easeOut', delay: 0.05 }}
     >
-      {tiles.map((tile) => (
-        <button
-          key={tile.id}
-          type="button"
-          onClick={() => onTileClick?.(tile.id)}
-          aria-label={t(tile.ariaKey)}
-          className={[
-            'group relative flex flex-col items-center justify-center',
-            'gap-3 py-8 px-6 rounded-2xl w-full cosmic-tile',
-            'hover:border-[var(--tile-accent)]',
-            'transition-[background-color,border-color,transform] duration-300 cursor-pointer',
-          ].join(' ')}
-        >
+      {tiles.map((tile) => {
+        const glowClass = tile.id === 'western' ? 'glow-gold' :
+                         tile.id === 'bazi' ? 'glow-green' :
+                         tile.id === 'wuxing' ? (
+                           tile.value.includes('Water') ? 'glow-blue' :
+                           tile.value.includes('Wood') ? 'glow-green' :
+                           tile.value.includes('Fire') ? 'glow-orange' :
+                           tile.value.includes('Earth') ? 'glow-orange' :
+                           tile.value.includes('Metal') ? 'glow-white' : 'glow-purple'
+                         ) : '';
+
+        return (
+          <button
+            key={tile.id}
+            type="button"
+            onClick={() => onTileClick?.(tile.id)}
+            aria-label={t(tile.ariaKey)}
+            className={[
+              'group relative flex flex-col items-center justify-center',
+              'gap-3 py-8 px-6 rounded-2xl w-full cosmic-tile',
+              glowClass,
+              'cursor-pointer',
+            ].join(' ')}
+          >
           {/* Icon */}
           <div className="opacity-80 group-hover:opacity-100 transition-opacity duration-300" style={{ color: 'var(--tile-accent)' }}>
             {tile.icon}
@@ -87,7 +98,7 @@ export function DashboardHeroNav({ sunSign, dominantElement, zodiacAnimal, onTil
             ↗
           </span>
         </button>
-      ))}
+      )})}
     </motion.div>
   );
 }

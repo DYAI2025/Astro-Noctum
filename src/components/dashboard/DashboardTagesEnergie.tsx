@@ -314,11 +314,11 @@ export function DashboardTagesEnergie({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.55, ease: 'easeOut' }}
-      className="w-full"
+      className="w-full group"
       aria-live="polite"
       aria-label={t('dashboard.tagesImpuls.ariaContainer')}
     >
-      <div className="tages-impuls-card">
+      <div className="tages-impuls-card glow-gold">
         {/* ── Header ─────────────────────────────────────────── */}
         <div className="px-5 pt-5 pb-3 relative flex items-center justify-center gap-3">
           <span className="text-xs font-sans uppercase tracking-[0.3em] font-bold text-center" style={{ color: 'var(--tile-text-secondary)' }}>
