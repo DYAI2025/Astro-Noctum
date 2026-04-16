@@ -140,32 +140,90 @@ body {
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06), 0 0 12px rgba(212, 175, 55, 0.08);
 }
 
-/* ── Unified Tile Design ────────────────────────────────────────────────── */
+/* ── Unified Tile Design (Lumina-OS Refinement) ────────────────────────── */
+
+:root {
+  --glow-blue: rgba(59, 130, 246, 0.6);
+  --glow-purple: rgba(139, 92, 246, 0.6);
+  --glow-white: rgba(255, 255, 255, 0.4);
+  --glow-orange: rgba(249, 115, 22, 0.6);
+  --glow-green: rgba(16, 185, 129, 0.6);
+  --glow-gold: rgba(212, 175, 55, 0.6);
+}
 
 .cosmic-tile,
 .tages-impuls-card {
+  position: relative;
   background: var(--tile-bg);
   border: 1px solid var(--tile-border);
-  border-radius: var(--radius-card-lg);
+  border-radius: 1.5rem; /* 24px per Lumina Spec */
   color: var(--tile-text-primary);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  transition: all var(--ui-transition-duration, 0.4s) var(--ui-transition-easing, cubic-bezier(0.16, 1, 0.3, 1));
+  transition: all 0.3s ease-in-out;
   box-shadow: var(--tile-shadow, 0 4px 24px rgba(0, 0, 0, 0.04));
+  overflow: hidden;
+  z-index: 1;
 }
 
+/* Ambient Pseudo-Element Glow */
+.cosmic-tile::before,
+.tages-impuls-card::before {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 40px;
+  background: radial-gradient(
+    ellipse at center, 
+    var(--tile-glow-color, var(--tile-accent)) 0%, 
+    transparent 70%
+  );
+  filter: blur(20px);
+  opacity: 0;
+  transition: all 0.4s ease-in-out;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Specific Glow Variants */
+.glow-blue   { --tile-glow-color: var(--glow-blue); }
+.glow-purple { --tile-glow-color: var(--glow-purple); }
+.glow-white  { --tile-glow-color: var(--glow-white); }
+.glow-orange { --tile-glow-color: var(--glow-orange); }
+.glow-green  { --tile-glow-color: var(--glow-green); }
+.glow-gold   { --tile-glow-color: var(--glow-gold); }
+
 /* Element-tinted card glow — bright mode only (excluded inside .planetarium dark mode) */
-body[data-element="Wood"]  .cosmic-tile:not(:is(.planetarium *)) { --tile-glow: rgba(61, 139, 55, 0.10); }
-body[data-element="Fire"]  .cosmic-tile:not(:is(.planetarium *)) { --tile-glow: rgba(197, 48, 48, 0.10); }
-body[data-element="Earth"] .cosmic-tile:not(:is(.planetarium *)) { --tile-glow: rgba(214, 158, 46, 0.10); }
-body[data-element="Metal"] .cosmic-tile:not(:is(.planetarium *)) { --tile-glow: rgba(113, 128, 150, 0.10); }
-body[data-element="Water"] .cosmic-tile:not(:is(.planetarium *)) { --tile-glow: rgba(43, 108, 176, 0.10); }
+body[data-element="Wood"]  .cosmic-tile:not(:is(.planetarium *)) { --tile-glow: rgba(61, 139, 55, 0.10); --tile-glow-color: var(--glow-green); }
+body[data-element="Fire"]  .cosmic-tile:not(:is(.planetarium *)) { --tile-glow: rgba(197, 48, 48, 0.10); --tile-glow-color: var(--glow-orange); }
+body[data-element="Earth"] .cosmic-tile:not(:is(.planetarium *)) { --tile-glow: rgba(214, 158, 46, 0.10); --tile-glow-color: var(--glow-orange); }
+body[data-element="Metal"] .cosmic-tile:not(:is(.planetarium *)) { --tile-glow: rgba(113, 128, 150, 0.10); --tile-glow-color: var(--glow-white); }
+body[data-element="Water"] .cosmic-tile:not(:is(.planetarium *)) { --tile-glow: rgba(43, 108, 176, 0.10); --tile-glow-color: var(--glow-blue); }
 
 .cosmic-tile:hover,
-.tages-impuls-card:hover {
-  border-color: var(--tile-accent);
-  box-shadow: 0 12px 40px var(--tile-glow);
-  transform: translateY(-4px);
+.tages-impuls-card:hover,
+.cosmic-tile.active {
+  border-color: var(--tile-glow-color, var(--tile-accent));
+  box-shadow: 0 0 50px -12px var(--tile-glow-color, var(--tile-accent));
+  transform: scale(1.025);
+}
+
+.cosmic-tile:hover::before,
+.tages-impuls-card:hover::before,
+.cosmic-tile.active::before {
+  opacity: 0.6;
+  filter: blur(30px);
+  saturate: 200%;
+}
+
+/* Media element transitions */
+.cosmic-tile img,
+.cosmic-tile video,
+.tages-impuls-card img {
+  transition: opacity 0.7s ease-in-out;
 }
 
 .tages-impuls-divider {
