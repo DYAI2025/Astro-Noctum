@@ -17,6 +17,7 @@ const FLAGS = {
   sky_jpl_proxy: false,
   cosmic_encounter_v1: false,
   daily_fusion_hero_v1: false,
+  atlas_v1: false,
 } as const;
 
 type FlagName = keyof typeof FLAGS;

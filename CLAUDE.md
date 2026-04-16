@@ -15,9 +15,9 @@ Bazodiac (Astro-Noctum) — a fusion astrology web + mobile app combining Wester
 
 Run `/SDLC-status` or check `3-code/tasks.md` + `git log` for live project state. Do not rely on hardcoded counts in this file.
 
-**Implementation progress (2026-04-15):** 299/314 tasks Done (14 Cancelled, 1 Blocked). Sprint S-DAILY-CHART-HERO complete. Sprint S-DCH-BUGFIX complete (5/5 — coherence formula, duplicate tile, error state, Vibes i18n, fusion fallback). 1803 tests green. Single blocked: REQ-F-orbital-signatur-visualization (deferred).
+**Implementation progress (2026-04-16):** 304/316 tasks Done (15 Cancelled, 2 Blocked). Sprint S-QA-2026-04-15 Phase 1: 6/8 Done (shell-audit, restructure-zones, active-route-highlight, theme-toggle-icon, agents-popup-levi-only, atlas-flagged-stub). Remaining Phase 1: mobile-375 + nav-tests. Blocked: REQ-F-orbital-signatur-visualization (deferred); TASK-qa-nav-agents-popup-add-eve (multi-agent infrastructure).
 
-**QA Sprint (2026-04-15):** 25 QA findings → 3 new Goals + 3 new Requirements + 3 new User Stories with full Goal→US→REQ traceability. All 3 goals **Approved** (2026-04-15). Stakeholders.md updated. Decomposed into Sprint **S-QA-2026-04-15** in `3-code/tasks.md` — 4 phases, 24 tasks (7 navigation, 8 signatur-triggers, 8 i18n/quiz, 1 runbook). Status: Todo.
+**QA Sprint (2026-04-15):** 25 QA findings → 3 new Goals + 3 new Requirements + 3 new User Stories with full Goal→US→REQ traceability. All 3 goals **Approved** (2026-04-15). Stakeholders.md updated. Decomposed into Sprint **S-QA-2026-04-15** in `3-code/tasks.md` — 4 phases, 26 tasks (9 navigation incl. decomposed agents-popup, 8 signatur-triggers, 8 i18n/quiz, 1 runbook). Phase 1 in progress.
 
 **Objectives gap analysis (2026-04-15):** 3 Critical resolved (C1 new US drafted, C2 stakeholders + index synced, C3 ASM-ued-metrics-available explicitly parked until S-ORBITAL), 4 Important open (8 US without REQs; missing REQ-USA/REQ-PERF counterparts for 3 new QA reqs; no monetization GOAL; ASM-noaa-in-fufre invalidation audit), 3 Minor open (24 US still Draft; deprecated REQ-F-signatur-mobile-native audit; empty REQ-QUAL/COMP/OPS/DATA classes).
 

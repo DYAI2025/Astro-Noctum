@@ -21,9 +21,10 @@ import { BrandedLoader } from "./components/BrandedLoader";
 import { usePremium } from "./hooks/usePremium";
 import { isFeatureEnabled } from "./lib/feature-flags";
 import type { BootstrapResponse, SignatureDeltaResponse } from "./lib/schemas/experience";
-import { Volume2, VolumeX, Settings, X, Moon, Sun, Home } from "lucide-react";
+import { Volume2, VolumeX, Settings, X, Moon, Sun, Home, Lock } from "lucide-react";
 import { IconSparkles as Sparkles, IconOrbit as OrbitIcon } from "./components/animated-icons";
 import { SettingsMenu } from "./components/navigation/SettingsMenu";
+import { AgentsPopup } from "./components/navigation/AgentsPopup";
 import { LEGAL_CONTENT } from "./components/LegalFooter";
 import { DebugPanel, useDebugPanel } from "./debug";
 import { useElementTheme } from "./hooks/useElementTheme";
@@ -390,25 +391,38 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
   const { activeAgent, agentStates, setWidgetExpanded } = useAgent();
   const agentActive = activeAgent !== null && agentStates[activeAgent]?.active;
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [agentsPopupOpen, setAgentsPopupOpen] = useState(false);
   const [legalSection, setLegalSection] = useState<null | "terms" | "privacy">(null);
 
-  // Important fix #5: close settings + legal on route change
+  // Important fix #5: close settings + legal + agents popup on route change
   useEffect(() => {
     setSettingsOpen(false);
+    setAgentsPopupOpen(false);
     setLegalSection(null);
   }, [location.pathname]);
+
+  const handleUpgrade = async () => {
+    try {
+      const { authedFetch } = await import("@/src/lib/authedFetch");
+      const res = await authedFetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" } });
+      const { url } = await res.json();
+      if (url) window.location.href = url;
+    } catch { /* ignore */ }
+  };
 
   const isSignaturRoute = location.pathname === "/signatur";
   const isOnboardingRoute = location.pathname === "/onboarding";
 
   // Center-zone contextual primary-view links per DEC-navigation-shell v2.
   // Shows only the primary views that are NOT the current route.
-  // Atlas stub added separately (TASK-qa-nav-atlas-flagged-stub) behind feature flag.
   const isDashboardActive = location.pathname === "/";
   const isSignaturActive = location.pathname === "/signatur" || location.pathname === "/fu-ring";
-  const centerLinks: Array<{ to: string; label: string }> = [];
+  const isAtlasActive = location.pathname === "/atlas";
+  const showAtlas = isFeatureEnabled("atlas_v1");
+  const centerLinks: Array<{ to: string; label: string; premiumOnly?: boolean }> = [];
   if (!isDashboardActive) centerLinks.push({ to: "/", label: t("nav.dashboard") });
   if (!isSignaturActive) centerLinks.push({ to: "/signatur", label: t("nav.signatur") });
+  if (showAtlas && !isAtlasActive) centerLinks.push({ to: "/atlas", label: t("nav.atlas"), premiumOnly: true });
 
   const navItemClass = () =>
     `min-h-[44px] flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] border-b-2 border-transparent text-ink/60 hover:text-gold-deep transition-all duration-300 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-deep/60`;
@@ -453,12 +467,27 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
 
         {/* Center zone — contextual primary-view links (show only non-current) */}
         <nav className="flex space-x-10 text-[10px] uppercase tracking-[0.3em]" aria-label="Main navigation">
-          {centerLinks.map((link) => (
-            <Link key={link.to} to={link.to} className={navItemClass()}>
-              {link.to === "/signatur" && <OrbitIcon className="w-4 h-4 shrink-0" aria-hidden="true" />}
-              {link.label}
-            </Link>
-          ))}
+          {centerLinks.map((link) => {
+            if (link.premiumOnly && !isPremium) {
+              return (
+                <button
+                  key={link.to}
+                  onClick={handleUpgrade}
+                  className={`${navItemClass()} opacity-40 cursor-pointer`}
+                  title={t("nav.atlasPremium")}
+                >
+                  <Lock className="w-3 h-3 shrink-0" aria-hidden="true" />
+                  {link.label}
+                </button>
+              );
+            }
+            return (
+              <Link key={link.to} to={link.to} className={navItemClass()}>
+                {link.to === "/signatur" && <OrbitIcon className="w-4 h-4 shrink-0" aria-hidden="true" />}
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Right zone — symbol-only utilities: audio, agents, theme, settings */}
@@ -488,18 +517,39 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
 
           <div className="w-px h-4 bg-gold-deep/20" />
 
-          {/* Astro-Agents — icon-only (popup with both agents added by TASK-qa-nav-agents-popup-both-premium) */}
-          <button
-            onClick={() => setWidgetExpanded(true)}
-            className="relative inline-flex items-center justify-center min-w-[44px] min-h-[44px] text-ink/40 hover:text-gold-deep transition-colors"
-            aria-label={t("nav.astroAgents")}
-            title={t("nav.astroAgents")}
-          >
-            <Sparkles className="w-4 h-4 shrink-0" aria-hidden="true" />
-            {agentActive && (
-              <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
+          {/* Astro-Agents — popup with Levi tile */}
+          <div className="relative">
+            <button
+              onClick={() => { setAgentsPopupOpen((o) => !o); setSettingsOpen(false); }}
+              aria-expanded={agentsPopupOpen}
+              aria-haspopup="menu"
+              className={`relative inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-md transition-all ${
+                agentsPopupOpen
+                  ? "text-gold-deep bg-gold-deep/08 border border-gold-deep/20"
+                  : isPremium
+                    ? "text-ink/40 hover:text-gold-deep border border-transparent"
+                    : "text-ink/20 border border-transparent"
+              }`}
+              aria-label={t("nav.astroAgents")}
+              title={t("nav.astroAgents")}
+            >
+              <Sparkles className="w-4 h-4 shrink-0" aria-hidden="true" />
+              {agentActive && (
+                <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
+              )}
+            </button>
+
+            {agentsPopupOpen && (
+              <AgentsPopup
+                position="desktop"
+                isPremium={isPremium}
+                lang={lang}
+                t={t}
+                onStopAudio={ambiente.pause}
+                onClose={() => setAgentsPopupOpen(false)}
+              />
             )}
-          </button>
+          </div>
 
           {/* Theme toggle — Moon/Sun reflecting current mode */}
           <button
@@ -515,7 +565,7 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
           {/* Settings */}
           <div className="relative">
             <button
-              onClick={() => setSettingsOpen((o) => !o)}
+              onClick={() => { setSettingsOpen((o) => !o); setAgentsPopupOpen(false); }}
               aria-expanded={settingsOpen}
               aria-haspopup="menu"
               aria-label={t("nav.settings")}
@@ -624,35 +674,63 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
       {!isOnboardingRoute && (
       <nav className="md:hidden fixed bottom-0 w-full bg-white/70 backdrop-blur-xl border-t border-gold-deep/15 flex items-center justify-around z-50 h-16 px-2" aria-label="Main navigation">
         {/* Center-zone contextual primary-view links */}
-        {centerLinks.map((link) => (
-          <Link
-            key={link.to}
-            to={link.to}
-            className={mobileNavItemClass(false)}
-          >
-            {link.to === "/signatur" ? (
-              <OrbitIcon className="w-5 h-5" aria-hidden="true" />
-            ) : (
-              <Home className="w-5 h-5" aria-hidden="true" />
-            )}
-            <span className="text-[9px] uppercase tracking-tight leading-none">{link.label}</span>
-          </Link>
-        ))}
+        {centerLinks.map((link) => {
+          const icon = link.to === "/signatur"
+            ? <OrbitIcon className="w-5 h-5" aria-hidden="true" />
+            : link.to === "/atlas"
+              ? <Lock className="w-4 h-4" aria-hidden="true" />
+              : <Home className="w-5 h-5" aria-hidden="true" />;
 
-        {/* Right zone — Astro-Agents (icon-only) */}
-        <button
-          onClick={() => setWidgetExpanded(true)}
-          className={mobileNavItemClass(agentActive)}
-          aria-label={t("nav.astroAgents")}
-          title={t("nav.astroAgents")}
-        >
-          <span className="relative inline-flex">
-            <Sparkles className="w-5 h-5" aria-hidden="true" />
-            {agentActive && (
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
-            )}
-          </span>
-        </button>
+          if (link.premiumOnly && !isPremium) {
+            return (
+              <button
+                key={link.to}
+                onClick={handleUpgrade}
+                className={`${mobileNavItemClass(false)} opacity-40`}
+                title={t("nav.atlasPremium")}
+              >
+                {icon}
+                <span className="text-[9px] uppercase tracking-tight leading-none">{link.label}</span>
+              </button>
+            );
+          }
+          return (
+            <Link key={link.to} to={link.to} className={mobileNavItemClass(false)}>
+              {icon}
+              <span className="text-[9px] uppercase tracking-tight leading-none">{link.label}</span>
+            </Link>
+          );
+        })}
+
+        {/* Right zone — Astro-Agents popup */}
+        <div className="relative">
+          <button
+            onClick={() => { setAgentsPopupOpen((o) => !o); setSettingsOpen(false); }}
+            aria-expanded={agentsPopupOpen}
+            aria-haspopup="menu"
+            className={mobileNavItemClass(agentsPopupOpen || agentActive)}
+            aria-label={t("nav.astroAgents")}
+            title={t("nav.astroAgents")}
+          >
+            <span className="relative inline-flex">
+              <Sparkles className="w-5 h-5" aria-hidden="true" />
+              {agentActive && (
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
+              )}
+            </span>
+          </button>
+
+          {agentsPopupOpen && (
+            <AgentsPopup
+              position="mobile"
+              isPremium={isPremium}
+              lang={lang}
+              t={t}
+              onStopAudio={ambiente.pause}
+              onClose={() => setAgentsPopupOpen(false)}
+            />
+          )}
+        </div>
 
         {/* Right zone — theme toggle (Moon/Sun) */}
         <button
@@ -668,7 +746,7 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
         {/* Right zone — Settings */}
         <div className="relative">
           <button
-            onClick={() => setSettingsOpen((o) => !o)}
+            onClick={() => { setSettingsOpen((o) => !o); setAgentsPopupOpen(false); }}
             aria-expanded={settingsOpen}
             aria-haspopup="menu"
             className={mobileNavItemClass(settingsOpen)}

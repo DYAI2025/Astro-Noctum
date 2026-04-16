@@ -24,6 +24,7 @@ const translationsEn: DeepStringRecord = {
   nav: {
     dashboard: "Dashboard",
     atlas: "Atlas",
+    atlasPremium: "Atlas — Premium feature",
     signatur: "Signatur",
     sky: "Sky",
     weekly: "Week",
@@ -500,6 +501,7 @@ const translationsDe: DeepStringRecord = {
   nav: {
     dashboard: "Tageschart",
     atlas: "Atlas",
+    atlasPremium: "Atlas — Premium-Funktion",
     signatur: "Signatur",
     sky: "Sky",
     weekly: "Woche",
