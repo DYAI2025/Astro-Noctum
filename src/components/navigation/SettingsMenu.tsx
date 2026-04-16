@@ -105,19 +105,19 @@ export function SettingsMenu({
               className={planetariumMode ? "active" : ""}
               onClick={() => { if (!planetariumMode) { togglePlanetarium(); onClose(); } }}
               aria-pressed={planetariumMode ? "true" : "false"}
-              title="Planetarium — Dark Luxury"
+              aria-label={lang === "de" ? "Planetarium (dunkel)" : "Planetarium (dark)"}
+              title={lang === "de" ? "Planetarium — Dunkles Luxus-Theme" : "Planetarium — Dark Luxury"}
             >
-              <Moon className="w-3 h-3 shrink-0" aria-hidden="true" />
-              Planetarium
+              <Moon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             </button>
             <button
               className={!planetariumMode ? "active" : ""}
               onClick={() => { if (planetariumMode) { togglePlanetarium(); onClose(); } }}
               aria-pressed={!planetariumMode ? "true" : "false"}
-              title="Solar System — Bright"
+              aria-label={lang === "de" ? "Solar System (hell)" : "Solar System (bright)"}
+              title={lang === "de" ? "Solar System — Helles Theme" : "Solar System — Bright"}
             >
-              <Sun className="w-3 h-3 shrink-0" aria-hidden="true" />
-              Solar System
+              <Sun className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             </button>
           </div>
         </div>
