@@ -1,2 +1,2 @@
-export { NavSidebarA } from "./NavSidebarA";
 export { SettingsMenu } from "./SettingsMenu";
+export { AgentsPopup } from "./AgentsPopup";
