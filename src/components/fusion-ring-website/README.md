@@ -8,7 +8,7 @@ Referenced by Sprint S-QA-2026-04-15 Phase 2 tasks.
 | # | Trigger | Source | Poll / Event Interval | Effect on Ring | Expected Latency | Current Status |
 |---|---------|--------|----------------------|----------------|------------------|----------------|
 | T1 | **Transit-state delta** | `useFusionSignal` → `GET /api/transit-state/:userId` | 800ms poll (15s offline) | `targetSignals[12]` (clamped [0,1]) → `soulprintToNatalWeights()` → 7 planet weights → V2 particle positions/colors. Rebuild skipped when Δ < 0.01. | ≤ 5s (per REQ AC) | **Fixed** — was feeding static `baseSignals` instead of transit-modulated `targetSignals`. Power curve softened (1.5→1.2). |
-| T2 | **Quiz cluster completion** | `useQuizContribution` → `POST /api/contribute` | On quiz `onComplete` callback | Soulprint sectors update → ring geometry shifts. Only fires when ALL quizzes in a cluster are done. | Immediate (fire-and-forget POST, next poll picks up) | **Needs audit** — gate logic present in `useQuizContribution` L26-31 but server-side upsert in `/api/contribute` not independently gated (QA-17, QA-24). |
+| T2 | **Quiz cluster completion** | `useQuizContribution` → `POST /api/contribute` | On quiz `onComplete` callback | Soulprint sectors update → ring geometry shifts. Only fires when ALL quizzes in a cluster are done. Partial results queued in localStorage via `contribution-queue.ts`. On cluster completion: `burst` effect (cluster color + significance-scaled intensity) → radial displacement, color injection, resonance wave, screen shake. | Immediate (fire-and-forget batch POST, next poll picks up) | **Fixed** — localStorage queue stores partial quiz results; batch-POSTs all on cluster completion. Animated burst verified with 11 tests. |
 | T3 | **Space weather** | `useSpaceWeather` → `GET /api/space-weather/extended` | 5-min poll (server: 5-min cache) | `ringModulation` (1.0–1.5) → particle intensity + korona effects at G3+ | 5–10 min (poll + cache) | **Working** — `computeRingModulation()` feeds into `FusionRing3D.solarModulation` prop. |
 | T4 | **Cousto audio mute** | `useCoustoAudio` (localStorage `cousto_audio_muted`) | User click | All 6 Cousto oscillators gain → 0. Mute state persists in localStorage. | < 100ms (per REQ AC) | **Needs verification** — `toggleMute()` sets state + localStorage, but oscillator stop timing not measured (QA-25). |
 
@@ -22,9 +22,11 @@ T1: useFusionSignal (800ms poll)
 
 T2: useQuizContribution (on quiz complete)
      → eventToSectorSignals() + AFFINITY_MAP → sectorWeights[12]
+     → queueContribution() → localStorage (always)
      → cluster gate check (isClusterComplete)
-     → POST /api/contribute → contribution_events table
-     → next T1 poll picks up updated soulprint
+     → if incomplete: return (no POST, data queued)
+     → if complete: drainClusterContributions() → batch POST /api/contribute
+     → contribution_events table → next T1 poll picks up updated soulprint
 
 T3: useSpaceWeather (5-min poll)
      ↓ computeSolarPressureScore() → solarPressure (0–1)
