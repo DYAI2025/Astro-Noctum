@@ -26,6 +26,7 @@ import {
   findClusterForModule,
 } from '@/src/lib/fusion-ring/clusters';
 import { toNatalWeightsOrUndefined, toQuizWeightsOrUndefined } from '@/src/lib/signatur/weight-utils';
+import { baziToChladniParams } from '@/src/lib/cymatics/bazi-to-chladni';
 import type { ContributionEvent } from '@/src/lib/lme/types';
 import { eventToSectorSignals } from '@/src/lib/fusion-ring/test-signal';
 import { useCoustoAudio } from '@/src/hooks/useCoustoAudio';
@@ -103,6 +104,17 @@ export default function FuRingPage() {
     () => apiData?.wuxing?.elements ?? undefined,
     [apiData?.wuxing?.elements],
   );
+
+  // Chladni params — derived deterministically from BaZi pillars + Wu-Xing weights.
+  // undefined when birth data is unavailable → FusionRing3D falls back to V3/V2/V1.
+  const chladniParams = useMemo(() => {
+    const pillars = apiData?.bazi?.pillars;
+    const wuxingWeights = apiData?.wuxing?.elements;
+    if (!pillars || !wuxingWeights) return undefined;
+    const rawHarmony = apiData?.wuxing?.['harmony_index'];
+    const harmonyIndex = typeof rawHarmony === 'number' ? rawHarmony : 0.5;
+    return baziToChladniParams(pillars, wuxingWeights, harmonyIndex);
+  }, [apiData?.bazi?.pillars, apiData?.wuxing?.elements, apiData?.wuxing]);
 
   // Cousto audio — dimension weights drive oscillator gains
   const audioWeights = useMemo(
@@ -306,6 +318,7 @@ export default function FuRingPage() {
               externalDissonance={dissonance}
               dayHarmonic={activeHarmonic}
               planetariumMode={planetariumMode}
+              chladniParams={chladniParams}
               labels={{
                 regionLabel: t('furing3d.a11y.regionLabel'),
                 loading: t('furing3d.loading'),
