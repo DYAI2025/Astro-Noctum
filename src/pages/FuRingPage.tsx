@@ -34,6 +34,8 @@ import { useCosmicResonance } from '@/src/hooks/useCosmicResonance';
 import { useFluidityLevel } from '@/src/hooks/useFluidityLevel';
 import { SpaceWeatherPanel } from '@/src/components/signatur/SpaceWeatherPanel';
 import { TransitResonancePanels } from '@/src/components/signatur/TransitResonancePanels';
+import { CymaticsFrequencyPanel } from '@/src/components/signatur-cymatics/CymaticsFrequencyPanel';
+import { isFeatureEnabled } from '@/src/lib/feature-flags';
 
 export default function FuRingPage() {
   const { t, lang } = useLanguage();
@@ -356,6 +358,15 @@ export default function FuRingPage() {
 
         {/* Live transit resonance panels */}
         <TransitResonancePanels birthSign={sunSign} />
+
+        {/* Cousto frequency panel — only when Cymatics engine is active */}
+        {isFeatureEnabled('signature_engine_cymatics') && chladniParams && wuxinBalance && (
+          <CymaticsFrequencyPanel
+            wuxingWeights={wuxinBalance}
+            dominantElement={chladniParams.dominantElement}
+            planetariumMode={planetariumMode}
+          />
+        )}
       </section>
 
       {/* Quiz overlay */}
