@@ -1,32 +1,26 @@
 import { lazy, Suspense, useState } from 'react';
 import { Pause, Play } from 'lucide-react';
-import type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
-import type { DissonanceResult } from '../../lib/fusion-ring/dissonance';
-import type { SolarModulation } from '../signatur-v3/bipolar-engine';
 import { useLanguage } from '../../contexts/LanguageContext';
 import type { ChladniParams } from '../../lib/cymatics/bazi-to-chladni';
 
-const SignaturV3Canvas = lazy(() => import('../signatur-v3/SignaturV3Canvas'));
+const SignaturCymaticsCanvas = lazy(() =>
+  import('../signatur-cymatics/SignaturCymaticsCanvas').then(m => ({ default: m.SignaturCymaticsCanvas }))
+);
+const CymaticsFallback = lazy(() =>
+  import('../signatur-cymatics/CymaticsFallback').then(m => ({ default: m.CymaticsFallback }))
+);
 
 interface MiniSignatureProps {
-  natalWeights?: Record<string, number>;
-  quizWeights?: Record<string, number>;
-  dayHarmonic?: DayHarmonicState | null;
-  externalDissonance?: DissonanceResult | null;
-  solarModulation?: SolarModulation;
+  chladniParams?: ChladniParams;
+  planetariumMode?: boolean;
   loading?: boolean;
   onExpand?: () => void;
-  /** Chladni params for the Cymatics engine. Added in C2a; C2b routes the render body through this. */
-  chladniParams?: ChladniParams;
-  /** Planetarium (dark) vs. Solar System (bright) theme. Default true. Added in C2a; C2b wires to canvas. */
-  planetariumMode?: boolean;
 }
 
-const EMPTY_WEIGHTS: Record<string, number> = {};
-
-export default function MiniSignature({ natalWeights, quizWeights, dayHarmonic, externalDissonance, solarModulation, loading, onExpand, chladniParams, planetariumMode = true }: MiniSignatureProps) {
+/** MiniSignature — Dashboard-size Cymatics signature, rendered in a 200px aspect-square tile. */
+export default function MiniSignature({ chladniParams, planetariumMode = true, loading, onExpand }: MiniSignatureProps) {
   const { t } = useLanguage();
-  const hasData = natalWeights && Object.keys(natalWeights).length > 0;
+  const hasData = chladniParams !== undefined;
 
   const [paused, setPaused] = useState(() =>
     localStorage.getItem('bazodiac_mini_signature_paused') === 'true'
@@ -55,29 +49,22 @@ export default function MiniSignature({ natalWeights, quizWeights, dayHarmonic, 
               {t('dashboard.miniSignature.calculating')}
             </p>
           </div>
-        ) : !hasData ? (
-          <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
-            <p className="text-[10px] opacity-60 uppercase tracking-widest font-sans">
-              {t('dashboard.miniSignature.unavailable')}
-            </p>
-          </div>
         ) : paused ? (
           <div className="absolute inset-0 flex items-center justify-center">
             <p className="text-[10px] opacity-60 uppercase tracking-widest font-sans">
               {t('dashboard.miniSignature.paused')}
             </p>
           </div>
-        ) : (
+        ) : chladniParams ? (
           <div className="absolute inset-0 scale-125 group-hover:scale-150 transition-transform duration-1000">
-            <Suspense fallback={<div className="w-full h-full opacity-20 rounded-full animate-pulse" />}>
-              <SignaturV3Canvas
-                natalWeights={natalWeights ?? EMPTY_WEIGHTS}
-                quizWeights={quizWeights ?? EMPTY_WEIGHTS}
-                dayHarmonic={dayHarmonic ?? undefined}
-                externalDissonance={externalDissonance}
-                solarModulation={solarModulation}
-                className="w-full h-full"
-              />
+            <Suspense fallback={<CymaticsFallback dominantElement={chladniParams.dominantElement} />}>
+              <SignaturCymaticsCanvas params={chladniParams} planetariumMode={planetariumMode} className="w-full h-full" />
+            </Suspense>
+          </div>
+        ) : (
+          <div className="absolute inset-0">
+            <Suspense fallback={null}>
+              <CymaticsFallback dominantElement={undefined} />
             </Suspense>
           </div>
         )}
