@@ -28,8 +28,8 @@ export function sectorsToChladniParams(sectors?: number[] | null): ChladniParams
   const dominantElement = ELEMENTS[elementBuckets.indexOf(Math.max(...elementBuckets))] ?? 'Water';
 
   return {
-    m: clamp01((m - 2) / 4) * 4 + 2,
-    n: clamp01((n - 2) / 4) * 4 + 2,
+    m,
+    n,
     a,
     b,
     dominantElement,
