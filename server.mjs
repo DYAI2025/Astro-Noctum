@@ -132,50 +132,46 @@ if (!stripe && process.env.NODE_ENV === 'production') {
   console.warn('[server] Stripe not configured (STRIPE_SECRET_KEY missing)');
 }
 
-function buildGeminiPrompt(data, lang) {
-  const l = lang === 'de' ? 'German' : 'English';
-  const you = lang === 'de' ? 'du' : 'you';
-  return `
-You are Bazodiac's fusion astrologer — the ONLY system that synthesizes Western astrology, Chinese BaZi, and Wu-Xing Five Elements into one unified reading.
+import { buildUnifiedPrompt } from "./packages/shared/src/signatur/synthesis-engine.mjs";
 
-BIRTH DATA (JSON):
-${JSON.stringify(data, null, 2)}
-
-TASK: Generate a deeply personal ${l} horoscope. Address the reader as "${you}". Respond with VALID JSON only — no markdown fences, no commentary outside the JSON.
-
-OUTPUT FORMAT (strict JSON):
-{
-  "interpretation": "5 paragraphs, 400-500 words, Markdown formatted. Structure: 1) Cosmic Identity (Sun sign + Day Master), 2) Emotional Depths (Moon + BaZi pillars + dominant element), 3) Fusion Revelation (unique Western+BaZi+WuXing intersection), 4) WuXing Balance (element strengths/weaknesses + Ascendant + life recommendation), 5) Path Forward (synthesis + closing).",
-  "tiles": {
-    "sun": "2-3 sentences about this specific Sun sign personality in context of the full chart. Reference element and ruling planet.",
-    "moon": "2-3 sentences about this specific Moon sign emotional nature in context of the full chart.",
-    "yearAnimal": "2-3 sentences about the specific BaZi year animal + element combination and what it reveals about character.",
-    "dominantWuXing": "2-3 sentences about the dominant Wu-Xing element and how it shapes this person's energy.",
-    "dayMaster": "2-3 sentences about the Heavenly Stem Day Master and what it says about core vitality."
-  },
-  "houses": {
-    "1": "2-3 sentences: what this specific zodiac sign in the 1st house means for this person's self-image and appearance.",
-    "2": "2-3 sentences: what this sign in the 2nd house means for values and finances.",
-    "3": "2-3 sentences: what this sign in the 3rd house means for communication.",
-    "4": "2-3 sentences: what this sign in the 4th house means for home and roots.",
-    "5": "2-3 sentences: what this sign in the 5th house means for creativity and romance.",
-    "6": "2-3 sentences: what this sign in the 6th house means for health and daily routines.",
-    "7": "2-3 sentences: what this sign in the 7th house means for partnerships.",
-    "8": "2-3 sentences: what this sign in the 8th house means for transformation.",
-    "9": "2-3 sentences: what this sign in the 9th house means for philosophy and travel.",
-    "10": "2-3 sentences: what this sign in the 10th house means for career and public image.",
-    "11": "2-3 sentences: what this sign in the 11th house means for friendships and ideals.",
-    "12": "2-3 sentences: what this sign in the 12th house means for the subconscious and spirituality."
+function normalizeSynthesisInput(data) {
+  if (!data || typeof data !== "object") {
+    return { harmony_index: 0 };
   }
+
+  // If the payload is already in the flat synthesis shape, preserve it and
+  // only backfill fields that the prompt builder may assume are present.
+  if (
+    "planets" in data ||
+    "bazi_pillars" in data ||
+    "harmony_index" in data
+  ) {
+    return {
+      ...data,
+      harmony_index: typeof data.harmony_index === "number" ? data.harmony_index : 0,
+    };
+  }
+
+  // Normalize the nested ApiData shape used by the app into the flat shape
+  // expected by buildUnifiedPrompt.
+  return {
+    ...data,
+    ...(data.western ?? {}),
+    ...(data.bazi ?? {}),
+    ...(data.wuxing ?? {}),
+    planets: data.western?.planets ?? data.planets,
+    bazi_pillars: data.bazi?.bazi_pillars ?? data.bazi_pillars,
+    harmony_index:
+      typeof data.wuxing?.harmony_index === "number"
+        ? data.wuxing.harmony_index
+        : typeof data.harmony_index === "number"
+          ? data.harmony_index
+          : 0,
+  };
 }
 
-RULES:
-- Every text MUST reference specific data from the birth chart — never generic
-- If house data is missing or empty, omit the "houses" key entirely
-- Language: ALL text in ${l}
-- Do NOT hallucinate data not present in the birth chart
-- TONE: Warm, precise, mystical but grounded. Every sentence for THIS chart only.
-`.trim();
+function buildGeminiPrompt(data, lang) {
+  return buildUnifiedPrompt(normalizeSynthesisInput(data), lang);
 }
 
 // ── Security Headers ─────────────────────────────────────────────────

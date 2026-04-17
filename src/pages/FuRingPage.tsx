@@ -34,6 +34,9 @@ import { useCosmicResonance } from '@/src/hooks/useCosmicResonance';
 import { useFluidityLevel } from '@/src/hooks/useFluidityLevel';
 import { SpaceWeatherPanel } from '@/src/components/signatur/SpaceWeatherPanel';
 import { TransitResonancePanels } from '@/src/components/signatur/TransitResonancePanels';
+import { CymaticsFrequencyPanel } from '@/src/components/signatur-cymatics/CymaticsFrequencyPanel';
+import { ChladniParamsBadge } from '@/src/components/signatur-cymatics/ChladniParamsBadge';
+import { isFeatureEnabled } from '@/src/lib/feature-flags';
 
 export default function FuRingPage() {
   const { t, lang } = useLanguage();
@@ -112,9 +115,9 @@ export default function FuRingPage() {
     const wuxingWeights = apiData?.wuxing?.elements;
     if (!pillars || !wuxingWeights) return undefined;
     const rawHarmony = apiData?.wuxing?.['harmony_index'];
-    const harmonyIndex = typeof rawHarmony === 'number' ? rawHarmony : 0.5;
+    const harmonyIndex = Number.isFinite(rawHarmony as number) ? (rawHarmony as number) : 0.5;
     return baziToChladniParams(pillars, wuxingWeights, harmonyIndex);
-  }, [apiData?.bazi?.pillars, apiData?.wuxing?.elements, apiData?.wuxing]);
+  }, [apiData?.bazi?.pillars, apiData?.wuxing]);
 
   // Cousto audio — dimension weights drive oscillator gains
   const audioWeights = useMemo(
@@ -305,7 +308,7 @@ export default function FuRingPage() {
 
           {/* Ring — intuitive side */}
           <motion.div
-            className="min-w-0 flex-1"
+            className="flex min-w-0 flex-1 flex-col gap-3"
             animate={fluidityTier >= 1 ? { scale: [1, 1.005, 1] } : undefined}
             transition={fluidityTier >= 1 ? { duration: 6, repeat: Infinity, ease: 'easeInOut' } : undefined}
           >
@@ -332,6 +335,12 @@ export default function FuRingPage() {
                 eventAnnouncePrefix: t('furing3d.eventAnnouncePrefix'),
               }}
             />
+            {isFeatureEnabled('signature_engine_cymatics') && chladniParams && (
+              <ChladniParamsBadge
+                params={chladniParams}
+                planetariumMode={planetariumMode}
+              />
+            )}
           </motion.div>
 
           {/* Space Weather Panel — scientific side (desktop: right column, mobile: below ring) */}
@@ -356,6 +365,15 @@ export default function FuRingPage() {
 
         {/* Live transit resonance panels */}
         <TransitResonancePanels birthSign={sunSign} />
+
+        {/* Cousto frequency panel — only when Cymatics engine is active */}
+        {isFeatureEnabled('signature_engine_cymatics') && chladniParams && wuxinBalance && (
+          <CymaticsFrequencyPanel
+            wuxingWeights={wuxinBalance}
+            dominantElement={chladniParams.dominantElement}
+            planetariumMode={planetariumMode}
+          />
+        )}
       </section>
 
       {/* Quiz overlay */}

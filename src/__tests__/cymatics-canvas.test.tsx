@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import React from 'react';
 import { SignaturCymaticsCanvas, CYMATICS_DARK_BG, CYMATICS_BRIGHT_BG } from '../components/signatur-cymatics/SignaturCymaticsCanvas';
 import { CymaticsFallback } from '../components/signatur-cymatics/CymaticsFallback';
@@ -74,6 +74,76 @@ describe('SignaturCymaticsCanvas — getContext throws', () => {
     const onFailed = vi.fn();
     render(<SignaturCymaticsCanvas params={DEFAULT_PARAMS} onFailed={onFailed} />);
     expect(onFailed).toHaveBeenCalledOnce();
+  });
+});
+
+// ── SignaturCymaticsCanvas — smooth morph / no abrupt reset ──────────────────
+//
+// When ChladniParams change the canvas must NOT remount (which would hard-reset
+// particles). Instead, the live-ref update + lerp in the RAF loop produces a
+// smooth morph. These tests verify the no-remount contract by asserting that
+// the container DOM node is the same object before and after a prop change.
+
+describe('SignaturCymaticsCanvas — smooth morph on param change', () => {
+  const BASE: ChladniParams = {
+    m: 3, n: 4, a: 0.65, b: 0.61,
+    dominantElement: 'Water',
+    harmonyIndex: 0.5,
+  };
+
+  it('does not remount canvas container when a/b change', () => {
+    const { rerender } = render(<SignaturCymaticsCanvas params={BASE} />);
+    const before = screen.getByTestId('cymatics-canvas-container');
+
+    act(() => {
+      rerender(<SignaturCymaticsCanvas params={{ ...BASE, a: 0.8, b: 0.52 }} />);
+    });
+
+    expect(screen.getByTestId('cymatics-canvas-container')).toBe(before);
+  });
+
+  it('does not remount canvas container when m/n change', () => {
+    const { rerender } = render(<SignaturCymaticsCanvas params={BASE} />);
+    const before = screen.getByTestId('cymatics-canvas-container');
+
+    act(() => {
+      rerender(<SignaturCymaticsCanvas params={{ ...BASE, m: 5, n: 2 }} />);
+    });
+
+    expect(screen.getByTestId('cymatics-canvas-container')).toBe(before);
+  });
+
+  it('does not remount canvas container when harmonyIndex changes', () => {
+    const { rerender } = render(<SignaturCymaticsCanvas params={BASE} />);
+    const before = screen.getByTestId('cymatics-canvas-container');
+
+    act(() => {
+      rerender(<SignaturCymaticsCanvas params={{ ...BASE, harmonyIndex: 0.9 }} />);
+    });
+
+    expect(screen.getByTestId('cymatics-canvas-container')).toBe(before);
+  });
+
+  it('does not remount canvas container when dominantElement changes', () => {
+    const { rerender } = render(<SignaturCymaticsCanvas params={BASE} />);
+    const before = screen.getByTestId('cymatics-canvas-container');
+
+    act(() => {
+      rerender(<SignaturCymaticsCanvas params={{ ...BASE, dominantElement: 'Fire' }} />);
+    });
+
+    expect(screen.getByTestId('cymatics-canvas-container')).toBe(before);
+  });
+
+  it('does not remount on repeated sequential param changes', () => {
+    const { rerender } = render(<SignaturCymaticsCanvas params={BASE} />);
+    const before = screen.getByTestId('cymatics-canvas-container');
+
+    act(() => { rerender(<SignaturCymaticsCanvas params={{ ...BASE, m: 5, n: 2 }} />); });
+    act(() => { rerender(<SignaturCymaticsCanvas params={{ ...BASE, m: 5, n: 2, a: 0.9, b: 0.46 }} />); });
+    act(() => { rerender(<SignaturCymaticsCanvas params={{ ...BASE, m: 2, n: 5, a: 0.9, b: 0.46 }} />); });
+
+    expect(screen.getByTestId('cymatics-canvas-container')).toBe(before);
   });
 });
 

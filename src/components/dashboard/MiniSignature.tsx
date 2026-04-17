@@ -1,12 +1,12 @@
-import { lazy, Suspense, useState } from 'react';
+import { Suspense, useState, useMemo } from 'react';
 import { Pause, Play } from 'lucide-react';
 import type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
 import type { DissonanceResult } from '../../lib/fusion-ring/dissonance';
-import type { SolarModulation } from '../signatur-v3/bipolar-engine';
+import { CymanticsSignature } from '../cymantics/CymanticsSignature';
+import type { SolarModulation } from '../cymantics/Cymantics3D';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { dimensionWeightsToChladniParams } from '../../lib/cymatics/signatur-to-chladni';
-
-const SignaturCymaticsCanvas = lazy(() => import('../signatur-cymatics/SignaturCymaticsCanvas').then(m => ({ default: m.SignaturCymaticsCanvas })));
+import { deriveCymanticsParams } from '@/src/lib/signatur/weight-utils';
+import type { ApiData } from '../../types/bafe';
 
 interface MiniSignatureProps {
   natalWeights?: Record<string, number>;
@@ -14,15 +14,22 @@ interface MiniSignatureProps {
   dayHarmonic?: DayHarmonicState | null;
   externalDissonance?: DissonanceResult | null;
   solarModulation?: SolarModulation;
-  loading?: boolean;
-  onExpand?: () => void;
+  className?: string;
+  isDailyOnly?: boolean;
+  apiData?: ApiData;
 }
+
 
 const EMPTY_WEIGHTS: Record<string, number> = {};
 
 export default function MiniSignature({ natalWeights, quizWeights, loading, onExpand }: MiniSignatureProps) {
   const { t } = useLanguage();
   const hasData = natalWeights && Object.keys(natalWeights).length > 0;
+
+  const chladniParams = useMemo(() => {
+    if (!apiData) return undefined;
+    return deriveCymanticsParams(apiData);
+  }, [apiData]);
 
   const [paused, setPaused] = useState(() =>
     localStorage.getItem('bazodiac_mini_signature_paused') === 'true'
@@ -66,8 +73,12 @@ export default function MiniSignature({ natalWeights, quizWeights, loading, onEx
         ) : (
           <div className="absolute inset-0 scale-125 group-hover:scale-150 transition-transform duration-1000">
             <Suspense fallback={<div className="w-full h-full opacity-20 rounded-full animate-pulse" />}>
-              <SignaturCymaticsCanvas
-                params={dimensionWeightsToChladniParams((quizWeights ?? natalWeights) ?? EMPTY_WEIGHTS)}
+              <CymanticsSignature
+                natalWeights={natalWeights ?? EMPTY_WEIGHTS}
+                quizWeights={quizWeights ?? EMPTY_WEIGHTS}
+                chladniParams={chladniParams}
+                solarModulation={solarModulation}
+                mode="hybrid"
                 className="w-full h-full"
               />
             </Suspense>

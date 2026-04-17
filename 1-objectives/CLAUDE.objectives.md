@@ -171,13 +171,13 @@ When an artifact (goal, requirement) is no longer relevant:
 | [REQ-F-signatur-live-transit-panels](requirements/REQ-F-signatur-live-transit-panels.md) | REQ-F | Must | Draft | Lower Signatur-page tiles replaced with live transit resonance panels; no static placeholders |
 | [REQ-F-dashboard-bazi-fusion-bridge](requirements/REQ-F-dashboard-bazi-fusion-bridge.md) | REQ-F | Must | Draft | Western–BaZi planet fusion: Sheng/Ke resonance calculation + German interpretation per planet card |
 | [REQ-F-onboarding-display-name](requirements/REQ-F-onboarding-display-name.md) | REQ-F | Must | Implemented | Onboarding captures display_name; stored in profiles only, never forwarded to FuFirE |
-| [REQ-F-daily-chart-coherence-hero](requirements/REQ-F-daily-chart-coherence-hero.md) | REQ-F | Must | Draft | Unified Daily Chart hero ersetzt split top-card layout — Kohärenz + Daily Impulse + aktive Planeten + Driver-Strip in einer Karte, Dark/Bright mode contrast-safe |
+| [REQ-F-daily-chart-coherence-hero](requirements/REQ-F-daily-chart-coherence-hero.md) | REQ-F | Must | Approved | Unified Daily Chart hero ersetzt split top-card layout — Kohärenz + Daily Impulse + aktive Planeten + Driver-Strip in einer Karte, Dark/Bright mode contrast-safe |
 | [REQ-F-daily-chart-dashboard-order](requirements/REQ-F-daily-chart-dashboard-order.md) | REQ-F | Must | Implemented | Daily Chart section appears before Planetarium in dashboard layout |
 | [REQ-F-impact-active-endpoint](requirements/REQ-F-impact-active-endpoint.md) | REQ-F | Must | Implemented | POST /impact/active returns ACTIVE_IMPACTS_v1 — structured, no LLM |
-| [REQ-F-experience-daily-v2](requirements/REQ-F-experience-daily-v2.md) | REQ-F | Must | Draft | POST /experience/daily mit Unified Daily Chart Contract — one-pass rendering von Kohärenz, Daily Impulse, aktive Planeten, Driver Evidence |
-| [REQ-F-active-planets-frontend](requirements/REQ-F-active-planets-frontend.md) | REQ-F | Must | Draft | Signatur-aligned planet cards im Daily Chart hero — Name, Stärke, "Warum?" expandierbar, höchste Stärke zuerst |
-| [REQ-F-coherence-hero-impact-datasource](requirements/REQ-F-coherence-hero-impact-datasource.md) | REQ-F | Must | Draft | Kohärenz-Darstellung trennt stabilen Baseline von positivem Tages-Delta — base_coherence + positive_daily_delta + Driver-Strip mit echten Werten |
-| [REQ-USA-daily-chart-responsive-readability](requirements/REQ-USA-daily-chart-responsive-readability.md) | REQ-USA | Must | Draft | Daily Chart hero lesbar und scannable auf 375px + Desktop — kein horizontal scroll, WCAG-kontrast in Bright + Dark |
+| [REQ-F-experience-daily-v2](requirements/REQ-F-experience-daily-v2.md) | REQ-F | Must | Approved | POST /experience/daily mit Unified Daily Chart Contract — one-pass rendering von Kohärenz, Daily Impulse, aktive Planeten, Driver Evidence |
+| [REQ-F-active-planets-frontend](requirements/REQ-F-active-planets-frontend.md) | REQ-F | Must | Approved | Signatur-aligned planet cards im Daily Chart hero — Name, Stärke, "Warum?" expandierbar, höchste Stärke zuerst |
+| [REQ-F-coherence-hero-impact-datasource](requirements/REQ-F-coherence-hero-impact-datasource.md) | REQ-F | Must | Approved | Kohärenz-Darstellung trennt stabilen Baseline von positivem Tages-Delta — base_coherence + positive_daily_delta + Driver-Strip mit echten Werten |
+| [REQ-USA-daily-chart-responsive-readability](requirements/REQ-USA-daily-chart-responsive-readability.md) | REQ-USA | Must | Approved | Daily Chart hero lesbar und scannable auf 375px + Desktop — kein horizontal scroll, WCAG-kontrast in Bright + Dark |
 | [REQ-PERF-impact-active-response-time](requirements/REQ-PERF-impact-active-response-time.md) | REQ-PERF | Must | Implemented | POST /impact/active ≤ 800ms p95 |
 | [REQ-PERF-daily-experience-response-time](requirements/REQ-PERF-daily-experience-response-time.md) | REQ-PERF | Must | Implemented | POST /experience/daily ≤ 2s p95 |
 | [REQ-F-synastry-partner-management](requirements/REQ-F-synastry-partner-management.md) | REQ-F | Must | Implemented | partner_profiles CRUD with user_id RLS + defence-in-depth delete guard |
@@ -185,7 +185,8 @@ When an artifact (goal, requirement) is no longer relevant:
 | [REQ-F-synastry-premium-narrative](requirements/REQ-F-synastry-premium-narrative.md) | REQ-F | Must | Implemented | Hybrid narratives: template (free) + Gemini (premium) with zodiac whitelist guard |
 | [REQ-F-navigation-redesign](requirements/REQ-F-navigation-redesign.md) | REQ-F | Must | Draft | App-shell navigation redesign — always-visible Dashboard link, active-route highlight, non-confusing mode toggle, both agents exposed |
 | [REQ-F-signatur-realtime-triggers](requirements/REQ-F-signatur-realtime-triggers.md) | REQ-F | Must | Draft | Signatur real-time trigger contract + cluster-gate enforcement + reliable Cousto audio mute |
-| [REQ-F-i18n-completeness](requirements/REQ-F-i18n-completeness.md) | REQ-F | Must | Draft | Every `t()` call resolves to translated string in DE + EN; automated audit test; quiz overlay dismiss via X / Esc / backdrop |
+| [REQ-F-signatur-cymatics](requirements/REQ-F-signatur-cymatics.md) | REQ-F | Must | Approved | Canvas2D Chladni/Cymatics engine — BaZi→Chladni bridge, SignaturCymaticsCanvas, CSS fallback, feature-flag gated |
+| [REQ-F-i18n-completeness](requirements/REQ-F-i18n-completeness.md) | REQ-F | Must | Approved | Every `t()` call resolves to translated string in DE + EN; automated audit test; quiz overlay dismiss via X / Esc / backdrop |
 
 ---
 

@@ -2,11 +2,10 @@ import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { BootstrapResponse, SignatureDeltaResponse } from '@/src/lib/schemas/experience';
 import { isFeatureEnabled } from '@/src/lib/feature-flags';
-import { toDimensionWeightsOrUndefined, toNatalWeightsOrUndefined } from '@/src/lib/signatur/weight-utils';
-import { sectorsToChladniParams } from '@/src/lib/cymatics/signatur-to-chladni';
+import { toDimensionWeightsOrUndefined, toNatalWeightsOrUndefined, deriveCymanticsParams } from '@/src/lib/signatur/weight-utils';
 import { useLanguage } from '@/src/contexts/LanguageContext';
+import { CymanticsSignature } from '../cymantics/CymanticsSignature';
 
-const SignaturV3Canvas = lazy(() => import('@/src/components/signatur-v3/SignaturV3Canvas'));
 const FusionRingCanvasV2 = lazy(() => import('@/src/components/fusion-ring-website/FusionRingCanvasV2'));
 const SignaturCymaticsCanvas = lazy(() => import('@/src/components/signatur-cymatics/SignaturCymaticsCanvas').then(m => ({ default: m.SignaturCymaticsCanvas })));
 const FusionRingWebsiteCanvas = lazy(() => import('@/src/components/fusion-ring-website/FusionRingWebsiteCanvas').then(m => ({ default: m.FusionRingWebsiteCanvas })));
@@ -41,6 +40,7 @@ export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: 
 
   const isFallback = bootstrapData.meta?.engine_version === 'fallback';
 
+  const chladniParams = useMemo(() => deriveCymanticsParams(bootstrapData), [bootstrapData]);
   const natalWeights = useMemo(() => toNatalWeightsOrUndefined(sectors), [sectors]);
   const dimensionWeights = useMemo(() => toDimensionWeightsOrUndefined(sectors), [sectors]);
   const neutralDimensionWeights = useMemo(() => toDimensionWeightsOrUndefined(DEFAULT_SECTORS) ?? {}, []);
@@ -61,18 +61,14 @@ export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: 
       {/* Ring container — round clipped */}
       <div className="w-[200px] h-[200px] rounded-full overflow-hidden relative">
         <Suspense fallback={<div className="w-full h-full bg-[#010409]" />}>
-          {useCymatics ? (
-            <SignaturCymaticsCanvas
-              params={cymaticsParams}
-              className="w-full h-full"
-            />
-          ) : useV3 ? (
-            <SignaturV3Canvas
+          {useV3 ? (
+            <CymanticsSignature
               natalWeights={(revealProgress > 0 ? dimensionWeights : neutralDimensionWeights) || neutralDimensionWeights}
               quizWeights={{}}
+              chladniParams={chladniParams}
+              mode="hybrid"
               width={200}
               height={200}
-              quality="medium"
             />
           ) : useV2 ? (
             <FusionRingCanvasV2

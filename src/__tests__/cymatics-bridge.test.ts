@@ -124,8 +124,8 @@ describe('baziToChladniParams — output ranges', () => {
   });
 
   it('b satisfies b = 1 - a*0.6 (derived range ~0.40..0.82)', () => {
-    // The REQ annotation "0.10..0.70" is incorrect; the formula b = 1 - a*0.6
-    // with a ∈ [0.3, 1.0] gives b ∈ [0.40, 0.82]. Test the formula directly.
+    // Formula: b = 1 - a*0.6 with a ∈ [0.30, 1.00] → b ∈ [0.40, 0.82].
+    // Test verifies the formula holds exactly — not the REQ prose range.
     for (const harmony of [0, 0.25, 0.5, 0.75, 1]) {
       const { a, b } = makeParams(0, 0, 0, 0, harmony);
       expect(b).toBeCloseTo(1.0 - a * 0.6, 10);
