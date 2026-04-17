@@ -1,4 +1,4 @@
-import { PLANETS } from "../lib/planetaryFrequencies";
+import { PLANETS } from "./planetaryFrequencies";
 
 interface PlanetPanelProps {
   weights: number[];
