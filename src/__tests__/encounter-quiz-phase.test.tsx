@@ -52,12 +52,8 @@ vi.mock('../components/onboarding/useParallax', () => ({
   useParallax: () => ({ x: 0, y: 0 }),
 }));
 
-vi.mock('../components/onboarding/FusionRingReveal', () => ({
-  __esModule: true,
-  default: ({ onComplete }: any) => (
-    <div data-testid="ring-reveal" onClick={onComplete} />
-  ),
-}));
+// Phase C1 — FusionRingReveal was removed. The ring-reveal phase now
+// auto-transitions to quiz after 2500ms (no component is mounted).
 
 // mockDeltaData must be declared before vi.mock so it is accessible
 // inside the factory (vitest hoists vi.mock calls, but the const below
@@ -183,21 +179,11 @@ describe('CosmicEncounter — quiz→complete phase transition', () => {
     // 500 ms delay in the calculating→ring-reveal effect
     await act(async () => { vi.advanceTimersByTime(500); });
 
-    // Flush React.lazy resolution microtasks for FusionRingReveal
-    await flushLazy(30);
-
-    // Fallback: use real timers + waitFor if flushLazy wasn't enough
-    vi.useRealTimers();
-    await waitFor(
-      () => expect(screen.getByTestId('ring-reveal')).toBeDefined(),
-      { timeout: 2000 },
-    );
-    vi.useFakeTimers();
-
-    // ── ring-reveal → quiz (click ring-reveal mock) ──────────────────
-    await act(async () => {
-      screen.getByTestId('ring-reveal').click();
-    });
+    // ── ring-reveal → quiz (auto-transition after 2500ms, no component) ──
+    // Phase C1: no FusionRingReveal is mounted any more. The ring-reveal
+    // phase holds briefly then auto-fires handleRingRevealComplete.
+    await act(async () => { vi.advanceTimersByTime(2500); });
+    await flushLazy(5);
 
     // SignatureRevealLazy uses lazy(() => import('./SignatureReveal').then(m => ...))
     // The extra .then() adds an additional microtask tick. Use real-timer based

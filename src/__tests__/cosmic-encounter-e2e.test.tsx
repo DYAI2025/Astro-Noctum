@@ -14,7 +14,6 @@ import { CosmicEncounter } from '../components/onboarding/CosmicEncounter';
 // ── Callback-capturing variables ──────────────────────────────────────────
 
 let capturedLeviOnComplete: (() => void) | undefined;
-let capturedRingOnComplete: (() => void) | undefined;
 let capturedQuizOnComplete: ((delta: any) => void) | undefined;
 let capturedFormOnSubmit: ((data: any) => void) | undefined;
 
@@ -71,13 +70,8 @@ vi.mock('../components/onboarding/useParallax', () => ({
   useParallax: () => ({ x: 0, y: 0 }),
 }));
 
-vi.mock('../components/onboarding/FusionRingReveal', () => ({
-  __esModule: true,
-  default: ({ onComplete }: any) => {
-    capturedRingOnComplete = onComplete;
-    return <div data-testid="ring-reveal" />;
-  },
-}));
+// Phase C1 — FusionRingReveal was removed. The ring-reveal phase now
+// auto-transitions to quiz after 2500ms; no component is mounted there.
 
 vi.mock('../components/onboarding/SignatureReveal', () => ({
   SignatureReveal: ({ onComplete }: any) => {
@@ -134,7 +128,6 @@ describe('CosmicEncounter — full 7-phase e2e integration', () => {
     Object.defineProperty(window, 'innerWidth', { value: 1024, writable: true });
     // Reset captured callbacks
     capturedLeviOnComplete = undefined;
-    capturedRingOnComplete = undefined;
     capturedQuizOnComplete = undefined;
     capturedFormOnSubmit = undefined;
   });
@@ -237,30 +230,17 @@ describe('CosmicEncounter — full 7-phase e2e integration', () => {
       />,
     );
 
-    // 500ms delay in the calculating → ring-reveal effect
+    // Phase C1: ring-reveal is "silent" — the calculating→ring-reveal effect
+    // fires after 500ms, then the ring-reveal→quiz auto-transition needs
+    // another 2500ms. Advance in two stages so React can commit the
+    // ring-reveal phase and schedule the auto-transition timer in between.
     await act(async () => {
       vi.advanceTimersByTime(500);
     });
-
-    // Flush React.lazy resolution for FusionRingReveal
-    await flushLazy(30);
-
-    // Fallback: use real timers + waitFor if flushLazy wasn't enough
-    vi.useRealTimers();
-    await waitFor(
-      () => expect(screen.getByTestId('ring-reveal')).toBeDefined(),
-      { timeout: 2000 },
-    );
-    vi.useFakeTimers();
-
-    // ────────────────────────────────────────────────────────────────────
-    // PHASE 6: quiz (triggered by FusionRingReveal onComplete)
-    // ────────────────────────────────────────────────────────────────────
-    expect(capturedRingOnComplete).toBeDefined();
-
     await act(async () => {
-      capturedRingOnComplete!();
+      vi.advanceTimersByTime(2500);
     });
+    await flushLazy(15);
 
     // SignatureRevealLazy uses lazy(() => import(...).then(m => ...))
     // which adds an extra microtask. Switch to real timers + waitFor to
@@ -319,10 +299,9 @@ describe('CosmicEncounter — full 7-phase e2e integration', () => {
       />,
     );
     await act(async () => { vi.advanceTimersByTime(500); });
-    await flushLazy(15);
 
-    // ring-reveal → quiz
-    await act(async () => { capturedRingOnComplete!(); });
+    // Phase C1: ring-reveal auto-transitions to quiz after 2500ms (no component).
+    await act(async () => { vi.advanceTimersByTime(2500); });
     vi.useRealTimers();
     await waitFor(
       () => expect(screen.getByTestId('sig-reveal')).toBeDefined(),

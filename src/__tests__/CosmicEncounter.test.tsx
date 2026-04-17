@@ -31,10 +31,8 @@ vi.mock('../components/onboarding/MyzeliumNetwork', () => ({
 vi.mock('../components/onboarding/useParallax', () => ({
   useParallax: () => ({ x: 0, y: 0 }),
 }));
-vi.mock('../components/onboarding/FusionRingReveal', () => ({
-  __esModule: true,
-  default: ({ onComplete }: any) => <div data-testid="ring-reveal" onClick={onComplete} />,
-}));
+// Phase C1 — FusionRingReveal was removed. The ring-reveal phase now
+// auto-advances to quiz after 2500ms; no component is mounted.
 vi.mock('../components/onboarding/SignatureReveal', () => ({
   SignatureReveal: ({ onComplete }: any) => (
     <div data-testid="sig-reveal" onClick={() => onComplete(null)} />
@@ -135,18 +133,21 @@ describe('CosmicEncounter', () => {
       />
     );
 
-    // 500ms delay before ring-reveal
+    // 500ms delay before ring-reveal phase starts, then 2500ms auto-transition
+    // to quiz (Phase C1 — no dedicated ring-reveal component any more).
+    // Two-stage advance: React must commit the ring-reveal phase first so the
+    // auto-transition useEffect can register its 2500ms timer.
     await act(async () => { vi.advanceTimersByTime(500); });
-    // Flush lazy-load microtasks (React.lazy promise resolution)
+    await act(async () => { vi.advanceTimersByTime(2500); });
+    // Flush React.lazy microtasks for SignatureRevealLazy
     for (let i = 0; i < 30; i++) {
       await act(async () => { await Promise.resolve(); });
     }
-    // Fallback: real timers + waitFor if flushes weren't enough under load
+    // Use waitFor with real timers to let Suspense resolve
     vi.useRealTimers();
     const { waitFor: wf } = await import('@testing-library/react');
-    await wf(() => expect(screen.getByTestId('ring-reveal')).toBeDefined(), { timeout: 2000 });
+    await wf(() => expect(screen.getByTestId('sig-reveal')).toBeDefined(), { timeout: 2000 });
     vi.useFakeTimers();
-
   });
 
   it('calls ambientePause when form is submitted', () => {

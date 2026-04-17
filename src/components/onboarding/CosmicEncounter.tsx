@@ -2,7 +2,6 @@ import {
   useState,
   useEffect,
   useCallback,
-  useMemo,
   useRef,
   lazy,
   Suspense,
@@ -14,12 +13,13 @@ import { EncounterBirthForm } from './EncounterBirthForm';
 import { LeviSpeechBubble } from './LeviSpeechBubble';
 import { MyzeliumNetwork } from './MyzeliumNetwork';
 import { useParallax } from './useParallax';
-import { toNatalWeightsOrUndefined } from '@/src/lib/signatur/weight-utils';
 import type { BootstrapResponse, SignatureDeltaResponse } from '../../lib/schemas/experience';
 import type { OnboardingBirthData } from '../BirthForm';
 
-// Lazy-load heavy ring components
-const FusionRingReveal = lazy(() => import('./FusionRingReveal'));
+// Phase C1 — the legacy reveal component was removed. SignatureReveal is now
+// the sole reveal component (renders Cymatics). The `ring-reveal` phase still
+// exists in the state machine for scene/Levi timing, but auto-transitions to
+// `quiz` after a short hold so SignatureReveal can take over.
 const SignatureRevealLazy = lazy(
   () => import('./SignatureReveal').then((m) => ({ default: m.SignatureReveal })),
 );
@@ -106,11 +106,6 @@ export function CosmicEncounter({
   const formParallax = useParallax(30);
   const leviParallax = useParallax(-50);
 
-  // Compute natal weights when bootstrap data arrives
-  const natalWeights = useMemo(() => {
-    return toNatalWeightsOrUndefined(bootstrapData?.soulprint_sectors);
-  }, [bootstrapData]);
-
   // ── Phase 1: materializing → levi-speaks (3s auto-trigger) ────────
 
   useEffect(() => {
@@ -188,6 +183,20 @@ export function CosmicEncounter({
     setLeviVisible(false);
     setLeviSpeaking(0);
   }, []);
+
+  // Phase C1: ring-reveal phase used to mount the legacy reveal component and
+  // wait for its RAF-driven onComplete (~2.5s). SignatureReveal now handles the
+  // reveal animation itself, so we auto-transition ring-reveal → quiz after a
+  // brief hold that preserves scene/Levi pacing.
+  useEffect(() => {
+    if (phase !== 'ring-reveal') return;
+    const timer = setTimeout(() => {
+      if (phaseRef.current === 'ring-reveal') {
+        handleRingRevealComplete();
+      }
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, [phase, handleRingRevealComplete]);
 
   // ── Phase 6→7: quiz → complete ───────────────────────────────────
 
@@ -313,27 +322,6 @@ export function CosmicEncounter({
             exit={{ opacity: 0 }}
           >
             <div className="w-16 h-16 rounded-full border-2 border-gold/30 border-t-gold animate-spin" />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Ring Reveal (phase: ring-reveal) */}
-      <AnimatePresence>
-        {phase === 'ring-reveal' && (
-          <motion.div
-            key="ring-reveal"
-            className="absolute inset-0 z-40"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1, transition: { duration: 1.5 } }}
-            exit={{ opacity: 0 }}
-          >
-            <Suspense fallback={<RingFallback />}>
-              <FusionRingReveal
-                natalWeights={natalWeights}
-                onComplete={handleRingRevealComplete}
-                autoReveal
-              />
-            </Suspense>
           </motion.div>
         )}
       </AnimatePresence>
