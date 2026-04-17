@@ -21,7 +21,7 @@ Die Signatur-Visualisierung erhält eine neue Engine (`SignaturCymaticsCanvas`) 
   - `m`: integer 2..6, derived from `(yi * 1000 + mi * 100 + di * 10 + hi) % 360`
   - `n`: integer 2..6, derived from `floor(numeric_sig * 7 / 5) % 5 + 2`
   - `a`: float 0.3..1.0, derived from `harmony_index`
-  - `b`: float 0.1..0.7, derived as `1.0 - a * 0.6`
+  - `b`: float 0.40..0.82, derived as `1.0 - a * 0.6` (b = 1 − a×0.6; a ∈ [0.30,1.00])
   - `dominantElement`: one of `Wood | Fire | Earth | Metal | Water`
   - `harmonyIndex`: float 0..1
 
@@ -95,7 +95,7 @@ export function baziToChladniParams(baziPillars, wuxingWeights, harmonyIndex): C
   const m = 2 + (numericSig % 5);                          // 2..6
   const n = 2 + (Math.floor(numericSig * 7 / 5) % 5);     // 2..6
   const a = 0.3 + harmonyIndex * 0.7;                      // 0.3..1.0
-  const b = 1.0 - a * 0.6;                                 // 0.1..0.7
+  const b = 1.0 - a * 0.6;                                 // 0.40..0.82
 
   const dominantElement = Object.entries(wuxingWeights)
     .sort(([,v1],[,v2]) => v2 - v1)[0]?.[0] ?? 'Water';
