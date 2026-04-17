@@ -4,8 +4,8 @@ import { isFeatureEnabled } from '../lib/feature-flags';
 describe('signature_engine_cymatics flag', () => {
   beforeEach(() => { localStorage.clear(); });
 
-  it('is off by default', () => {
-    expect(isFeatureEnabled('signature_engine_cymatics')).toBe(false);
+  it('is on by default', () => {
+    expect(isFeatureEnabled('signature_engine_cymatics')).toBe(true);
   });
 
   it('can be enabled via localStorage override', () => {

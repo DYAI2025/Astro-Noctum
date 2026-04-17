@@ -39,8 +39,8 @@ vi.mock('@/src/lib/feature-flags', () => {
       const stored = localStorage.getItem(`ff_${key}`);
       if (stored === 'true') return true;
       if (stored === 'false') return false;
-      // Defaults: cymatics off, v3 off, v2 on
-      if (key === 'signature_engine_cymatics') return false;
+      // Defaults: cymatics on, v3 off, v2 on
+      if (key === 'signature_engine_cymatics') return true;
       if (key === 'signature_engine_v3') return false;
       if (key === 'signature_engine_v2') return true;
       return true;
@@ -166,7 +166,22 @@ describe('FusionRing3D cymatics wiring', () => {
     localStorage.clear();
   });
 
-  it('renders V2 by default (cymatics flag off)', async () => {
+  it('renders cymatics canvas by default when flag on and params present', async () => {
+    await act(async () => {
+      render(
+        React.createElement(FusionRing3D, {
+          userId: 'test-user',
+          labels: LABELS,
+          chladniParams: CHLADNI_PARAMS,
+        }),
+      );
+    });
+    expect(screen.getByTestId('mock-cymatics-canvas')).toBeDefined();
+    expect(screen.queryByTestId('mock-v2-canvas')).toBeNull();
+  });
+
+  it('falls through to V2 when cymatics flag explicitly disabled', async () => {
+    localStorage.setItem('ff_signature_engine_cymatics', 'false');
     await act(async () => {
       render(
         React.createElement(FusionRing3D, {
