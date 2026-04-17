@@ -44,7 +44,7 @@ export function PlanetPanel({ weights, dominantIdx }: PlanetPanelProps) {
               </div>
             </div>
             <div className="text-[11px] text-white/40 leading-tight mb-2">
-              {planet.archetype}
+              {planet.archetype_de}
             </div>
             {/* Intensity bar */}
             <div className="h-0.5 w-full bg-white/5 rounded-full overflow-hidden">
