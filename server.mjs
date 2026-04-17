@@ -76,8 +76,44 @@ if (!stripe && process.env.NODE_ENV === 'production') {
 
 import { buildUnifiedPrompt } from "./packages/shared/src/signatur/synthesis-engine.mjs";
 
+function normalizeSynthesisInput(data) {
+  if (!data || typeof data !== "object") {
+    return { harmony_index: 0 };
+  }
+
+  // If the payload is already in the flat synthesis shape, preserve it and
+  // only backfill fields that the prompt builder may assume are present.
+  if (
+    "planets" in data ||
+    "bazi_pillars" in data ||
+    "harmony_index" in data
+  ) {
+    return {
+      ...data,
+      harmony_index: typeof data.harmony_index === "number" ? data.harmony_index : 0,
+    };
+  }
+
+  // Normalize the nested ApiData shape used by the app into the flat shape
+  // expected by buildUnifiedPrompt.
+  return {
+    ...data,
+    ...(data.western ?? {}),
+    ...(data.bazi ?? {}),
+    ...(data.wuxing ?? {}),
+    planets: data.western?.planets ?? data.planets,
+    bazi_pillars: data.bazi?.bazi_pillars ?? data.bazi_pillars,
+    harmony_index:
+      typeof data.wuxing?.harmony_index === "number"
+        ? data.wuxing.harmony_index
+        : typeof data.harmony_index === "number"
+          ? data.harmony_index
+          : 0,
+  };
+}
+
 function buildGeminiPrompt(data, lang) {
-  return buildUnifiedPrompt(data, lang);
+  return buildUnifiedPrompt(normalizeSynthesisInput(data), lang);
 }
 
 // ── Security Headers ─────────────────────────────────────────────────
