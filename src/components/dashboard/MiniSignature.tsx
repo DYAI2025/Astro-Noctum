@@ -4,6 +4,7 @@ import type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
 import type { DissonanceResult } from '../../lib/fusion-ring/dissonance';
 import type { SolarModulation } from '../signatur-v3/bipolar-engine';
 import { useLanguage } from '../../contexts/LanguageContext';
+import type { ChladniParams } from '../../lib/cymatics/bazi-to-chladni';
 
 const SignaturV3Canvas = lazy(() => import('../signatur-v3/SignaturV3Canvas'));
 
@@ -15,11 +16,15 @@ interface MiniSignatureProps {
   solarModulation?: SolarModulation;
   loading?: boolean;
   onExpand?: () => void;
+  /** Chladni params for the Cymatics engine. Added in C2a; C2b routes the render body through this. */
+  chladniParams?: ChladniParams;
+  /** Planetarium (dark) vs. Solar System (bright) theme. Default true. Added in C2a; C2b wires to canvas. */
+  planetariumMode?: boolean;
 }
 
 const EMPTY_WEIGHTS: Record<string, number> = {};
 
-export default function MiniSignature({ natalWeights, quizWeights, dayHarmonic, externalDissonance, solarModulation, loading, onExpand }: MiniSignatureProps) {
+export default function MiniSignature({ natalWeights, quizWeights, dayHarmonic, externalDissonance, solarModulation, loading, onExpand, chladniParams, planetariumMode = true }: MiniSignatureProps) {
   const { t } = useLanguage();
   const hasData = natalWeights && Object.keys(natalWeights).length > 0;
 
