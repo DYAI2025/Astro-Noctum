@@ -40,6 +40,12 @@ interface SignaturEngineProps {
   kpIndex?: number;
   size?: number;
   onReady?: () => void;
+  /**
+   * Called when the V2 GL engine fails to initialise (e.g. WebGL context
+   * unavailable on device). The caller should render the V1 fallback and
+   * log the degradation explicitly — no silent fallback.
+   */
+  onFailed?: () => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -127,6 +133,7 @@ export default function SignaturEngine({
   kpIndex = 0,
   size = 300,
   onReady,
+  onFailed,
 }: SignaturEngineProps) {
   const animationRef = useRef<number>(0);
   const disposeRef = useRef<(() => void) | null>(null);
@@ -201,6 +208,7 @@ export default function SignaturEngine({
 
   const onContextCreate = useCallback(
     async (gl: ExpoWebGLRenderingContext) => {
+    try {
       // ----- Renderer -----
       const renderer = new Renderer({ gl });
       renderer.setSize(gl.drawingBufferWidth, gl.drawingBufferHeight);
@@ -471,6 +479,13 @@ export default function SignaturEngine({
       };
 
       onReady?.();
+    } catch (err) {
+      console.warn(
+        '[SignaturEngine] V2 GL context failed — degrading to V1 SignaturCanvas.',
+        err,
+      );
+      onFailed?.();
+    }
     },
     // We intentionally only depend on the initial values.
     // Re-creating the GL scene for prop changes would be wasteful;

@@ -50,6 +50,16 @@ interface EffectState {
   clusterColorHex?: string;
 }
 
+// Palette constants for dark / bright theme modes (V2 uses deeper dark for richer bloom)
+const V2_DARK_BG = 0x08080e as const;
+const V2_BRIGHT_BG = 0xf1f5f9 as const;
+const V2_DARK_SKY1 = 0x08080e as const;
+const V2_DARK_SKY2 = 0x0a1020 as const;
+const V2_DARK_SKY3 = 0x100818 as const;
+const V2_BRIGHT_SKY1 = 0xf1f5f9 as const;
+const V2_BRIGHT_SKY2 = 0xe2e8f0 as const;
+const V2_BRIGHT_SKY3 = 0xf8fafc as const;
+
 export interface FusionRingCanvasProps {
   natalWeights?: Record<string, number>;
   quizWeights?: Record<string, number>;
@@ -62,6 +72,8 @@ export interface FusionRingCanvasProps {
   dissonanceModulation?: import('../../lib/fusion-ring/dissonance-visual').VisualModulation | null;
   /** Called when WebGL is unavailable — caller should render a 2D fallback instead */
   onFailed?: () => void;
+  /** Planetarium (dark) or Solar System (bright) theme. Default: true (dark). */
+  planetariumMode?: boolean;
 }
 
 // Simple hash for deterministic pseudo-random
@@ -80,16 +92,19 @@ interface BazodiacState {
   dissonanceModulation?: import('../../lib/fusion-ring/dissonance-visual').VisualModulation | null;
 }
 
-function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, isMini = false, onPostProcessDegraded }: {
+function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, isMini = false, onPostProcessDegraded, planetariumMode = true }: {
   effectRef: React.MutableRefObject<EffectState | null>;
   audioRef: React.MutableRefObject<FusionAudioEngine | null>;
   bazStateRef: React.MutableRefObject<BazodiacState>;
   revealProgress?: number;
   isMini?: boolean;
   onPostProcessDegraded?: () => void;
+  planetariumMode?: boolean;
 }) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const densityCanvasRef = useRef<HTMLCanvasElement>(null);
+  const rendererRef = useRef<import('three').WebGLRenderer | null>(null);
+  const skyMatRef = useRef<import('three').ShaderMaterial | null>(null);
 
   // DebugInjection für Renderer-Overrides
   const debugOverridesRef = useRef<DebugOverrides>({});
@@ -180,7 +195,8 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.5;
-      renderer.setClearColor(0x08080e);
+      renderer.setClearColor(planetariumMode ? V2_DARK_BG : V2_BRIGHT_BG);
+      rendererRef.current = renderer;
       canvasRef.current?.appendChild?.(renderer.domElement);
       
       let composer: any;
@@ -496,9 +512,9 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
         depthWrite: false,
         uniforms: {
           uTime: { value: 0 },
-          uColor1: { value: new THREE.Color(0x08080e) },
-          uColor2: { value: new THREE.Color(0x0a1020) },
-          uColor3: { value: new THREE.Color(0x100818) },
+          uColor1: { value: new THREE.Color(planetariumMode ? V2_DARK_SKY1 : V2_BRIGHT_SKY1) },
+          uColor2: { value: new THREE.Color(planetariumMode ? V2_DARK_SKY2 : V2_BRIGHT_SKY2) },
+          uColor3: { value: new THREE.Color(planetariumMode ? V2_DARK_SKY3 : V2_BRIGHT_SKY3) },
         },
         vertexShader: `
           varying vec3 vWorldPos;
@@ -524,6 +540,7 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
       });
       const bgSphere = new THREE.Mesh(bgGeo, bgMat);
       scene.add(bgSphere);
+      skyMatRef.current = bgMat;
 
       // ========================================
       // LOAD SIGNATURE INTO BUFFERS
@@ -1231,6 +1248,8 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
         // Dispose renderer
         renderer.dispose();
         renderer.forceContextLoss();
+        rendererRef.current = null;
+        skyMatRef.current = null;
         if (canvasRef.current?.contains?.(renderer.domElement)) {
           canvasRef.current.removeChild(renderer.domElement);
         }
@@ -1246,6 +1265,19 @@ function ThreeScene({ effectRef, audioRef, bazStateRef, revealProgress = 1.0, is
     const cleanup = initScene();
     return () => { cleanup?.then?.((fn) => fn?.()); };
   }, []);
+
+  // React to planetariumMode changes — update clearColor and sky dome uniforms reactively
+  useEffect(() => {
+    if (rendererRef.current) {
+      rendererRef.current.setClearColor(planetariumMode ? V2_DARK_BG : V2_BRIGHT_BG);
+    }
+    const mat = skyMatRef.current;
+    if (mat) {
+      mat.uniforms.uColor1.value.setHex(planetariumMode ? V2_DARK_SKY1 : V2_BRIGHT_SKY1);
+      mat.uniforms.uColor2.value.setHex(planetariumMode ? V2_DARK_SKY2 : V2_BRIGHT_SKY2);
+      mat.uniforms.uColor3.value.setHex(planetariumMode ? V2_DARK_SKY3 : V2_BRIGHT_SKY3);
+    }
+  }, [planetariumMode]);
 
   return (
     <div ref={canvasRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
@@ -1284,6 +1316,7 @@ export default function FusionRingCanvas({
   className,
   dissonanceModulation,
   onFailed,
+  planetariumMode = true,
 }: FusionRingCanvasProps) {
   const [mounted, setMounted] = useState(false);
   const [webglSupported, setWebglSupported] = useState(true);
@@ -1403,7 +1436,7 @@ export default function FusionRingCanvas({
   return (
     <div
       className={className}
-      style={{ width: '100%', height: '100%', background: '#08080e', position: 'relative', overflow: 'hidden' }}
+      style={{ width: '100%', height: '100%', background: planetariumMode ? '#08080e' : '#f1f5f9', position: 'relative', overflow: 'hidden' }}
     >
       <ThreeScene
         effectRef={effectRef}
@@ -1412,6 +1445,7 @@ export default function FusionRingCanvas({
         revealProgress={revealProgress}
         isMini={isMini}
         onPostProcessDegraded={() => setPostProcessDegraded(true)}
+        planetariumMode={planetariumMode}
       />
 
       {postProcessDegraded && (
