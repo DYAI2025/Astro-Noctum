@@ -74,7 +74,7 @@ if (!stripe && process.env.NODE_ENV === 'production') {
   console.warn('[server] Stripe not configured (STRIPE_SECRET_KEY missing)');
 }
 
-import { buildUnifiedPrompt } from "./packages/shared/src/signatur/synthesis-engine.ts";
+import { buildUnifiedPrompt } from "./packages/shared/src/signatur/synthesis-engine.mjs";
 
 function buildGeminiPrompt(data, lang) {
   return buildUnifiedPrompt(data, lang);
