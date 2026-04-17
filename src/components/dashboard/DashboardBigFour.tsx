@@ -164,10 +164,10 @@ export function DashboardBigFour({
                   <p className="text-[8px] font-sans uppercase tracking-[0.2em] opacity-65">
                     {t(labelKey)}
                   </p>
-                  {items.find(it => it.id === id)?.frequency && (
+                  {frequency && (
                     <span className="flex items-center gap-0.5 text-[7px] text-amber-500/60 font-mono">
                       <Zap size={6} />
-                      {items.find(it => it.id === id)?.frequency?.toFixed(2)} Hz
+                      {frequency.toFixed(2)} Hz
                     </span>
                   )}
                 </div>
