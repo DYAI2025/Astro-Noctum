@@ -8,6 +8,7 @@ const FLAGS = {
   daily_modal_v1: true,
   signature_engine_v2: true,
   signature_engine_v3: true,
+  signature_engine_cymatics: false,
   sky_jieqi_banner: true,
   sky_flare_timeline: true,
   sky_aurora_layer: true,
