@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useCallback } from "react";
-import { ChladniSignature } from "../components/ChladniSignature";
-import { PLANETS } from "../lib/planetaryFrequencies";
+import { ChladniSignature } from "../ChladniSignature";
+import { PLANETS } from "./planetaryFrequencies";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
