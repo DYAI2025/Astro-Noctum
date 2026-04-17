@@ -286,8 +286,9 @@ export function DailyChartHero({
 
   return (
     <div
-      className="daily-chart-hero cosmic-tile p-6 sm:p-8 rounded-[2rem] space-y-5"
+      className="daily-chart-hero cosmic-tile p-6 sm:p-8 rounded-[2rem] space-y-5 group"
       data-testid="daily-chart-hero"
+      style={{ '--tile-glow-color': `${accentColor}99` } as React.CSSProperties}
     >
       {/* ── A. Coherence Ring + Label ─────────────────────────────────── */}
       {isUnavailable ? (

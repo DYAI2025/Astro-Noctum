@@ -169,14 +169,11 @@ export const FusionRing3D = ({
               planetariumMode={planetariumMode}
             />
           }>
-            <SignaturV3Canvas
+            <CymanticsSignature
               natalWeights={v3DimensionWeights}
               quizWeights={quizWeights ?? v3DimensionWeights}
-              dayHarmonic={dayHarmonic ?? undefined}
-              externalDissonance={externalDissonance}
-              solarModulation={solarModulation != null ? { ringModulation: solarModulation, triggerEffect: kpIndex >= 5, kpIndex } : undefined}
+              solarModulation={solarModulation != null ? { ringModulation: solarModulation, flareIntensity: kpIndex >= 5 ? 0.8 : 0.2, kpIndex } : undefined}
               className="h-full w-full"
-              quality="auto"
             />
           </Suspense>
         ) : isFeatureEnabled('signature_engine_v2') && !v2Failed ? (

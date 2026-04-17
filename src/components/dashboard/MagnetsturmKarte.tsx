@@ -69,7 +69,7 @@ export function MagnetsturmKarte() {
 
   return (
     <div
-      className="cosmic-tile p-5 sm:p-6 space-y-4"
+      className="cosmic-tile p-5 sm:p-6 space-y-4 group"
       data-testid="magnetsturm-karte"
       style={{
         borderColor: `${color}55`,
@@ -78,7 +78,8 @@ export function MagnetsturmKarte() {
           ? `0 0 0 1px ${color}66, 0 0 16px ${color}33`
           : undefined,
         animation: isG3Plus ? 'magnetsturm-pulse 2s ease-in-out infinite' : undefined,
-      }}
+        '--tile-glow-color': `${color}99`,
+      } as React.CSSProperties}
     >
       {/* ── Header ────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">

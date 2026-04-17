@@ -3,6 +3,7 @@ import {
   quizSectorsToQuizWeights,
   soulprintToDimensionWeights,
 } from '@/src/components/fusion-ring-website/signatur-bridge';
+import type { ApiData } from '../../types/bafe';
 
 // ── Synthetic soulprint fallback ────────────────────────────────────────────
 
@@ -10,6 +11,48 @@ const SIGN_ORDER = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
   'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces',
 ];
+
+/**
+ * Derives Cymantics/Chladni parameters from either full ApiData or BootstrapResponse.
+ * Based on the Hans Cousto / Bazi mapping logic.
+ */
+export function deriveCymanticsParams(data: any) {
+  // Try to find bazi pillars or sun sign
+  const bazi = data.bazi?.pillars || data.profile; 
+  const western = data.western || data.profile;
+  const harmonyIndex = data.wuxing?.harmony_index ?? data.profile?.harmony_index ?? 0.5;
+
+  const sunSign = western?.zodiac_sign || western?.sun_sign || 'Aries';
+  const sunIdx = SIGN_ORDER.indexOf(sunSign);
+  
+  // Deterministic numeric signature
+  let numeric_signature = (sunIdx * 100) % 360;
+  
+  if (data.bazi?.pillars) {
+    const p = data.bazi.pillars;
+    const yi = p.year?.stem ? 1 : 0;
+    const mi = p.month?.stem ? 1 : 0;
+    const di = p.day?.stem ? 1 : 0;
+    const hi = p.hour?.stem ? 1 : 0;
+    numeric_signature = (numeric_signature + (yi * 1000 + mi * 100 + di * 10 + hi)) % 360;
+  } else if (data.profile?.day_master) {
+    // Simple hash of day master string if pillars missing
+    const dm = data.profile.day_master;
+    let hash = 0;
+    for (let i = 0; i < dm.length; i++) hash += dm.charCodeAt(i);
+    numeric_signature = (numeric_signature + hash) % 360;
+  }
+
+  // Chladni parameters (ranges 2..6 for m,n)
+  const m = 2 + (numeric_signature % 5);
+  const n = 2 + (Math.floor(numeric_signature * 7 / 5) % 5);
+  const a = 0.3 + harmonyIndex * 0.7;
+  const b = 1.0 - a * 0.6;
+
+  return { m, n, a, b, numeric_signature, harmonyIndex };
+}
+
+// ── Synthetic detection ─────────────────────────────────────────────────────
 
 /**
  * Generates a deterministic 12-sector soulprint array from a zodiac sign name.
