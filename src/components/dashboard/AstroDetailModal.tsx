@@ -9,6 +9,7 @@ import { getBranchByAnimal } from '../../lib/astro-data/earthlyBranches';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ZodiacIcon, WuXingIcon, BaZiAnimalIcon } from '../animated-icons/CosmicSymbols';
 import { IconSun, IconOrbit } from '../animated-icons';
+import { PLANETS } from '../cymantics/planetaryFrequencies';
 import type { ApiData } from '../../types/bafe';
 import type { TileTexts } from '../../types/interpretation';
 
@@ -84,6 +85,11 @@ export function AstroDetailModal({ activeId, onClose, apiData, tileTexts }: Astr
           value: ascData ? ascData.name[lang] : ascSignKey || '—',
           description: ascData?.asc[lang] || '',
         },
+        {
+          label: lang === 'de' ? 'Sonnenfrequenz' : 'Solar Frequency',
+          value: `${PLANETS.find(p => p.name === 'Sun')?.baseFrequency.toFixed(2)} Hz`,
+          description: lang === 'de' ? 'Der Klang des solaren Jahrestons.' : 'The frequency of the solar year.',
+        },
       ],
     },
     bazi: {
@@ -105,9 +111,9 @@ export function AstroDetailModal({ activeId, onClose, apiData, tileTexts }: Astr
           description: monthStem?.monthStem[lang] || '',
         },
         {
-          label: t('astroAccordion.hourStem'),
-          value: hourStem ? hourStem.name[lang] : (pillars?.hour?.stem || '—'),
-          description: hourStem?.dayMaster[lang] || '',
+          label: lang === 'de' ? 'Resonanzfrequenz (Jupiter)' : 'Resonance Frequency (Jupiter)',
+          value: `${PLANETS.find(p => p.name === 'Jupiter')?.baseFrequency.toFixed(2)} Hz`,
+          description: lang === 'de' ? 'Der Ton des Planeten Jupiter, Hüter der Zeit.' : 'The tone of Jupiter, keeper of time.',
         },
       ],
     },

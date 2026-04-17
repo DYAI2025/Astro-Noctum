@@ -44,7 +44,7 @@ function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;
 }
 
-export function ChladniSignature({ params, active, size = 500 }: ChladniSignatureProps) {
+export function Cymantics2D({ params, active, size = 500 }: ChladniSignatureProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const p5Ref = useRef<any>(null);
   const paramsRef = useRef(params);

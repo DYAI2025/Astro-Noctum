@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { BootstrapResponse, SignatureDeltaResponse } from '@/src/lib/schemas/experience';
 import { isFeatureEnabled } from '@/src/lib/feature-flags';
-import { toDimensionWeightsOrUndefined, toNatalWeightsOrUndefined } from '@/src/lib/signatur/weight-utils';
+import { toDimensionWeightsOrUndefined, toNatalWeightsOrUndefined, deriveCymanticsParams } from '@/src/lib/signatur/weight-utils';
 import { useLanguage } from '@/src/contexts/LanguageContext';
 import { CymanticsSignature } from '../cymantics/CymanticsSignature';
 
@@ -38,6 +38,7 @@ export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: 
 
   const isFallback = bootstrapData.meta?.engine_version === 'fallback';
 
+  const chladniParams = useMemo(() => deriveCymanticsParams(bootstrapData), [bootstrapData]);
   const natalWeights = useMemo(() => toNatalWeightsOrUndefined(sectors), [sectors]);
   const dimensionWeights = useMemo(() => toDimensionWeightsOrUndefined(sectors), [sectors]);
   const neutralDimensionWeights = useMemo(() => toDimensionWeightsOrUndefined(DEFAULT_SECTORS) ?? {}, []);
@@ -58,6 +59,8 @@ export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: 
             <CymanticsSignature
               natalWeights={(revealProgress > 0 ? dimensionWeights : neutralDimensionWeights) || neutralDimensionWeights}
               quizWeights={{}}
+              chladniParams={chladniParams}
+              mode="hybrid"
               width={200}
               height={200}
             />

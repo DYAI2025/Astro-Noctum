@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback, Component, ReactNode, useMemo } from "react";
 import * as THREE from "three";
 import { PLANETS, computeSignatureWeights, type Planet } from "./planetaryFrequencies";
-import { chladniDisplacement, getPolePositions, type SignatureParams } from "./cymatics";
+import { buildSignatureGeometry, buildTrailGeometry, getPolePositions, type SignatureParams } from "./cymatics";
 
 // ═══════════════════════════════════════
 //  TYPES
@@ -47,7 +47,6 @@ function CssSignatureFallback({ dominantPlanet }: { dominantPlanet: Planet | nul
   return (
     <div style={{ width: "100%", height: "100%", position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
       <style>{`
-        @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes pulse-ring { 0%,100% { opacity:0.15; transform:scale(1); } 50% { opacity:0.4; transform:scale(1.04); } }
         .css-ring { position:absolute; border-radius:50%; border:1px solid; animation:pulse-ring 4s ease-in-out infinite; }
       `}</style>
@@ -73,82 +72,18 @@ function Cymantics3DInner({ natalWeights, quizWeights, solarModulation, dominant
     camera: THREE.PerspectiveCamera;
     frameId: number;
     signatureGroup: THREE.Group;
-    wireMesh: THREE.Mesh | null;
-    solidMesh: THREE.Mesh | null;
-    trailLines: THREE.Line[];
+    wireMesh: THREE.Mesh;
+    solidMesh: THREE.Mesh;
+    trailMeshes: THREE.Mesh[];
     weights: number[];
     targetWeights: number[];
     time: number;
-    mouseX: number;
-    mouseY: number;
   } | null>(null);
 
   const solarRef = useRef(solarModulation);
   solarRef.current = solarModulation;
 
   const weightsArr = useMemo(() => computeSignatureWeights(natalWeights, quizWeights), [natalWeights, quizWeights]);
-
-  const buildWireMesh = useCallback((weights: number[], time: number, radius: number) => {
-    const res = 64;
-    const geo = new THREE.SphereGeometry(radius, res, res);
-    const pos = geo.attributes.position;
-    
-    // Solar storm expands the amplitude
-    const solarMod = solarRef.current?.ringModulation ?? 1.0;
-    const amplitudeBase = radius * 0.16 * solarMod;
-
-    for (let i = 0; i < pos.count; i++) {
-      const x = (pos.array as Float32Array)[i * 3];
-      const y = (pos.array as Float32Array)[i * 3 + 1];
-      const z = (pos.array as Float32Array)[i * 3 + 2];
-      const r = Math.sqrt(x * x + y * y + z * z);
-      if (r < 0.001) continue;
-      const theta = Math.acos(Math.max(-1, Math.min(1, y / r)));
-      const phi = Math.atan2(z, x);
-      
-      const params: SignatureParams = { weights, time, resolution: res, radius };
-      const disp = chladniDisplacement(theta, phi, params);
-      const scale = 1 + disp * (amplitudeBase / radius);
-      
-      (pos.array as Float32Array)[i * 3] = x * scale;
-      (pos.array as Float32Array)[i * 3 + 1] = y * scale;
-      (pos.array as Float32Array)[i * 3 + 2] = z * scale;
-    }
-    pos.needsUpdate = true;
-    geo.computeVertexNormals();
-    return geo;
-  }, []);
-
-  const buildTrails = useCallback((weights: number[], time: number, radius: number): THREE.Line[] => {
-    const lines: THREE.Line[] = [];
-    const poles = getPolePositions(radius);
-    const solarMod = solarRef.current?.kpIndex ?? 3;
-
-    for (let i = 0; i < poles.length; i++) {
-      const planet = PLANETS[i % PLANETS.length];
-      const w = weights[i % weights.length];
-      const target = poles[(i + 5) % poles.length]; // asymmetric connection for 10 planets
-      const steps = 48;
-      const points: THREE.Vector3[] = [];
-
-      for (let s = 0; s <= steps; s++) {
-        const t = s / steps;
-        const p = new THREE.Vector3().lerpVectors(poles[i], target, t).normalize();
-        
-        // Solar intensity affects ripple speed and height
-        const ripple = Math.sin(t * Math.PI * 4 + time * 0.001 * (planet.baseFrequency / 50) * (1 + solarMod * 0.1)) * 0.04 * w;
-        p.multiplyScalar(radius * (1.0 + ripple));
-        points.push(p);
-      }
-
-      const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
-      const alpha = 0.2 + w * 0.5;
-      const color = new THREE.Color(planet.color);
-      const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: alpha });
-      lines.push(new THREE.Line(lineGeo, mat));
-    }
-    return lines;
-  }, []);
 
   useEffect(() => {
     if (!mountRef.current || !isWebGLAvailable()) return;
@@ -175,24 +110,40 @@ function Cymantics3DInner({ natalWeights, quizWeights, solarModulation, dominant
     scene.add(signatureGroup);
 
     const initialWeights = computeSignatureWeights(natalWeights, quizWeights);
-    const wireGeo = buildWireMesh(initialWeights, 0, 1.0);
+    
+    // Wireframe displacement layer
+    const wireGeo = buildSignatureGeometry({ weights: initialWeights, time: 0, resolution: 64, radius: 1.0 });
     const wireMat = new THREE.MeshStandardMaterial({ color: 0x4f6ef7, wireframe: true, transparent: true, opacity: 0.15 });
     const wireMesh = new THREE.Mesh(wireGeo, wireMat);
     signatureGroup.add(wireMesh);
 
-    const solidGeo = buildWireMesh(initialWeights, 0, 0.95);
+    // Solid core layer
+    const solidGeo = buildSignatureGeometry({ weights: initialWeights, time: 0, resolution: 64, radius: 0.95 });
     const solidMat = new THREE.MeshStandardMaterial({ color: 0x050510, transparent: true, opacity: 0.8 });
     const solidMesh = new THREE.Mesh(solidGeo, solidMat);
     signatureGroup.add(solidMesh);
 
-    const trailLines = buildTrails(initialWeights, 0, 1.0);
-    trailLines.forEach(l => signatureGroup.add(l));
+    // Trail skeletons
+    const trailGeos = buildTrailGeometry(1.0, initialWeights, 0);
+    const trailMeshes = trailGeos.map((geo, i) => {
+      const planet = PLANETS[i % PLANETS.length];
+      const mat = new THREE.MeshStandardMaterial({ 
+        color: planet.color, 
+        transparent: true, 
+        opacity: 0.4,
+        emissive: planet.color,
+        emissiveIntensity: 0.5
+      });
+      const mesh = new THREE.Mesh(geo, mat);
+      signatureGroup.add(mesh);
+      return mesh;
+    });
 
     sceneRef.current = {
       renderer, scene, camera, frameId: 0,
-      signatureGroup, wireMesh, solidMesh, trailLines,
+      signatureGroup, wireMesh, solidMesh, trailMeshes,
       weights: initialWeights, targetWeights: initialWeights,
-      time: 0, mouseX: 0, mouseY: 0
+      time: 0
     };
 
     const animate = (t: number) => {
@@ -209,14 +160,36 @@ function Cymantics3DInner({ natalWeights, quizWeights, solarModulation, dominant
       s.signatureGroup.rotation.y += 0.002;
       s.signatureGroup.rotation.x += 0.001;
 
+      // Throttle geometry updates for performance
       if (Math.round(t / 16) % 3 === 0) {
-        s.wireMesh!.geometry.dispose();
-        s.wireMesh!.geometry = buildWireMesh(s.weights, t, 1.0);
+        const params: SignatureParams = { 
+          weights: s.weights, 
+          time: t, 
+          resolution: 64, 
+          radius: 1.0 
+        };
+
+        s.wireMesh.geometry.dispose();
+        s.wireMesh.geometry = buildSignatureGeometry(params);
         
-        s.trailLines.forEach(l => { s.signatureGroup.remove(l); l.geometry.dispose(); });
-        const newT = buildTrails(s.weights, t, 1.0);
-        newT.forEach(l => s.signatureGroup.add(l));
-        s.trailLines = newT;
+        s.solidMesh.geometry.dispose();
+        s.solidMesh.geometry = buildSignatureGeometry({ ...params, radius: 0.95 });
+
+        // Update trails
+        s.trailMeshes.forEach(m => {
+          s.signatureGroup.remove(m);
+          m.geometry.dispose();
+        });
+        const newTrailGeos = buildTrailGeometry(1.0, s.weights, t);
+        s.trailMeshes = newTrailGeos.map((geo, i) => {
+          const planet = PLANETS[i % PLANETS.length];
+          const mat = (s.trailMeshes[i]?.material as THREE.MeshStandardMaterial) || new THREE.MeshStandardMaterial({ 
+            color: planet.color, transparent: true, opacity: 0.4 
+          });
+          const mesh = new THREE.Mesh(geo, mat);
+          s.signatureGroup.add(mesh);
+          return mesh;
+        });
       }
 
       renderer.render(scene, camera);
