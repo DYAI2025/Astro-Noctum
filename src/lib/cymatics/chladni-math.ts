@@ -1,5 +1,9 @@
 import type { ChladniParams } from './bazi-to-chladni';
 
+export function lerp(a: number, b: number, t: number): number {
+  return a + (b - a) * t;
+}
+
 /**
  * Chladni equation — amplitude at point (x, y) on unit square [0,1]×[0,1].
  *

@@ -65,9 +65,8 @@ export default function App() {
   const [onboardingPhase, setOnboardingPhase] = useState<'form' | 'encounter' | 'signature' | 'done'>(() => {
     const saved = localStorage.getItem('bazodiac_onboarding_phase');
     if (saved && ['form', 'encounter', 'signature', 'done'].includes(saved)) {
-      return saved as any;
+      return saved as 'form' | 'encounter' | 'signature' | 'done';
     }
-    if (isFeatureEnabled('cosmic_encounter_v1')) return 'encounter';
     return 'form';
   });
 

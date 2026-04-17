@@ -13,7 +13,10 @@ import { toDimensionWeightsOrUndefined, toNatalWeightsOrUndefined } from '@/src/
 import { isFeatureEnabled } from '@/src/lib/feature-flags';
 import type { DissonanceResult } from '../../lib/fusion-ring/dissonance';
 import type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
-import { CymanticsSignature } from '../cymantics/CymanticsSignature';
+import type { ChladniParams } from '@/src/lib/cymatics/bazi-to-chladni';
+
+const SignaturV3Canvas = lazy(() => import('@/src/components/signatur-v3/SignaturV3Canvas'));
+const SignaturCymaticsCanvas = lazy(() => import('@/src/components/signatur-cymatics/SignaturCymaticsCanvas').then(m => ({ default: m.SignaturCymaticsCanvas })));
 
 export type FusionRing3DLabels = {
   regionLabel: string;
@@ -42,6 +45,8 @@ type FusionRing3DProps = {
   dayHarmonic?: DayHarmonicState | null;
   /** Planetarium (dark) or Solar System (bright) theme. Default: true (dark). */
   planetariumMode?: boolean;
+  /** Chladni params derived from user's BaZi chart. When provided and signature_engine_cymatics is enabled, the Cymatics engine is used. */
+  chladniParams?: ChladniParams;
 };
 
 type QueuedEffect = { id: string; type: RingEffectType };
@@ -82,6 +87,7 @@ export const FusionRing3D = ({
   externalDissonance,
   dayHarmonic,
   planetariumMode = true,
+  chladniParams,
 }: FusionRing3DProps) => {
   const prefersReducedMotion = useReducedMotion();
   const { signalData, events, resolution, loading, error } = useFusionSignal(userId);
@@ -102,6 +108,7 @@ export const FusionRing3D = ({
   const [queuedEffect, setQueuedEffect] = useState<QueuedEffect | null>(null);
   const lastEventRef = useRef<string>('');
   const [v2Failed, setV2Failed] = useState(false);
+  const [cymaticsFailed, setCymaticsFailed] = useState(false);
 
   const latestEvent = useMemo(() => pickLatestEvent(events), [events]);
 
@@ -137,7 +144,23 @@ export const FusionRing3D = ({
           </div>
         )}
 
-        {isFeatureEnabled('signature_engine_v3') && v3DimensionWeights ? (
+        {isFeatureEnabled('signature_engine_cymatics') && chladniParams && !cymaticsFailed ? (
+          <Suspense fallback={
+            <FusionRingWebsiteCanvas
+              queuedEffect={queuedEffect}
+              className="h-full w-full"
+              soulProfile={signalData?.baseSignals ?? null}
+              planetariumMode={planetariumMode}
+            />
+          }>
+            <SignaturCymaticsCanvas
+              params={chladniParams}
+              planetariumMode={planetariumMode}
+              onFailed={() => setCymaticsFailed(true)}
+              className="h-full w-full"
+            />
+          </Suspense>
+        ) : isFeatureEnabled('signature_engine_v3') && v3DimensionWeights ? (
           <Suspense fallback={
             <FusionRingWebsiteCanvas
               queuedEffect={queuedEffect}

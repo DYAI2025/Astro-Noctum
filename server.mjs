@@ -35,6 +35,64 @@ async function fetchWithRetry(url, options, maxRetries = 3, baseDelayMs = 2000) 
   throw lastError;
 }
 
+const SUPERGLUE_BASE_URL = (process.env.SUPERGLUE_BASE_URL || "https://api.superglue.ai/v1").replace(/\/$/, "");
+const SUPERGLUE_API_KEY = process.env.SUPERGLUE_API_KEY || null;
+
+async function triggerBazodiacUserChart(userId, forceRecalculate = false) {
+  if (!SUPERGLUE_API_KEY) {
+    throw new Error("superglue_not_configured");
+  }
+
+  const hookUrl = `${SUPERGLUE_BASE_URL}/hooks/bazodiac-user-chart?token=${encodeURIComponent(SUPERGLUE_API_KEY)}`;
+  const response = await fetch(hookUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      user_id: userId,
+      force_recalculate: Boolean(forceRecalculate),
+    }),
+    signal: AbortSignal.timeout(10000),
+  });
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    throw new Error(`superglue_hook_failed:${response.status}${body ? ` ${body.slice(0, 300)}` : ""}`);
+  }
+}
+
+function extractStoredChart(astroJson) {
+  if (!astroJson || typeof astroJson !== "object") return null;
+  const candidate = astroJson.bafe && typeof astroJson.bafe === "object" ? astroJson.bafe : astroJson;
+  if (!candidate || typeof candidate !== "object") return null;
+  return candidate;
+}
+
+async function waitForStoredChart(userId, maxAttempts = 8, waitMs = 750) {
+  if (!supabaseServer) return null;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const { data, error } = await supabaseServer
+      .from("astro_profiles")
+      .select("sun_sign, moon_sign, asc_sign, astro_json")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (!error && data) {
+      const storedChart = extractStoredChart(data.astro_json);
+      const hasCoreFields = !!(data.sun_sign && data.moon_sign && data.asc_sign);
+      if (storedChart && hasCoreFields) {
+        return { row: data, chart: storedChart };
+      }
+    }
+
+    if (attempt < maxAttempts - 1) {
+      await new Promise((resolve) => setTimeout(resolve, waitMs));
+    }
+  }
+
+  return null;
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
@@ -53,7 +111,7 @@ if (missing.length > 0) {
   console.warn(`[server] WARNING: Missing env vars (dev mode): ${missing.join(', ')}`);
 }
 
-const OPTIONAL_ENV_VARS = ['GEMINI_API_KEY', 'ELEVENLABS_TOOL_SECRET', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_BUY_ID'];
+const OPTIONAL_ENV_VARS = ['GEMINI_API_KEY', 'ELEVENLABS_TOOL_SECRET', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_BUY_ID', 'SUPERGLUE_API_KEY'];
 for (const v of OPTIONAL_ENV_VARS) {
   if (!process.env[v]) {
     console.warn(`[server] Optional env var not set: ${v} (some features may be degraded)`);
@@ -1955,10 +2013,9 @@ app.post('/api/impact/active', requireUserAuth, async (req, res) => {
  *
  * 1. Validate auth: requireUserAuth middleware checks Supabase JWT, attaches req.userId.
  * 2. Parse birth data: req.body must contain { date, time, lat, lon, tz }.
- * 3. Fetch chart from BAFE: POST to /chart with 15s AbortSignal timeout.
- *    Uses fetchWithRetry (max 3 attempts, exponential backoff: 2s → 4s → 8s).
- *    4xx from BAFE is NOT retried (client error). Network errors and 5xx are retried.
- *    If all retries fail: returns HTTP 502 to client.
+ * 3. Trigger Superglue chart calculation via bazodiac-user-chart webhook.
+ *    Polls astro_profiles for sun/moon/asc + astro_json (written by the worker).
+ *    Falls back to direct BAFE /chart only if Superglue data is not ready in time.
  * 4. Compute Master Signal: runs gcbBuilder + masterSignalBuilder on the BAFE chart.
  *    Projects the result to 12 soulprint_sectors (Float array, values 0–1).
  * 5. Persist soulprint: awaits Supabase astro_profiles.update({ soulprint_sectors }).
@@ -1975,43 +2032,56 @@ app.post('/api/experience/bootstrap', requireUserAuth, async (req, res) => {
     const { birth } = req.body;
     if (!birth) return res.status(400).json({ error: 'Missing birth data' });
 
-    // 1. Fetch Natal Chart from BAFE
-    const bafeRes = await fetchWithRetry(
-      `${BAFE_BASE_URL}/chart`,
-      {
-        method: "POST",
-        headers: bafeDirectHeaders(),
-        body: JSON.stringify({
-          birthDate: birth.date,
-          birthTime: birth.time,
-          lat: birth.lat,
-          lng: birth.lon,
-          timeZone: birth.tz
-        }),
-        // Reduced per-attempt timeout to keep total worst-case under typical client/proxy limits.
-        signal: AbortSignal.timeout(7000),
-      },
-      3,    // maxRetries
-      1000  // baseDelayMs (reduced to shorten overall backoff duration)
-    );
-
-    if (!bafeRes.ok) {
-        throw new Error(`BAFE responded with ${bafeRes.status}`);
+    // 1. Trigger Superglue tool first (required onboarding path)
+    try {
+      await triggerBazodiacUserChart(req.userId, false);
+    } catch (hookErr) {
+      console.error('[experience/bootstrap] Superglue hook failed:', hookErr?.message || hookErr);
+      return res.status(502).json({ error: 'superglue_unavailable' });
     }
-    const bafeData = await bafeRes.json();
 
-    // 2. Compute Master Signal (N + G)
+    // 2. Try to consume chart persisted by Superglue worker
+    let bafeData = null;
+    const stored = await waitForStoredChart(req.userId);
+    if (stored?.chart) {
+      bafeData = stored.chart;
+    } else {
+      console.warn('[experience/bootstrap] Superglue chart not ready, falling back to direct BAFE /chart for user', req.userId);
+      const bafeRes = await fetchWithRetry(
+        `${BAFE_BASE_URL}/chart`,
+        {
+          method: "POST",
+          headers: bafeDirectHeaders(),
+          body: JSON.stringify({
+            birthDate: birth.date,
+            birthTime: birth.time,
+            lat: birth.lat,
+            lng: birth.lon,
+            timeZone: birth.tz
+          }),
+          signal: AbortSignal.timeout(7000),
+        },
+        3,
+        1000
+      );
+      if (!bafeRes.ok) {
+        throw new Error(`BAFE responded with ${bafeRes.status}`);
+      }
+      bafeData = await bafeRes.json();
+    }
+
+    // 3. Compute Master Signal (N + G)
     const birthYear = parseInt(birth.date.substring(0, 4), 10);
     const nDim = computeNatalDimensions(bafeData);
     const qDim = zeroDimensions(); // No quiz yet
     const gcbDim = computeGCBDimensions(birthYear);
 
-    // 3. Project to Ring (Initial Soulprint)
+    // 4. Project to Ring (Initial Soulprint)
     const soulprintSectors = projectToRing(nDim, qDim, 1, 0);
 
     const narratives = generateNarratives(nDim, qDim, gcbDim, req.query.lang === 'en' ? 'en' : 'de');
 
-    // 4. Generate Blueprint
+    // 5. Generate Blueprint
     const signatureSeed = crypto.createHash('sha256').update(req.userId + Date.now().toString()).digest('hex').substring(0, 16);
 
     const profileData = {
@@ -2033,7 +2103,7 @@ app.post('/api/experience/bootstrap', requireUserAuth, async (req, res) => {
       meta: { engine_version: "master_signal_v1_js", generated_at: new Date().toISOString() }
     };
 
-    // 5. Save to Supabase
+    // 6. Save to Supabase
     let soulprint_saved = false;
     if (supabaseServer) {
       try {
