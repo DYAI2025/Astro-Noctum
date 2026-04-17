@@ -2,7 +2,7 @@ import { render, screen, act } from '@testing-library/react';
 import { vi, describe, it, expect } from 'vitest';
 
 vi.mock('@/src/lib/feature-flags', () => ({
-  isFeatureEnabled: (flag: string) => flag === 'signature_engine_v3' || flag === 'signature_engine_v2',
+  isFeatureEnabled: (flag: string) => flag === 'signature_engine_cymatics',
 }));
 const REVEAL_T_MAP: Record<string, string> = {
   'common.continue': 'Weiter',
@@ -31,6 +31,9 @@ vi.mock('@/src/components/fusion-ring-website/FusionRingCanvasV2', () => ({
 vi.mock('@/src/components/fusion-ring-website/FusionRingWebsiteCanvas', () => ({
   FusionRingWebsiteCanvas: (props: any) => <div data-testid="v1-canvas" />,
 }));
+vi.mock('@/src/components/signatur-cymatics/SignaturCymaticsCanvas', () => ({
+  SignaturCymaticsCanvas: (props: any) => <div data-testid="cymatics-canvas" />,
+}));
 
 import { SignatureReveal } from '@/src/components/onboarding/SignatureReveal';
 
@@ -43,9 +46,9 @@ const mockBootstrap = {
 };
 
 describe('SignatureReveal', () => {
-  it('renders V3 canvas as default (V3 flag enabled)', async () => {
+  it('renders Cymatics canvas as default', async () => {
     render(<SignatureReveal bootstrapData={mockBootstrap as any} onComplete={vi.fn()} />);
-    expect(await screen.findByTestId('v3-canvas')).toBeDefined();
+    expect(await screen.findByTestId('cymatics-canvas')).toBeDefined();
   });
 
   it('does NOT render quiz options', async () => {

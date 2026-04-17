@@ -14,6 +14,7 @@ import { isFeatureEnabled } from '@/src/lib/feature-flags';
 import type { DissonanceResult } from '../../lib/fusion-ring/dissonance';
 import type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
 import type { ChladniParams } from '@/src/lib/cymatics/bazi-to-chladni';
+import { sectorsToChladniParams } from '@/src/lib/cymatics/signatur-to-chladni';
 
 const SignaturV3Canvas = lazy(() => import('@/src/components/signatur-v3/SignaturV3Canvas'));
 const SignaturCymaticsCanvas = lazy(() => import('@/src/components/signatur-cymatics/SignaturCymaticsCanvas').then(m => ({ default: m.SignaturCymaticsCanvas })));
@@ -104,6 +105,10 @@ export const FusionRing3D = ({
     () => toDimensionWeightsOrUndefined(signalData?.baseSignals),
     [signalData?.baseSignals]
   );
+  const liveChladniParams = useMemo(
+    () => chladniParams ?? sectorsToChladniParams(signalData?.baseSignals),
+    [chladniParams, signalData?.baseSignals],
+  );
 
   const [queuedEffect, setQueuedEffect] = useState<QueuedEffect | null>(null);
   const lastEventRef = useRef<string>('');
@@ -144,7 +149,7 @@ export const FusionRing3D = ({
           </div>
         )}
 
-        {isFeatureEnabled('signature_engine_cymatics') && chladniParams && !cymaticsFailed ? (
+        {isFeatureEnabled('signature_engine_cymatics') && !cymaticsFailed ? (
           <Suspense fallback={
             <FusionRingWebsiteCanvas
               queuedEffect={queuedEffect}
@@ -154,7 +159,7 @@ export const FusionRing3D = ({
             />
           }>
             <SignaturCymaticsCanvas
-              params={chladniParams}
+              params={liveChladniParams}
               planetariumMode={planetariumMode}
               onFailed={() => setCymaticsFailed(true)}
               className="h-full w-full"

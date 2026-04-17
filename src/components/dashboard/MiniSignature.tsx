@@ -4,8 +4,9 @@ import type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
 import type { DissonanceResult } from '../../lib/fusion-ring/dissonance';
 import type { SolarModulation } from '../signatur-v3/bipolar-engine';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { dimensionWeightsToChladniParams } from '../../lib/cymatics/signatur-to-chladni';
 
-const SignaturV3Canvas = lazy(() => import('../signatur-v3/SignaturV3Canvas'));
+const SignaturCymaticsCanvas = lazy(() => import('../signatur-cymatics/SignaturCymaticsCanvas').then(m => ({ default: m.SignaturCymaticsCanvas })));
 
 interface MiniSignatureProps {
   natalWeights?: Record<string, number>;
@@ -19,7 +20,7 @@ interface MiniSignatureProps {
 
 const EMPTY_WEIGHTS: Record<string, number> = {};
 
-export default function MiniSignature({ natalWeights, quizWeights, dayHarmonic, externalDissonance, solarModulation, loading, onExpand }: MiniSignatureProps) {
+export default function MiniSignature({ natalWeights, quizWeights, loading, onExpand }: MiniSignatureProps) {
   const { t } = useLanguage();
   const hasData = natalWeights && Object.keys(natalWeights).length > 0;
 
@@ -65,12 +66,8 @@ export default function MiniSignature({ natalWeights, quizWeights, dayHarmonic, 
         ) : (
           <div className="absolute inset-0 scale-125 group-hover:scale-150 transition-transform duration-1000">
             <Suspense fallback={<div className="w-full h-full opacity-20 rounded-full animate-pulse" />}>
-              <SignaturV3Canvas
-                natalWeights={natalWeights ?? EMPTY_WEIGHTS}
-                quizWeights={quizWeights ?? EMPTY_WEIGHTS}
-                dayHarmonic={dayHarmonic ?? undefined}
-                externalDissonance={externalDissonance}
-                solarModulation={solarModulation}
+              <SignaturCymaticsCanvas
+                params={dimensionWeightsToChladniParams((quizWeights ?? natalWeights) ?? EMPTY_WEIGHTS)}
                 className="w-full h-full"
               />
             </Suspense>

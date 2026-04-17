@@ -6,9 +6,9 @@
 const FLAGS = {
   signature_onboarding_v1: true,
   daily_modal_v1: true,
-  signature_engine_v2: true,
-  signature_engine_v3: true,
-  signature_engine_cymatics: false,
+  signature_engine_v2: false,
+  signature_engine_v3: false,
+  signature_engine_cymatics: true,
   sky_jieqi_banner: true,
   sky_flare_timeline: true,
   sky_aurora_layer: true,

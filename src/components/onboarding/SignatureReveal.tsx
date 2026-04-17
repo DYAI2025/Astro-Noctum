@@ -3,10 +3,12 @@ import { motion, AnimatePresence } from 'motion/react';
 import type { BootstrapResponse, SignatureDeltaResponse } from '@/src/lib/schemas/experience';
 import { isFeatureEnabled } from '@/src/lib/feature-flags';
 import { toDimensionWeightsOrUndefined, toNatalWeightsOrUndefined } from '@/src/lib/signatur/weight-utils';
+import { sectorsToChladniParams } from '@/src/lib/cymatics/signatur-to-chladni';
 import { useLanguage } from '@/src/contexts/LanguageContext';
 
 const SignaturV3Canvas = lazy(() => import('@/src/components/signatur-v3/SignaturV3Canvas'));
 const FusionRingCanvasV2 = lazy(() => import('@/src/components/fusion-ring-website/FusionRingCanvasV2'));
+const SignaturCymaticsCanvas = lazy(() => import('@/src/components/signatur-cymatics/SignaturCymaticsCanvas').then(m => ({ default: m.SignaturCymaticsCanvas })));
 const FusionRingWebsiteCanvas = lazy(() => import('@/src/components/fusion-ring-website/FusionRingWebsiteCanvas').then(m => ({ default: m.FusionRingWebsiteCanvas })));
 
 const DEFAULT_SECTORS = Array(12).fill(0.5);
@@ -32,6 +34,7 @@ export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: 
 
   const useV3 = isFeatureEnabled('signature_engine_v3');
   const useV2 = !useV3 && isFeatureEnabled('signature_engine_v2') && canRunV2();
+  const useCymatics = isFeatureEnabled('signature_engine_cymatics');
   const sectors = bootstrapData.soulprint_sectors?.length === 12
     ? bootstrapData.soulprint_sectors
     : DEFAULT_SECTORS;
@@ -41,6 +44,10 @@ export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: 
   const natalWeights = useMemo(() => toNatalWeightsOrUndefined(sectors), [sectors]);
   const dimensionWeights = useMemo(() => toDimensionWeightsOrUndefined(sectors), [sectors]);
   const neutralDimensionWeights = useMemo(() => toDimensionWeightsOrUndefined(DEFAULT_SECTORS) ?? {}, []);
+  const cymaticsParams = useMemo(
+    () => sectorsToChladniParams(revealProgress > 0 ? sectors : DEFAULT_SECTORS),
+    [revealProgress, sectors],
+  );
 
   // Morph animation: neutral -> personal over 2s, then show button at 3s
   useEffect(() => {
@@ -54,7 +61,12 @@ export function SignatureReveal({ bootstrapData, onComplete, bootstrapFailed }: 
       {/* Ring container — round clipped */}
       <div className="w-[200px] h-[200px] rounded-full overflow-hidden relative">
         <Suspense fallback={<div className="w-full h-full bg-[#010409]" />}>
-          {useV3 ? (
+          {useCymatics ? (
+            <SignaturCymaticsCanvas
+              params={cymaticsParams}
+              className="w-full h-full"
+            />
+          ) : useV3 ? (
             <SignaturV3Canvas
               natalWeights={(revealProgress > 0 ? dimensionWeights : neutralDimensionWeights) || neutralDimensionWeights}
               quizWeights={{}}
