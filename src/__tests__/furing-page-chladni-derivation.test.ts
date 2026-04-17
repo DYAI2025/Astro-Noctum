@@ -51,10 +51,10 @@ describe('FuRingPage chladniParams guard conditions', () => {
 
 describe('FuRingPage harmony_index extraction', () => {
   /** Mirrors: const rawHarmony = apiData?.wuxing?.['harmony_index'];
-   *            const harmonyIndex = typeof rawHarmony === 'number' ? rawHarmony : 0.5; */
+   *            const harmonyIndex = Number.isFinite(rawHarmony as number) ? ... : 0.5; */
   function extractHarmony(wuxing: Record<string, unknown>): number {
     const raw = wuxing['harmony_index'];
-    return typeof raw === 'number' ? raw : 0.5;
+    return Number.isFinite(raw as number) ? (raw as number) : 0.5;
   }
 
   it('uses 0.5 when wuxing has no harmony_index field', () => {
@@ -68,6 +68,10 @@ describe('FuRingPage harmony_index extraction', () => {
   it('falls back to 0.5 when harmony_index is non-numeric', () => {
     expect(extractHarmony({ harmony_index: 'high' })).toBe(0.5);
     expect(extractHarmony({ harmony_index: null })).toBe(0.5);
+  });
+
+  it('falls back to 0.5 when harmony_index is NaN (typeof NaN === "number")', () => {
+    expect(extractHarmony({ harmony_index: NaN })).toBe(0.5);
   });
 
   it('derived params differ with different harmony_index values', () => {

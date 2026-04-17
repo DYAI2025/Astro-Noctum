@@ -115,9 +115,9 @@ export default function FuRingPage() {
     const wuxingWeights = apiData?.wuxing?.elements;
     if (!pillars || !wuxingWeights) return undefined;
     const rawHarmony = apiData?.wuxing?.['harmony_index'];
-    const harmonyIndex = typeof rawHarmony === 'number' ? rawHarmony : 0.5;
+    const harmonyIndex = Number.isFinite(rawHarmony as number) ? (rawHarmony as number) : 0.5;
     return baziToChladniParams(pillars, wuxingWeights, harmonyIndex);
-  }, [apiData?.bazi?.pillars, apiData?.wuxing?.elements, apiData?.wuxing]);
+  }, [apiData?.bazi?.pillars, apiData?.wuxing]);
 
   // Cousto audio — dimension weights drive oscillator gains
   const audioWeights = useMemo(
