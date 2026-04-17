@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { ChladniParams } from '../../lib/cymatics/bazi-to-chladni';
 import { ELEMENT_COLORS } from '../../lib/cymatics/bazi-to-chladni';
-import { chladni } from '../../lib/cymatics/chladni-math';
+import { chladni, lerp } from '../../lib/cymatics/chladni-math';
 
 const N_PARTICLES = 16_000;
 const MAX_SIZE = 600;
@@ -22,10 +22,6 @@ const SCATTER_FRAMES = 90;
 function hexToRgb(hex: string): [number, number, number] {
   const h = hex.replace('#', '');
   return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
-}
-
-function lerp(a: number, b: number, t: number): number {
-  return a + (b - a) * t;
 }
 
 export interface SignaturCymaticsCanvasProps {
