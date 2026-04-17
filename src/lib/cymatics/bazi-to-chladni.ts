@@ -174,7 +174,10 @@ function sectorsToTarget(sectors: number[]): ChladniParams {
   const harmonyIndex = clamp(1 - variance / 0.25, 0, 1);
 
   const a = 0.3 + harmonyIndex * 0.7; // 0.30..1.00
-  const b = clamp(1.0 - a * 0.6, 0.1, 0.7); // 0.40..0.82, clamped into declared range
+  // b clamped to [0.1, 0.7] for visual legibility.
+  // Theoretical range from REQ-F-signatur-cymatics formula b = 1 - a*0.6 with a ∈ [0.3, 1.0] is [0.40, 0.82],
+  // but the Chladni canvas reads too chaotic near 0.82, so we clamp tighter here.
+  const b = clamp(1.0 - a * 0.6, 0.1, 0.7);
 
   // Dominant element: sum sectors per element, pick the max
   const elementSums: Record<WuxingElement, number> = {

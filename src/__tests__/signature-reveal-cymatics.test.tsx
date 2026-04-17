@@ -13,6 +13,11 @@ import { render, screen, act } from '@testing-library/react';
 import { vi, describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import type { ComponentProps } from 'react';
+import type { ChladniParams } from '@/src/lib/cymatics/bazi-to-chladni';
+import type { BootstrapResponse } from '@/src/lib/schemas/experience';
+import type { SignaturCymaticsCanvas as SignaturCymaticsCanvasType } from '@/src/components/signatur-cymatics/SignaturCymaticsCanvas';
+import type { CymaticsFallback as CymaticsFallbackType } from '@/src/components/signatur-cymatics/CymaticsFallback';
 
 // Language context — minimal translation stub
 const REVEAL_T_MAP: Record<string, string> = {
@@ -28,9 +33,9 @@ vi.mock('@/src/contexts/LanguageContext', () => ({
 }));
 
 // Mock the Cymatics canvas so we can inspect props without running WebGL/Canvas2D.
-const lastParamsRef = { current: null as any };
+const lastParamsRef: { current: ChladniParams | null } = { current: null };
 vi.mock('@/src/components/signatur-cymatics/SignaturCymaticsCanvas', () => ({
-  SignaturCymaticsCanvas: (props: any) => {
+  SignaturCymaticsCanvas: (props: ComponentProps<typeof SignaturCymaticsCanvasType>) => {
     lastParamsRef.current = props.params;
     return <div data-testid="cymatics-canvas" data-m={props.params?.m} data-n={props.params?.n} data-a={props.params?.a} />;
   },
@@ -38,7 +43,7 @@ vi.mock('@/src/components/signatur-cymatics/SignaturCymaticsCanvas', () => ({
 
 // Mock CymaticsFallback so we can detect it
 vi.mock('@/src/components/signatur-cymatics/CymaticsFallback', () => ({
-  CymaticsFallback: (props: any) => (
+  CymaticsFallback: (props: ComponentProps<typeof CymaticsFallbackType>) => (
     <div data-testid="cymatics-fallback" data-element={props.dominantElement} />
   ),
 }));
@@ -56,7 +61,7 @@ vi.mock('@/src/components/fusion-ring-website/FusionRingWebsiteCanvas', () => ({
 
 import { SignatureReveal } from '@/src/components/onboarding/SignatureReveal';
 
-const mockBootstrap = {
+const mockBootstrap: BootstrapResponse = {
   profile: { sun_sign: 'Aries', moon_sign: 'Cancer', ascendant_sign: 'Leo', day_master: 'Wood', harmony_index: 0.8 },
   soulprint_sectors: [0.9, 0.2, 0.3, 0.8, 0.1, 0.5, 0.6, 0.7, 0.9, 0.2, 0.3, 0.4],
   narratives: { core_summary: '', context_summary: '', integration_summary: '' },
@@ -64,9 +69,17 @@ const mockBootstrap = {
   meta: { engine_version: 'test' },
 };
 
-const mockBootstrapNoSectors = {
-  ...mockBootstrap,
-  soulprint_sectors: undefined as any,
+// Intentionally shaped to exercise the runtime fallback when soulprint_sectors is absent.
+// The schema requires a 12-array, but the component defensively handles the undefined case —
+// so we omit the field rather than cast, keeping the test fixture typed with no `any`.
+type BootstrapWithoutSectors = Omit<BootstrapResponse, 'soulprint_sectors'> &
+  Partial<Pick<BootstrapResponse, 'soulprint_sectors'>>;
+
+const mockBootstrapNoSectors: BootstrapWithoutSectors = {
+  profile: mockBootstrap.profile,
+  narratives: mockBootstrap.narratives,
+  signature_blueprint: mockBootstrap.signature_blueprint,
+  meta: mockBootstrap.meta,
 };
 
 /** Flush React.lazy / Suspense microtasks */
@@ -78,13 +91,13 @@ async function flushLazy(ticks = 20) {
 
 describe('SignatureReveal — Cymatics-only rendering (Phase C1)', () => {
   it('renders SignaturCymaticsCanvas when soulprint_sectors present', async () => {
-    render(<SignatureReveal bootstrapData={mockBootstrap as any} onComplete={vi.fn()} />);
+    render(<SignatureReveal bootstrapData={mockBootstrap} onComplete={vi.fn()} />);
     await flushLazy();
     expect(screen.getByTestId('cymatics-canvas')).toBeDefined();
   });
 
   it('never renders V1, V2, or V3 canvases', async () => {
-    render(<SignatureReveal bootstrapData={mockBootstrap as any} onComplete={vi.fn()} />);
+    render(<SignatureReveal bootstrapData={mockBootstrap} onComplete={vi.fn()} />);
     await flushLazy();
     expect(screen.queryByTestId('v1-canvas-should-not-appear')).toBeNull();
     expect(screen.queryByTestId('v2-canvas-should-not-appear')).toBeNull();
@@ -92,7 +105,9 @@ describe('SignatureReveal — Cymatics-only rendering (Phase C1)', () => {
   });
 
   it('falls back to CymaticsFallback when soulprint_sectors is missing', async () => {
-    render(<SignatureReveal bootstrapData={mockBootstrapNoSectors as any} onComplete={vi.fn()} />);
+    // Intentional cast: exercising the runtime fallback when soulprint_sectors is missing
+    // at runtime (e.g. from a stale cache). The component defends against this case.
+    render(<SignatureReveal bootstrapData={mockBootstrapNoSectors as BootstrapResponse} onComplete={vi.fn()} />);
     await flushLazy();
     // Fallback branch — no canvas, just fallback.
     expect(screen.queryByTestId('cymatics-canvas')).toBeNull();
@@ -102,7 +117,7 @@ describe('SignatureReveal — Cymatics-only rendering (Phase C1)', () => {
   it('starts with neutral ChladniParams at revealProgress=0 (m=3, n=3, a≈0.4)', async () => {
     vi.useFakeTimers();
     try {
-      render(<SignatureReveal bootstrapData={mockBootstrap as any} onComplete={vi.fn()} />);
+      render(<SignatureReveal bootstrapData={mockBootstrap} onComplete={vi.fn()} />);
       // React effects still run with fake timers; flush the Suspense promise without advancing timers.
       await act(async () => { await Promise.resolve(); });
       await act(async () => { await Promise.resolve(); });
@@ -121,7 +136,7 @@ describe('SignatureReveal — Cymatics-only rendering (Phase C1)', () => {
   it('morphs to weight-derived params by revealProgress=1', async () => {
     vi.useFakeTimers();
     try {
-      render(<SignatureReveal bootstrapData={mockBootstrap as any} onComplete={vi.fn()} />);
+      render(<SignatureReveal bootstrapData={mockBootstrap} onComplete={vi.fn()} />);
       await act(async () => { await Promise.resolve(); });
       await act(async () => { await Promise.resolve(); });
       await act(async () => { await Promise.resolve(); });
