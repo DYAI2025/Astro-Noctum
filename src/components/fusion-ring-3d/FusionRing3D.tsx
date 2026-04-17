@@ -1,21 +1,19 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useReducedMotion } from 'motion/react';
 
 import { useFusionSignal } from '@/src/hooks/useFusionSignal';
 import { useSpaceWeather } from '@/src/hooks/useSpaceWeather';
-import type { TransitEvent } from '@/src/lib/schemas/transit-state';
-import {
-  FusionRingWebsiteCanvas,
-  type RingEffectType,
-} from '@/src/components/fusion-ring-website/FusionRingWebsiteCanvas';
-import FusionRingCanvasV2 from '@/src/components/fusion-ring-website/FusionRingCanvasV2';
-import { toDimensionWeightsOrUndefined, toNatalWeightsOrUndefined } from '@/src/lib/signatur/weight-utils';
-import { isFeatureEnabled } from '@/src/lib/feature-flags';
+import { CymaticsFallback } from '@/src/components/signatur-cymatics/CymaticsFallback';
 import type { DissonanceResult } from '../../lib/fusion-ring/dissonance';
 import type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
 import type { ChladniParams } from '@/src/lib/cymatics/bazi-to-chladni';
 
-const SignaturV3Canvas = lazy(() => import('@/src/components/signatur-v3/SignaturV3Canvas'));
+// Cymatics is the only renderer now. V1/V2/V3 paths were removed on 2026-04-18
+// because the legacy engines were shadowing the Cymatics signature — whenever
+// chladniParams was undefined (still loading, or bazi data missing) the page
+// fell through to V3 and the user never saw the new engine.
+// If chladniParams is undefined or Canvas2D fails, we show CymaticsFallback
+// (CSS/SVG static Chladni pattern) rather than a different renderer.
 const SignaturCymaticsCanvas = lazy(() => import('@/src/components/signatur-cymatics/SignaturCymaticsCanvas').then(m => ({ default: m.SignaturCymaticsCanvas })));
 
 export type FusionRing3DLabels = {
@@ -35,98 +33,41 @@ type FusionRing3DProps = {
   userId: string;
   isInteractive?: boolean;
   labels: FusionRing3DLabels;
+  /** @deprecated legacy V2/V3 prop — ignored. Kept on the interface for call-site stability. */
   quizWeights?: Record<string, number>;
+  /** @deprecated legacy V2 prop — ignored. */
   effectTrigger?: { type: string; color?: string; timestamp: number; intensity?: number } | null;
+  /** @deprecated legacy V2/V3 prop — ignored. */
   solarModulation?: number;
+  /** @deprecated legacy V2 prop — ignored. */
   dissonanceModulation?: import('../../lib/fusion-ring/dissonance-visual').VisualModulation | null;
-  /** External dissonance result for V3 engine */
+  /** @deprecated legacy V3 prop — ignored. */
   externalDissonance?: DissonanceResult | null;
-  /** Day harmonic state for V3 engine */
+  /** @deprecated legacy V3 prop — ignored. */
   dayHarmonic?: DayHarmonicState | null;
   /** Planetarium (dark) or Solar System (bright) theme. Default: true (dark). */
   planetariumMode?: boolean;
-  /** Chladni params derived from user's BaZi chart. When provided and signature_engine_cymatics is enabled, the Cymatics engine is used. */
+  /** Chladni params derived from user's BaZi chart. When undefined, CymaticsFallback is shown. */
   chladniParams?: ChladniParams;
-};
-
-type QueuedEffect = { id: string; type: RingEffectType };
-
-const mapTransitEventToEffect = (event: TransitEvent): RingEffectType => {
-  const delta = event.delta ?? 0;
-
-  switch (event.type) {
-    case 'resonance_jump':
-      if (delta >= 0.3) return 'divergenz_spike';
-      return 'resonanzsprung';
-    case 'cluster_complete':
-      return delta >= 0.25 ? 'korona_eruption' : 'dominanzwechsel';
-    case 'equilibrium_shift':
-      return delta < 0 ? 'crunch' : 'spannungsachse';
-    default:
-      if (delta >= 0.35) return 'burst';
-      if (delta <= -0.18) return 'crunch';
-      return 'mond_event';
-  }
-};
-
-const pickLatestEvent = (events: TransitEvent[]): TransitEvent | null => {
-  if (!events.length) return null;
-  return [...events]
-    .sort((a, b) => (a.timestamp ?? 0) - (b.timestamp ?? 0))
-    .at(-1) ?? null;
 };
 
 export const FusionRing3D = ({
   userId,
-  isInteractive = false,
   labels,
-  quizWeights,
-  effectTrigger,
-  solarModulation,
-  dissonanceModulation,
-  externalDissonance,
-  dayHarmonic,
   planetariumMode = true,
   chladniParams,
 }: FusionRing3DProps) => {
   const prefersReducedMotion = useReducedMotion();
-  const { signalData, events, resolution, loading, error } = useFusionSignal(userId);
+  // Hooks kept alive so the DEV panel keeps showing resolution/Kp and the
+  // loading state. None of their output drives the renderer any more.
+  const { signalData, resolution, loading, error } = useFusionSignal(userId);
   const { kpIndex } = useSpaceWeather();
 
-  const v2NatalWeights = useMemo(() => {
-    const sectors = signalData?.targetSignals ?? signalData?.baseSignals;
-    if (!sectors) return undefined;
-    const clamped = sectors.map(v => Math.max(0, Math.min(1, v)));
-    return toNatalWeightsOrUndefined(clamped);
-  }, [signalData?.targetSignals, signalData?.baseSignals]);
-
-  const v3DimensionWeights = useMemo(
-    () => toDimensionWeightsOrUndefined(signalData?.baseSignals),
-    [signalData?.baseSignals]
-  );
-
-  const [queuedEffect, setQueuedEffect] = useState<QueuedEffect | null>(null);
-  const lastEventRef = useRef<string>('');
-  const [v2Failed, setV2Failed] = useState(false);
   const [cymaticsFailed, setCymaticsFailed] = useState(false);
 
-  const latestEvent = useMemo(() => pickLatestEvent(events), [events]);
-
-  useEffect(() => {
-    if (!latestEvent) return;
-    const eventKey = `${latestEvent.id}:${latestEvent.timestamp ?? 'no-ts'}`;
-    if (eventKey === lastEventRef.current) return;
-    lastEventRef.current = eventKey;
-    setQueuedEffect({
-      id: eventKey,
-      type: mapTransitEventToEffect(latestEvent),
-    });
-  }, [latestEvent]);
-
   const resolutionText = `${labels.resolution}: ${Math.round(resolution)}%`;
-  const eventDescription = latestEvent
-    ? `${labels.eventAnnouncePrefix}: ${latestEvent.type} · S${latestEvent.sector + 1} · Letzte Änderung: ${latestEvent.delta >= 0 ? '+' : ''}${latestEvent.delta.toFixed(2)}`
-    : labels.latestEvents;
+
+  const showCymatics = chladniParams && !cymaticsFailed;
 
   return (
     <section
@@ -137,20 +78,19 @@ export const FusionRing3D = ({
           : 'border-slate-200 bg-[#f1f5f9]'
       }`}
     >
-      <div className="relative h-[55vh] min-h-[340px] w-full max-h-[700px] sm:h-[62vh] sm:min-h-[420px] sm:max-h-[760px]">
+      <div className="relative flex h-[55vh] min-h-[340px] w-full max-h-[700px] items-center justify-center sm:h-[62vh] sm:min-h-[420px] sm:max-h-[760px]">
         {loading && !signalData && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/45 text-xs uppercase tracking-[0.2em] text-white/70">
             {labels.loading}
           </div>
         )}
 
-        {isFeatureEnabled('signature_engine_cymatics') && chladniParams && !cymaticsFailed ? (
+        {showCymatics ? (
           <Suspense fallback={
-            <FusionRingWebsiteCanvas
-              queuedEffect={queuedEffect}
-              className="h-full w-full"
-              soulProfile={signalData?.baseSignals ?? null}
+            <CymaticsFallback
+              dominantElement={chladniParams.dominantElement}
               planetariumMode={planetariumMode}
+              className="h-full w-full"
             />
           }>
             <SignaturCymaticsCanvas
@@ -160,51 +100,22 @@ export const FusionRing3D = ({
               className="h-full w-full"
             />
           </Suspense>
-        ) : isFeatureEnabled('signature_engine_v3') && v3DimensionWeights ? (
-          <Suspense fallback={
-            <FusionRingWebsiteCanvas
-              queuedEffect={queuedEffect}
-              className="h-full w-full"
-              soulProfile={signalData?.baseSignals ?? null}
-              planetariumMode={planetariumMode}
-            />
-          }>
-            <SignaturV3Canvas
-              natalWeights={v3DimensionWeights}
-              quizWeights={quizWeights ?? v3DimensionWeights}
-              dayHarmonic={dayHarmonic ?? undefined}
-              externalDissonance={externalDissonance}
-              solarModulation={solarModulation != null ? { ringModulation: solarModulation, triggerEffect: kpIndex >= 5, kpIndex } : undefined}
-              className="h-full w-full"
-              quality="auto"
-            />
-          </Suspense>
-        ) : isFeatureEnabled('signature_engine_v2') && !v2Failed ? (
-          <FusionRingCanvasV2
-            natalWeights={v2NatalWeights}
-            quizWeights={quizWeights}
-            effectTrigger={effectTrigger}
-            solarModulation={solarModulation}
-            dissonanceModulation={dissonanceModulation}
-            className="h-full w-full"
-            onFailed={() => setV2Failed(true)}
-            planetariumMode={planetariumMode}
-          />
         ) : (
-          <FusionRingWebsiteCanvas
-            queuedEffect={queuedEffect}
-            className="h-full w-full"
-            soulProfile={signalData?.baseSignals ?? null}
+          // No chladniParams yet (bazi data still loading / unavailable) or
+          // Canvas2D failed — show the static SVG fallback, *never* a legacy
+          // engine. Dominant element defaults to Water inside the fallback.
+          <CymaticsFallback
+            dominantElement={chladniParams?.dominantElement}
             planetariumMode={planetariumMode}
+            className="h-full w-full"
           />
         )}
       </div>
 
       {!!import.meta.env.DEV && (
-        <div className="grid gap-2 border-t border-white/10 bg-black/30 px-4 py-3 text-xs text-white/75 md:grid-cols-3 md:px-5">
+        <div className="grid gap-2 border-t border-white/10 bg-black/30 px-4 py-3 text-xs text-white/75 md:grid-cols-2 md:px-5">
           <p>{resolutionText}</p>
           <p>{`Kp: ${kpIndex.toFixed(1)}`}</p>
-          <p className="truncate">{eventDescription}</p>
         </div>
       )}
 
@@ -214,7 +125,7 @@ export const FusionRing3D = ({
         </p>
       )}
 
-      {/* Transit API errors are handled silently — V1 canvas renders with defaults when data is unavailable */}
+      {/* Transit API errors are handled silently — Cymatics renderer does not depend on transit data */}
       {!!error && import.meta.env.DEV && (
         <p className="border-t border-yellow-400/20 bg-yellow-950/10 px-4 py-2 text-xs text-yellow-200/60">
           {labels.renderError}
