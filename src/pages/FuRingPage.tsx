@@ -35,6 +35,7 @@ import { useFluidityLevel } from '@/src/hooks/useFluidityLevel';
 import { SpaceWeatherPanel } from '@/src/components/signatur/SpaceWeatherPanel';
 import { TransitResonancePanels } from '@/src/components/signatur/TransitResonancePanels';
 import { CymaticsFrequencyPanel } from '@/src/components/signatur-cymatics/CymaticsFrequencyPanel';
+import { ChladniParamsBadge } from '@/src/components/signatur-cymatics/ChladniParamsBadge';
 import { isFeatureEnabled } from '@/src/lib/feature-flags';
 
 export default function FuRingPage() {
@@ -307,7 +308,7 @@ export default function FuRingPage() {
 
           {/* Ring — intuitive side */}
           <motion.div
-            className="min-w-0 flex-1"
+            className="flex min-w-0 flex-1 flex-col gap-3"
             animate={fluidityTier >= 1 ? { scale: [1, 1.005, 1] } : undefined}
             transition={fluidityTier >= 1 ? { duration: 6, repeat: Infinity, ease: 'easeInOut' } : undefined}
           >
@@ -334,6 +335,12 @@ export default function FuRingPage() {
                 eventAnnouncePrefix: t('furing3d.eventAnnouncePrefix'),
               }}
             />
+            {isFeatureEnabled('signature_engine_cymatics') && chladniParams && (
+              <ChladniParamsBadge
+                params={chladniParams}
+                planetariumMode={planetariumMode}
+              />
+            )}
           </motion.div>
 
           {/* Space Weather Panel — scientific side (desktop: right column, mobile: below ring) */}
