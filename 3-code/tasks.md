@@ -41,6 +41,85 @@
 
 ---
 
+## Phase: Sprint S-SOULPRINT-HOTFIX — Soulprint Persist Fix (Default-Signatur Root-Cause)
+
+**Sprint Goal:** Fix des Default-Signatur-Symptoms. Root-Cause entdeckt 2026-04-18 während TASK-supg1-supabase-hypothesis: `server.mjs` L2113-2118 nutzt `.update().eq('user_id')` statt `.upsert()`, scheitert für 100% der User (Race Condition — astro_profiles-Zeile wird erst nachgelagert durch Superglue-Worker erstellt). 50/50 prod astro_profiles haben `soulprint_sectors = NULL` → Frontend lädt NULL → Default-Signatur. Fix: upsert-Pattern + Backfill-Script. **Priorität: geht S-SUPERGLUE-STAGE1 voraus**, weil das der eigentliche User-Bug ist. Goal: [GOAL-soulprint-persistence](../1-objectives/goals/GOAL-soulprint-persistence.md). Requirement: [REQ-REL-soulprint-persist-onboarding](../1-objectives/requirements/REQ-REL-soulprint-persist-onboarding.md).
+
+### Phase 1 — Fix Bootstrap Upsert
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-sphx-bootstrap-upsert | Bootstrap-Persistenz in `server.mjs` umschreiben: `.update({ soulprint_sectors }).eq('user_id', req.userId).select('user_id')` → `.upsert({ user_id: req.userId, soulprint_sectors }, { onConflict: 'user_id' }).select('user_id')`. Inline-Kommentar: Root-Cause-Hinweis (Race Condition mit Superglue-Worker) + Begründung für upsert. | P1 | Done | [REQ-REL-soulprint-persist-onboarding](../1-objectives/requirements/REQ-REL-soulprint-persist-onboarding.md) | - | 2026-04-18 | 3-Zeilen-Fix (+ 7-Zeilen-Kommentar mit DEC-synthetic-soulprint-fallback-Ref); `npx tsc --noEmit` grün; keine anderen Logic-Changes. |
+| TASK-sphx-verify-no-overwrite | `triggerBazodiacUserChart` (L41-61) + `waitForStoredChart` Verhalten analysieren: schreibt der Superglue-Worker in seinem nachgelagerten Payload jemals `soulprint_sectors` (als `null` oder `undefined`)? Wenn ja → Bootstrap-Fix wird bei Race wieder kaputt, braucht zusätzliche Guardrail. Ergebnis als kurzes Findings-Memo unter Sprint-Notes dokumentieren. | P1 | Done | [REQ-REL-soulprint-persist-onboarding](../1-objectives/requirements/REQ-REL-soulprint-persist-onboarding.md) | - | 2026-04-19 | **Findings 2026-04-19:** Code-Analyse server.mjs L41-94 zeigt: (1) `triggerBazodiacUserChart` sendet nur `{ user_id, force_recalculate }` an Superglue-Webhook, konsumiert Response-Body nicht; (2) `waitForStoredChart` pollt nur auf `sun_sign, moon_sign, asc_sign, astro_json` — liest `soulprint_sectors` nie; (3) `extractStoredChart` (L63-68) verarbeitet nur BAFE-Chart-Daten (`astroJson.bafe` oder `astroJson`), kein Soulprint. **Fazit:** Server-Pfad berührt `soulprint_sectors` auf dem Superglue-Arm nirgends. Das Superglue-Tool heißt `bazodiac-user-chart` → schreibt `astro_json` + Basis-Signs, vermutlich nicht die soulprint-Spalte (die ist unsere Projektion). **Unknown Residual Risk:** ob Superglue INSERT mit unique-violation-silently-fails oder UPSERT mit targeted SET ausführt — empirisch per TASK-sphx-integration-test post-deploy verifizierbar (Test-User onboarden, 30s warten bis Superglue-Write landet, `soulprint_sectors` re-query: muss Array bleiben, nicht wieder NULL). **Pre-Deploy nicht-blockierend** — Bootstrap-Fix darf gehen. |
+| TASK-sphx-unit-test | Vitest-Test für Bootstrap-Endpoint mit Supabase-mock: (a) upsert auf non-existent row → Row entsteht mit `user_id` + `soulprint_sectors`; (b) upsert auf existing row mit `astro_json` → nur `soulprint_sectors` + `updated_at` ändert sich, `astro_json` unberührt; (c) upsert-Error → `soulprint_saved: false` in Response + warn-Log. | P1 | Todo | [REQ-REL-soulprint-persist-onboarding](../1-objectives/requirements/REQ-REL-soulprint-persist-onboarding.md) | TASK-sphx-bootstrap-upsert | 2026-04-18 | `src/__tests__/` oder api-server-Testverzeichnis je nach existierender Konvention. |
+
+### Phase 2 — Backfill für 50 existierende User
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-sphx-backfill | `scripts/backfill-soulprint.mjs` anlegen: iteriert `astro_profiles WHERE soulprint_sectors IS NULL`; für jede Zeile: `astro_json` laden → `computeNatalDimensions` + `projectToRing(nDim, zeroDimensions(), 1, 0)` → `.upsert({ user_id, soulprint_sectors }, { onConflict: 'user_id' })`. Support für `--dry-run` (default) vs. `--apply`. Finale Verifikationsquery (`COUNT(*) WHERE soulprint_sectors IS NULL`) ausgeben. | P1 | Todo | [REQ-REL-soulprint-persist-onboarding](../1-objectives/requirements/REQ-REL-soulprint-persist-onboarding.md) | TASK-sphx-bootstrap-upsert, TASK-sphx-verify-no-overwrite | 2026-04-18 | Einmaliges Script, kein Cron. Dry-run zuerst, dann `--apply`. Nutzt `SUPABASE_SERVICE_ROLE_KEY`. |
+
+### Phase 3 — Deploy, Verify, Report
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-sphx-integration-test | Nach Deploy auf Railway: 2 frische Test-User mit unterschiedlichen Geburtsdaten anlegen, Onboarding durchlaufen. Supabase-Verifikation: beide neuen `astro_profiles`-Zeilen haben `soulprint_sectors` als 12-Element-Array (nicht NULL). Frontend-Check: beide User sehen nicht-defaulte, sichtbar unterschiedliche Signaturen (2D Cymatics + 3D Sphere). | P1 | Todo | [REQ-REL-soulprint-persist-onboarding](../1-objectives/requirements/REQ-REL-soulprint-persist-onboarding.md) | TASK-sphx-unit-test, TASK-sphx-backfill | 2026-04-18 | Post-Deploy manuell; NICHT Production wenn möglich — siehe runbook. |
+| TASK-sphx-po-report | Finaler Bericht an PO: Commit-SHAs, Deploy-SHA, Backfill-Count, Supabase-Post-Query-Resultat (`SELECT COUNT(*) WHERE soulprint_sectors IS NULL` — soll 0 ergeben), Integration-Test-Ergebnisse, Remaining Risks, Confidence. GOAL-signatur-realtime-consistency Teil-SC wird hiermit auch verifiziert. | P1 | Todo | [REQ-REL-soulprint-persist-onboarding](../1-objectives/requirements/REQ-REL-soulprint-persist-onboarding.md) | TASK-sphx-integration-test | 2026-04-18 | Sprint-Abschluss. |
+
+---
+
+## Phase: Sprint S-SUPERGLUE-STAGE1 — Superglue Removal (Onboarding)
+
+**Sprint Goal:** Entferne Superglue-Middleware aus dem Onboarding-Pfad. `/api/experience/bootstrap` ruft BAFE direkt auf und persistiert `astro_json` vollständig in Supabase. Strukturelle Dependency-Reduktion + Fundament für Stages 2–5. Goal: [GOAL-superglue-removal](../1-objectives/goals/GOAL-superglue-removal.md). Plan-Dokument: `docs/superglue-removal-stage-1-onboarding.md`. **Reframing 2026-04-18:** Plan-§2-Hypothese (Superglue-Webhook als Ursache des Default-Signatur-Symptoms) wurde durch TASK-supg1-supabase-hypothesis widerlegt — 50/50 prod astro_profiles zeigen vollständiges astro_json. Sprint läuft weiter mit geänderter Abnahme: Integrationstest ist **Regressions-Check** (Refactor bricht keine funktionierende Baseline), nicht Symptom-Fix. Default-Signatur-Root-Cause ist separate Diagnose.
+
+### Phase 0 — Pre-flight & Hypothesen-Verifikation
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-supg1-supabase-hypothesis | Supabase SQL aus Plan §2 (staging) ausführen: `SELECT user_id, CASE WHEN astro_json IS NULL THEN 'NULL' ... END AS state, COUNT(*) FROM astro_profiles GROUP BY 1,2`. Bei NO_BAZI/NO_WUXING/NULL signifikant vertreten → Hypothese bestätigt, weitermachen. Bei allen OK → HALT + PO melden. | P1 | Done | - | - | 2026-04-18 | **RESULT 2026-04-18:** All 50 astro_profiles rows return state `OK` (astro_json complete: bazi + western + wuxing present for all). Hypothesis **REFUTED** per Plan §2 HALT rule. Query run against prod DB (BaZidiac, project `<prod>`) via Supabase MCP with corrected `GROUP BY 2` aggregate (no PII). Superglue is NOT the root cause of the default-signature symptom — bug likely sits in frontend read path, Master Signal pipeline, or soulprint_sectors column. Downstream tasks blocked pending root-cause re-analysis. |
+| TASK-supg1-baseline | Branch `refactor/stage-1-superglue-out-onboarding` erstellen; `git status` clean; `npx tsc --noEmit` Baseline grün. Bei Fehler HALT. | P1 | Todo | - | TASK-supg1-supabase-hypothesis | 2026-04-18 | Plan §5 Phase 0. |
+| TASK-supg1-audit-read | Plan §4 Read-only-Audit: `server.mjs` L1-120, L277-365, L781-810, L2034-2136; `src/services/api.ts`; `src/types/bafe.ts`; `src/contexts/AppLayoutContext.tsx`; `src/lib/schemas/experience.ts`. Keine Edits. | P1 | Todo | - | TASK-supg1-baseline | 2026-04-18 | Plan §4. |
+| TASK-supg1-schema-check | `astro_profiles` Supabase-Spalten verifizieren: user_id, astro_json, sun_sign, moon_sign, asc_sign, birth_date, birth_time, iana_time_zone, birth_lat, birth_lng, updated_at. HALT + PO melden falls eine fehlt. | P1 | Todo | - | TASK-supg1-baseline | 2026-04-18 | Plan §5 Phase 1 Schritt 4 — Schema-Migration ist separate Entscheidung. |
+
+### Phase 1 — fetchAndPersistChart Service
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-supg1-fetch-persist-service | `fetchAndPersistChart(userId, birth)` in `server.mjs` unter `fetchChartForBirth` (L~810) einfügen. Payload shape aus bestehendem Fallback-Block (L2054-2074): `{ birthDate, birthTime, lat, lng, timeZone }`. `fetchWithRetry` + `bafeFallbackUrls('/chart')`, 3 Attempts, 1000ms Backoff, 7000ms Timeout. Validate `bafeData.bazi`, `bafeData.western`, `bafeData.wuxing` — wenn eines fehlt → `throw new Error('bafe_invalid_response')`. Upsert in `astro_profiles` onConflict `user_id` mit vollständigem astro_json + Basisfeldern (sun_sign, moon_sign, asc_sign, birth_date, birth_time, iana_time_zone, birth_lat, birth_lng, updated_at). Throws: `'bafe_unavailable'` / `'bafe_invalid_response'` / `'supabase_write_failed'`. Return: `bafeData`. | P1 | Todo | - | TASK-supg1-audit-read, TASK-supg1-schema-check | 2026-04-18 | Plan §5 Phase 1. |
+| TASK-supg1-phase1-verify | `npx tsc --noEmit` grün. Funktion definiert aber noch nicht aufgerufen (alter Bootstrap-Code unverändert). Commit: `add: fetchAndPersistChart service (not yet wired in)`. | P1 | Todo | - | TASK-supg1-fetch-persist-service | 2026-04-18 | Plan §5 Phase 1 Verifikation. |
+
+### Phase 2 — Bootstrap-Endpoint Refactor
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-supg1-bootstrap-refactor | `/api/experience/bootstrap` (L2034-2136) umschreiben: `fetchAndPersistChart(req.userId, birth)` direkt aufrufen (ersetzt Superglue-Trigger + Polling + Fallback-Block). Master-Signal-Pipeline (computeNatalDimensions, projectToRing, generateNarratives, Blueprint-Seed) unverändert. Error-Mapping: `bafe_unavailable` → 502 `chart_service_unavailable`, `bafe_invalid_response` → 502 `chart_invalid`, `supabase_write_failed` → 500 `persist_failed`. JSDoc-Kommentar über Endpoint (L~2017-2032) anpassen — Superglue-Schritte entfernen. Soulprint-save-Block bleibt (astro_json ist bereits in Phase 1 persistiert). | P1 | Todo | - | TASK-supg1-phase1-verify | 2026-04-18 | Plan §5 Phase 2. |
+| TASK-supg1-phase2-verify | `npx tsc --noEmit` grün. Lokalen Server ohne `SUPERGLUE_API_KEY` starten — Bootstrap muss ohne Crash hochfahren. Commit: `refactor: bootstrap endpoint uses fetchAndPersistChart directly`. | P1 | Todo | - | TASK-supg1-bootstrap-refactor | 2026-04-18 | Plan §5 Phase 2 Verifikation. |
+
+### Phase 3 — Superglue-Code entfernen
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-supg1-remove-utils | In `server.mjs` entfernen: `triggerBazodiacUserChart` (L41-61), `waitForStoredChart` (L70-94), `extractStoredChart` (L63-68), `SUPERGLUE_BASE_URL` + `SUPERGLUE_API_KEY` Konstanten (L38-39). | P1 | Todo | - | TASK-supg1-phase2-verify | 2026-04-18 | Plan §5 Phase 3. |
+| TASK-supg1-remove-env | `SUPERGLUE_API_KEY` aus `OPTIONAL_ENV_VARS` Liste (L~114) entfernen. `.env.example`: Zeilen `SUPERGLUE_BASE_URL=` und `SUPERGLUE_API_KEY=` entfernen falls vorhanden. | P1 | Todo | - | TASK-supg1-remove-utils | 2026-04-18 | Plan §5 Phase 3. |
+| TASK-supg1-grep-verify | `grep -ri superglue ./server.mjs ./src` ausführen: `./src/` muss komplett leer sein; `./server.mjs` nur noch im möglichen Stage-2+-Kontext (Email-Service aus Flow #7 falls präsent — nicht anfassen). README / Setup-Docs auf Superglue-Onboarding-Erwähnungen prüfen und korrigieren. | P1 | Todo | - | TASK-supg1-remove-env | 2026-04-18 | Plan §5 Phase 3 Grep-Verifikation. |
+| TASK-supg1-phase3-verify | `npx tsc --noEmit` grün. Commit: `remove: superglue onboarding integration`. | P1 | Todo | - | TASK-supg1-grep-verify | 2026-04-18 | Plan §5 Phase 3 Verifikation. |
+
+### Phase 4 — Integrationstest & Runbook
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-supg1-runbook | `4-deploy/runbooks/onboarding-bootstrap-test.md` anlegen (oder bestehenden Onboarding-Runbook erweitern): Startup-Steps (staging-Server, Supabase-Access); 2-Test-User-Setup (Signup oder existierende Accounts, `astro_profiles`-Zeile vorher löschen); Browser-Flow (Geburtsdaten → SignaturPage); Supabase-Inspection (astro_json-Completeness-Check per SQL); DevTools-Console-Verifikation (`apiData.bazi`, `apiData.wuxing` befüllt); Abnahme-Kriterien (2 User sichtbar unterschiedliche Signaturen, `astro_json` vollständig). | P1 | Todo | - | TASK-supg1-phase3-verify | 2026-04-18 | Plan §5 Phase 4; Manual-Testing-Readiness für Sprint. |
+| TASK-supg1-integration-test | Runbook manuell durchlaufen: 2 Test-User mit stark unterschiedlichen Geburtsdaten anlegen, Onboarding im Browser, Signatur prüfen (2D Cymatics + 3D Sphere), `astro_json` in Supabase prüfen. Abnahme: beide User unterschiedliche, nicht-defaulte Signaturen + astro_json für beide vollständig. Ergebnisse protokollieren. | P1 | Todo | - | TASK-supg1-runbook | 2026-04-18 | Plan §5 Phase 4; NICHT auf Production, nur staging. |
+
+### Phase 5 — Docs + Merge-Readiness
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-supg1-update-plan-status | `docs/superglue-removal-stage-1-onboarding.md`: Status von "Planned" auf "Completed" setzen. §9 "Ausführungsnotizen" mit Abweichungen vom Plan + Commit-SHAs der Branch ergänzen. | P1 | Todo | - | TASK-supg1-integration-test | 2026-04-18 | Plan §5 Phase 5. |
+| TASK-supg1-po-report | Finaler Report an PO im codemoss-guardrails-Format: `### phase` (Zusammenfassung), `### verification` (typecheck / integration / astro_json), `### remaining risks` (konkret), `### confidence` (high/medium/low). Warten auf Merge-Freigabe, nicht selbständig mergen. | P1 | Todo | - | TASK-supg1-update-plan-status | 2026-04-18 | Plan §5 Phase 5; Sprint-Abschluss. |
+
+---
+
 ## Phase: Current Sprint — S-BRIDGE (Shared Bridge Refactor)
 
 **Sprint Goal:** `DIMENSION_DEFS` + V3-Bridge-Funktionen aus lokalen Dateien in `packages/shared/src/signatur/` als Single Source of Truth extrahieren. Determinismus-Test-Suite als automatisierten Beweis für plattformübergreifende Konsistenz. Swift-Konstanten-Referenzdokument für iOS-Port.
@@ -335,6 +414,122 @@
 ---
 
 ## Execution Plan
+
+### Sprint S-SOULPRINT-HOTFIX: Soulprint Persist Fix
+
+**Sprint Goal:** Root-Cause-Fix für Default-Signatur-Symptom. Upsert statt Update im Bootstrap-Endpoint + Backfill für 50 existierende prod User. Goal: GOAL-soulprint-persistence. Req: REQ-REL-soulprint-persist-onboarding. **Priorität: geht S-SUPERGLUE-STAGE1 voraus.**
+
+#### Phase 1: Fix Bootstrap Upsert
+
+**Capabilities delivered:**
+- `/api/experience/bootstrap` persistiert `soulprint_sectors` zuverlässig auch wenn `astro_profiles`-Zeile noch nicht existiert
+- Unit-Test-Coverage für upsert-Pattern (3 Szenarien)
+- Inline-Kommentar dokumentiert Race-Condition-Root-Cause
+- Worker-Overwrite-Hypothese (TASK-sphx-verify-no-overwrite) geklärt
+
+**Tasks:**
+1. TASK-sphx-bootstrap-upsert
+2. TASK-sphx-verify-no-overwrite
+3. TASK-sphx-unit-test
+
+#### Phase 2: Backfill für 50 existierende User
+
+**Capabilities delivered:**
+- Alle existierenden User haben `soulprint_sectors` populated — Default-Signatur-Symptom für legacy User behoben
+- GOAL-soulprint-persistence SC#2 (Supabase NULL-Count = 0) erfüllt
+
+**Tasks:**
+1. TASK-sphx-backfill
+
+#### Phase 3: Deploy, Verify, Report
+
+**Capabilities delivered:**
+- Production Deploy mit fixem upsert + backfilled existing User
+- Integration-Test 2-User-Szenario mit sichtbar unterschiedlichen Signaturen — GOAL-soulprint-persistence SC#3 erfüllt
+- PO-Report mit Abnahme-Evidence
+
+**Tasks:**
+1. TASK-sphx-integration-test
+2. TASK-sphx-po-report
+
+---
+
+### Sprint S-SUPERGLUE-STAGE1: Superglue Removal (Onboarding)
+
+**Sprint Goal:** Superglue-Middleware aus `/api/experience/bootstrap` entfernen; direkter BAFE-Call + vollständiger astro_json-Persist. Strukturelle Dependency-Reduktion, nicht Symptom-Fix (Plan-§2-Hypothese 2026-04-18 widerlegt — siehe Sprint-Header). Goal: GOAL-superglue-removal. Plan: `docs/superglue-removal-stage-1-onboarding.md`.
+
+#### Phase 0: Pre-flight & Hypothesen-Verifikation
+
+**Capabilities delivered:**
+- Hypothese aus Plan §2 in Supabase verifiziert (oder widerlegt → HALT)
+- Clean Branch + tsc-Baseline etabliert
+- Read-only-Audit der relevanten Dateien abgeschlossen
+- astro_profiles-Schema verifiziert
+
+**Tasks:**
+1. TASK-supg1-supabase-hypothesis
+2. TASK-supg1-baseline
+3. TASK-supg1-audit-read
+4. TASK-supg1-schema-check
+
+#### Phase 1: fetchAndPersistChart Service
+
+**Capabilities delivered:**
+- Isolierter BAFE-Call + Supabase-Upsert als neue Einheit (noch nicht wired)
+- Definierte Error-Kanäle: bafe_unavailable, bafe_invalid_response, supabase_write_failed
+- GOAL-superglue-removal SC#4 (Retry + Timeout Policy dokumentiert)
+
+**Tasks:**
+1. TASK-supg1-fetch-persist-service
+2. TASK-supg1-phase1-verify
+
+#### Phase 2: Bootstrap-Endpoint Refactor
+
+**Capabilities delivered:**
+- Bootstrap-Endpoint verwendet direkten BAFE-Call (kein Superglue-Umweg)
+- astro_json wird vollständig persistiert — GOAL-superglue-removal SC#1
+- Server startet ohne SUPERGLUE_API_KEY
+
+**Tasks:**
+1. TASK-supg1-bootstrap-refactor
+2. TASK-supg1-phase2-verify
+
+#### Phase 3: Superglue-Code entfernen
+
+**Capabilities delivered:**
+- Superglue-Utility-Funktionen komplett aus server.mjs entfernt
+- Env-Vars aus Code + .env.example entfernt
+- GOAL-superglue-removal SC#3 (Grep clean in src/)
+
+**Tasks:**
+1. TASK-supg1-remove-utils
+2. TASK-supg1-remove-env
+3. TASK-supg1-grep-verify
+4. TASK-supg1-phase3-verify
+
+#### Phase 4: Integrationstest & Runbook
+
+**Capabilities delivered:**
+- Onboarding-Bootstrap-Test-Runbook in `4-deploy/runbooks/` verfügbar
+- 2-User-Abnahme-Test erfolgreich durchlaufen
+- GOAL-superglue-removal SC#2 (sichtbar unterschiedliche Signaturen) verifiziert
+
+**Tasks:**
+1. TASK-supg1-runbook
+2. TASK-supg1-integration-test
+
+#### Phase 5: Docs + Merge-Readiness
+
+**Capabilities delivered:**
+- Plan-Dokument abgeschlossen mit Ausführungsnotizen
+- PO-Report erstattet, Merge-Freigabe angefragt
+- GOAL-superglue-removal SC#5 (Rollback-Pfad dokumentiert)
+
+**Tasks:**
+1. TASK-supg1-update-plan-status
+2. TASK-supg1-po-report
+
+---
 
 ### Sprint S-BRIDGE: Shared Bridge Refactor
 

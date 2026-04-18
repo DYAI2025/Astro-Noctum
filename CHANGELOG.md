@@ -18,6 +18,7 @@
 
 ### Bug Fixes
 
+- **Soulprint-Persistenz Race Condition** (`server.mjs` L2110-2138) — Bootstrap-Endpoint nutzte `.update()` statt `.upsert()` auf `astro_profiles`; scheiterte für 100% der User, weil die Row erst asynchron durch den Superglue-Worker erstellt wird (`.update().eq('user_id')` → `affected 0 rows`). Resultat: 50/50 prod Users hatten `soulprint_sectors = NULL` → Default-Signatur im Frontend (via `DEC-synthetic-soulprint-fallback`). Fix: `.upsert({ user_id, soulprint_sectors }, { onConflict: 'user_id' })`. Inline-Kommentar mit Root-Cause + DEC-Ref. Verifiziert via Supabase-Prod-Query 2026-04-18. REQ-REL-soulprint-persist-onboarding, Sprint S-SOULPRINT-HOTFIX Phase 1/3 (Tests + Backfill folgen).
 - **BUG-26: Cymatics-Renderer wurde auf Signatur-Page nicht gerendert** — Feature-Flag `signature_engine_cymatics` war seit Sprint-Abschluss auf `false` default, `FusionRing3D` ist dadurch auf V3 gefallen. Flag auf `true` gesetzt + zu `CRITICAL_FLAGS` hinzugefügt (mittlerweile durch Phase E komplett entfernt).
 
 ### Test Infrastructure

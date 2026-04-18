@@ -88,6 +88,8 @@ When an artifact (goal, requirement) is no longer relevant:
 | [GOAL-navigation-app-shell-consistency](goals/GOAL-navigation-app-shell-consistency.md) | Must | Approved | Consistent app-shell navigation across all pages — active-route highlight, Dashboard link, non-confusing mode toggle |
 | [GOAL-signatur-realtime-consistency](goals/GOAL-signatur-realtime-consistency.md) | Must | Approved | Signatur visibly reacts to real-time inputs; cluster-gate enforced; same V2 engine on web + mobile; Cousto mute reliable |
 | [GOAL-i18n-quiz-ux-integrity](goals/GOAL-i18n-quiz-ux-integrity.md) | Must | Approved | Zero raw translation keys in UI; quiz overlays reliably dismissable (X / Esc / backdrop) |
+| [GOAL-superglue-removal](goals/GOAL-superglue-removal.md) | Must | Approved | Superglue-Dependency aus 6 Core-UX-Flows entfernen; direkte Server-Endpoints gegen BAFE/FuFirE/Supabase |
+| [GOAL-soulprint-persistence](goals/GOAL-soulprint-persistence.md) | Must | Approved | Bootstrap persistiert soulprint_sectors zuverlässig via upsert — fixt Default-Signatur-Symptom (Race-Condition-Bug 2026-04-18) |
 
 ---
 
@@ -187,6 +189,7 @@ When an artifact (goal, requirement) is no longer relevant:
 | [REQ-F-signatur-realtime-triggers](requirements/REQ-F-signatur-realtime-triggers.md) | REQ-F | Must | Draft | Signatur real-time trigger contract + cluster-gate enforcement + reliable Cousto audio mute |
 | [REQ-F-signatur-cymatics](requirements/REQ-F-signatur-cymatics.md) | REQ-F | Must | Approved | Canvas2D Chladni/Cymatics engine — BaZi→Chladni bridge, SignaturCymaticsCanvas, CSS fallback, feature-flag gated |
 | [REQ-F-i18n-completeness](requirements/REQ-F-i18n-completeness.md) | REQ-F | Must | Approved | Every `t()` call resolves to translated string in DE + EN; automated audit test; quiz overlay dismiss via X / Esc / backdrop |
+| [REQ-REL-soulprint-persist-onboarding](requirements/REQ-REL-soulprint-persist-onboarding.md) | REQ-REL | Must | Approved | Bootstrap upsert statt update — soulprint_sectors 100% persistiert + Backfill für 50 existing user |
 
 ---
 
