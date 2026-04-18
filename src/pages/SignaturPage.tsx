@@ -27,6 +27,7 @@ import {
 } from '@/src/lib/signatur/clusters';
 import { toNatalWeightsOrUndefined, toQuizWeightsOrUndefined } from '@/src/lib/signatur/weight-utils';
 import { baziToChladniParams } from '@/src/lib/cymatics/bazi-to-chladni';
+import { baziToPlanetWeights } from '@/src/lib/signatur-3d/bazi-to-planets';
 import type { ContributionEvent } from '@/src/lib/lme/types';
 import { eventToSectorSignals } from '@/src/lib/signatur/test-signal';
 import { useCoustoAudio } from '@/src/hooks/useCoustoAudio';
@@ -117,6 +118,14 @@ export default function SignaturPage() {
     const harmonyIndex = Number.isFinite(rawHarmony as number) ? (rawHarmony as number) : 0.5;
     return baziToChladniParams(pillars, wuxingWeights, harmonyIndex);
   }, [apiData?.bazi?.pillars, apiData?.wuxing]);
+
+  // Planet weights für 3D-Sphere — aus demselben BaZi+Wu-Xing-Datensatz wie chladniParams.
+  // Entkoppelt vom Transit-State-API (der bei null/neutral alle User identisch machte).
+  // Adapter liefert immer alle 10 Keys; NEUTRAL_BAZI_WEIGHTS wenn apiData unvollständig.
+  const planetWeights = useMemo(
+    () => baziToPlanetWeights(apiData?.bazi, apiData?.wuxing),
+    [apiData?.bazi, apiData?.wuxing],
+  );
 
   // Cousto audio — dimension weights drive oscillator gains
   const audioWeights = useMemo(
@@ -321,6 +330,7 @@ export default function SignaturPage() {
               dayHarmonic={activeHarmonic}
               planetariumMode={planetariumMode}
               chladniParams={chladniParams}
+              planetWeights={planetWeights}
               labels={{
                 regionLabel: t('signatur.a11y.regionLabel'),
                 loading: t('signatur.loading'),

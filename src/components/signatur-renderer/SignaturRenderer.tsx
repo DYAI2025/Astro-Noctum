@@ -4,8 +4,8 @@ import { useReducedMotion } from 'motion/react';
 import { useSignaturSignal } from '@/src/hooks/useSignaturSignal';
 import { useSpaceWeather } from '@/src/hooks/useSpaceWeather';
 import { CymaticsFallback } from '@/src/components/signatur-cymatics/CymaticsFallback';
-import { PLANETS, type PlanetName } from '@/src/lib/signatur-3d/planets';
-import { soulprintToPlanetWeights } from '@/src/lib/signatur-3d/soulprint-to-planets';
+import { type PlanetName } from '@/src/lib/signatur-3d/planets';
+import { NEUTRAL_BAZI_WEIGHTS } from '@/src/lib/signatur-3d/bazi-to-planets';
 import type { DissonanceResult } from '../../lib/dissonance/dissonance';
 import type { DayHarmonicState } from '../../lib/day-harmonic';
 import type { ChladniParams } from '@/src/lib/cymatics/bazi-to-chladni';
@@ -22,15 +22,6 @@ const SignaturCymaticsCanvas = lazy(() => import('@/src/components/signatur-cyma
 // bundle is only fetched when the user actually toggles 3D.
 const SignatureSphere3D = lazy(() =>
   import('@/src/components/signatur-3d/SignatureSphere3D').then((m) => ({ default: m.SignatureSphere3D })),
-);
-
-/**
- * Neutral uniform planet weights (0.5 each) — used as the 3D sphere's
- * deformation source when signalData hasn't loaded yet. Explicit "no user
- * data" signal, not a mocked number.
- */
-const NEUTRAL_WEIGHTS: Readonly<Record<PlanetName, number>> = Object.freeze(
-  Object.fromEntries(PLANETS.map((p) => [p.name, 0.5])) as Record<PlanetName, number>,
 );
 
 export type SignaturRendererLabels = {
@@ -66,6 +57,19 @@ type SignaturRendererProps = {
   planetariumMode?: boolean;
   /** Chladni params derived from user's BaZi chart. When undefined, CymaticsFallback is shown. */
   chladniParams?: ChladniParams;
+  /**
+   * Per-planet Chladni weights for the 3D sphere. Caller computes these from
+   * the same BaZi + Wu-Xing data that drives `chladniParams` (via
+   * `baziToPlanetWeights` in `src/lib/signatur-3d/bazi-to-planets.ts`).
+   *
+   * When omitted, `NEUTRAL_BAZI_WEIGHTS` is used — the sphere still renders
+   * coherently but stops being user-specific. Previously this path was driven
+   * by `signalData.baseSignals` from the transit-state polling hook; that
+   * proved unreliable (null on mount, null on API failure) so the 3D weight
+   * source is now fully decoupled from the transit-state API. See
+   * `bazi-to-planets.ts` for the mapping rationale.
+   */
+  planetWeights?: Record<PlanetName, number>;
 };
 
 export const SignaturRenderer = ({
@@ -73,6 +77,7 @@ export const SignaturRenderer = ({
   labels,
   planetariumMode = true,
   chladniParams,
+  planetWeights,
 }: SignaturRendererProps) => {
   const prefersReducedMotion = useReducedMotion();
   // Hooks kept alive so the DEV panel keeps showing resolution/Kp and the
@@ -87,16 +92,14 @@ export const SignaturRenderer = ({
 
   const showCymatics = chladniParams && !cymaticsFailed;
 
-  // Derive 10-planet weights from the existing 12-sector soulprint. When
-  // signalData is still loading (or unavailable), fall back to neutral
-  // uniform weights so the sphere still shows a coherent baseline shape.
-  const planetWeights = useMemo(() => {
-    const baseSignals = signalData?.baseSignals;
-    if (baseSignals && baseSignals.length === 12) {
-      return soulprintToPlanetWeights(baseSignals);
-    }
-    return NEUTRAL_WEIGHTS;
-  }, [signalData?.baseSignals]);
+  // 3D sphere weights: prefer the caller-supplied BaZi-derived weights
+  // (user-specific, always available once apiData has resolved). Fall back
+  // to the neutral profile only when nothing was passed — explicit "no data"
+  // state rather than a silent NEUTRAL collapse to all-0.5.
+  const effectivePlanetWeights = useMemo(
+    () => planetWeights ?? NEUTRAL_BAZI_WEIGHTS,
+    [planetWeights],
+  );
 
   return (
     <section
@@ -192,7 +195,7 @@ export const SignaturRenderer = ({
             />
           }>
             <SignatureSphere3D
-              weights={planetWeights}
+              weights={effectivePlanetWeights}
               planetariumMode={planetariumMode}
               className="h-full w-full"
             />
