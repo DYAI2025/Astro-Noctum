@@ -55,20 +55,6 @@ vi.mock('@/src/components/signatur-cymatics/SignaturCymaticsCanvas', () => ({
     }),
 }));
 
-vi.mock('@/src/components/signatur-v3/SignaturV3Canvas', () => ({
-  default: () => React.createElement('div', { 'data-testid': 'mock-v3-canvas' }),
-}));
-
-vi.mock('@/src/components/fusion-ring-website/FusionRingCanvasV2', () => ({
-  default: ({ onFailed }: { onFailed?: () => void }) =>
-    React.createElement('div', { 'data-testid': 'mock-v2-canvas' }),
-}));
-
-vi.mock('@/src/components/fusion-ring-website/FusionRingWebsiteCanvas', () => ({
-  FusionRingWebsiteCanvas: () =>
-    React.createElement('div', { 'data-testid': 'mock-v1-canvas' }),
-}));
-
 // ── Engine hierarchy (pure logic, no component mount) ─────────────────────────
 
 describe('Engine selection logic', () => {
@@ -174,7 +160,6 @@ describe('FusionRing3D cymatics wiring', () => {
       );
     });
     expect(screen.getByTestId('mock-cymatics-canvas')).toBeDefined();
-    expect(screen.queryByTestId('mock-v2-canvas')).toBeNull();
   });
 
   it('does NOT render cymatics when params undefined', async () => {

@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import { computeSpiroParams, generatePlanetParticles, PLANETS } from '../components/fusion-ring-website/bazodiac-engine';
 
 type ElementalDissonanceType = 'sheng' | 'ke' | 'neutral';
 
@@ -152,36 +151,5 @@ describe('computeDissonance', () => {
     const result = computeDissonance(natal, natal, null, wuxinBefore, wuxinAfter);
     expect(result.d_elemental.type).toBe('neutral');
     expect(result.d_elemental.magnitude).toBe(0);
-  });
-});
-
-describe('bazodiac-engine modulation', () => {
-  it('computeSpiroParams accepts optional modulation', () => {
-    const base = computeSpiroParams(126.22);
-    const modulated = computeSpiroParams(126.22, true, { geometrySkew: 0.8, penDistanceShift: 0.3 });
-    expect(modulated.d).not.toBeCloseTo(base.d, 1);
-  });
-
-  it('computeSpiroParams without modulation returns same as before', () => {
-    const a = computeSpiroParams(126.22);
-    const b = computeSpiroParams(126.22, true);
-    expect(a.d).toBeCloseTo(b.d);
-    expect(a.r).toBeCloseTo(b.r);
-    expect(a.n).toBe(b.n);
-  });
-
-  it('generatePlanetParticles accepts optional modulation', () => {
-    const sun = PLANETS[0]!;
-    const particles = generatePlanetParticles(sun, 0.8, 2.0, 0.1, {
-      geometrySkew: 0.5,
-      penDistanceShift: 0.2,
-    });
-    expect(particles.length).toBeGreaterThan(0);
-  });
-
-  it('generatePlanetParticles without modulation still works', () => {
-    const sun = PLANETS[0]!;
-    const particles = generatePlanetParticles(sun, 0.8, 2.0, 0.1);
-    expect(particles.length).toBeGreaterThan(0);
   });
 });

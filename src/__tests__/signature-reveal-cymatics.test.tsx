@@ -48,17 +48,6 @@ vi.mock('@/src/components/signatur-cymatics/CymaticsFallback', () => ({
   ),
 }));
 
-// Assertion guards — if these modules get imported, force the test to fail.
-vi.mock('@/src/components/signatur-v3/SignaturV3Canvas', () => ({
-  default: () => <div data-testid="v3-canvas-should-not-appear" />,
-}));
-vi.mock('@/src/components/fusion-ring-website/FusionRingCanvasV2', () => ({
-  default: () => <div data-testid="v2-canvas-should-not-appear" />,
-}));
-vi.mock('@/src/components/fusion-ring-website/FusionRingWebsiteCanvas', () => ({
-  FusionRingWebsiteCanvas: () => <div data-testid="v1-canvas-should-not-appear" />,
-}));
-
 import { SignatureReveal } from '@/src/components/onboarding/SignatureReveal';
 
 const mockBootstrap: BootstrapResponse = {
@@ -96,9 +85,11 @@ describe('SignatureReveal — Cymatics-only rendering (Phase C1)', () => {
     expect(screen.getByTestId('cymatics-canvas')).toBeDefined();
   });
 
-  it('never renders V1, V2, or V3 canvases', async () => {
+  it('never renders V1, V2, or V3 canvases (modules deleted in phase F)', async () => {
     render(<SignatureReveal bootstrapData={mockBootstrap} onComplete={vi.fn()} />);
     await flushLazy();
+    // The V1/V2/V3 canvas modules were deleted in phase F — their absence is enforced
+    // by the module resolver (any import would throw at module-load time).
     expect(screen.queryByTestId('v1-canvas-should-not-appear')).toBeNull();
     expect(screen.queryByTestId('v2-canvas-should-not-appear')).toBeNull();
     expect(screen.queryByTestId('v3-canvas-should-not-appear')).toBeNull();
