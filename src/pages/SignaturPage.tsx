@@ -221,10 +221,10 @@ export default function SignaturPage() {
                 ? 'border-white/8 px-2 py-1 text-[10px] text-white/40'
                 : 'border-white/15 px-3 py-1.5 text-xs text-white/70'
             } uppercase tracking-[0.2em]`}
-            aria-label={t('furing3d.back')}
+            aria-label={t('signatur.back')}
           >
             <ArrowLeft className={fluidityTier >= 1 ? 'h-3 w-3' : 'h-3.5 w-3.5'} />
-            {fluidityTier >= 1 ? null : t('furing3d.back')}
+            {fluidityTier >= 1 ? null : t('signatur.back')}
           </Link>
 
           <div className="flex items-center gap-3">
@@ -251,7 +251,7 @@ export default function SignaturPage() {
               )}
             </div>
             <div className="rounded-full border border-white/10 bg-black/45 px-3 py-1 text-[10px] uppercase tracking-[0.25em] text-white/65">
-              {t('furing3d.badge')}
+              {t('signatur.badge')}
             </div>
           </div>
         </header>
@@ -259,10 +259,10 @@ export default function SignaturPage() {
         {/* Title */}
         <div className="max-w-3xl space-y-4">
           <h1 className="font-serif text-3xl leading-tight text-[#D4AF37] md:text-5xl">
-            {t('furing3d.title')}
+            {t('signatur.title')}
           </h1>
           <p className="max-w-2xl text-sm leading-relaxed text-white/75 md:text-base">
-            {t('furing3d.subtitle')}
+            {t('signatur.subtitle')}
           </p>
         </div>
 
@@ -322,16 +322,16 @@ export default function SignaturPage() {
               planetariumMode={planetariumMode}
               chladniParams={chladniParams}
               labels={{
-                regionLabel: t('furing3d.a11y.regionLabel'),
-                loading: t('furing3d.loading'),
-                reducedMotionHint: t('furing3d.reducedMotionHint'),
-                resolution: t('furing3d.resolutionLabel'),
-                audioOn: t('furing3d.audioOn'),
-                audioOff: t('furing3d.audioOff'),
-                latestEvents: t('furing3d.latestEvents'),
-                renderError: t('furing3d.renderError'),
-                reload: t('furing3d.reload'),
-                eventAnnouncePrefix: t('furing3d.eventAnnouncePrefix'),
+                regionLabel: t('signatur.a11y.regionLabel'),
+                loading: t('signatur.loading'),
+                reducedMotionHint: t('signatur.reducedMotionHint'),
+                resolution: t('signatur.resolutionLabel'),
+                audioOn: t('signatur.audioOn'),
+                audioOff: t('signatur.audioOff'),
+                latestEvents: t('signatur.latestEvents'),
+                renderError: t('signatur.renderError'),
+                reload: t('signatur.reload'),
+                eventAnnouncePrefix: t('signatur.eventAnnouncePrefix'),
               }}
             />
             {chladniParams && (

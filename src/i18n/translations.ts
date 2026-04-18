@@ -56,7 +56,7 @@ const translationsEn: DeepStringRecord = {
       subPlanetarium: "Planetarium",
       subCosmicBlueprint: "Cosmic Blueprint",
       subWuXing: "Wu Xing",
-      subFusionRing: "Fusion Ring",
+      subSignatur: "Signatur",
       subQuizzes: "Quizzes",
       subCluster: "Cluster",
       subArticles: "Articles",
@@ -140,7 +140,7 @@ const translationsEn: DeepStringRecord = {
     nameRequired: "Please enter your name.",
     nameTooLong: "Name must be 50 characters or fewer.",
   },
-  furing3d: {
+  signatur: {
     back: "Dashboard",
     badge: "SIGNATUR 3D",
     title: "Signatur — Live Divergence Field",
@@ -164,6 +164,12 @@ const translationsEn: DeepStringRecord = {
       spaceWeatherText: "Kp-index turbulence modulates the signature's deformation and visual noise in subtle waves.",
       accessibilityTitle: "Accessibility",
       accessibilityText: "Reduced Motion, keyboard shortcuts, and screenreader updates are supported.",
+    },
+    premiumModal: {
+      unlockLabel: "Unlock Premium",
+      closeLabel: "Close",
+      description: "This cluster is part of the premium experience. Unlock deeper insights into your signature.",
+      ctaLabel: "Unlock Premium",
     },
   },
   expandable: {
@@ -464,14 +470,6 @@ const translationsEn: DeepStringRecord = {
       introDesc: "Everyone gives and receives love in their own way. Discover in 12 questions which love archetype shapes your nature.",
     },
   },
-  signatur: {
-    premiumModal: {
-      unlockLabel: "Unlock Premium",
-      closeLabel: "Close",
-      description: "This cluster is part of the premium experience. Unlock deeper insights into your signature.",
-      ctaLabel: "Unlock Premium",
-    },
-  },
   astroAccordion: {
     sunSign: "Sun Sign",
     moonSign: "Moon Sign",
@@ -533,7 +531,7 @@ const translationsDe: DeepStringRecord = {
       subPlanetarium: "Planetarium",
       subCosmicBlueprint: "Kosmischer Blueprint",
       subWuXing: "Wu Xing",
-      subFusionRing: "Fusion Ring",
+      subSignatur: "Signatur",
       subQuizzes: "Quizze",
       subCluster: "Cluster",
       subArticles: "Artikel",
@@ -617,7 +615,7 @@ const translationsDe: DeepStringRecord = {
     nameRequired: "Bitte gib deinen Namen ein.",
     nameTooLong: "Name darf maximal 50 Zeichen lang sein.",
   },
-  furing3d: {
+  signatur: {
     back: "Dashboard",
     badge: "SIGNATUR 3D",
     title: "Signatur — Live-Divergenzfeld",
@@ -641,6 +639,12 @@ const translationsDe: DeepStringRecord = {
       spaceWeatherText: "Kp-Index-Turbulenzen modulieren Deformation und visuelles Noise der Signatur in feinen Wellen.",
       accessibilityTitle: "Barrierefreiheit",
       accessibilityText: "Reduced Motion, Tastatur-Shortcuts und Screenreader-Updates werden unterstützt.",
+    },
+    premiumModal: {
+      unlockLabel: "Premium freischalten",
+      closeLabel: "Schließen",
+      description: "Dieser Cluster ist Teil des Premium-Erlebnisses. Schalte tiefere Einblicke in deine Signatur frei.",
+      ctaLabel: "Premium freischalten",
     },
   },
   expandable: {
@@ -939,14 +943,6 @@ const translationsDe: DeepStringRecord = {
     },
     loveLanguages: {
       introDesc: "Jeder Mensch gibt und empfängt Liebe auf eine eigene Art. Entdecke in 12 Fragen, welcher Liebenden-Archetyp dein Wesen prägt.",
-    },
-  },
-  signatur: {
-    premiumModal: {
-      unlockLabel: "Premium freischalten",
-      closeLabel: "Schließen",
-      description: "Dieser Cluster ist Teil des Premium-Erlebnisses. Schalte tiefere Einblicke in deine Signatur frei.",
-      ctaLabel: "Premium freischalten",
     },
   },
   astroAccordion: {
