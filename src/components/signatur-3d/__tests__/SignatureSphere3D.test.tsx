@@ -1,14 +1,19 @@
 /**
- * Phase H4 — Smoke tests for the static R3F SignatureSphere3D.
+ * Phase H4/H5 — Smoke tests for the R3F SignatureSphere3D.
  *
  * WebGL is unavailable in happy-dom, so we mock `@react-three/fiber`'s
- * `<Canvas>` and `@react-three/drei`'s `<Text>`/`<Billboard>` to render
- * as plain DOM so we can at least count glyphs and trails.
+ * `<Canvas>` and `useFrame`, and `@react-three/drei`'s `<Text>` /
+ * `<Billboard>` to render as plain DOM so we can at least count glyphs,
+ * trails, and assert that the animation hook wires up.
  * Internal scene-graph coverage beyond that is out of scope here.
  */
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { render, cleanup } from '@testing-library/react';
 import type { ReactNode } from 'react';
+
+// Capture useFrame callbacks per render so individual tests can assert
+// against "was a frame callback registered" and optionally invoke it.
+const useFrameMock = vi.fn();
 
 // Mock the R3F Canvas so children render without a WebGL context. Intrinsic
 // three elements (<mesh>, <sphereGeometry>, ...) become unknown JSX tags in
@@ -18,6 +23,16 @@ vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children?: ReactNode } & Record<string, any>) => (
     <div data-testid="r3f-canvas-mock">{children}</div>
   ),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  useFrame: (cb: any) => useFrameMock(cb),
+}));
+
+// `motion/react`'s useReducedMotion is queried at render time. Default to
+// `false` (animated) so H4 assertions keep their prior behavior; individual
+// tests override via `mockReturnValueOnce(true)`.
+const useReducedMotionMock = vi.fn(() => false);
+vi.mock('motion/react', () => ({
+  useReducedMotion: () => useReducedMotionMock(),
 }));
 
 // Mock drei's <Text> and <Billboard>. Text becomes a testable DOM element
@@ -75,6 +90,12 @@ const ALL_HALF: Readonly<Partial<Record<PlanetName, number>>> = {
 };
 
 describe('SignatureSphere3D', () => {
+  beforeEach(() => {
+    useFrameMock.mockClear();
+    useReducedMotionMock.mockReset();
+    useReducedMotionMock.mockReturnValue(false);
+  });
+
   afterEach(() => {
     cleanup();
   });
@@ -148,5 +169,34 @@ describe('SignatureSphere3D', () => {
     for (const s of ['☉', '☽', '☿', '♀', '♂', '♃', '♄', '♅', '♆', '♇']) {
       expect(symbolSet.has(s)).toBe(true);
     }
+  });
+
+  // ── H5 additions ─────────────────────────────────────────────────────────
+
+  it('registers a useFrame callback when mounted (animated mode)', () => {
+    // prefersReducedMotion defaults to `false` in beforeEach → animation path.
+    render(<SignatureSphere3D weights={ALL_HALF} />);
+    expect(useFrameMock).toHaveBeenCalled();
+    // The callback passed to useFrame must be a function so R3F can drive it.
+    expect(typeof useFrameMock.mock.calls[0][0]).toBe('function');
+  });
+
+  it('frame callback is a no-op when prefersReducedMotion is true', () => {
+    // Force the motion/react hook to report reduced-motion for this render.
+    useReducedMotionMock.mockReturnValue(true);
+    render(<SignatureSphere3D weights={ALL_HALF} />);
+    // The component still calls useFrame (React Hooks rules — call order must
+    // be stable across renders), but the body short-circuits. We assert the
+    // reduced-motion flag is reflected on the container and that invoking the
+    // registered callback does NOT throw and does NOT mutate any throwaway
+    // state we can observe from here.
+    const container = document.querySelector('[data-testid="signature-sphere-3d"]');
+    expect(container?.getAttribute('data-reduced-motion')).toBe('true');
+    expect(useFrameMock).toHaveBeenCalled();
+    const cb = useFrameMock.mock.calls[0][0];
+    // Invoking should not throw even with a null state (reduced-motion branch
+    // returns before touching anything).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect(() => cb({} as any, 0.016)).not.toThrow();
   });
 });

@@ -1,8 +1,8 @@
 /**
- * Phase H4 — Static R3F rendering of a Chladni-displaced signature sphere
+ * Phase H5 — Animated R3F rendering of a Chladni-displaced signature sphere
  * with per-planet pole glyphs and trails between dominant antipodal pole pairs.
  *
- * Scene graph (time = 0 snapshot):
+ * Scene graph:
  *   - Haze sphere (inward-facing dark shell)
  *   - Wire sphere (Chladni-displaced wireframe, r = 1.0)
  *   - Solid sphere (Chladni-displaced, r = 0.93)
@@ -11,15 +11,26 @@
  *   - 0..6 tube-geometry trails along great-circle paths between antipodal
  *     pole pairs whose assigned planet weight ≥ TRAIL_THRESHOLD.
  *
- * Animation (useFrame) arrives in Phase H5; FusionRing3D integration in H6.
+ * Animation (H5):
+ *   - Whole signature group rotates slowly on Y (with a slight X wobble).
+ *   - Wire + solid Chladni geometries morph in place every 4th frame
+ *     (≈15fps effective). Geometry updates read from a stored Float32Array
+ *     snapshot of the ORIGINAL undeformed (unit-sphere × radius) positions,
+ *     then write freshly-displaced positions into the live buffer — this
+ *     makes the morph drift-free (we never deform an already-deformed
+ *     sample).
+ *   - Trails remain static this phase (H5 non-goal); they will animate
+ *     via `trailTime` in H6 when integrated with FusionRing3D.
+ *   - `useReducedMotion()` from `motion/react` short-circuits the loop
+ *     entirely: rotation + morph are skipped, the sphere stays at t=0.
  *
- * Pure math — `chladniDisplacement`, `getPolePositions`, `getPolePairs`,
- * `buildTrailPath` — lives in `src/lib/signatur-3d/sphere-chladni.ts` (H2).
+ * FusionRing3D integration lands in Phase H6.
  */
 import { useEffect, useMemo, useRef, type ReactElement } from 'react';
 import * as THREE from 'three';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { Billboard, Text } from '@react-three/drei';
+import { useReducedMotion } from 'motion/react';
 
 import { PLANETS } from '@/src/lib/signatur-3d/planets';
 import type { PlanetName } from '@/src/lib/signatur-3d/planets';
@@ -63,20 +74,37 @@ const TRAIL_TUBE_STEPS = 48;
 /** Tube radial-segment count per trail. */
 const TRAIL_TUBE_RADIAL = 4;
 
+// ── Animation tuning (H5) ─────────────────────────────────────────────────
+/** Per-frame Y rotation (radians). Slow drift. */
+const ROT_Y_PER_FRAME = 0.0018;
+/** Per-frame X rotation (radians). Subtle wobble. */
+const ROT_X_PER_FRAME = 0.0006;
+/** Morph the geometry every Nth frame (≈15fps morph at 60fps render). */
+const MORPH_EVERY_N_FRAMES = 4;
+/** Solid-layer time runs slower than wire — visual "inside lags outside". */
+const SOLID_TIME_SCALE = 0.7;
+
 /**
  * Build a Chladni-displaced SphereGeometry. Mutates position buffer in place
  * starting from a fresh `new THREE.SphereGeometry`, then recomputes normals.
  *
  * Extracted so both wire and solid layers share identical topology and the
  * `useMemo` dependency list stays compact.
+ *
+ * Returns the geometry AND a Float32Array snapshot of the *original* (before
+ * Chladni-displacement) vertex positions — callers use that snapshot as the
+ * reference frame for in-place animation updates so the morph never drifts.
  */
 function buildDisplacedSphere(
   radius: number,
   weights: Readonly<Partial<Record<PlanetName, number>>>,
-): THREE.SphereGeometry {
+): { geometry: THREE.SphereGeometry; originalPositions: Float32Array } {
   const geo = new THREE.SphereGeometry(radius, SPHERE_SEGMENTS, SPHERE_SEGMENTS);
   const pos = geo.attributes.position;
   const arr = pos.array as Float32Array;
+  // Snapshot the clean unit-sphere × radius positions BEFORE we displace them.
+  // This is the stable reference frame for every future in-place morph update.
+  const originalPositions = new Float32Array(arr);
   const amplitude = radius * DISPLACEMENT_FACTOR;
 
   for (let i = 0; i < pos.count; i++) {
@@ -98,11 +126,205 @@ function buildDisplacedSphere(
 
   pos.needsUpdate = true;
   geo.computeVertexNormals();
-  return geo;
+  return { geometry: geo, originalPositions };
 }
 
 /**
- * R3F component rendering the static Chladni signature sphere.
+ * In-place Chladni morph for an already-built displaced sphere.
+ *
+ * CRITICAL: reads vertex positions from the supplied `originalPositions`
+ * snapshot (the clean, undeformed unit-sphere × radius positions) and
+ * writes displaced positions into the live attribute buffer. Reading from
+ * a fresh reference each frame avoids the feedback-loop drift that would
+ * result from re-deforming an already-deformed sample.
+ */
+function updateChladniGeometryInPlace(
+  geom: THREE.BufferGeometry | null,
+  originalPositions: Float32Array | null,
+  weights: Readonly<Partial<Record<PlanetName, number>>>,
+  time: number,
+  radius: number,
+): void {
+  if (!geom || !originalPositions) return;
+  const pos = geom.attributes.position;
+  if (!pos) return;
+  const arr = pos.array as Float32Array;
+  const amplitudeBase = radius * DISPLACEMENT_FACTOR;
+  const count = pos.count;
+
+  for (let i = 0; i < count; i++) {
+    const xi = i * 3;
+    // Read from ORIGINAL (stable, undeformed) positions.
+    const x = originalPositions[xi];
+    const y = originalPositions[xi + 1];
+    const z = originalPositions[xi + 2];
+    const r = Math.sqrt(x * x + y * y + z * z);
+    if (r < 1e-6) continue;
+    const theta = Math.acos(Math.max(-1, Math.min(1, y / r)));
+    const phi = Math.atan2(z, x);
+    const disp = chladniDisplacement(theta, phi, weights, time);
+    const scale = (radius + disp * amplitudeBase) / r;
+    arr[xi] = x * scale;
+    arr[xi + 1] = y * scale;
+    arr[xi + 2] = z * scale;
+  }
+  pos.needsUpdate = true;
+  geom.computeVertexNormals();
+}
+
+// ── Internal animated scene sub-component ────────────────────────────────
+// `useFrame` is only valid inside an `<Canvas>` subtree, so the scene graph
+// plus its animation hook live here. Kept module-local on purpose — there is
+// no other caller and the prop shape is specific to the parent's refs.
+
+interface AnimatedSceneProps {
+  weights: Readonly<Partial<Record<PlanetName, number>>>;
+  wireGeom: THREE.SphereGeometry;
+  solidGeom: THREE.SphereGeometry;
+  wireOriginalPositions: Float32Array;
+  solidOriginalPositions: Float32Array;
+  polePositions: ReturnType<typeof getPolePositions>;
+  trails: {
+    curve: THREE.CatmullRomCurve3;
+    color: string;
+    radius: number;
+    weight: number;
+  }[];
+  prefersReducedMotion: boolean;
+}
+
+function AnimatedScene({
+  weights,
+  wireGeom,
+  solidGeom,
+  wireOriginalPositions,
+  solidOriginalPositions,
+  polePositions,
+  trails,
+  prefersReducedMotion,
+}: AnimatedSceneProps): ReactElement {
+  const signatureGroupRef = useRef<THREE.Group | null>(null);
+  const timeRef = useRef(0);
+  const frameCountRef = useRef(0);
+
+  useFrame((_state, delta) => {
+    if (prefersReducedMotion) return;
+
+    // delta is seconds; Cymantics-style math is in ms.
+    timeRef.current += delta * 1000;
+    frameCountRef.current += 1;
+
+    // Rotation — applied every frame for smoothness.
+    if (signatureGroupRef.current) {
+      signatureGroupRef.current.rotation.y += ROT_Y_PER_FRAME;
+      signatureGroupRef.current.rotation.x += ROT_X_PER_FRAME;
+    }
+
+    // Geometry morph — throttled to every Nth frame to keep CPU cost flat.
+    if (frameCountRef.current % MORPH_EVERY_N_FRAMES === 0) {
+      updateChladniGeometryInPlace(
+        wireGeom,
+        wireOriginalPositions,
+        weights,
+        timeRef.current,
+        WIRE_RADIUS,
+      );
+      updateChladniGeometryInPlace(
+        solidGeom,
+        solidOriginalPositions,
+        weights,
+        timeRef.current * SOLID_TIME_SCALE,
+        SOLID_RADIUS,
+      );
+    }
+  });
+
+  return (
+    <>
+      <ambientLight intensity={0.4} color={0x4f6ef7} />
+      <pointLight position={[3, 3, 3]} intensity={3} color={0x4f6ef7} distance={20} />
+      <pointLight position={[-3, -2, 2]} intensity={2} color={0x00d4ff} distance={20} />
+      <pointLight position={[0, -4, -3]} intensity={1.5} color={0x7b3ff7} distance={15} />
+
+      <group ref={signatureGroupRef}>
+        {/* Haze shell — inward-facing dark backdrop inside the sphere. */}
+        <mesh>
+          <sphereGeometry args={[1.06, 32, 32]} />
+          <meshBasicMaterial
+            color={0x05050f}
+            transparent
+            opacity={0.7}
+            side={THREE.BackSide}
+          />
+        </mesh>
+
+        {/* Wire layer — Chladni-displaced wireframe. */}
+        <mesh geometry={wireGeom}>
+          <meshStandardMaterial
+            color={0x4f6ef7}
+            wireframe
+            transparent
+            opacity={0.2}
+            emissive={0x1a2a8f}
+            emissiveIntensity={0.6}
+          />
+        </mesh>
+
+        {/* Solid layer — slightly smaller, dark core. */}
+        <mesh geometry={solidGeom}>
+          <meshStandardMaterial
+            color={0x06060f}
+            transparent
+            opacity={0.8}
+            roughness={0.9}
+            metalness={0.05}
+          />
+        </mesh>
+
+        {/* 12 pole groups — a small planet-tinted sphere + billboarded glyph. */}
+        {polePositions.map((p, i) => {
+          const planet = PLANETS[i % PLANETS.length];
+          return (
+            <group key={`pole-${i}`} position={[p.x, p.y, p.z]}>
+              <mesh>
+                <sphereGeometry args={[POLE_MARKER_RADIUS, 16, 16]} />
+                <meshBasicMaterial color={planet.color} />
+              </mesh>
+              <Billboard follow>
+                <Text
+                  position={[0, GLYPH_LIFT, 0]}
+                  fontSize={GLYPH_FONT_SIZE}
+                  color={planet.color}
+                  anchorX="center"
+                  anchorY="middle"
+                >
+                  {planet.symbol}
+                </Text>
+              </Billboard>
+            </group>
+          );
+        })}
+
+        {/* Trails — one tube per dominant antipodal pair. Opacity scales with weight. */}
+        {trails.map((trail, idx) => (
+          <mesh key={`trail-${idx}`}>
+            <tubeGeometry
+              args={[trail.curve, TRAIL_TUBE_STEPS, trail.radius, TRAIL_TUBE_RADIAL, false]}
+            />
+            <meshBasicMaterial
+              color={trail.color}
+              transparent
+              opacity={0.15 + (trail.weight - TRAIL_THRESHOLD) * 0.25}
+            />
+          </mesh>
+        ))}
+      </group>
+    </>
+  );
+}
+
+/**
+ * R3F component rendering the animated Chladni signature sphere.
  *
  * Caller is expected to pass a stable `weights` reference (e.g. memoized via
  * `useMemo` at the call-site); we do NOT defensively clone.
@@ -115,9 +337,14 @@ export function SignatureSphere3D({
   const wireGeomRef = useRef<THREE.SphereGeometry | null>(null);
   const solidGeomRef = useRef<THREE.SphereGeometry | null>(null);
 
-  // Rebuild geometries only when weights change.
-  const wireGeom = useMemo(() => buildDisplacedSphere(WIRE_RADIUS, weights), [weights]);
-  const solidGeom = useMemo(() => buildDisplacedSphere(SOLID_RADIUS, weights), [weights]);
+  // Rebuild geometries only when weights change. Each build also returns an
+  // immutable snapshot of the undeformed vertex positions, which the animated
+  // morph reads from every frame to stay drift-free.
+  const wireBuilt = useMemo(() => buildDisplacedSphere(WIRE_RADIUS, weights), [weights]);
+  const solidBuilt = useMemo(() => buildDisplacedSphere(SOLID_RADIUS, weights), [weights]);
+
+  const wireGeom = wireBuilt.geometry;
+  const solidGeom = solidBuilt.geometry;
 
   wireGeomRef.current = wireGeom;
   solidGeomRef.current = solidGeom;
@@ -180,6 +407,10 @@ export function SignatureSphere3D({
     return result;
   }, [weights]);
 
+  // `useReducedMotion()` may return null when the media query is unsupported;
+  // we coerce to boolean so the render-graph sees a stable primitive.
+  const prefersReducedMotion = useReducedMotion() ?? false;
+
   const dpr = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 2) : 2;
 
   const containerStyle: React.CSSProperties = {
@@ -193,6 +424,7 @@ export function SignatureSphere3D({
     <div
       data-testid="signature-sphere-3d"
       data-planetarium={planetariumMode}
+      data-reduced-motion={prefersReducedMotion}
       className={className}
       style={containerStyle}
     >
@@ -201,84 +433,16 @@ export function SignatureSphere3D({
         dpr={dpr}
         gl={{ antialias: true, alpha: true }}
       >
-        <ambientLight intensity={0.4} color={0x4f6ef7} />
-        <pointLight position={[3, 3, 3]} intensity={3} color={0x4f6ef7} distance={20} />
-        <pointLight position={[-3, -2, 2]} intensity={2} color={0x00d4ff} distance={20} />
-        <pointLight position={[0, -4, -3]} intensity={1.5} color={0x7b3ff7} distance={15} />
-
-        <group>
-          {/* Haze shell — inward-facing dark backdrop inside the sphere. */}
-          <mesh>
-            <sphereGeometry args={[1.06, 32, 32]} />
-            <meshBasicMaterial
-              color={0x05050f}
-              transparent
-              opacity={0.7}
-              side={THREE.BackSide}
-            />
-          </mesh>
-
-          {/* Wire layer — Chladni-displaced wireframe. */}
-          <mesh geometry={wireGeom}>
-            <meshStandardMaterial
-              color={0x4f6ef7}
-              wireframe
-              transparent
-              opacity={0.2}
-              emissive={0x1a2a8f}
-              emissiveIntensity={0.6}
-            />
-          </mesh>
-
-          {/* Solid layer — slightly smaller, dark core. */}
-          <mesh geometry={solidGeom}>
-            <meshStandardMaterial
-              color={0x06060f}
-              transparent
-              opacity={0.8}
-              roughness={0.9}
-              metalness={0.05}
-            />
-          </mesh>
-
-          {/* 12 pole groups — a small planet-tinted sphere + billboarded glyph. */}
-          {polePositions.map((p, i) => {
-            const planet = PLANETS[i % PLANETS.length];
-            return (
-              <group key={`pole-${i}`} position={[p.x, p.y, p.z]}>
-                <mesh>
-                  <sphereGeometry args={[POLE_MARKER_RADIUS, 16, 16]} />
-                  <meshBasicMaterial color={planet.color} />
-                </mesh>
-                <Billboard follow>
-                  <Text
-                    position={[0, GLYPH_LIFT, 0]}
-                    fontSize={GLYPH_FONT_SIZE}
-                    color={planet.color}
-                    anchorX="center"
-                    anchorY="middle"
-                  >
-                    {planet.symbol}
-                  </Text>
-                </Billboard>
-              </group>
-            );
-          })}
-
-          {/* Trails — one tube per dominant antipodal pair. Opacity scales with weight. */}
-          {trails.map((trail, idx) => (
-            <mesh key={`trail-${idx}`}>
-              <tubeGeometry
-                args={[trail.curve, TRAIL_TUBE_STEPS, trail.radius, TRAIL_TUBE_RADIAL, false]}
-              />
-              <meshBasicMaterial
-                color={trail.color}
-                transparent
-                opacity={0.15 + (trail.weight - TRAIL_THRESHOLD) * 0.25}
-              />
-            </mesh>
-          ))}
-        </group>
+        <AnimatedScene
+          weights={weights}
+          wireGeom={wireGeom}
+          solidGeom={solidGeom}
+          wireOriginalPositions={wireBuilt.originalPositions}
+          solidOriginalPositions={solidBuilt.originalPositions}
+          polePositions={polePositions}
+          trails={trails}
+          prefersReducedMotion={prefersReducedMotion}
+        />
       </Canvas>
     </div>
   );
