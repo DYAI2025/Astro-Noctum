@@ -12,7 +12,7 @@
  * Layer 3 (future): Empirical refinement from logged Signatur snapshots
  */
 
-import { DIMENSIONS } from '../../components/signatur-v3/bipolar-engine';
+import { DIMENSION_DEFS as DIMENSIONS } from '@/packages/shared/src/signatur/dimension-defs';
 
 // ═══════════════════════════════════════
 //  TYPES
