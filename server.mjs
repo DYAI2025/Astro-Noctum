@@ -93,6 +93,50 @@ async function waitForStoredChart(userId, maxAttempts = 8, waitMs = 750) {
   return null;
 }
 
+/**
+ * Persists soulprint_sectors to astro_profiles via upsert and returns { saved: boolean }.
+ *
+ * Uses upsert (not update) because the astro_profiles row may not exist yet at
+ * bootstrap time: the Superglue worker writes astro_json asynchronously outside
+ * the request lifecycle, so the row is often created *after* we've already
+ * fallen back to the direct BAFE call and tried to persist the soulprint.
+ * A plain .update() returns 0 rows affected in that race and soulprint_sectors
+ * stays NULL forever for that user — confirmed on prod 2026-04-18 (all users NULL).
+ *
+ * See DEC-synthetic-soulprint-fallback: when this column is NULL the frontend
+ * derives a sign-based synthetic soulprint, but the authoritative computation
+ * must still land here so downstream consumers see the real value.
+ *
+ * @param {any} client — Supabase client (or null when env vars missing in tests)
+ * @param {string} userId
+ * @param {number[]} sectors — 12-element array
+ * @returns {Promise<{ saved: boolean }>}
+ */
+export async function persistSoulprintSectors(client, userId, sectors) {
+  if (!client) return { saved: false };
+  try {
+    const { data, error } = await client
+      .from("astro_profiles")
+      .upsert(
+        { user_id: userId, soulprint_sectors: sectors },
+        { onConflict: "user_id" },
+      )
+      .select("user_id");
+    if (error) {
+      console.warn("[bootstrap] soulprint save failed", error.message);
+      return { saved: false };
+    }
+    if (Array.isArray(data) && data.length > 0) {
+      return { saved: true };
+    }
+    console.warn("[bootstrap] soulprint save affected 0 rows for user_id", userId);
+    return { saved: false };
+  } catch (err) {
+    console.warn("[bootstrap] soulprint save threw", err);
+    return { saved: false };
+  }
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
@@ -2108,37 +2152,11 @@ app.post('/api/experience/bootstrap', requireUserAuth, async (req, res) => {
     };
 
     // 6. Save to Supabase
-    //
-    // Use upsert (not update) because the astro_profiles row may not exist yet
-    // at this point: the Superglue worker (step 1) writes astro_json asynchronously
-    // outside the request lifecycle, so the row is often created *after* we've
-    // already fallen back to the direct BAFE call and tried to persist the soulprint.
-    // A plain .update() returns 0 rows affected in that race and soulprint_sectors
-    // stays NULL forever for that user — this was confirmed on prod (all users NULL).
-    // See DEC-synthetic-soulprint-fallback: the frontend gracefully derives a
-    // sign-based synthetic soulprint when this column is NULL, but the authoritative
-    // computation must still land here so downstream consumers see the real value.
-    let soulprint_saved = false;
-    if (supabaseServer) {
-      try {
-        const { data, error } = await supabaseServer
-          .from('astro_profiles')
-          .upsert(
-            { user_id: req.userId, soulprint_sectors: soulprintSectors },
-            { onConflict: 'user_id' }
-          )
-          .select('user_id');
-        if (error) {
-          console.warn('[bootstrap] soulprint save failed', error.message);
-        } else if (Array.isArray(data) && data.length > 0) {
-          soulprint_saved = true;
-        } else {
-          console.warn('[bootstrap] soulprint save affected 0 rows for user_id', req.userId);
-        }
-      } catch (err) {
-        console.warn('[bootstrap] soulprint save threw', err);
-      }
-    }
+    const { saved: soulprint_saved } = await persistSoulprintSectors(
+      supabaseServer,
+      req.userId,
+      soulprintSectors
+    );
 
     res.status(200).json({ ...responsePayload, soulprint_saved });
   } catch (err) {
