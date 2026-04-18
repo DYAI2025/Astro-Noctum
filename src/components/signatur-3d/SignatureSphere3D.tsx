@@ -29,7 +29,7 @@
 import { useEffect, useMemo, useRef, type ReactElement } from 'react';
 import * as THREE from 'three';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Billboard, Text } from '@react-three/drei';
+import { Billboard, Text, Stats } from '@react-three/drei';
 import { useReducedMotion } from 'motion/react';
 
 import { PLANETS } from '@/src/lib/signatur-3d/planets';
@@ -324,10 +324,32 @@ function AnimatedScene({
 }
 
 /**
- * R3F component rendering the animated Chladni signature sphere.
+ * SignatureSphere3D — R3F Chladni sphere with per-planet weighted standing waves.
  *
- * Caller is expected to pass a stable `weights` reference (e.g. memoized via
- * `useMemo` at the call-site); we do NOT defensively clone.
+ * R3F component rendering the animated Chladni signature sphere. Caller is
+ * expected to pass a stable `weights` reference (e.g. memoized via `useMemo`
+ * at the call-site); we do NOT defensively clone.
+ *
+ * Performance notes:
+ * - Pixel ratio capped at `dpr={[1, 2]}` — iPhone 14 has DPR 3; limiting to 2
+ *   caps the GPU workload at ~4× backing buffer vs. native 9×.
+ * - Geometry morph runs every 4th frame (15 fps effective) via in-place
+ *   BufferAttribute update. Wire + solid spheres share the same update pattern.
+ * - useMemo dependencies: {@link SignatureSphere3DProps.weights} is the only
+ *   reactive input to the expensive geometry build. Parent must pass a stable
+ *   reference (or a value-equivalent object) to avoid per-render rebuild.
+ * - useReducedMotion (motion/react) short-circuits the useFrame loop entirely.
+ * - DEV-only: a drei <Stats /> panel is mounted inside the Canvas for on-device
+ *   FPS monitoring.
+ *
+ * Trail tubes:
+ * - Drawn only for the 6 antipodal pole pairs whose assigned planet weight
+ *   >= 0.35 (weights below render no trail, reducing triangle count).
+ *
+ * Data contract:
+ * - `weights` keys are the 10 Cousto planet names; missing keys default to 0.
+ * - Typical source: soulprintToPlanetWeights(signalData.baseSignals) from
+ *   the parent FusionRing3D component.
  */
 export function SignatureSphere3D({
   weights,
@@ -433,6 +455,7 @@ export function SignatureSphere3D({
         dpr={dpr}
         gl={{ antialias: true, alpha: true }}
       >
+        {import.meta.env.DEV && <Stats />}
         <AnimatedScene
           weights={weights}
           wireGeom={wireGeom}

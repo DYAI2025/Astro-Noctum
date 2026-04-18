@@ -45,6 +45,8 @@ vi.mock('@react-three/drei', () => ({
       {children}
     </div>
   ),
+  // H7: <Stats /> is a DEV-only FPS panel; mock as a no-op for tests.
+  Stats: () => null,
 }));
 
 // Override the global three mock's SphereGeometry with a stub that exposes
