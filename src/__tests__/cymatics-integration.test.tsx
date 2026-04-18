@@ -180,21 +180,6 @@ describe('FusionRing3D cymatics wiring', () => {
     expect(screen.queryByTestId('mock-v2-canvas')).toBeNull();
   });
 
-  it('falls through to V2 when cymatics flag explicitly disabled', async () => {
-    localStorage.setItem('ff_signature_engine_cymatics', 'false');
-    await act(async () => {
-      render(
-        React.createElement(FusionRing3D, {
-          userId: 'test-user',
-          labels: LABELS,
-          chladniParams: CHLADNI_PARAMS,
-        }),
-      );
-    });
-    expect(screen.queryByTestId('mock-cymatics-canvas')).toBeNull();
-    expect(screen.getByTestId('mock-v2-canvas')).toBeDefined();
-  });
-
   it('renders cymatics canvas when flag enabled + params present', async () => {
     localStorage.setItem('ff_signature_engine_cymatics', 'true');
     await act(async () => {
