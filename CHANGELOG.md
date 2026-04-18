@@ -1,5 +1,39 @@
 # Changelog
 
+## [Unreleased] - 2026-04-18
+
+### Features
+
+- **3D Cymatics Signatur-View** (`src/components/signatur-3d/SignatureSphere3D.tsx`) — Three.js/R3F-Sphäre mit Chladni-Displacement, 10-Planeten-Pole-Markern (Cousto-Frequenzen, gesetzte Glyphen-Symbole über drei's `<Text>`+`<Billboard>`), Tube-Trails zwischen dominanten antipodalen Pol-Paaren (threshold w ≥ 0.35), `useFrame`-Animation (rotation + in-place geometry morph alle 4 Frames). DPR-capped auf [1,2] für iPhone 14. DEV-only `<Stats />` FPS-Panel.
+- **2D ↔ 3D Toggle auf Signatur-Seite** (`SignaturRenderer`) — rounded-pill Button oben-rechts des Canvas, beide Canvases persistent mounted (CSS `hidden` toggle), kein State-Reset beim Switch. Default `2d`. Accessible via `aria-pressed`.
+- **10-Planeten-Tabelle + Rulership-Adapter** (`src/lib/signatur-3d/`) — Cousto-Planeten mit `baseFrequency`, `color`, `symbol`, `dimension`, `poleIndex`. `soulprintToPlanetWeights(sectors: number[12])` deterministic derivation aus Bootstrap's `soulprint_sectors` via klassischer Rulership-Matrix (Aries→Mars/Pluto, Cancer→Moon, etc.).
+
+### Refactoring
+
+- **V1/V2/V3 Renderer-Chain entfernt** — `FusionRingCanvasV2`, `FusionRingWebsiteCanvas`, `SignaturV3Canvas`, `bazodiac-engine.ts`, `bipolar-engine.ts` alle gelöscht. Cymatics ist die einzige 2D-Render-Engine.
+- **Feature-Flags entfernt** — `signature_engine_v2`, `signature_engine_v3`, `signature_engine_cymatics` aus `feature-flags.ts` weg. `CymaticsFallback` (CSS/SVG) ist der automatische Fallback bei Canvas-Fehlern.
+- **Rename "Fusion Ring" → "Signatur"** — Component `FusionRing3D` → `SignaturRenderer`, Page `FuRingPage` → `SignaturPage`, Hook `useFusionSignal` → `useSignaturSignal`, i18n-Namespace `furing3d` → `signatur`. Route `/fu-ring` als Legacy-Alias für 30 Tage.
+- **`src/lib/fusion-ring/` Ordner aufgelöst** — 19 Dateien einzeln geprüft: 17 Moves (→ `src/lib/signatur/`, `src/lib/dissonance/`, `src/lib/day-harmonic.ts`), 2 Deletes (`colors.ts`, `draw.ts` — V-chain palette + Canvas-Draw).
+- **Helper extraction** — `clamp` + `lerp` aus `bazodiac-engine.ts` nach `src/lib/utils/math.ts`; `DIMENSIONS` aus `bipolar-engine.ts` direkt von `@/packages/shared/src/signatur/dimension-defs` importiert.
+
+### Bug Fixes
+
+- **BUG-26: Cymatics-Renderer wurde auf Signatur-Page nicht gerendert** — Feature-Flag `signature_engine_cymatics` war seit Sprint-Abschluss auf `false` default, `FusionRing3D` ist dadurch auf V3 gefallen. Flag auf `true` gesetzt + zu `CRITICAL_FLAGS` hinzugefügt (mittlerweile durch Phase E komplett entfernt).
+
+### Test Infrastructure
+
+- **Test-Cleanup** — 10 V-Chain-only Tests gelöscht (`signatur-reveal-v2`, `mobile-v2-parity`, `webgl-fallback`, `signatur-v3-performance`, `cluster-burst-trigger`, `fusion-ring-postprocess-degraded`, `signatur-theme-aware`, 3 V3-Engine-Tests). 6 Tests surgical bearbeitet (stale `vi.mock`s entfernt, Mock-Pfade aktualisiert).
+- **+38 neue Tests** — Planet-Adapter (8), Chladni-Math (14), 3D-Komponente (10), Integration-Toggle (5), MiniSignature-Rewrite (9). Full-Suite 1949/1949 passing.
+
+### Deferred Follow-ups
+
+- `packages/shared/src/fusion-ring/` (Shared-Package-Clone mit `constants.ts`, `math.ts`, `signal.ts` — I5.1 Follow-up vor Mobile-Release adressieren)
+- `test-signal.ts` → `event-to-signal.ts` Rename (Naming-Theater, optional)
+- `dissonance-morph.ts` Delete (Dead-Code-Evaluation, optional)
+- `/fu-ring` Legacy-Alias (safe to remove 30 Tage post-deploy)
+
+---
+
 ## [Unreleased] - 2026-04-11
 
 ### Features
