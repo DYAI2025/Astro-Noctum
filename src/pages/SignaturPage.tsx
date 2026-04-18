@@ -24,11 +24,11 @@ import {
   CLUSTER_REGISTRY,
   isClusterComplete,
   findClusterForModule,
-} from '@/src/lib/fusion-ring/clusters';
+} from '@/src/lib/signatur/clusters';
 import { toNatalWeightsOrUndefined, toQuizWeightsOrUndefined } from '@/src/lib/signatur/weight-utils';
 import { baziToChladniParams } from '@/src/lib/cymatics/bazi-to-chladni';
 import type { ContributionEvent } from '@/src/lib/lme/types';
-import { eventToSectorSignals } from '@/src/lib/fusion-ring/test-signal';
+import { eventToSectorSignals } from '@/src/lib/signatur/test-signal';
 import { useCoustoAudio } from '@/src/hooks/useCoustoAudio';
 import { useCosmicResonance } from '@/src/hooks/useCosmicResonance';
 import { useFluidityLevel } from '@/src/hooks/useFluidityLevel';

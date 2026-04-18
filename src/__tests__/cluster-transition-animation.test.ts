@@ -3,7 +3,7 @@ import {
   CLUSTER_REGISTRY,
   isClusterComplete,
   findClusterForModule,
-} from '../lib/fusion-ring/clusters';
+} from '../lib/signatur/clusters';
 
 // ── 1. Cluster metadata for animation ──────────────────────────────
 

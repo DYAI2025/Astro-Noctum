@@ -13,7 +13,7 @@
 
 import { useMemo } from 'react';
 import { useReducedMotion } from 'motion/react';
-import { CLUSTER_REGISTRY, isClusterComplete } from '@/src/lib/fusion-ring/clusters';
+import { CLUSTER_REGISTRY, isClusterComplete } from '@/src/lib/signatur/clusters';
 
 export type FluidityTier = 0 | 1 | 2;
 

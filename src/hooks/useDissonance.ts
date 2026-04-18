@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { computeDissonance, type DissonanceResult } from '../lib/fusion-ring/dissonance';
-import { computeVisualModulation, type VisualModulation } from '../lib/fusion-ring/dissonance-visual';
+import { computeDissonance, type DissonanceResult } from '../lib/dissonance/dissonance';
+import { computeVisualModulation, type VisualModulation } from '../lib/dissonance/dissonance-visual';
 
 interface UseDissonanceProps {
   natalWeights: Record<string, number> | null;

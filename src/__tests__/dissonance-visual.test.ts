@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { computeVisualModulation, NEUTRAL_MODULATION, type VisualModulation } from '../lib/fusion-ring/dissonance-visual';
-import type { DissonanceResult } from '../lib/fusion-ring/dissonance';
+import { computeVisualModulation, NEUTRAL_MODULATION, type VisualModulation } from '../lib/dissonance/dissonance-visual';
+import type { DissonanceResult } from '../lib/dissonance/dissonance';
 
 describe('computeVisualModulation', () => {
   const zero: DissonanceResult = {

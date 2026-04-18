@@ -1,12 +1,12 @@
 import { useCallback } from 'react';
 import type { ContributionEvent } from '@/src/lib/lme/types';
-import { eventToSectorSignals } from '@/src/lib/fusion-ring/test-signal';
+import { eventToSectorSignals } from '@/src/lib/signatur/test-signal';
 import { contributeQuizResult } from '@/src/services/contribute';
-import { findClusterForModule, isClusterComplete } from '@/src/lib/fusion-ring/clusters';
+import { findClusterForModule, isClusterComplete } from '@/src/lib/signatur/clusters';
 import {
   queueContribution,
   drainClusterContributions,
-} from '@/src/lib/fusion-ring/contribution-queue';
+} from '@/src/lib/signatur/contribution-queue';
 
 /**
  * Returns a handler for quiz onComplete that:

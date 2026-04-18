@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { ContributionEvent } from '@/src/lib/lme/types';
-import { shadowArchetypeToEvent } from '@/src/lib/fusion-ring/quiz-to-event';
+import { shadowArchetypeToEvent } from '@/src/lib/signatur/quiz-to-event';
 import { shadowArchetypeQuiz } from '@/packages/shared/src/quizzes/definitions/shadow-archetype';
 import { scoreQuiz } from '@/packages/shared/src/quizzes/scoring';
 import { useLanguage } from '../../contexts/LanguageContext';

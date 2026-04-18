@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { lerpModulation, dissonanceEase, morphDuration } from '../lib/fusion-ring/dissonance-morph';
-import type { VisualModulation } from '../lib/fusion-ring/dissonance-visual';
+import { lerpModulation, dissonanceEase, morphDuration } from '../lib/dissonance/dissonance-morph';
+import type { VisualModulation } from '../lib/dissonance/dissonance-visual';
 
 const neutral: VisualModulation = {
   geometrySkew: 0, penDistanceShift: 0,

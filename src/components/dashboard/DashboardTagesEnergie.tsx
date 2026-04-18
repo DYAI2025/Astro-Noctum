@@ -34,7 +34,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import type { DailyResponse } from '@/src/lib/schemas/experience';
-import type { DayHarmonicState } from '@/src/lib/fusion-ring/day-harmonic';
+import type { DayHarmonicState } from '@/src/lib/day-harmonic';
 import type { SpaceWeatherState } from '@/src/hooks/useSpaceWeather';
 import type { SpaceWeatherExtended } from '@/src/lib/schemas/space-weather';
 import { PremiumGate } from '../PremiumGate';

@@ -16,7 +16,7 @@
 
 import { useMemo } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
+import type { DayHarmonicState } from '../../lib/day-harmonic';
 import type { SpaceWeatherState } from '../../hooks/useSpaceWeather';
 import type { TransitEvent } from '../../lib/schemas/transit-state';
 

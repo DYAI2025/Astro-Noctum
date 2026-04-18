@@ -1,7 +1,7 @@
 import { supabase } from "../lib/supabase";
 import type { ApiData } from "../types/bafe";
 import type { TileTexts } from "../types/interpretation";
-import type { DissonanceResult } from "../lib/fusion-ring/dissonance";
+import type { DissonanceResult } from "../lib/dissonance/dissonance";
 
 // ── Types ───────────────────────────────────────────────────────────
 

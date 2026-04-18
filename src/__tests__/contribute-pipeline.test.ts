@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { eventToSectorSignals } from '@/src/lib/fusion-ring/test-signal';
-import { findClusterForModule, isClusterComplete } from '@/src/lib/fusion-ring/clusters';
+import { eventToSectorSignals } from '@/src/lib/signatur/test-signal';
+import { findClusterForModule, isClusterComplete } from '@/src/lib/signatur/clusters';
 import type { ContributionEvent } from '@/src/lib/lme/types';
 
 const makeEvent = (moduleId: string, markers: { id: string; weight: number }[]): ContributionEvent => ({

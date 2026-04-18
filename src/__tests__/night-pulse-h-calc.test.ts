@@ -9,7 +9,7 @@
  * Implements: REQ-F-signatur-day-night-pulse § Night-Pulse
  */
 import { describe, it, expect } from 'vitest';
-import { computeDayHarmonic, computeNightHarmonic, isNighttime } from '../lib/fusion-ring/day-harmonic';
+import { computeDayHarmonic, computeNightHarmonic, isNighttime } from '../lib/day-harmonic';
 
 // ── Mirror of server.mjs Night-Pulse helpers ─────────────────────────────────
 

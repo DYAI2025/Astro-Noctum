@@ -3,7 +3,7 @@ import {
   countCompletedClusters,
   clusterCountToTier,
 } from '@/src/hooks/useFluidityLevel';
-import { CLUSTER_REGISTRY } from '@/src/lib/fusion-ring/clusters';
+import { CLUSTER_REGISTRY } from '@/src/lib/signatur/clusters';
 
 describe('countCompletedClusters', () => {
   it('returns 0 for empty set', () => {

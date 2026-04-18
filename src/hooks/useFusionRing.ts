@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { ContributionEvent } from '@/src/lib/lme/types';
 import type { ApiData } from '@/src/types/bafe';
-import type { FusionRingSignal } from '@/src/lib/fusion-ring';
+import type { FusionRingSignal } from '@/src/lib/signatur';
 import type { MasterSignal } from '@/src/lib/master-signal';
 import {
   westernToSectors,
@@ -12,7 +12,7 @@ import {
   findClusterForModule,
   isClusterComplete,
   CLUSTER_REGISTRY,
-} from '@/src/lib/fusion-ring';
+} from '@/src/lib/signatur';
 import { saveContributionEvent, loadUserEvents } from '@/src/services/contribution-events';
 
 export function useFusionRing(

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { DissonanceResult } from '@/src/lib/fusion-ring/dissonance';
+import type { DissonanceResult } from '@/src/lib/dissonance/dissonance';
 
 interface DissonanceValuesProps {
   dissonance: DissonanceResult;

@@ -4,8 +4,8 @@ import {
   isClusterComplete,
   clusterProgress,
   findClusterForModule,
-} from '@/src/lib/fusion-ring/clusters';
-import { MODULE_TO_QUIZ_ID, QUIZ_NAMES } from '@/src/lib/fusion-ring/quiz-maps';
+} from '@/src/lib/signatur/clusters';
+import { MODULE_TO_QUIZ_ID, QUIZ_NAMES } from '@/src/lib/signatur/quiz-maps';
 import { pickSuggestion } from '@/src/hooks/useQuizSuggestion';
 
 describe('Quiz-Cluster E2E pipeline', () => {

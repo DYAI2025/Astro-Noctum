@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CLUSTER_REGISTRY, isClusterComplete, findClusterForModule } from '@/src/lib/fusion-ring/clusters';
+import { CLUSTER_REGISTRY, isClusterComplete, findClusterForModule } from '@/src/lib/signatur/clusters';
 
 describe('cluster completion flow', () => {
   it('each cluster has a significance weight between 0 and 1', () => {

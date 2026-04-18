@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { DashboardTagesEnergie } from '../components/dashboard/DashboardTagesEnergie';
 import type { DailyResponse } from '../lib/schemas/experience';
-import type { DayHarmonicState } from '../lib/fusion-ring/day-harmonic';
+import type { DayHarmonicState } from '../lib/day-harmonic';
 import type { SpaceWeatherState } from '../hooks/useSpaceWeather';
 
 // ── Mock feature flag so badge row renders ─────────────────────────────────────

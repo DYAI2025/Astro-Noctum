@@ -6,8 +6,8 @@ import { useSpaceWeather } from '@/src/hooks/useSpaceWeather';
 import { CymaticsFallback } from '@/src/components/signatur-cymatics/CymaticsFallback';
 import { PLANETS, type PlanetName } from '@/src/lib/signatur-3d/planets';
 import { soulprintToPlanetWeights } from '@/src/lib/signatur-3d/soulprint-to-planets';
-import type { DissonanceResult } from '../../lib/fusion-ring/dissonance';
-import type { DayHarmonicState } from '../../lib/fusion-ring/day-harmonic';
+import type { DissonanceResult } from '../../lib/dissonance/dissonance';
+import type { DayHarmonicState } from '../../lib/day-harmonic';
 import type { ChladniParams } from '@/src/lib/cymatics/bazi-to-chladni';
 
 // Cymatics is the only renderer now. V1/V2/V3 paths were removed on 2026-04-18
@@ -57,7 +57,7 @@ type SignaturRendererProps = {
   /** @deprecated legacy V2/V3 prop — ignored. */
   solarModulation?: number;
   /** @deprecated legacy V2 prop — ignored. */
-  dissonanceModulation?: import('../../lib/fusion-ring/dissonance-visual').VisualModulation | null;
+  dissonanceModulation?: import('../../lib/dissonance/dissonance-visual').VisualModulation | null;
   /** @deprecated legacy V3 prop — ignored. */
   externalDissonance?: DissonanceResult | null;
   /** @deprecated legacy V3 prop — ignored. */

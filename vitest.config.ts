@@ -17,7 +17,14 @@ export default defineConfig({
     },
     coverage: {
       reporter: ["text", "html"],
-      include: ["src/lib/astro-data/**", "src/contexts/**", "src/lib/fusion-ring/**", "src/lib/lme/**"],
+      include: [
+        "src/lib/astro-data/**",
+        "src/contexts/**",
+        "src/lib/signatur/**",
+        "src/lib/dissonance/**",
+        "src/lib/day-harmonic.ts",
+        "src/lib/lme/**",
+      ],
     },
   },
   resolve: {

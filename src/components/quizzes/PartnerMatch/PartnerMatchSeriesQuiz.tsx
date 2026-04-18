@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { ContributionEvent } from '@/src/lib/lme/types';
-import { partnerMatchSeriesQuizToEvent } from '@/src/lib/fusion-ring/quiz-to-event';
+import { partnerMatchSeriesQuizToEvent } from '@/src/lib/signatur/quiz-to-event';
 import { SPINNER_OUTER, SPINNER_INNER } from '../quiz-transitions';
 import { useLanguage } from '@/src/contexts/LanguageContext';
 

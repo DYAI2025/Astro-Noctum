@@ -3,12 +3,12 @@ import {
   queueContribution,
   drainClusterContributions,
   loadPendingContributions,
-} from '../lib/fusion-ring/contribution-queue';
+} from '../lib/signatur/contribution-queue';
 import {
   findClusterForModule,
   isClusterComplete,
   CLUSTER_REGISTRY,
-} from '../lib/fusion-ring/clusters';
+} from '../lib/signatur/clusters';
 
 // ── 1. Contribution queue — localStorage persistence ────────────────
 

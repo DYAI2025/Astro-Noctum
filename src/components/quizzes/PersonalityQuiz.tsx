@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { ContributionEvent } from '@/src/lib/lme/types';
-import { personalityToEvent } from '@/src/lib/fusion-ring/quiz-to-event';
+import { personalityToEvent } from '@/src/lib/signatur/quiz-to-event';
 import { SharePopup } from '@/src/components/SharePopup';
 import { useLanguage } from '../../contexts/LanguageContext';
 

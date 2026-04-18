@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { pickSuggestion } from '@/src/hooks/useQuizSuggestion';
-import { CLUSTER_REGISTRY } from '@/src/lib/fusion-ring/clusters';
+import { CLUSTER_REGISTRY } from '@/src/lib/signatur/clusters';
 
 describe('pickSuggestion', () => {
   beforeEach(() => {

@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { loveLangToEvent } from '@/src/lib/fusion-ring/quiz-to-event';
+import { loveLangToEvent } from '@/src/lib/signatur/quiz-to-event';
 import type { ContributionEvent } from '@/src/lib/lme/types';
 import { SharePopup } from '@/src/components/SharePopup';
 import { useLanguage } from '../../contexts/LanguageContext';

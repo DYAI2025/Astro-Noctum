@@ -8,7 +8,7 @@ import {
   type DayHarmonicState,
   computeDayHarmonic,
   computeNightHarmonic,
-} from '../lib/fusion-ring/day-harmonic';
+} from '../lib/day-harmonic';
 
 // ── Types ─────────────────────────────────────────────────────────────
 

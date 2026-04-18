@@ -6,8 +6,8 @@ import {
   clusterProgress,
   isClusterComplete,
   type ClusterDef,
-} from '@/src/lib/fusion-ring/clusters';
-import { MODULE_TO_QUIZ_ID, QUIZ_NAMES } from '@/src/lib/fusion-ring/quiz-maps';
+} from '@/src/lib/signatur/clusters';
+import { MODULE_TO_QUIZ_ID, QUIZ_NAMES } from '@/src/lib/signatur/quiz-maps';
 import { useLanguage } from '@/src/contexts/LanguageContext';
 
 interface ClusterSidebarProps {

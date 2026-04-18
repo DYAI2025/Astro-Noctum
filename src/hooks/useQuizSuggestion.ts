@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CLUSTER_REGISTRY } from '@/src/lib/fusion-ring/clusters';
+import { CLUSTER_REGISTRY } from '@/src/lib/signatur/clusters';
 
 const STORAGE_KEY = 'bazodiac_quiz_last_suggestion';
 

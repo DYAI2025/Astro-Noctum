@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { MODULE_TO_QUIZ_ID, QUIZ_NAMES } from '@/src/lib/fusion-ring/quiz-maps';
-import { CLUSTER_REGISTRY } from '@/src/lib/fusion-ring/clusters';
+import { MODULE_TO_QUIZ_ID, QUIZ_NAMES } from '@/src/lib/signatur/quiz-maps';
+import { CLUSTER_REGISTRY } from '@/src/lib/signatur/clusters';
 
 describe('quiz-maps', () => {
   it('MODULE_TO_QUIZ_ID covers every module in CLUSTER_REGISTRY', () => {

@@ -8,7 +8,7 @@ import {
   eventToSectorSignals,
   computeFusionSignal,
   SECTOR_COUNT,
-} from '@/src/lib/fusion-ring';
+} from '@/src/lib/signatur';
 import type { ContributionEvent, Marker } from '@/src/lib/lme/types';
 
 // ---------------------------------------------------------------------------

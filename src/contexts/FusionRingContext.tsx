@@ -1,6 +1,6 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import { useFusionRing } from '../hooks/useFusionRing';
-import type { FusionRingSignal } from '../lib/fusion-ring/signal';
+import type { FusionRingSignal } from '../lib/signatur/signal';
 import type { ContributionEvent } from '../lib/lme/types';
 import type { ApiData } from '../types/bafe';
 import type { MasterSignal } from '../lib/master-signal';
