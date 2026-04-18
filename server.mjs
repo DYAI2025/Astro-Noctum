@@ -112,6 +112,22 @@ async function waitForStoredChart(userId, maxAttempts = 8, waitMs = 750) {
  * @param {number[]} sectors — 12-element array
  * @returns {Promise<{ saved: boolean }>}
  */
+/**
+ * Recomputes the 12-sector soulprint from a stored astro_json blob using
+ * the same pipeline as /api/experience/bootstrap (natal dimensions + zero
+ * quiz + 100/0 blend). Exported for the backfill script
+ * (scripts/backfill-soulprint.mjs) that repairs existing rows where
+ * soulprint_sectors is NULL from the pre-upsert race-condition window.
+ *
+ * @param {any} astroJson — the persisted bafeData from astro_profiles.astro_json
+ * @returns {number[]} 12-element array
+ */
+export function recomputeSoulprintFromAstroJson(astroJson) {
+  const nDim = computeNatalDimensions(astroJson);
+  const qDim = zeroDimensions();
+  return projectToRing(nDim, qDim, 1, 0);
+}
+
 export async function persistSoulprintSectors(client, userId, sectors) {
   if (!client) return { saved: false };
   try {
