@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { soulprintToNatalWeights, quizSectorsToQuizWeights } from '@/src/components/fusion-ring-website/signatur-bridge';
+import { soulprintToNatalWeights, quizSectorsToQuizWeights } from '@/packages/shared/src/signatur/signatur-bridge';
 import {
   hasFullSectorSet,
   toNatalWeightsOrUndefined,

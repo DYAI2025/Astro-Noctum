@@ -14,7 +14,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { soulprintToNatalWeights } from '@/src/components/fusion-ring-website/signatur-bridge';
+import { soulprintToNatalWeights } from '@/packages/shared/src/signatur/signatur-bridge';
 
 const PLANETS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'] as const;
 

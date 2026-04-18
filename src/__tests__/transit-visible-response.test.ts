@@ -5,7 +5,7 @@ import {
   calculateFusionSignal,
   clamp01,
 } from '../utils/math';
-import { soulprintToNatalWeights } from '../components/fusion-ring-website/signatur-bridge';
+import { soulprintToNatalWeights } from '@/packages/shared/src/signatur/signatur-bridge';
 
 // ── 1. Power curve perceptibility ─────────────────────────────────────
 

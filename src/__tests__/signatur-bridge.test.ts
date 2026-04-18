@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   soulprintToNatalWeights,
   quizSectorsToQuizWeights,
-} from '@/src/components/fusion-ring-website/signatur-bridge';
+} from '@/packages/shared/src/signatur/signatur-bridge';
 
 describe('soulprintToNatalWeights', () => {
   it('returns weights for all 7 planets', () => {

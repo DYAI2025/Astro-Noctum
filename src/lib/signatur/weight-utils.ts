@@ -2,7 +2,7 @@ import {
   soulprintToNatalWeights,
   quizSectorsToQuizWeights,
   soulprintToDimensionWeights,
-} from '@/src/components/fusion-ring-website/signatur-bridge';
+} from '@/packages/shared/src/signatur/signatur-bridge';
 
 // ── Synthetic soulprint fallback ────────────────────────────────────────────
 
