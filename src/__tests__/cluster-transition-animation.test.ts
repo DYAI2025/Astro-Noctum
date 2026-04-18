@@ -37,7 +37,7 @@ describe('cluster-transition-animation — effect trigger contract', () => {
 
     expect(isClusterComplete(naturkind, completed)).toBe(true);
 
-    // Simulate effect construction as FuRingPage does (line 143)
+    // Simulate effect construction as SignaturPage does (line 143)
     const effect = {
       type: 'burst' as const,
       color: naturkind.color,

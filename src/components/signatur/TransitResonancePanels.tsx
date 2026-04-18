@@ -3,7 +3,7 @@
 // Live planetary transit panels showing current aspects relative to the
 // user's birth sign and which Signatur pole each transit affects.
 //
-// Replaces the static info cards on FuRingPage.
+// Replaces the static info cards on SignaturPage.
 // Data source: computeTodayPlanetInfluences() (client-side Kepler computation)
 // ═══════════════════════════════════════════════════════════════════════════
 

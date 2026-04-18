@@ -1,7 +1,7 @@
 /**
- * Tests for the chladniParams derivation pattern used in FuRingPage.
+ * Tests for the chladniParams derivation pattern used in SignaturPage.
  *
- * FuRingPage derives ChladniParams via:
+ * SignaturPage derives ChladniParams via:
  *   baziToChladniParams(pillars, wuxingWeights, harmonyIndex)
  *
  * where:
@@ -10,7 +10,7 @@
  *   - harmonyIndex from apiData.wuxing['harmony_index'] ?? 0.5 (not a typed field)
  *
  * These tests verify the guard conditions and fallback behavior that the
- * FuRingPage useMemo relies on — without mounting the full page component.
+ * SignaturPage useMemo relies on — without mounting the full page component.
  */
 import { describe, it, expect } from 'vitest';
 import { baziToChladniParams } from '../lib/cymatics/bazi-to-chladni';
@@ -25,7 +25,7 @@ const WEIGHTS = { Wood: 0.1, Fire: 0.3, Earth: 0.2, Metal: 0.2, Water: 0.2 };
 
 // ── Guard: undefined propagation ─────────────────────────────────────────────
 
-describe('FuRingPage chladniParams guard conditions', () => {
+describe('SignaturPage chladniParams guard conditions', () => {
   it('returns undefined when pillars is falsy', () => {
     // Mirrors the guard: if (!pillars || !wuxingWeights) return undefined
     const pillars = undefined;
@@ -49,7 +49,7 @@ describe('FuRingPage chladniParams guard conditions', () => {
 
 // ── harmony_index extraction ──────────────────────────────────────────────────
 
-describe('FuRingPage harmony_index extraction', () => {
+describe('SignaturPage harmony_index extraction', () => {
   /** Mirrors: const rawHarmony = apiData?.wuxing?.['harmony_index'];
    *            const harmonyIndex = Number.isFinite(rawHarmony as number) ? ... : 0.5; */
   function extractHarmony(wuxing: Record<string, unknown>): number {
@@ -88,7 +88,7 @@ describe('FuRingPage harmony_index extraction', () => {
 
 // ── Determinism: same apiData → same chladniParams ───────────────────────────
 
-describe('FuRingPage chladniParams determinism', () => {
+describe('SignaturPage chladniParams determinism', () => {
   it('produces identical params on repeated calls with same inputs', () => {
     const a = baziToChladniParams(PILLARS, WEIGHTS, 0.5);
     const b = baziToChladniParams(PILLARS, WEIGHTS, 0.5);

@@ -37,7 +37,7 @@ import { TransitResonancePanels } from '@/src/components/signatur/TransitResonan
 import { CymaticsFrequencyPanel } from '@/src/components/signatur-cymatics/CymaticsFrequencyPanel';
 import { ChladniParamsBadge } from '@/src/components/signatur-cymatics/ChladniParamsBadge';
 
-export default function FuRingPage() {
+export default function SignaturPage() {
   const { t, lang } = useLanguage();
   const { userId, apiData } = useAppLayout();
   const { planetariumMode } = usePlanetarium();

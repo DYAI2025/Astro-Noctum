@@ -6,7 +6,7 @@ import { useNavigationDepth, type TransitionDirection } from './hooks/useNavigat
 import type { OnboardingPageProps } from './pages/OnboardingPage';
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
-const FuRingPage = lazy(() => import('./pages/FuRingPage'));
+const SignaturPage = lazy(() => import('./pages/SignaturPage'));
 const SignaturQuizzesPage = lazy(() => import('./pages/SignaturQuizzesPage'));
 const WuXingPage = lazy(() => import('./pages/WuXingPage'));
 const WissenPage = lazy(() => import('./pages/WissenPage'));
@@ -101,8 +101,9 @@ export function AppRoutes({ hasCompleteProfile, onboardingProps }: AppRoutesProp
               path="/"
               element={hasCompleteProfile ? <DashboardPage /> : <Navigate to="/onboarding" replace />}
             />
-            <Route path="/signatur" element={<FuRingPage />} />
-            <Route path="/fu-ring" element={<FuRingPage />} />
+            <Route path="/signatur" element={<SignaturPage />} />
+            {/* Legacy alias — safe to remove 30 days post-deploy */}
+            <Route path="/fu-ring" element={<SignaturPage />} />
             <Route path="/signatur/quizzes" element={<SignaturQuizzesPage />} />
             <Route path="/wu-xing" element={<WuXingPage />} />
             <Route path="/wissen" element={<WissenPage />} />

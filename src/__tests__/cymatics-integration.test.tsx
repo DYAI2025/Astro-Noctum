@@ -1,5 +1,5 @@
 /**
- * Integration tests for the Cymatics engine wiring in SignaturRenderer and FuRingPage.
+ * Integration tests for the Cymatics engine wiring in SignaturRenderer and SignaturPage.
  *
  * Covers:
  * 1. Engine hierarchy: cymatics > V3 > V2 > V1
