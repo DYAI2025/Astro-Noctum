@@ -1,11 +1,10 @@
 /**
- * Phase H3 — Smoke tests for the static R3F SignatureSphere3D.
+ * Phase H4 — Smoke tests for the static R3F SignatureSphere3D.
  *
  * WebGL is unavailable in happy-dom, so we mock `@react-three/fiber`'s
- * `<Canvas>` to render as a plain div wrapper. We only assert on outer-
- * container props (testid, data-planetarium, className). Internal scene-
- * graph coverage is out of scope here — that comes with the H6 integration
- * test running against a real renderer.
+ * `<Canvas>` and `@react-three/drei`'s `<Text>`/`<Billboard>` to render
+ * as plain DOM so we can at least count glyphs and trails.
+ * Internal scene-graph coverage beyond that is out of scope here.
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, cleanup } from '@testing-library/react';
@@ -18,6 +17,18 @@ vi.mock('@react-three/fiber', () => ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Canvas: ({ children }: { children?: ReactNode } & Record<string, any>) => (
     <div data-testid="r3f-canvas-mock">{children}</div>
+  ),
+}));
+
+// Mock drei's <Text> and <Billboard>. Text becomes a testable DOM element
+// so we can count glyph renders; Billboard is a passthrough.
+vi.mock('@react-three/drei', () => ({
+  Billboard: ({ children }: { children?: ReactNode }) => <>{children}</>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Text: ({ children, color, fontSize }: { children?: ReactNode } & Record<string, any>) => (
+    <div data-testid="drei-text-mock" data-color={color} data-size={fontSize}>
+      {children}
+    </div>
   ),
 }));
 
@@ -96,5 +107,46 @@ describe('SignatureSphere3D', () => {
       <SignatureSphere3D weights={ALL_HALF} className="custom-class" />,
     );
     expect(getByTestId('signature-sphere-3d').className).toContain('custom-class');
+  });
+
+  // ── H4 additions ─────────────────────────────────────────────────────────
+
+  it('renders 12 glyphs (one per pole) even when all weights are sub-threshold', () => {
+    // All weights below TRAIL_THRESHOLD (0.35): glyphs still render (12), trails = 0.
+    const LOW: Readonly<Partial<Record<PlanetName, number>>> = {
+      Sun: 0.2,
+      Moon: 0.2,
+      Mercury: 0.2,
+      Venus: 0.2,
+      Mars: 0.2,
+      Jupiter: 0.2,
+      Saturn: 0.2,
+      Uranus: 0.2,
+      Neptune: 0.2,
+      Pluto: 0.2,
+    };
+    const { queryAllByTestId } = render(<SignatureSphere3D weights={LOW} />);
+    const glyphs = queryAllByTestId('drei-text-mock');
+    // 12 poles × 1 glyph each = 12 glyphs regardless of weights.
+    expect(glyphs.length).toBe(12);
+  });
+
+  it('renders no glyph DOM crashes when weights are empty', () => {
+    // Covers the branch where the trail loop short-circuits for every pair
+    // and no weights means nothing in the glyph color paths either.
+    const { queryAllByTestId } = render(<SignatureSphere3D weights={{}} />);
+    expect(queryAllByTestId('drei-text-mock').length).toBe(12);
+  });
+
+  it('renders glyphs with planet symbols as text content', () => {
+    // With full weights, all 10 planet symbols should appear at least once
+    // across the 12 glyphs (poles 10/11 reuse Sun/Moon via i % PLANETS.length).
+    const { queryAllByTestId } = render(<SignatureSphere3D weights={ALL_HALF} />);
+    const glyphs = queryAllByTestId('drei-text-mock');
+    const symbolSet = new Set(glyphs.map((el) => el.textContent?.trim()));
+    // Known symbols from planets.ts
+    for (const s of ['☉', '☽', '☿', '♀', '♂', '♃', '♄', '♅', '♆', '♇']) {
+      expect(symbolSet.has(s)).toBe(true);
+    }
   });
 });

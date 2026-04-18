@@ -1,25 +1,32 @@
 /**
- * Phase H3 — Static R3F rendering of a Chladni-displaced signature sphere.
+ * Phase H4 — Static R3F rendering of a Chladni-displaced signature sphere
+ * with per-planet pole glyphs and trails between dominant antipodal pole pairs.
  *
  * Scene graph (time = 0 snapshot):
  *   - Haze sphere (inward-facing dark shell)
  *   - Wire sphere (Chladni-displaced wireframe, r = 1.0)
  *   - Solid sphere (Chladni-displaced, r = 0.93)
- *   - 12 pole markers colored per planet (Sun/Moon recycled for poles 10/11)
+ *   - 12 pole groups: a small planet-tinted sphere + billboarded glyph
+ *     (the planet's Unicode symbol) — one per pole.
+ *   - 0..6 tube-geometry trails along great-circle paths between antipodal
+ *     pole pairs whose assigned planet weight ≥ TRAIL_THRESHOLD.
  *
- * Animation (useFrame) arrives in Phase H5; trails between poles in H4.
+ * Animation (useFrame) arrives in Phase H5; FusionRing3D integration in H6.
  *
- * Pure math — `chladniDisplacement`, `getPolePositions` — lives in
- * `src/lib/signatur-3d/sphere-chladni.ts` (H2).
+ * Pure math — `chladniDisplacement`, `getPolePositions`, `getPolePairs`,
+ * `buildTrailPath` — lives in `src/lib/signatur-3d/sphere-chladni.ts` (H2).
  */
 import { useEffect, useMemo, useRef, type ReactElement } from 'react';
 import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
+import { Billboard, Text } from '@react-three/drei';
 
 import { PLANETS } from '@/src/lib/signatur-3d/planets';
 import type { PlanetName } from '@/src/lib/signatur-3d/planets';
 import {
+  buildTrailPath,
   chladniDisplacement,
+  getPolePairs,
   getPolePositions,
 } from '@/src/lib/signatur-3d/sphere-chladni';
 
@@ -39,8 +46,22 @@ const SOLID_RADIUS = 0.93;
 const DISPLACEMENT_FACTOR = 0.18;
 /** Sphere tessellation — matches the Cymantics prototype. */
 const SPHERE_SEGMENTS = 72;
-/** Pole-marker geometry size. */
-const POLE_MARKER_RADIUS = 0.04;
+/** Pole-marker geometry size (H4: downsized from 0.04; glyph provides the read). */
+const POLE_MARKER_RADIUS = 0.025;
+/** Glyph font size in world units. */
+const GLYPH_FONT_SIZE = 0.07;
+/** Glyph lift above the pole along +y in the billboard's local frame. */
+const GLYPH_LIFT = 0.06;
+/** Minimum planet weight for a trail to render for its antipodal pair. */
+const TRAIL_THRESHOLD = 0.35;
+/** Max trail tube-radius scale (multiplied by weight). */
+const TRAIL_RADIUS_SCALE = 0.004;
+/** Ripple amplitude (multiplied by weight) fed into buildTrailPath. */
+const TRAIL_RIPPLE_SCALE = 0.04;
+/** Tube segment count per trail. */
+const TRAIL_TUBE_STEPS = 48;
+/** Tube radial-segment count per trail. */
+const TRAIL_TUBE_RADIAL = 4;
 
 /**
  * Build a Chladni-displaced SphereGeometry. Mutates position buffer in place
@@ -112,6 +133,53 @@ export function SignatureSphere3D({
   // Pole markers: 12 poles → PLANETS[i % 10] for color.
   const polePositions = useMemo(() => getPolePositions(WIRE_RADIUS), []);
 
+  /**
+   * Trails: one per antipodal pole pair whose assigned planet's weight
+   * meets TRAIL_THRESHOLD. Paired planet index is `pairIdx` (0..5), so at
+   * most 6 trails regardless of weight distribution. Each trail carries a
+   * precomputed CatmullRomCurve3 that later feeds a <tubeGeometry>.
+   *
+   * JS-only objects (Vector3, CatmullRomCurve3) — no GPU handles — so we
+   * do not need to dispose the curve itself. The <tubeGeometry> JSX is
+   * disposed by R3F when the element re-mounts on weight change (R3F
+   * attaches `geometry` with `dispose-true` semantics by default).
+   */
+  const trails = useMemo(() => {
+    const pairs = getPolePairs(WIRE_RADIUS);
+    const result: {
+      curve: THREE.CatmullRomCurve3;
+      color: string;
+      radius: number;
+      weight: number;
+    }[] = [];
+    pairs.forEach((pair, pairIdx) => {
+      const planet = PLANETS[pairIdx % PLANETS.length];
+      const w = weights[planet.name] ?? 0;
+      if (w < TRAIL_THRESHOLD) return;
+
+      const ripple = TRAIL_RIPPLE_SCALE * w;
+      const frequency = 2 + (planet.poleIndex % 4);
+      const points = buildTrailPath(
+        pair[0],
+        pair[1],
+        WIRE_RADIUS,
+        ripple,
+        frequency,
+        TRAIL_TUBE_STEPS,
+        0,
+      );
+      const vectors = points.map((p) => new THREE.Vector3(p.x, p.y, p.z));
+      const curve = new THREE.CatmullRomCurve3(vectors);
+      result.push({
+        curve,
+        color: planet.color,
+        radius: TRAIL_RADIUS_SCALE * w,
+        weight: w,
+      });
+    });
+    return result;
+  }, [weights]);
+
   const dpr = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 2) : 2;
 
   const containerStyle: React.CSSProperties = {
@@ -173,16 +241,43 @@ export function SignatureSphere3D({
             />
           </mesh>
 
-          {/* 12 pole markers — one sphere per pole, planet-tinted. */}
+          {/* 12 pole groups — a small planet-tinted sphere + billboarded glyph. */}
           {polePositions.map((p, i) => {
             const planet = PLANETS[i % PLANETS.length];
             return (
-              <mesh key={`pole-${i}`} position={[p.x, p.y, p.z]}>
-                <sphereGeometry args={[POLE_MARKER_RADIUS, 16, 16]} />
-                <meshBasicMaterial color={planet.color} />
-              </mesh>
+              <group key={`pole-${i}`} position={[p.x, p.y, p.z]}>
+                <mesh>
+                  <sphereGeometry args={[POLE_MARKER_RADIUS, 16, 16]} />
+                  <meshBasicMaterial color={planet.color} />
+                </mesh>
+                <Billboard follow>
+                  <Text
+                    position={[0, GLYPH_LIFT, 0]}
+                    fontSize={GLYPH_FONT_SIZE}
+                    color={planet.color}
+                    anchorX="center"
+                    anchorY="middle"
+                  >
+                    {planet.symbol}
+                  </Text>
+                </Billboard>
+              </group>
             );
           })}
+
+          {/* Trails — one tube per dominant antipodal pair. Opacity scales with weight. */}
+          {trails.map((trail, idx) => (
+            <mesh key={`trail-${idx}`}>
+              <tubeGeometry
+                args={[trail.curve, TRAIL_TUBE_STEPS, trail.radius, TRAIL_TUBE_RADIAL, false]}
+              />
+              <meshBasicMaterial
+                color={trail.color}
+                transparent
+                opacity={0.15 + (trail.weight - TRAIL_THRESHOLD) * 0.25}
+              />
+            </mesh>
+          ))}
         </group>
       </Canvas>
     </div>
