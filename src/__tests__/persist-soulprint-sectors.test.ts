@@ -72,8 +72,9 @@ describe('persistSoulprintSectors', () => {
     // This is the client-boundary guarantee that backs the "existing row: only
     // soulprint_sectors + updated_at change" acceptance criterion. If we only
     // send two fields, Postgres ON CONFLICT DO UPDATE SET only touches those
-    // two (plus updated_at via DB default). The preservation of astro_json is
-    // a Postgres semantic, not something the client can violate.
+    // two; updated_at would change only if the table has an update trigger or
+    // the UPDATE explicitly sets it. The preservation of astro_json is a
+    // Postgres semantic, not something the client can violate.
     const persistSoulprintSectors = await loadFn();
     const { client, upsert } = buildMockClient({
       data: [{ user_id: 'existing-user' }],
