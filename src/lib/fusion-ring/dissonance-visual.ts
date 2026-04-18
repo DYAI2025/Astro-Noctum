@@ -1,4 +1,4 @@
-import { clamp, lerp } from '../../components/fusion-ring-website/bazodiac-engine';
+import { clamp, lerp } from '../utils/math';
 import type { DissonanceResult } from './dissonance';
 
 export interface VisualModulation {

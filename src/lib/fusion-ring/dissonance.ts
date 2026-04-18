@@ -1,5 +1,5 @@
 import { CONTROL_CYCLE, GENERATION_CYCLE } from '../astro-data/wuxing-cycles';
-import { clamp } from '../../components/fusion-ring-website/bazodiac-engine';
+import { clamp } from '../utils/math';
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
