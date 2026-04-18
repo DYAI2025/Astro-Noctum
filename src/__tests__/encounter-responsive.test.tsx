@@ -35,10 +35,6 @@ vi.mock('../components/onboarding/MyzeliumNetwork', () => ({
 vi.mock('../components/onboarding/useParallax', () => ({
   useParallax: () => ({ x: 0, y: 0 }),
 }));
-vi.mock('../components/onboarding/FusionRingReveal', () => ({
-  __esModule: true,
-  default: ({ onComplete }: any) => <div data-testid="ring-reveal" onClick={onComplete} />,
-}));
 vi.mock('../components/onboarding/SignatureReveal', () => ({
   SignatureReveal: ({ onComplete }: any) => (
     <div data-testid="sig-reveal" onClick={() => onComplete(null)} />
