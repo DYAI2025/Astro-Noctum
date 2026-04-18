@@ -21,3 +21,7 @@ __pycache__/
 # Worktrees
 .worktrees/
 .worktrees/
+
+# Local-only artefacts (prototype references + session kickoff docs)
+Cymantics/
+H_SESSION_KICKOFF.md
