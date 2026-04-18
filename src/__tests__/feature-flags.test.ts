@@ -52,14 +52,4 @@ describe('validateCriticalFlags', () => {
     );
   });
 
-  it('warns when signature_engine_v2 is overridden to false', async () => {
-    localStorage.setItem('ff_signature_engine_v2', 'false');
-    vi.resetModules();
-    const { validateCriticalFlags } = await import('../lib/feature-flags');
-    validateCriticalFlags();
-    expect(console.warn).toHaveBeenCalledWith(
-      '[FeatureFlags] Critical flag disabled via override:',
-      'signature_engine_v2'
-    );
-  });
 });

@@ -39,10 +39,8 @@ vi.mock('@/src/lib/feature-flags', () => {
       const stored = localStorage.getItem(`ff_${key}`);
       if (stored === 'true') return true;
       if (stored === 'false') return false;
-      // Defaults: cymatics on, v3 off, v2 on
+      // Default: cymatics on (v2/v3 removed in phase E1)
       if (key === 'signature_engine_cymatics') return true;
-      if (key === 'signature_engine_v3') return false;
-      if (key === 'signature_engine_v2') return true;
       return true;
     },
     validateCriticalFlags: () => {},
