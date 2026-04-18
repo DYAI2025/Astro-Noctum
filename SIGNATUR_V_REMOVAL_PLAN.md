@@ -338,6 +338,36 @@ Gewichte über ein neues `bazi-to-planet-weights.ts`.
 
 ---
 
+### Phase H — Mikro-Split (eingepflegt 2026-04-18, Session-H-Start)
+
+**Stack-Entscheidung (transparent):**
+- Repo hat bereits `three@0.175.0` + `@react-three/fiber@9.5.0` + `@react-three/drei@10.7.7`.
+- Ben-Spec sagte „Three.js r128" (=v0.128, Legacy von 2021). **Wir nutzen die installierte v0.175** + R3F. Keine neue Dep, moderne API statt r128-Spec. Abweichung dokumentiert hier.
+- R3F statt plain Three.js: idiomatischer in React 19, drei liefert Helpers (Sphere, Text, Line, Trails), keine Canvas-Lifecycle-Arbeit.
+
+**Daten-Pipeline-Entscheidung (transparent):**
+- `BootstrapResponseSchema` hat KEINE 10-Planet-Weights — nur `soulprint_sectors: number[12]`, `signature_blueprint.{visual, elements}`, `profile.harmony_index`.
+- **Entscheidung:** Pure-Function-Adapter `soulprintToPlanetWeights(sectors: number[12]): Record<PlanetName, number>` via klassischer zodiakaler Rulership-Matrix (Aries→Mars, Taurus→Venus, Gemini→Mercury, Cancer→Moon, Leo→Sun, Virgo→Mercury, Libra→Venus, Scorpio→Mars/Pluto, Sagittarius→Jupiter, Capricorn→Saturn, Aquarius→Saturn/Uranus, Pisces→Jupiter/Neptune).
+- Das ist **deterministische Derivation aus echten Bootstrap-Daten** — kein Mock, keine erfundenen Zahlen. Ben-Regel „nur echte Zahlen wo echte Zahlen sind" bleibt eingehalten.
+
+**Mikro-Phasen (15–30 Min pro Commit, Time-Box + Hard-Abort wie bisher):**
+
+| # | Scope | Files | Box / Abort |
+|---|-------|-------|-------------|
+| H1 | Planet-Tabelle (10 Cousto) + Rulership-Adapter + Unit-Tests | 2 new (`lib/signatur-3d/planets.ts`, `lib/signatur-3d/soulprint-to-planets.ts`) + 1 test | 20 / 30 |
+| H2 | Chladni-Sphere-Math (displacement, pole positions, trail-paths) pure functions + Unit-Tests | 1 new (`lib/signatur-3d/sphere-chladni.ts`) + 1 test | 25 / 35 |
+| H3 | R3F Sphere-Component, static (no animation, no trails) + Smoke-Test | 1 new (`components/signatur-3d/SignatureSphere3D.tsx`) + 1 test | 25 / 35 |
+| H4 | Pole-Glyphen + Trails zwischen dominanten Polen (Tube-Curves) | edits to H3 component | 25 / 35 |
+| H5 | Animation (rotation + standing-wave phase via useFrame) | edits to H3 component | 20 / 30 |
+| H6 | 2D↔3D Toggle in `FusionRing3D.tsx` — beide mounted, CSS-visibility (kein Cymatics-Reset) | edit FusionRing3D + Integration-Test | 25 / 35 |
+| H7 | Device-Mode-Check iPhone 14 (DevTools), pixel-ratio cap, perf-note für Ben (kein Commit wenn keine Fix nötig) | optional edit SignatureSphere3D | 15 / 25 |
+
+**Ship-Kriterium:** Sphere rendert deterministisch mit echten Bootstrap-Daten, individuell pro User. Desktop + iPhone 14 simuliert via Chrome DevTools Device-Mode + Throttling. Hardware-Test später (Ben).
+
+**Nicht in H-Scope:** Rename (Phase I), `src/lib/fusion-ring/` anfassen (Phase I5), MiniSignature-Dashboard-Re-Integration, neue BaZi-Berechnungen.
+
+---
+
 ### Phase I — Rename „FusionRing" / „fusion-ring" → „Signatur" / „signatur"
 **Ziel:** Die Begrifflichkeit „Fusion Ring" ist aus der Syntax verschwunden
 (Ben: *„Das Fusion Ring ist von der Syntax weg und aus. Es gibt keinen Fusion
