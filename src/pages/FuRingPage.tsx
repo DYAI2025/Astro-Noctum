@@ -36,7 +36,6 @@ import { SpaceWeatherPanel } from '@/src/components/signatur/SpaceWeatherPanel';
 import { TransitResonancePanels } from '@/src/components/signatur/TransitResonancePanels';
 import { CymaticsFrequencyPanel } from '@/src/components/signatur-cymatics/CymaticsFrequencyPanel';
 import { ChladniParamsBadge } from '@/src/components/signatur-cymatics/ChladniParamsBadge';
-import { isFeatureEnabled } from '@/src/lib/feature-flags';
 
 export default function FuRingPage() {
   const { t, lang } = useLanguage();
@@ -335,7 +334,7 @@ export default function FuRingPage() {
                 eventAnnouncePrefix: t('furing3d.eventAnnouncePrefix'),
               }}
             />
-            {isFeatureEnabled('signature_engine_cymatics') && chladniParams && (
+            {chladniParams && (
               <ChladniParamsBadge
                 params={chladniParams}
                 planetariumMode={planetariumMode}
@@ -367,7 +366,7 @@ export default function FuRingPage() {
         <TransitResonancePanels birthSign={sunSign} />
 
         {/* Cousto frequency panel — only when Cymatics engine is active */}
-        {isFeatureEnabled('signature_engine_cymatics') && chladniParams && wuxinBalance && (
+        {chladniParams && wuxinBalance && (
           <CymaticsFrequencyPanel
             wuxingWeights={wuxinBalance}
             dominantElement={chladniParams.dominantElement}

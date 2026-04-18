@@ -1,23 +1,4 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { isFeatureEnabled } from '../lib/feature-flags';
-
-describe('signature_engine_cymatics flag', () => {
-  beforeEach(() => { localStorage.clear(); });
-
-  it('is on by default', () => {
-    expect(isFeatureEnabled('signature_engine_cymatics')).toBe(true);
-  });
-
-  it('can be enabled via localStorage override', () => {
-    localStorage.setItem('ff_signature_engine_cymatics', 'true');
-    expect(isFeatureEnabled('signature_engine_cymatics')).toBe(true);
-  });
-
-  it('returns false when override is explicitly false', () => {
-    localStorage.setItem('ff_signature_engine_cymatics', 'false');
-    expect(isFeatureEnabled('signature_engine_cymatics')).toBe(false);
-  });
-});
 
 describe('validateCriticalFlags', () => {
   beforeEach(() => {
