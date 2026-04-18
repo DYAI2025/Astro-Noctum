@@ -13,7 +13,7 @@ import {
 } from '@/src/utils/math';
 import { authedFetch } from '@/src/lib/authedFetch';
 
-type FusionSignalState = {
+type SignaturSignalState = {
   signalData: FusionSignalData | null;
   events: TransitEvent[];
   resolution: number;
@@ -30,7 +30,7 @@ const OFFLINE_POLL_INTERVAL_MS = 15_000;
 const ERROR_BASE_RETRY_MS = 3_000;
 const ERROR_MAX_RETRY_MS = 30_000;
 
-export const useFusionSignal = (userId: string): FusionSignalState => {
+export const useSignaturSignal = (userId: string): SignaturSignalState => {
   const [signalData, setSignalData] = useState<FusionSignalData | null>(null);
   const [events, setEvents] = useState<TransitEvent[]>([]);
   const [resolution, setResolution] = useState<number>(33);

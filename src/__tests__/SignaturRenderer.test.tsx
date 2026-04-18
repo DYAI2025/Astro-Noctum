@@ -13,8 +13,8 @@ vi.mock('motion/react', async () => {
   };
 });
 
-vi.mock('@/src/hooks/useFusionSignal', () => ({
-  useFusionSignal: () => ({
+vi.mock('@/src/hooks/useSignaturSignal', () => ({
+  useSignaturSignal: () => ({
     signalData: {
       targetSignals: Array(12).fill(0.4),
       baseSignals: Array(12).fill(0.3),

@@ -6,7 +6,7 @@
  * Decision:   DEC-no-number-without-explanation (no bare numbers)
  *
  * Data sources:
- *   - events[]      — from useFusionSignal().events (FuFirE /transit/state)
+ *   - events[]      — from useSignaturSignal().events (FuFirE /transit/state)
  *   - dayMode       — from useFirstRunDaily().dailyData.fusion.day_mode
  *
  * The component renders verbatim server-provided text. It never templates or
@@ -19,7 +19,7 @@ import type { TransitEvent } from '../../lib/schemas/transit-state';
 // ── Types ────────────────────────────────────────────────────────────────────
 
 interface DayPulseExpandedProps {
-  /** Transit events from useFusionSignal().events */
+  /** Transit events from useSignaturSignal().events */
   events: TransitEvent[];
   /** 'pulse' = active / energetic day; 'trace' = reflective / inward day */
   dayMode: 'pulse' | 'trace';
@@ -77,7 +77,7 @@ export function DayPulseExpanded({ events, dayMode, loading = false }: DayPulseE
   const modeDesc  = isDe ? MODE_DESCRIPTION[dayMode].de : MODE_DESCRIPTION[dayMode].en;
 
   // Primary event — highest-priority event for today.
-  // Source: useFusionSignal().events (FuFirE /transit/state, sorted by priority desc)
+  // Source: useSignaturSignal().events (FuFirE /transit/state, sorted by priority desc)
   const primaryEvent: TransitEvent | undefined = events
     .slice()
     .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0))[0];

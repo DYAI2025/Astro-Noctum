@@ -14,8 +14,8 @@ import React from 'react';
 
 // ── Module mocks ─────────────────────────────────────────────────────────────
 
-vi.mock('@/src/hooks/useFusionSignal', () => ({
-  useFusionSignal: () => ({
+vi.mock('@/src/hooks/useSignaturSignal', () => ({
+  useSignaturSignal: () => ({
     signalData: null,
     events: [],
     resolution: 0,

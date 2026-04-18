@@ -12,7 +12,7 @@ import { useCompletedModules } from '@/src/hooks/useCompletedModules';
 import { useQuizSuggestion } from '@/src/hooks/useQuizSuggestion';
 import { usePremium } from '@/src/hooks/usePremium';
 import { useSpaceWeather } from '@/src/hooks/useSpaceWeather';
-import { useFusionSignal } from '@/src/hooks/useFusionSignal';
+import { useSignaturSignal } from '@/src/hooks/useSignaturSignal';
 import { useDissonance } from '@/src/hooks/useDissonance';
 import { useFirstRunDaily } from '@/src/hooks/useFirstRunDaily';
 import { upsertDissonanceState } from '@/src/services/supabase';
@@ -47,7 +47,7 @@ export default function SignaturPage() {
   const suggestedModule = useQuizSuggestion(completedModuleIds);
   const quizContribution = useQuizContribution(completedModuleIds);
   const spaceWeather = useSpaceWeather();
-  const { signalData, refresh: refreshSignal } = useFusionSignal(userId);
+  const { signalData, refresh: refreshSignal } = useSignaturSignal(userId);
   const { dayHarmonic, nightHarmonic } = useFirstRunDaily(userId, null, signalData?.baseSignals ?? null, [], null);
 
   // Night-Pulse gate: weekend (Sat/Sun) → all users; weekday → Premium only.

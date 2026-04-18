@@ -32,7 +32,7 @@ import { CosmicInfluenceSection } from "./dashboard/CosmicInfluenceSection";
 import { TourOverlay } from "./dashboard/TourOverlay";
 import { MagnetsturmKarte } from "./dashboard/MagnetsturmKarte";
 import { NatalSignaturStatic } from "./dashboard/NatalSignaturStatic";
-import { useFusionSignal } from "../hooks/useFusionSignal";
+import { useSignaturSignal } from "../hooks/useSignaturSignal";
 import { useDashboardTour } from "@/src/hooks/useDashboardTour";
 import { usePlanetarium } from "@/src/contexts/PlanetariumContext";
 import { useDeviceLocation } from "@/src/hooks/useDeviceLocation";
@@ -263,7 +263,7 @@ export function Dashboard({
   const spaceWeather = useSpaceWeather();
 
   // ── Transit signal — provides events[] for DailyChartHero ──
-  const { events: transitEvents, loading: transitLoading } = useFusionSignal(userId);
+  const { events: transitEvents, loading: transitLoading } = useSignaturSignal(userId);
 
   // ── Active Impacts — harmony_index + active planets from POST /api/impact/active ──
   const {

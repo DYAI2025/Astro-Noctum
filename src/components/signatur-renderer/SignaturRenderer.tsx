@@ -1,7 +1,7 @@
 import { lazy, Suspense, useMemo, useState } from 'react';
 import { useReducedMotion } from 'motion/react';
 
-import { useFusionSignal } from '@/src/hooks/useFusionSignal';
+import { useSignaturSignal } from '@/src/hooks/useSignaturSignal';
 import { useSpaceWeather } from '@/src/hooks/useSpaceWeather';
 import { CymaticsFallback } from '@/src/components/signatur-cymatics/CymaticsFallback';
 import { PLANETS, type PlanetName } from '@/src/lib/signatur-3d/planets';
@@ -77,7 +77,7 @@ export const SignaturRenderer = ({
   const prefersReducedMotion = useReducedMotion();
   // Hooks kept alive so the DEV panel keeps showing resolution/Kp and the
   // loading state. None of their output drives the renderer any more.
-  const { signalData, resolution, loading, error } = useFusionSignal(userId);
+  const { signalData, resolution, loading, error } = useSignaturSignal(userId);
   const { kpIndex } = useSpaceWeather();
 
   const [cymaticsFailed, setCymaticsFailed] = useState(false);

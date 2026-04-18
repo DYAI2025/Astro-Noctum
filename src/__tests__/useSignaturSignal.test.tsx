@@ -6,7 +6,7 @@ vi.mock('@/src/lib/authedFetch', () => ({
   authedFetch: vi.fn((...args: Parameters<typeof fetch>) => fetch(...args)),
 }));
 
-import { useFusionSignal } from '@/src/hooks/useFusionSignal';
+import { useSignaturSignal } from '@/src/hooks/useSignaturSignal';
 
 const validTransitPayload = {
   ring: { sectors: Array(12).fill(0.6) },
@@ -31,14 +31,14 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('useFusionSignal', () => {
+describe('useSignaturSignal', () => {
   it('maps and exposes parsed transit state', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: true,
       json: async () => validTransitPayload,
     } as Response);
 
-    const { result } = renderHook(() => useFusionSignal('user-1'));
+    const { result } = renderHook(() => useSignaturSignal('user-1'));
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -56,7 +56,7 @@ describe('useFusionSignal', () => {
       json: async () => ({ bad: 'payload' }),
     } as Response);
 
-    const { result } = renderHook(() => useFusionSignal('user-2'));
+    const { result } = renderHook(() => useSignaturSignal('user-2'));
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
