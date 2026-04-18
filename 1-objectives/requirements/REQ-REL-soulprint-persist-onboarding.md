@@ -12,7 +12,7 @@
 
 ## Description
 
-`/api/experience/bootstrap` muss `astro_profiles.soulprint_sectors` für jeden onboardenden User zuverlässig persistieren — unabhängig davon, ob die `astro_profiles`-Zeile zum Save-Zeitpunkt bereits existiert (z.B. durch Superglue-Worker-Write davor) oder noch nicht. Implementation: `.upsert()` mit `onConflict: 'user_id'` statt `.update().eq('user_id')` in `server.mjs` L2113-2118. Der Save darf andere Spalten der Zeile (`astro_json`, `birth_*`, `sun_sign`, etc.) nicht überschreiben, wenn sie bereits gesetzt sind. Bestehende 50 User mit `soulprint_sectors = NULL` werden per einmaligem Backfill-Script repariert.
+`/api/experience/bootstrap` muss `astro_profiles.soulprint_sectors` für jeden onboardenden User zuverlässig persistieren — unabhängig davon, ob die `astro_profiles`-Zeile zum Save-Zeitpunkt bereits existiert (z.B. durch Superglue-Worker-Write davor) oder noch nicht. Implementation: `.upsert()` mit `onConflict: 'user_id'` statt `.update().eq('user_id')` in `server.mjs`. Der Save darf andere Spalten der Zeile (`astro_json`, `birth_*`, `sun_sign`, etc.) nicht überschreiben, wenn sie bereits gesetzt sind. Bestehende 50 User mit `soulprint_sectors = NULL` werden per einmaligem Backfill-Script repariert.
 
 ## Acceptance Criteria
 
