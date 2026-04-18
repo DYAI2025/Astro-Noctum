@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, Sparkles, Volume2, VolumeX } from 'lucide-react';
 import { useLanguage } from '@/src/contexts/LanguageContext';
 import { useAppLayout } from '@/src/contexts/AppLayoutContext';
-import { FusionRing3D } from '@/src/components/fusion-ring-3d/FusionRing3D';
+import { SignaturRenderer } from '@/src/components/signatur-renderer/SignaturRenderer';
 import { usePlanetarium } from '@/src/contexts/PlanetariumContext';
 import QuizOverlay from '@/src/components/QuizOverlay';
 import { useQuizContribution } from '@/src/hooks/useQuizContribution';
@@ -108,7 +108,7 @@ export default function FuRingPage() {
   );
 
   // Chladni params — derived deterministically from BaZi pillars + Wu-Xing weights.
-  // undefined when birth data is unavailable → FusionRing3D falls back to V3/V2/V1.
+  // undefined when birth data is unavailable → SignaturRenderer falls back to V3/V2/V1.
   const chladniParams = useMemo(() => {
     const pillars = apiData?.bazi?.pillars;
     const wuxingWeights = apiData?.wuxing?.elements;
@@ -311,7 +311,7 @@ export default function FuRingPage() {
             animate={fluidityTier >= 1 ? { scale: [1, 1.005, 1] } : undefined}
             transition={fluidityTier >= 1 ? { duration: 6, repeat: Infinity, ease: 'easeInOut' } : undefined}
           >
-            <FusionRing3D
+            <SignaturRenderer
               userId={userId}
               quizWeights={liveQuizWeights}
               effectTrigger={ringEffect}

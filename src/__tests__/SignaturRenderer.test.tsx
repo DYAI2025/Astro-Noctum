@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { FusionRing3D } from '@/src/components/fusion-ring-3d/FusionRing3D';
+import { SignaturRenderer } from '@/src/components/signatur-renderer/SignaturRenderer';
 
 vi.mock('motion/react', async () => {
   const actual = await vi.importActual<typeof import('motion/react')>('motion/react');
@@ -55,9 +55,9 @@ const labels = {
   eventAnnouncePrefix: 'Transit event',
 };
 
-describe('FusionRing3D', () => {
+describe('SignaturRenderer', () => {
   it('uses 2D fallback when reduced motion is enabled', () => {
-    render(<FusionRing3D userId="u1" labels={labels} />);
+    render(<SignaturRenderer userId="u1" labels={labels} />);
 
     expect(screen.getByText('Reduced Motion / fallback mode active')).toBeInTheDocument();
     expect(screen.getByText(/Resolution: 50%/i)).toBeInTheDocument();

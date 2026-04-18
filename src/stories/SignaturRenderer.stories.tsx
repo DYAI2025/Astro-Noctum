@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { FusionRing3D, type FusionRing3DLabels } from '@/src/components/fusion-ring-3d/FusionRing3D';
+import { SignaturRenderer, type SignaturRendererLabels } from '@/src/components/signatur-renderer/SignaturRenderer';
 
-const labels: FusionRing3DLabels = {
-  regionLabel: 'Bazodiac Fusion Ring 3D',
+const labels: SignaturRendererLabels = {
+  regionLabel: 'Bazodiac Signatur Renderer',
   loading: 'Loading…',
   reducedMotionHint: 'Reduced Motion / fallback mode active',
   resolution: 'Resolution',
@@ -86,9 +86,9 @@ const withMockFetch = (profile: keyof typeof mockProfiles) => {
   };
 };
 
-const meta: Meta<typeof FusionRing3D> = {
-  title: 'Bazodiac/FusionRing3D',
-  component: FusionRing3D,
+const meta: Meta<typeof SignaturRenderer> = {
+  title: 'Bazodiac/SignaturRenderer',
+  component: SignaturRenderer,
   tags: ['autodocs'],
   parameters: {
     layout: 'centered',
@@ -101,7 +101,7 @@ const meta: Meta<typeof FusionRing3D> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof FusionRing3D>;
+type Story = StoryObj<typeof SignaturRenderer>;
 
 export const FeuerProfil: Story = {
   loaders: [async () => withMockFetch('fire')],

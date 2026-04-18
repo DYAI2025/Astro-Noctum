@@ -20,11 +20,11 @@
  *     makes the morph drift-free (we never deform an already-deformed
  *     sample).
  *   - Trails remain static this phase (H5 non-goal); they will animate
- *     via `trailTime` in H6 when integrated with FusionRing3D.
+ *     via `trailTime` in H6 when integrated with SignaturRenderer.
  *   - `useReducedMotion()` from `motion/react` short-circuits the loop
  *     entirely: rotation + morph are skipped, the sphere stays at t=0.
  *
- * FusionRing3D integration lands in Phase H6.
+ * SignaturRenderer integration lands in Phase H6.
  */
 import { useEffect, useMemo, useRef, type ReactElement } from 'react';
 import * as THREE from 'three';
@@ -349,7 +349,7 @@ function AnimatedScene({
  * Data contract:
  * - `weights` keys are the 10 Cousto planet names; missing keys default to 0.
  * - Typical source: soulprintToPlanetWeights(signalData.baseSignals) from
- *   the parent FusionRing3D component.
+ *   the parent SignaturRenderer component.
  */
 export function SignatureSphere3D({
   weights,

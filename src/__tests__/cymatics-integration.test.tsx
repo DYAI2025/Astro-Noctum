@@ -1,12 +1,12 @@
 /**
- * Integration tests for the Cymatics engine wiring in FusionRing3D and FuRingPage.
+ * Integration tests for the Cymatics engine wiring in SignaturRenderer and FuRingPage.
  *
  * Covers:
  * 1. Engine hierarchy: cymatics > V3 > V2 > V1
  * 2. Feature-flag gate: default off, localStorage enable
  * 3. cymaticsFailed degradation → falls back to next engine
- * 4. FusionRing3D render: cymatics canvas visible when flag + params present
- * 5. FusionRing3D render: cymatics hidden when flag off or params undefined
+ * 4. SignaturRenderer render: cymatics canvas visible when flag + params present
+ * 5. SignaturRenderer render: cymatics hidden when flag off or params undefined
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
@@ -112,9 +112,9 @@ describe('Engine selection logic', () => {
   });
 });
 
-// ── FusionRing3D component integration ────────────────────────────────────────
+// ── SignaturRenderer component integration ────────────────────────────────────────
 
-describe('FusionRing3D cymatics wiring', () => {
+describe('SignaturRenderer cymatics wiring', () => {
   const LABELS = {
     regionLabel: 'Signatur',
     loading: 'Laden',
@@ -137,12 +137,12 @@ describe('FusionRing3D cymatics wiring', () => {
     dominantElement: 'Fire' as const,
   };
 
-  let FusionRing3D: typeof import('@/src/components/fusion-ring-3d/FusionRing3D').FusionRing3D;
+  let SignaturRenderer: typeof import('@/src/components/signatur-renderer/SignaturRenderer').SignaturRenderer;
 
   beforeEach(async () => {
     localStorage.clear();
-    const mod = await import('@/src/components/fusion-ring-3d/FusionRing3D');
-    FusionRing3D = mod.FusionRing3D;
+    const mod = await import('@/src/components/signatur-renderer/SignaturRenderer');
+    SignaturRenderer = mod.SignaturRenderer;
   });
 
   afterEach(() => {
@@ -152,7 +152,7 @@ describe('FusionRing3D cymatics wiring', () => {
   it('renders cymatics canvas by default when flag on and params present', async () => {
     await act(async () => {
       render(
-        React.createElement(FusionRing3D, {
+        React.createElement(SignaturRenderer, {
           userId: 'test-user',
           labels: LABELS,
           chladniParams: CHLADNI_PARAMS,
@@ -165,7 +165,7 @@ describe('FusionRing3D cymatics wiring', () => {
   it('does NOT render cymatics when params undefined', async () => {
     await act(async () => {
       render(
-        React.createElement(FusionRing3D, {
+        React.createElement(SignaturRenderer, {
           userId: 'test-user',
           labels: LABELS,
           chladniParams: undefined,

@@ -33,7 +33,7 @@ const NEUTRAL_WEIGHTS: Readonly<Record<PlanetName, number>> = Object.freeze(
   Object.fromEntries(PLANETS.map((p) => [p.name, 0.5])) as Record<PlanetName, number>,
 );
 
-export type FusionRing3DLabels = {
+export type SignaturRendererLabels = {
   regionLabel: string;
   loading: string;
   reducedMotionHint: string;
@@ -46,10 +46,10 @@ export type FusionRing3DLabels = {
   eventAnnouncePrefix: string;
 };
 
-type FusionRing3DProps = {
+type SignaturRendererProps = {
   userId: string;
   isInteractive?: boolean;
-  labels: FusionRing3DLabels;
+  labels: SignaturRendererLabels;
   /** @deprecated legacy V2/V3 prop — ignored. Kept on the interface for call-site stability. */
   quizWeights?: Record<string, number>;
   /** @deprecated legacy V2 prop — ignored. */
@@ -68,12 +68,12 @@ type FusionRing3DProps = {
   chladniParams?: ChladniParams;
 };
 
-export const FusionRing3D = ({
+export const SignaturRenderer = ({
   userId,
   labels,
   planetariumMode = true,
   chladniParams,
-}: FusionRing3DProps) => {
+}: SignaturRendererProps) => {
   const prefersReducedMotion = useReducedMotion();
   // Hooks kept alive so the DEV panel keeps showing resolution/Kp and the
   // loading state. None of their output drives the renderer any more.

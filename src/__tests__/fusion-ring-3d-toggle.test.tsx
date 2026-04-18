@@ -1,5 +1,5 @@
 /**
- * Phase H6 — Integration tests for the 2D ↔ 3D view toggle in FusionRing3D.
+ * Phase H6 — Integration tests for the 2D ↔ 3D view toggle in SignaturRenderer.
  *
  * Verifies:
  *   1. Default view is 2D (3D container carries the `hidden` class).
@@ -52,7 +52,7 @@ vi.mock('@/src/components/signatur-3d/SignatureSphere3D', () => ({
 
 // ── Tests ────────────────────────────────────────────────────────────────────
 
-describe('FusionRing3D 2D↔3D toggle', () => {
+describe('SignaturRenderer 2D↔3D toggle', () => {
   const LABELS = {
     regionLabel: 'Signatur',
     loading: 'Laden',
@@ -75,12 +75,12 @@ describe('FusionRing3D 2D↔3D toggle', () => {
     dominantElement: 'Fire' as const,
   };
 
-  let FusionRing3D: typeof import('@/src/components/fusion-ring-3d/FusionRing3D').FusionRing3D;
+  let SignaturRenderer: typeof import('@/src/components/signatur-renderer/SignaturRenderer').SignaturRenderer;
 
   beforeEach(async () => {
     localStorage.clear();
-    const mod = await import('@/src/components/fusion-ring-3d/FusionRing3D');
-    FusionRing3D = mod.FusionRing3D;
+    const mod = await import('@/src/components/signatur-renderer/SignaturRenderer');
+    SignaturRenderer = mod.SignaturRenderer;
   });
 
   afterEach(() => {
@@ -90,7 +90,7 @@ describe('FusionRing3D 2D↔3D toggle', () => {
   const renderRing = async () => {
     await act(async () => {
       render(
-        React.createElement(FusionRing3D, {
+        React.createElement(SignaturRenderer, {
           userId: 'test-user',
           labels: LABELS,
           chladniParams: CHLADNI_PARAMS,
