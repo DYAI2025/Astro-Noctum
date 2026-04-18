@@ -9,6 +9,7 @@ import {
   type RingEffectType,
 } from '@/src/components/fusion-ring-website/FusionRingWebsiteCanvas';
 import FusionRingCanvasV2 from '@/src/components/fusion-ring-website/FusionRingCanvasV2';
+import { CymanticsSignature } from '@/src/components/cymantics/CymanticsSignature';
 import { toDimensionWeightsOrUndefined, toNatalWeightsOrUndefined } from '@/src/lib/signatur/weight-utils';
 import { isFeatureEnabled } from '@/src/lib/feature-flags';
 import type { DissonanceResult } from '../../lib/fusion-ring/dissonance';
