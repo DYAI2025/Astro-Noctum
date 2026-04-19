@@ -176,7 +176,7 @@ const translationsEn: DeepStringRecord = {
     soulprintCalculating: "Calculating your soulprint…",
     signatureForming: "Your signature is forming",
     signaturePartialError: "Signature preview",
-    previewNote: "We'll finalize your real signature once your full chart is ready. You can continue anyway.",
+    previewNote: "We'll finalize your real signature once your full chart is ready. You can continue.",
     continueAnyway: "Continue",
   },
   expandable: {
