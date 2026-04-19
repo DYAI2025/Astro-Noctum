@@ -37,12 +37,22 @@ function makeParams(yi: number, mi: number, di: number, hi: number, harmony = 0.
 
 describe('STEM_NAME_TO_INDEX', () => {
   it('maps all 10 heavenly stems (both Chinese characters and Pinyin) to indices 0..9', () => {
-    // 10 Chinese + 10 Pinyin = 20 keys; each index 0..9 appears twice.
-    expect(Object.keys(STEM_NAME_TO_INDEX)).toHaveLength(20);
-    const values = Object.values(STEM_NAME_TO_INDEX);
-    for (let i = 0; i < 10; i++) {
-      expect(values).toContain(i);
+    const PAIRS: Array<[string, string]> = [
+      ['甲', 'Jia'],  ['乙', 'Yi'],   ['丙', 'Bing'], ['丁', 'Ding'], ['戊', 'Wu'],
+      ['己', 'Ji'],   ['庚', 'Geng'], ['辛', 'Xin'],  ['壬', 'Ren'],  ['癸', 'Gui'],
+    ];
+
+    for (const [index, [cn, py]] of PAIRS.entries()) {
+      expect(STEM_NAME_TO_INDEX).toHaveProperty(cn);
+      expect(STEM_NAME_TO_INDEX).toHaveProperty(py);
+      expect(STEM_NAME_TO_INDEX[cn]).toBe(index);
+      expect(STEM_NAME_TO_INDEX[py]).toBe(index);
     }
+
+    const mappedIndices = new Set(
+      PAIRS.flatMap(([cn, py]) => [STEM_NAME_TO_INDEX[cn], STEM_NAME_TO_INDEX[py]]),
+    );
+    expect([...mappedIndices].sort((a, b) => a - b)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
   });
 
   it('maps 甲→0 and 癸→9 (Chinese characters)', () => {
