@@ -55,15 +55,39 @@ export const ELEMENT_COLORS: Record<WuxingElement, string> = {
  * the Pinyin keys caused every lookup to fall back to 0, collapsing all users
  * to (m=2, n=2) in the 2D Cymatics visualisation.
  */
-export const STEM_NAME_TO_INDEX: Record<string, number> = {
+function normaliseStemName(stem: string): string {
+  return stem
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+const STEM_NAME_TO_INDEX_BASE: Record<string, number> = {
   // Chinese characters (kept for historical/mixed inputs)
   '甲': 0, '乙': 1, '丙': 2, '丁': 3, '戊': 4,
   '己': 5, '庚': 6, '辛': 7, '壬': 8, '癸': 9,
-  // Pinyin — what BAFE currently returns
-  'Jia': 0, 'Yi':  1, 'Bing': 2, 'Ding': 3, 'Wu':  4,
-  'Ji':  5, 'Geng': 6, 'Xin':  7, 'Ren':  8, 'Gui': 9,
+  // Pinyin — normalized to lowercase for case-insensitive matching
+  'jia': 0, 'yi':  1, 'bing': 2, 'ding': 3, 'wu':  4,
+  'ji':  5, 'geng': 6, 'xin':  7, 'ren':  8, 'gui': 9,
 };
 
+export const STEM_NAME_TO_INDEX: Record<string, number> = new Proxy(STEM_NAME_TO_INDEX_BASE, {
+  get(target, prop: string | symbol): number | undefined {
+    if (typeof prop !== 'string') {
+      return Reflect.get(target, prop) as number | undefined;
+    }
+
+    return target[prop] ?? target[normaliseStemName(prop)];
+  },
+  has(target, prop: string | symbol): boolean {
+    if (typeof prop !== 'string') {
+      return Reflect.has(target, prop);
+    }
+
+    return prop in target || normaliseStemName(prop) in target;
+  },
+});
 type BaziPillars = {
   year: MappedPillar;
   month: MappedPillar;
