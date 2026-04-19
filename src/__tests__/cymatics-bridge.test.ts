@@ -202,7 +202,7 @@ describe('baziToChladniParams — diversity', () => {
   it('Pinyin stems (as BAFE actually returns them) produce distinct (m,n) per distinct stem tuple', () => {
     // Regression guard for the 2026-04-19 bug where STEM_NAME_TO_INDEX only had
     // Chinese characters — all Pinyin lookups fell back to 0, collapsing every
-    // user to (m=2, n=2) regardless of BaZi. These three tuples are real prod
+    // user to (m=2, n=2) regardless of BaZi. These four tuples are real prod
     // samples (BaZidiac 2026-04-19 — see GOAL-soulprint-persistence + this fix).
     const PROD_SAMPLES: Array<[string, string, string, string]> = [
       ['Geng', 'Ren',  'Wu',  'Geng'], // 14 users in prod
