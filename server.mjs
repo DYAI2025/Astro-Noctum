@@ -67,7 +67,14 @@ function extractStoredChart(astroJson) {
   return candidate;
 }
 
-async function waitForStoredChart(userId, maxAttempts = 8, waitMs = 750) {
+// Default polling window: 25 × 800ms = 20s.
+// Raised from 8 × 750ms = 6s on 2026-04-19 (Track B, Sprint S-BOOTSTRAP-RESILIENCE):
+// BAFE prod logs showed /chart responses taking 6–12s while Superglue-worker
+// writes astro_json async within ~10–15s. The 6s window made the bootstrap
+// endpoint fall back to a direct BAFE call that then also timed out (7s cap),
+// leaving soulprint_sectors unpersisted for every new user. Longer poll lets
+// Superglue win the race in the happy path and avoids the whole fallback.
+async function waitForStoredChart(userId, maxAttempts = 25, waitMs = 800) {
   if (!supabaseServer) return null;
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -2104,34 +2111,62 @@ app.post('/api/experience/bootstrap', requireUserAuth, async (req, res) => {
       return res.status(502).json({ error: 'superglue_unavailable' });
     }
 
-    // 2. Try to consume chart persisted by Superglue worker
+    // 2. Try to consume chart persisted by Superglue worker (primary path).
+    // 2b. If not ready within the poll window, fall back to a direct BAFE call.
+    // 2c. If BAFE also fails, re-check Supabase once more — the Superglue-worker
+    //     may have finished during the BAFE timeout window (observed in prod
+    //     2026-04-19 — BAFE /chart returning 200 OK ~6s after our AbortSignal
+    //     fired, Superglue also eventually writes astro_json async).
+    // Only if all three paths fail do we return 502. This is Track B
+    // Resilience-Policy P1: three independent chances before user-facing error.
     let bafeData = null;
     const stored = await waitForStoredChart(req.userId);
     if (stored?.chart) {
       bafeData = stored.chart;
     } else {
       console.warn('[experience/bootstrap] Superglue chart not ready, falling back to direct BAFE /chart for user', req.userId);
-      const bafeRes = await fetchWithRetry(
-        `${BAFE_BASE_URL}/chart`,
-        {
-          method: "POST",
-          headers: bafeDirectHeaders(),
-          body: JSON.stringify({
-            birthDate: birth.date,
-            birthTime: birth.time,
-            lat: birth.lat,
-            lng: birth.lon,
-            timeZone: birth.tz
-          }),
-          signal: AbortSignal.timeout(7000),
-        },
-        3,
-        1000
-      );
-      if (!bafeRes.ok) {
-        throw new Error(`BAFE responded with ${bafeRes.status}`);
+      try {
+        const bafeRes = await fetchWithRetry(
+          `${BAFE_BASE_URL}/chart`,
+          {
+            method: "POST",
+            headers: bafeDirectHeaders(),
+            body: JSON.stringify({
+              birthDate: birth.date,
+              birthTime: birth.time,
+              lat: birth.lat,
+              lng: birth.lon,
+              timeZone: birth.tz
+            }),
+            // 20s signal (raised from 7s on 2026-04-19): BAFE prod p99 on /chart
+            // is ~12s and the 7s cap caused bootstrap to always time out.
+            signal: AbortSignal.timeout(20000),
+          },
+          3,
+          1000
+        );
+        if (bafeRes.ok) {
+          bafeData = await bafeRes.json();
+        } else {
+          console.warn('[experience/bootstrap] BAFE fallback returned non-ok status', bafeRes.status);
+        }
+      } catch (bafeErr) {
+        console.warn('[experience/bootstrap] BAFE fallback threw:', bafeErr?.message || bafeErr);
       }
-      bafeData = await bafeRes.json();
+
+      // 2c. Supabase re-check — Superglue may have finished during the BAFE wait.
+      if (!bafeData) {
+        const retry = await waitForStoredChart(req.userId, 1, 0);
+        if (retry?.chart) {
+          bafeData = retry.chart;
+          console.info('[experience/bootstrap] Recovered via Supabase re-check after BAFE failure for user', req.userId);
+        }
+      }
+    }
+
+    if (!bafeData) {
+      console.error('[experience/bootstrap] No chart available — Superglue + BAFE + Supabase-recheck all failed for user', req.userId);
+      return res.status(502).json({ error: 'chart_unavailable' });
     }
 
     // 3. Compute Master Signal (N + G)
