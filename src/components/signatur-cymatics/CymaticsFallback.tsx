@@ -25,11 +25,17 @@ export function CymaticsFallback({
   return (
     <div
       className={className}
+      // Height-dominant square — mirror fix from SignaturCymaticsCanvas so
+      // callers passing `h-full w-full` don't stretch this fallback to the
+      // parent's landscape aspect (oval fallback bug, 2026-04-19).
       style={{
         position: 'relative',
-        width: '100%',
+        height: '100%',
+        width: 'auto',
         aspectRatio: '1 / 1',
         maxWidth: 600,
+        maxHeight: 600,
+        marginInline: 'auto',
         background: bg,
         borderRadius: '50%',
         overflow: 'hidden',
