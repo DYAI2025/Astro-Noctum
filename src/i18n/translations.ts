@@ -172,6 +172,13 @@ const translationsEn: DeepStringRecord = {
       ctaLabel: "Unlock Premium",
     },
   },
+  signatureReveal: {
+    soulprintCalculating: "Calculating your soulprint…",
+    signatureForming: "Your signature is forming",
+    signaturePartialError: "Signature preview",
+    previewNote: "We'll finalize your real signature once your full chart is ready. You can continue anyway.",
+    continueAnyway: "Continue anyway",
+  },
   expandable: {
     readMore: 'Read more',
     less: 'Less',
@@ -646,6 +653,13 @@ const translationsDe: DeepStringRecord = {
       description: "Dieser Cluster ist Teil des Premium-Erlebnisses. Schalte tiefere Einblicke in deine Signatur frei.",
       ctaLabel: "Premium freischalten",
     },
+  },
+  signatureReveal: {
+    soulprintCalculating: "Soulprint wird berechnet…",
+    signatureForming: "Deine Signatur formt sich",
+    signaturePartialError: "Signatur-Vorschau",
+    previewNote: "Deine echte Signatur wird finalisiert, sobald dein vollständiges Chart bereit ist. Du kannst trotzdem fortfahren.",
+    continueAnyway: "Trotzdem fortfahren",
   },
   expandable: {
     readMore: 'Mehr erfahren',
