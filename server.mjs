@@ -2131,12 +2131,12 @@ app.post('/api/experience/bootstrap', requireUserAuth, async (req, res) => {
 
         for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
           try {
-            // BAFE /chart canonical payload per 2026-04-11 schema migration:
+            // For this direct BAFE /chart fallback, use the current payload shape:
             // `local_datetime` (combined ISO datetime) + `tz` + `lon` + `lat`
             // + guard flags. The prior `birthDate + birthTime + lng + timeZone`
             // shape returns 422 validation_error from current BAFE — confirmed
-            // by prod logs 2026-04-19T18:56:27Z. Mirrors src/services/api.ts:446
-            // (calculateAll) and server.mjs fetchChartForBirth:852.
+            // by prod logs 2026-04-19T18:56:27Z. Keep this comment scoped to
+            // this fallback path rather than implying all /chart call sites match.
             const localDatetime = birth.time
               ? `${birth.date}T${birth.time}`
               : `${birth.date}T12:00`;
