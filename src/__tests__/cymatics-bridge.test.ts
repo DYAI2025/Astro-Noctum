@@ -36,17 +36,33 @@ function makeParams(yi: number, mi: number, di: number, hi: number, harmony = 0.
 // ── STEM_NAME_TO_INDEX ────────────────────────────────────────────────────────
 
 describe('STEM_NAME_TO_INDEX', () => {
-  it('maps all 10 heavenly stems to indices 0..9', () => {
-    expect(Object.keys(STEM_NAME_TO_INDEX)).toHaveLength(10);
+  it('maps all 10 heavenly stems (both Chinese characters and Pinyin) to indices 0..9', () => {
+    // 10 Chinese + 10 Pinyin = 20 keys; each index 0..9 appears twice.
+    expect(Object.keys(STEM_NAME_TO_INDEX)).toHaveLength(20);
     const values = Object.values(STEM_NAME_TO_INDEX);
     for (let i = 0; i < 10; i++) {
       expect(values).toContain(i);
     }
   });
 
-  it('maps 甲→0 and 癸→9', () => {
+  it('maps 甲→0 and 癸→9 (Chinese characters)', () => {
     expect(STEM_NAME_TO_INDEX['甲']).toBe(0);
     expect(STEM_NAME_TO_INDEX['癸']).toBe(9);
+  });
+
+  it('maps Jia→0 and Gui→9 (Pinyin — what BAFE returns)', () => {
+    expect(STEM_NAME_TO_INDEX['Jia']).toBe(0);
+    expect(STEM_NAME_TO_INDEX['Gui']).toBe(9);
+  });
+
+  it('Pinyin and Chinese-char pairs agree for every stem', () => {
+    const PAIRS: Array<[string, string]> = [
+      ['甲', 'Jia'],  ['乙', 'Yi'],  ['丙', 'Bing'], ['丁', 'Ding'], ['戊', 'Wu'],
+      ['己', 'Ji'],   ['庚', 'Geng'], ['辛', 'Xin'],  ['壬', 'Ren'],  ['癸', 'Gui'],
+    ];
+    for (const [cn, py] of PAIRS) {
+      expect(STEM_NAME_TO_INDEX[cn]).toBe(STEM_NAME_TO_INDEX[py]);
+    }
   });
 
   it('covers every stem name used in makeParams', () => {
@@ -171,6 +187,52 @@ describe('baziToChladniParams — diversity', () => {
     }
     // Expect all 25 possible m×n pairs (5×5) to appear — 100% > required ≥80%
     expect(seen.size).toBeGreaterThanOrEqual(20);
+  });
+
+  it('Pinyin stems (as BAFE actually returns them) produce distinct (m,n) per distinct stem tuple', () => {
+    // Regression guard for the 2026-04-19 bug where STEM_NAME_TO_INDEX only had
+    // Chinese characters — all Pinyin lookups fell back to 0, collapsing every
+    // user to (m=2, n=2) regardless of BaZi. These three tuples are real prod
+    // samples (BaZidiac 2026-04-19 — see GOAL-soulprint-persistence + this fix).
+    const PROD_SAMPLES: Array<[string, string, string, string]> = [
+      ['Geng', 'Ren',  'Wu',  'Geng'], // 14 users in prod
+      ['Ji',   'Bing', 'Bing', 'Jia'], // 8 users in prod
+      ['Xin',  'Ding', 'Gui',  'Bing'], // unique user
+      ['Ren',  'Jia',  'Ding', 'Geng'], // unique user
+    ];
+    const seen = new Set<string>();
+    for (const [y, mo, d, h] of PROD_SAMPLES) {
+      const { m, n } = baziToChladniParams(
+        {
+          year:  makePillar(y),
+          month: makePillar(mo),
+          day:   makePillar(d),
+          hour:  makePillar(h),
+        },
+        DEFAULT_WEIGHTS,
+        0.5,
+      );
+      seen.add(`${m}x${n}`);
+    }
+    // Four distinct stem tuples must produce at least 3 distinct (m,n) pairs.
+    // (Before the fix, all four produced (2,2).)
+    expect(seen.size).toBeGreaterThanOrEqual(3);
+  });
+
+  it('missing/unknown stem names fall back to index 0 (degenerate data, not crash)', () => {
+    const { m, n } = baziToChladniParams(
+      {
+        year:  makePillar('???'),
+        month: makePillar(''),
+        day:   makePillar('not-a-stem'),
+        hour:  makePillar('undefined'),
+      },
+      DEFAULT_WEIGHTS,
+      0.5,
+    );
+    // numericSig = 0 → m=2, n=2 — this is the documented degenerate output.
+    expect(m).toBe(2);
+    expect(n).toBe(2);
   });
 });
 

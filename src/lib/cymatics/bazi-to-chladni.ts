@@ -45,13 +45,23 @@ export const ELEMENT_COLORS: Record<WuxingElement, string> = {
 };
 
 /**
- * Heavenly Stem Chinese name → index 0..9.
- * This is the PRIMARY lookup because MappedPillar.stem is a string (Chinese character),
- * not a numeric index — BAFE does not return stem_index in the mapped response.
+ * Heavenly Stem name → index 0..9.
+ * This is the PRIMARY lookup because MappedPillar.stem is a string
+ * (BAFE does not return stem_index in the mapped response).
+ *
+ * Supports both Chinese characters and Pinyin because BAFE has historically
+ * returned both forms in different versions. Prod data (verified 2026-04-19
+ * against 50 astro_profiles on BaZidiac) uses Pinyin exclusively — omitting
+ * the Pinyin keys caused every lookup to fall back to 0, collapsing all users
+ * to (m=2, n=2) in the 2D Cymatics visualisation.
  */
 export const STEM_NAME_TO_INDEX: Record<string, number> = {
+  // Chinese characters (kept for historical/mixed inputs)
   '甲': 0, '乙': 1, '丙': 2, '丁': 3, '戊': 4,
   '己': 5, '庚': 6, '辛': 7, '壬': 8, '癸': 9,
+  // Pinyin — what BAFE currently returns
+  'Jia': 0, 'Yi':  1, 'Bing': 2, 'Ding': 3, 'Wu':  4,
+  'Ji':  5, 'Geng': 6, 'Xin':  7, 'Ren':  8, 'Gui': 9,
 };
 
 type BaziPillars = {
