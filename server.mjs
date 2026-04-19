@@ -2126,29 +2126,49 @@ app.post('/api/experience/bootstrap', requireUserAuth, async (req, res) => {
     } else {
       console.warn('[experience/bootstrap] Superglue chart not ready, falling back to direct BAFE /chart for user', req.userId);
       try {
-        const bafeRes = await fetchWithRetry(
-          `${BAFE_BASE_URL}/chart`,
-          {
-            method: "POST",
-            headers: bafeDirectHeaders(),
-            body: JSON.stringify({
-              birthDate: birth.date,
-              birthTime: birth.time,
-              lat: birth.lat,
-              lng: birth.lon,
-              timeZone: birth.tz
-            }),
-            // 20s signal (raised from 7s on 2026-04-19): BAFE prod p99 on /chart
-            // is ~12s and the 7s cap caused bootstrap to always time out.
-            signal: AbortSignal.timeout(20000),
-          },
-          3,
-          1000
-        );
-        if (bafeRes.ok) {
-          bafeData = await bafeRes.json();
-        } else {
-          console.warn('[experience/bootstrap] BAFE fallback returned non-ok status', bafeRes.status);
+        const maxAttempts = 4; // initial attempt + 3 retries
+        let bafeRes = null;
+
+        for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+          try {
+            bafeRes = await fetch(`${BAFE_BASE_URL}/chart`, {
+              method: "POST",
+              headers: bafeDirectHeaders(),
+              body: JSON.stringify({
+                birthDate: birth.date,
+                birthTime: birth.time,
+                lat: birth.lat,
+                lng: birth.lon,
+                timeZone: birth.tz
+              }),
+              // Give each retry attempt its own 20s timeout budget.
+              // Reusing a single AbortSignal.timeout() across retries leaves
+              // later attempts permanently aborted after the first timeout.
+              signal: AbortSignal.timeout(20000),
+            });
+
+            if (bafeRes.ok) {
+              bafeData = await bafeRes.json();
+              break;
+            }
+
+            if (bafeRes.status < 500 || attempt === maxAttempts) {
+              console.warn('[experience/bootstrap] BAFE fallback returned non-ok status', bafeRes.status);
+              break;
+            }
+          } catch (bafeErr) {
+            const isAbortError = bafeErr?.name === 'AbortError';
+            if (attempt === maxAttempts) {
+              throw bafeErr;
+            }
+
+            if (!isAbortError && bafeErr?.name && bafeErr.name !== 'TypeError') {
+              throw bafeErr;
+            }
+          }
+
+          const backoffMs = 1000 * (2 ** (attempt - 1));
+          await new Promise((resolve) => setTimeout(resolve, backoffMs));
         }
       } catch (bafeErr) {
         console.warn('[experience/bootstrap] BAFE fallback threw:', bafeErr?.message || bafeErr);
