@@ -2131,15 +2131,25 @@ app.post('/api/experience/bootstrap', requireUserAuth, async (req, res) => {
 
         for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
           try {
+            // For this direct BAFE /chart fallback, use the current payload shape:
+            // `local_datetime` (combined ISO datetime) + `tz` + `lon` + `lat`
+            // + guard flags. The prior `birthDate + birthTime + lng + timeZone`
+            // shape returns 422 validation_error from current BAFE — confirmed
+            // by prod logs 2026-04-19T18:56:27Z. Keep this comment scoped to
+            // this fallback path rather than implying all /chart call sites match.
+            const localDatetime = birth.time
+              ? `${birth.date}T${birth.time}`
+              : `${birth.date}T12:00`;
             bafeRes = await fetch(`${BAFE_BASE_URL}/chart`, {
               method: "POST",
               headers: bafeDirectHeaders(),
               body: JSON.stringify({
-                birthDate: birth.date,
-                birthTime: birth.time,
+                local_datetime: localDatetime,
+                tz: birth.tz,
+                lon: birth.lon,
                 lat: birth.lat,
-                lng: birth.lon,
-                timeZone: birth.tz
+                ambiguousTime: "earlier",
+                nonexistentTime: "error",
               }),
               // Give each retry attempt its own 20s timeout budget.
               // Reusing a single AbortSignal.timeout() across retries leaves
@@ -2175,8 +2185,12 @@ app.post('/api/experience/bootstrap', requireUserAuth, async (req, res) => {
       }
 
       // 2c. Supabase re-check — Superglue may have finished during the BAFE wait.
+      // Extended from 1-shot (useless race — prod trace 2026-04-19 showed
+      // Superglue finishing +1s after our give-up) to 15×1s = 15s multi-attempt
+      // window. The Superglue-worker writes astro_json reliably within ~10-20s
+      // (prod evidence from 14:53 / 14:57 / 18:56 UTC onboardings).
       if (!bafeData) {
-        const retry = await waitForStoredChart(req.userId, 1, 0);
+        const retry = await waitForStoredChart(req.userId, 15, 1000);
         if (retry?.chart) {
           bafeData = retry.chart;
           console.info('[experience/bootstrap] Recovered via Supabase re-check after BAFE failure for user', req.userId);
