@@ -25,12 +25,18 @@ interface NatalSignaturStaticProps {
   wuxingElement?: string;
 }
 
-function IdentityPill({ label, value }: { label: string; value: string }) {
+interface IdentityPillProps {
+  id: string;
+  label: string;
+  value: string;
+}
+
+function IdentityPill({ id, label, value }: IdentityPillProps) {
   return (
     <div
       className="rounded-lg border px-2 py-1.5 text-center"
       style={{ borderColor: 'var(--tile-border)' }}
-      data-testid={`identity-pill-${label.toLowerCase()}`}
+      data-testid={`identity-pill-${id}`}
     >
       <p
         className="text-[8px] font-sans uppercase tracking-[0.2em]"
