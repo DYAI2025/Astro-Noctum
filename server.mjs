@@ -903,14 +903,17 @@ async function fetchFusionForBirth({ birth_date, birth_time, iana_time_zone, bir
     try {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-      const resp = await fetch(url, {
-        method: 'POST',
-        headers: bafeDirectHeaders({ 'Content-Type': 'application/json' }),
-        body,
-        signal: controller.signal,
-      });
-      clearTimeout(timer);
-      if (resp.ok) return resp.json();
+      try {
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: bafeDirectHeaders({ 'Content-Type': 'application/json' }),
+          body,
+          signal: controller.signal,
+        });
+        if (resp.ok) return resp.json();
+      } finally {
+        clearTimeout(timer);
+      }
     } catch { /* try next URL */ }
   }
   throw new Error('FuFirE /calculate/fusion unavailable');
