@@ -385,6 +385,7 @@ export function Dashboard({
             transitEvents={transitEvents}
             dayMode={dailyData?.fusion?.day_mode ?? 'pulse'}
             birthSign={birthSign}
+            impulsText={dailyData?.fusion?.synthesis || dailyData?.fusion?.summary}
             onOpenDayModal={dailyEnabled ? () => setIsDayModalOpen(true) : undefined}
           />
         </SectionErrorBoundary>

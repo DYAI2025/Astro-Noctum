@@ -46,6 +46,14 @@ export interface DailyChartHeroProps {
    * compact variant rendered below the driver strip.
    */
   birthSign?: string | null;
+  /**
+   * Real daily horoscope text (Phase 5). Populate from
+   * `dailyData.fusion.synthesis ?? dailyData.fusion.summary`
+   * (Experience API `/api/experience/daily` → useFirstRunDaily).
+   * When empty/undefined, the Tagesimpuls section is suppressed —
+   * preferred over rendering a meaningless placeholder.
+   */
+  impulsText?: string;
   /** Optional callback to open the day-detail modal (feature-flagged) */
   onOpenDayModal?: () => void;
 }
@@ -143,17 +151,6 @@ function classifyTransitCount(n: number): DriverState {
   return 'tense';
 }
 
-// ── Day-Impulse Text ───────────────────────────────────────────────────────────
-
-const MODE_LABEL: Record<'pulse' | 'trace', { de: string; en: string }> = {
-  pulse: { de: 'Tages-Impuls', en: 'Day Pulse' },
-  trace: { de: 'Tages-Spur',  en: 'Day Trace' },
-};
-const MODE_DESC: Record<'pulse' | 'trace', { de: string; en: string }> = {
-  pulse: { de: 'Aktiver Tag — Bewegung, Sichtbarkeit, Außenwirkung.', en: 'Active day — movement, visibility, outward energy.' },
-  trace: { de: 'Reflexiver Tag — nach innen horchen, Muster erkennen.', en: 'Reflective day — listen inward, recognise patterns.' },
-};
-
 // ── Coherence subtitle (dynamic, delta-direction-aware) ───────────────────────
 
 function coherenceSubtitle(
@@ -213,6 +210,7 @@ export function DailyChartHero({
   transitEvents,
   dayMode,
   birthSign,
+  impulsText,
   onOpenDayModal,
 }: DailyChartHeroProps) {
   const { lang } = useLanguage();
@@ -240,19 +238,15 @@ export function DailyChartHero({
     },
   ], [spaceWeather.kpIndex, spaceWeather.solarPressure, transitEvents.length, isDe]);
 
-  const primaryEvent = useMemo(
-    () => [...transitEvents].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0))[0],
-    [transitEvents],
-  );
-
   if (loading) return <DailyChartHeroSkeleton />;
 
   const isUnavailable = displayedCoherence == null && baseCoherence == null;
 
-  const modeLabel = isDe ? MODE_LABEL[dayMode].de : MODE_LABEL[dayMode].en;
-  const modeDesc  = isDe ? MODE_DESC[dayMode].de  : MODE_DESC[dayMode].en;
+  // dayMode still drives the subtle tile-glow accent (gold for pulse,
+  // lavender for trace); Phase 5 removed the mode-badge/description UI
+  // that also consumed it.
   const accentColor = dayMode === 'pulse' ? '#D4AF37' : '#9B8EC4';
-  const hasEventText = (primaryEvent?.description_de ?? '').length > 0;
+  const hasImpuls = typeof impulsText === 'string' && impulsText.trim().length > 0;
 
   return (
     <div
@@ -384,64 +378,40 @@ export function DailyChartHero({
       </div>
 
 
-      {/* ── D. Day-Impulse Block ──────────────────────────────────────── */}
-      <div
-        className="space-y-2 pt-4 border-t"
-        style={{ borderColor: 'var(--tile-border)' }}
-        data-testid="day-impulse-section"
-      >
-        <div className="flex items-center gap-2">
-          <span
-            className="text-[9px] font-bold tracking-[0.25em] uppercase px-2 py-0.5 rounded-full"
-            style={{ background: `${accentColor}22`, color: accentColor }}
-          >
-            {modeLabel}
-          </span>
-        </div>
-        <p
-          className="text-[11px] leading-relaxed"
-          style={{ color: 'var(--tile-text-secondary)', opacity: 0.7 }}
+      {/* ── D. Tagesimpuls — centered headline + real daily horoscope ──── */}
+      {hasImpuls && (
+        <section
+          className="mt-2 pt-5 border-t"
+          style={{ borderColor: 'var(--tile-border)' }}
+          data-testid="day-impulse-section"
         >
-          {modeDesc}
-        </p>
-        {hasEventText ? (
-          <div className="space-y-1">
-            <p className="text-sm leading-relaxed" style={{ color: 'var(--tile-text-primary)' }}>
-              {primaryEvent!.description_de}
-            </p>
-            {(primaryEvent?.personal_context ?? '').length > 0 && (
-              <p className="text-xs leading-relaxed italic" style={{ color: 'var(--tile-text-secondary)', opacity: 0.75 }}>
-                {primaryEvent!.personal_context}
-              </p>
-            )}
-          </div>
-        ) : (
+          <h3
+            className="text-center font-serif text-2xl mb-3"
+            style={{ color: 'var(--tile-text-primary)' }}
+          >
+            {isDe ? 'Tagesimpuls' : 'Daily impulse'}
+          </h3>
           <p
-            className="text-sm leading-relaxed"
-            style={{ color: 'var(--tile-text-secondary)', opacity: 0.6 }}
-            data-testid="impulse-fallback"
+            className="text-sm leading-relaxed text-center max-w-prose mx-auto"
+            style={{ color: 'var(--tile-text-secondary)' }}
           >
-            {isDe ? 'Heute keine markanten Ereignisse. Nutze die Ruhe.' : 'No significant events today. Use the quiet.'}
+            {impulsText}
           </p>
-        )}
-        {primaryEvent?.trigger_planet && (
-          <div className="flex items-center gap-1.5 text-[10px]" style={{ color: 'var(--tile-text-secondary)', opacity: 0.5 }}>
-            {primaryEvent.trigger_symbol && <span aria-hidden="true">{primaryEvent.trigger_symbol}</span>}
-            <span>{primaryEvent.trigger_planet}</span>
-            {primaryEvent.sector_domain && <span>· {primaryEvent.sector_domain}</span>}
-          </div>
-        )}
-        {onOpenDayModal && (
-          <button
-            onClick={onOpenDayModal}
-            className="self-start text-[10px] font-serif tracking-wide focus-visible:ring-1 focus-visible:ring-current focus-visible:outline-none rounded"
-            style={{ color: 'var(--tile-accent)', opacity: 0.7 }}
-            data-testid="day-detail-trigger"
-          >
-            {isDe ? 'vertiefen \u2192' : 'explore \u2192'}
-          </button>
-        )}
-      </div>
+          {onOpenDayModal && (
+            <div className="mt-3 text-center">
+              <button
+                type="button"
+                onClick={onOpenDayModal}
+                className="text-[10px] font-serif tracking-wide focus-visible:ring-1 focus-visible:ring-current focus-visible:outline-none rounded"
+                style={{ color: 'var(--tile-accent)', opacity: 0.7 }}
+                data-testid="day-detail-trigger"
+              >
+                {isDe ? 'vertiefen \u2192' : 'explore \u2192'}
+              </button>
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 }

@@ -181,44 +181,30 @@ describe('DailyChartHero — active impacts section', () => {
   });
 });
 
-// ── Day-Impulse Block ─────────────────────────────────────────────────────────
+// ── Day-Impulse Block (Phase 5 replacement) ────────────────────────────────
+// Full Tagesimpuls assertions live in src/__tests__/daily-chart-hero.impuls.test.tsx.
+// Here we only assert the new behaviour that impacts the existing suite:
+// the old mode badge, transit-event body, fallback and trigger indicator are gone.
 
-describe('DailyChartHero — day impulse', () => {
-  it('shows mode badge (Tages-Impuls for pulse)', () => {
+describe('DailyChartHero — day impulse (post-Phase-5)', () => {
+  it('does NOT render the old mode badge (Tages-Impuls / Tages-Spur pills)', () => {
     renderHero({ dayMode: 'pulse' });
-    expect(screen.getByText('Tages-Impuls')).toBeTruthy();
+    // The old pill rendered the label in isolation; after Phase 5 the
+    // centered headline is "Tagesimpuls" only and only when impulsText is set.
+    expect(screen.queryByText('Tages-Impuls')).toBeNull();
+    expect(screen.queryByText('Tages-Spur')).toBeNull();
   });
 
-  it('shows mode badge (Tages-Spur for trace)', () => {
-    renderHero({ dayMode: 'trace' });
-    expect(screen.getByText('Tages-Spur')).toBeTruthy();
-  });
-
-  it('shows mode description', () => {
-    renderHero({ dayMode: 'pulse' });
-    expect(screen.getByText(/Aktiver Tag/)).toBeTruthy();
-  });
-
-  it('renders transit event text when available', () => {
+  it('does NOT render the old transit-event body or the "keine markanten Ereignisse" fallback', () => {
     renderHero({ transitEvents: [MOCK_EVENT] });
-    expect(screen.getByText(/Mars Quadrat zu deiner Natal-Venus/)).toBeTruthy();
+    expect(screen.queryByText(/Mars Quadrat zu deiner Natal-Venus/)).toBeNull();
+    expect(screen.queryByText(/Heute keine markanten Ereignisse/)).toBeNull();
+    expect(screen.queryByTestId('impulse-fallback')).toBeNull();
   });
 
-  it('renders personal_context in italic when available', () => {
-    renderHero({ transitEvents: [MOCK_EVENT] });
-    expect(screen.getByText(/Besonders im Bereich Beziehungen/)).toBeTruthy();
-  });
-
-  it('shows trigger planet indicator', () => {
-    renderHero({ transitEvents: [MOCK_EVENT] });
-    expect(screen.getByText('Mars')).toBeTruthy();
-    expect(screen.getByText('♂')).toBeTruthy();
-  });
-
-  it('shows fallback when no transit events', () => {
-    renderHero({ transitEvents: [] });
-    expect(screen.getByTestId('impulse-fallback')).toBeTruthy();
-    expect(screen.getByText(/Heute keine markanten Ereignisse/)).toBeTruthy();
+  it('does NOT render the Tagesimpuls section when impulsText is absent', () => {
+    renderHero();
+    expect(screen.queryByTestId('day-impulse-section')).toBeNull();
   });
 });
 
