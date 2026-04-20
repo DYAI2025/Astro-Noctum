@@ -122,11 +122,11 @@ export function NatalSignaturStatic({
         >
           {hasAnyIdentity && (
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 p-4" data-testid="identity-strip">
-              {sunSign && <IdentityPill label={isDe ? 'Sonne' : 'Sun'} value={sunSign} />}
-              {moonSign && <IdentityPill label={isDe ? 'Mond' : 'Moon'} value={moonSign} />}
-              {ascendant && <IdentityPill label="AC" value={ascendant} />}
-              {baziAnimal && <IdentityPill label="BaZi" value={baziAnimal} />}
-              {wuxingElement && <IdentityPill label="Wu-Xing" value={wuxingElement} />}
+              {sunSign && <IdentityPill id="sun" label={isDe ? 'Sonne' : 'Sun'} value={sunSign} />}
+              {moonSign && <IdentityPill id="moon" label={isDe ? 'Mond' : 'Moon'} value={moonSign} />}
+              {ascendant && <IdentityPill id="ac" label="AC" value={ascendant} />}
+              {baziAnimal && <IdentityPill id="bazi" label="BaZi" value={baziAnimal} />}
+              {wuxingElement && <IdentityPill id="wuxing" label="Wu-Xing" value={wuxingElement} />}
             </div>
           )}
           {children}

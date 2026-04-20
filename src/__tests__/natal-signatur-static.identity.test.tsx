@@ -45,9 +45,9 @@ describe('NatalSignaturStatic — identity strip (merged BigFour)', () => {
     );
     expect(screen.getByText('Widder')).toBeDefined();
     expect(screen.getByText('Hase')).toBeDefined();
-    expect(screen.queryByTestId('identity-pill-mond')).toBeNull();
+    expect(screen.queryByTestId('identity-pill-moon')).toBeNull();
     expect(screen.queryByTestId('identity-pill-ac')).toBeNull();
-    expect(screen.queryByTestId('identity-pill-wu-xing')).toBeNull();
+    expect(screen.queryByTestId('identity-pill-wuxing')).toBeNull();
   });
 
   it('identity strip only renders when accordion is expanded', () => {
