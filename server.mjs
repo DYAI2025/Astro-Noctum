@@ -3823,11 +3823,13 @@ app.get("/api/space-weather/extended", async (_req, res) => {
   let f107 = 0;
   let sunspotNumber = 0;
 
-  // Use NOAA_BASE so Railway env var overrides the live endpoint for testing/staging
+  // NOAA endpoint paths updated 2026-04 after /json/goes_xray_flux.json +
+  // /json/goes_proton_flux.json returned 404 (SWPC moved GOES primary feeds
+  // under /json/goes/primary/). Solar-cycle indices consolidate f10.7 + ssn.
   const noaaFetches = [
-    { name: "xray",   url: `${NOAA_BASE}/json/goes_xray_flux.json` },
-    { name: "proton", url: `${NOAA_BASE}/json/goes_proton_flux.json` },
-    { name: "f107",   url: `${NOAA_BASE}/json/f107_cm_flux.json` },
+    { name: "xray",       url: `${NOAA_BASE}/json/goes/primary/xrays-1-day.json` },
+    { name: "proton",     url: `${NOAA_BASE}/json/goes/primary/integral-protons-1-day.json` },
+    { name: "solarCycle", url: `${NOAA_BASE}/json/solar-cycle/observed-solar-cycle-indices.json` },
   ];
 
   const noaaResults = await Promise.allSettled(
@@ -3849,15 +3851,27 @@ app.get("/api/space-weather/extended", async (_req, res) => {
     const { name, data } = result.value;
     try {
       if (name === "xray" && Array.isArray(data) && data.length > 0) {
-        const last = data[data.length - 1];
+        // New shape: [{time_tag, satellite, flux, observed_flux, energy: "0.1-0.8nm", ...}]
+        // Multiple energy bands may be interleaved — filter to the 0.1-0.8nm
+        // soft-X-ray band used for flare classification.
+        const soft = data.filter((r) => r?.energy === "0.1-0.8nm");
+        const last = (soft.length ? soft : data)[(soft.length ? soft : data).length - 1];
         xrayFlux = Number.parseFloat(String(last?.flux ?? last?.observed_flux ?? 0)) || 0;
         xrayClass = classifyXray(xrayFlux);
       } else if (name === "proton" && Array.isArray(data) && data.length > 0) {
-        const last = data[data.length - 1];
+        // New shape has 8 interleaved energy bands; filter to >=10 MeV
+        // (standard SEP reference energy).
+        const band = data.filter((r) => r?.energy === ">=10 MeV");
+        const last = (band.length ? band : data)[(band.length ? band : data).length - 1];
         protonFlux = Number.parseFloat(String(last?.flux ?? last?.observed_flux ?? 0)) || 0;
-      } else if (name === "f107" && Array.isArray(data) && data.length > 0) {
-        const last = data[data.length - 1];
-        f107 = Number.parseFloat(String(last?.flux ?? last?.observed_flux ?? 0)) || 0;
+      } else if (name === "solarCycle" && Array.isArray(data) && data.length > 0) {
+        // Monthly series; take the most-recent observed row (ssn != -1).
+        const observed = [...data].reverse().find((r) => {
+          const s = Number(r?.ssn);
+          return Number.isFinite(s) && s !== -1;
+        }) ?? data[data.length - 1];
+        f107 = Number.parseFloat(String(observed?.["f10.7"] ?? 0)) || 0;
+        sunspotNumber = Number.parseFloat(String(observed?.ssn ?? 0)) || 0;
       }
     } catch (parseErr) {
       console.warn(`[space-weather/extended] parse ${name}:`, parseErr?.message);

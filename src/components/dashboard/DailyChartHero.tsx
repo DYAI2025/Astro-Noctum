@@ -7,12 +7,26 @@
  * Decision: DEC-dashboard-volatile-first (position 1 — unified hero)
  */
 
-import { useState, useMemo } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { useMemo } from 'react';
+import * as Tooltip from '@radix-ui/react-tooltip';
 import { useLanguage } from '../../contexts/LanguageContext';
-import type { ActivePlanet } from '../../lib/schemas/active-impacts';
+import { ActiveImpactsList } from '../shared/ActiveImpactsList';
 import type { SpaceWeatherState } from '../../hooks/useSpaceWeather';
 import type { TransitEvent } from '../../lib/schemas/transit-state';
+
+// ── Coherence tooltip copy (canonical source: docs/KOHAERENZ_INDEX.md §3.1–3.2) ──
+
+const COHERENCE_TOOLTIP_DE =
+  'Der Kohärenzindex misst, wie stark deine Natal-Signatur gerade mit der Welt resoniert. ' +
+  'Er setzt sich aus Natal-Kern, heutigem Transit, deiner Quiz-Kalibrierung und der kosmischen ' +
+  'Membran (Kp, Sonnenwind) zusammen. Er sagt nicht aus, wer du bist, sondern wie laut deine ' +
+  'Struktur heute spricht.';
+
+const COHERENCE_TOOLTIP_EN =
+  'The coherence index measures how strongly your natal signature resonates with the world ' +
+  'right now. It combines natal core, today\'s transits, your quiz calibration, and the cosmic ' +
+  'membrane (Kp, solar wind). It does not say who you are — it says how loudly your structure ' +
+  'speaks today.';
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -25,9 +39,21 @@ export interface DailyChartHeroProps {
   /** Value shown in ring = base + delta (0–100) */
   displayedCoherence: number | null;
   spaceWeather: SpaceWeatherState;
-  activePlanets: ActivePlanet[];
   transitEvents: TransitEvent[];
   dayMode: 'pulse' | 'trace';
+  /**
+   * Western zodiac sign (e.g. "Aries"). Drives the `ActiveImpactsList`
+   * compact variant rendered below the driver strip.
+   */
+  birthSign?: string | null;
+  /**
+   * Real daily horoscope text (Phase 5). Populate from
+   * `dailyData.fusion.synthesis ?? dailyData.fusion.summary`
+   * (Experience API `/api/experience/daily` → useFirstRunDaily).
+   * When empty/undefined, the Tagesimpuls section is suppressed —
+   * preferred over rendering a meaningless placeholder.
+   */
+  impulsText?: string;
   /** Optional callback to open the day-detail modal (feature-flagged) */
   onOpenDayModal?: () => void;
 }
@@ -125,79 +151,30 @@ function classifyTransitCount(n: number): DriverState {
   return 'tense';
 }
 
-// ── Planet Card ────────────────────────────────────────────────────────────────
+// ── Coherence subtitle (dynamic, delta-direction-aware) ───────────────────────
 
-function PlanetCard({ planet, isDe }: { planet: ActivePlanet; isDe: boolean }) {
-  const [open, setOpen] = useState(false);
-
-  const strengthLabel = planet.strength >= 0.7
-    ? (isDe ? 'Stark' : 'Strong')
-    : planet.strength >= 0.4
-      ? (isDe ? 'Mittel' : 'Moderate')
-      : (isDe ? 'Gering' : 'Mild');
-
-  const explanation = isDe
-    ? `${planet.planet} bildet einen ${planet.aspect_type} (${planet.orb.toFixed(1)}°) zu deinem Natal-${planet.natal_planet}${planet.wu_xing_element ? ` — ${planet.wu_xing_element}-Feld aktiv` : ''}.`
-    : `${planet.planet} forms a ${planet.aspect_type} (${planet.orb.toFixed(1)}°) to your natal ${planet.natal_planet}${planet.wu_xing_element ? ` — ${planet.wu_xing_element} field active` : ''}.`;
-
-  return (
-    <div
-      className="rounded-xl border p-3 text-[11px] space-y-1.5"
-      style={{ borderColor: 'var(--tile-border)', background: 'var(--tile-bg)' }}
-    >
-      <div className="flex items-center gap-2">
-        <span className="font-semibold" style={{ color: 'var(--tile-text-primary)' }}>
-          {planet.planet}
-        </span>
-        <span
-          className="text-[9px] px-1.5 py-0.5 rounded-full font-mono"
-          style={{ background: 'var(--tile-glow)', color: 'var(--tile-accent)' }}
-        >
-          {strengthLabel}
-        </span>
-        <button
-          className="ml-auto flex items-center gap-0.5 text-[9px] uppercase tracking-wide focus-visible:ring-1 focus-visible:ring-current focus-visible:outline-none rounded"
-          style={{ color: 'var(--tile-accent)', opacity: 0.7 }}
-          onClick={() => setOpen(v => !v)}
-          aria-expanded={open}
-          aria-label={isDe ? `Erklärung für ${planet.planet}` : `Explanation for ${planet.planet}`}
-        >
-          {isDe ? 'Warum?' : 'Why?'}
-          <ChevronDown
-            className="w-3 h-3 transition-transform duration-200"
-            style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
-            aria-hidden="true"
-          />
-        </button>
-      </div>
-      <div className="flex items-center gap-1.5" style={{ color: 'var(--tile-text-secondary)', opacity: 0.65 }}>
-        <span>{planet.aspect_type}</span>
-        <span>·</span>
-        <span>{isDe ? 'Natal' : 'natal'} {planet.natal_planet}</span>
-      </div>
-      {open && (
-        <p
-          className="text-[10px] leading-relaxed pt-1 border-t"
-          style={{ color: 'var(--tile-text-secondary)', opacity: 0.8, borderColor: 'var(--tile-border)' }}
-          data-testid={`planet-explanation-${planet.planet}`}
-        >
-          {explanation}
-        </p>
-      )}
-    </div>
-  );
+function coherenceSubtitle(
+  base: number,
+  displayed: number,
+  delta: number,
+  lang: 'de' | 'en',
+): string {
+  const b = Math.round(base);
+  const d = Math.round(displayed);
+  if (delta > 0.01) {
+    return lang === 'de'
+      ? `Dein Basiswert ${b}, heute durch kosmische Aktivierung angehoben auf ${d}.`
+      : `Your baseline ${b}, elevated by today's cosmic activation to ${d}.`;
+  }
+  if (delta < -0.01) {
+    return lang === 'de'
+      ? `Dein Basiswert ${b}, heute durch kosmische Spannung auf ${d} gedämpft.`
+      : `Your baseline ${b}, dampened by today's cosmic tension to ${d}.`;
+  }
+  return lang === 'de'
+    ? `Dein Basiswert ${b}, heute ohne spürbare kosmische Modulation.`
+    : `Your baseline ${b}, today without noticeable cosmic modulation.`;
 }
-
-// ── Day-Impulse Text ───────────────────────────────────────────────────────────
-
-const MODE_LABEL: Record<'pulse' | 'trace', { de: string; en: string }> = {
-  pulse: { de: 'Tages-Impuls', en: 'Day Pulse' },
-  trace: { de: 'Tages-Spur',  en: 'Day Trace' },
-};
-const MODE_DESC: Record<'pulse' | 'trace', { de: string; en: string }> = {
-  pulse: { de: 'Aktiver Tag — Bewegung, Sichtbarkeit, Außenwirkung.', en: 'Active day — movement, visibility, outward energy.' },
-  trace: { de: 'Reflexiver Tag — nach innen horchen, Muster erkennen.', en: 'Reflective day — listen inward, recognise patterns.' },
-};
 
 // ── Skeleton ───────────────────────────────────────────────────────────────────
 
@@ -230,9 +207,10 @@ export function DailyChartHero({
   positiveDailyDelta,
   displayedCoherence,
   spaceWeather,
-  activePlanets,
   transitEvents,
   dayMode,
+  birthSign,
+  impulsText,
   onOpenDayModal,
 }: DailyChartHeroProps) {
   const { lang } = useLanguage();
@@ -258,31 +236,17 @@ export function DailyChartHero({
       value: `${transitEvents.length} ${isDe ? 'aktiv' : 'active'}`,
       state: classifyTransitCount(transitEvents.length),
     },
-    {
-      label: isDe ? 'Tagesfeld' : 'Day field',
-      value: dayMode === 'pulse' ? (isDe ? 'Impuls' : 'Pulse') : (isDe ? 'Spur' : 'Trace'),
-      state: (dayMode === 'pulse' ? 'calm' : 'active') as DriverState,
-    },
-  ], [spaceWeather.kpIndex, spaceWeather.solarPressure, transitEvents.length, dayMode, isDe]);
-
-  const sortedPlanets = useMemo(
-    () => [...activePlanets].sort((a, b) => b.strength - a.strength),
-    [activePlanets],
-  );
-
-  const primaryEvent = useMemo(
-    () => [...transitEvents].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0))[0],
-    [transitEvents],
-  );
+  ], [spaceWeather.kpIndex, spaceWeather.solarPressure, transitEvents.length, isDe]);
 
   if (loading) return <DailyChartHeroSkeleton />;
 
   const isUnavailable = displayedCoherence == null && baseCoherence == null;
 
-  const modeLabel = isDe ? MODE_LABEL[dayMode].de : MODE_LABEL[dayMode].en;
-  const modeDesc  = isDe ? MODE_DESC[dayMode].de  : MODE_DESC[dayMode].en;
+  // dayMode still drives the subtle tile-glow accent (gold for pulse,
+  // lavender for trace); Phase 5 removed the mode-badge/description UI
+  // that also consumed it.
   const accentColor = dayMode === 'pulse' ? '#D4AF37' : '#9B8EC4';
-  const hasEventText = (primaryEvent?.description_de ?? '').length > 0;
+  const hasImpuls = typeof impulsText === 'string' && impulsText.trim().length > 0;
 
   return (
     <div
@@ -313,11 +277,42 @@ export function DailyChartHero({
         </div>
       ) : (
         <div className="flex items-center gap-6 sm:gap-8">
-          <SplitCoherenceRing
-            baseCoherence={base}
-            positiveDailyDelta={delta}
-            displayedCoherence={displayed}
-          />
+          <Tooltip.Provider delayDuration={500}>
+            <Tooltip.Root>
+              <Tooltip.Trigger asChild>
+                <div
+                  data-testid="coherence-ring"
+                  tabIndex={0}
+                  aria-label={isDe ? 'Kohärenzindex-Erklärung anzeigen' : 'Show coherence index explanation'}
+                  className="cursor-help focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tile-accent)] rounded-full"
+                >
+                  <SplitCoherenceRing
+                    baseCoherence={base}
+                    positiveDailyDelta={delta}
+                    displayedCoherence={displayed}
+                  />
+                </div>
+              </Tooltip.Trigger>
+              <Tooltip.Portal>
+                <Tooltip.Content
+                  sideOffset={8}
+                  className="z-50 max-w-sm rounded-lg p-3 text-xs leading-relaxed shadow-xl"
+                  style={{
+                    background: 'var(--tile-bg, rgba(10, 8, 20, 0.96))',
+                    color: 'var(--tile-text-primary, #fff)',
+                    border: '1px solid var(--tile-border, rgba(212, 175, 55, 0.2))',
+                  }}
+                >
+                  {isDe ? COHERENCE_TOOLTIP_DE : COHERENCE_TOOLTIP_EN}
+                  <Tooltip.Arrow
+                    width={10}
+                    height={6}
+                    style={{ fill: 'var(--tile-bg, rgba(10, 8, 20, 0.96))' }}
+                  />
+                </Tooltip.Content>
+              </Tooltip.Portal>
+            </Tooltip.Root>
+          </Tooltip.Provider>
           <div className="flex-1 min-w-0 space-y-1">
             <p
               className="text-[9px] font-sans uppercase tracking-[0.3em]"
@@ -337,10 +332,9 @@ export function DailyChartHero({
             <p
               className="text-[10px] leading-relaxed"
               style={{ color: 'var(--tile-text-secondary)', opacity: 0.65 }}
+              data-testid="coherence-subtitle"
             >
-              {isDe
-                ? 'Dein persönlicher Grundwert, heute durch kosmische Aktivierung erhöht.'
-                : 'Your personal baseline, elevated by today\'s cosmic activation.'}
+              {coherenceSubtitle(base, displayed, delta, lang)}
             </p>
           </div>
         </div>
@@ -363,98 +357,61 @@ export function DailyChartHero({
         ))}
       </div>
 
-      {/* ── C. Active Planets ─────────────────────────────────────────── */}
-      {sortedPlanets.length > 0 ? (
-        <div
-          className="space-y-2 pt-4 border-t"
-          style={{ borderColor: 'var(--tile-border)' }}
-          data-testid="active-planets-section"
-        >
-          <p
-            className="text-[9px] font-bold uppercase tracking-[0.2em]"
-            style={{ color: 'var(--tile-text-secondary)', opacity: 0.5 }}
-          >
-            {isDe ? 'Aktive Planeten' : 'Active planets'}
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {sortedPlanets.map(planet => (
-              <PlanetCard key={`${planet.planet}-${planet.natal_planet}`} planet={planet} isDe={isDe} />
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div
-          className="pt-4 border-t"
-          style={{ borderColor: 'var(--tile-border)' }}
-          data-testid="no-active-planets"
-        >
-          <p
-            className="text-[10px] text-center"
-            style={{ color: 'var(--tile-text-secondary)', opacity: 0.5 }}
-          >
-            {isDe ? 'Keine aktiven Planeteneinflüsse heute.' : 'No active planetary influences today.'}
-          </p>
-        </div>
-      )}
-
-      {/* ── D. Day-Impulse Block ──────────────────────────────────────── */}
+      {/* ── C. Active Impacts — shared with Signatur page ──────────────── */}
       <div
-        className="space-y-2 pt-4 border-t"
+        className="pt-4 border-t"
         style={{ borderColor: 'var(--tile-border)' }}
-        data-testid="day-impulse-section"
+        data-testid="active-impacts-section"
       >
-        <div className="flex items-center gap-2">
-          <span
-            className="text-[9px] font-bold tracking-[0.25em] uppercase px-2 py-0.5 rounded-full"
-            style={{ background: `${accentColor}22`, color: accentColor }}
-          >
-            {modeLabel}
-          </span>
-        </div>
         <p
-          className="text-[11px] leading-relaxed"
-          style={{ color: 'var(--tile-text-secondary)', opacity: 0.7 }}
+          className="text-[9px] font-bold uppercase tracking-[0.2em] mb-3"
+          style={{ color: 'var(--tile-text-secondary)', opacity: 0.5 }}
         >
-          {modeDesc}
+          {isDe ? 'Aktive Einflüsse' : 'Active influences'}
         </p>
-        {hasEventText ? (
-          <div className="space-y-1">
-            <p className="text-sm leading-relaxed" style={{ color: 'var(--tile-text-primary)' }}>
-              {primaryEvent!.description_de}
-            </p>
-            {(primaryEvent?.personal_context ?? '').length > 0 && (
-              <p className="text-xs leading-relaxed italic" style={{ color: 'var(--tile-text-secondary)', opacity: 0.75 }}>
-                {primaryEvent!.personal_context}
-              </p>
-            )}
-          </div>
-        ) : (
-          <p
-            className="text-sm leading-relaxed"
-            style={{ color: 'var(--tile-text-secondary)', opacity: 0.6 }}
-            data-testid="impulse-fallback"
-          >
-            {isDe ? 'Heute keine markanten Ereignisse. Nutze die Ruhe.' : 'No significant events today. Use the quiet.'}
-          </p>
-        )}
-        {primaryEvent?.trigger_planet && (
-          <div className="flex items-center gap-1.5 text-[10px]" style={{ color: 'var(--tile-text-secondary)', opacity: 0.5 }}>
-            {primaryEvent.trigger_symbol && <span aria-hidden="true">{primaryEvent.trigger_symbol}</span>}
-            <span>{primaryEvent.trigger_planet}</span>
-            {primaryEvent.sector_domain && <span>· {primaryEvent.sector_domain}</span>}
-          </div>
-        )}
-        {onOpenDayModal && (
-          <button
-            onClick={onOpenDayModal}
-            className="self-start text-[10px] font-serif tracking-wide focus-visible:ring-1 focus-visible:ring-current focus-visible:outline-none rounded"
-            style={{ color: 'var(--tile-accent)', opacity: 0.7 }}
-            data-testid="day-detail-trigger"
-          >
-            {isDe ? 'vertiefen \u2192' : 'explore \u2192'}
-          </button>
-        )}
+        <ActiveImpactsList
+          birthSign={birthSign ?? undefined}
+          variant="compact"
+          maxItems={4}
+          hideHeader
+        />
       </div>
+
+
+      {/* ── D. Tagesimpuls — centered headline + real daily horoscope ──── */}
+      {hasImpuls && (
+        <section
+          className="mt-2 pt-5 border-t"
+          style={{ borderColor: 'var(--tile-border)' }}
+          data-testid="day-impulse-section"
+        >
+          <h3
+            className="text-center font-serif text-2xl mb-3"
+            style={{ color: 'var(--tile-text-primary)' }}
+          >
+            {isDe ? 'Tagesimpuls' : 'Daily impulse'}
+          </h3>
+          <p
+            className="text-sm leading-relaxed text-center max-w-prose mx-auto"
+            style={{ color: 'var(--tile-text-secondary)' }}
+          >
+            {impulsText}
+          </p>
+          {onOpenDayModal && (
+            <div className="mt-3 text-center">
+              <button
+                type="button"
+                onClick={onOpenDayModal}
+                className="text-[10px] font-serif tracking-wide focus-visible:ring-1 focus-visible:ring-current focus-visible:outline-none rounded"
+                style={{ color: 'var(--tile-accent)', opacity: 0.7 }}
+                data-testid="day-detail-trigger"
+              >
+                {isDe ? 'vertiefen \u2192' : 'explore \u2192'}
+              </button>
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 }

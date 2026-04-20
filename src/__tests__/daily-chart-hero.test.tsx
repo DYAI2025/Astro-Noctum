@@ -4,13 +4,15 @@
  * Covers:
  * - REQ-F-daily-chart-coherence-hero: skeleton, no "Mittlere Übereinstimmung", single card
  * - REQ-F-coherence-hero-impact-datasource: split ring, driver strip, driver values
- * - REQ-F-active-planets-frontend: planet cards, strength ordering, Warum? expand, empty state
+ *
+ * Phase 4 (2026-04-20): active-planets assertions migrated to
+ * `src/__tests__/active-impacts-list.test.tsx` — the hero now delegates
+ * planet rendering to the shared ActiveImpactsList component.
  */
 
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { DailyChartHero } from '../components/dashboard/DailyChartHero';
-import type { ActivePlanet } from '../lib/schemas/active-impacts';
 import type { SpaceWeatherState } from '../hooks/useSpaceWeather';
 import type { TransitEvent } from '../lib/schemas/transit-state';
 
@@ -18,6 +20,14 @@ import type { TransitEvent } from '../lib/schemas/transit-state';
 
 vi.mock('../contexts/LanguageContext', () => ({
   useLanguage: () => ({ lang: 'de', t: (k: string) => k }),
+}));
+
+// computeTodayPlanetInfluences is the client-side planet engine invoked
+// transitively via ActiveImpactsList. Mock to a stable set so the hero tests
+// do not depend on real ephemeris computation.
+vi.mock('../lib/astro-data/planetInfluences', () => ({
+  computeTodayPlanetInfluences: vi.fn(() => null), // empty-state default
+  zodiacSignToIndex: vi.fn(() => -1),
 }));
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -41,28 +51,7 @@ const NULL_SPACE_WEATHER: SpaceWeatherState = {
   error: null,
 };
 
-const NO_PLANETS: ActivePlanet[] = [];
 const NO_EVENTS: TransitEvent[] = [];
-
-const MOCK_PLANET_STRONG: ActivePlanet = {
-  planet: 'Mars',
-  strength: 0.8,
-  aspect_type: 'Quadrat',
-  orb: 2.5,
-  natal_planet: 'Venus',
-  bazi_resonance: 'kontrolle',
-  wu_xing_element: 'fire',
-};
-
-const MOCK_PLANET_WEAK: ActivePlanet = {
-  planet: 'Jupiter',
-  strength: 0.3,
-  aspect_type: 'Sextil',
-  orb: 3.8,
-  natal_planet: 'Moon',
-  bazi_resonance: null,
-  wu_xing_element: null,
-};
 
 const MOCK_EVENT: TransitEvent = {
   type: 'transit',
@@ -84,7 +73,6 @@ function renderHero(overrides: Partial<Parameters<typeof DailyChartHero>[0]> = {
       positiveDailyDelta={7}
       displayedCoherence={72}
       spaceWeather={NULL_SPACE_WEATHER}
-      activePlanets={NO_PLANETS}
       transitEvents={NO_EVENTS}
       dayMode="pulse"
       {...overrides}
@@ -141,19 +129,22 @@ describe('DailyChartHero — coherence ring', () => {
 
   it('shows explanatory sentence below baseline', () => {
     renderHero();
-    expect(screen.getByText(/persönlicher Grundwert/)).toBeTruthy();
+    // Phase 1 (2026-04-20): subtitle is now dynamic — "Basiswert {base} …" keyed on delta direction.
+    expect(screen.getByText(/Basiswert 65.*angehoben auf 72/)).toBeTruthy();
   });
 });
 
 // ── Driver Strip ──────────────────────────────────────────────────────────────
 
 describe('DailyChartHero — driver strip', () => {
-  it('renders all 4 drivers', () => {
+  // Phase 2 (2026-04-20): Tagesfeld-Pill entfernt (siehe US-DSG-2).
+  // Mode-Info (Impuls/Spur) lebt nur noch im Day-Impulse-Badge "Tages-Impuls"/"Tages-Spur".
+  it('renders 3 drivers (Geomagnetik, Solardruck, Transit-Aktivität)', () => {
     renderHero();
     expect(screen.getByText('Geomagnetik')).toBeTruthy();
     expect(screen.getByText('Solardruck')).toBeTruthy();
     expect(screen.getByText('Transit-Aktivität')).toBeTruthy();
-    expect(screen.getByText('Tagesfeld')).toBeTruthy();
+    expect(screen.queryByText('Tagesfeld')).toBeNull();
   });
 
   it('shows Kp value in driver', () => {
@@ -172,107 +163,48 @@ describe('DailyChartHero — driver strip', () => {
     expect(screen.getByText('2 aktiv')).toBeTruthy();
   });
 
-  it('shows Impuls for pulse mode', () => {
-    renderHero({ dayMode: 'pulse' });
-    expect(screen.getByText('Impuls')).toBeTruthy();
-  });
-
-  it('shows Spur for trace mode', () => {
-    renderHero({ dayMode: 'trace' });
-    expect(screen.getByText('Spur')).toBeTruthy();
-  });
-
   it('marks unavailable driver value when Kp is 0', () => {
     renderHero({ spaceWeather: { ...NULL_SPACE_WEATHER, kpIndex: 0 } });
     expect(screen.getByText('Kp 0')).toBeTruthy();
   });
 });
 
-// ── Active Planets ────────────────────────────────────────────────────────────
+// ── Active Impacts delegation ─────────────────────────────────────────────────
+// Planet-rendering itself is covered by src/__tests__/active-impacts-list.test.tsx.
+// Here we only assert the hero mounts the shared section with the header label.
 
-describe('DailyChartHero — active planets', () => {
-  it('renders planet name and strength label', () => {
-    renderHero({ activePlanets: [MOCK_PLANET_STRONG] });
-    expect(screen.getByText('Mars')).toBeTruthy();
-    expect(screen.getByText('Stark')).toBeTruthy();
-  });
-
-  it('renders multiple planets sorted by strength (strongest first)', () => {
-    renderHero({ activePlanets: [MOCK_PLANET_WEAK, MOCK_PLANET_STRONG] });
-    const names = screen.getAllByText(/Mars|Jupiter/);
-    expect(names[0].textContent).toBe('Mars');
-    expect(names[1].textContent).toBe('Jupiter');
-  });
-
-  it('shows Warum? button with correct aria-label', () => {
-    renderHero({ activePlanets: [MOCK_PLANET_STRONG] });
-    expect(screen.getByRole('button', { name: /Erklärung für Mars/i })).toBeTruthy();
-  });
-
-  it('expands explanation on Warum? click', () => {
-    renderHero({ activePlanets: [MOCK_PLANET_STRONG] });
-    const btn = screen.getByRole('button', { name: /Erklärung für Mars/i });
-    fireEvent.click(btn);
-    expect(screen.getByTestId('planet-explanation-Mars')).toBeTruthy();
-    expect(screen.getByText(/Quadrat.*2\.5°.*Natal-Venus/)).toBeTruthy();
-  });
-
-  it('shows Gering label for weak planet', () => {
-    renderHero({ activePlanets: [MOCK_PLANET_WEAK] });
-    expect(screen.getByText('Gering')).toBeTruthy();
-  });
-
-  it('shows empty state when no planets', () => {
-    renderHero({ activePlanets: [] });
-    expect(screen.getByTestId('no-active-planets')).toBeTruthy();
-    expect(screen.getByText(/Keine aktiven Planeteneinflüsse/)).toBeTruthy();
-  });
-
-  it('shows aspect type and natal planet in compact view', () => {
-    renderHero({ activePlanets: [MOCK_PLANET_STRONG] });
-    expect(screen.getByText('Quadrat')).toBeTruthy();
-    expect(screen.getByText('Natal Venus')).toBeTruthy();
+describe('DailyChartHero — active impacts section', () => {
+  it('renders the Aktive Einflüsse section', () => {
+    renderHero({ birthSign: 'Aries' });
+    expect(screen.getByTestId('active-impacts-section')).toBeTruthy();
+    expect(screen.getByText('Aktive Einflüsse')).toBeTruthy();
   });
 });
 
-// ── Day-Impulse Block ─────────────────────────────────────────────────────────
+// ── Day-Impulse Block (Phase 5 replacement) ────────────────────────────────
+// Full Tagesimpuls assertions live in src/__tests__/daily-chart-hero.impuls.test.tsx.
+// Here we only assert the new behaviour that impacts the existing suite:
+// the old mode badge, transit-event body, fallback and trigger indicator are gone.
 
-describe('DailyChartHero — day impulse', () => {
-  it('shows mode badge (Tages-Impuls for pulse)', () => {
+describe('DailyChartHero — day impulse (post-Phase-5)', () => {
+  it('does NOT render the old mode badge (Tages-Impuls / Tages-Spur pills)', () => {
     renderHero({ dayMode: 'pulse' });
-    expect(screen.getByText('Tages-Impuls')).toBeTruthy();
+    // The old pill rendered the label in isolation; after Phase 5 the
+    // centered headline is "Tagesimpuls" only and only when impulsText is set.
+    expect(screen.queryByText('Tages-Impuls')).toBeNull();
+    expect(screen.queryByText('Tages-Spur')).toBeNull();
   });
 
-  it('shows mode badge (Tages-Spur for trace)', () => {
-    renderHero({ dayMode: 'trace' });
-    expect(screen.getByText('Tages-Spur')).toBeTruthy();
-  });
-
-  it('shows mode description', () => {
-    renderHero({ dayMode: 'pulse' });
-    expect(screen.getByText(/Aktiver Tag/)).toBeTruthy();
-  });
-
-  it('renders transit event text when available', () => {
+  it('does NOT render the old transit-event body or the "keine markanten Ereignisse" fallback', () => {
     renderHero({ transitEvents: [MOCK_EVENT] });
-    expect(screen.getByText(/Mars Quadrat zu deiner Natal-Venus/)).toBeTruthy();
+    expect(screen.queryByText(/Mars Quadrat zu deiner Natal-Venus/)).toBeNull();
+    expect(screen.queryByText(/Heute keine markanten Ereignisse/)).toBeNull();
+    expect(screen.queryByTestId('impulse-fallback')).toBeNull();
   });
 
-  it('renders personal_context in italic when available', () => {
-    renderHero({ transitEvents: [MOCK_EVENT] });
-    expect(screen.getByText(/Besonders im Bereich Beziehungen/)).toBeTruthy();
-  });
-
-  it('shows trigger planet indicator', () => {
-    renderHero({ transitEvents: [MOCK_EVENT] });
-    expect(screen.getByText('Mars')).toBeTruthy();
-    expect(screen.getByText('♂')).toBeTruthy();
-  });
-
-  it('shows fallback when no transit events', () => {
-    renderHero({ transitEvents: [] });
-    expect(screen.getByTestId('impulse-fallback')).toBeTruthy();
-    expect(screen.getByText(/Heute keine markanten Ereignisse/)).toBeTruthy();
+  it('does NOT render the Tagesimpuls section when impulsText is absent', () => {
+    renderHero();
+    expect(screen.queryByTestId('day-impulse-section')).toBeNull();
   });
 });
 

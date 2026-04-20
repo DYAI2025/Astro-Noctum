@@ -26,6 +26,7 @@ High-level route components.
 Reusable UI building blocks.
 - `fusion-ring-3d/`: Specialized Three.js components for the 3D Ring.
 - `quizzes/`: Self-contained quiz components (LoveLanguages, Personality, etc.).
+- `shared/`: Cross-surface components reused by Dashboard + Signatur page. Notably `ActiveImpactsList` (Phase 4, 2026-04-20) — planet-influence renderer with `full` + `compact` variants; drives both `/signatur`'s *Aktive Einflüsse* panel and the Dashboard's impact strip.
 - `Dashboard.tsx`: The main layout and logic for the astro dashboard.
 - `AuthGate.tsx`: Handles sign-in and sign-up flows.
 - `BirthForm.tsx`: Collects birth date, time, and location (with geocoding).

@@ -26,9 +26,7 @@ import { Card } from "./ui/card";
 import {
   syntheticSoulprintFromSign,
 } from "@/src/lib/signatur/weight-utils";
-import { DashboardBigFour as DashboardBigFourCard } from "./dashboard/DashboardBigFour";
 // MiniSignature removed from dashboard grid — coherence-first layout.
-import { CosmicInfluenceSection } from "./dashboard/CosmicInfluenceSection";
 import { TourOverlay } from "./dashboard/TourOverlay";
 import { MagnetsturmKarte } from "./dashboard/MagnetsturmKarte";
 import { NatalSignaturStatic } from "./dashboard/NatalSignaturStatic";
@@ -36,7 +34,6 @@ import { useSignaturSignal } from "../hooks/useSignaturSignal";
 import { useDashboardTour } from "@/src/hooks/useDashboardTour";
 import { usePlanetarium } from "@/src/contexts/PlanetariumContext";
 import { useDeviceLocation } from "@/src/hooks/useDeviceLocation";
-import { VibesSection } from "./dashboard/VibesSection";
 import { SkyModeToggle } from "./dashboard/SkyModeToggle";
 import { getConstellationForSign } from "../lib/astro-data/constellationFromSign";
 import { useCelestialOrrery } from "../hooks/useCelestialOrrery";
@@ -265,14 +262,14 @@ export function Dashboard({
   // ── Transit signal — provides events[] for DailyChartHero ──
   const { events: transitEvents, loading: transitLoading } = useSignaturSignal(userId);
 
-  // ── Active Impacts — harmony_index + active planets from POST /api/impact/active ──
+  // ── Active Impacts — harmony_index from POST /api/impact/active.
+  // activePlanets is no longer consumed by DailyChartHero (Phase 4 switched it
+  // to shared ActiveImpactsList, which derives planets client-side from birthSign).
   const {
     harmonyIndex: impactHarmonyIndex,
     baseCoherence: impactBaseCoherence,
     positiveDailyDelta: impactPositiveDailyDelta,
     displayedCoherence: impactDisplayedCoherence,
-    activePlanets: impactPlanets,
-    loading: impactLoading,
   } = useActiveImpacts();
 
   // ── Daily horoscope modal ───────────────────────────────────────────
@@ -382,9 +379,10 @@ export function Dashboard({
             positiveDailyDelta={impactPositiveDailyDelta}
             displayedCoherence={impactDisplayedCoherence}
             spaceWeather={spaceWeather}
-            activePlanets={impactPlanets}
             transitEvents={transitEvents}
             dayMode={dailyData?.fusion?.day_mode ?? 'pulse'}
+            birthSign={birthSign}
+            impulsText={dailyData?.fusion?.synthesis || dailyData?.fusion?.summary}
             onOpenDayModal={dailyEnabled ? () => setIsDayModalOpen(true) : undefined}
           />
         </SectionErrorBoundary>
@@ -393,19 +391,10 @@ export function Dashboard({
       {/* ── Tour sentinel: step 0 anchors at the planet section ── */}
       <div ref={astroSentinelRef} className="h-px" aria-hidden="true" />
 
-      {/* ═══ 2. VIBES ══════════════════════════════════════════════════ */}
-      <motion.div {...fadeIn(0.12)}>
-        <SectionErrorBoundary name="Vibes">
-          <div className="flex justify-center md:justify-start">
-            <VibesSection userId={userId} />
-          </div>
-        </SectionErrorBoundary>
-      </motion.div>
-
       {/* ── Tour sentinel: step 1 triggers when agents scroll into view ── */}
       <div ref={leviSentinelRef} className="h-px" aria-hidden="true" />
 
-      {/* ═══ 3. ASTRO AGENTS — interpretation bridge ═════════════════ */}
+      {/* ═══ 2. ASTRO AGENTS — interpretation bridge ═════════════════ */}
       <motion.div {...fadeIn(0.14)}>
         <SectionErrorBoundary name="Agents">
           <div className="cosmic-tile p-6 rounded-[2rem] space-y-5">
@@ -434,9 +423,15 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
-      {/* ═══ 4. BLUEPRINT — collapsed natal accordion ════════════════ */}
+      {/* ═══ 3. BLUEPRINT — natal accordion incl. identity strip ═════ */}
       <SectionErrorBoundary name="NatalSignaturStatic">
-        <NatalSignaturStatic>
+        <NatalSignaturStatic
+          sunSign={apiData?.western?.zodiac_sign || ''}
+          moonSign={apiData?.western?.moon_sign || ''}
+          ascendant={apiData?.western?.ascendant_sign || ''}
+          baziAnimal={apiData?.bazi?.zodiac_sign || ''}
+          wuxingElement={apiData?.wuxing?.dominant_element || ''}
+        >
           <DashboardAstroSection
             apiData={apiData}
             isPremium={isPremium}
@@ -445,20 +440,7 @@ export function Dashboard({
         </NatalSignaturStatic>
       </SectionErrorBoundary>
 
-      {/* ═══ 5. STABLE NATAL VALUES — Identity Cards ════════════════ */}
-      <motion.div {...fadeIn(0.18)}>
-        <SectionErrorBoundary name="BigFour">
-          <DashboardBigFourCard
-            sunSign={apiData?.western?.zodiac_sign || ''}
-            moonSign={apiData?.western?.moon_sign || ''}
-            ascendant={apiData?.western?.ascendant_sign || ''}
-            baziAnimal={apiData?.bazi?.zodiac_sign || ''}
-            wuxingElement={apiData?.wuxing?.dominant_element || ''}
-          />
-        </SectionErrorBoundary>
-      </motion.div>
-
-      {/* ═══ 6. PLANETARIUM (Birth Chart Orrery) ═════════════════════ */}
+      {/* ═══ 4. PLANETARIUM (Birth Chart Orrery) ═════════════════════ */}
       <div ref={planetariumSentinelRef} className="h-px" aria-hidden="true" />
       <motion.div className="-mx-4 md:-mx-6" {...fadeIn(0.20)}>
         <Suspense fallback={<div className="w-full aspect-[16/10] min-h-[360px] bg-[#0A0A14] rounded-2xl animate-pulse" />}>
@@ -490,14 +472,7 @@ export function Dashboard({
         </motion.div>
       )}
 
-      {/* ═══ 7. COSMIC INFLUENCE DETAIL ═════════════════════════════ */}
-      <motion.div {...fadeIn(0.24)}>
-        <SectionErrorBoundary name="CosmicInfluence">
-          <CosmicInfluenceSection spaceWeather={spaceWeather} />
-        </SectionErrorBoundary>
-      </motion.div>
-
-      {/* ═══ 8. MAGNETSTURM (self-hides when Kp < 4) ════════════════ */}
+      {/* ═══ 5. MAGNETSTURM (self-hides when Kp < 4) ════════════════ */}
       <motion.div {...fadeIn(0.26)}>
         <SectionErrorBoundary name="MagnetsturmKarte">
           <MagnetsturmKarte />

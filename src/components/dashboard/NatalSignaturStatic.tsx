@@ -18,15 +18,55 @@ interface NatalSignaturStaticProps {
   children: React.ReactNode;
   /** Override default collapsed state (useful for testing) */
   defaultExpanded?: boolean;
+  sunSign?: string;
+  moonSign?: string;
+  ascendant?: string;
+  baziAnimal?: string;
+  wuxingElement?: string;
+}
+
+interface IdentityPillProps {
+  id: string;
+  label: string;
+  value: string;
+}
+
+function IdentityPill({ id, label, value }: IdentityPillProps) {
+  return (
+    <div
+      className="rounded-lg border px-2 py-1.5 text-center"
+      style={{ borderColor: 'var(--tile-border)' }}
+      data-testid={`identity-pill-${id}`}
+    >
+      <p
+        className="text-[8px] font-sans uppercase tracking-[0.2em]"
+        style={{ color: 'var(--tile-text-secondary)', opacity: 0.6 }}
+      >
+        {label}
+      </p>
+      <p
+        className="text-sm font-serif truncate"
+        style={{ color: 'var(--tile-text-primary)' }}
+      >
+        {value || '—'}
+      </p>
+    </div>
+  );
 }
 
 export function NatalSignaturStatic({
   children,
   defaultExpanded = false,
+  sunSign,
+  moonSign,
+  ascendant,
+  baziAnimal,
+  wuxingElement,
 }: NatalSignaturStaticProps) {
   const { lang } = useLanguage();
   const isDe = lang === 'de';
   const [expanded, setExpanded] = useState(defaultExpanded);
+  const hasAnyIdentity = !!(sunSign || moonSign || ascendant || baziAnimal || wuxingElement);
 
   const title = isDe ? 'Deine Natal-Signatur (statisch)' : 'Your Natal Signature (static)';
   const subtitle = isDe
@@ -80,6 +120,15 @@ export function NatalSignaturStatic({
           className="border-t"
           style={{ borderColor: 'var(--tile-border)' }}
         >
+          {hasAnyIdentity && (
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 p-4" data-testid="identity-strip">
+              {sunSign && <IdentityPill id="sun" label={isDe ? 'Sonne' : 'Sun'} value={sunSign} />}
+              {moonSign && <IdentityPill id="moon" label={isDe ? 'Mond' : 'Moon'} value={moonSign} />}
+              {ascendant && <IdentityPill id="ac" label="AC" value={ascendant} />}
+              {baziAnimal && <IdentityPill id="bazi" label="BaZi" value={baziAnimal} />}
+              {wuxingElement && <IdentityPill id="wuxing" label="Wu-Xing" value={wuxingElement} />}
+            </div>
+          )}
           {children}
         </div>
       )}
