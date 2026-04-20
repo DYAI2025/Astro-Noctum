@@ -141,7 +141,8 @@ describe('DailyChartHero — coherence ring', () => {
 
   it('shows explanatory sentence below baseline', () => {
     renderHero();
-    expect(screen.getByText(/persönlicher Grundwert/)).toBeTruthy();
+    // Phase 1 (2026-04-20): subtitle is now dynamic — "Basiswert {base} …" keyed on delta direction.
+    expect(screen.getByText(/Basiswert 65.*angehoben auf 72/)).toBeTruthy();
   });
 });
 

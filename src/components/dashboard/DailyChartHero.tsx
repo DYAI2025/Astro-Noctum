@@ -199,6 +199,31 @@ const MODE_DESC: Record<'pulse' | 'trace', { de: string; en: string }> = {
   trace: { de: 'Reflexiver Tag — nach innen horchen, Muster erkennen.', en: 'Reflective day — listen inward, recognise patterns.' },
 };
 
+// ── Coherence subtitle (dynamic, delta-direction-aware) ───────────────────────
+
+function coherenceSubtitle(
+  base: number,
+  displayed: number,
+  delta: number,
+  lang: 'de' | 'en',
+): string {
+  const b = Math.round(base);
+  const d = Math.round(displayed);
+  if (delta > 0.01) {
+    return lang === 'de'
+      ? `Dein Basiswert ${b}, heute durch kosmische Aktivierung angehoben auf ${d}.`
+      : `Your baseline ${b}, elevated by today's cosmic activation to ${d}.`;
+  }
+  if (delta < -0.01) {
+    return lang === 'de'
+      ? `Dein Basiswert ${b}, heute durch kosmische Spannung auf ${d} gedämpft.`
+      : `Your baseline ${b}, dampened by today's cosmic tension to ${d}.`;
+  }
+  return lang === 'de'
+    ? `Dein Basiswert ${b}, heute ohne spürbare kosmische Modulation.`
+    : `Your baseline ${b}, today without noticeable cosmic modulation.`;
+}
+
 // ── Skeleton ───────────────────────────────────────────────────────────────────
 
 function DailyChartHeroSkeleton() {
@@ -337,10 +362,9 @@ export function DailyChartHero({
             <p
               className="text-[10px] leading-relaxed"
               style={{ color: 'var(--tile-text-secondary)', opacity: 0.65 }}
+              data-testid="coherence-subtitle"
             >
-              {isDe
-                ? 'Dein persönlicher Grundwert, heute durch kosmische Aktivierung erhöht.'
-                : 'Your personal baseline, elevated by today\'s cosmic activation.'}
+              {coherenceSubtitle(base, displayed, delta, lang)}
             </p>
           </div>
         </div>
