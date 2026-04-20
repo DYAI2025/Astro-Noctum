@@ -7,11 +7,10 @@
  * Decision: DEC-dashboard-volatile-first (position 1 — unified hero)
  */
 
-import { useState, useMemo } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { useMemo } from 'react';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { useLanguage } from '../../contexts/LanguageContext';
-import type { ActivePlanet } from '../../lib/schemas/active-impacts';
+import { ActiveImpactsList } from '../shared/ActiveImpactsList';
 import type { SpaceWeatherState } from '../../hooks/useSpaceWeather';
 import type { TransitEvent } from '../../lib/schemas/transit-state';
 
@@ -40,9 +39,13 @@ export interface DailyChartHeroProps {
   /** Value shown in ring = base + delta (0–100) */
   displayedCoherence: number | null;
   spaceWeather: SpaceWeatherState;
-  activePlanets: ActivePlanet[];
   transitEvents: TransitEvent[];
   dayMode: 'pulse' | 'trace';
+  /**
+   * Western zodiac sign (e.g. "Aries"). Drives the `ActiveImpactsList`
+   * compact variant rendered below the driver strip.
+   */
+  birthSign?: string | null;
   /** Optional callback to open the day-detail modal (feature-flagged) */
   onOpenDayModal?: () => void;
 }
@@ -140,69 +143,6 @@ function classifyTransitCount(n: number): DriverState {
   return 'tense';
 }
 
-// ── Planet Card ────────────────────────────────────────────────────────────────
-
-function PlanetCard({ planet, isDe }: { planet: ActivePlanet; isDe: boolean }) {
-  const [open, setOpen] = useState(false);
-
-  const strengthLabel = planet.strength >= 0.7
-    ? (isDe ? 'Stark' : 'Strong')
-    : planet.strength >= 0.4
-      ? (isDe ? 'Mittel' : 'Moderate')
-      : (isDe ? 'Gering' : 'Mild');
-
-  const explanation = isDe
-    ? `${planet.planet} bildet einen ${planet.aspect_type} (${planet.orb.toFixed(1)}°) zu deinem Natal-${planet.natal_planet}${planet.wu_xing_element ? ` — ${planet.wu_xing_element}-Feld aktiv` : ''}.`
-    : `${planet.planet} forms a ${planet.aspect_type} (${planet.orb.toFixed(1)}°) to your natal ${planet.natal_planet}${planet.wu_xing_element ? ` — ${planet.wu_xing_element} field active` : ''}.`;
-
-  return (
-    <div
-      className="rounded-xl border p-3 text-[11px] space-y-1.5"
-      style={{ borderColor: 'var(--tile-border)', background: 'var(--tile-bg)' }}
-    >
-      <div className="flex items-center gap-2">
-        <span className="font-semibold" style={{ color: 'var(--tile-text-primary)' }}>
-          {planet.planet}
-        </span>
-        <span
-          className="text-[9px] px-1.5 py-0.5 rounded-full font-mono"
-          style={{ background: 'var(--tile-glow)', color: 'var(--tile-accent)' }}
-        >
-          {strengthLabel}
-        </span>
-        <button
-          className="ml-auto flex items-center gap-0.5 text-[9px] uppercase tracking-wide focus-visible:ring-1 focus-visible:ring-current focus-visible:outline-none rounded"
-          style={{ color: 'var(--tile-accent)', opacity: 0.7 }}
-          onClick={() => setOpen(v => !v)}
-          aria-expanded={open}
-          aria-label={isDe ? `Erklärung für ${planet.planet}` : `Explanation for ${planet.planet}`}
-        >
-          {isDe ? 'Warum?' : 'Why?'}
-          <ChevronDown
-            className="w-3 h-3 transition-transform duration-200"
-            style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
-            aria-hidden="true"
-          />
-        </button>
-      </div>
-      <div className="flex items-center gap-1.5" style={{ color: 'var(--tile-text-secondary)', opacity: 0.65 }}>
-        <span>{planet.aspect_type}</span>
-        <span>·</span>
-        <span>{isDe ? 'Natal' : 'natal'} {planet.natal_planet}</span>
-      </div>
-      {open && (
-        <p
-          className="text-[10px] leading-relaxed pt-1 border-t"
-          style={{ color: 'var(--tile-text-secondary)', opacity: 0.8, borderColor: 'var(--tile-border)' }}
-          data-testid={`planet-explanation-${planet.planet}`}
-        >
-          {explanation}
-        </p>
-      )}
-    </div>
-  );
-}
-
 // ── Day-Impulse Text ───────────────────────────────────────────────────────────
 
 const MODE_LABEL: Record<'pulse' | 'trace', { de: string; en: string }> = {
@@ -270,9 +210,9 @@ export function DailyChartHero({
   positiveDailyDelta,
   displayedCoherence,
   spaceWeather,
-  activePlanets,
   transitEvents,
   dayMode,
+  birthSign,
   onOpenDayModal,
 }: DailyChartHeroProps) {
   const { lang } = useLanguage();
@@ -299,11 +239,6 @@ export function DailyChartHero({
       state: classifyTransitCount(transitEvents.length),
     },
   ], [spaceWeather.kpIndex, spaceWeather.solarPressure, transitEvents.length, isDe]);
-
-  const sortedPlanets = useMemo(
-    () => [...activePlanets].sort((a, b) => b.strength - a.strength),
-    [activePlanets],
-  );
 
   const primaryEvent = useMemo(
     () => [...transitEvents].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0))[0],
@@ -428,39 +363,26 @@ export function DailyChartHero({
         ))}
       </div>
 
-      {/* ── C. Active Planets ─────────────────────────────────────────── */}
-      {sortedPlanets.length > 0 ? (
-        <div
-          className="space-y-2 pt-4 border-t"
-          style={{ borderColor: 'var(--tile-border)' }}
-          data-testid="active-planets-section"
+      {/* ── C. Active Impacts — shared with Signatur page ──────────────── */}
+      <div
+        className="pt-4 border-t"
+        style={{ borderColor: 'var(--tile-border)' }}
+        data-testid="active-impacts-section"
+      >
+        <p
+          className="text-[9px] font-bold uppercase tracking-[0.2em] mb-3"
+          style={{ color: 'var(--tile-text-secondary)', opacity: 0.5 }}
         >
-          <p
-            className="text-[9px] font-bold uppercase tracking-[0.2em]"
-            style={{ color: 'var(--tile-text-secondary)', opacity: 0.5 }}
-          >
-            {isDe ? 'Aktive Planeten' : 'Active planets'}
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {sortedPlanets.map(planet => (
-              <PlanetCard key={`${planet.planet}-${planet.natal_planet}`} planet={planet} isDe={isDe} />
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div
-          className="pt-4 border-t"
-          style={{ borderColor: 'var(--tile-border)' }}
-          data-testid="no-active-planets"
-        >
-          <p
-            className="text-[10px] text-center"
-            style={{ color: 'var(--tile-text-secondary)', opacity: 0.5 }}
-          >
-            {isDe ? 'Keine aktiven Planeteneinflüsse heute.' : 'No active planetary influences today.'}
-          </p>
-        </div>
-      )}
+          {isDe ? 'Aktive Einflüsse' : 'Active influences'}
+        </p>
+        <ActiveImpactsList
+          birthSign={birthSign ?? undefined}
+          variant="compact"
+          maxItems={4}
+          hideHeader
+        />
+      </div>
+
 
       {/* ── D. Day-Impulse Block ──────────────────────────────────────── */}
       <div

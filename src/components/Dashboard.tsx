@@ -265,14 +265,14 @@ export function Dashboard({
   // ── Transit signal — provides events[] for DailyChartHero ──
   const { events: transitEvents, loading: transitLoading } = useSignaturSignal(userId);
 
-  // ── Active Impacts — harmony_index + active planets from POST /api/impact/active ──
+  // ── Active Impacts — harmony_index from POST /api/impact/active.
+  // activePlanets is no longer consumed by DailyChartHero (Phase 4 switched it
+  // to shared ActiveImpactsList, which derives planets client-side from birthSign).
   const {
     harmonyIndex: impactHarmonyIndex,
     baseCoherence: impactBaseCoherence,
     positiveDailyDelta: impactPositiveDailyDelta,
     displayedCoherence: impactDisplayedCoherence,
-    activePlanets: impactPlanets,
-    loading: impactLoading,
   } = useActiveImpacts();
 
   // ── Daily horoscope modal ───────────────────────────────────────────
@@ -382,9 +382,9 @@ export function Dashboard({
             positiveDailyDelta={impactPositiveDailyDelta}
             displayedCoherence={impactDisplayedCoherence}
             spaceWeather={spaceWeather}
-            activePlanets={impactPlanets}
             transitEvents={transitEvents}
             dayMode={dailyData?.fusion?.day_mode ?? 'pulse'}
+            birthSign={birthSign}
             onOpenDayModal={dailyEnabled ? () => setIsDayModalOpen(true) : undefined}
           />
         </SectionErrorBoundary>
