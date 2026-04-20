@@ -27,7 +27,6 @@ import {
   syntheticSoulprintFromSign,
 } from "@/src/lib/signatur/weight-utils";
 // MiniSignature removed from dashboard grid — coherence-first layout.
-import { CosmicInfluenceSection } from "./dashboard/CosmicInfluenceSection";
 import { TourOverlay } from "./dashboard/TourOverlay";
 import { MagnetsturmKarte } from "./dashboard/MagnetsturmKarte";
 import { NatalSignaturStatic } from "./dashboard/NatalSignaturStatic";
@@ -473,14 +472,7 @@ export function Dashboard({
         </motion.div>
       )}
 
-      {/* ═══ 5. COSMIC INFLUENCE DETAIL ═════════════════════════════ */}
-      <motion.div {...fadeIn(0.24)}>
-        <SectionErrorBoundary name="CosmicInfluence">
-          <CosmicInfluenceSection spaceWeather={spaceWeather} />
-        </SectionErrorBoundary>
-      </motion.div>
-
-      {/* ═══ 6. MAGNETSTURM (self-hides when Kp < 4) ════════════════ */}
+      {/* ═══ 5. MAGNETSTURM (self-hides when Kp < 4) ════════════════ */}
       <motion.div {...fadeIn(0.26)}>
         <SectionErrorBoundary name="MagnetsturmKarte">
           <MagnetsturmKarte />
