@@ -283,12 +283,7 @@ export function DailyChartHero({
       value: `${transitEvents.length} ${isDe ? 'aktiv' : 'active'}`,
       state: classifyTransitCount(transitEvents.length),
     },
-    {
-      label: isDe ? 'Tagesfeld' : 'Day field',
-      value: dayMode === 'pulse' ? (isDe ? 'Impuls' : 'Pulse') : (isDe ? 'Spur' : 'Trace'),
-      state: (dayMode === 'pulse' ? 'calm' : 'active') as DriverState,
-    },
-  ], [spaceWeather.kpIndex, spaceWeather.solarPressure, transitEvents.length, dayMode, isDe]);
+  ], [spaceWeather.kpIndex, spaceWeather.solarPressure, transitEvents.length, isDe]);
 
   const sortedPlanets = useMemo(
     () => [...activePlanets].sort((a, b) => b.strength - a.strength),

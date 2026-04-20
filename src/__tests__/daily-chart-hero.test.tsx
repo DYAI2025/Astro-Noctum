@@ -149,12 +149,14 @@ describe('DailyChartHero — coherence ring', () => {
 // ── Driver Strip ──────────────────────────────────────────────────────────────
 
 describe('DailyChartHero — driver strip', () => {
-  it('renders all 4 drivers', () => {
+  // Phase 2 (2026-04-20): Tagesfeld-Pill entfernt (siehe US-DSG-2).
+  // Mode-Info (Impuls/Spur) lebt nur noch im Day-Impulse-Badge "Tages-Impuls"/"Tages-Spur".
+  it('renders 3 drivers (Geomagnetik, Solardruck, Transit-Aktivität)', () => {
     renderHero();
     expect(screen.getByText('Geomagnetik')).toBeTruthy();
     expect(screen.getByText('Solardruck')).toBeTruthy();
     expect(screen.getByText('Transit-Aktivität')).toBeTruthy();
-    expect(screen.getByText('Tagesfeld')).toBeTruthy();
+    expect(screen.queryByText('Tagesfeld')).toBeNull();
   });
 
   it('shows Kp value in driver', () => {
@@ -171,16 +173,6 @@ describe('DailyChartHero — driver strip', () => {
     const events = [MOCK_EVENT, { ...MOCK_EVENT, priority: 3 }] as TransitEvent[];
     renderHero({ transitEvents: events });
     expect(screen.getByText('2 aktiv')).toBeTruthy();
-  });
-
-  it('shows Impuls for pulse mode', () => {
-    renderHero({ dayMode: 'pulse' });
-    expect(screen.getByText('Impuls')).toBeTruthy();
-  });
-
-  it('shows Spur for trace mode', () => {
-    renderHero({ dayMode: 'trace' });
-    expect(screen.getByText('Spur')).toBeTruthy();
   });
 
   it('marks unavailable driver value when Kp is 0', () => {
