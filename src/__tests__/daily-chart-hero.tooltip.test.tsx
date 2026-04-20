@@ -38,7 +38,6 @@ const baseProps = {
   positiveDailyDelta: 5,
   displayedCoherence: 65,
   spaceWeather: NULL_SPACE_WEATHER,
-  activePlanets: [],
   transitEvents: [],
   dayMode: 'pulse' as const,
 };
