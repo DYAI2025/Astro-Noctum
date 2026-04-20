@@ -2092,9 +2092,11 @@ async function computeActiveImpactsCore(userId) {
         rawHarmony = healedHarmony;
         hasFusionData = true;
         // Persist healed fusion block back into astro_json (fire-and-forget).
-        // Uses jsonb deep-merge so only `fusion` is overwritten, preserving
-        // existing bazi/western/wuxing keys. Errors here are swallowed — the
-        // in-memory rawHarmony is already usable for the current response.
+        // This does an in-memory top-level merge with the previously loaded
+        // astro_json and writes the whole object back, replacing `fusion`
+        // while preserving existing top-level keys from `profile.astro_json`.
+        // Errors here are swallowed — the in-memory rawHarmony is already
+        // usable for the current response.
         const mergedAstro = { ...profile.astro_json, fusion: fusionResp };
         supabaseServer
           .from('astro_profiles')
