@@ -64,6 +64,14 @@ export default defineConfig(({mode}) => {
           target: 'http://localhost:3001',
           changeOrigin: true,
         },
+        '/api/chart': {
+          // Frontend calculateAll() hits /api/chart (same-origin proxy). Without
+          // this rule Vite returns 404 because the only /chart rule above targets
+          // BAFE directly at /chart (no /api prefix), leaving /api/chart unrouted.
+          // Prod path works because server.mjs registers app.post('/api/chart').
+          target: 'http://localhost:3001',
+          changeOrigin: true,
+        },
       },
     },
     build: {
