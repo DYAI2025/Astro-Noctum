@@ -36,7 +36,6 @@ import { useSignaturSignal } from "../hooks/useSignaturSignal";
 import { useDashboardTour } from "@/src/hooks/useDashboardTour";
 import { usePlanetarium } from "@/src/contexts/PlanetariumContext";
 import { useDeviceLocation } from "@/src/hooks/useDeviceLocation";
-import { VibesSection } from "./dashboard/VibesSection";
 import { SkyModeToggle } from "./dashboard/SkyModeToggle";
 import { getConstellationForSign } from "../lib/astro-data/constellationFromSign";
 import { useCelestialOrrery } from "../hooks/useCelestialOrrery";
@@ -393,15 +392,6 @@ export function Dashboard({
 
       {/* ── Tour sentinel: step 0 anchors at the planet section ── */}
       <div ref={astroSentinelRef} className="h-px" aria-hidden="true" />
-
-      {/* ═══ 2. VIBES ══════════════════════════════════════════════════ */}
-      <motion.div {...fadeIn(0.12)}>
-        <SectionErrorBoundary name="Vibes">
-          <div className="flex justify-center md:justify-start">
-            <VibesSection userId={userId} />
-          </div>
-        </SectionErrorBoundary>
-      </motion.div>
 
       {/* ── Tour sentinel: step 1 triggers when agents scroll into view ── */}
       <div ref={leviSentinelRef} className="h-px" aria-hidden="true" />

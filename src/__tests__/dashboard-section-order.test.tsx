@@ -51,7 +51,6 @@ describe('Dashboard coherence-first section hierarchy', () => {
     // DailyChartHero replaces COHERENCE HERO + ACTIVE PLANET INFLUENCES + DAY PULSE
     const markers = [
       'DAILY CHART HERO',
-      'VIBES',
       'ASTRO AGENTS',
       'BLUEPRINT',
       'STABLE NATAL VALUES',
