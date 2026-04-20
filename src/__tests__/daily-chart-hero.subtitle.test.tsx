@@ -35,7 +35,6 @@ const NULL_SPACE_WEATHER: SpaceWeatherState = {
 const base = {
   loading: false,
   spaceWeather: NULL_SPACE_WEATHER,
-  activePlanets: [],
   transitEvents: [],
   dayMode: 'pulse' as const,
 };
