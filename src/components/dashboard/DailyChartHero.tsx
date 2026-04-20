@@ -9,10 +9,25 @@
 
 import { useState, useMemo } from 'react';
 import { ChevronDown } from 'lucide-react';
+import * as Tooltip from '@radix-ui/react-tooltip';
 import { useLanguage } from '../../contexts/LanguageContext';
 import type { ActivePlanet } from '../../lib/schemas/active-impacts';
 import type { SpaceWeatherState } from '../../hooks/useSpaceWeather';
 import type { TransitEvent } from '../../lib/schemas/transit-state';
+
+// ── Coherence tooltip copy (canonical source: docs/KOHAERENZ_INDEX.md §3.1–3.2) ──
+
+const COHERENCE_TOOLTIP_DE =
+  'Der Kohärenzindex misst, wie stark deine Natal-Signatur gerade mit der Welt resoniert. ' +
+  'Er setzt sich aus Natal-Kern, heutigem Transit, deiner Quiz-Kalibrierung und der kosmischen ' +
+  'Membran (Kp, Sonnenwind) zusammen. Er sagt nicht aus, wer du bist, sondern wie laut deine ' +
+  'Struktur heute spricht.';
+
+const COHERENCE_TOOLTIP_EN =
+  'The coherence index measures how strongly your natal signature resonates with the world ' +
+  'right now. It combines natal core, today\'s transits, your quiz calibration, and the cosmic ' +
+  'membrane (Kp, solar wind). It does not say who you are — it says how loudly your structure ' +
+  'speaks today.';
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -333,11 +348,42 @@ export function DailyChartHero({
         </div>
       ) : (
         <div className="flex items-center gap-6 sm:gap-8">
-          <SplitCoherenceRing
-            baseCoherence={base}
-            positiveDailyDelta={delta}
-            displayedCoherence={displayed}
-          />
+          <Tooltip.Provider delayDuration={500}>
+            <Tooltip.Root>
+              <Tooltip.Trigger asChild>
+                <div
+                  data-testid="coherence-ring"
+                  tabIndex={0}
+                  aria-label={isDe ? 'Kohärenzindex-Erklärung anzeigen' : 'Show coherence index explanation'}
+                  className="cursor-help focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tile-accent)] rounded-full"
+                >
+                  <SplitCoherenceRing
+                    baseCoherence={base}
+                    positiveDailyDelta={delta}
+                    displayedCoherence={displayed}
+                  />
+                </div>
+              </Tooltip.Trigger>
+              <Tooltip.Portal>
+                <Tooltip.Content
+                  sideOffset={8}
+                  className="z-50 max-w-sm rounded-lg p-3 text-xs leading-relaxed shadow-xl"
+                  style={{
+                    background: 'var(--tile-bg, rgba(10, 8, 20, 0.96))',
+                    color: 'var(--tile-text-primary, #fff)',
+                    border: '1px solid var(--tile-border, rgba(212, 175, 55, 0.2))',
+                  }}
+                >
+                  {isDe ? COHERENCE_TOOLTIP_DE : COHERENCE_TOOLTIP_EN}
+                  <Tooltip.Arrow
+                    width={10}
+                    height={6}
+                    style={{ fill: 'var(--tile-bg, rgba(10, 8, 20, 0.96))' }}
+                  />
+                </Tooltip.Content>
+              </Tooltip.Portal>
+            </Tooltip.Root>
+          </Tooltip.Provider>
           <div className="flex-1 min-w-0 space-y-1">
             <p
               className="text-[9px] font-sans uppercase tracking-[0.3em]"
