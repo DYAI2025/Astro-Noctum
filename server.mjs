@@ -876,6 +876,49 @@ async function fetchChartForBirth({ birth_date, birth_time, iana_time_zone, birt
   throw new Error('FuFirE /chart unavailable');
 }
 
+/**
+ * Fetch natal Fusion (Wu-Xing × Western harmony) from FuFirE's
+ * /calculate/fusion endpoint. Used by the coherence-self-heal path in
+ * computeActiveImpactsCore — when stored astro_profiles.astro_json.fusion is
+ * missing the nested harmony_index, we re-query this endpoint on demand,
+ * cache the result back into astro_json, and continue.
+ *
+ * Response shape (FuFirE spec): { harmony_index: { harmony_index: number,
+ *   method, bazi_vector, western_vector, interpretation, ... }, ... }
+ */
+async function fetchFusionForBirth({ birth_date, birth_time, iana_time_zone, birth_lat, birth_lon }) {
+  const dt = birth_time
+    ? `${birth_date}T${birth_time}`
+    : `${birth_date}T12:00`;
+  const body = JSON.stringify({
+    date:             dt,
+    tz:               iana_time_zone || 'UTC',
+    lat:              birth_lat,
+    lon:              birth_lon,
+    ambiguousTime:    'earlier',
+    nonexistentTime:  'error',
+  });
+  const urls = bafeFallbackUrls('/calculate/fusion');
+  for (const url of urls) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+      try {
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: bafeDirectHeaders({ 'Content-Type': 'application/json' }),
+          body,
+          signal: controller.signal,
+        });
+        if (resp.ok) return resp.json();
+      } finally {
+        clearTimeout(timer);
+      }
+    } catch { /* try next URL */ }
+  }
+  throw new Error('FuFirE /calculate/fusion unavailable');
+}
+
 app.post('/api/synastry', requireUserAuth, requirePremium, async (req, res) => {
   if (!supabaseServer) return res.status(503).json({ error: 'Auth service not configured' });
 
@@ -1936,10 +1979,11 @@ async function computeActiveImpactsCore(userId) {
 
   if (!supabaseServer) throw new Error('database_unavailable');
 
-  // 1. Load user profile — natal chart + day master + soulprint
+  // 1. Load user profile — natal chart + day master + soulprint + birth data
+  // (birth_* fields needed for live /calculate/fusion self-heal below).
   const { data: profile, error: profileErr } = await supabaseServer
     .from('astro_profiles')
-    .select('astro_json, soulprint_sectors')
+    .select('astro_json, soulprint_sectors, birth_date, birth_time, iana_time_zone, birth_lat, birth_lng')
     .eq('user_id', userId)
     .maybeSingle();
 
@@ -2010,10 +2054,66 @@ async function computeActiveImpactsCore(userId) {
   }
   activePlanets.sort((a, b) => b.strength - a.strength);
 
-  // 5. Compute coherence (additive: base + solar delta, never below base)
-  const rawHarmony = profile.astro_json?.fusion?.harmony_index;
-  const hasFusionData = rawHarmony !== undefined && rawHarmony !== null;
-  const baseHarmony = rawHarmony ?? 0.5;
+  // 5. Compute coherence (additive: base + solar delta, never below base).
+  //
+  // FuFirE /calculate/fusion stores the natal Kohärenzindex under the nested
+  // path `astro_json.fusion.harmony_index.harmony_index` (number in [0, 1]) —
+  // the outer `harmony_index` is an object containing the number plus
+  // bazi_vector, western_vector, interpretation, etc. An earlier version of
+  // this code read `astro_json.fusion.harmony_index` directly, which returned
+  // the wrapper object and evaluated as `!== null` but produced NaN downstream.
+  // Bug verified 2026-04-19: 27/59 prod users had `fusion = {}` (empty object,
+  // no nested data) — these users saw "Derzeit nicht verfügbar" on the
+  // dashboard; the rest saw garbled rings because the object-as-number never
+  // sanitized to a valid percentage. See user question 2026-04-20.
+  //
+  // Self-heal path (Track B of A+B): if the nested harmony value is missing
+  // AND the profile carries birth data, live-call /calculate/fusion and
+  // persist the result back into astro_json.fusion. Ensures legacy rows get
+  // healed the first time their dashboard is rendered, without requiring a
+  // separate backfill script. Failures are non-blocking — we fall back to the
+  // "unavailable" UI state rather than crashing the endpoint.
+  const fusionBlock = profile.astro_json?.fusion;
+  let rawHarmony = fusionBlock?.harmony_index?.harmony_index;
+  let hasFusionData = typeof rawHarmony === 'number' && Number.isFinite(rawHarmony);
+
+  if (!hasFusionData && profile.birth_date && profile.birth_lat != null && profile.birth_lng != null) {
+    try {
+      console.info('[impact/active] Self-heal: fetching /calculate/fusion for user', userId);
+      const fusionResp = await fetchFusionForBirth({
+        birth_date: profile.birth_date,
+        birth_time: profile.birth_time,
+        iana_time_zone: profile.iana_time_zone,
+        birth_lat: profile.birth_lat,
+        birth_lon: profile.birth_lng,
+      });
+      const healedHarmony = fusionResp?.harmony_index?.harmony_index;
+      if (typeof healedHarmony === 'number' && Number.isFinite(healedHarmony)) {
+        rawHarmony = healedHarmony;
+        hasFusionData = true;
+        // Persist healed fusion block back into astro_json (fire-and-forget).
+        // This does an in-memory top-level merge with the previously loaded
+        // astro_json and writes the whole object back, replacing `fusion`
+        // while preserving existing top-level keys from `profile.astro_json`.
+        // Errors here are swallowed — the in-memory rawHarmony is already
+        // usable for the current response.
+        const mergedAstro = { ...profile.astro_json, fusion: fusionResp };
+        supabaseServer
+          .from('astro_profiles')
+          .update({ astro_json: mergedAstro })
+          .eq('user_id', userId)
+          .then(({ error: persistErr }) => {
+            if (persistErr) {
+              console.warn('[impact/active] Self-heal persist failed:', persistErr.message);
+            }
+          });
+      }
+    } catch (err) {
+      console.warn('[impact/active] Self-heal fetch failed:', err?.message || err);
+    }
+  }
+
+  const baseHarmony = hasFusionData ? rawHarmony : 0.5;
   const sw = spaceWeatherCache?.payload;
   const solarPressure = sw?.solar_pressure_score ?? 0;
   const sWeight = Number(process.env.HARMONY_INDEX_SOLAR_WEIGHT) || 0.35;
