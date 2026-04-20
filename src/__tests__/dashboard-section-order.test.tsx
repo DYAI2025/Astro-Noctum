@@ -53,7 +53,6 @@ describe('Dashboard coherence-first section hierarchy', () => {
       'DAILY CHART HERO',
       'ASTRO AGENTS',
       'BLUEPRINT',
-      'STABLE NATAL VALUES',
       'PLANETARIUM',
       'SKY MODE TOGGLE',
       'UPGRADE BANNER',

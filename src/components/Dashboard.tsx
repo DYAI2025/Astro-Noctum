@@ -26,7 +26,6 @@ import { Card } from "./ui/card";
 import {
   syntheticSoulprintFromSign,
 } from "@/src/lib/signatur/weight-utils";
-import { DashboardBigFour as DashboardBigFourCard } from "./dashboard/DashboardBigFour";
 // MiniSignature removed from dashboard grid — coherence-first layout.
 import { CosmicInfluenceSection } from "./dashboard/CosmicInfluenceSection";
 import { TourOverlay } from "./dashboard/TourOverlay";
@@ -396,7 +395,7 @@ export function Dashboard({
       {/* ── Tour sentinel: step 1 triggers when agents scroll into view ── */}
       <div ref={leviSentinelRef} className="h-px" aria-hidden="true" />
 
-      {/* ═══ 3. ASTRO AGENTS — interpretation bridge ═════════════════ */}
+      {/* ═══ 2. ASTRO AGENTS — interpretation bridge ═════════════════ */}
       <motion.div {...fadeIn(0.14)}>
         <SectionErrorBoundary name="Agents">
           <div className="cosmic-tile p-6 rounded-[2rem] space-y-5">
@@ -425,9 +424,15 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
-      {/* ═══ 4. BLUEPRINT — collapsed natal accordion ════════════════ */}
+      {/* ═══ 3. BLUEPRINT — natal accordion incl. identity strip ═════ */}
       <SectionErrorBoundary name="NatalSignaturStatic">
-        <NatalSignaturStatic>
+        <NatalSignaturStatic
+          sunSign={apiData?.western?.zodiac_sign || ''}
+          moonSign={apiData?.western?.moon_sign || ''}
+          ascendant={apiData?.western?.ascendant_sign || ''}
+          baziAnimal={apiData?.bazi?.zodiac_sign || ''}
+          wuxingElement={apiData?.wuxing?.dominant_element || ''}
+        >
           <DashboardAstroSection
             apiData={apiData}
             isPremium={isPremium}
@@ -436,20 +441,7 @@ export function Dashboard({
         </NatalSignaturStatic>
       </SectionErrorBoundary>
 
-      {/* ═══ 5. STABLE NATAL VALUES — Identity Cards ════════════════ */}
-      <motion.div {...fadeIn(0.18)}>
-        <SectionErrorBoundary name="BigFour">
-          <DashboardBigFourCard
-            sunSign={apiData?.western?.zodiac_sign || ''}
-            moonSign={apiData?.western?.moon_sign || ''}
-            ascendant={apiData?.western?.ascendant_sign || ''}
-            baziAnimal={apiData?.bazi?.zodiac_sign || ''}
-            wuxingElement={apiData?.wuxing?.dominant_element || ''}
-          />
-        </SectionErrorBoundary>
-      </motion.div>
-
-      {/* ═══ 6. PLANETARIUM (Birth Chart Orrery) ═════════════════════ */}
+      {/* ═══ 4. PLANETARIUM (Birth Chart Orrery) ═════════════════════ */}
       <div ref={planetariumSentinelRef} className="h-px" aria-hidden="true" />
       <motion.div className="-mx-4 md:-mx-6" {...fadeIn(0.20)}>
         <Suspense fallback={<div className="w-full aspect-[16/10] min-h-[360px] bg-[#0A0A14] rounded-2xl animate-pulse" />}>
@@ -481,14 +473,14 @@ export function Dashboard({
         </motion.div>
       )}
 
-      {/* ═══ 7. COSMIC INFLUENCE DETAIL ═════════════════════════════ */}
+      {/* ═══ 5. COSMIC INFLUENCE DETAIL ═════════════════════════════ */}
       <motion.div {...fadeIn(0.24)}>
         <SectionErrorBoundary name="CosmicInfluence">
           <CosmicInfluenceSection spaceWeather={spaceWeather} />
         </SectionErrorBoundary>
       </motion.div>
 
-      {/* ═══ 8. MAGNETSTURM (self-hides when Kp < 4) ════════════════ */}
+      {/* ═══ 6. MAGNETSTURM (self-hides when Kp < 4) ════════════════ */}
       <motion.div {...fadeIn(0.26)}>
         <SectionErrorBoundary name="MagnetsturmKarte">
           <MagnetsturmKarte />
