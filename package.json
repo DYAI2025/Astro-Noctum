@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
+    "dev:all": "bash scripts/dev.sh",
+    "dev:server": "PORT=3001 node server.mjs",
     "build": "npm run check:runtime-imports && vite build",
     "preview": "vite preview",
     "check:text-integrity": "node scripts/check-text-integrity.mjs",
