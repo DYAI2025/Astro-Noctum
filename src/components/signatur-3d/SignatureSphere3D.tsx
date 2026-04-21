@@ -26,13 +26,13 @@
  *
  * SignaturRenderer integration lands in Phase H6.
  */
-import { useEffect, useMemo, useRef, type ReactElement } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import * as THREE from 'three';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Billboard, Text, Stats } from '@react-three/drei';
 import { useReducedMotion } from 'motion/react';
 
-import { PLANETS } from '@/src/lib/signatur-3d/planets';
+import { PLANETS, PLANET_MAP } from '@/src/lib/signatur-3d/planets';
 import type { PlanetName } from '@/src/lib/signatur-3d/planets';
 import {
   buildTrailPath,
@@ -40,6 +40,18 @@ import {
   getPolePairs,
   getPolePositions,
 } from '@/src/lib/signatur-3d/sphere-chladni';
+import {
+  PLANET_INFLUENCE,
+  TIER_LABEL,
+  TIER_SHORT_LABEL,
+  tierFor,
+} from '@/src/lib/signatur-3d/planet-tooltips';
+import { useLanguage } from '@/src/contexts/LanguageContext';
+
+/** Never let raycasts hit the wire/solid/haze sphere meshes — only the
+ *  pole markers should receive pointer events so hover tooltips work.
+ *  Returned from a `raycast` prop so R3F's event reconciler skips it. */
+const SKIP_RAYCAST = () => {};
 
 export interface SignatureSphere3DProps {
   /** Per-planet amplitude weights (e.g. result of `soulprintToPlanetWeights()`). */
@@ -200,6 +212,8 @@ interface AnimatedSceneProps {
   prefersReducedMotion: boolean;
   /** 0–9; scales the morph-clock so higher Kp = faster breathing. */
   kpIndex: number;
+  /** Hover handlers — drive the tooltip overlay outside the Canvas. */
+  onPoleHover: (name: PlanetName | null) => void;
 }
 
 function AnimatedScene({
@@ -212,6 +226,7 @@ function AnimatedScene({
   trails,
   prefersReducedMotion,
   kpIndex,
+  onPoleHover,
 }: AnimatedSceneProps): ReactElement {
   const signatureGroupRef = useRef<THREE.Group | null>(null);
   const timeRef = useRef(0);
@@ -262,8 +277,9 @@ function AnimatedScene({
       <pointLight position={[0, -4, -3]} intensity={1.5} color={0x7b3ff7} distance={15} />
 
       <group ref={signatureGroupRef}>
-        {/* Haze shell — inward-facing dark backdrop inside the sphere. */}
-        <mesh>
+        {/* Haze shell — inward-facing dark backdrop inside the sphere.
+            raycast disabled so it never intercepts pole hovers. */}
+        <mesh raycast={SKIP_RAYCAST}>
           <sphereGeometry args={[1.06, 32, 32]} />
           <meshBasicMaterial
             color={0x05050f}
@@ -273,8 +289,8 @@ function AnimatedScene({
           />
         </mesh>
 
-        {/* Wire layer — Chladni-displaced wireframe. */}
-        <mesh geometry={wireGeom}>
+        {/* Wire layer — Chladni-displaced wireframe. Skip raycast. */}
+        <mesh geometry={wireGeom} raycast={SKIP_RAYCAST}>
           <meshStandardMaterial
             color={0x4f6ef7}
             wireframe
@@ -285,8 +301,8 @@ function AnimatedScene({
           />
         </mesh>
 
-        {/* Solid layer — slightly smaller, dark core. */}
-        <mesh geometry={solidGeom}>
+        {/* Solid layer — slightly smaller, dark core. Skip raycast. */}
+        <mesh geometry={solidGeom} raycast={SKIP_RAYCAST}>
           <meshStandardMaterial
             color={0x06060f}
             transparent
@@ -312,7 +328,20 @@ function AnimatedScene({
           // three scene pointLights (blue/cyan/purple) make the base color
           // readable even at emissiveIntensity 0.
           return (
-            <group key={`pole-${i}`} position={[p.x, p.y, p.z]}>
+            <group
+              key={`pole-${i}`}
+              position={[p.x, p.y, p.z]}
+              onPointerOver={(e) => {
+                e.stopPropagation();
+                document.body.style.cursor = 'pointer';
+                onPoleHover(planet.name);
+              }}
+              onPointerOut={(e) => {
+                e.stopPropagation();
+                document.body.style.cursor = 'auto';
+                onPoleHover(null);
+              }}
+            >
               <mesh>
                 <sphereGeometry args={[markerRadius, 16, 16]} />
                 <meshStandardMaterial
@@ -475,6 +504,13 @@ export function SignatureSphere3D({
     background: planetariumMode ? '#02020a' : 'transparent',
   };
 
+  // Hover-tooltip state. Lives at the outer component so the tooltip overlay
+  // (rendered as a sibling of <Canvas>) can pull full Tailwind styling while
+  // the inner pole <group> fires pointer events.
+  const [hoveredPole, setHoveredPole] = useState<PlanetName | null>(null);
+  const { lang } = useLanguage();
+  const isDe = lang === 'de';
+
   return (
     <div
       data-testid="signature-sphere-3d"
@@ -499,8 +535,80 @@ export function SignatureSphere3D({
           trails={trails}
           prefersReducedMotion={prefersReducedMotion}
           kpIndex={kpIndex}
+          onPoleHover={setHoveredPole}
         />
       </Canvas>
+
+      {hoveredPole && (
+        <PoleTooltip
+          planetName={hoveredPole}
+          weight={Math.max(0, Math.min(1, weights[hoveredPole] ?? 0))}
+          isDe={isDe}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Tooltip overlay (outside the R3F Canvas) ────────────────────────────
+// Absolute-positioned so it floats on top of the sphere without pushing
+// layout. Rendered conditionally on hover. Styled with Tailwind so it
+// matches the rest of the app's dark luxury palette.
+function PoleTooltip({
+  planetName,
+  weight,
+  isDe,
+}: {
+  planetName: PlanetName;
+  weight: number;
+  isDe: boolean;
+}): ReactElement {
+  const planet = PLANET_MAP[planetName];
+  const tier = tierFor(weight);
+  const influence = PLANET_INFLUENCE[planetName][isDe ? 'de' : 'en'];
+  const tierLine = TIER_LABEL[tier][isDe ? 'de' : 'en'];
+  const tierShort = TIER_SHORT_LABEL[tier][isDe ? 'de' : 'en'];
+  const percent = Math.round(weight * 100);
+  const displayName = isDe ? planet.name_de : planet.name;
+  const archetype = planet.archetype_de; // German archetype line from planets.ts
+  // Short archetype labels fall back to the DE one for EN for now — can be
+  // expanded in planets.ts if an EN archetype_en is added.
+  const weightLabel = isDe ? 'Dein Anteil' : 'Your share';
+
+  return (
+    <div
+      data-testid="pole-tooltip"
+      data-planet={planetName}
+      className="pointer-events-none absolute left-3 top-3 z-30 max-w-[280px] rounded-xl border border-white/15 bg-black/75 p-3 text-white shadow-[0_0_40px_rgba(0,0,0,0.6)] backdrop-blur-md sm:left-4 sm:top-4 sm:max-w-[320px] sm:p-4"
+    >
+      <div className="flex items-center gap-2">
+        <span
+          className="text-2xl leading-none"
+          style={{ color: planet.color }}
+          aria-hidden="true"
+        >
+          {planet.symbol}
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold tracking-wide">{displayName}</p>
+          <p className="text-[10px] uppercase tracking-[0.18em] text-white/60">
+            {archetype}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-3 flex items-center justify-between gap-2 rounded-md border border-white/10 bg-white/5 px-2 py-1.5">
+        <span className="text-[11px] uppercase tracking-wider text-white/60">
+          {weightLabel}
+        </span>
+        <span className="text-[13px] font-semibold" style={{ color: planet.color }}>
+          {percent}% · {tierShort}
+        </span>
+      </div>
+
+      <p className="mt-2 text-[12px] leading-snug text-white/70">{tierLine}</p>
+
+      <p className="mt-2 text-[13px] leading-relaxed text-white/90">{influence}</p>
     </div>
   );
 }
