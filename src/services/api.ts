@@ -63,6 +63,83 @@ function signFromDegrees(deg: number | undefined | null): string | undefined {
   return SIGN_NAMES[Math.floor(((deg % 360) + 360) % 360 / 30)];
 }
 
+/**
+ * Normalise BAFE's `bodies` / `positions` shape into a dict keyed by body name.
+ *
+ * BAFE schema drift (observed 2026-04-21): the endpoint now returns an ARRAY
+ * of body objects — `[{name:"Sun", sign_index:10, sign_name:"Aquarius",
+ * longitude_deg:303.74, ...}, ...]` — where it used to return an OBJECT
+ * keyed by name (`{Sun: {zodiac_sign:10}, Moon: {...}}`). Older responses
+ * may still come through via cache, so we accept both shapes and always
+ * return the dict form that the rest of the mapper expects.
+ */
+function normalizeBodies(
+  bodies: unknown,
+): Record<string, Record<string, unknown>> | undefined {
+  if (!bodies) return undefined;
+  if (Array.isArray(bodies)) {
+    const dict: Record<string, Record<string, unknown>> = {};
+    for (const body of bodies) {
+      if (!body || typeof body !== 'object') continue;
+      const name = (body as { name?: unknown }).name;
+      if (typeof name === 'string' && name.length > 0) {
+        dict[name] = body as Record<string, unknown>;
+      }
+    }
+    return dict;
+  }
+  if (typeof bodies === 'object') {
+    return bodies as Record<string, Record<string, unknown>>;
+  }
+  return undefined;
+}
+
+/**
+ * Resolve a zodiac sign from whichever BAFE body shape we received.
+ *
+ * Checks each known key in order and stops at the first readable value:
+ *   1. `sign_index`    (new BAFE, 0-based int 0..11)
+ *   2. `sign_name`     (new BAFE, English name — signFromIndex accepts it)
+ *   3. `zodiac_sign`   (old BAFE, number or name)
+ *   4. `sign`          (alt old shape)
+ *   5. `longitude_deg` (new BAFE, derive via signFromDegrees)
+ *   6. `longitude`     (alt old shape)
+ */
+function signFromBody(body: Record<string, unknown> | undefined): string | undefined {
+  if (!body) return undefined;
+  return (
+    signFromIndex(body.sign_index as number | string | undefined) ||
+    signFromIndex(body.sign_name as number | string | undefined) ||
+    signFromIndex(body.zodiac_sign as number | string | undefined) ||
+    signFromIndex(body.sign as number | string | undefined) ||
+    (body.longitude_deg != null ? signFromDegrees(body.longitude_deg as number) : undefined) ||
+    (body.longitude != null ? signFromDegrees(body.longitude as number) : undefined)
+  );
+}
+
+/**
+ * BAFE new schema emits `dominant_element: ""` for some chart responses
+ * while still populating `dominant_bazi` / `dominant_planet`. Pick the
+ * first non-empty signal and normalise German element names to English.
+ */
+function resolveDominantElement(wuxing: Record<string, unknown>): string {
+  const direct = wuxing.dominant_element;
+  if (typeof direct === 'string' && direct.length > 0) return direct;
+  const fallback =
+    (typeof wuxing.dominant_bazi === 'string' && wuxing.dominant_bazi) ||
+    (typeof wuxing.dominant_planet === 'string' && wuxing.dominant_planet) ||
+    '';
+  if (!fallback) return '';
+  const DE_TO_EN: Record<string, string> = {
+    Holz: 'Wood',
+    Feuer: 'Fire',
+    Erde: 'Earth',
+    Metall: 'Metal',
+    Wasser: 'Water',
+  };
+  return DE_TO_EN[fallback] ?? fallback;
+}
+
 const fetchWithTimeout = async (url: string, options: RequestInit, timeoutMs = 15000) => {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeoutMs);
@@ -222,10 +299,12 @@ export async function calculateWestern(data: BirthData): Promise<MappedWestern> 
     nonexistentTime: "error",
   });
 
-  // BAFE returns zodiac_sign as 0-based index and ascendant as degrees.
-  // Dashboard expects English sign name strings.
-  const sunSign = signFromIndex(raw.bodies?.Sun?.zodiac_sign);
-  const moonSign = signFromIndex(raw.bodies?.Moon?.zodiac_sign);
+  // BAFE may return bodies as a dict keyed by name (old) or an array (new,
+  // observed 2026-04-21). Normalise and resolve via the shared helpers so
+  // sign_index / sign_name / longitude_deg all flow into English sign names.
+  const bodiesDict = normalizeBodies((raw as { bodies?: unknown }).bodies);
+  const sunSign = signFromBody(bodiesDict?.Sun);
+  const moonSign = signFromBody(bodiesDict?.Moon);
   const ascendantDeg = raw.angles?.Ascendant;
   const ascendantSign = signFromDegrees(ascendantDeg);
 
@@ -328,7 +407,9 @@ export function mapChartToApiResults(raw: ChartResponse): Omit<ApiResults, 'issu
   if (!raw.bazi?.pillars) {
     throw new Error('/chart response missing bazi.pillars');
   }
-  const bodiesSource = raw.positions || raw.bodies;
+  // Accept both old (object keyed by name) and new (array of body objects)
+  // BAFE shapes — see normalizeBodies for context.
+  const bodiesSource = normalizeBodies(raw.positions ?? raw.bodies);
   if (!bodiesSource) {
     throw new Error('/chart response missing positions/bodies');
   }
@@ -355,15 +436,16 @@ export function mapChartToApiResults(raw: ChartResponse): Omit<ApiResults, 'issu
     zodiac_sign: raw.bazi.chinese?.year?.animal || raw.bazi.pillars.year?.tier || '',
   };
 
-  const sunBody = bodiesSource?.Sun as Record<string, unknown> | undefined;
-  const moonBody = bodiesSource?.Moon as Record<string, unknown> | undefined;
-  const sunSign        = signFromIndex(sunBody?.zodiac_sign as number | string | undefined)
-                      || signFromIndex(sunBody?.sign as number | string | undefined)
-                      || (sunBody?.longitude != null ? signFromDegrees(sunBody.longitude as number) : undefined);
-  const moonSign       = signFromIndex(moonBody?.zodiac_sign as number | string | undefined)
-                      || signFromIndex(moonBody?.sign as number | string | undefined)
-                      || (moonBody?.longitude != null ? signFromDegrees(moonBody.longitude as number) : undefined);
-  const ascendantSign  = signFromDegrees(raw.angles?.Ascendant);
+  const sunSign       = signFromBody(bodiesSource.Sun);
+  const moonSign      = signFromBody(bodiesSource.Moon);
+  // Ascendant may arrive as a degree value (old shape) OR already a sign
+  // name (some new responses put `angles.Ascendant` as numeric, plus a
+  // separate `ascendant_sign` top-level string).
+  const ascendantSign =
+    signFromDegrees(raw.angles?.Ascendant) ??
+    signFromIndex(
+      (raw as { ascendant_sign?: unknown }).ascendant_sign as number | string | undefined,
+    );
 
   const normalizedHouses: Record<string, string> = {};
   if (raw.houses && typeof raw.houses === 'object') {
@@ -411,9 +493,9 @@ export function mapChartToApiResults(raw: ChartResponse): Omit<ApiResults, 'issu
       Feuer:  src.Feuer  ?? src.Fire   ?? 0,
       Erde:   src.Erde   ?? src.Earth  ?? 0,
       Metall: src.Metall ?? src.Metal  ?? 0,
-      Wasser: vec.Wasser ?? vec.Water  ?? 0,
+      Wasser: src.Wasser ?? src.Water  ?? 0,
     },
-    dominant_element: raw.wuxing.dominant_element || '',
+    dominant_element: resolveDominantElement(raw.wuxing as Record<string, unknown>),
   };
 
   const fusion: BafeFusionResponse = raw.fusion || {};
