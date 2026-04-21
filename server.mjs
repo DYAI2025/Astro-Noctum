@@ -320,12 +320,24 @@ app.use('/api/', (req, res, next) => {
 });
 
 // ── Rate Limiting ────────────────────────────────────────────────────
+// max: 100/15min was too tight — a single authenticated dashboard mount
+// polls /api/transit-state/:userId every 800ms (~1125 req/15min on its
+// own) and burns the quota within ~80s, causing /api/chart to fail with
+// 429 on the very next call. Bump the general bucket and exempt the
+// known high-frequency polling GETs so they don't starve write endpoints.
+const HIGH_FREQ_POLL_PREFIXES = [
+  "/api/transit-state/",
+  "/api/space-weather",
+];
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 min
-  max: 100,
+  max: 2000,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests, please try again later." },
+  skip: (req) =>
+    req.method === "GET" &&
+    HIGH_FREQ_POLL_PREFIXES.some((p) => req.path.startsWith(p)),
 });
 app.use("/api/", apiLimiter);
 
