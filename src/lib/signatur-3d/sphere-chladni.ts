@@ -65,11 +65,20 @@ export function chladniDisplacement(
 
 /**
  * Parse a #RRGGBB hex string into normalised 0–1 RGB components.
- * Invalid inputs fall back to mid-grey so callers never see NaN.
+ * Invalid inputs fall back to mid-grey so callers never see NaN in the
+ * render loop. In dev a warning is logged so configuration mistakes
+ * (typo in `PLANETS[i].color`, etc.) surface rather than silently
+ * turning the sphere grey.
  */
 function hexToNormalisedRgb(hex: string): { r: number; g: number; b: number } {
   const match = /^#?([0-9a-f]{6})$/i.exec(hex);
-  if (!match) return { r: 0.5, g: 0.5, b: 0.5 };
+  if (!match) {
+    if (typeof import.meta !== 'undefined' && (import.meta as { env?: { DEV?: boolean } }).env?.DEV) {
+      // eslint-disable-next-line no-console
+      console.warn(`[sphere-chladni] invalid hex color "${hex}" — falling back to mid-grey`);
+    }
+    return { r: 0.5, g: 0.5, b: 0.5 };
+  }
   const n = Number.parseInt(match[1], 16);
   return {
     r: ((n >> 16) & 0xff) / 255,
@@ -120,11 +129,67 @@ export function chladniNodeIntensity(chladniValue: number): number {
   return Math.max(0, 1 - m * 3.5);
 }
 
+/** Very dark navy base so the sphere reads as a deep-space body between
+ *  the glowing node filaments. Not pitch black so the silhouette stays
+ *  legible against the page background. */
+const NODE_BASE_R = 0.02;
+const NODE_BASE_G = 0.02;
+const NODE_BASE_B = 0.06;
+
 /**
- * Write vertex colours into a Float32Array such that Chladni nodes glow in
+ * Shared inner loop for both {@link computeChladniVertexColors} and
+ * {@link writeChladniVertexColors}. Operates on a caller-supplied target
+ * buffer so the two public wrappers only differ in whether they allocate
+ * that buffer. Extracted to keep the Chladni → colour mapping in a single
+ * place and avoid math drift between the two paths.
+ */
+function writeChladniColorsInto(
+  target: Float32Array,
+  positions: ArrayLike<number>,
+  weights: Readonly<Partial<Record<PlanetName, number>>>,
+  time: number,
+): void {
+  if (positions.length % 3 !== 0) {
+    throw new RangeError(
+      `chladni colour writer expected positions.length to be a multiple of 3, got ${positions.length}`,
+    );
+  }
+  if (target.length !== positions.length) {
+    throw new RangeError(
+      `chladni colour writer target length ${target.length} does not match positions length ${positions.length}`,
+    );
+  }
+  const count = positions.length / 3;
+  const tint = blendedPlanetColor(weights);
+  for (let i = 0; i < count; i++) {
+    const xi = i * 3;
+    const x = positions[xi];
+    const y = positions[xi + 1];
+    const z = positions[xi + 2];
+    const r = Math.sqrt(x * x + y * y + z * z);
+    if (r < 1e-6) {
+      target[xi] = NODE_BASE_R;
+      target[xi + 1] = NODE_BASE_G;
+      target[xi + 2] = NODE_BASE_B;
+      continue;
+    }
+    const theta = Math.acos(Math.max(-1, Math.min(1, y / r)));
+    const phi = Math.atan2(z, x);
+    const v = chladniDisplacement(theta, phi, weights, time);
+    const intensity = chladniNodeIntensity(v);
+    target[xi]     = NODE_BASE_R + (tint.r - NODE_BASE_R) * intensity;
+    target[xi + 1] = NODE_BASE_G + (tint.g - NODE_BASE_G) * intensity;
+    target[xi + 2] = NODE_BASE_B + (tint.b - NODE_BASE_B) * intensity;
+  }
+}
+
+/**
+ * Compute a fresh vertex-colour buffer such that Chladni nodes glow in
  * the weighted-planet blend colour and antinodes stay near the dark-navy
  * sphere base. Consumers pass this array to `BufferAttribute` with
  * `itemSize=3` and enable `vertexColors` on the material.
+ *
+ * Thin wrapper around {@link writeChladniColorsInto}.
  *
  * @param positions  position buffer (count × 3, origin-centred)
  * @param weights    per-planet amplitudes
@@ -137,40 +202,8 @@ export function computeChladniVertexColors(
   weights: Readonly<Partial<Record<PlanetName, number>>>,
   time: number,
 ): Float32Array {
-  if (positions.length % 3 !== 0) {
-    throw new RangeError(
-      `computeChladniVertexColors expected positions.length to be a multiple of 3, got ${positions.length}`,
-    );
-  }
-  const count = positions.length / 3;
   const out = new Float32Array(positions.length);
-  const tint = blendedPlanetColor(weights);
-  // Very dark base so the sphere reads as a deep-space body between the
-  // glowing node filaments. Not pitch black so the silhouette stays legible.
-  const baseR = 0.02;
-  const baseG = 0.02;
-  const baseB = 0.06;
-
-  for (let i = 0; i < count; i++) {
-    const xi = i * 3;
-    const x = positions[xi];
-    const y = positions[xi + 1];
-    const z = positions[xi + 2];
-    const r = Math.sqrt(x * x + y * y + z * z);
-    if (r < 1e-6) {
-      out[xi] = baseR;
-      out[xi + 1] = baseG;
-      out[xi + 2] = baseB;
-      continue;
-    }
-    const theta = Math.acos(Math.max(-1, Math.min(1, y / r)));
-    const phi = Math.atan2(z, x);
-    const v = chladniDisplacement(theta, phi, weights, time);
-    const intensity = chladniNodeIntensity(v);
-    out[xi]     = baseR + (tint.r - baseR) * intensity;
-    out[xi + 1] = baseG + (tint.g - baseG) * intensity;
-    out[xi + 2] = baseB + (tint.b - baseB) * intensity;
-  }
+  writeChladniColorsInto(out, positions, weights, time);
   return out;
 }
 
@@ -185,36 +218,7 @@ export function writeChladniVertexColors(
   weights: Readonly<Partial<Record<PlanetName, number>>>,
   time: number,
 ): void {
-  if (target.length !== positions.length) {
-    throw new RangeError(
-      `writeChladniVertexColors target length ${target.length} does not match positions length ${positions.length}`,
-    );
-  }
-  const count = positions.length / 3;
-  const tint = blendedPlanetColor(weights);
-  const baseR = 0.02;
-  const baseG = 0.02;
-  const baseB = 0.06;
-  for (let i = 0; i < count; i++) {
-    const xi = i * 3;
-    const x = positions[xi];
-    const y = positions[xi + 1];
-    const z = positions[xi + 2];
-    const r = Math.sqrt(x * x + y * y + z * z);
-    if (r < 1e-6) {
-      target[xi] = baseR;
-      target[xi + 1] = baseG;
-      target[xi + 2] = baseB;
-      continue;
-    }
-    const theta = Math.acos(Math.max(-1, Math.min(1, y / r)));
-    const phi = Math.atan2(z, x);
-    const v = chladniDisplacement(theta, phi, weights, time);
-    const intensity = chladniNodeIntensity(v);
-    target[xi]     = baseR + (tint.r - baseR) * intensity;
-    target[xi + 1] = baseG + (tint.g - baseG) * intensity;
-    target[xi + 2] = baseB + (tint.b - baseB) * intensity;
-  }
+  writeChladniColorsInto(target, positions, weights, time);
 }
 
 /**

@@ -203,6 +203,14 @@ function updateChladniGeometryInPlace(
     arr[xi + 2] = z * scale;
   }
   pos.needsUpdate = true;
+  // Re-derive normals so the solid sphere's meshStandardMaterial lighting
+  // tracks the displaced geometry. With SPHERE_SEGMENTS = 72 this is ~10k
+  // triangles → ~0.3–0.6 ms per call on a mid-range laptop; acceptable
+  // because the whole position/normal update is already throttled to
+  // every MORPH_EVERY_N_FRAMES (4) frames in the caller. If we ever raise
+  // SPHERE_SEGMENTS or drop the throttle, consider caching a single
+  // original-normal buffer and rotating it per-vertex instead of the full
+  // BufferGeometry recompute.
   geom.computeVertexNormals();
 
   // If the geometry carries a vertex-colour attribute, flow the same
