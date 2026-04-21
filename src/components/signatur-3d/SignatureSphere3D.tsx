@@ -48,13 +48,18 @@ export interface SignatureSphere3DProps {
   planetariumMode?: boolean;
   /** Optional CSS class on the outer container. */
   className?: string;
+  /** Current Kp geomagnetic index (0–9). Drives morph-speed multiplier so the
+   *  sphere visibly breathes faster during geomagnetic storms. Default 0. */
+  kpIndex?: number;
 }
 
 /** Wireframe-layer radius. Solid layer sits slightly inside at 0.93. */
 const WIRE_RADIUS = 1.0;
 const SOLID_RADIUS = 0.93;
-/** Displacement amplitude as a fraction of the layer radius. */
-const DISPLACEMENT_FACTOR = 0.18;
+/** Displacement amplitude as a fraction of the layer radius.
+ *  Bumped 0.18→0.30 (2026-04-21) so per-planet weight variation reads
+ *  at a glance instead of the sphere looking uniformly round. */
+const DISPLACEMENT_FACTOR = 0.30;
 /** Sphere tessellation — matches the Cymantics prototype. */
 const SPHERE_SEGMENTS = 72;
 /** Pole-marker geometry size (H4: downsized from 0.04; glyph provides the read). */
@@ -63,8 +68,10 @@ const POLE_MARKER_RADIUS = 0.025;
 const GLYPH_FONT_SIZE = 0.07;
 /** Glyph lift above the pole along +y in the billboard's local frame. */
 const GLYPH_LIFT = 0.06;
-/** Minimum planet weight for a trail to render for its antipodal pair. */
-const TRAIL_THRESHOLD = 0.35;
+/** Minimum planet weight for a trail to render for its antipodal pair.
+ *  Lowered 0.35→0.15 (2026-04-21) — 0.35 was prohibitive, most users saw
+ *  zero trails. 0.15 yields 3–5 visible energy bands for typical signatures. */
+const TRAIL_THRESHOLD = 0.15;
 /** Max trail tube-radius scale (multiplied by weight). */
 const TRAIL_RADIUS_SCALE = 0.004;
 /** Ripple amplitude (multiplied by weight) fed into buildTrailPath. */
@@ -191,6 +198,8 @@ interface AnimatedSceneProps {
     weight: number;
   }[];
   prefersReducedMotion: boolean;
+  /** 0–9; scales the morph-clock so higher Kp = faster breathing. */
+  kpIndex: number;
 }
 
 function AnimatedScene({
@@ -202,16 +211,22 @@ function AnimatedScene({
   polePositions,
   trails,
   prefersReducedMotion,
+  kpIndex,
 }: AnimatedSceneProps): ReactElement {
   const signatureGroupRef = useRef<THREE.Group | null>(null);
   const timeRef = useRef(0);
   const frameCountRef = useRef(0);
 
+  // Kp 0 → ×1.0 (calm), Kp 5 (G1 storm) → ×2.0, Kp 9 (G5 extreme) → ×2.8.
+  // Clamped so a missing/NaN reading never freezes or over-spins the sphere.
+  const kpSpeedMult = 1 + Math.min(Math.max(kpIndex, 0), 9) / 5;
+
   useFrame((_state, delta) => {
     if (prefersReducedMotion) return;
 
     // delta is seconds; Cymantics-style math is in ms.
-    timeRef.current += delta * 1000;
+    // Scale by Kp so the sphere visibly breathes faster during storms.
+    timeRef.current += delta * 1000 * kpSpeedMult;
     frameCountRef.current += 1;
 
     // Rotation — applied every frame for smoothness.
@@ -281,20 +296,37 @@ function AnimatedScene({
           />
         </mesh>
 
-        {/* 12 pole groups — a small planet-tinted sphere + billboarded glyph. */}
+        {/* 12 pole groups — a small planet-tinted sphere + billboarded glyph.
+            Marker size, glyph size and emissive intensity all scale with the
+            planet's weight so dominant frequencies visibly glow and quiet
+            planets fade into the backdrop (2026-04-21). */}
         {polePositions.map((p, i) => {
           const planet = PLANETS[i % PLANETS.length];
+          const w = Math.max(0, Math.min(1, weights[planet.name] ?? 0));
+          // Scale: 0.5× at w=0 up to 1.5× at w=1 — keeps even 0-weight poles
+          // visible so the 12-axis layout still reads.
+          const sizeMult = 0.5 + w;
+          const markerRadius = POLE_MARKER_RADIUS * sizeMult;
+          const glyphSize = GLYPH_FONT_SIZE * (0.7 + w * 0.6);
+          // meshStandardMaterial so we can modulate emissive with weight; the
+          // three scene pointLights (blue/cyan/purple) make the base color
+          // readable even at emissiveIntensity 0.
           return (
             <group key={`pole-${i}`} position={[p.x, p.y, p.z]}>
               <mesh>
-                <sphereGeometry args={[POLE_MARKER_RADIUS, 16, 16]} />
-                <meshBasicMaterial color={planet.color} />
+                <sphereGeometry args={[markerRadius, 16, 16]} />
+                <meshStandardMaterial
+                  color={planet.color}
+                  emissive={planet.color}
+                  emissiveIntensity={0.2 + w * 1.5}
+                />
               </mesh>
               <Billboard follow>
                 <Text
                   position={[0, GLYPH_LIFT, 0]}
-                  fontSize={GLYPH_FONT_SIZE}
+                  fontSize={glyphSize}
                   color={planet.color}
+                  fillOpacity={0.5 + w * 0.5}
                   anchorX="center"
                   anchorY="middle"
                 >
@@ -355,6 +387,7 @@ export function SignatureSphere3D({
   weights,
   planetariumMode = true,
   className,
+  kpIndex = 0,
 }: SignatureSphere3DProps): ReactElement {
   const wireGeomRef = useRef<THREE.SphereGeometry | null>(null);
   const solidGeomRef = useRef<THREE.SphereGeometry | null>(null);
@@ -465,6 +498,7 @@ export function SignatureSphere3D({
           polePositions={polePositions}
           trails={trails}
           prefersReducedMotion={prefersReducedMotion}
+          kpIndex={kpIndex}
         />
       </Canvas>
     </div>

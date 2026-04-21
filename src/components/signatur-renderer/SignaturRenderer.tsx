@@ -197,6 +197,7 @@ export const SignaturRenderer = ({
             <SignatureSphere3D
               weights={effectivePlanetWeights}
               planetariumMode={planetariumMode}
+              kpIndex={kpIndex}
               className="h-full w-full"
             />
           </Suspense>
