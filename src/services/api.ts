@@ -493,7 +493,7 @@ export function mapChartToApiResults(raw: ChartResponse): Omit<ApiResults, 'issu
       Feuer:  src.Feuer  ?? src.Fire   ?? 0,
       Erde:   src.Erde   ?? src.Earth  ?? 0,
       Metall: src.Metall ?? src.Metal  ?? 0,
-      Wasser: vec.Wasser ?? vec.Water  ?? 0,
+      Wasser: src.Wasser ?? src.Water  ?? 0,
     },
     dominant_element: resolveDominantElement(raw.wuxing as Record<string, unknown>),
   };
