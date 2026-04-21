@@ -1,5 +1,41 @@
 # Changelog
 
+## [Unreleased] - 2026-04-21 — Sprint S-DASH-SIGNATUR-GAPS
+
+### Features
+
+- **3D Signatur cursor rotation** (`src/components/signatur-3d/SignatureSphere3D.tsx`) — drei's `<OrbitControls>` mounted inside the Canvas. Drag-to-rotate; pan/zoom disabled so the sphere stays the visual centre. `autoRotate` drift respects `prefersReducedMotion`. Group-level Y-rotation removed so OrbitControls owns the Y axis; subtle X wobble kept on the group for parallax.
+- **Chladni-node pattern painted on the sphere surface** (`src/lib/signatur-3d/sphere-chladni.ts` new `computeChladniVertexColors` + `writeChladniVertexColors` + `chladniNodeIntensity` + planet-colour blend helpers) — solid layer now uses `vertexColors`; node regions (`|chladni|` small) glow in a weighted-planet colour blend, antinodes stay dark-navy. Pattern animates in phase with the geometry morph (same field feeds both position + colour buffers) so the surface reads as a wrapping Chladni figure instead of a generic sphere.
+- **Hover tooltips on planet poles** (`src/lib/signatur-3d/planet-tooltips.ts` + `SignatureSphere3D` PoleTooltip subcomponent) — pointing at a pole surfaces symbol + DE/EN name + archetype + weight percent + tier label (dominant ≥0.6 / aktiv ≥0.3 / leise) + 2-sentence influence text. Wire/solid/haze meshes get `raycast={() => null}` so only pole markers hit-test. Language from `useLanguage()`.
+- **Frequency-responsive sphere tuning** — pole marker radius + glyph fontSize + fillOpacity + emissiveIntensity scale with the planet's weight; marker material switched to `meshStandardMaterial` so dominant planets visibly glow. Morph clock × Kp multiplier (Kp 0 → ×1.0, Kp 5 → ×2.0, Kp 9 → ×2.8) — sphere breathes faster during geomagnetic storms. `TRAIL_THRESHOLD` lowered 0.35 → 0.15 so typical signatures get 3–5 visible antipodal trails instead of zero.
+- **Unified Tagesimpuls + shared ActiveImpactsList** (`src/components/shared/ActiveImpactsList.tsx` new, `DailyChartHero.tsx` rework) — Dashboard hero now renders `<ActiveImpactsList variant="compact">` driven by real `dailyData.fusion.synthesis`; Signatur page uses the same component in `variant="full"`. Tagesimpuls headline is centred `text-2xl font-serif` with a "vertiefen →" deep-link.
+- **Dynamic coherence subtitle** + hover tooltip on the coherence ring (`DailyChartHero.coherenceSubtitle()` + Radix Tooltip, canonical text from `KOHAERENZ_INDEX.md`) — subtitle reflects delta direction (erhöht / gedämpft / neutral), tooltip explains the index to first-time viewers.
+
+### Bug Fixes
+
+- **429 "Too many requests" on `/api/chart` directly after registration** (`server.mjs` apiLimiter) — `max: 100 / 15min` on `/api/*` was too tight. Dashboard's `useSignaturSignal` polls `/api/transit-state/:userId` every 800 ms (~1125 req/15min on its own), so a single authenticated mount burned the budget in ~80s and starved the subsequent `/api/chart` + `/api/experience/*` calls. Bumped to `max: 2000 / 15min` and added a `skip` predicate: GETs on `/api/transit-state/` + `/api/space-weather` prefixes bypass the general bucket entirely. Auth-adjacent limiters (`/api/checkout`, `/api/customer-portal`) keep their strict 10/15min ceiling.
+- **NOAA endpoint drift — Kp/xray/proton/sunspot all 0 on Dashboard Cosmic Influence tile** (`server.mjs /api/space-weather/extended`) — SWPC moved the GOES primary feeds to `/json/goes/primary/{xrays-1-day, integral-protons-1-day}.json`; the old `/json/goes_{xray,proton}_flux.json` paths returned 404 and the server silently warned+continued with 0. `sunspotNumber` was declared but never assigned. Fix swaps URLs, filters interleaved energy bands (`0.1-0.8nm` for xray, `>=10 MeV` for proton), and replaces the stale `f107_cm_flux.json` call with `observed-solar-cycle-indices.json` which returns both `f10.7` and `ssn` in a single response. Live prod now reports xray class B, proton 0.19, ssn 85.9, f107 130.66; remaining Kp=0 is real (quiet sun).
+- **IdentityPill TS2741 breaking CI typecheck** (`src/components/dashboard/NatalSignaturStatic.tsx`) — Copilot suggestion on commit `9df8b04` refactored `IdentityPill` to require `id: string` (used for `data-testid`), but the five call sites still passed only `label` + `value`. Assigned stable ids (`sun`, `moon`, `ac`, `bazi`, `wuxing`); tests updated to match.
+- **`<img>` and framer-motion edge cases in DailyChartHero** — tracked across the sprint (centred Tagesimpuls, Tagesfeld driver pill removed, coherence subtitle direction-aware).
+
+### Refactoring
+
+- **Removed non-functional VibesSection** — feature was stopped. Deleted `src/components/dashboard/VibesSection.tsx` + `VibesModal.tsx` + orphaned `src/lib/format-cooldown.ts` + paired tests. Mobile's `useVibes` hook + `/api/vibes` endpoint kept (mobile still consumes it).
+- **DashboardBigFour merged into NatalSignaturStatic** as a slim `IdentityPill` grid inside the accordion body (`Sonne · Mond · AC · BaZi · Wu-Xing`). Freestanding `DashboardBigFour.tsx` component + its 18-test file deleted. Rich per-card accordion descriptions dropped by product decision — identity is essentials only, details are one layer deeper in the accordion.
+- **Duplicate CosmicInfluenceSection removed below sky** — active-impact info already lives in `DailyChartHero` via the shared `ActiveImpactsList`. Deleted `CosmicInfluenceSection.tsx` + its test.
+- **TransitResonancePanels reduced to a 25-line adapter** (was 312 lines of duplicated impact-rendering logic) — now just mounts `<ActiveImpactsList variant="full">`.
+- **Dashboard.tsx comment numbering rebalanced** to consecutive sections after the removals (1 Daily Chart Hero → 2 Astro Agents → 3 Blueprint → 4 Planetarium → 5 Cosmic Influence → 6 Magnetsturm).
+
+### Docs
+
+- `docs/requirements/2026-04-20-signatur-3d-defect.md` — Phase-10 diagnosis report of the "komisches Bild" 3D observation. Four ranked hypotheses (H1 default-2D misread / H2 neutral weights / H3 static SVG fallback / H4 WebGL init failure) with test steps + fix candidates + acceptance criteria for "real 3D". No code fix shipped in this sprint — requires one screenshot + product call from Ben. Now partially resolved by the 2026-04-21 3D feature work (cursor rotation, surface pattern, tooltips).
+- `docs/requirements/2026-04-20-quiz-signatur-coupling-deferred.md` — explicit scope boundary between this sprint and the separately-planned Quiz → Signatur Coupling sprint. Acceptance criteria + inputs + open product questions + out-of-scope list documented.
+
+### Dev Experience
+
+- `npm run dev:all` (new) starts Vite (:3000) + Express (:3001) together via `scripts/dev.sh`. Ctrl+C cleans both up. Uses Node 20.6+ native `--env-file=.env` (no dotenv import). `package.json` gains `dev:server` alias for running Express standalone.
+- Vite dev proxy: `/api/chart` now routes to `localhost:3001` (was 404ing locally because the only existing `/chart` rule targeted BAFE directly without the `/api` prefix).
+
 ## [Unreleased] - 2026-04-18
 
 ### Features
