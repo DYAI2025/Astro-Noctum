@@ -90,6 +90,8 @@ When an artifact (goal, requirement) is no longer relevant:
 | [GOAL-i18n-quiz-ux-integrity](goals/GOAL-i18n-quiz-ux-integrity.md) | Must | Approved | Zero raw translation keys in UI; quiz overlays reliably dismissable (X / Esc / backdrop) |
 | [GOAL-superglue-removal](goals/GOAL-superglue-removal.md) | Must | Approved | Superglue-Dependency aus 6 Core-UX-Flows entfernen; direkte Server-Endpoints gegen BAFE/FuFirE/Supabase |
 | [GOAL-soulprint-persistence](goals/GOAL-soulprint-persistence.md) | Must | Approved | Bootstrap persistiert soulprint_sectors zuverlässig via upsert — fixt Default-Signatur-Symptom (Race-Condition-Bug 2026-04-18) |
+| [GOAL-dashboard-signatur-hygiene](goals/GOAL-dashboard-signatur-hygiene.md) | Must | Approved | Dashboard + Signatur-Seite zeigen echte Daten ohne UI-Lügen, duplizierte Sektionen entfernt — Sprint A 2026-04-20 |
+| [GOAL-quiz-signatur-coupling-v1](goals/GOAL-quiz-signatur-coupling-v1.md) | Must | Approved | Quiz → Signatur Coupling Sprint 1: Datenmodell + Wu-Xing-Kranz + Sofort-Effekt. 12 Axiome als Produkt-Gesetz via CON-quiz-signatur-axiome |
 
 ---
 
@@ -214,3 +216,4 @@ When an artifact (goal, requirement) is no longer relevant:
 | [CON-no-unexplained-numbers](constraints/CON-no-unexplained-numbers.md) | Business | Active | No numerical value in UI without explanation — hard rule |
 | [CON-resource-oriented-framing](constraints/CON-resource-oriented-framing.md) | Business | Active | Possibility-oriented language, no fatalistic framing |
 | [CON-mobile-first-readability](constraints/CON-mobile-first-readability.md) | Business | Active | <10s core comprehension on mobile viewport |
+| [CON-quiz-signatur-axiome](constraints/CON-quiz-signatur-axiome.md) | Business | Active | 12 Produkt-Axiome für Quiz → Signatur Coupling (append-only, element auf answer-ebene, neutral start, etc.) — Plan-Patch statt Axiom-Aufweichen bei Konflikt |
