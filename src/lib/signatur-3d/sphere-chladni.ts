@@ -137,6 +137,11 @@ export function computeChladniVertexColors(
   weights: Readonly<Partial<Record<PlanetName, number>>>,
   time: number,
 ): Float32Array {
+  if (positions.length % 3 !== 0) {
+    throw new RangeError(
+      `computeChladniVertexColors expected positions.length to be a multiple of 3, got ${positions.length}`,
+    );
+  }
   const count = positions.length / 3;
   const out = new Float32Array(positions.length);
   const tint = blendedPlanetColor(weights);
