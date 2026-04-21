@@ -49,6 +49,12 @@ vi.mock('@react-three/drei', () => ({
   Stats: () => null,
 }));
 
+// The tooltip overlay uses useLanguage() from the app's LanguageContext —
+// stub it so SignatureSphere3D can render in isolation without a provider.
+vi.mock('@/src/contexts/LanguageContext', () => ({
+  useLanguage: () => ({ lang: 'de', t: (k: string) => k, setLang: vi.fn() }),
+}));
+
 // Override the global three mock's SphereGeometry with a stub that exposes
 // a minimal `attributes.position` the displacement builder can iterate over.
 // Uses vertex count 0 so the inner loop is skipped entirely — we only care
