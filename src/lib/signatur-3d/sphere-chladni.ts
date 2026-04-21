@@ -185,6 +185,11 @@ export function writeChladniVertexColors(
   weights: Readonly<Partial<Record<PlanetName, number>>>,
   time: number,
 ): void {
+  if (target.length !== positions.length) {
+    throw new RangeError(
+      `writeChladniVertexColors target length ${target.length} does not match positions length ${positions.length}`,
+    );
+  }
   const count = positions.length / 3;
   const tint = blendedPlanetColor(weights);
   const baseR = 0.02;
