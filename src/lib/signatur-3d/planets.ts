@@ -35,6 +35,8 @@ export interface Planet {
   /** Hex color for pole markers & particle tint. */
   color: string;
   archetype_de: string;
+  /** English archetype (same 2–3 word label as archetype_de, translated). */
+  archetype_en: string;
   wuxing_element: WuxingElement;
   /**
    * Chladni frequency-shell index 0..5.
@@ -68,6 +70,7 @@ export const PLANETS: readonly Planet[] = [
     baseFrequency: 126.22,
     color: '#FFD700',
     archetype_de: 'Identität & Lebenskraft',
+    archetype_en: 'Identity & Life Force',
     wuxing_element: 'Fire',
     dimension: 0,
     poleIndex: 1,
@@ -79,6 +82,7 @@ export const PLANETS: readonly Planet[] = [
     baseFrequency: 210.42,
     color: '#C0C8E0',
     archetype_de: 'Emotion & Resonanz',
+    archetype_en: 'Emotion & Resonance',
     wuxing_element: 'Water',
     dimension: 0,
     poleIndex: 2,
@@ -90,6 +94,7 @@ export const PLANETS: readonly Planet[] = [
     baseFrequency: 141.27,
     color: '#8ED6CF',
     archetype_de: 'Kognition & Kommunikation',
+    archetype_en: 'Cognition & Communication',
     wuxing_element: 'Metal',
     dimension: 1,
     poleIndex: 3,
@@ -101,6 +106,7 @@ export const PLANETS: readonly Planet[] = [
     baseFrequency: 221.23,
     color: '#FF9EBC',
     archetype_de: 'Liebe & Harmonie',
+    archetype_en: 'Love & Harmony',
     wuxing_element: 'Earth',
     dimension: 1,
     poleIndex: 4,
@@ -112,6 +118,7 @@ export const PLANETS: readonly Planet[] = [
     baseFrequency: 144.72,
     color: '#FF6B4A',
     archetype_de: 'Antrieb & Durchsetzung',
+    archetype_en: 'Drive & Assertion',
     wuxing_element: 'Fire',
     dimension: 2,
     poleIndex: 5,
@@ -123,6 +130,7 @@ export const PLANETS: readonly Planet[] = [
     baseFrequency: 183.58,
     color: '#B8A0E8',
     archetype_de: 'Expansion & Weisheit',
+    archetype_en: 'Expansion & Wisdom',
     wuxing_element: 'Wood',
     dimension: 2,
     poleIndex: 0,
@@ -134,6 +142,7 @@ export const PLANETS: readonly Planet[] = [
     baseFrequency: 147.85,
     color: '#A0B8D8',
     archetype_de: 'Struktur & Transformation',
+    archetype_en: 'Structure & Transformation',
     wuxing_element: 'Earth',
     dimension: 3,
     poleIndex: 1,
@@ -145,6 +154,7 @@ export const PLANETS: readonly Planet[] = [
     baseFrequency: 207.36,
     color: '#7AF0E0',
     archetype_de: 'Erneuerung & Freiheit',
+    archetype_en: 'Renewal & Freedom',
     wuxing_element: 'Metal',
     dimension: 4,
     poleIndex: 2,
@@ -156,6 +166,7 @@ export const PLANETS: readonly Planet[] = [
     baseFrequency: 211.44,
     color: '#4F6EF7',
     archetype_de: 'Auflösung & Intuition',
+    archetype_en: 'Dissolution & Intuition',
     wuxing_element: 'Water',
     dimension: 5,
     poleIndex: 3,
@@ -167,6 +178,7 @@ export const PLANETS: readonly Planet[] = [
     baseFrequency: 140.25,
     color: '#9B59B6',
     archetype_de: 'Tiefenwandel & Kraft',
+    archetype_en: 'Deep Change & Power',
     wuxing_element: 'Water',
     dimension: 5,
     poleIndex: 4,

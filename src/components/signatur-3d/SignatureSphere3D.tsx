@@ -624,9 +624,7 @@ function PoleTooltip({
   const tierShort = TIER_SHORT_LABEL[tier][isDe ? 'de' : 'en'];
   const percent = Math.round(weight * 100);
   const displayName = isDe ? planet.name_de : planet.name;
-  const archetype = planet.archetype_de; // German archetype line from planets.ts
-  // Short archetype labels fall back to the DE one for EN for now — can be
-  // expanded in planets.ts if an EN archetype_en is added.
+  const archetype = isDe ? planet.archetype_de : planet.archetype_en;
   const weightLabel = isDe ? 'Dein Anteil' : 'Your share';
 
   return (

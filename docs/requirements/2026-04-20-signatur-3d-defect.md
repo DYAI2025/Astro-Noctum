@@ -1,9 +1,44 @@
 # Signatur 3D — "komisches Bild" Defect Report
 
-**Status:** Open — diagnosed, not fixed
+**Status:** **Partially Resolved 2026-04-21** — H1 + H3 addressed, H2 + H4 still open, formal PO acceptance pending
 **Created:** 2026-04-20
 **Sprint:** Dashboard/Signatur Hygiene (docs/plans/2026-04-20-dashboard-signatur-gaps.md)
 **Phase:** 10
+
+## Resolution delta (2026-04-21)
+
+After the Phase-10 report landed, the user confirmed the 3D was visible but reading as "nicht selbsterklärend" / "zu stark ausgebeult" / "nicht drehbar". Three commits on branch `2026-04-20-dashboard-signatur-gaps` addressed the diagnosed hypotheses:
+
+- **`e0300f8`** — frequency-responsive tuning (Displacement 0.18→0.30 [later reverted], TRAIL_THRESHOLD 0.35→0.15, pole-marker size + glow proportional to weight, Kp-multiplied morph clock).
+- **`b66d428`** — hover tooltips on each of the 10 planet poles (DE/EN archetype + 2-sentence influence + weight tier) — directly answers the "was heißt das?" question in H1.
+- **`f40eef2`** — **`<OrbitControls>`** drag-to-rotate + **vertex-colour Chladni-node pattern** painted onto the solid sphere surface + displacement reverted 0.30→0.12 so the geometry stays coherent. Pattern animates in phase with the geometry morph. Addresses H1 (3D now self-explanatory via interaction) + H3 (surface is no longer a static SVG-feeling shell).
+
+### Status per hypothesis
+
+| | Hypothesis | Status |
+|---|---|---|
+| **H1** | User was seeing the 2D default without clicking the 3D toggle | **Resolved.** Cursor rotation + surface pattern + hover tooltips make the 3D mode the obvious richer view; users who toggle are immediately oriented. |
+| **H2** | `planetWeights` collapsing to `NEUTRAL_BAZI_WEIGHTS` for users with incomplete `apiData` | **Still open.** Not addressed in this sprint. Needs an audit of `baziToPlanetWeights` against real BaZi data + a guarantee that bootstrap always persists `pillars` + `wuxing.elements` before Dashboard renders. |
+| **H3** | `CymaticsFallback` (static SVG) was what rendered when `chladniParams` was undefined | **Resolved on the 3D branch.** Solid sphere now carries a weight-driven vertex-colour pattern; fallback surface read is replaced by a glowing Chladni-node surface. The 2D fallback itself (`CymaticsFallback.tsx`) is unchanged. |
+| **H4** | WebGL unavailable in some browsers → silent degrade | **Still open.** No explicit "3D nicht verfügbar"-Message shipped. R3F's Suspense fallback still silently shows `CymaticsFallback` if the R3F Canvas fails to initialise. |
+
+### Acceptance criteria check (as of 2026-04-21)
+
+| | Criterion | Status |
+|---|---|---|
+| ✅ | Rotatable (drag) | `<OrbitControls>` mounted, pan/zoom disabled, autoRotate drift idle. |
+| ✅ | Lit | Three pointLights (blue / cyan / purple) retained; solid sphere now uses `meshStandardMaterial` so lighting reads on the pattern. |
+| ✅ | Planet-coded poles | Pole markers + glyphs carry planet colour; marker emissive scales with weight. |
+| ✅ | Weight-driven delta | Pole size/glow, trail count (threshold 0.15), morph amplitude, and vertex-colour blend all flow from `weights`. |
+| ⚠ | No silent degradation | Not yet. If WebGL fails, Suspense silently renders `CymaticsFallback` with no user-visible note. |
+
+### Residual work before closing the defect fully
+
+1. Audit `baziToPlanetWeights` so users with incomplete `apiData` don't collapse to `NEUTRAL_BAZI_WEIGHTS` — or, if they must, show a "loading your signature" caption in `SignaturRenderer` until real weights land.
+2. Add a graceful WebGL-failure message in the 3D path (detect via `canvas.getContext('webgl2')` or Suspense error boundary) instead of silently reverting to the 2D fallback.
+3. Ben's formal acceptance at HALT-Gate #5 on prod after Railway deploy.
+
+---
 
 ## Reproduction
 
