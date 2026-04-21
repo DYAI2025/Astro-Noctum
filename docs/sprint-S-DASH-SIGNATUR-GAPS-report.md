@@ -8,9 +8,9 @@
 
 ---
 
-## phase
+## Phase
 
-Dashboard-Hygiene-Sprint + 3D-Signatur-Upgrade. Elf Plan-Phasen plus vier out-of-band Feature-Additions und zwei Hotfixes abgeschlossen. Kohärenz-Index liest jetzt den korrekten nested path (pre-sprint carry-over), Dashboard ist auf `coherence-first` reduziert (VibesSection + CosmicInfluence-Duplikat + BigFour-Freestanding-Stack entfernt, Identity-Pills in `NatalSignaturStatic` gewandert, zentrierte `Tagesimpuls`-Headline mit echtem Daily-Horoscope-Text, Shared `ActiveImpactsList`). Space-Weather-Tile zeigt nach dem NOAA-Endpoint-Fix wieder reale Werte. Rate-Limit-Fix verhindert 429 direkt nach Registrierung. 3D-Signatur ist jetzt user-interaktiv (drag-to-rotate) und zeigt das Chladni-Knotenmuster als glühende Filamente auf der Oberfläche mit Hover-Tooltips pro Planeten-Pol.
+Dashboard-Hygiene-Sprint + 3D-Signatur-Upgrade. Elf Plan-Phasen plus vier out-of-band Feature-Additions und zwei Hotfixes sind abgeschlossen. Kohärenz-Index liest jetzt den korrekten nested path (pre-sprint carry-over), Dashboard ist auf `coherence-first` reduziert (VibesSection + CosmicInfluence-Duplikat + BigFour-Freestanding-Stack entfernt, Identity-Pills in `NatalSignaturStatic` gewandert, zentrierte `Tagesimpuls`-Headline mit echtem Daily-Horoscope-Text, Shared `ActiveImpactsList`). Space-Weather-Tile zeigt nach dem NOAA-Endpoint-Fix wieder reale Werte. Rate-Limit-Fix verhindert 429 direkt nach Registrierung. 3D-Signatur ist jetzt user-interaktiv (drag-to-rotate) und zeigt das Chladni-Knotenmuster als glühende Filamente auf der Oberfläche mit Hover-Tooltips pro Planeten-Pol.
 
 ## Sprint-Scope & Shipped
 
