@@ -37,18 +37,6 @@ vi.mock('motion/react', () => ({
 
 // Mock drei's <Text> and <Billboard>. Text becomes a testable DOM element
 // so we can count glyph renders; Billboard is a passthrough.
-vi.mock('@react-three/drei', () => ({
-  Billboard: ({ children }: { children?: ReactNode }) => <>{children}</>,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Text: ({ children, color, fontSize }: { children?: ReactNode } & Record<string, any>) => (
-    <div data-testid="drei-text-mock" data-color={color} data-size={fontSize}>
-      {children}
-    </div>
-  ),
-  // H7: <Stats /> is a DEV-only FPS panel; mock as a no-op for tests.
-  Stats: () => null,
-}));
-
 // The tooltip overlay uses useLanguage() from the app's LanguageContext —
 // stub it so SignatureSphere3D can render in isolation without a provider.
 vi.mock('@/src/contexts/LanguageContext', () => ({
@@ -76,10 +64,33 @@ vi.mock('three', async (importOriginal) => {
       };
       this.computeVertexNormals = vi.fn();
       this.dispose = vi.fn();
+      this.setAttribute = vi.fn((name: string, attr: unknown) => {
+        this.attributes[name] = attr;
+      });
+    }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    BufferAttribute: vi.fn(function BufferAttribute(this: any, array: Float32Array, itemSize: number) {
+      this.array = array;
+      this.itemSize = itemSize;
+      this.needsUpdate = false;
     }),
     BackSide: 1,
   };
 });
+
+// OrbitControls is from drei; add to the mock so the Canvas subtree renders
+// in tests without needing a real WebGL camera.
+vi.mock('@react-three/drei', () => ({
+  Billboard: ({ children }: { children?: ReactNode }) => <>{children}</>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Text: ({ children, color, fontSize }: { children?: ReactNode } & Record<string, any>) => (
+    <div data-testid="drei-text-mock" data-color={color} data-size={fontSize}>
+      {children}
+    </div>
+  ),
+  Stats: () => null,
+  OrbitControls: () => null,
+}));
 
 import { SignatureSphere3D } from '../SignatureSphere3D';
 import type { PlanetName } from '@/src/lib/signatur-3d/planets';

@@ -64,6 +64,150 @@ export function chladniDisplacement(
 }
 
 /**
+ * Parse a #RRGGBB hex string into normalised 0–1 RGB components.
+ * Invalid inputs fall back to mid-grey so callers never see NaN.
+ */
+function hexToNormalisedRgb(hex: string): { r: number; g: number; b: number } {
+  const match = /^#?([0-9a-f]{6})$/i.exec(hex);
+  if (!match) return { r: 0.5, g: 0.5, b: 0.5 };
+  const n = Number.parseInt(match[1], 16);
+  return {
+    r: ((n >> 16) & 0xff) / 255,
+    g: ((n >> 8) & 0xff) / 255,
+    b: (n & 0xff) / 255,
+  };
+}
+
+/**
+ * Weighted average of planet colours in 0–1 RGB space. If no planet has
+ * any weight, returns a soft blue default so the sphere still has a tint.
+ */
+function blendedPlanetColor(
+  weights: Readonly<Partial<Record<PlanetName, number>>>,
+): { r: number; g: number; b: number } {
+  let r = 0;
+  let g = 0;
+  let b = 0;
+  let total = 0;
+  for (const planet of PLANETS) {
+    const w = weights[planet.name] ?? 0;
+    if (w <= 0) continue;
+    const c = hexToNormalisedRgb(planet.color);
+    r += c.r * w;
+    g += c.g * w;
+    b += c.b * w;
+    total += w;
+  }
+  if (total === 0) return { r: 0.31, g: 0.43, b: 0.97 }; // soft indigo default
+  return { r: r / total, g: g / total, b: b / total };
+}
+
+/**
+ * Compute a node-highlight intensity for one vertex from its Chladni value.
+ *
+ * Chladni-plate convention: sand collects where |amplitude| ≈ 0 — the
+ * NODE lines. We mirror that here by lighting up curves where |v| is small
+ * and fading toward zero where |v| is large. This paints the wave pattern
+ * onto the sphere surface as glowing filaments, matching the visual grammar
+ * of the 2D Cymatics view.
+ *
+ * @param chladniValue  from `chladniDisplacement`, roughly ±1
+ * @returns             0..1, 1 at node, 0 at antinode
+ */
+export function chladniNodeIntensity(chladniValue: number): number {
+  const m = Math.abs(chladniValue);
+  // Falloff rate — 3.5 gives thin visible node curves for typical weights.
+  return Math.max(0, 1 - m * 3.5);
+}
+
+/**
+ * Write vertex colours into a Float32Array such that Chladni nodes glow in
+ * the weighted-planet blend colour and antinodes stay near the dark-navy
+ * sphere base. Consumers pass this array to `BufferAttribute` with
+ * `itemSize=3` and enable `vertexColors` on the material.
+ *
+ * @param positions  position buffer (count × 3, origin-centred)
+ * @param weights    per-planet amplitudes
+ * @param time       monotonic ms — same argument as `chladniDisplacement`
+ *                   so colours stay in phase with geometry displacement
+ * @returns          colour buffer matching `positions` length
+ */
+export function computeChladniVertexColors(
+  positions: ArrayLike<number>,
+  weights: Readonly<Partial<Record<PlanetName, number>>>,
+  time: number,
+): Float32Array {
+  const count = positions.length / 3;
+  const out = new Float32Array(positions.length);
+  const tint = blendedPlanetColor(weights);
+  // Very dark base so the sphere reads as a deep-space body between the
+  // glowing node filaments. Not pitch black so the silhouette stays legible.
+  const baseR = 0.02;
+  const baseG = 0.02;
+  const baseB = 0.06;
+
+  for (let i = 0; i < count; i++) {
+    const xi = i * 3;
+    const x = positions[xi];
+    const y = positions[xi + 1];
+    const z = positions[xi + 2];
+    const r = Math.sqrt(x * x + y * y + z * z);
+    if (r < 1e-6) {
+      out[xi] = baseR;
+      out[xi + 1] = baseG;
+      out[xi + 2] = baseB;
+      continue;
+    }
+    const theta = Math.acos(Math.max(-1, Math.min(1, y / r)));
+    const phi = Math.atan2(z, x);
+    const v = chladniDisplacement(theta, phi, weights, time);
+    const intensity = chladniNodeIntensity(v);
+    out[xi]     = baseR + (tint.r - baseR) * intensity;
+    out[xi + 1] = baseG + (tint.g - baseG) * intensity;
+    out[xi + 2] = baseB + (tint.b - baseB) * intensity;
+  }
+  return out;
+}
+
+/**
+ * In-place variant of {@link computeChladniVertexColors}. Reuses a caller-
+ * supplied colour buffer so the GPU upload can be throttled to the same
+ * schedule as position updates.
+ */
+export function writeChladniVertexColors(
+  target: Float32Array,
+  positions: ArrayLike<number>,
+  weights: Readonly<Partial<Record<PlanetName, number>>>,
+  time: number,
+): void {
+  const count = positions.length / 3;
+  const tint = blendedPlanetColor(weights);
+  const baseR = 0.02;
+  const baseG = 0.02;
+  const baseB = 0.06;
+  for (let i = 0; i < count; i++) {
+    const xi = i * 3;
+    const x = positions[xi];
+    const y = positions[xi + 1];
+    const z = positions[xi + 2];
+    const r = Math.sqrt(x * x + y * y + z * z);
+    if (r < 1e-6) {
+      target[xi] = baseR;
+      target[xi + 1] = baseG;
+      target[xi + 2] = baseB;
+      continue;
+    }
+    const theta = Math.acos(Math.max(-1, Math.min(1, y / r)));
+    const phi = Math.atan2(z, x);
+    const v = chladniDisplacement(theta, phi, weights, time);
+    const intensity = chladniNodeIntensity(v);
+    target[xi]     = baseR + (tint.r - baseR) * intensity;
+    target[xi + 1] = baseG + (tint.g - baseG) * intensity;
+    target[xi + 2] = baseB + (tint.b - baseB) * intensity;
+  }
+}
+
+/**
  * Six axes used by `getPolePositions`. Each axis is unit-length.
  * Cardinal axes produce orthogonal poles; the three diagonals fill the
  * remaining octants symmetrically. Order matters: the output of

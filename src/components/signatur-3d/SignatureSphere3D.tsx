@@ -29,7 +29,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import * as THREE from 'three';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Billboard, Text, Stats } from '@react-three/drei';
+import { Billboard, OrbitControls, Text, Stats } from '@react-three/drei';
 import { useReducedMotion } from 'motion/react';
 
 import { PLANETS, PLANET_MAP } from '@/src/lib/signatur-3d/planets';
@@ -37,8 +37,10 @@ import type { PlanetName } from '@/src/lib/signatur-3d/planets';
 import {
   buildTrailPath,
   chladniDisplacement,
+  computeChladniVertexColors,
   getPolePairs,
   getPolePositions,
+  writeChladniVertexColors,
 } from '@/src/lib/signatur-3d/sphere-chladni';
 import {
   PLANET_INFLUENCE,
@@ -69,9 +71,11 @@ export interface SignatureSphere3DProps {
 const WIRE_RADIUS = 1.0;
 const SOLID_RADIUS = 0.93;
 /** Displacement amplitude as a fraction of the layer radius.
- *  Bumped 0.18→0.30 (2026-04-21) so per-planet weight variation reads
- *  at a glance instead of the sphere looking uniformly round. */
-const DISPLACEMENT_FACTOR = 0.30;
+ *  Trimmed 0.30→0.12 (2026-04-21) — 0.30 over-deformed the surface so
+ *  inward dips punched through the dark solid shell and made the sphere
+ *  look broken. 0.12 keeps the geometry coherent; the per-planet signal
+ *  now reads through the vertex-colour node pattern instead of big bumps. */
+const DISPLACEMENT_FACTOR = 0.12;
 /** Sphere tessellation — matches the Cymantics prototype. */
 const SPHERE_SEGMENTS = 72;
 /** Pole-marker geometry size (H4: downsized from 0.04; glyph provides the read). */
@@ -117,6 +121,7 @@ const SOLID_TIME_SCALE = 0.7;
 function buildDisplacedSphere(
   radius: number,
   weights: Readonly<Partial<Record<PlanetName, number>>>,
+  withVertexColors = false,
 ): { geometry: THREE.SphereGeometry; originalPositions: Float32Array } {
   const geo = new THREE.SphereGeometry(radius, SPHERE_SEGMENTS, SPHERE_SEGMENTS);
   const pos = geo.attributes.position;
@@ -145,6 +150,16 @@ function buildDisplacedSphere(
 
   pos.needsUpdate = true;
   geo.computeVertexNormals();
+
+  // Attach a vertex-colour buffer keyed to the original (undeformed)
+  // positions so the Chladni-node pattern paints where the caller intends
+  // it — not on the already-displaced positions, which would wobble with
+  // the geometry morph.
+  if (withVertexColors) {
+    const colors = computeChladniVertexColors(originalPositions, weights, 0);
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  }
+
   return { geometry: geo, originalPositions };
 }
 
@@ -189,6 +204,20 @@ function updateChladniGeometryInPlace(
   }
   pos.needsUpdate = true;
   geom.computeVertexNormals();
+
+  // If the geometry carries a vertex-colour attribute, flow the same
+  // Chladni field into it so the node pattern on the surface animates in
+  // sync with the geometry morph.
+  const colorAttr = geom.attributes.color as THREE.BufferAttribute | undefined;
+  if (colorAttr) {
+    writeChladniVertexColors(
+      colorAttr.array as Float32Array,
+      originalPositions,
+      weights,
+      time,
+    );
+    colorAttr.needsUpdate = true;
+  }
 }
 
 // ── Internal animated scene sub-component ────────────────────────────────
@@ -244,9 +273,13 @@ function AnimatedScene({
     timeRef.current += delta * 1000 * kpSpeedMult;
     frameCountRef.current += 1;
 
-    // Rotation — applied every frame for smoothness.
+    // Y rotation is now handled by OrbitControls autoRotate (so user drag
+    // and auto-drift share the same source). We keep a very subtle X wobble
+    // on the group so the pole layout still feels alive when the camera is
+    // parked. `ROT_Y_PER_FRAME` is deliberately unused here; kept as a
+    // reference constant in case OrbitControls is ever removed.
+    void ROT_Y_PER_FRAME;
     if (signatureGroupRef.current) {
-      signatureGroupRef.current.rotation.y += ROT_Y_PER_FRAME;
       signatureGroupRef.current.rotation.x += ROT_X_PER_FRAME;
     }
 
@@ -301,14 +334,19 @@ function AnimatedScene({
           />
         </mesh>
 
-        {/* Solid layer — slightly smaller, dark core. Skip raycast. */}
+        {/* Solid layer — slightly smaller, dark core. Vertex colours carry
+            the Chladni-node pattern so the surface itself visibly encodes
+            the standing-wave structure (2026-04-21). Skip raycast so the
+            sphere never intercepts pole hovers. */}
         <mesh geometry={solidGeom} raycast={SKIP_RAYCAST}>
           <meshStandardMaterial
-            color={0x06060f}
+            vertexColors
             transparent
-            opacity={0.8}
-            roughness={0.9}
-            metalness={0.05}
+            opacity={0.92}
+            roughness={0.55}
+            metalness={0.15}
+            emissive={0x0a0a2a}
+            emissiveIntensity={0.35}
           />
         </mesh>
 
@@ -424,8 +462,12 @@ export function SignatureSphere3D({
   // Rebuild geometries only when weights change. Each build also returns an
   // immutable snapshot of the undeformed vertex positions, which the animated
   // morph reads from every frame to stay drift-free.
-  const wireBuilt = useMemo(() => buildDisplacedSphere(WIRE_RADIUS, weights), [weights]);
-  const solidBuilt = useMemo(() => buildDisplacedSphere(SOLID_RADIUS, weights), [weights]);
+  //
+  // Solid layer carries the Chladni-node vertex-colour pattern — that is the
+  // "pattern on the surface" the user sees. Wire layer stays flat-colour so
+  // its contour lines aren't fighting the node pattern for visual attention.
+  const wireBuilt = useMemo(() => buildDisplacedSphere(WIRE_RADIUS, weights, false), [weights]);
+  const solidBuilt = useMemo(() => buildDisplacedSphere(SOLID_RADIUS, weights, true), [weights]);
 
   const wireGeom = wireBuilt.geometry;
   const solidGeom = solidBuilt.geometry;
@@ -525,6 +567,18 @@ export function SignatureSphere3D({
         gl={{ antialias: true, alpha: true }}
       >
         {import.meta.env.DEV && <Stats />}
+        {/* User-facing rotation. Pan + zoom are disabled so the sphere
+            stays the visual centrepiece; users can drag to reorient it,
+            otherwise it drifts on its own via autoRotate. */}
+        <OrbitControls
+          enablePan={false}
+          enableZoom={false}
+          autoRotate={!prefersReducedMotion}
+          autoRotateSpeed={0.6}
+          rotateSpeed={0.6}
+          dampingFactor={0.15}
+          enableDamping
+        />
         <AnimatedScene
           weights={weights}
           wireGeom={wireGeom}
