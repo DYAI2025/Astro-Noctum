@@ -7,7 +7,7 @@ import { createClient } from "@supabase/supabase-js";
 import compression from "compression";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
-import { GoogleGenAI } from "@google/genai";
+import { createGenAiRouter } from "./server/ai-router.mjs";
 import Stripe from 'stripe';
 
 // Exponential-backoff fetch helper used by the bootstrap endpoint.
@@ -178,7 +178,7 @@ if (missing.length > 0) {
   console.warn(`[server] WARNING: Missing env vars (dev mode): ${missing.join(', ')}`);
 }
 
-const OPTIONAL_ENV_VARS = ['GEMINI_API_KEY', 'ELEVENLABS_TOOL_SECRET', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_BUY_ID', 'SUPERGLUE_API_KEY'];
+const OPTIONAL_ENV_VARS = ['GEMINI_API_KEY', 'OPENROUTER_API_KEY', 'ELEVENLABS_TOOL_SECRET', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_BUY_ID', 'SUPERGLUE_API_KEY'];
 for (const v of OPTIONAL_ENV_VARS) {
   if (!process.env[v]) {
     console.warn(`[server] Optional env var not set: ${v} (some features may be degraded)`);
@@ -186,9 +186,15 @@ for (const v of OPTIONAL_ENV_VARS) {
 }
 
 // ── Gemini client (server-side only — key never reaches browser) ──────
-const geminiClient = process.env.GEMINI_API_KEY
-  ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
-  : null;
+// Wrapped in a transparent fallback router: primary calls go to Gemini
+// direct, then on 429/quota errors roll through OpenRouter free-tier
+// models (each has its own rate-limit bucket). Call-sites use the same
+// `.models.generateContent({...})` + `.getGenerativeModel({...})` surfaces
+// they used before, so no changes needed downstream.
+const geminiClient = createGenAiRouter({
+  geminiApiKey: process.env.GEMINI_API_KEY,
+  openrouterApiKey: process.env.OPENROUTER_API_KEY,
+});
 
 // ── Stripe client (server-side only) ──────────────────────────────
 const stripe = process.env.STRIPE_SECRET_KEY
