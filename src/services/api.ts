@@ -432,8 +432,22 @@ export function mapChartToApiResults(raw: ChartResponse): Omit<ApiResults, 'issu
       day:   mapPillar(raw.bazi.pillars.day),
       hour:  mapPillar(raw.bazi.pillars.hour),
     },
-    day_master: raw.bazi.chinese?.day_master || raw.bazi.pillars.day?.stamm || (raw.bazi.pillars.day as unknown as { stem?: string })?.stem || '',
-    zodiac_sign: raw.bazi.chinese?.year?.animal || raw.bazi.pillars.year?.tier || '',
+    // BAFE new shape (2026-04-22): `raw.bazi.chinese` no longer exists and
+    // pillars use English keys ({stem, branch, animal, element}) instead of
+    // the old German ({stamm, zweig, tier, element}). Fallback chain accepts
+    // both so the mapper degrades to whichever shape is on the wire.
+    day_master:
+      (raw.bazi as { day_master?: string }).day_master ||
+      raw.bazi.chinese?.day_master ||
+      raw.bazi.pillars.day?.stamm ||
+      (raw.bazi.pillars.day as unknown as { stem?: string })?.stem ||
+      '',
+    zodiac_sign:
+      (raw.bazi as { zodiac_sign?: string }).zodiac_sign ||
+      raw.bazi.chinese?.year?.animal ||
+      (raw.bazi.pillars.year as unknown as { animal?: string })?.animal ||
+      raw.bazi.pillars.year?.tier ||
+      '',
   };
 
   const sunSign       = signFromBody(bodiesSource.Sun);

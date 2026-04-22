@@ -137,4 +137,43 @@ describe('mapChartToApiResults — BAFE schema drift', () => {
     const mapped = mapChartToApiResults(response);
     expect(mapped.wuxing.dominant_element).toBe('Water');
   });
+
+  it('bazi zodiac_sign resolves from new English-keyed pillar shape (no `chinese` block)', () => {
+    // Real 2026-04-22 BAFE bazi shape — `chinese` block is gone, pillars use
+    // English {stem, branch, animal, element} instead of old {stamm, zweig, tier}.
+    const response = {
+      bazi: {
+        pillars: {
+          year:  { stem: 'Ji',   branch: 'Si',  animal: 'Snake',   element: 'Erde' },
+          month: { stem: 'Bing', branch: 'Chen', animal: 'Dragon', element: 'Fire' },
+          day:   { stem: 'Ji',   branch: 'Wei',  animal: 'Goat',   element: 'Earth' },
+          hour:  { stem: 'Xin',  branch: 'You',  animal: 'Rooster', element: 'Metal' },
+        },
+      },
+      bodies: [
+        { name: 'Sun',  sign_index: 10, sign_name: 'Aquarius', longitude_deg: 303.75 },
+        { name: 'Moon', sign_index: 6,  sign_name: 'Libra',    longitude_deg: 187.19 },
+      ],
+      angles: { Ascendant: 81.14 },
+      wuxing: {
+        elements: { Wood: 1, Fire: 1, Earth: 1, Metal: 1, Water: 1 },
+        dominant_element: 'Earth',
+      },
+      houses: {},
+      fusion: {},
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any;
+    const mapped = mapChartToApiResults(response);
+    expect(mapped.bazi.zodiac_sign).toBe('Snake');
+    expect(mapped.bazi.day_master).toBe('Ji');
+  });
+
+  it('bazi prefers direct zodiac_sign / day_master top-level fields when BAFE supplies them', () => {
+    const response = buildNewShapeResponse();
+    (response.bazi as unknown as Record<string, unknown>).zodiac_sign = 'Tiger';
+    (response.bazi as unknown as Record<string, unknown>).day_master = 'Gui';
+    const mapped = mapChartToApiResults(response);
+    expect(mapped.bazi.zodiac_sign).toBe('Tiger');
+    expect(mapped.bazi.day_master).toBe('Gui');
+  });
 });
