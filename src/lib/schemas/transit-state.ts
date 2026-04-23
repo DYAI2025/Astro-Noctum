@@ -24,6 +24,34 @@ export const TransitEventSchema = z.object({
   priority: z.number().optional().default(0),
 });
 
+/**
+ * Source marker on transit-state + derived payloads.
+ *
+ * - `live`              — real FuFirE transit response, fully live data
+ * - `fallback-profile`  — FuFirE unreachable, ring synthesized from stored
+ *                         soulprint + small deterministic drift (not live
+ *                         transit, user's natal signature only)
+ * - `fallback-neutral`  — neither FuFirE nor Supabase profile available,
+ *                         ring is pure neutral (worst case, no user data)
+ *
+ * The no-placeholder-fake directive requires the UI to distinguish these
+ * states visibly rather than presenting fallback data as if it were live.
+ */
+export const TransitSourceSchema = z.union([
+  z.literal('live'),
+  z.literal('fallback-profile'),
+  z.literal('fallback-neutral'),
+]);
+
+export type TransitSource = z.infer<typeof TransitSourceSchema>;
+
+export const TransitMetaSchema = z.object({
+  source: TransitSourceSchema,
+  reason: z.string().optional(),
+});
+
+export type TransitMeta = z.infer<typeof TransitMetaSchema>;
+
 export const TransitStateSchema = z.object({
   ring: z.object({ sectors: TwelveNumbers }),
   soulprint: z.object({ sectors: TwelveNumbers }),
@@ -33,6 +61,9 @@ export const TransitStateSchema = z.object({
   }),
   events: z.array(TransitEventSchema).default([]),
   resolution: z.number().min(0).max(100).optional(),
+  // Defaults to `live` for backward-compat on old cached responses, but
+  // current server always sets this explicitly so the UI can trust it.
+  _meta: TransitMetaSchema.optional().default({ source: 'live' }),
 });
 
 export const FusionSignalDataSchema = z.object({
@@ -40,6 +71,8 @@ export const FusionSignalDataSchema = z.object({
   baseSignals: z.array(z.number().min(0).max(1)).length(12),
   thirtyDayAvg: z.array(z.number().min(0).max(1)).length(12),
   transitIntensity: z.number().min(0).max(1),
+  source: TransitSourceSchema.default('live'),
+  sourceReason: z.string().optional(),
 });
 
 export type TransitState = z.infer<typeof TransitStateSchema>;

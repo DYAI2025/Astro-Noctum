@@ -1465,10 +1465,16 @@ app.get("/api/transit-state/:userId", requireUserAuth, async (req, res) => {
       }
     }
     console.warn("[transit-state] fallback:", reason);
+    const source = profile ? "fallback-profile" : "fallback-neutral";
+    const payload = fallbackStateFromProfile(userId, profile);
+    // Surface the degradation in BOTH header (debug / tooling) and body
+    // (for the frontend). No-placeholder-fake directive: UI must be able
+    // to distinguish live transits from synthesized natal-fallback data.
+    payload._meta = { source, reason };
     return res
       .status(200)
       .set("X-Transit-Fallback", profile ? "profile-derived" : "neutral")
-      .json(fallbackStateFromProfile(userId, profile));
+      .json(payload);
   };
 
   try {
@@ -1537,6 +1543,10 @@ app.get("/api/transit-state/:userId", requireUserAuth, async (req, res) => {
       },
       events: (fufireData.events ?? []).map((ev) => mapFufireEvent(ev, generatedAt)),
       resolution,
+      // Explicit source marker so the UI can distinguish live FuFirE data
+      // from synthesized natal-profile fallback. Paired with the fallback
+      // payload's `_meta.source` in `respondWithFallback`.
+      _meta: { source: "live" },
     };
 
     return res.status(200).json(response);

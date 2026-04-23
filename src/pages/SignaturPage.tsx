@@ -5,6 +5,7 @@ import { ArrowLeft, Sparkles, Volume2, VolumeX } from 'lucide-react';
 import { useLanguage } from '@/src/contexts/LanguageContext';
 import { useAppLayout } from '@/src/contexts/AppLayoutContext';
 import { SignaturRenderer } from '@/src/components/signatur-renderer/SignaturRenderer';
+import { TransitSourceBadge } from '@/src/components/signatur/TransitSourceBadge';
 import { usePlanetarium } from '@/src/contexts/PlanetariumContext';
 import QuizOverlay from '@/src/components/QuizOverlay';
 import { useQuizContribution } from '@/src/hooks/useQuizContribution';
@@ -344,6 +345,14 @@ export default function SignaturPage() {
                 eventAnnouncePrefix: t('signatur.eventAnnouncePrefix'),
               }}
             />
+            {signalData && signalData.source !== 'live' && (
+              <div className="flex justify-center">
+                <TransitSourceBadge
+                  source={signalData.source}
+                  reason={signalData.sourceReason}
+                />
+              </div>
+            )}
             {chladniParams && (
               <ChladniParamsBadge
                 params={chladniParams}
