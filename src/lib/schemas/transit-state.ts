@@ -63,7 +63,11 @@ export const TransitStateSchema = z.object({
   resolution: z.number().min(0).max(100).optional(),
   // Defaults to `live` for backward-compat on old cached responses, but
   // current server always sets this explicitly so the UI can trust it.
-  _meta: TransitMetaSchema.optional().default(() => ({ source: 'live' })),
+  // `as const` preserves the string-literal type through TS widening —
+  // Zod's .default overload demands `'live' | 'fallback-profile' |
+  // 'fallback-neutral'`, a bare `'live'` string widens to `string` on
+  // the strict TS config used in CI and breaks the overload match.
+  _meta: TransitMetaSchema.optional().default({ source: 'live' as const }),
 });
 
 export const FusionSignalDataSchema = z.object({
@@ -71,7 +75,8 @@ export const FusionSignalDataSchema = z.object({
   baseSignals: z.array(z.number().min(0).max(1)).length(12),
   thirtyDayAvg: z.array(z.number().min(0).max(1)).length(12),
   transitIntensity: z.number().min(0).max(1),
-  source: TransitSourceSchema.default('live'),
+  // Same widening guard as TransitStateSchema._meta — see comment there.
+  source: TransitSourceSchema.default('live' as const),
   sourceReason: z.string().optional(),
 });
 
