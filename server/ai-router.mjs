@@ -98,8 +98,12 @@ function geminiContentsToMessages(contents, systemInstruction) {
  */
 function normalizeOpenRouterModel(requestedModel, fallbackModel) {
   if (!requestedModel) return fallbackModel;
-  // If caller passed an OpenRouter slug directly, respect it.
-  if (requestedModel.includes('/')) return requestedModel;
+  // If caller passed an OpenRouter slug directly, only let it override the
+  // matching chain entry. Otherwise we collapse the entire fallback chain
+  // into repeated attempts against the same model.
+  if (requestedModel.includes('/')) {
+    return requestedModel === fallbackModel ? requestedModel : fallbackModel;
+  }
   return fallbackModel;
 }
 
