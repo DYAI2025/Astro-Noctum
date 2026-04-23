@@ -63,7 +63,7 @@ export const TransitStateSchema = z.object({
   resolution: z.number().min(0).max(100).optional(),
   // Defaults to `live` for backward-compat on old cached responses, but
   // current server always sets this explicitly so the UI can trust it.
-  _meta: TransitMetaSchema.optional().default({ source: 'live' }),
+  _meta: TransitMetaSchema.optional().default(() => ({ source: 'live' })),
 });
 
 export const FusionSignalDataSchema = z.object({
