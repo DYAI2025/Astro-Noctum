@@ -27,7 +27,7 @@ providers:
     priority: 2
     timeout_seconds: 45
     headers:
-      HTTP-Referer: "https://bazodiac.com"
+      HTTP-Referer: "https://bazodiac.space"
       X-Title: "Bazodiac"
     retry_on_error: true
 
