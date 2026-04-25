@@ -7,7 +7,7 @@ allowed-tools: Bash, Read, Grep
 
 Bazodiac deploys to Railway across two services:
 - **FuFirE** — astrology engine at `bafe-production.up.railway.app` (repo: `Projects/SaaS/FuFirE/BAFE`, also mirrored in `.env` as `VITE_BAFE_BASE_URL`)
-- **Astro-Noctum** — web app at `astro-noctum-production.up.railway.app` (this repo)
+- **Astro-Noctum** — web app at `bazodiac.space` (this repo)
 
 The pattern this skill handles: user has shipped a fix/feature/endpoint and wants to confirm it's actually reachable in production — not just merged to main, but actually running on Railway with the expected behavior.
 
@@ -30,7 +30,7 @@ If no argument given: ask the user what to verify.
 ### Steps
 
 1. **Clarify scope** (only if args ambiguous)
-   Which service: FuFirE (`bafe-production.up.railway.app`) or Astro-Noctum (`astro-noctum-production.up.railway.app`)? If unclear, default to Astro-Noctum since this is the Astro-Noctum repo.
+   Which service: FuFirE (`bafe-production.up.railway.app`) or Astro-Noctum (`bazodiac.space`)? If unclear, default to Astro-Noctum since this is the Astro-Noctum repo.
 
 2. **Check what's on main vs. what's on the branch**
    ```bash
@@ -50,7 +50,7 @@ If no argument given: ask the user what to verify.
    For Astro-Noctum endpoints:
    ```bash
    curl -s -o /tmp/verify-response.json -w "HTTP %{http_code}\n" \
-     https://astro-noctum-production.up.railway.app/<path>
+     https://bazodiac.space/<path>
    cat /tmp/verify-response.json | head -40
    ```
    For FuFirE endpoints (check `.env` for exact URL):

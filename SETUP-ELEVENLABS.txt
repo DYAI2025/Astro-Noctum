@@ -22,7 +22,7 @@ Method:         GET
 URL:            https://DEINE-DEPLOYED-URL/api/profile/{user_id}
 
                 Ersetze DEINE-DEPLOYED-URL mit der echten URL, z.B.:
-                https://astro-noctum-production.up.railway.app/api/profile/{user_id}
+                https://bazodiac.space/api/profile/{user_id}
 
 ------------------------------------------------------------
 HEADERS
