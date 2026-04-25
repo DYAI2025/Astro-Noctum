@@ -167,7 +167,7 @@ würde — schreib es rein.
 ## Custom Tools (ElevenLabs konfigurieren)
 
 ### Tool 1: get_user_astro_profile
-**URL:** `https://bazodiac.com/api/profile/{user_id}`
+**URL:** `https://bazodiac.space/api/profile/{user_id}`
 **Methode:** GET
 **Relevant für Levi:**
 ```json
@@ -186,7 +186,7 @@ würde — schreib es rein.
 ```
 
 ### Tool 2: save_conversation_summary
-**URL:** `https://bazodiac.com/api/agent/conversation`
+**URL:** `https://bazodiac.space/api/agent/conversation`
 **Methode:** POST
 **Auth:** `Bearer wsec_6799ace1ef60109af06c4f51592a371b2a1fa96ed4e8bea794f5a7cd0e8aa1af`
 **Payload:**

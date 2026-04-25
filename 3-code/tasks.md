@@ -1207,7 +1207,7 @@ Conversion architecture decided 2026-04-10: [DEC-conversion-tiers](../2-design/d
 
 ### Sprint-Landing (moved to separate repo)
 
-Landing page development moved to `Landingpage-viteapp` repo (bazodiac.com). Architecture: Option C (separate apps, API bridge). Integration plan: `Landingpage-viteapp/app/2026-04-13-landingpage-fufire-integration-plan.md`.
+Landing page development moved to `Landingpage-viteapp` repo (bazodiac.space). Architecture: Option C (separate apps, API bridge). Integration plan: `Landingpage-viteapp/app/2026-04-13-landingpage-fufire-integration-plan.md`.
 
 **Astro-Noctum server.mjs work remaining:** Two public endpoints (`POST /api/public/chart`, `POST /api/public/match-preview`) will be added here when the Landingpage reaches Phase 2 of the integration plan.
 

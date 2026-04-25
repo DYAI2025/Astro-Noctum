@@ -292,13 +292,13 @@ Find:
 ```javascript
 const APP_URL = stripTrailingSlash(
   process.env.APP_URL || 
-  (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : "https://bazodiac.com")
+  (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : "https://bazodiac.space")
 );
 ```
 
 **Step 2: Fix fallback domain**
 
-Replace `"https://bazodiac.com"` with `"https://bazodiac.space"`:
+Replace `"https://bazodiac.space"` with `"https://bazodiac.space"`:
 
 ```javascript
 const APP_URL = stripTrailingSlash(
@@ -317,7 +317,7 @@ node --check server.mjs
 
 ```bash
 git add server.mjs
-git commit -m "fix: correct APP_URL fallback from bazodiac.com to bazodiac.space"
+git commit -m "fix: correct APP_URL fallback from bazodiac.space to bazodiac.space"
 ```
 
 ---
@@ -392,7 +392,7 @@ Expected: 0 matches.
 **Step 5: Verify APP_URL fallback**
 
 ```bash
-grep 'bazodiac.com' server.mjs
+grep 'bazodiac.space' server.mjs
 ```
 
 Expected: 0 matches.
@@ -411,7 +411,7 @@ git push origin master
 |------|-----|-----|----------------|
 | 1-2 | #1 Duplicate webhook | Remove first handler, merge into second | `profiles` + `astro_profiles` |
 | 3 | #2 Wrong API key | `ELEVENLABS_TOOL_SECRET` → `bafeDirectHeaders()` | — |
-| 4 | #4 Wrong domain | `bazodiac.com` → `bazodiac.space` | — |
+| 4 | #4 Wrong domain | `bazodiac.space` → `bazodiac.space` | — |
 | 5 | #7 Info disclosure | Remove auth success logging | — |
 
 **Estimated time:** 30-45 minutes.
