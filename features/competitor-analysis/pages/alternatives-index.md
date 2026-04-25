@@ -53,7 +53,7 @@ Common reasons people switch:
 
 Bazodiac's free tier includes your complete multi-system birth chart (Western + BaZi + WuXing), the AI interpretation preview, the 3D orrery, and one quiz per cluster. No credit card, no time limit.
 
-**[Try Bazodiac Free →](https://bazodiac.com)**
+**[Try Bazodiac Free →](https://bazodiac.space)**
 
 ---
 
