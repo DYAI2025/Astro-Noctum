@@ -165,7 +165,7 @@ export function createGenAiRouter({
   geminiApiKey,
   openrouterApiKey,
   freeModelChain = DEFAULT_FREE_MODEL_CHAIN,
-  referer = 'https://astro-noctum-production.up.railway.app',
+  referer = 'https://bazodiac.space',
   title = 'Bazodiac',
 } = {}) {
   const hasGemini = typeof geminiApiKey === 'string' && geminiApiKey.length > 0;
