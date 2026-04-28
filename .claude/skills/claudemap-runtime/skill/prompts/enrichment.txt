@@ -1,0 +1,103 @@
+You will receive a JSON snapshot of a codebase with a flat `files` array. Each file has `path`, `relativePath`, `directory`, `name`, `lineCount`, `imports`, `exports`, and `language`.
+
+Return a single JSON object with `nodes` and `edges`. No prose, no markdown, no code fences, no commentary before or after. Your entire response must parse as valid JSON.
+
+# Output schema
+
+```
+{
+  "nodes": [
+    {
+      "id": "string",
+      "label": "string",
+      "type": "system" | "file" | "function",
+      "icon": "shield|database|globe|gear|puzzle|route|lock|envelope|clock|layers|code|file|server|zap",
+      "parentId": "string | null",
+      "filePath": "string",
+      "lineCount": number,
+      "health": "green" | "yellow" | "red",
+      "healthReason": "string (only when health is yellow or red)",
+      "summary": "string (optional, see budgets below)"
+    }
+  ],
+  "edges": [
+    { "id": "string", "source": "string", "target": "string", "type": "imports" }
+  ]
+}
+```
+
+# Required fields per node type
+
+Every node must have: `id`, `label`, `type`, `parentId`, `filePath`, `lineCount`, `health`.
+
+- **system**: `parentId` is `null` for top-level, or another system's id for nested. `filePath` is the primary directory (e.g. `"src/auth/"`) or `""` if none applies. `lineCount` is the sum of descendant file lines.
+- **file**: `parentId` is a system id. `filePath` is the snapshot's `relativePath`. `lineCount` is the snapshot's `lineCount`.
+- **function**: `parentId` is a file id. `filePath` matches the parent file. `lineCount` may be estimated but must be > 0. Icon is always `"code"`.
+
+# Token-efficiency rules
+
+These are not suggestions. Violating them wastes tokens.
+
+1. **Omit `healthReason` when health is `green`.** Only emit it for `yellow` or `red`.
+2. **Omit `summary` when it would be uninformative** or when the label already tells the full story (`button.jsx`, `index.ts`, `types.ts`).
+3. **Summary length caps** (hard limits, not guidelines):
+   - system summary: ≤ 60 chars
+   - file summary: ≤ 50 chars
+   - function summary: ≤ 40 chars
+4. **`healthReason` cap:** ≤ 60 chars.
+5. **Edge `type` is always `"imports"`.** Do not emit `calls`, `uses`, or `extends`.
+6. **Deduplicate edges** by `(source, target)`. Never emit self-loops or duplicate pairs.
+7. **Do not emit edges that live inside a single nested subtree.** Only emit edges where the endpoints cross top-level system boundaries.
+8. **Do not emit fields outside the schema.** No extra metadata, no comments, no thinking traces.
+
+# Nesting is mandatory above 80 files
+
+- 1–20 files: 3–5 top-level systems, nesting optional.
+- 21–80 files: 5–8 top-level systems, nesting encouraged where a domain has sub-responsibilities.
+- 81–250 files: 6–10 top-level systems. **At least one domain must use nested subsystems.**
+- 250+ files: 8–12 top-level systems. **Nesting is expected throughout.** A flat graph at this scale is a failure.
+
+If you catch yourself creating three siblings named `Foo API`, `Foo Store`, `Foo Jobs`, collapse them into a `Foo` parent with three nested children.
+
+# File coverage
+
+Every file in the snapshot must appear as exactly one `file` node under exactly one system (or nested subsystem). No file may be omitted, duplicated, or assigned to multiple parents.
+
+# Function nodes — opt-in, budgeted
+
+Function nodes are optional. Emit them only as navigation anchors. Use these rules:
+
+- **Eligible**: route/HTTP handlers, CLI subcommands, job/worker entrypoints, GraphQL resolvers, public service methods, store/reducer actions.
+- **Not eligible**: private helpers, types, constants, barrel re-exports, trivial getters, test utilities.
+- **Skip files under 50 lines entirely.** No function nodes.
+- **Max 3 function nodes per file.** Pick the most navigationally useful exports from the snapshot's `exports` array.
+- **Global budget**: total function node count ≤ 1.5× system count for repos with 250+ files, ≤ 2× system count otherwise.
+
+Err on the side of fewer function nodes. A function node that doesn't help navigation is pure token cost for no benefit.
+
+# IDs
+
+Derive deterministically from labels and paths. Never random. Suggested patterns:
+
+- system: `system-<slug>` (e.g. `system-auth`, `system-billing-refunds`)
+- file: `file-<slug-of-relativePath>`
+- function: `function-<slug-of-relativePath>-<slug-of-exportName>`
+- edge: `edge-<sourceId>-<targetId>`
+
+Slug = lowercase, alphanumeric, dashes for separators, no leading/trailing dashes.
+
+# Icons
+
+One per system, chosen from: `shield`, `database`, `globe`, `gear`, `puzzle`, `route`, `lock`, `envelope`, `clock`, `layers`, `code`, `file`, `server`, `zap`. Files always use `file`. Functions always use `code`. Do not burn reasoning cycles on icon choice — pick the closest match and move on.
+
+# Health grading
+
+- `green`: cohesive system, normal file sizes (< 300 lines), normal imports. Omit `healthReason`.
+- `yellow`: 300–500 line files, > 12 imports on a file, weak cohesion, or a system containing > 15 files without nesting. Include `healthReason`.
+- `red`: 500+ line files, circular dependencies, or a single file spanning handler + service + persistence. Include `healthReason`.
+
+Use data from the snapshot. Do not invent problems.
+
+# Output format
+
+Return a single JSON object. No wrapper text. No ```json fences. No "Here is the graph:" preamble. If the first character is not `{` or the last character is not `}`, the output is wrong.
