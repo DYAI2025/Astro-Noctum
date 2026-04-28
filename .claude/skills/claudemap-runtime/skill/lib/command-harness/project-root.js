@@ -1,25 +1,16 @@
 import path from 'path'
 
-export function resolveProjectRoot(argv, positionalName = null) {
-  const optionsWithValues = new Set([
-    '--enrichment-file',
-    '--scope-json',
-    '--instructions',
-    '--zoom',
-    '--explain',
-    '--title',
-    '--step',
-    '--mode',
-  ])
+export function resolveProjectRoot(argv, positionalName = null, parsedArgs = null) {
+  let projectRootArg = null
 
-  const projectRootArg = argv.find((argument, index) => {
-    if (argument.startsWith('--')) {
-      return false
+  if (positionalName && parsedArgs) {
+    const positionalKey = toCamel(positionalName)
+    const positionalValue = parsedArgs[positionalKey]
+
+    if (typeof positionalValue === 'string' && positionalValue.trim()) {
+      projectRootArg = positionalValue.trim()
     }
-
-    const previousArgument = argv[index - 1]
-    return !optionsWithValues.has(previousArgument)
-  })
+  }
 
   return path.resolve(
     projectRootArg ||
@@ -27,4 +18,8 @@ export function resolveProjectRoot(argv, positionalName = null) {
     process.env.INIT_CWD ||
     process.cwd(),
   )
+}
+
+function toCamel(value) {
+  return String(value).replace(/-([a-z0-9])/g, (_, character) => character.toUpperCase())
 }

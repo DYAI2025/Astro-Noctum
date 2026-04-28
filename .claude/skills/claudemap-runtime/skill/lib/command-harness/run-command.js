@@ -54,7 +54,10 @@ export async function runCommand(descriptor, argv) {
     }
 
     const args = parseResult.parsed
-    const projectRoot = resolveProjectRoot(argv)
+    const projectRootPositionalName = !isDispatcher && actionSpec?.positional?.name === 'projectRoot'
+      ? actionSpec.positional.name
+      : null
+    const projectRoot = resolveProjectRoot(argv, projectRootPositionalName, args)
     const activeMap = resolveActiveMap(projectRoot)
     const log = createLogger({
       command: descriptor.name,
