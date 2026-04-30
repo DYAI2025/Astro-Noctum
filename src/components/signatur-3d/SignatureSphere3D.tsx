@@ -333,15 +333,38 @@ function AnimatedScene({
           />
         </mesh>
 
-        {/* Wire layer — Chladni-displaced wireframe. Skip raycast. */}
-        <mesh geometry={wireGeom} raycast={SKIP_RAYCAST}>
-          <meshStandardMaterial
-            color={0x4f6ef7}
+        {/* Halo — shadow outline behind gold wire for contrast on all element surfaces */}
+        <mesh
+          geometry={wireGeom}
+          raycast={SKIP_RAYCAST}
+          data-mesh-role="wire-halo"
+          scale={1.005}
+          renderOrder={1}
+        >
+          <meshBasicMaterial
+            color={0x000000}
             wireframe
             transparent
-            opacity={0.2}
-            emissive={0x1a2a8f}
-            emissiveIntensity={0.6}
+            opacity={0.30}
+            depthWrite={false}
+          />
+        </mesh>
+
+        {/* Gold wire — main Chladni line layer */}
+        <mesh
+          geometry={wireGeom}
+          raycast={SKIP_RAYCAST}
+          data-mesh-role="wire"
+          data-tint="gold"
+          renderOrder={2}
+        >
+          <meshStandardMaterial
+            color={0xD4AF37}
+            wireframe
+            transparent
+            opacity={0.40}
+            emissive={0x8B6914}
+            emissiveIntensity={0.5}
           />
         </mesh>
 

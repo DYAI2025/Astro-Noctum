@@ -216,6 +216,29 @@ describe('SignatureSphere3D', () => {
     expect(el?.getAttribute('data-element')).toBe('Water');
   });
 
+  // ── Task-5b additions ─────────────────────────────────────────────────────
+
+  it('wire layer carries gold-tint role marker', () => {
+    const { container } = render(
+      <SignatureSphere3D weights={{ Sun: 0.5 }} dominantElement="Water" />
+    );
+    const wireMesh = container.querySelector('[data-mesh-role="wire"]');
+    expect(wireMesh).not.toBeNull();
+    expect(wireMesh?.getAttribute('data-tint')).toBe('gold');
+  });
+
+  // ── Task-5c additions ─────────────────────────────────────────────────────
+
+  it('wire layer has both main and halo meshes', () => {
+    const { container } = render(
+      <SignatureSphere3D weights={{ Sun: 0.5 }} dominantElement="Earth" />
+    );
+    const main = container.querySelector('[data-mesh-role="wire"]');
+    const halo = container.querySelector('[data-mesh-role="wire-halo"]');
+    expect(main).not.toBeNull();
+    expect(halo).not.toBeNull();
+  });
+
   it('frame callback is a no-op when prefersReducedMotion is true', () => {
     // Force the motion/react hook to report reduced-motion for this render.
     useReducedMotionMock.mockReturnValue(true);
