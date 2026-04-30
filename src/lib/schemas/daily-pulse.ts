@@ -9,14 +9,17 @@ export const CouncilFigureSchema = z.object({
   signOrElement: z.string(),
 });
 
+export const CopyrightStatusSchema = z.enum(['PD', 'Zitatrecht', 'eigene-Übersetzung', 'lizenziert']);
+export const AttributionStatusSchema = z.enum(['verified', 'disputed', 'apocryphal', 'folkloric']);
+
 export const PulseAphorismSchema = z.object({
   id: z.string(),
   text_de: z.string(),
   text_en: z.string(),
   author: z.string(),
   work: z.string().nullable(),
-  copyright: z.string(),
-  attribution_status: z.string(),
+  copyright: CopyrightStatusSchema,
+  attribution_status: AttributionStatusSchema,
   mode_tags: z.array(DayModeSchema),
   tone_tags: z.array(z.string()),
   element_affinity: z.array(z.string()),
