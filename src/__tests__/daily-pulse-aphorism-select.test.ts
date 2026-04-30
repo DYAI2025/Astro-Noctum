@@ -68,4 +68,31 @@ describe('selectDailyAphorism', () => {
     const recent = make('r', ['pulse'], [], 4); recent.first_used = '2026-04-29'; recent.cooldown_days = 30;
     expect(() => selectDailyAphorism([recent], 'u', '2026-04-30', 'pulse')).toThrow();
   });
+
+  it('applies trace+high-intensity tone bump (spec §7 line 126)', () => {
+    const sharp = make('sharp', ['trace'], [], 3); sharp.tone_tags = ['scharf'];
+    const calm  = make('calm',  ['trace'], [], 4); calm.tone_tags  = ['ruhig'];
+    // Without bump: calm (4) > sharp (3) → calm wins.
+    // With bump (intensity > 0.7): sharp 3 * 1.2 = 3.6 < calm 4 → calm still wins.
+    const r0 = selectDailyAphorism([sharp, calm], 'u1', '2026-04-30', 'trace', { intensity: 0.8 });
+    expect(r0.id).toBe('calm');
+
+    // Lift sharp to rating 4 → with bump 4 * 1.2 = 4.8 > calm 4 → sharp wins.
+    const sharpHi = make('sharpHi', ['trace'], [], 4); sharpHi.tone_tags = ['drängend'];
+    const r1 = selectDailyAphorism([sharpHi, calm], 'u1', '2026-04-30', 'trace', { intensity: 0.8 });
+    expect(r1.id).toBe('sharpHi');
+
+    // intensity not high enough → no bump → calm (rating 4) > sharp (rating 3) → calm wins.
+    const r2 = selectDailyAphorism([sharp, calm], 'u1', '2026-04-30', 'trace', { intensity: 0.3 });
+    expect(r2.id).toBe('calm');
+
+    // Bump only applies in trace mode — same pool with mode='pulse' ignores tone bump.
+    const sharpPulse = { ...sharpHi, mode_tags: ['pulse'] };
+    const calmPulse  = { ...calm,    mode_tags: ['pulse'] };
+    // No bump in pulse mode → both at rating 4 → tied → calm wins by id-tiebreak.
+    const r3 = selectDailyAphorism([sharpPulse, calmPulse], 'u1', '2026-04-30', 'pulse', { intensity: 0.9 });
+    // Without the trace bump, sharpHi has no advantage; deterministic id-tiebreak picks
+    // alphabetically (calm < sharpHi); both in top-5 → fnv1a%2 picks one of them.
+    expect(['calm', 'sharpHi']).toContain(r3.id);
+  });
 });

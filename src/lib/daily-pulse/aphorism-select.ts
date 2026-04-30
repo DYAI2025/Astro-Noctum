@@ -25,7 +25,13 @@ export const AphorismRecordSchema = z.object({
 });
 export type AphorismRecord = z.infer<typeof AphorismRecordSchema>;
 
-interface Hints { dominantElement?: string; season?: string; selectedFigure?: string; }
+interface Hints {
+  dominantElement?: string;
+  season?: string;
+  selectedFigure?: string;
+  /** Required for the trace+intensity tone bump (spec §7 line 126). */
+  intensity?: number;
+}
 
 /** Spec §7 line 121 — entries are blocked while their cooldown window is open. */
 function isOnCooldown(a: AphorismRecord, today: string): boolean {
@@ -63,6 +69,16 @@ export function selectDailyAphorism(
     if (hints.dominantElement && a.element_affinity.includes(hints.dominantElement)) score += 2;
     if (hints.season && a.season_affinity.includes(hints.season)) score += 1;
     if (hints.selectedFigure && a.figure_affinity.includes(hints.selectedFigure as any)) score += 1;
+    // Spec §7 line 126: trace + intensity > 0.7 + sharp/urgent tone → 1.2x multiplier.
+    // Spec uses ASCII transliteration "draengend"; fallback pool uses "drängend" — match both.
+    if (
+      mode === 'trace' &&
+      hints.intensity !== undefined &&
+      hints.intensity > 0.7 &&
+      (a.tone_tags.includes('scharf') || a.tone_tags.includes('drängend') || a.tone_tags.includes('draengend'))
+    ) {
+      score *= 1.2;
+    }
     return { score, a };
   });
   scored.sort((x, y) => y.score - x.score || x.a.id.localeCompare(y.a.id));
