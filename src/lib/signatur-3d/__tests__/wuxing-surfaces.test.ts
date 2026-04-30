@@ -3,6 +3,8 @@ import {
   ELEMENT_INDEX,
   MATERIAL_PROPS,
   PLASTICITY,
+  SURFACE_PALETTES,
+  paletteToVec3Array,
   type WuxingElement,
 } from '../wuxing-surfaces';
 
@@ -34,6 +36,27 @@ describe('wuxing-surfaces constants', () => {
     (['Fire', 'Earth', 'Wood', 'Metal', 'Water'] as WuxingElement[]).forEach((el) => {
       expect(PLASTICITY[el]).toBeGreaterThanOrEqual(0.3);
       expect(PLASTICITY[el]).toBeLessThanOrEqual(1.5);
+    });
+  });
+});
+
+describe('wuxing-surfaces palettes', () => {
+  it('defines dark and bright palette for all 5 elements', () => {
+    (['Fire', 'Earth', 'Wood', 'Metal', 'Water'] as WuxingElement[]).forEach((el) => {
+      expect(SURFACE_PALETTES[el].dark).toBeDefined();
+      expect(SURFACE_PALETTES[el].bright).toBeDefined();
+      expect(SURFACE_PALETTES[el].dark.inner).toHaveLength(3);
+      expect(SURFACE_PALETTES[el].dark.mid).toHaveLength(3);
+      expect(SURFACE_PALETTES[el].dark.outer).toHaveLength(3);
+    });
+  });
+
+  it('paletteToVec3Array yields 9 floats normalized 0..1', () => {
+    const arr = paletteToVec3Array(SURFACE_PALETTES.Fire.dark);
+    expect(arr).toHaveLength(9);
+    arr.forEach((v) => {
+      expect(v).toBeGreaterThanOrEqual(0);
+      expect(v).toBeLessThanOrEqual(1);
     });
   });
 });
