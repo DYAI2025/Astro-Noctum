@@ -51,4 +51,21 @@ describe('selectDailyAphorism', () => {
   it('throws when no aphorism matches mode', () => {
     expect(() => selectDailyAphorism([make('a', ['pulse'])], 'u', 'd', 'spannung')).toThrow();
   });
+
+  it('filters out aphorisms whose cooldown has not elapsed', () => {
+    const today = '2026-04-30';
+    const recent = make('r', ['pulse'], [], 4); recent.first_used = '2026-04-25'; recent.cooldown_days = 30;
+    const cooled = make('c2', ['pulse'], [], 4); cooled.first_used = '2026-01-01'; cooled.cooldown_days = 30;
+    const fresh  = make('f1', ['pulse'], [], 4);
+
+    for (const u of ['u1','u2','u3','u4','u5']) {
+      const r = selectDailyAphorism([recent, cooled, fresh], u, today, 'pulse');
+      expect(r.id).not.toBe('r');
+    }
+  });
+
+  it('throws when cooldown leaves no eligible entry', () => {
+    const recent = make('r', ['pulse'], [], 4); recent.first_used = '2026-04-29'; recent.cooldown_days = 30;
+    expect(() => selectDailyAphorism([recent], 'u', '2026-04-30', 'pulse')).toThrow();
+  });
 });

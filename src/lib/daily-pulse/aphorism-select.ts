@@ -27,6 +27,16 @@ export type AphorismRecord = z.infer<typeof AphorismRecordSchema>;
 
 interface Hints { dominantElement?: string; season?: string; selectedFigure?: string; }
 
+/** Spec §7 line 121 — entries are blocked while their cooldown window is open. */
+function isOnCooldown(a: AphorismRecord, today: string): boolean {
+  if (!a.first_used || !a.cooldown_days || a.cooldown_days <= 0) return false;
+  const last = Date.parse(a.first_used);
+  const now = Date.parse(today);
+  if (Number.isNaN(last) || Number.isNaN(now)) return false;
+  const daysElapsed = (now - last) / 86400000;
+  return daysElapsed < a.cooldown_days;
+}
+
 function fnv1a(s: string): number {
   let h = 2166136261 >>> 0;
   for (let i = 0; i < s.length; i++) {
@@ -43,7 +53,9 @@ export function selectDailyAphorism(
   mode: DayMode,
   hints: Hints = {},
 ): AphorismRecord {
-  const eligible = pool.filter(a => a.status === 'approved' && a.mode_tags.includes(mode));
+  const eligible = pool.filter(
+    a => a.status === 'approved' && a.mode_tags.includes(mode) && !isOnCooldown(a, date),
+  );
   if (eligible.length === 0) throw new Error(`No approved aphorism for mode=${mode}`);
 
   const scored = eligible.map(a => {
