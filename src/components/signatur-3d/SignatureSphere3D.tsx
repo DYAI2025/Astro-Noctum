@@ -277,7 +277,9 @@ function AnimatedScene({
   const timeRef = useRef(0);
   const frameCountRef = useRef(0);
 
-  // Build material once on mount — never re-create (preserves GPU state)
+  // Build material once on mount — never re-create (preserves GPU state).
+  // planetariumMode and dominantElement are baked into the closure at construction;
+  // use userData.updatePlanetariumMode / userData.updateElement for runtime changes.
   const wuxingMaterial = useMemo(
     () => buildWuxingMaterial({ element: dominantElement, planetariumMode }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -288,6 +290,11 @@ function AnimatedScene({
   useEffect(() => {
     wuxingMaterial.userData.updateElement(dominantElement);
   }, [dominantElement, wuxingMaterial]);
+
+  // Keep dark/bright mode in sync when planetariumMode changes
+  useEffect(() => {
+    wuxingMaterial.userData.updatePlanetariumMode(planetariumMode);
+  }, [planetariumMode, wuxingMaterial]);
 
   // Dispose on unmount
   useEffect(() => {
