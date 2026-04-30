@@ -1,0 +1,75 @@
+{
+  "name": "@quinnaho/claudemap",
+  "version": "0.2.1",
+  "description": "ClaudeMap installer CLI for bootstrapping the bundled .claude runtime into any repository",
+  "license": "MIT",
+  "author": "Quinn Aho",
+  "homepage": "https://github.com/QuinnAho/claudemap#readme",
+  "bugs": {
+    "url": "https://github.com/QuinnAho/claudemap/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/QuinnAho/claudemap.git"
+  },
+  "keywords": [
+    "claude",
+    "codex",
+    "cli",
+    "developer-tools",
+    "architecture",
+    "mcp"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "bin": {
+    "claudemap": "bin/claudemap.js"
+  },
+  "files": [
+    "bin/",
+    "scripts/install-claudemap.js",
+    ".npm-bundle/claudemap/",
+    ".npm-bundle/claudemap-codex/",
+    "skill/package.json",
+    "skill/lib/contracts/errors.js",
+    "skill/lib/contracts/paths.js",
+    "skill/lib/contracts/schemas/cache.js",
+    "skill/lib/contracts/schemas/graph.js",
+    "skill/lib/contracts/schemas/index.js",
+    "skill/lib/contracts/schemas/install-record.js",
+    "skill/lib/contracts/schemas/manifest.js",
+    "skill/lib/contracts/schemas/runtime-envelope.js",
+    "skill/lib/contracts/schemas/shared.js",
+    "README.md",
+    "PUBLISHING.md"
+  ],
+  "workspaces": [
+    "app",
+    "skill"
+  ],
+  "scripts": {
+    "test": "node ./scripts/check-contracts.js && node ./scripts/smoke-test-package.js",
+    "test:package": "node ./scripts/smoke-test-package.js",
+    "test:contracts": "node ./scripts/check-contracts.js",
+    "dev": "npm --workspace app run dev",
+    "build": "npm --workspace app run build",
+    "pack:test": "npm pack --pack-destination artifacts/npm --cache artifacts/.npm-cache",
+    "generate-seed-map": "node ./scripts/generate-seed-map.js",
+    "build-site": "npm run generate-seed-map && node ./scripts/build-site.js",
+    "mcp": "npm --workspace app run mcp",
+    "install-claudemap": "node ./scripts/install-claudemap.js",
+    "install:local": "node ./scripts/install-claudemap.js",
+    "setup-claudemap": "npm --workspace skill run setup-claudemap --",
+    "open-claudemap": "npm --workspace skill run open-claudemap --",
+    "create-map": "npm --workspace skill run create-map --",
+    "refresh": "npm --workspace skill run refresh --",
+    "update-claudemap-install": "node ./scripts/install-claudemap.js --update",
+    "show": "npm --workspace skill run show --",
+    "package-skill": "node ./scripts/package-claudemap-skill.js",
+    "prepare-npm-bundle": "node ./scripts/prepare-npm-bundle.js",
+    "prepack": "node ./scripts/prepare-npm-bundle.js",
+    "link-cli": "npm link --workspace skill",
+    "unlink-cli": "npm unlink --workspace skill"
+  }
+}
