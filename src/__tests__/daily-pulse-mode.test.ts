@@ -5,6 +5,7 @@ describe('dayModeFromHarmony', () => {
   it.each([
     [0.20, 'spannung', 0.45],
     [0.44, 'spannung', 0.018],
+    [0.45, 'pulse', 0],            // exact threshold: 0.45 is the first pulse value, intensity 0
     [0.46, 'pulse', 0.018],
     [0.49, 'pulse', 0.072],
     [0.50, 'trace', 0.090],
