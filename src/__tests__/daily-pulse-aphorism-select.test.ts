@@ -71,6 +71,11 @@ describe('selectDailyAphorism', () => {
     expect(() => selectDailyAphorism([make('a', ['pulse'])], 'u', 'd', 'spannung')).toThrow();
   });
 
+  it('throws when pool contains only non-approved entries (defensive status filter)', () => {
+    const draft = { ...make('a', ['pulse']), status: 'review' as any };
+    expect(() => selectDailyAphorism([draft] as any, 'u', '2026-04-30', 'pulse')).toThrow();
+  });
+
   it('filters out aphorisms whose cooldown has not elapsed', () => {
     const today = '2026-04-30';
     const recent = make('r', ['pulse'], [], 4); recent.first_used = '2026-04-25'; recent.cooldown_days = 30;
