@@ -38,6 +38,18 @@ describe('buildCouncil', () => {
     expect(c[3].displayName).toBe('Day-Master');
   });
 
+  it('localises display names to English when lang="en"', () => {
+    const c = buildCouncil(fullApi, 'en');
+    expect(c[0].displayName).toBe('Sun');
+    expect(c[1].displayName).toBe('Moon');
+    expect(c[2].displayName).toBe('Ascendant');
+    expect(c[3].displayName).toBe('Day Master');
+    expect(c[4].displayName).toBe('Year Animal');
+    expect(c[5].displayName).toBe('Wu Xing');
+    // signOrElement is NOT translated — it's pass-through from ApiData.
+    expect(c[0].signOrElement).toBe('Löwe');
+  });
+
   it('warns once when all six figures collapse to "—" (BAFE drift signal)', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const empty = { western: {}, bazi: {}, wuxing: {} } as any;
