@@ -17,6 +17,9 @@ describe('wuxing-shaders', () => {
     const waterMatch = FRAGMENT_SHADER.match(/u_element\s*==\s*4/);
     expect(fireMatch).not.toBeNull();
     expect(waterMatch).not.toBeNull();
+    expect(FRAGMENT_SHADER.match(/u_element\s*==\s*1/)).not.toBeNull(); // Earth
+    expect(FRAGMENT_SHADER.match(/u_element\s*==\s*2/)).not.toBeNull(); // Wood
+    expect(FRAGMENT_SHADER.match(/u_element\s*==\s*3/)).not.toBeNull(); // Metal
   });
 
   it('fragment shader implements lambert + blinn-phong lighting', () => {
@@ -24,5 +27,15 @@ describe('wuxing-shaders', () => {
     expect(FRAGMENT_SHADER).toContain('u_specStrength');
     expect(FRAGMENT_SHADER).toContain('u_specExp');
     expect(FRAGMENT_SHADER.match(/heightField/g)?.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('vertex and fragment shaders declare matching varyings', () => {
+    // Varying mismatch causes silent GLSL link error (black sphere at runtime)
+    const varyings = ['v_uv', 'v_normal', 'v_viewPos', 'v_height'];
+    varyings.forEach((v) => {
+      expect(VERTEX_SHADER).toContain(v);
+      expect(FRAGMENT_SHADER).toContain(v);
+    });
+    expect(FRAGMENT_SHADER).toContain('gl_FragColor');
   });
 });
