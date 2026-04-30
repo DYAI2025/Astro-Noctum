@@ -170,4 +170,29 @@ describe('createGenAiRouter — fallback chain', () => {
     expect(DEFAULT_FREE_MODEL_CHAIN.length).toBeGreaterThan(0);
     expect(DEFAULT_FREE_MODEL_CHAIN.every((m) => m.includes(':free'))).toBe(true);
   });
+
+  it('defaults the OpenRouter HTTP-Referer header to https://bazodiac.space', async () => {
+    // Regression guard: default `referer` in createGenAiRouter must stay at
+    // the production custom domain, not revert to a Railway-internal URL.
+    mockGenerateContent.mockRejectedValueOnce(
+      new Error('429 RESOURCE_EXHAUSTED'),
+    );
+    const fetchMock = mockFetchOnce([{ text: 'ok' }]);
+
+    const router = createGenAiRouter({
+      geminiApiKey: 'g',
+      openrouterApiKey: 'o',
+      freeModelChain: ['google/gemini-2.0-flash-exp:free'],
+      // Note: NOT passing `referer` — we want to assert the default.
+    })!;
+    await router.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: 'hi',
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [, init] = fetchMock.mock.calls[0];
+    const headers = (init as RequestInit).headers as Record<string, string>;
+    expect(headers['HTTP-Referer']).toBe('https://bazodiac.space');
+  });
 });
