@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { buildCouncil } from '../lib/daily-pulse/council';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { buildCouncil, __resetCouncilWarnState } from '../lib/daily-pulse/council';
 import type { ApiData } from '../types/bafe';
 
 const fullApi: ApiData = {
@@ -9,6 +9,10 @@ const fullApi: ApiData = {
 } as ApiData;
 
 describe('buildCouncil', () => {
+  beforeEach(() => {
+    __resetCouncilWarnState();
+  });
+
   it('returns six figures in canonical order', () => {
     const c = buildCouncil(fullApi);
     expect(c.map(f => f.key)).toEqual(['sonne','mond','aszendent','day_master','jahrestier','wuxing_dom']);
@@ -32,5 +36,22 @@ describe('buildCouncil', () => {
     const c = buildCouncil(fullApi);
     expect(c[0].displayName).toBe('Sonne');
     expect(c[3].displayName).toBe('Day-Master');
+  });
+
+  it('warns once when all six figures collapse to "—" (BAFE drift signal)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const empty = { western: {}, bazi: {}, wuxing: {} } as any;
+    buildCouncil(empty);
+    buildCouncil(empty); // second call — must NOT warn again
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toMatch(/buildCouncil.*all six figures.*—/i);
+    warn.mockRestore();
+  });
+
+  it('does NOT warn when at least one figure resolves', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    buildCouncil({ western: { zodiac_sign: 'Löwe' }, bazi: {}, wuxing: {} } as any);
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
   });
 });

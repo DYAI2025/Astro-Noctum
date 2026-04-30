@@ -18,18 +18,24 @@ const DISPLAY_EN: Record<CouncilKey, string> = {
   day_master: 'Day Master', jahrestier: 'Year Animal', wuxing_dom: 'Wu Xing',
 };
 
+let warnedAllDashes = false;
+/** Test-only escape hatch — resets the once-per-session warning gate. */
+export function __resetCouncilWarnState(): void { warnedAllDashes = false; }
+
 export function buildCouncil(api: ApiData, lang: 'de' | 'en' = 'de'): CouncilFigure[] {
   const display = lang === 'en' ? DISPLAY_EN : DISPLAY_DE;
   const dash = '—';
-  const western: any = api?.western ?? {};
-  const bazi: any = api?.bazi ?? {};
-  const wuxing: any = api?.wuxing ?? {};
-  return [
-    { key: 'sonne',       displayName: display.sonne,       signOrElement: western.zodiac_sign       || dash },
-    { key: 'mond',        displayName: display.mond,        signOrElement: western.moon_sign         || dash },
-    { key: 'aszendent',   displayName: display.aszendent,   signOrElement: western.ascendant_sign    || dash },
-    { key: 'day_master',  displayName: display.day_master,  signOrElement: bazi.day_master           || dash },
-    { key: 'jahrestier',  displayName: display.jahrestier,  signOrElement: bazi.zodiac_sign          || dash },
-    { key: 'wuxing_dom',  displayName: display.wuxing_dom,  signOrElement: wuxing.dominant_element   || dash },
+  const figures: CouncilFigure[] = [
+    { key: 'sonne',       displayName: display.sonne,       signOrElement: api?.western?.zodiac_sign       || dash },
+    { key: 'mond',        displayName: display.mond,        signOrElement: api?.western?.moon_sign         || dash },
+    { key: 'aszendent',   displayName: display.aszendent,   signOrElement: api?.western?.ascendant_sign    || dash },
+    { key: 'day_master',  displayName: display.day_master,  signOrElement: api?.bazi?.day_master           || dash },
+    { key: 'jahrestier',  displayName: display.jahrestier,  signOrElement: api?.bazi?.zodiac_sign          || dash },
+    { key: 'wuxing_dom',  displayName: display.wuxing_dom,  signOrElement: api?.wuxing?.dominant_element   || dash },
   ];
+  if (!warnedAllDashes && figures.every(f => f.signOrElement === dash)) {
+    warnedAllDashes = true;
+    console.warn('[buildCouncil] all six figures resolved to "—" — possible BAFE schema drift or empty profile');
+  }
+  return figures;
 }
