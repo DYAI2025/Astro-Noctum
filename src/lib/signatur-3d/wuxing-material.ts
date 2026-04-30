@@ -9,6 +9,11 @@ import {
   type WuxingElement,
 } from './wuxing-surfaces';
 
+export interface WuxingMaterialUserData {
+  updateElement: (el: WuxingElement) => void;
+  updateTime: (t: number) => void;
+}
+
 export interface WuxingMaterialOptions {
   element: WuxingElement;
   planetariumMode: boolean;
@@ -20,8 +25,7 @@ const LIGHT_DIR = new THREE.Vector3(3, 3, 3).normalize();
 // Half-direction for Blinn-Phong: (light + view) normalized.
 // Camera is at [0,0,4.5] in the scene, so view direction is [0,0,1] in view space.
 // We pre-normalize for performance.
-const VIEW_DIR = new THREE.Vector3(0, 0, 1);
-const HALF_DIR = LIGHT_DIR.clone().add(VIEW_DIR).normalize();
+const HALF_DIR = LIGHT_DIR.clone().add(new THREE.Vector3(0, 0, 1)).normalize();
 
 function makePaletteUniforms(element: WuxingElement, dark: boolean): THREE.Vector3[] {
   const palette = dark ? SURFACE_PALETTES[element].dark : SURFACE_PALETTES[element].bright;
@@ -49,14 +53,14 @@ export function buildWuxingMaterial(options: WuxingMaterialOptions): THREE.Shade
       u_specStrength: { value: props.specStrength },
       u_specExp:      { value: props.specExp },
       u_palette:      { value: makePaletteUniforms(element, dark) },
-      u_lightDir:     { value: LIGHT_DIR },
-      u_halfDir:      { value: HALF_DIR },
+      u_lightDir:     { value: LIGHT_DIR.clone() },
+      u_halfDir:      { value: HALF_DIR.clone() },
       u_ambient:      { value: 0.20 },
       u_brightMode:   { value: dark ? 0.0 : 1.0 },
     },
   });
 
-  material.userData.updateElement = (el: WuxingElement) => {
+  (material.userData as WuxingMaterialUserData).updateElement = (el: WuxingElement) => {
     const p = MATERIAL_PROPS[el];
     material.uniforms.u_element.value = ELEMENT_INDEX[el];
     material.uniforms.u_plasticity.value = PLASTICITY[el];
@@ -65,7 +69,7 @@ export function buildWuxingMaterial(options: WuxingMaterialOptions): THREE.Shade
     material.uniforms.u_palette.value = makePaletteUniforms(el, dark);
   };
 
-  material.userData.updateTime = (t: number) => {
+  (material.userData as WuxingMaterialUserData).updateTime = (t: number) => {
     material.uniforms.u_time.value = t;
   };
 
