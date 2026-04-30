@@ -48,11 +48,23 @@ describe('wuxing-surfaces palettes', () => {
       expect(SURFACE_PALETTES[el].dark.inner).toHaveLength(3);
       expect(SURFACE_PALETTES[el].dark.mid).toHaveLength(3);
       expect(SURFACE_PALETTES[el].dark.outer).toHaveLength(3);
+      expect(SURFACE_PALETTES[el].bright.inner).toHaveLength(3);
+      expect(SURFACE_PALETTES[el].bright.mid).toHaveLength(3);
+      expect(SURFACE_PALETTES[el].bright.outer).toHaveLength(3);
     });
   });
 
   it('paletteToVec3Array yields 9 floats normalized 0..1', () => {
     const arr = paletteToVec3Array(SURFACE_PALETTES.Fire.dark);
+    expect(arr).toHaveLength(9);
+    arr.forEach((v) => {
+      expect(v).toBeGreaterThanOrEqual(0);
+      expect(v).toBeLessThanOrEqual(1);
+    });
+  });
+
+  it('paletteToVec3Array normalizes correctly for Metal bright palette', () => {
+    const arr = paletteToVec3Array(SURFACE_PALETTES.Metal.bright);
     expect(arr).toHaveLength(9);
     arr.forEach((v) => {
       expect(v).toBeGreaterThanOrEqual(0);
