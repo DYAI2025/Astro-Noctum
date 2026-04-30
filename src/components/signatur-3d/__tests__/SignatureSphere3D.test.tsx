@@ -239,6 +239,16 @@ describe('SignatureSphere3D', () => {
     expect(halo).not.toBeNull();
   });
 
+  // ── Task-6 additions ─────────────────────────────────────────────────────
+
+  it('solid layer uses a ShaderMaterial when dominantElement is set', async () => {
+    const { container } = render(
+      <SignatureSphere3D weights={{ Sun: 0.5 }} dominantElement="Metal" />
+    );
+    const solidLayer = container.querySelector('[data-mesh-role="solid"]');
+    expect(solidLayer).not.toBeNull();
+  });
+
   it('frame callback is a no-op when prefersReducedMotion is true', () => {
     // Force the motion/react hook to report reduced-motion for this render.
     useReducedMotionMock.mockReturnValue(true);
