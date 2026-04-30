@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { SignatureSphere3D } from '../components/signatur-3d/SignatureSphere3D';
+import { SignatureSphere3D } from '@/src/components/signatur-3d/SignatureSphere3D';
 
 const meta: Meta<typeof SignatureSphere3D> = {
   title: 'Signatur 3D/Wuxing Surfaces',
