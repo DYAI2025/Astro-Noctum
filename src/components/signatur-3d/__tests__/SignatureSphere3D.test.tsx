@@ -200,6 +200,22 @@ describe('SignatureSphere3D', () => {
     expect(typeof useFrameMock.mock.calls[0][0]).toBe('function');
   });
 
+  // ── Task-5 additions ──────────────────────────────────────────────────────
+
+  it('accepts a dominantElement prop and exposes it as data-element attribute', () => {
+    const { container } = render(
+      <SignatureSphere3D weights={{ Sun: 0.5 }} dominantElement="Fire" />,
+    );
+    const el = container.querySelector('[data-testid="signature-sphere-3d"]');
+    expect(el?.getAttribute('data-element')).toBe('Fire');
+  });
+
+  it('defaults dominantElement to Water when prop is omitted', () => {
+    const { container } = render(<SignatureSphere3D weights={{ Sun: 0.5 }} />);
+    const el = container.querySelector('[data-testid="signature-sphere-3d"]');
+    expect(el?.getAttribute('data-element')).toBe('Water');
+  });
+
   it('frame callback is a no-op when prefersReducedMotion is true', () => {
     // Force the motion/react hook to report reduced-motion for this render.
     useReducedMotionMock.mockReturnValue(true);

@@ -49,6 +49,7 @@ import {
   tierFor,
 } from '@/src/lib/signatur-3d/planet-tooltips';
 import { useLanguage } from '@/src/contexts/LanguageContext';
+import type { WuxingElement } from '@/src/lib/signatur-3d/wuxing-surfaces';
 
 /** Never let raycasts hit the wire/solid/haze sphere meshes — only the
  *  pole markers should receive pointer events so hover tooltips work.
@@ -65,6 +66,8 @@ export interface SignatureSphere3DProps {
   /** Current Kp geomagnetic index (0–9). Drives morph-speed multiplier so the
    *  sphere visibly breathes faster during geomagnetic storms. Default 0. */
   kpIndex?: number;
+  /** Dominant Wuxing element drives the sphere's surface material. Defaults to 'Water'. */
+  dominantElement?: WuxingElement;
 }
 
 /** Wireframe-layer radius. Solid layer sits slightly inside at 0.93. */
@@ -463,6 +466,7 @@ export function SignatureSphere3D({
   planetariumMode = true,
   className,
   kpIndex = 0,
+  dominantElement = 'Water',
 }: SignatureSphere3DProps): ReactElement {
   const wireGeomRef = useRef<THREE.SphereGeometry | null>(null);
   const solidGeomRef = useRef<THREE.SphereGeometry | null>(null);
@@ -566,6 +570,7 @@ export function SignatureSphere3D({
       data-testid="signature-sphere-3d"
       data-planetarium={planetariumMode}
       data-reduced-motion={prefersReducedMotion}
+      data-element={dominantElement}
       className={className}
       style={containerStyle}
     >
