@@ -40,12 +40,31 @@ describe('selectDailyAphorism', () => {
     expect(ids.size).toBeGreaterThan(1);
   });
 
-  it('boosts dominant element match — boosted entry always wins when no other top-scorer matches', () => {
-    // c gets +2 for 'feuer', score 6 vs others' 4. Only c has top score → all users get c.
-    for (const u of ['u1','u2','u3','u4','u5']) {
-      const r = selectDailyAphorism(pool, u, '2026-04-30', 'pulse', { dominantElement: 'feuer' });
-      expect(r.id).toBe('c');
+  it('boost lifts a low-rank entry into top-5 (spec §7 line 128)', () => {
+    // 6 pulse-eligible entries, all rating 4. Without boost, deterministic id-tiebreak
+    // sort gives [a1, a2, a3, a4, a5, z]; top-5 = [a1..a5]; 'z' is never selected.
+    // With dominantElement='feuer' boost, 'z' jumps to score 6 (top), bumping a5 out
+    // of top-5 → 'z' is now selected for ~1/5 of users.
+    const bigPool = [
+      make('a1', ['pulse'], [], 4),
+      make('a2', ['pulse'], [], 4),
+      make('a3', ['pulse'], [], 4),
+      make('a4', ['pulse'], [], 4),
+      make('a5', ['pulse'], [], 4),
+      make('z',  ['pulse'], ['feuer'], 4),
+    ];
+
+    const seenWithoutBoost = new Set<string>();
+    for (let i = 0; i < 50; i++) {
+      seenWithoutBoost.add(selectDailyAphorism(bigPool, `u${i}`, '2026-04-30', 'pulse').id);
     }
+    expect(seenWithoutBoost.has('z')).toBe(false);
+
+    const seenWithBoost = new Set<string>();
+    for (let i = 0; i < 50; i++) {
+      seenWithBoost.add(selectDailyAphorism(bigPool, `u${i}`, '2026-04-30', 'pulse', { dominantElement: 'feuer' }).id);
+    }
+    expect(seenWithBoost.has('z')).toBe(true);
   });
 
   it('throws when no aphorism matches mode', () => {
@@ -70,29 +89,43 @@ describe('selectDailyAphorism', () => {
   });
 
   it('applies trace+high-intensity tone bump (spec §7 line 126)', () => {
-    const sharp = make('sharp', ['trace'], [], 3); sharp.tone_tags = ['scharf'];
-    const calm  = make('calm',  ['trace'], [], 4); calm.tone_tags  = ['ruhig'];
-    // Without bump: calm (4) > sharp (3) → calm wins.
-    // With bump (intensity > 0.7): sharp 3 * 1.2 = 3.6 < calm 4 → calm still wins.
-    const r0 = selectDailyAphorism([sharp, calm], 'u1', '2026-04-30', 'trace', { intensity: 0.8 });
-    expect(r0.id).toBe('calm');
+    // 'zSharp' is alphabetically last, rating 4, tone='scharf'. Five filler entries
+    // 'a1..a5' all rating 4 with no scharf/drängend tone. With top-5 selection +
+    // id-tiebreak, zSharp is never in top-5 normally. The bump (4 * 1.2 = 4.8)
+    // jumps zSharp to rank 1 → it now appears in top-5 sometimes.
+    const zSharp = make('zSharp', ['trace'], [], 4); zSharp.tone_tags = ['scharf'];
+    const fillers = ['a1','a2','a3','a4','a5'].map(id => make(id, ['trace'], [], 4));
+    const tracePool = [...fillers, zSharp];
 
-    // Lift sharp to rating 4 → with bump 4 * 1.2 = 4.8 > calm 4 → sharp wins.
-    const sharpHi = make('sharpHi', ['trace'], [], 4); sharpHi.tone_tags = ['drängend'];
-    const r1 = selectDailyAphorism([sharpHi, calm], 'u1', '2026-04-30', 'trace', { intensity: 0.8 });
-    expect(r1.id).toBe('sharpHi');
+    // Without bump: zSharp out of top-5 across many users.
+    const noBump = new Set<string>();
+    for (let i = 0; i < 50; i++) {
+      noBump.add(selectDailyAphorism(tracePool, `u${i}`, '2026-04-30', 'trace', { intensity: 0.3 }).id);
+    }
+    expect(noBump.has('zSharp')).toBe(false);
 
-    // intensity not high enough → no bump → calm (rating 4) > sharp (rating 3) → calm wins.
-    const r2 = selectDailyAphorism([sharp, calm], 'u1', '2026-04-30', 'trace', { intensity: 0.3 });
-    expect(r2.id).toBe('calm');
+    // With bump (trace + intensity > 0.7 + scharf tone): zSharp lifted into top-5.
+    const withBump = new Set<string>();
+    for (let i = 0; i < 50; i++) {
+      withBump.add(selectDailyAphorism(tracePool, `u${i}`, '2026-04-30', 'trace', { intensity: 0.8 }).id);
+    }
+    expect(withBump.has('zSharp')).toBe(true);
 
-    // Bump only applies in trace mode — same pool with mode='pulse' ignores tone bump.
-    const sharpPulse = { ...sharpHi, mode_tags: ['pulse'] };
-    const calmPulse  = { ...calm,    mode_tags: ['pulse'] };
-    // No bump in pulse mode → both at rating 4 → tied → calm wins by id-tiebreak.
-    const r3 = selectDailyAphorism([sharpPulse, calmPulse], 'u1', '2026-04-30', 'pulse', { intensity: 0.9 });
-    // Without the trace bump, sharpHi has no advantage; deterministic id-tiebreak picks
-    // alphabetically (calm < sharpHi); both in top-5 → fnv1a%2 picks one of them.
-    expect(['calm', 'sharpHi']).toContain(r3.id);
+    // Bump applies only in trace mode — same scenario in pulse mode → no bump → zSharp out.
+    const pulsePool = tracePool.map(a => ({ ...a, mode_tags: ['pulse'] }));
+    const pulseHigh = new Set<string>();
+    for (let i = 0; i < 50; i++) {
+      pulseHigh.add(selectDailyAphorism(pulsePool, `u${i}`, '2026-04-30', 'pulse', { intensity: 0.9 }).id);
+    }
+    expect(pulseHigh.has('zSharp')).toBe(false);
+
+    // Also accept 'draengend' (ASCII transliteration in spec).
+    const zDraeng = { ...zSharp, id: 'zDraeng', tone_tags: ['draengend'] };
+    const traceAscii = [...fillers, zDraeng];
+    const asciiBump = new Set<string>();
+    for (let i = 0; i < 50; i++) {
+      asciiBump.add(selectDailyAphorism(traceAscii, `u${i}`, '2026-04-30', 'trace', { intensity: 0.8 }).id);
+    }
+    expect(asciiBump.has('zDraeng')).toBe(true);
   });
 });

@@ -82,9 +82,7 @@ export function selectDailyAphorism(
     return { score, a };
   });
   scored.sort((x, y) => y.score - x.score || x.a.id.localeCompare(y.a.id));
-  // Keep only entries with the top score so a clear scoring winner always wins.
-  // Among ties (same top score), pick deterministically per (user, date, mode).
-  const maxScore = scored[0].score;
-  const top = scored.filter(s => s.score === maxScore).map(s => s.a);
+  // Spec §7 line 128: pick deterministic from top 5.
+  const top = scored.slice(0, 5).map(s => s.a);
   return top[fnv1a(`${userId}:${date}:${mode}`) % top.length];
 }
