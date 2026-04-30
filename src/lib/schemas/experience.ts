@@ -85,9 +85,9 @@ const DailyFusionSchema = z.object({
   pushworthy: z.boolean(),
   push_text: z.string().optional().nullable(),
   harmony_index: z.number().min(0).max(1),
-  day_mode: z.enum(['pulse', 'trace']),
+  day_mode: z.enum(['pulse', 'trace', 'spannung']),
   night_harmony_index: z.number().min(0).max(1).optional(),
-  night_mode: z.enum(['pulse', 'trace']).optional(),
+  night_mode: z.enum(['pulse', 'trace', 'spannung']).optional(),
 });
 
 export const ResonanceBadgeSchema = z.object({

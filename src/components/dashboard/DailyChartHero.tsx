@@ -40,7 +40,7 @@ export interface DailyChartHeroProps {
   displayedCoherence: number | null;
   spaceWeather: SpaceWeatherState;
   transitEvents: TransitEvent[];
-  dayMode: 'pulse' | 'trace';
+  dayMode: 'pulse' | 'trace' | 'spannung';
   /**
    * Western zodiac sign (e.g. "Aries"). Drives the `ActiveImpactsList`
    * compact variant rendered below the driver strip.
@@ -243,9 +243,12 @@ export function DailyChartHero({
   const isUnavailable = displayedCoherence == null && baseCoherence == null;
 
   // dayMode still drives the subtle tile-glow accent (gold for pulse,
-  // lavender for trace); Phase 5 removed the mode-badge/description UI
-  // that also consumed it.
-  const accentColor = dayMode === 'pulse' ? '#D4AF37' : '#9B8EC4';
+  // lavender for trace, terracotta for spannung); Phase 5 removed the
+  // mode-badge/description UI that also consumed it.
+  const accentColor =
+    dayMode === 'pulse' ? '#D4AF37'
+    : dayMode === 'spannung' ? '#E27D60'
+    : '#9B8EC4';
   const hasImpuls = typeof impulsText === 'string' && impulsText.trim().length > 0;
 
   return (

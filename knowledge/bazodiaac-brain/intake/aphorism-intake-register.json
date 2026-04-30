@@ -1,0 +1,267 @@
+[
+  {
+    "id": "aph-0001",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Hannah Arendt quote: modern author; keep as candidate only after exact source and rights review."
+  },
+  {
+    "id": "aph-0002",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Frankl-space quote: frequently disputed/Covey connection; do not export until source clarified."
+  },
+  {
+    "id": "aph-0003",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Fromm quote: attribution/original language uncertain; do not export until source clarified."
+  },
+  {
+    "id": "aph-0004",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Seneca long inversion: classical but exact Latin/work location needed; not generated here to avoid bad schema carryover."
+  },
+  {
+    "id": "aph-0005",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Marc Aurel paraphrase; exact source uncertain and previous word count wrong."
+  },
+  {
+    "id": "aph-0006",
+    "decision": "included_as_review_or_draft_md",
+    "reason": "Schema-conform file created under aphorisms/review; not approved by default."
+  },
+  {
+    "id": "aph-0007",
+    "decision": "included_as_review_or_draft_md",
+    "reason": "Schema-conform file created under aphorisms/review; not approved by default."
+  },
+  {
+    "id": "aph-0008",
+    "decision": "included_as_review_or_draft_md",
+    "reason": "Schema-conform file created under aphorisms/review; not approved by default."
+  },
+  {
+    "id": "aph-0009",
+    "decision": "included_as_review_or_draft_md",
+    "reason": "Schema-conform file created under aphorisms/review; not approved by default."
+  },
+  {
+    "id": "aph-0010",
+    "decision": "included_as_review_or_draft_md",
+    "reason": "Schema-conform file created under aphorisms/review; not approved by default."
+  },
+  {
+    "id": "aph-0011",
+    "decision": "included_as_review_or_draft_md",
+    "reason": "Schema-conform file created under aphorisms/review; not approved by default."
+  },
+  {
+    "id": "aph-0012",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Stanislaw Jerzy Lec: modern/copyright; exact source and license required."
+  },
+  {
+    "id": "aph-0013",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Stanislaw Jerzy Lec: modern/copyright; exact source and license required."
+  },
+  {
+    "id": "aph-0014",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Stanislaw Jerzy Lec: modern/copyright; exact source and license required."
+  },
+  {
+    "id": "aph-0015",
+    "decision": "included_as_review_or_draft_md",
+    "reason": "Schema-conform file created under aphorisms/review; not approved by default."
+  },
+  {
+    "id": "aph-0016",
+    "decision": "included_as_review_or_draft_md",
+    "reason": "Schema-conform file created under aphorisms/review; not approved by default."
+  },
+  {
+    "id": "aph-0017",
+    "decision": "included_as_review_or_draft_md",
+    "reason": "Schema-conform file created under aphorisms/review; not approved by default."
+  },
+  {
+    "id": "aph-0018",
+    "decision": "included_as_review_or_draft_md",
+    "reason": "Schema-conform file created under aphorisms/review; not approved by default."
+  },
+  {
+    "id": "aph-0019",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Saint-Exupery: copyrighted in many jurisdictions; commercial use review required."
+  },
+  {
+    "id": "aph-0020",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Saint-Exupery: copyrighted in many jurisdictions; commercial use review required."
+  },
+  {
+    "id": "aph-0021",
+    "decision": "included_as_review_or_draft_md",
+    "reason": "Schema-conform file created under aphorisms/review; not approved by default."
+  },
+  {
+    "id": "aph-0022",
+    "decision": "included_as_review_or_draft_md",
+    "reason": "Schema-conform file created under aphorisms/review; not approved by default."
+  },
+  {
+    "id": "aph-0023",
+    "decision": "included_as_review_or_draft_md",
+    "reason": "Schema-conform file created under aphorisms/review; not approved by default."
+  },
+  {
+    "id": "aph-0024",
+    "decision": "included_as_review_or_draft_md",
+    "reason": "Schema-conform file created under aphorisms/review; not approved by default."
+  },
+  {
+    "id": "aph-0025",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Saint-Exupery: copyrighted in many jurisdictions; commercial use review required."
+  },
+  {
+    "id": "aph-0026",
+    "decision": "quarantined_in_intake_register",
+    "reason": "The Matrix: film quote; do not use without license."
+  },
+  {
+    "id": "aph-0027",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Fight Club: film quote; do not use without license."
+  },
+  {
+    "id": "aph-0028",
+    "decision": "quarantined_in_intake_register",
+    "reason": "The Shawshank Redemption: film quote; do not use without license."
+  },
+  {
+    "id": "aph-0029",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Star Wars/Yoda quote: film quote; do not use without license."
+  },
+  {
+    "id": "aph-0030",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Dune fear litany/movie quote: copyright/licensing risk; do not use without license."
+  },
+  {
+    "id": "aph-0031",
+    "decision": "quarantined_in_intake_register",
+    "reason": "The Lion King quote: film quote; do not use without license."
+  },
+  {
+    "id": "aph-0032",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Into the Wild quote: film quote/book rights; do not use without license."
+  },
+  {
+    "id": "aph-0033",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Duplicate of aph-0015; do not keep duplicate ID for same Nietzsche abyss quote."
+  },
+  {
+    "id": "aph-0034",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Tom Waits lyric: song lyric; do not use without license."
+  },
+  {
+    "id": "aph-0035",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Fallout game quote: copyright/licensing risk."
+  },
+  {
+    "id": "aph-0036",
+    "decision": "quarantined_in_intake_register",
+    "reason": "The Last of Us quote: game quote; copyright/licensing risk."
+  },
+  {
+    "id": "aph-0037",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Saint-Exupery longer quote; copyright and length risk."
+  },
+  {
+    "id": "aph-0038",
+    "decision": "included_as_review_or_draft_md",
+    "reason": "Schema-conform file created under aphorisms/review; not approved by default."
+  },
+  {
+    "id": "aph-0039",
+    "decision": "included_as_review_or_draft_md",
+    "reason": "Schema-conform file created under aphorisms/review; not approved by default."
+  },
+  {
+    "id": "aph-0040",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Duplicate Shawshank quote; film quote, copyright/licensing risk."
+  },
+  {
+    "id": "aph-0041",
+    "decision": "quarantined_in_intake_register",
+    "reason": "\"Der Weise weiss, dass er nichts weiss\" is Socratic, not Laozi; attribution conflict."
+  },
+  {
+    "id": "aph-0042",
+    "decision": "included_as_review_or_draft_md",
+    "reason": "Schema-conform file created under aphorisms/review; not approved by default."
+  },
+  {
+    "id": "aph-0043",
+    "decision": "included_as_review_or_draft_md",
+    "reason": "Schema-conform file created under aphorisms/review; not approved by default."
+  },
+  {
+    "id": "aph-0044",
+    "decision": "included_as_review_or_draft_md",
+    "reason": "Schema-conform file created under aphorisms/review; not approved by default."
+  },
+  {
+    "id": "aph-0045",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Duplicate Saint-Exupery heart quote; copyright review required."
+  },
+  {
+    "id": "aph-0046",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Duplicate Matrix quote; film quote, copyright/licensing risk."
+  },
+  {
+    "id": "aph-0047",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Duplicate Fight Club quote; film quote, copyright/licensing risk."
+  },
+  {
+    "id": "aph-0048",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Good Will Hunting quote: film quote, copyright/licensing risk."
+  },
+  {
+    "id": "aph-0049",
+    "decision": "included_as_review_or_draft_md",
+    "reason": "Schema-conform file created under aphorisms/review; not approved by default."
+  },
+  {
+    "id": "aph-0050",
+    "decision": "included_as_review_or_draft_md",
+    "reason": "Schema-conform file created under aphorisms/review; not approved by default."
+  },
+  {
+    "id": "aph-0051",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Tom Waits lyric/quote: copyright/licensing risk."
+  },
+  {
+    "id": "aph-0052",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Benjamin Button film quote: copyright/licensing risk."
+  },
+  {
+    "id": "aph-0053",
+    "decision": "quarantined_in_intake_register",
+    "reason": "Dylan Thomas poem line via Interstellar; poem copyright/licensing risk."
+  }
+]
