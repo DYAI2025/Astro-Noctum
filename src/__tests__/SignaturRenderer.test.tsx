@@ -62,4 +62,20 @@ describe('SignaturRenderer', () => {
     expect(screen.getByText('Reduced Motion / fallback mode active')).toBeInTheDocument();
     expect(screen.getByText(/Resolution: 50%/i)).toBeInTheDocument();
   });
+
+  it('forwards chladniParams.dominantElement to SignatureSphere3D', () => {
+    const { container } = render(
+      <SignaturRenderer
+        userId="u1"
+        labels={labels}
+        chladniParams={{
+          m: 4, n: 3, a: 1, b: 1,
+          dominantElement: 'Wood',
+          harmonyIndex: 0.6,
+        }}
+      />
+    );
+    const sphere = container.querySelector('[data-element]');
+    expect(sphere?.getAttribute('data-element')).toBe('Wood');
+  });
 });

@@ -86,7 +86,7 @@ export const SignaturRenderer = ({
   const { kpIndex } = useSpaceWeather();
 
   const [cymaticsFailed, setCymaticsFailed] = useState(false);
-  const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d');
+  const [viewMode] = useState<'2d' | '3d'>('3d');
 
   const resolutionText = `${labels.resolution}: ${Math.round(resolution)}%`;
 
@@ -110,36 +110,6 @@ export const SignaturRenderer = ({
           : 'border-slate-200 bg-[#f1f5f9]'
       }`}
     >
-      {/* 2D ↔ 3D view toggle. Absolute-positioned so it floats above whichever
-          canvas is visible without pushing the layout. aria-pressed reflects
-          the active mode for assistive tech. */}
-      <div
-        role="group"
-        aria-label="Ansichtsmodus"
-        className="absolute right-3 top-3 z-20 flex items-center rounded-full border border-white/15 bg-black/50 p-1 text-[11px] font-semibold backdrop-blur-sm"
-      >
-        <button
-          type="button"
-          onClick={() => setViewMode('2d')}
-          aria-pressed={viewMode === '2d'}
-          className={`rounded-full px-3 py-1 transition-colors ${
-            viewMode === '2d' ? 'bg-white/15 text-white' : 'text-white/50 hover:text-white/80'
-          }`}
-        >
-          2D
-        </button>
-        <button
-          type="button"
-          onClick={() => setViewMode('3d')}
-          aria-pressed={viewMode === '3d'}
-          className={`rounded-full px-3 py-1 transition-colors ${
-            viewMode === '3d' ? 'bg-white/15 text-white' : 'text-white/50 hover:text-white/80'
-          }`}
-        >
-          3D
-        </button>
-      </div>
-
       <div className="relative flex h-[55vh] min-h-[340px] w-full max-h-[700px] items-center justify-center sm:h-[62vh] sm:min-h-[420px] sm:max-h-[760px]">
         {loading && !signalData && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/45 text-xs uppercase tracking-[0.2em] text-white/70">
@@ -198,6 +168,7 @@ export const SignaturRenderer = ({
               weights={effectivePlanetWeights}
               planetariumMode={planetariumMode}
               kpIndex={kpIndex}
+              dominantElement={chladniParams?.dominantElement}
               className="h-full w-full"
             />
           </Suspense>

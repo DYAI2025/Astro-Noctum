@@ -293,7 +293,8 @@ export function Dashboard({
     effectiveSoulprint,
     profileMeta.quizSectors,
     birthSign,
-    skyMode === 'current' ? currentDate.toISOString().split('T')[0] : undefined
+    skyMode === 'current' ? currentDate.toISOString().split('T')[0] : undefined,
+    lang === 'en' ? 'en-US' : 'de-DE',
   );
 
   // Night-Pulse gate: weekends → all users; weekdays → Premium only.
