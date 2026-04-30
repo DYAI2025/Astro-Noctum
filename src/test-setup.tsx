@@ -12,15 +12,16 @@ vi.mock("three", () => {
     this.value = value;
     return this;
   });
-  const Vector3 = vi.fn().mockImplementation((x = 0, y = 0, z = 0) => ({
-    x, y, z,
-    set: vi.fn().mockReturnThis(),
-    clone: vi.fn().mockReturnThis(),
-    copy: vi.fn().mockReturnThis(),
-    add: vi.fn().mockReturnThis(),
-    divideScalar: vi.fn().mockReturnThis(),
-    project: vi.fn().mockReturnThis(),
-  }));
+  const Vector3 = vi.fn(function Vector3(this: any, x = 0, y = 0, z = 0) {
+    this.x = x; this.y = y; this.z = z;
+    this.set = vi.fn().mockReturnThis();
+    this.clone = vi.fn().mockReturnThis();
+    this.copy = vi.fn().mockReturnThis();
+    this.add = vi.fn(function(this: any) { return this; });
+    this.normalize = vi.fn(function(this: any) { return this; });
+    this.divideScalar = vi.fn().mockReturnThis();
+    this.project = vi.fn().mockReturnThis();
+  });
   return {
     WebGLRenderer: vi.fn().mockImplementation(() => ({
       setSize: vi.fn(), setPixelRatio: vi.fn(), setClearColor: vi.fn(),
@@ -52,7 +53,16 @@ vi.mock("three", () => {
     LineBasicMaterial: vi.fn().mockImplementation(() => ({
       color: { set: vi.fn() }, opacity: 1,
     })),
-    PointsMaterial: vi.fn(), ShaderMaterial: vi.fn(),
+    PointsMaterial: vi.fn(),
+    ShaderMaterial: vi.fn(function ShaderMaterial(this: any, params: any = {}) {
+      this.uniforms = params.uniforms ?? {};
+      this.vertexShader = params.vertexShader ?? '';
+      this.fragmentShader = params.fragmentShader ?? '';
+      this.transparent = params.transparent ?? false;
+      this.userData = {};
+      this.dispose = vi.fn();
+      this.needsUpdate = false;
+    }),
     TorusGeometry: vi.fn(function TorusGeometry(this: any) { this.dispose = vi.fn(); }),
     IcosahedronGeometry: vi.fn(function IcosahedronGeometry(this: any) { this.dispose = vi.fn(); }),
     RingGeometry: vi.fn(function RingGeometry(this: any) { this.dispose = vi.fn(); }),

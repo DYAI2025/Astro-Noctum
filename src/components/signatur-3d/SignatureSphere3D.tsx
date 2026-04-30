@@ -49,6 +49,8 @@ import {
   tierFor,
 } from '@/src/lib/signatur-3d/planet-tooltips';
 import { useLanguage } from '@/src/contexts/LanguageContext';
+import type { WuxingElement } from '@/src/lib/signatur-3d/wuxing-surfaces';
+import { buildWuxingMaterial } from '@/src/lib/signatur-3d/wuxing-material';
 
 /** Never let raycasts hit the wire/solid/haze sphere meshes — only the
  *  pole markers should receive pointer events so hover tooltips work.
@@ -65,6 +67,8 @@ export interface SignatureSphere3DProps {
   /** Current Kp geomagnetic index (0–9). Drives morph-speed multiplier so the
    *  sphere visibly breathes faster during geomagnetic storms. Default 0. */
   kpIndex?: number;
+  /** Dominant Wuxing element drives the sphere's surface material. Defaults to 'Water'. */
+  dominantElement?: WuxingElement;
 }
 
 /** Wireframe-layer radius. Solid layer sits slightly inside at 0.93. */
@@ -251,6 +255,8 @@ interface AnimatedSceneProps {
   kpIndex: number;
   /** Hover handlers — drive the tooltip overlay outside the Canvas. */
   onPoleHover: (name: PlanetName | null) => void;
+  dominantElement: WuxingElement;
+  planetariumMode: boolean;
 }
 
 function AnimatedScene({
@@ -264,10 +270,38 @@ function AnimatedScene({
   prefersReducedMotion,
   kpIndex,
   onPoleHover,
+  dominantElement,
+  planetariumMode,
 }: AnimatedSceneProps): ReactElement {
   const signatureGroupRef = useRef<THREE.Group | null>(null);
   const timeRef = useRef(0);
   const frameCountRef = useRef(0);
+
+  // Build material once on mount — never re-create (preserves GPU state).
+  // planetariumMode and dominantElement are baked into the closure at construction;
+  // use userData.updatePlanetariumMode / userData.updateElement for runtime changes.
+  const wuxingMaterial = useMemo(
+    () => buildWuxingMaterial({ element: dominantElement, planetariumMode }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
+  // Keep element uniforms in sync — mutates in-place, no re-mount
+  useEffect(() => {
+    wuxingMaterial.userData.updateElement(dominantElement);
+  }, [dominantElement, wuxingMaterial]);
+
+  // Keep dark/bright mode in sync when planetariumMode changes
+  useEffect(() => {
+    wuxingMaterial.userData.updatePlanetariumMode(planetariumMode);
+  }, [planetariumMode, wuxingMaterial]);
+
+  // Dispose on unmount
+  useEffect(() => {
+    return () => {
+      wuxingMaterial.dispose();
+    };
+  }, [wuxingMaterial]);
 
   // Kp 0 → ×1.0 (calm), Kp 5 (G1 storm) → ×2.0, Kp 9 (G5 extreme) → ×2.8.
   // Clamped so a missing/NaN reading never freezes or over-spins the sphere.
@@ -308,6 +342,8 @@ function AnimatedScene({
         SOLID_RADIUS,
       );
     }
+
+    wuxingMaterial.userData.updateTime(timeRef.current * 0.001);
   });
 
   return (
@@ -330,33 +366,51 @@ function AnimatedScene({
           />
         </mesh>
 
-        {/* Wire layer — Chladni-displaced wireframe. Skip raycast. */}
-        <mesh geometry={wireGeom} raycast={SKIP_RAYCAST}>
-          <meshStandardMaterial
-            color={0x4f6ef7}
+        {/* Halo — shadow outline behind gold wire for contrast on all element surfaces */}
+        <mesh
+          geometry={wireGeom}
+          raycast={SKIP_RAYCAST}
+          data-mesh-role="wire-halo"
+          scale={1.005}
+          renderOrder={1}
+        >
+          <meshBasicMaterial
+            color={0x000000}
             wireframe
             transparent
-            opacity={0.2}
-            emissive={0x1a2a8f}
-            emissiveIntensity={0.6}
+            opacity={0.30}
+            depthWrite={false}
           />
         </mesh>
 
-        {/* Solid layer — slightly smaller, dark core. Vertex colours carry
-            the Chladni-node pattern so the surface itself visibly encodes
-            the standing-wave structure (2026-04-21). Skip raycast so the
-            sphere never intercepts pole hovers. */}
-        <mesh geometry={solidGeom} raycast={SKIP_RAYCAST}>
+        {/* Gold wire — main Chladni line layer */}
+        <mesh
+          geometry={wireGeom}
+          raycast={SKIP_RAYCAST}
+          data-mesh-role="wire"
+          data-tint="gold"
+          renderOrder={2}
+        >
           <meshStandardMaterial
-            vertexColors
+            color={0xD4AF37}
+            wireframe
             transparent
-            opacity={0.92}
-            roughness={0.55}
-            metalness={0.15}
-            emissive={0x0a0a2a}
-            emissiveIntensity={0.35}
+            opacity={0.40}
+            emissive={0x8B6914}
+            emissiveIntensity={0.5}
           />
         </mesh>
+
+        {/* Solid layer — slightly smaller, dark core. Now driven by the
+            wuxing ShaderMaterial which encodes element-specific palettes
+            and time-based surface animation (2026-04-30). Skip raycast so
+            the sphere never intercepts pole hovers. */}
+        <mesh
+          geometry={solidGeom}
+          raycast={SKIP_RAYCAST}
+          data-mesh-role="solid"
+          material={wuxingMaterial}
+        />
 
         {/* 12 pole groups — a small planet-tinted sphere + billboarded glyph.
             Marker size, glyph size and emissive intensity all scale with the
@@ -463,6 +517,7 @@ export function SignatureSphere3D({
   planetariumMode = true,
   className,
   kpIndex = 0,
+  dominantElement = 'Water',
 }: SignatureSphere3DProps): ReactElement {
   const wireGeomRef = useRef<THREE.SphereGeometry | null>(null);
   const solidGeomRef = useRef<THREE.SphereGeometry | null>(null);
@@ -566,6 +621,7 @@ export function SignatureSphere3D({
       data-testid="signature-sphere-3d"
       data-planetarium={planetariumMode}
       data-reduced-motion={prefersReducedMotion}
+      data-element={dominantElement}
       className={className}
       style={containerStyle}
     >
@@ -598,6 +654,8 @@ export function SignatureSphere3D({
           prefersReducedMotion={prefersReducedMotion}
           kpIndex={kpIndex}
           onPoleHover={setHoveredPole}
+          dominantElement={dominantElement}
+          planetariumMode={planetariumMode}
         />
       </Canvas>
 

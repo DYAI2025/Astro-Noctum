@@ -198,6 +198,7 @@ export const SignaturRenderer = ({
               weights={effectivePlanetWeights}
               planetariumMode={planetariumMode}
               kpIndex={kpIndex}
+              dominantElement={chladniParams?.dominantElement}
               className="h-full w-full"
             />
           </Suspense>
