@@ -88,12 +88,15 @@ Risiko:
 - Netzwerk-/Auth-/Schema-Fehler werden in der Oberfläche nicht als Fehlerstatus, sondern als „gültiger“ Tagesimpuls gezeigt.
 - Dadurch bleibt ein API-Problem lange unentdeckt.
 
-### Beobachtung 2: Früher Return bei fehlendem `birthData`
+### Beobachtung 2: Früher Return bei fehlendem `birthData` ist nur temporär, Retry-Sperre ist kritischer
 
-`useFirstRunDaily()` beendet den Effekt sofort, wenn `!birthData`. Wenn Dashboard den Hook mit `null` BirthData aufruft (oder später als gedacht hydratisiert), gibt es nie einen Daily-Call.
+`useFirstRunDaily()` beendet den Effekt sofort, wenn `!birthData`. Das verhindert den Daily-Call aber nicht zwangsläufig dauerhaft: sobald `birthData` später von `null` auf einen gültigen Wert hydratisiert wird, läuft der Effekt wegen der Dependency erneut und kann den Call dann doch noch auslösen.
+
+Der relevantere „kein Retry“-Fall ist daher nicht der frühe Return selbst, sondern eine mögliche Sperrwirkung von `lastFetchedDateRef`, falls dieses Ref bereits vor dem eigentlichen Fetch auf `targetDate` gesetzt wird. Scheitert der Fetch anschließend, kann ein weiterer Versuch für dasselbe `targetDate` bis zu einem Remount oder Parameterwechsel ausbleiben.
 
 Risiko:
-- Hero zeigt dann ggf. nur statische Teile; Impulsbereich bleibt aus oder fällt auf andere UI-Fallbacks.
+- Ein temporär fehlendes `birthData` verzögert den Call nur.
+- Ein fehlgeschlagener Fetch kann dagegen für denselben Tag effektiv „festklemmen“, wenn `lastFetchedDateRef` den Retry unterdrückt.
 
 ### Beobachtung 3: Cache maskiert Backend-Probleme
 
