@@ -167,7 +167,7 @@ Ein **einziger orchestrierter Daily-Read-Model-Flow** für Dashboard/Signatur-na
 
 6. **Contract-Tests erweitern**
    - E2E-Testfall „Daily endpoint 500 → UI zeigt fallback-banner + telemetry event“.
-   - Testfall „birthData missing → kein API-Call + sichtbarer status“.
+   - Testfall „birthData missing → kein API-Call + sichtbarer Status“.
    - Testfall „cache stale → refetch wird garantiert ausgelöst“.
 
 ---
