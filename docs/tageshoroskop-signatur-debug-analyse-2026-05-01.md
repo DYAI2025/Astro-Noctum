@@ -52,18 +52,25 @@ Relevante Call-Sites:
 
 ### D. Active Planets
 
-Explizit aus Impact-Endpoint:
-- `useActiveImpacts()` ruft `POST /api/impact/active`.
-- Ergebnis enthält `active_planets[]`.
+Zu unterscheiden sind hier zwei Ebenen:
+
+1. Endpoint-Daten:
+   - `useActiveImpacts()` ruft `POST /api/impact/active`.
+   - Das Ergebnis enthält u. a. `active_planets[]`.
+
+2. Aktuell gerenderter Planet-UI-Pfad:
+   - Die im Dashboard sichtbare Planetenliste läuft derzeit nicht primär über `active_planets[]` aus dem Impact-Endpoint.
+   - `DailyChartHero` verwendet hierfür `ActiveImpactsList`, das die Planeten clientseitig aus `birthSign` ableitet.
 
 Relevante Endpunkte:
-- `POST /api/impact/active`
+- `POST /api/impact/active` (liefert `active_planets[]` auf Datenebene)
 
-Relevante Call-Sites:
-- `src/hooks/useActiveImpacts.ts`
-- `src/components/Dashboard.tsx`
-- `src/components/dashboard/KohaerenzHero.tsx`
-- `src/components/dashboard/AktiveEinfluesseFusion.tsx` (optional konsumiert)
+Relevante Call-Sites / Einordnung:
+- `src/hooks/useActiveImpacts.ts` (Endpoint-Call für `POST /api/impact/active`)
+- `src/components/Dashboard.tsx` (bindet Active-Impact-Daten in den Dashboard-Flow ein)
+- `src/components/dashboard/AktiveEinfluesseFusion.tsx` (optional/sekundär; kann Active-Impact-Daten konsumieren)
+- `src/components/dashboard/KohaerenzHero.tsx` (Legacy: historischer Consumer, aktuell nicht mehr im aktiven App-Flow)
+- `src/components/dashboard/DailyChartHero.tsx` (aktueller UI-Pfad für die sichtbare Planetenliste über `ActiveImpactsList`, nicht über `active_planets[]`)
 
 ### E. Active (Kohärenz / Resonanz allgemein)
 
