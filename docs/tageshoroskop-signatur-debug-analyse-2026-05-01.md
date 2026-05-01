@@ -139,6 +139,7 @@ Risiko:
 ## Zielbild
 Ein **einziger orchestrierter Daily-Read-Model-Flow** für Dashboard/Signatur-nahe Tagesdaten:
 - orchestriert: `daily + impact + transit`
+- einheitlicher Status: `fresh | stale-cache | fallback | error`
 - einheitlicher status: `fresh | stale-cache | fallback | error`
 - zentrale telemetry/debug IDs
 
