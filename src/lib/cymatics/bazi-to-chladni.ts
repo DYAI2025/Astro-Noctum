@@ -44,6 +44,59 @@ export const ELEMENT_COLORS: Record<WuxingElement, string> = {
   Water: '#42A5F5',
 };
 
+
+
+const CANONICAL_WUXING_ELEMENTS: readonly WuxingElement[] = ['Wood', 'Fire', 'Earth', 'Metal', 'Water'] as const;
+
+function normalizeWuxingElementKey(raw: string): WuxingElement | null {
+  const key = raw.trim().toLowerCase();
+  switch (key) {
+    case 'wood':
+    case 'holz':
+      return 'Wood';
+    case 'fire':
+    case 'feuer':
+      return 'Fire';
+    case 'earth':
+    case 'erde':
+      return 'Earth';
+    case 'metal':
+    case 'metall':
+      return 'Metal';
+    case 'water':
+    case 'wasser':
+      return 'Water';
+    default:
+      return null;
+  }
+}
+
+function dominantElementFromWeights(wuxingWeights: Record<string, number>): WuxingElement {
+  let best: WuxingElement = 'Water';
+  let bestValue = Number.NEGATIVE_INFINITY;
+
+  for (const el of CANONICAL_WUXING_ELEMENTS) {
+    const v = Number(wuxingWeights[el] ?? Number.NEGATIVE_INFINITY);
+    if (v > bestValue) {
+      best = el;
+      bestValue = v;
+    }
+  }
+
+  for (const [rawKey, rawValue] of Object.entries(wuxingWeights)) {
+    const el = normalizeWuxingElementKey(rawKey);
+    if (!el) continue;
+    const v = Number(rawValue);
+    if (!Number.isFinite(v)) continue;
+    if (v > bestValue) {
+      best = el;
+      bestValue = v;
+    }
+  }
+
+  return best;
+}
+
 /**
  * Heavenly Stem name → index 0..9.
  * This is the PRIMARY lookup because MappedPillar.stem is a string
@@ -122,9 +175,7 @@ export function baziToChladniParams(
   const a = 0.3 + harmonyIndex * 0.7;                      // 0.30..1.00
   const b = 1.0 - a * 0.6;                                 // ~0.40..0.82
 
-  const dominantElement = (
-    Object.entries(wuxingWeights).sort(([, v1], [, v2]) => v2 - v1)[0]?.[0] ?? 'Water'
-  ) as WuxingElement;
+  const dominantElement = dominantElementFromWeights(wuxingWeights);
 
   return { m, n, a, b, dominantElement, harmonyIndex };
 }
