@@ -3819,6 +3819,7 @@ function estimateSolarCyclePhase(f107) {
 }
 
 app.get("/api/space-weather/extended", async (_req, res) => {
+  try {
   res.set("Cache-Control", "public, max-age=300");
 
   const now = Date.now();
@@ -4110,6 +4111,21 @@ app.get("/api/space-weather/extended", async (_req, res) => {
   extendedWeatherCache = { timestamp: now, payload };
   console.log(`[space-weather/extended] Kp=${kpValue} (${kpSource}), xray=${xrayClass}, events=${activeEvents.length}, f107=${f107}`);
   return res.json(payload);
+  } catch (err) {
+    console.error("[space-weather/extended] unhandled error:", err?.message || err);
+    return res.status(200).json({
+      current: { kp: 0, kpForecast3h: [], xrayFlux: 0, xrayClass: "A", protonFlux: 0 },
+      events: [],
+      alerts: [],
+      epoch: { sunspotNumber: 0, f107: 0, solarCyclePhase: "minimum" },
+      meta: {
+        fetchedAt: new Date().toISOString(),
+        noaaVersion: "v1",
+        cacheTtlSeconds: Math.round(EXTENDED_CACHE_TTL_MS / 1000),
+        degraded: true,
+      },
+    });
+  }
 });
 
 // ── /api/space-weather/timeline ─────────────────────────────────────

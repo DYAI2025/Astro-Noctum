@@ -71,7 +71,7 @@ export function buildWuxingMaterial(options: WuxingMaterialOptions): THREE.Shade
   let currentElement = safeElement;
   let isDark = planetariumMode;
   const element = safeElement;
-  const props = MATERIAL_PROPS[element];
+  const props = MATERIAL_PROPS[element] ?? MATERIAL_PROPS.Water;
 
   const material = new THREE.ShaderMaterial({
     vertexShader: VERTEX_SHADER,
@@ -94,7 +94,7 @@ export function buildWuxingMaterial(options: WuxingMaterialOptions): THREE.Shade
   (material.userData as WuxingMaterialUserData).updateElement = (el: WuxingElement) => {
     const safeEl = coerceWuxingElement(el);
     currentElement = safeEl;
-    const p = MATERIAL_PROPS[safeEl];
+    const p = MATERIAL_PROPS[safeEl] ?? MATERIAL_PROPS.Water;
     material.uniforms.u_element.value = ELEMENT_INDEX[safeEl];
     material.uniforms.u_plasticity.value = PLASTICITY[safeEl];
     material.uniforms.u_specStrength.value = p.specStrength;
