@@ -64,6 +64,15 @@ function coerceWuxingElement(input: unknown): WuxingElement {
   return 'Water';
 }
 
+function getPropsForElement(input: WuxingElement): (typeof MATERIAL_PROPS)[WuxingElement] {
+  const safeElement = coerceWuxingElement(input);
+  if (safeElement !== input) {
+    // eslint-disable-next-line no-console
+    console.warn('[wuxing-material] unknown element key coerced to Water:', input);
+  }
+  return MATERIAL_PROPS[safeElement] ?? MATERIAL_PROPS.Water;
+}
+
 export function buildWuxingMaterial(options: WuxingMaterialOptions): THREE.ShaderMaterial {
   const safeElement = coerceWuxingElement(options.element);
   const { planetariumMode } = options;
@@ -71,7 +80,7 @@ export function buildWuxingMaterial(options: WuxingMaterialOptions): THREE.Shade
   let currentElement = safeElement;
   let isDark = planetariumMode;
   const element = safeElement;
-  const props = MATERIAL_PROPS[element] ?? MATERIAL_PROPS.Water;
+  const props = getPropsForElement(element);
 
   const material = new THREE.ShaderMaterial({
     vertexShader: VERTEX_SHADER,
@@ -94,7 +103,7 @@ export function buildWuxingMaterial(options: WuxingMaterialOptions): THREE.Shade
   (material.userData as WuxingMaterialUserData).updateElement = (el: WuxingElement) => {
     const safeEl = coerceWuxingElement(el);
     currentElement = safeEl;
-    const p = MATERIAL_PROPS[safeEl] ?? MATERIAL_PROPS.Water;
+    const p = getPropsForElement(el);
     material.uniforms.u_element.value = ELEMENT_INDEX[safeEl];
     material.uniforms.u_plasticity.value = PLASTICITY[safeEl];
     material.uniforms.u_specStrength.value = p.specStrength;

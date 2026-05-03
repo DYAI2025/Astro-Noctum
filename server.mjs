@@ -3802,6 +3802,8 @@ app.get("/api/space-weather", async (_req, res) => {
 // Extended space weather: NOAA real-time + NASA DONKI events → contribution schema
 let extendedWeatherCache = null;
 const EXTENDED_CACHE_TTL_MS = 5 * 60 * 1000;
+const EMPTY_KP_FORECAST = Object.freeze([]);
+const DEFAULT_NOAA_ADAPTER_VERSION = "v2";
 
 function classifyXray(flux) {
   if (flux >= 1e-4) return "X";
@@ -3816,6 +3818,27 @@ function estimateSolarCyclePhase(f107) {
   if (f107 >= 150) return "ascending";
   if (f107 >= 100) return "descending";
   return "minimum";
+}
+
+function isTransientSpaceWeatherError(err) {
+  const message = String(err?.message || "").toLowerCase();
+  if (
+    message.includes("abort") ||
+    message.includes("timeout") ||
+    message.includes("econnreset") ||
+    message.includes("enotfound") ||
+    message.includes("fetch") ||
+    message.includes("http 429") ||
+    message.includes("http 502") ||
+    message.includes("http 503") ||
+    message.includes("http 504") ||
+    message.includes("noaa") ||
+    message.includes("donki")
+  ) {
+    return true;
+  }
+  const status = Number(err?.status || err?.statusCode || 0);
+  return [408, 425, 429, 500, 502, 503, 504].includes(status);
 }
 
 app.get("/api/space-weather/extended", async (_req, res) => {
@@ -4112,15 +4135,21 @@ app.get("/api/space-weather/extended", async (_req, res) => {
   console.log(`[space-weather/extended] Kp=${kpValue} (${kpSource}), xray=${xrayClass}, events=${activeEvents.length}, f107=${f107}`);
   return res.json(payload);
   } catch (err) {
-    console.error("[space-weather/extended] unhandled error:", err?.message || err);
+    console.error("[space-weather/extended] unhandled error object:", err);
+    console.error("[space-weather/extended] unhandled error stack:", err?.stack);
+    if (!isTransientSpaceWeatherError(err)) {
+      return res.status(500).json({
+        error: "Internal server error while aggregating extended space weather.",
+      });
+    }
     return res.status(200).json({
-      current: { kp: 0, kpForecast3h: [], xrayFlux: 0, xrayClass: "A", protonFlux: 0 },
+      current: { kp: 0, kpForecast3h: [...EMPTY_KP_FORECAST], xrayFlux: 0, xrayClass: "A", protonFlux: 0 },
       events: [],
       alerts: [],
       epoch: { sunspotNumber: 0, f107: 0, solarCyclePhase: "minimum" },
       meta: {
         fetchedAt: new Date().toISOString(),
-        noaaVersion: "v1",
+        noaaVersion: DEFAULT_NOAA_ADAPTER_VERSION,
         cacheTtlSeconds: Math.round(EXTENDED_CACHE_TTL_MS / 1000),
         degraded: true,
       },
