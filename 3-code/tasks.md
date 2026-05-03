@@ -1319,3 +1319,76 @@ GitHub Issues (#115, #117, #118, #119, #123, #124, #129, #130, #132, #136) remai
 | ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
 |----|------|----------|--------|-----|--------------|---------|-------|
 | TASK-qa-sprint-manual-testing | Create `4-deploy/runbooks/qa-sprint-2026-04-15-test.md` with startup + step-by-step manual scenarios (nav consistency, signatur trigger check, i18n audit pass, quiz dismissal) | P1 | Todo | - | TASK-qa-nav-tests, TASK-qa-sig-tests, TASK-qa-quiz-tests, TASK-qa-i18n-ci-gate | 2026-04-15 | Spans frontend, mobile, api-server |
+
+## Sprint S-QSC: Quiz → Signatur Coupling v1 (2026-04-20 → ?)
+
+Decomposition of Sprint B per `docs/plans/2026-04-20-quiz-signatur-coupling.md` and `DEC-quiz-data-model-migration` (Hybrid-Erweiterung Option C). Closes the 4 unverlinkten approved REQs from the Gap-Analysis 2026-04-23. Sprint A (S-DASH-SIGNATUR-GAPS) ist code-complete; Sprint B technisch und strukturell startbar. Phase 0 (Baseline & Research) ist via `docs/user-stories/2026-04-20/US-QSC-0-baseline-research.md` bereits Done.
+
+### Phase 1 — Types & Schemas
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-qsc-types-quiz-answer-option | Erweitere `QuizAnswerOption` Type in `packages/shared/src/quizzes/` um `elementContrib: Partial<Record<WuXingElement, number>>` + `sectorContrib: Partial<Record<ZodiacSector, number>>` (Felder required, Inhalt darf `{}` sein). Export `WuXingElement` + `ZodiacSector` Typen. | P1 | Todo | [REQ-F-quiz-answer-element-contrib](../1-objectives/requirements/REQ-F-quiz-answer-element-contrib.md) | - | 2026-05-02 | shared component. Plan §A.1 + DEC-quiz-data-model-migration Required patterns. |
+| TASK-qsc-zod-schema-quiz-answer | Zod-Schema in `packages/shared/src/quizzes/schemas.ts` für Persistenz: `QuizAnswerInsert` (`user_id`, `quiz_id`, `question_id`, `answer_id`, `element_contrib`, `sector_contrib`). Re-export via `index.ts`. | P1 | Todo | [REQ-F-quiz-append-only](../1-objectives/requirements/REQ-F-quiz-append-only.md) | TASK-qsc-types-quiz-answer-option | 2026-05-02 | shared component. Validates inserts at API boundary. |
+| TASK-qsc-typecheck-fail-fixture | Vitest type-only Fixture in `packages/shared/src/quizzes/__tests__/`: ein Quiz-Definition ohne `elementContrib` muss bei `tsc --noEmit` fehlschlagen (negative type test). | P1 | Todo | [REQ-F-quiz-answer-element-contrib](../1-objectives/requirements/REQ-F-quiz-answer-element-contrib.md) | TASK-qsc-types-quiz-answer-option | 2026-05-02 | shared component. AC2 enforcement: missing field = build-error. |
+
+### Phase 2 — Supabase-Migration
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-qsc-migration-tables-rls | Supabase-Migration in `supabase-migrations/`: CREATE `user_quiz_answers` (append-only — RLS: INSERT+SELECT für owner, REVOKE UPDATE/DELETE auf `authenticated` Rolle) + `user_quiz_profile` (UPSERT für owner). Indexe auf `(user_id, created_at)` für Rate-Limit-Queries. | P1 | Todo | [REQ-F-quiz-append-only](../1-objectives/requirements/REQ-F-quiz-append-only.md) | - | 2026-05-02 | setup. Plan §A.1 SQL-DDL + DEC RLS-Spec. |
+| TASK-qsc-rls-policy-test | RLS-Tests (Vitest + Supabase test-client als `authenticated` Role): INSERT eigene Rows OK, UPDATE+DELETE blockiert (Status 403/42501). Cross-User SELECT blockiert. | P1 | Todo | [REQ-F-quiz-append-only](../1-objectives/requirements/REQ-F-quiz-append-only.md) | TASK-qsc-migration-tables-rls | 2026-05-02 | api-server. AC5 enforcement. |
+
+### Phase 3 — Aggregations-Logik
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-qsc-aggregate-fn | `packages/shared/src/quizzes/aggregate.ts`: `aggregateQuizResponses(answers: QuizAnswer[]): { element_profile, sector_profile, total_quiz_count }`. Pure function, additive, keine Side-Effects. | P1 | Todo | [REQ-F-quiz-answer-element-contrib](../1-objectives/requirements/REQ-F-quiz-answer-element-contrib.md) | TASK-qsc-types-quiz-answer-option | 2026-05-02 | shared. Independence der 5- und 12-Dimensionen (AC4). |
+| TASK-qsc-aggregate-tests | Unit-Tests `__tests__/aggregate.test.ts`: Additivität, Independence der Dimensionen, Empty-Object-Handling, Backfill-Diagnose-Case (alle 0 = Diagnose, kein Bug). | P1 | Todo | [REQ-F-quiz-answer-element-contrib](../1-objectives/requirements/REQ-F-quiz-answer-element-contrib.md) | TASK-qsc-aggregate-fn | 2026-05-02 | shared. AC3, AC4, AC6. |
+
+### Phase 4 — Persistenz-Layer + Rate-Limit
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-qsc-contribute-handler-extend | `server.mjs` `/api/contribute`: parallel zu `contribution_events`-Upsert (unverändert) jetzt `user_quiz_answers`-INSERT pro Antwort + `user_quiz_profile`-UPSERT (Aggregat). Atomar via Supabase-RPC oder server-Transaktion. | P1 | Todo | [REQ-F-quiz-append-only](../1-objectives/requirements/REQ-F-quiz-append-only.md) | TASK-qsc-migration-tables-rls, TASK-qsc-aggregate-fn, TASK-qsc-zod-schema-quiz-answer | 2026-05-02 | api-server. INSERT-only (AC4). Bestehende Cluster-Gate-Logik für contribution_events bleibt unangetastet. |
+| TASK-qsc-rate-limit-middleware | `server.mjs`: Rate-Limit-Check vor `/api/contribute` und `/api/quiz/start`-Pfad — Count `user_quiz_answers` für `today UTC`, vergleiche mit User-Tier (Free=1, Premium=2). Bei Überschreitung 429 + Body `{ error, remaining, reset_at }`. | P1 | Todo | [REQ-F-quiz-rate-limit](../1-objectives/requirements/REQ-F-quiz-rate-limit.md) | TASK-qsc-migration-tables-rls | 2026-05-02 | api-server. Server-side enforcement (AC6). |
+| TASK-qsc-quota-status-endpoint | Neuer GET `/api/quiz/quota`: liefert `{ tier, completed_today, remaining, reset_at }`. UI-Surface für AC5. | P1 | Todo | [REQ-F-quiz-rate-limit](../1-objectives/requirements/REQ-F-quiz-rate-limit.md) | TASK-qsc-rate-limit-middleware | 2026-05-02 | api-server. AC5: UI shows remaining quota. |
+| TASK-qsc-contribute-integration-test | Integration-Test gegen Test-Supabase: Quiz-Completion schreibt in beide Tabellen, Cluster-Gate-Semantik bleibt für `contribution_events` erhalten, `user_quiz_answers` ohne Gate. Rate-Limit-Boundary verifiziert. | P1 | Todo | [REQ-F-quiz-append-only](../1-objectives/requirements/REQ-F-quiz-append-only.md), [REQ-F-quiz-rate-limit](../1-objectives/requirements/REQ-F-quiz-rate-limit.md) | TASK-qsc-contribute-handler-extend, TASK-qsc-quota-status-endpoint | 2026-05-02 | api-server. AC4 (INSERT-only handler), AC1+AC2 (rate-limit). |
+
+### Phase 5 — Redaktioneller Backfill (6 aktive Cluster)
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-qsc-backfill-cluster-A | Cluster A Quiz-Definitions in `packages/shared/src/quizzes/definitions/`: redaktionell `elementContrib` + `sectorContrib` pro AnswerOption ergänzen. | P1 | Todo | [REQ-F-quiz-answer-element-contrib](../1-objectives/requirements/REQ-F-quiz-answer-element-contrib.md) | TASK-qsc-types-quiz-answer-option | 2026-05-02 | shared. Editorial work; cluster names per `docs/plans/2026-04-20-quiz-signatur-coupling.md` Phase 5. |
+| TASK-qsc-backfill-cluster-B | Cluster B (analog) | P1 | Todo | [REQ-F-quiz-answer-element-contrib](../1-objectives/requirements/REQ-F-quiz-answer-element-contrib.md) | TASK-qsc-types-quiz-answer-option | 2026-05-02 | shared. |
+| TASK-qsc-backfill-cluster-C | Cluster C (analog) | P1 | Todo | [REQ-F-quiz-answer-element-contrib](../1-objectives/requirements/REQ-F-quiz-answer-element-contrib.md) | TASK-qsc-types-quiz-answer-option | 2026-05-02 | shared. |
+| TASK-qsc-backfill-cluster-D | Cluster D (analog) | P1 | Todo | [REQ-F-quiz-answer-element-contrib](../1-objectives/requirements/REQ-F-quiz-answer-element-contrib.md) | TASK-qsc-types-quiz-answer-option | 2026-05-02 | shared. |
+| TASK-qsc-backfill-cluster-E | Cluster E (analog) | P1 | Todo | [REQ-F-quiz-answer-element-contrib](../1-objectives/requirements/REQ-F-quiz-answer-element-contrib.md) | TASK-qsc-types-quiz-answer-option | 2026-05-02 | shared. |
+| TASK-qsc-backfill-cluster-F | Cluster F (analog) | P1 | Todo | [REQ-F-quiz-answer-element-contrib](../1-objectives/requirements/REQ-F-quiz-answer-element-contrib.md) | TASK-qsc-types-quiz-answer-option | 2026-05-02 | shared. Letzter Cluster, dann sind alle 6 aktiven Cluster mit Element-Vektoren versehen. |
+
+### Phase 6 — `FuenfElementeKranz` (isoliert)
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-qsc-kranz-component | `src/components/signatur-3d/FuenfElementeKranz.tsx`: Standalone-Komponente, Props `{ elementProfile: ElementProfile, animate?: boolean }`. Liest ausschließlich `user_quiz_profile.element_profile` (per Hook). 5-Segment-Kranz, SVG oder Canvas. | P1 | Todo | - | TASK-qsc-aggregate-fn | 2026-05-02 | frontend. Isoliert (noch nicht eingebettet). DEC-Pattern: Kranz liest NIE contribution_events. |
+| TASK-qsc-kranz-storybook | Storybook-Stories: alle-0-State (Diagnose), Holz-Dominant, balanced. Visual regression baseline. | P1 | Todo | [REQ-USA-quiz-instant-feedback](../1-objectives/requirements/REQ-USA-quiz-instant-feedback.md) | TASK-qsc-kranz-component | 2026-05-02 | frontend. Phase-6 verifiable in isolation. |
+
+### Phase 7 — Kranz in Signatur-Page einbetten
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-qsc-kranz-embed-signatur | Integration in Signatur-Page-Layout: Kranz als Krone um die 3D-Sphäre. Hook `useQuizProfile()` mit SWR-Cache. Empty-State-Wording — TODO-Marker für Ben-Entscheidung setzen. | P1 | Todo | - | TASK-qsc-kranz-component, TASK-qsc-contribute-handler-extend | 2026-05-02 | frontend. Empty-State-Wording bewusst pending (DEC §Akzeptierter Produkt-Zustand). |
+
+### Phase 8 — Sofort-Effekt (Optimistic Update)
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-qsc-optimistic-update-hook | `useOptimisticQuizContribution`: bei `onComplete` lokal `aggregateQuizResponses()` rechnen, Kranz-State sofort update, dann Server-Persist. Rollback bei 4xx/5xx. | P1 | Todo | [REQ-USA-quiz-instant-feedback](../1-objectives/requirements/REQ-USA-quiz-instant-feedback.md) | TASK-qsc-aggregate-fn, TASK-qsc-contribute-handler-extend | 2026-05-02 | frontend. AC5: kein /api/transit-state Round-Trip nötig. |
+| TASK-qsc-kranz-pulse-animation | Pulse/Glow-Animation auf affected Element-Segment, Trigger via `prevElementProfile != newElementProfile` Diff. Frame-Time-Messung in dev-mode (<500ms). | P1 | Todo | [REQ-USA-quiz-instant-feedback](../1-objectives/requirements/REQ-USA-quiz-instant-feedback.md) | TASK-qsc-kranz-embed-signatur, TASK-qsc-optimistic-update-hook | 2026-05-02 | frontend. AC1+AC3: visible <500ms, segment-highlighted. |
+
+### Phase 9 — Verifikation & Runbook
+
+| ID | Task | Priority | Status | Req | Dependencies | Updated | Notes |
+|----|------|----------|--------|-----|--------------|---------|-------|
+| TASK-qsc-e2e-flow-test | E2E-Test: Quiz-Completion → Kranz updated <500ms → Rate-Limit-Block bei 2. Quiz (Free) → 3. Quiz scheitert serverseitig mit 429. | P1 | Todo | [REQ-USA-quiz-instant-feedback](../1-objectives/requirements/REQ-USA-quiz-instant-feedback.md), [REQ-F-quiz-rate-limit](../1-objectives/requirements/REQ-F-quiz-rate-limit.md) | TASK-qsc-kranz-pulse-animation, TASK-qsc-contribute-integration-test | 2026-05-02 | frontend. End-to-end coverage of Sprint B happy + sad path. |
+| TASK-qsc-runbook-sprint-b | `4-deploy/runbooks/s-qsc-test.md`: PO Manual-Test-Schritte (Setup, Quiz machen, Kranz prüfen, Rate-Limit prüfen, RLS-UPDATE/DELETE-Block prüfen, Empty-State-Verhalten). | P1 | Todo | - | TASK-qsc-e2e-flow-test | 2026-05-02 | deploy. Spans api-server, shared, frontend. |
