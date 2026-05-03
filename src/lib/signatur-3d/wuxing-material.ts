@@ -40,11 +40,37 @@ function makePaletteUniforms(element: WuxingElement, dark: boolean): THREE.Vecto
   ];
 }
 
+/** Coerce an arbitrary input to a valid WuxingElement key. Logs the bad value
+ *  in dev so upstream data quality issues stay visible instead of crashing
+ *  the renderer. Mirrors the defensive `?? 'Water'` defaults already used in
+ *  CymaticsFallback. */
+function coerceWuxingElement(input: unknown): WuxingElement {
+  if (
+    input === 'Fire' ||
+    input === 'Earth' ||
+    input === 'Wood' ||
+    input === 'Metal' ||
+    input === 'Water'
+  ) {
+    return input;
+  }
+  if (import.meta.env.DEV) {
+    // eslint-disable-next-line no-console
+    console.warn('[wuxing-material] invalid element value, defaulting to Water:', input);
+  }
+  try {
+    sessionStorage.setItem('__wuxingBadElement', JSON.stringify({ value: input, t: Date.now() }));
+  } catch { /* ignore */ }
+  return 'Water';
+}
+
 export function buildWuxingMaterial(options: WuxingMaterialOptions): THREE.ShaderMaterial {
-  const { element, planetariumMode } = options;
+  const safeElement = coerceWuxingElement(options.element);
+  const { planetariumMode } = options;
   // Track mutable closure state so updatePlanetariumMode can re-paint without re-creating.
-  let currentElement = element;
+  let currentElement = safeElement;
   let isDark = planetariumMode;
+  const element = safeElement;
   const props = MATERIAL_PROPS[element];
 
   const material = new THREE.ShaderMaterial({
@@ -66,13 +92,14 @@ export function buildWuxingMaterial(options: WuxingMaterialOptions): THREE.Shade
   });
 
   (material.userData as WuxingMaterialUserData).updateElement = (el: WuxingElement) => {
-    currentElement = el;
-    const p = MATERIAL_PROPS[el];
-    material.uniforms.u_element.value = ELEMENT_INDEX[el];
-    material.uniforms.u_plasticity.value = PLASTICITY[el];
+    const safeEl = coerceWuxingElement(el);
+    currentElement = safeEl;
+    const p = MATERIAL_PROPS[safeEl];
+    material.uniforms.u_element.value = ELEMENT_INDEX[safeEl];
+    material.uniforms.u_plasticity.value = PLASTICITY[safeEl];
     material.uniforms.u_specStrength.value = p.specStrength;
     material.uniforms.u_specExp.value = p.specExp;
-    material.uniforms.u_palette.value = makePaletteUniforms(el, isDark);
+    material.uniforms.u_palette.value = makePaletteUniforms(safeEl, isDark);
   };
 
   (material.userData as WuxingMaterialUserData).updateTime = (t: number) => {

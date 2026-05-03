@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import React from 'react';
 import { SignaturRenderer } from '@/src/components/signatur-renderer/SignaturRenderer';
 
 vi.mock('motion/react', async () => {
@@ -12,6 +13,24 @@ vi.mock('motion/react', async () => {
     },
   };
 });
+
+// Mock SignatureSphere3D — R3F's <Canvas> requires WebGL which jsdom does not
+// provide. The mock preserves the `data-element` attribute the renderer's
+// dominantElement test asserts on.
+vi.mock('@/src/components/signatur-3d/SignatureSphere3D', () => ({
+  SignatureSphere3D: ({
+    dominantElement,
+    className,
+  }: {
+    dominantElement?: string;
+    className?: string;
+  }) =>
+    React.createElement('div', {
+      'data-testid': 'mock-sphere-3d',
+      'data-element': dominantElement,
+      className,
+    }),
+}));
 
 vi.mock('@/src/hooks/useSignaturSignal', () => ({
   useSignaturSignal: () => ({

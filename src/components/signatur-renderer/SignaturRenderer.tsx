@@ -1,28 +1,23 @@
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useReducedMotion } from 'motion/react';
 
 import { useSignaturSignal } from '@/src/hooks/useSignaturSignal';
 import { useSpaceWeather } from '@/src/hooks/useSpaceWeather';
 import { CymaticsFallback } from '@/src/components/signatur-cymatics/CymaticsFallback';
+import { SignatureSphere3D } from '@/src/components/signatur-3d/SignatureSphere3D';
 import { type PlanetName } from '@/src/lib/signatur-3d/planets';
 import { NEUTRAL_BAZI_WEIGHTS } from '@/src/lib/signatur-3d/bazi-to-planets';
 import type { DissonanceResult } from '../../lib/dissonance/dissonance';
 import type { DayHarmonicState } from '../../lib/day-harmonic';
 import type { ChladniParams } from '@/src/lib/cymatics/bazi-to-chladni';
 
-// Cymatics is the only renderer now. V1/V2/V3 paths were removed on 2026-04-18
-// because the legacy engines were shadowing the Cymatics signature — whenever
-// chladniParams was undefined (still loading, or bazi data missing) the page
-// fell through to V3 and the user never saw the new engine.
-// If chladniParams is undefined or Canvas2D fails, we show CymaticsFallback
-// (CSS/SVG static Chladni pattern) rather than a different renderer.
-const SignaturCymaticsCanvas = lazy(() => import('@/src/components/signatur-cymatics/SignaturCymaticsCanvas').then(m => ({ default: m.SignaturCymaticsCanvas })));
-
-// Phase H6 — R3F Chladni sphere (3D mode). Lazy-loaded so the Three.js
-// bundle is only fetched when the user actually toggles 3D.
-const SignatureSphere3D = lazy(() =>
-  import('@/src/components/signatur-3d/SignatureSphere3D').then((m) => ({ default: m.SignatureSphere3D })),
-);
+// Static import of SignatureSphere3D (was lazy with a CymaticsFallback Suspense
+// boundary). The Suspense fallback shadowed the sphere whenever the chunk took
+// noticeable time to load — users only ever saw the static SVG fallback. The
+// sphere is the page's main visual; it pays for its bundle weight by being
+// available at first paint. The 2D Cymatics path was also removed at the same
+// time — viewMode was hardcoded to '3d' so the 2D container was dead code that
+// still mounted SignaturCymaticsCanvas and ran its 16k-particle RAF loop.
 
 export type SignaturRendererLabels = {
   regionLabel: string;
@@ -63,11 +58,7 @@ type SignaturRendererProps = {
    * `baziToPlanetWeights` in `src/lib/signatur-3d/bazi-to-planets.ts`).
    *
    * When omitted, `NEUTRAL_BAZI_WEIGHTS` is used — the sphere still renders
-   * coherently but stops being user-specific. Previously this path was driven
-   * by `signalData.baseSignals` from the transit-state polling hook; that
-   * proved unreliable (null on mount, null on API failure) so the 3D weight
-   * source is now fully decoupled from the transit-state API. See
-   * `bazi-to-planets.ts` for the mapping rationale.
+   * coherently but stops being user-specific.
    */
   planetWeights?: Record<PlanetName, number>;
 };
@@ -85,17 +76,11 @@ export const SignaturRenderer = ({
   const { signalData, resolution, loading, error } = useSignaturSignal(userId);
   const { kpIndex } = useSpaceWeather();
 
-  const [cymaticsFailed, setCymaticsFailed] = useState(false);
-  const [viewMode] = useState<'2d' | '3d'>('3d');
-
   const resolutionText = `${labels.resolution}: ${Math.round(resolution)}%`;
 
-  const showCymatics = chladniParams && !cymaticsFailed;
-
-  // 3D sphere weights: prefer the caller-supplied BaZi-derived weights
-  // (user-specific, always available once apiData has resolved). Fall back
-  // to the neutral profile only when nothing was passed — explicit "no data"
-  // state rather than a silent NEUTRAL collapse to all-0.5.
+  // Prefer caller-supplied BaZi-derived weights; fall back to the neutral
+  // profile only when nothing was passed — explicit "no data" state rather
+  // than a silent NEUTRAL collapse to all-0.5.
   const effectivePlanetWeights = useMemo(
     () => planetWeights ?? NEUTRAL_BAZI_WEIGHTS,
     [planetWeights],
@@ -117,61 +102,26 @@ export const SignaturRenderer = ({
           </div>
         )}
 
-        {/* 2D Cymatics — always mounted, hidden when 3D active. Tailwind's
-            `hidden` is display:none which preserves React state (particle
-            positions, Canvas2D context) across toggles. */}
-        <div
-          data-testid="view-2d-container"
-          className={viewMode === '2d' ? 'absolute inset-0' : 'hidden'}
-        >
-          {showCymatics ? (
-            <Suspense fallback={
-              <CymaticsFallback
-                dominantElement={chladniParams.dominantElement}
-                planetariumMode={planetariumMode}
-                className="h-full w-full"
-              />
-            }>
-              <SignaturCymaticsCanvas
-                params={chladniParams}
-                planetariumMode={planetariumMode}
-                onFailed={() => setCymaticsFailed(true)}
-                className="h-full w-full"
-              />
-            </Suspense>
-          ) : (
-            // No chladniParams yet (bazi data still loading / unavailable) or
-            // Canvas2D failed — show the static SVG fallback, *never* a legacy
-            // engine. Dominant element defaults to Water inside the fallback.
-            <CymaticsFallback
-              dominantElement={chladniParams?.dominantElement}
-              planetariumMode={planetariumMode}
-              className="h-full w-full"
-            />
-          )}
-        </div>
-
-        {/* 3D SignatureSphere — always mounted, hidden when 2D active. The
-            Three.js scene preserves its camera + geometry across toggles. */}
-        <div
-          data-testid="view-3d-container"
-          className={viewMode === '3d' ? 'absolute inset-0' : 'hidden'}
-        >
-          <Suspense fallback={
-            <CymaticsFallback
-              dominantElement={chladniParams?.dominantElement}
-              planetariumMode={planetariumMode}
-              className="h-full w-full"
-            />
-          }>
+        {/* The only renderer: 3D Cymatic Wuxing sphere. CymaticsFallback shows
+            only while chladniParams is unavailable (BaZi data still loading or
+            missing) — never as a Suspense fallback for the sphere chunk. */}
+        <div data-testid="view-3d-container" className="absolute inset-0">
+          {chladniParams ? (
             <SignatureSphere3D
               weights={effectivePlanetWeights}
               planetariumMode={planetariumMode}
               kpIndex={kpIndex}
-              dominantElement={chladniParams?.dominantElement}
+              dominantElement={chladniParams.dominantElement}
               className="h-full w-full"
             />
-          </Suspense>
+          ) : (
+            // chladniParams is undefined here — let CymaticsFallback default
+            // (Water) drive the colour palette.
+            <CymaticsFallback
+              planetariumMode={planetariumMode}
+              className="h-full w-full"
+            />
+          )}
         </div>
       </div>
 
