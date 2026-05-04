@@ -81,7 +81,15 @@ for (const { user_id, astro_json } of candidates) {
     skipped++;
     continue;
   }
-  if (!astro_json.bazi || !astro_json.western || !astro_json.wuxing) {
+
+  const chartHasRequiredSubfields = (obj) =>
+    obj?.bazi && obj?.western && obj?.wuxing;
+
+  const chart = chartHasRequiredSubfields(astro_json.bafe)
+    ? astro_json.bafe
+    : astro_json;
+
+  if (!chartHasRequiredSubfields(chart)) {
     console.log(`  [SKIP] ${user_id}: astro_json missing bazi/western/wuxing subfields`);
     skipped++;
     continue;
@@ -89,7 +97,7 @@ for (const { user_id, astro_json } of candidates) {
 
   let sectors;
   try {
-    sectors = recomputeSoulprintFromAstroJson(astro_json);
+    sectors = recomputeSoulprintFromAstroJson(chart);
   } catch (err) {
     console.log(`  [FAIL] ${user_id}: recompute threw — ${err.message}`);
     failed++;
