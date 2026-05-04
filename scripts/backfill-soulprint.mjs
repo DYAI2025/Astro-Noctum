@@ -91,7 +91,7 @@ for (const { user_id, astro_json } of candidates) {
 
   let sectors;
   try {
-    sectors = recomputeSoulprintFromAstroJson(astro_json);
+    sectors = recomputeSoulprintFromAstroJson(chart);
   } catch (err) {
     console.log(`  [FAIL] ${user_id}: recompute threw — ${err.message}`);
     failed++;
