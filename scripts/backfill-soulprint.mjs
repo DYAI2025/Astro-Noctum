@@ -82,8 +82,14 @@ for (const { user_id, astro_json } of candidates) {
     continue;
   }
 
-  const chart = astro_json.bafe || astro_json;
-  if (!chart?.bazi || !chart?.western || !chart?.wuxing) {
+  const chartHasRequiredSubfields = (obj) =>
+    obj?.bazi && obj?.western && obj?.wuxing;
+
+  const chart = chartHasRequiredSubfields(astro_json.bafe)
+    ? astro_json.bafe
+    : astro_json;
+
+  if (!chartHasRequiredSubfields(chart)) {
     console.log(`  [SKIP] ${user_id}: astro_json missing bazi/western/wuxing subfields`);
     skipped++;
     continue;
