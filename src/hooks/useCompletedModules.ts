@@ -78,18 +78,24 @@ export function useCompletedModules() {
     // Schema: contribution_events has event_id (UNIQUE NOT NULL), occurred_at (NOT NULL),
     // payload (JSONB NOT NULL). sector_weights lives inside payload.
     const eventId = `${moduleId}:${user.id}:individual`;
-    supabase
-      .from('contribution_events')
-      .upsert({
-        user_id: user.id,
-        event_id: eventId,
-        module_id: moduleId,
-        occurred_at: new Date().toISOString(),
-        payload: { sector_weights: Array(12).fill(0), confidence: 0 },
-      }, { onConflict: 'user_id,module_id' })
-      .then(({ error }) => {
-        if (error) console.warn('[useCompletedModules] Individual persist failed:', error.message);
-      });
+    void (async () => {
+      try {
+        const { error } = await supabase
+          .from('contribution_events')
+          .upsert({
+            user_id: user.id,
+            event_id: eventId,
+            module_id: moduleId,
+            occurred_at: new Date().toISOString(),
+            payload: { sector_weights: Array(12).fill(0), confidence: 0 },
+          }, { onConflict: 'user_id,module_id' });
+
+        if (error) throw error;
+      } catch (persistErr: unknown) {
+        const persistMessage = persistErr instanceof Error ? persistErr.message : String(persistErr);
+        console.warn('[useCompletedModules] Individual persist failed:', persistMessage, persistErr);
+      }
+    })();
   }, [user]);
 
   return { completedModuleIds, loading, addModule };
