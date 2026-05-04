@@ -130,7 +130,11 @@ async function waitForStoredChart(userId, maxAttempts = 25, waitMs = 800) {
  * @returns {number[]} 12-element array
  */
 export function recomputeSoulprintFromAstroJson(astroJson) {
-  const nDim = computeNatalDimensions(astroJson);
+  const normalizedChart = extractStoredChart(astroJson);
+  if (!normalizedChart) {
+    throw new Error("invalid_astro_json");
+  }
+  const nDim = computeNatalDimensions(normalizedChart);
   const qDim = zeroDimensions();
   return projectToRing(nDim, qDim, 1, 0);
 }
