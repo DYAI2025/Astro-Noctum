@@ -326,8 +326,8 @@ app.use('/api/', (req, res, next) => {
 // 429 on the very next call. Bump the general bucket and exempt the
 // known high-frequency polling GETs so they don't starve write endpoints.
 const HIGH_FREQ_POLL_PREFIXES = [
-  "/api/transit-state/",
-  "/api/space-weather",
+  "/transit-state/",
+  "/space-weather",
 ];
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 min
