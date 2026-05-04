@@ -3,7 +3,7 @@
   "name": "save_conversation_summary",
   "description": "Saves a summary of the current conversation so you can remember it next time. Call this BEFORE ending every conversation with a 2-3 sentence summary of key topics and insights.",
   "api_schema": {
-    "url": "https://astro-noctum-production.up.railway.app/api/agent/conversation",
+    "url": "https://bazodiac.space/api/agent/conversation",
     "method": "POST",
     "path_params_schema": [],
     "query_params_schema": [],

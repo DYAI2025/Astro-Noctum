@@ -64,6 +64,164 @@ export function chladniDisplacement(
 }
 
 /**
+ * Parse a #RRGGBB hex string into normalised 0–1 RGB components.
+ * Invalid inputs fall back to mid-grey so callers never see NaN in the
+ * render loop. In dev a warning is logged so configuration mistakes
+ * (typo in `PLANETS[i].color`, etc.) surface rather than silently
+ * turning the sphere grey.
+ */
+function hexToNormalisedRgb(hex: string): { r: number; g: number; b: number } {
+  const match = /^#?([0-9a-f]{6})$/i.exec(hex);
+  if (!match) {
+    if (typeof import.meta !== 'undefined' && (import.meta as { env?: { DEV?: boolean } }).env?.DEV) {
+      // eslint-disable-next-line no-console
+      console.warn(`[sphere-chladni] invalid hex color "${hex}" — falling back to mid-grey`);
+    }
+    return { r: 0.5, g: 0.5, b: 0.5 };
+  }
+  const n = Number.parseInt(match[1], 16);
+  return {
+    r: ((n >> 16) & 0xff) / 255,
+    g: ((n >> 8) & 0xff) / 255,
+    b: (n & 0xff) / 255,
+  };
+}
+
+/**
+ * Weighted average of planet colours in 0–1 RGB space. If no planet has
+ * any weight, returns a soft blue default so the sphere still has a tint.
+ */
+function blendedPlanetColor(
+  weights: Readonly<Partial<Record<PlanetName, number>>>,
+): { r: number; g: number; b: number } {
+  let r = 0;
+  let g = 0;
+  let b = 0;
+  let total = 0;
+  for (const planet of PLANETS) {
+    const w = weights[planet.name] ?? 0;
+    if (w <= 0) continue;
+    const c = hexToNormalisedRgb(planet.color);
+    r += c.r * w;
+    g += c.g * w;
+    b += c.b * w;
+    total += w;
+  }
+  if (total === 0) return { r: 0.31, g: 0.43, b: 0.97 }; // soft indigo default
+  return { r: r / total, g: g / total, b: b / total };
+}
+
+/**
+ * Compute a node-highlight intensity for one vertex from its Chladni value.
+ *
+ * Chladni-plate convention: sand collects where |amplitude| ≈ 0 — the
+ * NODE lines. We mirror that here by lighting up curves where |v| is small
+ * and fading toward zero where |v| is large. This paints the wave pattern
+ * onto the sphere surface as glowing filaments, matching the visual grammar
+ * of the 2D Cymatics view.
+ *
+ * @param chladniValue  from `chladniDisplacement`, roughly ±1
+ * @returns             0..1, 1 at node, 0 at antinode
+ */
+export function chladniNodeIntensity(chladniValue: number): number {
+  const m = Math.abs(chladniValue);
+  // Falloff rate — 3.5 gives thin visible node curves for typical weights.
+  return Math.max(0, 1 - m * 3.5);
+}
+
+/** Very dark navy base so the sphere reads as a deep-space body between
+ *  the glowing node filaments. Not pitch black so the silhouette stays
+ *  legible against the page background. */
+const NODE_BASE_R = 0.02;
+const NODE_BASE_G = 0.02;
+const NODE_BASE_B = 0.06;
+
+/**
+ * Shared inner loop for both {@link computeChladniVertexColors} and
+ * {@link writeChladniVertexColors}. Operates on a caller-supplied target
+ * buffer so the two public wrappers only differ in whether they allocate
+ * that buffer. Extracted to keep the Chladni → colour mapping in a single
+ * place and avoid math drift between the two paths.
+ */
+function writeChladniColorsInto(
+  target: Float32Array,
+  positions: ArrayLike<number>,
+  weights: Readonly<Partial<Record<PlanetName, number>>>,
+  time: number,
+): void {
+  if (positions.length % 3 !== 0) {
+    throw new RangeError(
+      `chladni colour writer expected positions.length to be a multiple of 3, got ${positions.length}`,
+    );
+  }
+  if (target.length !== positions.length) {
+    throw new RangeError(
+      `chladni colour writer target length ${target.length} does not match positions length ${positions.length}`,
+    );
+  }
+  const count = positions.length / 3;
+  const tint = blendedPlanetColor(weights);
+  for (let i = 0; i < count; i++) {
+    const xi = i * 3;
+    const x = positions[xi];
+    const y = positions[xi + 1];
+    const z = positions[xi + 2];
+    const r = Math.sqrt(x * x + y * y + z * z);
+    if (r < 1e-6) {
+      target[xi] = NODE_BASE_R;
+      target[xi + 1] = NODE_BASE_G;
+      target[xi + 2] = NODE_BASE_B;
+      continue;
+    }
+    const theta = Math.acos(Math.max(-1, Math.min(1, y / r)));
+    const phi = Math.atan2(z, x);
+    const v = chladniDisplacement(theta, phi, weights, time);
+    const intensity = chladniNodeIntensity(v);
+    target[xi]     = NODE_BASE_R + (tint.r - NODE_BASE_R) * intensity;
+    target[xi + 1] = NODE_BASE_G + (tint.g - NODE_BASE_G) * intensity;
+    target[xi + 2] = NODE_BASE_B + (tint.b - NODE_BASE_B) * intensity;
+  }
+}
+
+/**
+ * Compute a fresh vertex-colour buffer such that Chladni nodes glow in
+ * the weighted-planet blend colour and antinodes stay near the dark-navy
+ * sphere base. Consumers pass this array to `BufferAttribute` with
+ * `itemSize=3` and enable `vertexColors` on the material.
+ *
+ * Thin wrapper around {@link writeChladniColorsInto}.
+ *
+ * @param positions  position buffer (count × 3, origin-centred)
+ * @param weights    per-planet amplitudes
+ * @param time       monotonic ms — same argument as `chladniDisplacement`
+ *                   so colours stay in phase with geometry displacement
+ * @returns          colour buffer matching `positions` length
+ */
+export function computeChladniVertexColors(
+  positions: ArrayLike<number>,
+  weights: Readonly<Partial<Record<PlanetName, number>>>,
+  time: number,
+): Float32Array {
+  const out = new Float32Array(positions.length);
+  writeChladniColorsInto(out, positions, weights, time);
+  return out;
+}
+
+/**
+ * In-place variant of {@link computeChladniVertexColors}. Reuses a caller-
+ * supplied colour buffer so the GPU upload can be throttled to the same
+ * schedule as position updates.
+ */
+export function writeChladniVertexColors(
+  target: Float32Array,
+  positions: ArrayLike<number>,
+  weights: Readonly<Partial<Record<PlanetName, number>>>,
+  time: number,
+): void {
+  writeChladniColorsInto(target, positions, weights, time);
+}
+
+/**
  * Six axes used by `getPolePositions`. Each axis is unit-length.
  * Cardinal axes produce orthogonal poles; the three diagonals fill the
  * remaining octants symmetrically. Order matters: the output of

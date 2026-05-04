@@ -42,7 +42,7 @@ Set these in the Railway service settings under **Variables**.
 | `STRIPE_SECRET_KEY` | Stripe secret key | Checkout returns 503; payment features disabled |
 | `STRIPE_PRICE_ID` | Stripe price ID | Checkout returns 503 |
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret | Webhook verification fails |
-| `APP_URL` | Public app URL (e.g. `https://bazodiac.com`) | Stripe redirect URLs may be incorrect |
+| `APP_URL` | Public app URL (e.g. `https://bazodiac.space`) | Stripe redirect URLs may be incorrect |
 | `NASA_API_KEY` | NASA DONKI API key | Falls back to `DEMO_KEY` (30 req/hr limit) |
 | `PORT` | Server port | Defaults to `3000`; Railway sets this automatically |
 

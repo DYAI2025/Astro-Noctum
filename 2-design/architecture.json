@@ -1,0 +1,288 @@
+{
+  "project": {
+    "name": "Bazodiac (Astro-Noctum)",
+    "domain": "mixed",
+    "repo": "github.com/DYAI2025/Astro-Noctum",
+    "timestamp": "2026-05-02T00:00:00+02:00",
+    "description": "Fusion-Astrology Web + Mobile App combining Western astrology, Chinese BaZi, and Wu-Xing Five Elements via deterministic chart calculation, AI interpretation, and voice agents."
+  },
+  "nodes": [
+    {
+      "id": "user-web",
+      "x": 140, "y": 180,
+      "type": "entry", "icon": "◎",
+      "label": "User (Web)", "sub": "browser",
+      "detail": {
+        "title": "User (Web)",
+        "subtitle": "entry · browser session",
+        "tags": ["entry", "user"],
+        "flow": ["Open Bazodiac SPA", "Sign in (Supabase auth)", "Enter birth data", "View Signatur + Daily horoscope"],
+        "apis": [], "schemas": [],
+        "notes": "Primary entry. German UI, dark luxury aesthetic.",
+        "constraints": ["Mobile-first readability <10s"],
+        "risks": []
+      }
+    },
+    {
+      "id": "user-mobile",
+      "x": 140, "y": 420,
+      "type": "entry", "icon": "◎",
+      "label": "User (iOS)", "sub": "Expo app",
+      "detail": {
+        "title": "User (iOS Native)",
+        "subtitle": "entry · mobile session",
+        "tags": ["entry", "mobile"],
+        "flow": ["Open iOS app", "Bootstrap version-gate (/api/mobile/bootstrap)", "Auth + onboarding", "View dashboard"],
+        "apis": [], "schemas": [],
+        "notes": "Expo-managed, offline contribution queue with auto-flush.",
+        "constraints": [], "risks": []
+      }
+    },
+    {
+      "id": "frontend",
+      "x": 460, "y": 180,
+      "type": "ui", "icon": "▦",
+      "label": "frontend", "sub": "React 19 SPA",
+      "detail": {
+        "title": "Web Frontend",
+        "subtitle": "component · React 19 SPA",
+        "tags": ["component", "ui", "web"],
+        "flow": ["Vite dev server", "Auth via Supabase JS client", "Polls /api/transit-state, /api/experience/daily", "Renders 3D Signatur (Three.js + GLSL)", "ElevenLabs voice widget"],
+        "apis": [], "schemas": [],
+        "notes": "Code: src/. Tailwind v4, Framer Motion, Zod runtime validation.",
+        "constraints": ["3D 60fps target on M1+", "Touch targets ≥44px"],
+        "risks": ["WebGL silent-degrade on low-end devices (defect H4)"]
+      }
+    },
+    {
+      "id": "mobile",
+      "x": 460, "y": 420,
+      "type": "ui", "icon": "▤",
+      "label": "mobile", "sub": "Expo 53 / RN 0.79",
+      "detail": {
+        "title": "iOS Native App",
+        "subtitle": "component · Expo + React Native",
+        "tags": ["component", "ui", "mobile"],
+        "flow": ["Expo dev client", "AsyncStorage cache + SecureStore identity", "WebView for ElevenLabs voice", "Offline contribution queue"],
+        "apis": [], "schemas": [],
+        "notes": "Code: apps/mobile/. expo-gl + three.js for SignaturCanvas (not yet mounted).",
+        "constraints": ["30fps native", "<2s first frame"],
+        "risks": ["3D renderer not yet shipped"]
+      }
+    },
+    {
+      "id": "shared",
+      "x": 760, "y": 300,
+      "type": "domain", "icon": "◇",
+      "label": "shared", "sub": "@bazodiac/shared",
+      "detail": {
+        "title": "Shared Library",
+        "subtitle": "component · cross-platform TS",
+        "tags": ["component", "library", "typescript"],
+        "flow": ["Re-exported via packages/shared/src/index.ts", "Imported by frontend (~13 files) and mobile via workspace dep", "No DOM, no React, no native APIs"],
+        "apis": [],
+        "schemas": [
+          {"name": "QuizDefinition", "purpose": "22 quiz definitions, scoring engine"},
+          {"name": "AGENTS", "purpose": "Levi + Eve voice agent configs"},
+          {"name": "DailyResponseSchema", "purpose": "Zod schema for /api/experience/daily"},
+          {"name": "bazodiac-engine.ts", "purpose": "TS port of master signal math"}
+        ],
+        "notes": "Pure TS, Zod 4.3, Vitest. Sub-modules: agents/, api/, experience/, fusion-bazi/, fusion-ring/, i18n/, quizzes/, signatur/, transit/, weekly/.",
+        "constraints": ["No side effects (Zod schemas exported, .parse() called by consumers)"],
+        "risks": ["Server-side drift: server.mjs cannot import TS — synastry templates manually mirrored (DEC-narrative-engine-hybrid)"]
+      }
+    },
+    {
+      "id": "api-server",
+      "x": 1080, "y": 300,
+      "type": "api", "icon": "▣",
+      "label": "api-server", "sub": "Express / Node 20",
+      "detail": {
+        "title": "API Server",
+        "subtitle": "component · Express orchestration",
+        "tags": ["component", "api", "node"],
+        "flow": [
+          "Receive HTTPS request from frontend/mobile",
+          "Validate Supabase JWT (requireUserAuth middleware)",
+          "Rate-limit /api/* (apiLimiter, 2000/15min)",
+          "Proxy to BAFE / Gemini / ElevenLabs / Stripe / NOAA / NASA-DONKI / JPL-Horizons / NeoWs",
+          "Cache responses (in-memory + Supabase L2)",
+          "Return JSON or stream"
+        ],
+        "apis": [
+          {"method": "POST", "path": "/api/calculate/:endpoint", "desc": "Proxy to BAFE /calculate/<bazi|western|fusion|wuxing|tst>", "params": ["endpoint: enum"], "consumers": ["frontend"], "auth": "bearer", "status": "active"},
+          {"method": "POST", "path": "/api/chart", "desc": "Proxy to BAFE /chart", "params": [], "consumers": ["frontend", "mobile"], "auth": "bearer", "status": "active"},
+          {"method": "POST", "path": "/api/synastry", "desc": "Compute Western+BaZi synastry between user and partner", "params": ["partner_id: UUID"], "consumers": ["frontend"], "auth": "bearer+premium", "status": "active"},
+          {"method": "GET",  "path": "/api/transit-state/:userId", "desc": "Current sector ring + transit + delta", "params": ["userId: UUID"], "consumers": ["frontend"], "auth": "bearer", "status": "active"},
+          {"method": "POST", "path": "/api/experience/daily", "desc": "Daily Experience: Western + BaZi + Fusion narrative + impact (DAILY_EXPERIENCE_v2)", "params": ["birth", "soulprint_sectors", "quiz_sectors", "target_date", "include?: ['impact']"], "consumers": ["frontend", "mobile"], "auth": "bearer", "status": "active"},
+          {"method": "POST", "path": "/api/experience/bootstrap", "desc": "Initial Experience state + soulprint persist", "params": ["birth"], "consumers": ["frontend", "mobile"], "auth": "bearer", "status": "active"},
+          {"method": "POST", "path": "/api/vibes", "desc": "On-demand 2-3h vibes signal (Gemini-generated)", "params": [], "consumers": ["frontend"], "auth": "bearer+tier", "status": "active"},
+          {"method": "POST", "path": "/api/weekly-insights", "desc": "Weekly 7-life-area insights (top-3 expanded)", "params": [], "consumers": ["frontend"], "auth": "bearer", "status": "active"},
+          {"method": "POST", "path": "/api/contribute", "desc": "Quiz contribution → contribution_events upsert", "params": [], "consumers": ["frontend", "mobile"], "auth": "bearer", "status": "active"},
+          {"method": "GET",  "path": "/api/space-weather", "desc": "NOAA→DONKI Kp index with cache+fallback", "params": [], "consumers": ["frontend"], "auth": "public", "status": "active"},
+          {"method": "POST", "path": "/api/checkout", "desc": "Stripe checkout session", "params": ["telemetry"], "consumers": ["frontend", "mobile"], "auth": "public", "status": "active"},
+          {"method": "POST", "path": "/api/webhook/stripe", "desc": "Stripe webhook for subscription events", "params": [], "consumers": ["stripe"], "auth": "stripe-signature", "status": "active"},
+          {"method": "GET",  "path": "/api/profile/:userId", "desc": "ElevenLabs Custom Tool: profile + last 5 conversations", "params": ["userId"], "consumers": ["elevenlabs"], "auth": "service", "status": "active"},
+          {"method": "POST", "path": "/api/agent/conversation", "desc": "Save voice agent conversation", "params": [], "consumers": ["elevenlabs"], "auth": "service", "status": "active"},
+          {"method": "POST", "path": "/api/interpret", "desc": "Gemini interpretation proxy (server-side key)", "params": ["prompt"], "consumers": ["frontend"], "auth": "public", "status": "active"}
+        ],
+        "schemas": [],
+        "notes": "Code: server.mjs (~5948 lines) + server/ai-router.mjs (Gemini→OpenRouter fallback). Single-file design.",
+        "constraints": ["Stripe webhook needs raw body parsing", "BAFE proxy uses ordered fallback chain (internal + public URL)"],
+        "risks": ["Single-file 5948 LOC = maintainability risk", "JS-mirror of shared TS schemas drifts (DEC-narrative-engine-hybrid)"]
+      }
+    },
+    {
+      "id": "bafe",
+      "x": 1380, "y": 80,
+      "type": "external", "icon": "✦",
+      "label": "BAFE", "sub": "Swiss Ephemeris",
+      "detail": {
+        "title": "BAFE (BaZi Astro Fusion Engine)",
+        "subtitle": "external · chart calculation",
+        "tags": ["external", "engine"],
+        "flow": ["/calculate/{bazi,western,fusion,wuxing,tst}", "/chart", "/transit/state", "/transit/now"],
+        "apis": [], "schemas": [],
+        "notes": "Deployed separately on Railway. Swiss Ephemeris pinned (DEC-swiss-ephemeris). Public + internal Railway URL.",
+        "constraints": [], "risks": ["Single point of failure for chart math"]
+      }
+    },
+    {
+      "id": "supabase",
+      "x": 1380, "y": 200,
+      "type": "data", "icon": "▢",
+      "label": "Supabase", "sub": "Auth + Postgres",
+      "detail": {
+        "title": "Supabase",
+        "subtitle": "external · auth + persistence",
+        "tags": ["external", "db", "auth"],
+        "flow": ["Auth (JWT issuance)", "PostgreSQL with RLS", "Service role bypass for admin endpoints"],
+        "apis": [],
+        "schemas": [
+          {"name": "astro_profiles", "purpose": "user_id, birth data, astro_json (bazi/western/wuxing), soulprint_sectors[12]"},
+          {"name": "contribution_events", "purpose": "Quiz cluster contributions, cluster-gated, JSONB sector weights"},
+          {"name": "user_quiz_answers (planned)", "purpose": "Append-only quiz answer history (RLS: no UPDATE/DELETE) — Sprint B"},
+          {"name": "user_quiz_profile (planned)", "purpose": "Aggregated element_profile[5] + sector_profile[12] — Sprint B"},
+          {"name": "agent_conversations", "purpose": "Voice session history, partitioned by agent_type (Levi|Eve)"},
+          {"name": "vibes_cache", "purpose": "L2 cache: user_id + hour_bucket + engine_version"},
+          {"name": "weekly_insights_cache", "purpose": "L2 cache: user_id + iso_week + engine_version"}
+        ],
+        "notes": "DEC-supabase-backend: dual-context (anon for client, service-role for server admin).",
+        "constraints": ["RLS must enforce ownership"],
+        "risks": ["Service-role key leakage = total DB compromise"]
+      }
+    },
+    {
+      "id": "gemini",
+      "x": 1380, "y": 320,
+      "type": "external", "icon": "✧",
+      "label": "Gemini", "sub": "AI interpretation",
+      "detail": {
+        "title": "Google Gemini",
+        "subtitle": "external · LLM",
+        "tags": ["external", "ai"],
+        "flow": ["gemini-3-flash-preview model", "15s timeout", "Used for: interpret, vibes, weekly, daily narratives, agent summary, conversation analyze"],
+        "apis": [], "schemas": [],
+        "notes": "Server-side key only in production (VITE_GEMINI_API_KEY only in dev). OpenRouter fallback chain via server/ai-router.mjs.",
+        "constraints": [], "risks": ["429 quota exhaustion → ai-router falls through to OpenRouter free tier"]
+      }
+    },
+    {
+      "id": "elevenlabs",
+      "x": 1380, "y": 440,
+      "type": "external", "icon": "▶",
+      "label": "ElevenLabs", "sub": "Voice agents",
+      "detail": {
+        "title": "ElevenLabs Voice",
+        "subtitle": "external · multi-agent voice",
+        "tags": ["external", "voice"],
+        "flow": ["Levi (primary, empathic)", "Eve (bold/modern)", "Custom Tool calls /api/profile/:userId, /api/agent/*"],
+        "apis": [], "schemas": [],
+        "notes": "DEC-multi-agent-voice. Config-driven via AGENTS array in shared. ELEVENLABS_TOOL_SECRET auth.",
+        "constraints": ["Adding agents = AgentConfig + env var + DB migration only"],
+        "risks": ["Eve disabled if VITE_ELEVENLABS_EVE_AGENT_ID missing → 'coming soon' UI"]
+      }
+    },
+    {
+      "id": "stripe",
+      "x": 1380, "y": 560,
+      "type": "external", "icon": "$",
+      "label": "Stripe", "sub": "Payments",
+      "detail": {
+        "title": "Stripe",
+        "subtitle": "external · payments",
+        "tags": ["external", "payments"],
+        "flow": ["Checkout session creation", "Webhook handlers (subscription created/updated/canceled)", "Customer Portal links"],
+        "apis": [], "schemas": [],
+        "notes": "/api/checkout, /api/customer-portal, /api/webhook/stripe (raw body). authLimiter on /api/checkout + /api/customer-portal.",
+        "constraints": ["Webhook signature verification mandatory"], "risks": []
+      }
+    },
+    {
+      "id": "noaa-donki",
+      "x": 1380, "y": 680,
+      "type": "external", "icon": "☀",
+      "label": "NOAA / DONKI", "sub": "Space weather",
+      "detail": {
+        "title": "NOAA SWPC + NASA DONKI",
+        "subtitle": "external · space weather aggregator",
+        "tags": ["external", "data"],
+        "flow": ["Kp index (primary: NOAA)", "DONKI events fallback", "X-ray flux + solar cycle indices"],
+        "apis": [], "schemas": [],
+        "notes": "5-min cache for /api/space-weather/extended, 15-min for /api/space-weather. NOAA endpoint drift documented in Sprint A (2026-04-21 hotfix).",
+        "constraints": [], "risks": ["NOAA endpoint format change broke production once (31.03.2026)"]
+      }
+    },
+    {
+      "id": "nasa-neows",
+      "x": 1380, "y": 800,
+      "type": "external", "icon": "☄",
+      "label": "NASA NeoWs", "sub": "Near-Earth Objects",
+      "detail": {
+        "title": "NASA Near-Earth Object Web Service",
+        "subtitle": "external · NEO data",
+        "tags": ["external", "data"],
+        "flow": ["7-day forward feed", "Top 5 closest NEOs by distance"],
+        "apis": [], "schemas": [],
+        "notes": "/api/neo/upcoming. 6h cache. DEMO_KEY fallback if NASA_API_KEY missing.",
+        "constraints": [], "risks": []
+      }
+    },
+    {
+      "id": "jpl-horizons",
+      "x": 1380, "y": 900,
+      "type": "external", "icon": "✶",
+      "label": "JPL Horizons", "sub": "Geometry verify",
+      "detail": {
+        "title": "JPL Horizons",
+        "subtitle": "external · ephemeris verification",
+        "tags": ["external", "data"],
+        "flow": ["Body-to-body ephemeris query", "1h cache per (body1, body2, date)"],
+        "apis": [], "schemas": [],
+        "notes": "/api/geometry/verify. Used for verified geometry events (e.g., conjunctions).",
+        "constraints": [], "risks": []
+      }
+    }
+  ],
+  "edges": [
+    {"from": "user-web",     "to": "frontend",   "style": "primary",   "relation": "user-flow",  "protocol": "HTTPS",   "label": "uses"},
+    {"from": "user-mobile",  "to": "mobile",     "style": "primary",   "relation": "user-flow",  "protocol": "internal","label": "uses"},
+    {"from": "frontend",     "to": "shared",     "style": "dependency","relation": "dependency", "protocol": "internal","label": "imports"},
+    {"from": "mobile",       "to": "shared",     "style": "dependency","relation": "dependency", "protocol": "internal","label": "imports"},
+    {"from": "frontend",     "to": "api-server", "style": "api",       "relation": "api-call",   "protocol": "HTTPS",   "label": "/api/*", "data": "JWT bearer"},
+    {"from": "mobile",       "to": "api-server", "style": "api",       "relation": "api-call",   "protocol": "HTTPS",   "label": "/api/*", "data": "JWT bearer"},
+    {"from": "frontend",     "to": "supabase",   "style": "data",      "relation": "data-flow",  "protocol": "HTTPS",   "label": "auth + RLS reads"},
+    {"from": "mobile",       "to": "supabase",   "style": "data",      "relation": "data-flow",  "protocol": "HTTPS",   "label": "auth + RLS reads"},
+    {"from": "api-server",   "to": "bafe",       "style": "api",       "relation": "api-call",   "protocol": "HTTP",    "label": "proxy /chart, /calculate/*", "data": "natal/transit data"},
+    {"from": "api-server",   "to": "supabase",   "style": "data",      "relation": "data-flow",  "protocol": "HTTPS",   "label": "service role", "data": "profiles, caches, conversations"},
+    {"from": "api-server",   "to": "gemini",     "style": "api",       "relation": "api-call",   "protocol": "HTTPS",   "label": "narratives + interpret"},
+    {"from": "api-server",   "to": "elevenlabs", "style": "api",       "relation": "api-call",   "protocol": "HTTPS",   "label": "agent context"},
+    {"from": "elevenlabs",   "to": "api-server", "style": "event",     "relation": "event-flow", "protocol": "HTTPS",   "label": "Custom Tool calls", "data": "/api/profile, /api/agent/*"},
+    {"from": "api-server",   "to": "stripe",     "style": "api",       "relation": "api-call",   "protocol": "HTTPS",   "label": "checkout sessions"},
+    {"from": "stripe",       "to": "api-server", "style": "event",     "relation": "event-flow", "protocol": "HTTPS",   "label": "webhook /api/webhook/stripe"},
+    {"from": "api-server",   "to": "noaa-donki", "style": "data",      "relation": "data-flow",  "protocol": "HTTPS",   "label": "Kp + events", "data": "5-15min cached"},
+    {"from": "api-server",   "to": "nasa-neows", "style": "data",      "relation": "data-flow",  "protocol": "HTTPS",   "label": "NEO feed", "data": "6h cached"},
+    {"from": "api-server",   "to": "jpl-horizons","style": "data",     "relation": "data-flow",  "protocol": "HTTPS",   "label": "geometry verify", "data": "1h cached"}
+  ],
+  "changes": []
+}

@@ -47,10 +47,20 @@ vi.mock('@/src/lib/feature-flags', () => {
   };
 });
 
-vi.mock('@/src/components/signatur-cymatics/SignaturCymaticsCanvas', () => ({
-  SignaturCymaticsCanvas: ({ className, onFailed }: { className?: string; onFailed?: () => void }) =>
+// SignaturCymaticsCanvas (2D) is no longer mounted by SignaturRenderer; the 3D
+// SignatureSphere3D is the only renderer. Mock the 3D sphere so jsdom doesn't
+// blow up trying to instantiate a WebGL canvas.
+vi.mock('@/src/components/signatur-3d/SignatureSphere3D', () => ({
+  SignatureSphere3D: ({
+    dominantElement,
+    className,
+  }: {
+    dominantElement?: string;
+    className?: string;
+  }) =>
     React.createElement('div', {
-      'data-testid': 'mock-cymatics-canvas',
+      'data-testid': 'mock-sphere-3d',
+      'data-element': dominantElement,
       className,
     }),
 }));
@@ -149,7 +159,7 @@ describe('SignaturRenderer cymatics wiring', () => {
     localStorage.clear();
   });
 
-  it('renders cymatics canvas by default when flag on and params present', async () => {
+  it('renders 3D Cymatic Wuxing sphere when chladniParams present', async () => {
     await act(async () => {
       render(
         React.createElement(SignaturRenderer, {
@@ -159,10 +169,13 @@ describe('SignaturRenderer cymatics wiring', () => {
         }),
       );
     });
-    expect(screen.getByTestId('mock-cymatics-canvas')).toBeDefined();
+    const sphere = screen.getByTestId('mock-sphere-3d');
+    expect(sphere).toBeDefined();
+    expect(sphere.getAttribute('data-element')).toBe('Fire');
+    expect(screen.queryByTestId('cymatics-fallback')).toBeNull();
   });
 
-  it('does NOT render cymatics when params undefined', async () => {
+  it('shows static fallback (not the 3D sphere) when chladniParams undefined', async () => {
     await act(async () => {
       render(
         React.createElement(SignaturRenderer, {
@@ -172,6 +185,7 @@ describe('SignaturRenderer cymatics wiring', () => {
         }),
       );
     });
-    expect(screen.queryByTestId('mock-cymatics-canvas')).toBeNull();
+    expect(screen.queryByTestId('mock-sphere-3d')).toBeNull();
+    expect(screen.getByTestId('cymatics-fallback')).toBeDefined();
   });
 });

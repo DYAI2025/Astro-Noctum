@@ -16,6 +16,9 @@ __pycache__/
 !.claude/skills/
 !.claude/skills/*/
 !.claude/skills/*/*.md
+# Project-wide hooks + deny rules — ship to all developers.
+# settings.local.json (personal allow-rules, absolute paths) stays ignored.
+!.claude/settings.json
 .mcp.json
 
 # Worktrees

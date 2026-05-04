@@ -7,7 +7,7 @@ import { createClient } from "@supabase/supabase-js";
 import compression from "compression";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
-import { GoogleGenAI } from "@google/genai";
+import { createGenAiRouter } from "./server/ai-router.mjs";
 import Stripe from 'stripe';
 
 // Exponential-backoff fetch helper used by the bootstrap endpoint.
@@ -67,7 +67,14 @@ function extractStoredChart(astroJson) {
   return candidate;
 }
 
-async function waitForStoredChart(userId, maxAttempts = 8, waitMs = 750) {
+// Default polling window: 25 × 800ms = 20s.
+// Raised from 8 × 750ms = 6s on 2026-04-19 (Track B, Sprint S-BOOTSTRAP-RESILIENCE):
+// BAFE prod logs showed /chart responses taking 6–12s while Superglue-worker
+// writes astro_json async within ~10–15s. The 6s window made the bootstrap
+// endpoint fall back to a direct BAFE call that then also timed out (7s cap),
+// leaving soulprint_sectors unpersisted for every new user. Longer poll lets
+// Superglue win the race in the happy path and avoids the whole fallback.
+async function waitForStoredChart(userId, maxAttempts = 25, waitMs = 800) {
   if (!supabaseServer) return null;
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -123,7 +130,11 @@ async function waitForStoredChart(userId, maxAttempts = 8, waitMs = 750) {
  * @returns {number[]} 12-element array
  */
 export function recomputeSoulprintFromAstroJson(astroJson) {
-  const nDim = computeNatalDimensions(astroJson);
+  const normalizedChart = extractStoredChart(astroJson);
+  if (!normalizedChart) {
+    throw new Error("invalid_astro_json");
+  }
+  const nDim = computeNatalDimensions(normalizedChart);
   const qDim = zeroDimensions();
   return projectToRing(nDim, qDim, 1, 0);
 }
@@ -171,7 +182,7 @@ if (missing.length > 0) {
   console.warn(`[server] WARNING: Missing env vars (dev mode): ${missing.join(', ')}`);
 }
 
-const OPTIONAL_ENV_VARS = ['GEMINI_API_KEY', 'ELEVENLABS_TOOL_SECRET', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_BUY_ID', 'SUPERGLUE_API_KEY'];
+const OPTIONAL_ENV_VARS = ['GEMINI_API_KEY', 'OPENROUTER_API_KEY', 'ELEVENLABS_TOOL_SECRET', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_BUY_ID', 'SUPERGLUE_API_KEY'];
 for (const v of OPTIONAL_ENV_VARS) {
   if (!process.env[v]) {
     console.warn(`[server] Optional env var not set: ${v} (some features may be degraded)`);
@@ -179,9 +190,15 @@ for (const v of OPTIONAL_ENV_VARS) {
 }
 
 // ── Gemini client (server-side only — key never reaches browser) ──────
-const geminiClient = process.env.GEMINI_API_KEY
-  ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
-  : null;
+// Wrapped in a transparent fallback router: primary calls go to Gemini
+// direct, then on 429/quota errors roll through OpenRouter free-tier
+// models (each has its own rate-limit bucket). Call-sites use the same
+// `.models.generateContent({...})` + `.getGenerativeModel({...})` surfaces
+// they used before, so no changes needed downstream.
+const geminiClient = createGenAiRouter({
+  geminiApiKey: process.env.GEMINI_API_KEY,
+  openrouterApiKey: process.env.OPENROUTER_API_KEY,
+});
 
 // ── Stripe client (server-side only) ──────────────────────────────
 const stripe = process.env.STRIPE_SECRET_KEY
@@ -313,22 +330,24 @@ app.use('/api/', (req, res, next) => {
 });
 
 // ── Rate Limiting ────────────────────────────────────────────────────
-const HIGH_FREQUENCY_API_PREFIXES = [
-  "/transit-state",
-  "/impact/active",
-  "/experience/daily",
-  "/vibes",
+// max: 100/15min was too tight — a single authenticated dashboard mount
+// polls /api/transit-state/:userId every 800ms (~1125 req/15min on its
+// own) and burns the quota within ~80s, causing /api/chart to fail with
+// 429 on the very next call. Bump the general bucket and exempt the
+// known high-frequency polling GETs so they don't starve write endpoints.
+const HIGH_FREQ_POLL_PREFIXES = [
+  "/transit-state/",
+  "/space-weather",
 ];
-
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 min
-  max: 100,
+  max: 2000,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests, please try again later." },
-  // app.use('/api/', ...) strips the mount path from req.path, so these
-  // prefixes must be relative to /api and not include '/api'.
-  skip: (req) => HIGH_FREQUENCY_API_PREFIXES.some((prefix) => req.path.startsWith(prefix)),
+  skip: (req) =>
+    req.method === "GET" &&
+    HIGH_FREQ_POLL_PREFIXES.some((p) => req.path.startsWith(p)),
 });
 app.use("/api/", apiLimiter);
 
@@ -879,6 +898,49 @@ async function fetchChartForBirth({ birth_date, birth_time, iana_time_zone, birt
   throw new Error('FuFirE /chart unavailable');
 }
 
+/**
+ * Fetch natal Fusion (Wu-Xing × Western harmony) from FuFirE's
+ * /calculate/fusion endpoint. Used by the coherence-self-heal path in
+ * computeActiveImpactsCore — when stored astro_profiles.astro_json.fusion is
+ * missing the nested harmony_index, we re-query this endpoint on demand,
+ * cache the result back into astro_json, and continue.
+ *
+ * Response shape (FuFirE spec): { harmony_index: { harmony_index: number,
+ *   method, bazi_vector, western_vector, interpretation, ... }, ... }
+ */
+async function fetchFusionForBirth({ birth_date, birth_time, iana_time_zone, birth_lat, birth_lon }) {
+  const dt = birth_time
+    ? `${birth_date}T${birth_time}`
+    : `${birth_date}T12:00`;
+  const body = JSON.stringify({
+    date:             dt,
+    tz:               iana_time_zone || 'UTC',
+    lat:              birth_lat,
+    lon:              birth_lon,
+    ambiguousTime:    'earlier',
+    nonexistentTime:  'error',
+  });
+  const urls = bafeFallbackUrls('/calculate/fusion');
+  for (const url of urls) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+      try {
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: bafeDirectHeaders({ 'Content-Type': 'application/json' }),
+          body,
+          signal: controller.signal,
+        });
+        if (resp.ok) return resp.json();
+      } finally {
+        clearTimeout(timer);
+      }
+    } catch { /* try next URL */ }
+  }
+  throw new Error('FuFirE /calculate/fusion unavailable');
+}
+
 app.post('/api/synastry', requireUserAuth, requirePremium, async (req, res) => {
   if (!supabaseServer) return res.status(503).json({ error: 'Auth service not configured' });
 
@@ -1413,10 +1475,16 @@ app.get("/api/transit-state/:userId", requireUserAuth, async (req, res) => {
       }
     }
     console.warn("[transit-state] fallback:", reason);
+    const source = profile ? "fallback-profile" : "fallback-neutral";
+    const payload = fallbackStateFromProfile(userId, profile);
+    // Surface the degradation in BOTH header (debug / tooling) and body
+    // (for the frontend). No-placeholder-fake directive: UI must be able
+    // to distinguish live transits from synthesized natal-fallback data.
+    payload._meta = { source, reason };
     return res
       .status(200)
       .set("X-Transit-Fallback", profile ? "profile-derived" : "neutral")
-      .json(fallbackStateFromProfile(userId, profile));
+      .json(payload);
   };
 
   try {
@@ -1485,6 +1553,10 @@ app.get("/api/transit-state/:userId", requireUserAuth, async (req, res) => {
       },
       events: (fufireData.events ?? []).map((ev) => mapFufireEvent(ev, generatedAt)),
       resolution,
+      // Explicit source marker so the UI can distinguish live FuFirE data
+      // from synthesized natal-profile fallback. Paired with the fallback
+      // payload's `_meta.source` in `respondWithFallback`.
+      _meta: { source: "live" },
     };
 
     return res.status(200).json(response);
@@ -1939,10 +2011,11 @@ async function computeActiveImpactsCore(userId) {
 
   if (!supabaseServer) throw new Error('database_unavailable');
 
-  // 1. Load user profile — natal chart + day master + soulprint
+  // 1. Load user profile — natal chart + day master + soulprint + birth data
+  // (birth_* fields needed for live /calculate/fusion self-heal below).
   const { data: profile, error: profileErr } = await supabaseServer
     .from('astro_profiles')
-    .select('astro_json, soulprint_sectors')
+    .select('astro_json, soulprint_sectors, birth_date, birth_time, iana_time_zone, birth_lat, birth_lng')
     .eq('user_id', userId)
     .maybeSingle();
 
@@ -2013,10 +2086,66 @@ async function computeActiveImpactsCore(userId) {
   }
   activePlanets.sort((a, b) => b.strength - a.strength);
 
-  // 5. Compute coherence (additive: base + solar delta, never below base)
-  const rawHarmony = profile.astro_json?.fusion?.harmony_index;
-  const hasFusionData = rawHarmony !== undefined && rawHarmony !== null;
-  const baseHarmony = rawHarmony ?? 0.5;
+  // 5. Compute coherence (additive: base + solar delta, never below base).
+  //
+  // FuFirE /calculate/fusion stores the natal Kohärenzindex under the nested
+  // path `astro_json.fusion.harmony_index.harmony_index` (number in [0, 1]) —
+  // the outer `harmony_index` is an object containing the number plus
+  // bazi_vector, western_vector, interpretation, etc. An earlier version of
+  // this code read `astro_json.fusion.harmony_index` directly, which returned
+  // the wrapper object and evaluated as `!== null` but produced NaN downstream.
+  // Bug verified 2026-04-19: 27/59 prod users had `fusion = {}` (empty object,
+  // no nested data) — these users saw "Derzeit nicht verfügbar" on the
+  // dashboard; the rest saw garbled rings because the object-as-number never
+  // sanitized to a valid percentage. See user question 2026-04-20.
+  //
+  // Self-heal path (Track B of A+B): if the nested harmony value is missing
+  // AND the profile carries birth data, live-call /calculate/fusion and
+  // persist the result back into astro_json.fusion. Ensures legacy rows get
+  // healed the first time their dashboard is rendered, without requiring a
+  // separate backfill script. Failures are non-blocking — we fall back to the
+  // "unavailable" UI state rather than crashing the endpoint.
+  const fusionBlock = profile.astro_json?.fusion;
+  let rawHarmony = fusionBlock?.harmony_index?.harmony_index;
+  let hasFusionData = typeof rawHarmony === 'number' && Number.isFinite(rawHarmony);
+
+  if (!hasFusionData && profile.birth_date && profile.birth_lat != null && profile.birth_lng != null) {
+    try {
+      console.info('[impact/active] Self-heal: fetching /calculate/fusion for user', userId);
+      const fusionResp = await fetchFusionForBirth({
+        birth_date: profile.birth_date,
+        birth_time: profile.birth_time,
+        iana_time_zone: profile.iana_time_zone,
+        birth_lat: profile.birth_lat,
+        birth_lon: profile.birth_lng,
+      });
+      const healedHarmony = fusionResp?.harmony_index?.harmony_index;
+      if (typeof healedHarmony === 'number' && Number.isFinite(healedHarmony)) {
+        rawHarmony = healedHarmony;
+        hasFusionData = true;
+        // Persist healed fusion block back into astro_json (fire-and-forget).
+        // This does an in-memory top-level merge with the previously loaded
+        // astro_json and writes the whole object back, replacing `fusion`
+        // while preserving existing top-level keys from `profile.astro_json`.
+        // Errors here are swallowed — the in-memory rawHarmony is already
+        // usable for the current response.
+        const mergedAstro = { ...profile.astro_json, fusion: fusionResp };
+        supabaseServer
+          .from('astro_profiles')
+          .update({ astro_json: mergedAstro })
+          .eq('user_id', userId)
+          .then(({ error: persistErr }) => {
+            if (persistErr) {
+              console.warn('[impact/active] Self-heal persist failed:', persistErr.message);
+            }
+          });
+      }
+    } catch (err) {
+      console.warn('[impact/active] Self-heal fetch failed:', err?.message || err);
+    }
+  }
+
+  const baseHarmony = hasFusionData ? rawHarmony : 0.5;
   const sw = spaceWeatherCache?.payload;
   const solarPressure = sw?.solar_pressure_score ?? 0;
   const sWeight = Number(process.env.HARMONY_INDEX_SOLAR_WEIGHT) || 0.35;
@@ -2114,34 +2243,97 @@ app.post('/api/experience/bootstrap', requireUserAuth, async (req, res) => {
       return res.status(502).json({ error: 'superglue_unavailable' });
     }
 
-    // 2. Try to consume chart persisted by Superglue worker
+    // 2. Try to consume chart persisted by Superglue worker (primary path).
+    // 2b. If not ready within the poll window, fall back to a direct BAFE call.
+    // 2c. If BAFE also fails, re-check Supabase once more — the Superglue-worker
+    //     may have finished during the BAFE timeout window (observed in prod
+    //     2026-04-19 — BAFE /chart returning 200 OK ~6s after our AbortSignal
+    //     fired, Superglue also eventually writes astro_json async).
+    // Only if all three paths fail do we return 502. This is Track B
+    // Resilience-Policy P1: three independent chances before user-facing error.
     let bafeData = null;
     const stored = await waitForStoredChart(req.userId);
     if (stored?.chart) {
       bafeData = stored.chart;
     } else {
       console.warn('[experience/bootstrap] Superglue chart not ready, falling back to direct BAFE /chart for user', req.userId);
-      const bafeRes = await fetchWithRetry(
-        `${BAFE_BASE_URL}/chart`,
-        {
-          method: "POST",
-          headers: bafeDirectHeaders(),
-          body: JSON.stringify({
-            birthDate: birth.date,
-            birthTime: birth.time,
-            lat: birth.lat,
-            lng: birth.lon,
-            timeZone: birth.tz
-          }),
-          signal: AbortSignal.timeout(7000),
-        },
-        3,
-        1000
-      );
-      if (!bafeRes.ok) {
-        throw new Error(`BAFE responded with ${bafeRes.status}`);
+      try {
+        const maxAttempts = 4; // initial attempt + 3 retries
+        let bafeRes = null;
+
+        for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+          try {
+            // For this direct BAFE /chart fallback, use the current payload shape:
+            // `local_datetime` (combined ISO datetime) + `tz` + `lon` + `lat`
+            // + guard flags. The prior `birthDate + birthTime + lng + timeZone`
+            // shape returns 422 validation_error from current BAFE — confirmed
+            // by prod logs 2026-04-19T18:56:27Z. Keep this comment scoped to
+            // this fallback path rather than implying all /chart call sites match.
+            const localDatetime = birth.time
+              ? `${birth.date}T${birth.time}`
+              : `${birth.date}T12:00`;
+            bafeRes = await fetch(`${BAFE_BASE_URL}/chart`, {
+              method: "POST",
+              headers: bafeDirectHeaders(),
+              body: JSON.stringify({
+                local_datetime: localDatetime,
+                tz: birth.tz,
+                lon: birth.lon,
+                lat: birth.lat,
+                ambiguousTime: "earlier",
+                nonexistentTime: "error",
+              }),
+              // Give each retry attempt its own 20s timeout budget.
+              // Reusing a single AbortSignal.timeout() across retries leaves
+              // later attempts permanently aborted after the first timeout.
+              signal: AbortSignal.timeout(20000),
+            });
+
+            if (bafeRes.ok) {
+              bafeData = await bafeRes.json();
+              break;
+            }
+
+            if (bafeRes.status < 500 || attempt === maxAttempts) {
+              console.warn('[experience/bootstrap] BAFE fallback returned non-ok status', bafeRes.status);
+              break;
+            }
+          } catch (bafeErr) {
+            const errorName = bafeErr?.name;
+            const isRetryableError = !errorName || errorName === 'AbortError' || errorName === 'TimeoutError' || errorName === 'TypeError';
+            if (attempt === maxAttempts) {
+              throw bafeErr;
+            }
+
+            if (!isRetryableError) {
+              throw bafeErr;
+            }
+          }
+
+          const backoffMs = 1000 * (2 ** (attempt - 1));
+          await new Promise((resolve) => setTimeout(resolve, backoffMs));
+        }
+      } catch (bafeErr) {
+        console.warn('[experience/bootstrap] BAFE fallback threw:', bafeErr?.message || bafeErr);
       }
-      bafeData = await bafeRes.json();
+
+      // 2c. Supabase re-check — Superglue may have finished during the BAFE wait.
+      // Extended from 1-shot (useless race — prod trace 2026-04-19 showed
+      // Superglue finishing +1s after our give-up) to 15×1s = 15s multi-attempt
+      // window. The Superglue-worker writes astro_json reliably within ~10-20s
+      // (prod evidence from 14:53 / 14:57 / 18:56 UTC onboardings).
+      if (!bafeData) {
+        const retry = await waitForStoredChart(req.userId, 15, 1000);
+        if (retry?.chart) {
+          bafeData = retry.chart;
+          console.info('[experience/bootstrap] Recovered via Supabase re-check after BAFE failure for user', req.userId);
+        }
+      }
+    }
+
+    if (!bafeData) {
+      console.error('[experience/bootstrap] No chart available — Superglue + BAFE + Supabase-recheck all failed for user', req.userId);
+      return res.status(502).json({ error: 'chart_unavailable' });
     }
 
     // 3. Compute Master Signal (N + G)
@@ -3615,6 +3807,8 @@ app.get("/api/space-weather", async (_req, res) => {
 // Extended space weather: NOAA real-time + NASA DONKI events → contribution schema
 let extendedWeatherCache = null;
 const EXTENDED_CACHE_TTL_MS = 5 * 60 * 1000;
+const EMPTY_KP_FORECAST = Object.freeze([]);
+const DEFAULT_NOAA_ADAPTER_VERSION = "v2";
 
 function classifyXray(flux) {
   if (flux >= 1e-4) return "X";
@@ -3631,7 +3825,29 @@ function estimateSolarCyclePhase(f107) {
   return "minimum";
 }
 
+function isTransientSpaceWeatherError(err) {
+  const message = String(err?.message || "").toLowerCase();
+  if (
+    message.includes("abort") ||
+    message.includes("timeout") ||
+    message.includes("econnreset") ||
+    message.includes("enotfound") ||
+    message.includes("fetch") ||
+    message.includes("http 429") ||
+    message.includes("http 502") ||
+    message.includes("http 503") ||
+    message.includes("http 504") ||
+    message.includes("noaa") ||
+    message.includes("donki")
+  ) {
+    return true;
+  }
+  const status = Number(err?.status || err?.statusCode || 0);
+  return [408, 425, 429, 500, 502, 503, 504].includes(status);
+}
+
 app.get("/api/space-weather/extended", async (_req, res) => {
+  try {
   res.set("Cache-Control", "public, max-age=300");
 
   const now = Date.now();
@@ -3664,11 +3880,13 @@ app.get("/api/space-weather/extended", async (_req, res) => {
   let f107 = 0;
   let sunspotNumber = 0;
 
-  // Use NOAA_BASE so Railway env var overrides the live endpoint for testing/staging
+  // NOAA endpoint paths updated 2026-04 after /json/goes_xray_flux.json +
+  // /json/goes_proton_flux.json returned 404 (SWPC moved GOES primary feeds
+  // under /json/goes/primary/). Solar-cycle indices consolidate f10.7 + ssn.
   const noaaFetches = [
-    { name: "xray",   url: `${NOAA_BASE}/json/goes_xray_flux.json` },
-    { name: "proton", url: `${NOAA_BASE}/json/goes_proton_flux.json` },
-    { name: "f107",   url: `${NOAA_BASE}/json/f107_cm_flux.json` },
+    { name: "xray",       url: `${NOAA_BASE}/json/goes/primary/xrays-1-day.json` },
+    { name: "proton",     url: `${NOAA_BASE}/json/goes/primary/integral-protons-1-day.json` },
+    { name: "solarCycle", url: `${NOAA_BASE}/json/solar-cycle/observed-solar-cycle-indices.json` },
   ];
 
   const noaaResults = await Promise.allSettled(
@@ -3690,15 +3908,27 @@ app.get("/api/space-weather/extended", async (_req, res) => {
     const { name, data } = result.value;
     try {
       if (name === "xray" && Array.isArray(data) && data.length > 0) {
-        const last = data[data.length - 1];
+        // New shape: [{time_tag, satellite, flux, observed_flux, energy: "0.1-0.8nm", ...}]
+        // Multiple energy bands may be interleaved — filter to the 0.1-0.8nm
+        // soft-X-ray band used for flare classification.
+        const soft = data.filter((r) => r?.energy === "0.1-0.8nm");
+        const last = (soft.length ? soft : data)[(soft.length ? soft : data).length - 1];
         xrayFlux = Number.parseFloat(String(last?.flux ?? last?.observed_flux ?? 0)) || 0;
         xrayClass = classifyXray(xrayFlux);
       } else if (name === "proton" && Array.isArray(data) && data.length > 0) {
-        const last = data[data.length - 1];
+        // New shape has 8 interleaved energy bands; filter to >=10 MeV
+        // (standard SEP reference energy).
+        const band = data.filter((r) => r?.energy === ">=10 MeV");
+        const last = (band.length ? band : data)[(band.length ? band : data).length - 1];
         protonFlux = Number.parseFloat(String(last?.flux ?? last?.observed_flux ?? 0)) || 0;
-      } else if (name === "f107" && Array.isArray(data) && data.length > 0) {
-        const last = data[data.length - 1];
-        f107 = Number.parseFloat(String(last?.flux ?? last?.observed_flux ?? 0)) || 0;
+      } else if (name === "solarCycle" && Array.isArray(data) && data.length > 0) {
+        // Monthly series; take the most-recent observed row (ssn != -1).
+        const observed = [...data].reverse().find((r) => {
+          const s = Number(r?.ssn);
+          return Number.isFinite(s) && s !== -1;
+        }) ?? data[data.length - 1];
+        f107 = Number.parseFloat(String(observed?.["f10.7"] ?? 0)) || 0;
+        sunspotNumber = Number.parseFloat(String(observed?.ssn ?? 0)) || 0;
       }
     } catch (parseErr) {
       console.warn(`[space-weather/extended] parse ${name}:`, parseErr?.message);
@@ -3909,6 +4139,27 @@ app.get("/api/space-weather/extended", async (_req, res) => {
   extendedWeatherCache = { timestamp: now, payload };
   console.log(`[space-weather/extended] Kp=${kpValue} (${kpSource}), xray=${xrayClass}, events=${activeEvents.length}, f107=${f107}`);
   return res.json(payload);
+  } catch (err) {
+    console.error("[space-weather/extended] unhandled error object:", err);
+    console.error("[space-weather/extended] unhandled error stack:", err?.stack);
+    if (!isTransientSpaceWeatherError(err)) {
+      return res.status(500).json({
+        error: "Internal server error while aggregating extended space weather.",
+      });
+    }
+    return res.status(200).json({
+      current: { kp: 0, kpForecast3h: [...EMPTY_KP_FORECAST], xrayFlux: 0, xrayClass: "A", protonFlux: 0 },
+      events: [],
+      alerts: [],
+      epoch: { sunspotNumber: 0, f107: 0, solarCyclePhase: "minimum" },
+      meta: {
+        fetchedAt: new Date().toISOString(),
+        noaaVersion: DEFAULT_NOAA_ADAPTER_VERSION,
+        cacheTtlSeconds: Math.round(EXTENDED_CACHE_TTL_MS / 1000),
+        degraded: true,
+      },
+    });
+  }
 });
 
 // ── /api/space-weather/timeline ─────────────────────────────────────

@@ -152,9 +152,9 @@ Das ist der virale Loop. Wenn Nutzer ihr Reading teilen, kommen neue Nutzer. Kos
 Aufgaben:
 ☐  PDF-Export: Reading als schönes PDF generieren (Server-Side mit Puppeteer oder Client-Side mit jsPDF)
 ☐  Social Share Card: OG-Image generieren — Sonnenzeichen-Sigil + Name + Kernaussage — 1200x630px
-☐  Share-URL: bazodiac.com/reading/[hash] — zeigt öffentliche Mini-Version des Readings
+☐  Share-URL: bazodiac.space/reading/[hash] — zeigt öffentliche Mini-Version des Readings
 ☐  Share-Buttons: WhatsApp, Instagram Story, LinkedIn, Twitter/X, Copy Link
-☐  Free-User: Share zeigt Basis-Info + "Get your full reading at bazodiac.com" CTA
+☐  Free-User: Share zeigt Basis-Info + "Get your full reading at bazodiac.space" CTA
 ☐  Premium-User: Share zeigt vollständigere Version
 PRIORITÄT: Social Share Card > PDF-Export. Die Share Card bringt neue Nutzer. Der PDF-Export ist nice-to-have.
 → DONE-GATE: Nutzer können ihr Reading als Social Card teilen. Geteilter Link zeigt Mini-Reading + Signup-CTA.
@@ -175,12 +175,12 @@ TAG 8  —  Landing Page + SEO-Grundlagen
 Fokus: Auffindbar werden
 Die SPA ist unsichtbar für Google. Du brauchst eine separate, statisch gerenderte Einstiegsseite.
 Option A (schnell): Separate Landing Page
-Statische HTML-Seite oder Astro/Next.js-Seite auf Subdomain (z.B. www.bazodiac.com), die zur App (app.bazodiac.com) verlinkt. Mit allen SEO-Basics.
+Statische HTML-Seite oder Astro/Next.js-Seite auf Subdomain (z.B. www.bazodiac.space), die zur App (app.bazodiac.space) verlinkt. Mit allen SEO-Basics.
 Option B (sauberer): SSR für die Hauptseite
 Vite-Plugin für SSR oder Migration zu Next.js/Astro mit React-Integration. Größerer Umbau, aber langfristig besser.
 EMPFEHLUNG: Option A jetzt. Option B später. Speed > Perfektion.
 Aufgaben:
-☐  Domain sichern/konfigurieren: bazodiac.com (oder .de / .app)
+☐  Domain sichern/konfigurieren: bazodiac.space (oder .de / .app)
 ☐  Landing Page bauen (1 Seite): Hero + Value Prop + Feature-Liste + CTA "Berechne dein Horoskop" + Testimonial-Platzhalter
 ☐  Meta-Tags: Title, Description, OG-Tags, Twitter Card für jede Seite
 ☐  robots.txt + sitemap.xml anlegen

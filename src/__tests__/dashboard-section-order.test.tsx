@@ -13,12 +13,15 @@ describe('Dashboard section order — coherence-first layout', () => {
     expect(heroIdx, 'DAILY CHART HERO should appear before PLANETARIUM').toBeLessThan(planetariumIdx);
   });
 
-  it('DailyChartHero contains active planets (unified hero)', async () => {
+  it('DailyChartHero contains the active impacts section (unified hero)', async () => {
     const fs = await import('fs');
     const source = fs.readFileSync('src/components/dashboard/DailyChartHero.tsx', 'utf-8');
 
-    expect(source).toContain('activePlanets');
-    expect(source).toContain('active-planets-section');
+    // Phase 4 (2026-04-20): renamed from `active-planets-section` to
+    // `active-impacts-section`; data source switched from API `activePlanets[]`
+    // to shared `ActiveImpactsList` (driven by `birthSign` client-side).
+    expect(source).toContain('ActiveImpactsList');
+    expect(source).toContain('active-impacts-section');
   });
 
   it('Orrery is NOT rendered inside DashboardAstroSection', async () => {
@@ -48,10 +51,8 @@ describe('Dashboard coherence-first section hierarchy', () => {
     // DailyChartHero replaces COHERENCE HERO + ACTIVE PLANET INFLUENCES + DAY PULSE
     const markers = [
       'DAILY CHART HERO',
-      'VIBES',
       'ASTRO AGENTS',
       'BLUEPRINT',
-      'STABLE NATAL VALUES',
       'PLANETARIUM',
       'SKY MODE TOGGLE',
       'UPGRADE BANNER',

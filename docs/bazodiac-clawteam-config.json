@@ -32,7 +32,7 @@
       "api_key_target_env": "OPENAI_API_KEY",
       "env": {
         "OPENAI_BASE_URL": "https://openrouter.ai/api/v1",
-        "OR_SITE_URL": "https://bazodiac.com",
+        "OR_SITE_URL": "https://bazodiac.space",
         "OR_APP_NAME": "Bazodiac"
       }
     },

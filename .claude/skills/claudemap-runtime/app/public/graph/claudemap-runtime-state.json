@@ -1,0 +1,28 @@
+{
+  "graphRevision": 1,
+  "updatedAt": "2026-04-22T01:37:56.919Z",
+  "graphMeta": {
+    "repoName": "Astro-Noctum",
+    "generatedAt": "2026-04-22T01:37:56.901Z",
+    "source": "claude",
+    "nodeCount": 1185,
+    "edgeCount": 545,
+    "fileCount": 1123
+  },
+  "runtime": {
+    "healthOverlay": false,
+    "highlightedNodeIds": [],
+    "highlightColor": "accent",
+    "focus": null,
+    "guidedFlow": null,
+    "presentation": {
+      "mode": "free",
+      "lockInput": false,
+      "title": null,
+      "explanation": null,
+      "body": null,
+      "stepLabel": null,
+      "updatedAt": null
+    }
+  }
+}

@@ -70,4 +70,4 @@ The quiz pricing alone makes the difference stark: Nebula charges ~20 EUR per qu
 
 ---
 
-**[Try Bazodiac Free →](https://bazodiac.com)** — No credit card. No trial timer. All quiz results included in premium.
+**[Try Bazodiac Free →](https://bazodiac.space)** — No credit card. No trial timer. All quiz results included in premium.

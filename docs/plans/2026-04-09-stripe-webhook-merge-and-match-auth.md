@@ -292,7 +292,7 @@ Find:
 ```javascript
 const APP_URL = stripTrailingSlash(
   process.env.APP_URL || 
-  (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : "https://bazodiac.com")
+  (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : "https://bazodiac.space")
 );
 ```
 
@@ -392,7 +392,7 @@ Expected: 0 matches.
 **Step 5: Verify APP_URL fallback**
 
 ```bash
-grep 'bazodiac.com' server.mjs
+grep 'bazodiac.space' server.mjs
 ```
 
 Expected: 0 matches.

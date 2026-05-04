@@ -28,7 +28,7 @@ function formatDate(dateStr: string): string {
 // Renders a minimal Lissajous-style preview that reflects Pulse vs Trace.
 // Falls back to an SVG placeholder if canvas is unavailable.
 
-function ModeSnapshot({ mode, intensity }: { mode: 'pulse' | 'trace'; intensity: number }) {
+function ModeSnapshot({ mode, intensity }: { mode: 'pulse' | 'trace' | 'spannung'; intensity: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [canvasOk, setCanvasOk] = useState(true);
 

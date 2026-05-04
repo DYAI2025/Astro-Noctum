@@ -26,20 +26,36 @@
  *
  * SignaturRenderer integration lands in Phase H6.
  */
-import { useEffect, useMemo, useRef, type ReactElement } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import * as THREE from 'three';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Billboard, Text, Stats } from '@react-three/drei';
+import { Billboard, OrbitControls, Text, Stats } from '@react-three/drei';
 import { useReducedMotion } from 'motion/react';
 
-import { PLANETS } from '@/src/lib/signatur-3d/planets';
+import { PLANETS, PLANET_MAP } from '@/src/lib/signatur-3d/planets';
 import type { PlanetName } from '@/src/lib/signatur-3d/planets';
 import {
   buildTrailPath,
   chladniDisplacement,
+  computeChladniVertexColors,
   getPolePairs,
   getPolePositions,
+  writeChladniVertexColors,
 } from '@/src/lib/signatur-3d/sphere-chladni';
+import {
+  PLANET_INFLUENCE,
+  TIER_LABEL,
+  TIER_SHORT_LABEL,
+  tierFor,
+} from '@/src/lib/signatur-3d/planet-tooltips';
+import { useLanguage } from '@/src/contexts/LanguageContext';
+import type { WuxingElement } from '@/src/lib/signatur-3d/wuxing-surfaces';
+import { buildWuxingMaterial } from '@/src/lib/signatur-3d/wuxing-material';
+
+/** Never let raycasts hit the wire/solid/haze sphere meshes — only the
+ *  pole markers should receive pointer events so hover tooltips work.
+ *  Returned from a `raycast` prop so R3F's event reconciler skips it. */
+const SKIP_RAYCAST = () => {};
 
 export interface SignatureSphere3DProps {
   /** Per-planet amplitude weights (e.g. result of `soulprintToPlanetWeights()`). */
@@ -48,13 +64,22 @@ export interface SignatureSphere3DProps {
   planetariumMode?: boolean;
   /** Optional CSS class on the outer container. */
   className?: string;
+  /** Current Kp geomagnetic index (0–9). Drives morph-speed multiplier so the
+   *  sphere visibly breathes faster during geomagnetic storms. Default 0. */
+  kpIndex?: number;
+  /** Dominant Wuxing element drives the sphere's surface material. Defaults to 'Water'. */
+  dominantElement?: WuxingElement;
 }
 
 /** Wireframe-layer radius. Solid layer sits slightly inside at 0.93. */
 const WIRE_RADIUS = 1.0;
 const SOLID_RADIUS = 0.93;
-/** Displacement amplitude as a fraction of the layer radius. */
-const DISPLACEMENT_FACTOR = 0.18;
+/** Displacement amplitude as a fraction of the layer radius.
+ *  Trimmed 0.30→0.12 (2026-04-21) — 0.30 over-deformed the surface so
+ *  inward dips punched through the dark solid shell and made the sphere
+ *  look broken. 0.12 keeps the geometry coherent; the per-planet signal
+ *  now reads through the vertex-colour node pattern instead of big bumps. */
+const DISPLACEMENT_FACTOR = 0.12;
 /** Sphere tessellation — matches the Cymantics prototype. */
 const SPHERE_SEGMENTS = 72;
 /** Pole-marker geometry size (H4: downsized from 0.04; glyph provides the read). */
@@ -63,8 +88,10 @@ const POLE_MARKER_RADIUS = 0.025;
 const GLYPH_FONT_SIZE = 0.07;
 /** Glyph lift above the pole along +y in the billboard's local frame. */
 const GLYPH_LIFT = 0.06;
-/** Minimum planet weight for a trail to render for its antipodal pair. */
-const TRAIL_THRESHOLD = 0.35;
+/** Minimum planet weight for a trail to render for its antipodal pair.
+ *  Lowered 0.35→0.15 (2026-04-21) — 0.35 was prohibitive, most users saw
+ *  zero trails. 0.15 yields 3–5 visible energy bands for typical signatures. */
+const TRAIL_THRESHOLD = 0.15;
 /** Max trail tube-radius scale (multiplied by weight). */
 const TRAIL_RADIUS_SCALE = 0.004;
 /** Ripple amplitude (multiplied by weight) fed into buildTrailPath. */
@@ -98,6 +125,7 @@ const SOLID_TIME_SCALE = 0.7;
 function buildDisplacedSphere(
   radius: number,
   weights: Readonly<Partial<Record<PlanetName, number>>>,
+  withVertexColors = false,
 ): { geometry: THREE.SphereGeometry; originalPositions: Float32Array } {
   const geo = new THREE.SphereGeometry(radius, SPHERE_SEGMENTS, SPHERE_SEGMENTS);
   const pos = geo.attributes.position;
@@ -126,6 +154,16 @@ function buildDisplacedSphere(
 
   pos.needsUpdate = true;
   geo.computeVertexNormals();
+
+  // Attach a vertex-colour buffer keyed to the original (undeformed)
+  // positions so the Chladni-node pattern paints where the caller intends
+  // it — not on the already-displaced positions, which would wobble with
+  // the geometry morph.
+  if (withVertexColors) {
+    const colors = computeChladniVertexColors(originalPositions, weights, 0);
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  }
+
   return { geometry: geo, originalPositions };
 }
 
@@ -169,7 +207,29 @@ function updateChladniGeometryInPlace(
     arr[xi + 2] = z * scale;
   }
   pos.needsUpdate = true;
+  // Re-derive normals so the solid sphere's meshStandardMaterial lighting
+  // tracks the displaced geometry. With SPHERE_SEGMENTS = 72 this is ~10k
+  // triangles → ~0.3–0.6 ms per call on a mid-range laptop; acceptable
+  // because the whole position/normal update is already throttled to
+  // every MORPH_EVERY_N_FRAMES (4) frames in the caller. If we ever raise
+  // SPHERE_SEGMENTS or drop the throttle, consider caching a single
+  // original-normal buffer and rotating it per-vertex instead of the full
+  // BufferGeometry recompute.
   geom.computeVertexNormals();
+
+  // If the geometry carries a vertex-colour attribute, flow the same
+  // Chladni field into it so the node pattern on the surface animates in
+  // sync with the geometry morph.
+  const colorAttr = geom.attributes.color as THREE.BufferAttribute | undefined;
+  if (colorAttr) {
+    writeChladniVertexColors(
+      colorAttr.array as Float32Array,
+      originalPositions,
+      weights,
+      time,
+    );
+    colorAttr.needsUpdate = true;
+  }
 }
 
 // ── Internal animated scene sub-component ────────────────────────────────
@@ -191,6 +251,12 @@ interface AnimatedSceneProps {
     weight: number;
   }[];
   prefersReducedMotion: boolean;
+  /** 0–9; scales the morph-clock so higher Kp = faster breathing. */
+  kpIndex: number;
+  /** Hover handlers — drive the tooltip overlay outside the Canvas. */
+  onPoleHover: (name: PlanetName | null) => void;
+  dominantElement: WuxingElement;
+  planetariumMode: boolean;
 }
 
 function AnimatedScene({
@@ -202,21 +268,60 @@ function AnimatedScene({
   polePositions,
   trails,
   prefersReducedMotion,
+  kpIndex,
+  onPoleHover,
+  dominantElement,
+  planetariumMode,
 }: AnimatedSceneProps): ReactElement {
   const signatureGroupRef = useRef<THREE.Group | null>(null);
   const timeRef = useRef(0);
   const frameCountRef = useRef(0);
 
+  // Build material once on mount — never re-create (preserves GPU state).
+  // planetariumMode and dominantElement are baked into the closure at construction;
+  // use userData.updatePlanetariumMode / userData.updateElement for runtime changes.
+  const wuxingMaterial = useMemo(
+    () => buildWuxingMaterial({ element: dominantElement, planetariumMode }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
+  // Keep element uniforms in sync — mutates in-place, no re-mount
+  useEffect(() => {
+    wuxingMaterial.userData.updateElement(dominantElement);
+  }, [dominantElement, wuxingMaterial]);
+
+  // Keep dark/bright mode in sync when planetariumMode changes
+  useEffect(() => {
+    wuxingMaterial.userData.updatePlanetariumMode(planetariumMode);
+  }, [planetariumMode, wuxingMaterial]);
+
+  // Dispose on unmount
+  useEffect(() => {
+    return () => {
+      wuxingMaterial.dispose();
+    };
+  }, [wuxingMaterial]);
+
+  // Kp 0 → ×1.0 (calm), Kp 5 (G1 storm) → ×2.0, Kp 9 (G5 extreme) → ×2.8.
+  // Clamped so a missing/NaN reading never freezes or over-spins the sphere.
+  const kpSpeedMult = 1 + Math.min(Math.max(kpIndex, 0), 9) / 5;
+
   useFrame((_state, delta) => {
     if (prefersReducedMotion) return;
 
     // delta is seconds; Cymantics-style math is in ms.
-    timeRef.current += delta * 1000;
+    // Scale by Kp so the sphere visibly breathes faster during storms.
+    timeRef.current += delta * 1000 * kpSpeedMult;
     frameCountRef.current += 1;
 
-    // Rotation — applied every frame for smoothness.
+    // Y rotation is now handled by OrbitControls autoRotate (so user drag
+    // and auto-drift share the same source). We keep a very subtle X wobble
+    // on the group so the pole layout still feels alive when the camera is
+    // parked. `ROT_Y_PER_FRAME` is deliberately unused here; kept as a
+    // reference constant in case OrbitControls is ever removed.
+    void ROT_Y_PER_FRAME;
     if (signatureGroupRef.current) {
-      signatureGroupRef.current.rotation.y += ROT_Y_PER_FRAME;
       signatureGroupRef.current.rotation.x += ROT_X_PER_FRAME;
     }
 
@@ -237,6 +342,8 @@ function AnimatedScene({
         SOLID_RADIUS,
       );
     }
+
+    wuxingMaterial.userData.updateTime(timeRef.current * 0.001);
   });
 
   return (
@@ -247,8 +354,9 @@ function AnimatedScene({
       <pointLight position={[0, -4, -3]} intensity={1.5} color={0x7b3ff7} distance={15} />
 
       <group ref={signatureGroupRef}>
-        {/* Haze shell — inward-facing dark backdrop inside the sphere. */}
-        <mesh>
+        {/* Haze shell — inward-facing dark backdrop inside the sphere.
+            raycast disabled so it never intercepts pole hovers. */}
+        <mesh raycast={SKIP_RAYCAST}>
           <sphereGeometry args={[1.06, 32, 32]} />
           <meshBasicMaterial
             color={0x05050f}
@@ -258,43 +366,96 @@ function AnimatedScene({
           />
         </mesh>
 
-        {/* Wire layer — Chladni-displaced wireframe. */}
-        <mesh geometry={wireGeom}>
-          <meshStandardMaterial
-            color={0x4f6ef7}
+        {/* Halo — shadow outline behind gold wire for contrast on all element surfaces */}
+        <mesh
+          geometry={wireGeom}
+          raycast={SKIP_RAYCAST}
+          data-mesh-role="wire-halo"
+          scale={1.005}
+          renderOrder={1}
+        >
+          <meshBasicMaterial
+            color={0x000000}
             wireframe
             transparent
-            opacity={0.2}
-            emissive={0x1a2a8f}
-            emissiveIntensity={0.6}
+            opacity={0.30}
+            depthWrite={false}
           />
         </mesh>
 
-        {/* Solid layer — slightly smaller, dark core. */}
-        <mesh geometry={solidGeom}>
+        {/* Gold wire — main Chladni line layer */}
+        <mesh
+          geometry={wireGeom}
+          raycast={SKIP_RAYCAST}
+          data-mesh-role="wire"
+          data-tint="gold"
+          renderOrder={2}
+        >
           <meshStandardMaterial
-            color={0x06060f}
+            color={0xD4AF37}
+            wireframe
             transparent
-            opacity={0.8}
-            roughness={0.9}
-            metalness={0.05}
+            opacity={0.40}
+            emissive={0x8B6914}
+            emissiveIntensity={0.5}
           />
         </mesh>
 
-        {/* 12 pole groups — a small planet-tinted sphere + billboarded glyph. */}
+        {/* Solid layer — slightly smaller, dark core. Now driven by the
+            wuxing ShaderMaterial which encodes element-specific palettes
+            and time-based surface animation (2026-04-30). Skip raycast so
+            the sphere never intercepts pole hovers. */}
+        <mesh
+          geometry={solidGeom}
+          raycast={SKIP_RAYCAST}
+          data-mesh-role="solid"
+          material={wuxingMaterial}
+        />
+
+        {/* 12 pole groups — a small planet-tinted sphere + billboarded glyph.
+            Marker size, glyph size and emissive intensity all scale with the
+            planet's weight so dominant frequencies visibly glow and quiet
+            planets fade into the backdrop (2026-04-21). */}
         {polePositions.map((p, i) => {
           const planet = PLANETS[i % PLANETS.length];
+          const w = Math.max(0, Math.min(1, weights[planet.name] ?? 0));
+          // Scale: 0.5× at w=0 up to 1.5× at w=1 — keeps even 0-weight poles
+          // visible so the 12-axis layout still reads.
+          const sizeMult = 0.5 + w;
+          const markerRadius = POLE_MARKER_RADIUS * sizeMult;
+          const glyphSize = GLYPH_FONT_SIZE * (0.7 + w * 0.6);
+          // meshStandardMaterial so we can modulate emissive with weight; the
+          // three scene pointLights (blue/cyan/purple) make the base color
+          // readable even at emissiveIntensity 0.
           return (
-            <group key={`pole-${i}`} position={[p.x, p.y, p.z]}>
+            <group
+              key={`pole-${i}`}
+              position={[p.x, p.y, p.z]}
+              onPointerOver={(e) => {
+                e.stopPropagation();
+                document.body.style.cursor = 'pointer';
+                onPoleHover(planet.name);
+              }}
+              onPointerOut={(e) => {
+                e.stopPropagation();
+                document.body.style.cursor = 'auto';
+                onPoleHover(null);
+              }}
+            >
               <mesh>
-                <sphereGeometry args={[POLE_MARKER_RADIUS, 16, 16]} />
-                <meshBasicMaterial color={planet.color} />
+                <sphereGeometry args={[markerRadius, 16, 16]} />
+                <meshStandardMaterial
+                  color={planet.color}
+                  emissive={planet.color}
+                  emissiveIntensity={0.2 + w * 1.5}
+                />
               </mesh>
               <Billboard follow>
                 <Text
                   position={[0, GLYPH_LIFT, 0]}
-                  fontSize={GLYPH_FONT_SIZE}
+                  fontSize={glyphSize}
                   color={planet.color}
+                  fillOpacity={0.5 + w * 0.5}
                   anchorX="center"
                   anchorY="middle"
                 >
@@ -355,6 +516,8 @@ export function SignatureSphere3D({
   weights,
   planetariumMode = true,
   className,
+  kpIndex = 0,
+  dominantElement = 'Water',
 }: SignatureSphere3DProps): ReactElement {
   const wireGeomRef = useRef<THREE.SphereGeometry | null>(null);
   const solidGeomRef = useRef<THREE.SphereGeometry | null>(null);
@@ -362,8 +525,12 @@ export function SignatureSphere3D({
   // Rebuild geometries only when weights change. Each build also returns an
   // immutable snapshot of the undeformed vertex positions, which the animated
   // morph reads from every frame to stay drift-free.
-  const wireBuilt = useMemo(() => buildDisplacedSphere(WIRE_RADIUS, weights), [weights]);
-  const solidBuilt = useMemo(() => buildDisplacedSphere(SOLID_RADIUS, weights), [weights]);
+  //
+  // Solid layer carries the Chladni-node vertex-colour pattern — that is the
+  // "pattern on the surface" the user sees. Wire layer stays flat-colour so
+  // its contour lines aren't fighting the node pattern for visual attention.
+  const wireBuilt = useMemo(() => buildDisplacedSphere(WIRE_RADIUS, weights, false), [weights]);
+  const solidBuilt = useMemo(() => buildDisplacedSphere(SOLID_RADIUS, weights, true), [weights]);
 
   const wireGeom = wireBuilt.geometry;
   const solidGeom = solidBuilt.geometry;
@@ -442,11 +609,19 @@ export function SignatureSphere3D({
     background: planetariumMode ? '#02020a' : 'transparent',
   };
 
+  // Hover-tooltip state. Lives at the outer component so the tooltip overlay
+  // (rendered as a sibling of <Canvas>) can pull full Tailwind styling while
+  // the inner pole <group> fires pointer events.
+  const [hoveredPole, setHoveredPole] = useState<PlanetName | null>(null);
+  const { lang } = useLanguage();
+  const isDe = lang === 'de';
+
   return (
     <div
       data-testid="signature-sphere-3d"
       data-planetarium={planetariumMode}
       data-reduced-motion={prefersReducedMotion}
+      data-element={dominantElement}
       className={className}
       style={containerStyle}
     >
@@ -456,6 +631,18 @@ export function SignatureSphere3D({
         gl={{ antialias: true, alpha: true }}
       >
         {import.meta.env.DEV && <Stats />}
+        {/* User-facing rotation. Pan + zoom are disabled so the sphere
+            stays the visual centrepiece; users can drag to reorient it,
+            otherwise it drifts on its own via autoRotate. */}
+        <OrbitControls
+          enablePan={false}
+          enableZoom={false}
+          autoRotate={!prefersReducedMotion}
+          autoRotateSpeed={0.6}
+          rotateSpeed={0.6}
+          dampingFactor={0.15}
+          enableDamping
+        />
         <AnimatedScene
           weights={weights}
           wireGeom={wireGeom}
@@ -465,8 +652,81 @@ export function SignatureSphere3D({
           polePositions={polePositions}
           trails={trails}
           prefersReducedMotion={prefersReducedMotion}
+          kpIndex={kpIndex}
+          onPoleHover={setHoveredPole}
+          dominantElement={dominantElement}
+          planetariumMode={planetariumMode}
         />
       </Canvas>
+
+      {hoveredPole && (
+        <PoleTooltip
+          planetName={hoveredPole}
+          weight={Math.max(0, Math.min(1, weights[hoveredPole] ?? 0))}
+          isDe={isDe}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Tooltip overlay (outside the R3F Canvas) ────────────────────────────
+// Absolute-positioned so it floats on top of the sphere without pushing
+// layout. Rendered conditionally on hover. Styled with Tailwind so it
+// matches the rest of the app's dark luxury palette.
+function PoleTooltip({
+  planetName,
+  weight,
+  isDe,
+}: {
+  planetName: PlanetName;
+  weight: number;
+  isDe: boolean;
+}): ReactElement {
+  const planet = PLANET_MAP[planetName];
+  const tier = tierFor(weight);
+  const influence = PLANET_INFLUENCE[planetName][isDe ? 'de' : 'en'];
+  const tierLine = TIER_LABEL[tier][isDe ? 'de' : 'en'];
+  const tierShort = TIER_SHORT_LABEL[tier][isDe ? 'de' : 'en'];
+  const percent = Math.round(weight * 100);
+  const displayName = isDe ? planet.name_de : planet.name;
+  const archetype = isDe ? planet.archetype_de : planet.archetype_en;
+  const weightLabel = isDe ? 'Dein Anteil' : 'Your share';
+
+  return (
+    <div
+      data-testid="pole-tooltip"
+      data-planet={planetName}
+      className="pointer-events-none absolute left-3 top-3 z-30 max-w-[280px] rounded-xl border border-white/15 bg-black/75 p-3 text-white shadow-[0_0_40px_rgba(0,0,0,0.6)] backdrop-blur-md sm:left-4 sm:top-4 sm:max-w-[320px] sm:p-4"
+    >
+      <div className="flex items-center gap-2">
+        <span
+          className="text-2xl leading-none"
+          style={{ color: planet.color }}
+          aria-hidden="true"
+        >
+          {planet.symbol}
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold tracking-wide">{displayName}</p>
+          <p className="text-[10px] uppercase tracking-[0.18em] text-white/60">
+            {archetype}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-3 flex items-center justify-between gap-2 rounded-md border border-white/10 bg-white/5 px-2 py-1.5">
+        <span className="text-[11px] uppercase tracking-wider text-white/60">
+          {weightLabel}
+        </span>
+        <span className="text-[13px] font-semibold" style={{ color: planet.color }}>
+          {percent}% · {tierShort}
+        </span>
+      </div>
+
+      <p className="mt-2 text-[12px] leading-snug text-white/70">{tierLine}</p>
+
+      <p className="mt-2 text-[13px] leading-relaxed text-white/90">{influence}</p>
     </div>
   );
 }

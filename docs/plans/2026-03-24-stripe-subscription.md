@@ -40,7 +40,7 @@ In Railway project settings, under Variables:
 ### Step B: Register Webhook in Stripe Dashboard
 
 1. Stripe Dashboard → Developers → Webhooks → Add endpoint
-2. Endpoint URL: `https://bazodiac.com/api/webhook/stripe`
+2. Endpoint URL: `https://bazodiac.space/api/webhook/stripe`
 3. Select events to listen to:
    - `checkout.session.completed`
    - `checkout.session.expired`

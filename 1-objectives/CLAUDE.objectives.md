@@ -90,6 +90,8 @@ When an artifact (goal, requirement) is no longer relevant:
 | [GOAL-i18n-quiz-ux-integrity](goals/GOAL-i18n-quiz-ux-integrity.md) | Must | Approved | Zero raw translation keys in UI; quiz overlays reliably dismissable (X / Esc / backdrop) |
 | [GOAL-superglue-removal](goals/GOAL-superglue-removal.md) | Must | Approved | Superglue-Dependency aus 6 Core-UX-Flows entfernen; direkte Server-Endpoints gegen BAFE/FuFirE/Supabase |
 | [GOAL-soulprint-persistence](goals/GOAL-soulprint-persistence.md) | Must | Approved | Bootstrap persistiert soulprint_sectors zuverlässig via upsert — fixt Default-Signatur-Symptom (Race-Condition-Bug 2026-04-18) |
+| [GOAL-dashboard-signatur-hygiene](goals/GOAL-dashboard-signatur-hygiene.md) | Must | Approved | Dashboard + Signatur-Seite zeigen echte Daten ohne UI-Lügen, duplizierte Sektionen entfernt — Sprint A 2026-04-20 |
+| [GOAL-quiz-signatur-coupling-v1](goals/GOAL-quiz-signatur-coupling-v1.md) | Must | Approved | Quiz → Signatur Coupling Sprint 1: Datenmodell + Wu-Xing-Kranz + Sofort-Effekt. 12 Axiome als Produkt-Gesetz via CON-quiz-signatur-axiome |
 
 ---
 
@@ -124,6 +126,25 @@ When an artifact (goal, requirement) is no longer relevant:
 | [US-navigation-app-shell](user-stories/US-navigation-app-shell.md) | Must | Draft | Consistent app-shell navigation across all pages with active-route highlight and Dashboard link |
 | [US-signatur-realtime-feedback](user-stories/US-signatur-realtime-feedback.md) | Must | Draft | Signatur visibly reacts to transit, space-weather, and cluster-completed quiz contributions |
 | [US-quiz-i18n-integrity](user-stories/US-quiz-i18n-integrity.md) | Must | Draft | No raw translation keys in UI; quiz overlays dismissable via X, Esc, and backdrop |
+| [US-dsg-dynamic-coherence-subtitle](user-stories/US-dsg-dynamic-coherence-subtitle.md) | Must | Draft | Sprint A retro — coherence subtitle reflects delta direction |
+| [US-dsg-remove-tagesfeld-pill](user-stories/US-dsg-remove-tagesfeld-pill.md) | Must | Draft | Sprint A retro — meaningless "Tagesfeld" pill removed from driver strip |
+| [US-dsg-coherence-tooltip](user-stories/US-dsg-coherence-tooltip.md) | Must | Draft | Sprint A retro — hover tooltip explains coherence index |
+| [US-dsg-shared-active-impacts-list](user-stories/US-dsg-shared-active-impacts-list.md) | Must | Draft | Sprint A retro — ActiveImpactsList shared between Dashboard + Signatur |
+| [US-dsg-tagesimpuls-centered-horoscope](user-stories/US-dsg-tagesimpuls-centered-horoscope.md) | Must | Draft | Sprint A retro — centered Tagesimpuls with real daily horoscope text |
+| [US-dsg-dashboard-dead-code-cleanup](user-stories/US-dsg-dashboard-dead-code-cleanup.md) | Must | Draft | Sprint A retro — VibesSection + BigFour + CosmicInfluenceSection duplicate removed |
+| [US-dsg-3d-signatur-upgrade](user-stories/US-dsg-3d-signatur-upgrade.md) | Must | Draft | Sprint A retro — 3D sphere with cursor rotation, Chladni vertex-colour pattern, pole tooltips |
+| [US-qsc-1-append-only-schema](user-stories/US-qsc-1-append-only-schema.md) | Must | Draft | Sprint B phase 1 — user_quiz_answers + user_quiz_profile append-only schema with RLS |
+| [US-qsc-2-quiz-rate-limit](user-stories/US-qsc-2-quiz-rate-limit.md) | Must | Draft | Sprint B phase 2 — free 1/day + premium 2/day rate limit |
+| [US-qsc-3-aggregation-function](user-stories/US-qsc-3-aggregation-function.md) | Must | Draft | Sprint B phase 3 — aggregateQuizResponses() pure function with TDD |
+| [US-qsc-4-answer-element-attribution](user-stories/US-qsc-4-answer-element-attribution.md) | Must | Draft | Sprint B phase 4 — elementContrib + sectorContrib on AnswerOption |
+| [US-qsc-5-editorial-template](user-stories/US-qsc-5-editorial-template.md) | Must | Draft | Sprint B phase 5 — editorial backfill skeleton for 6 existing clusters |
+| [US-qsc-6-wuxing-kranz-component](user-stories/US-qsc-6-wuxing-kranz-component.md) | Must | Draft | Sprint B phase 6 — FuenfElementeKranz React component with approved palette |
+| [US-qsc-7-additive-placement](user-stories/US-qsc-7-additive-placement.md) | Must | Draft | Sprint B phase 7 — Kranz placed additively on Signatur page, no replacement |
+| [US-qsc-8-instant-feedback-animation](user-stories/US-qsc-8-instant-feedback-animation.md) | Must | Draft | Sprint B phase 8 — <500ms pulse on quiz completion (Axiom 4) |
+| [US-qsc-9-maturation-visual-tier](user-stories/US-qsc-9-maturation-visual-tier.md) | Must | Draft | Sprint B phase 9 — Fibonacci-stage saturation/gold-glow, never as a number |
+| [US-retro-soulprint-upsert-fix](user-stories/US-retro-soulprint-upsert-fix.md) | Must | Draft | Retro — upsert bootstrap fix against race condition (S-SOULPRINT-HOTFIX shipped 2026-04-19) |
+| [US-retro-superglue-removal-hypothesis-refuted](user-stories/US-retro-superglue-removal-hypothesis-refuted.md) | Must | Draft | Retro — Superglue as default-signature-cause refuted via prod-data check (2026-04-18) |
+| [US-sig-cymatics-bazi-frequency-signature](user-stories/US-sig-cymatics-bazi-frequency-signature.md) | Must | Draft | Retro — BaZi pillars render as live Chladni (m, n, α, β) pattern (Sprint S-CYMATICS shipped 2026-04-17) |
 
 ---
 
@@ -190,6 +211,10 @@ When an artifact (goal, requirement) is no longer relevant:
 | [REQ-F-signatur-cymatics](requirements/REQ-F-signatur-cymatics.md) | REQ-F | Must | Approved | Canvas2D Chladni/Cymatics engine — BaZi→Chladni bridge, SignaturCymaticsCanvas, CSS fallback, feature-flag gated |
 | [REQ-F-i18n-completeness](requirements/REQ-F-i18n-completeness.md) | REQ-F | Must | Approved | Every `t()` call resolves to translated string in DE + EN; automated audit test; quiz overlay dismiss via X / Esc / backdrop |
 | [REQ-REL-soulprint-persist-onboarding](requirements/REQ-REL-soulprint-persist-onboarding.md) | REQ-REL | Must | Approved | Bootstrap upsert statt update — soulprint_sectors 100% persistiert + Backfill für 50 existing user |
+| [REQ-F-quiz-append-only](requirements/REQ-F-quiz-append-only.md) | REQ-F | Must | Approved | `user_quiz_answers` DB-seitig append-only (RLS + REVOKE UPDATE/DELETE); Axiom 1, 10 |
+| [REQ-F-quiz-rate-limit](requirements/REQ-F-quiz-rate-limit.md) | REQ-F | Must | Approved | Rhythmus-Gating Free 1/Tag + Premium 2/Tag, server-side enforced (Axiom 3) |
+| [REQ-F-quiz-answer-element-contrib](requirements/REQ-F-quiz-answer-element-contrib.md) | REQ-F | Must | Approved | Jede AnswerOption trägt `elementContrib[5]` + `sectorContrib[12]` (Axiom 8, 9); leer = Diagnose, nicht Default |
+| [REQ-USA-quiz-instant-feedback](requirements/REQ-USA-quiz-instant-feedback.md) | REQ-USA | Must | Approved | Sichtbarer Kranz-Effekt <500ms nach Quiz-Abschluss via optimistic UI (Axiom 4) |
 
 ---
 
@@ -214,3 +239,4 @@ When an artifact (goal, requirement) is no longer relevant:
 | [CON-no-unexplained-numbers](constraints/CON-no-unexplained-numbers.md) | Business | Active | No numerical value in UI without explanation — hard rule |
 | [CON-resource-oriented-framing](constraints/CON-resource-oriented-framing.md) | Business | Active | Possibility-oriented language, no fatalistic framing |
 | [CON-mobile-first-readability](constraints/CON-mobile-first-readability.md) | Business | Active | <10s core comprehension on mobile viewport |
+| [CON-quiz-signatur-axiome](constraints/CON-quiz-signatur-axiome.md) | Business | Active | 12 Produkt-Axiome für Quiz → Signatur Coupling (append-only, element auf answer-ebene, neutral start, etc.) — Plan-Patch statt Axiom-Aufweichen bei Konflikt |

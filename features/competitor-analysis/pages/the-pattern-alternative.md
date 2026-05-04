@@ -78,4 +78,4 @@ The Pattern can describe the trait. Bazodiac can explain the mechanism across tr
 
 ---
 
-**[Try Bazodiac Free →](https://bazodiac.com)**
+**[Try Bazodiac Free →](https://bazodiac.space)**

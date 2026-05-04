@@ -13,6 +13,7 @@ This phase contains the **implementation**. Focus on clean, tested, maintainable
 | **frontend** | [`3-code/frontend/`](frontend/) | `../src/` | React 19 SPA, Tailwind v4, Framer Motion, Three.js, Zod |
 | **api-server** | [`3-code/api-server/`](api-server/) | `../server.mjs` | Express.js, Stripe, Supabase service role, Gemini, ElevenLabs |
 | **mobile** | [`3-code/mobile/`](mobile/) | `../apps/mobile/` | Expo 53 iOS, React Native 0.79, @bazodiac/shared |
+| **shared** | [`3-code/shared/`](shared/) | `../packages/shared/` | TypeScript (ESM), Zod, Vitest — `@bazodiac/shared` workspace package |
 
 ### Frontend
 
@@ -32,6 +33,12 @@ This phase contains the **implementation**. Focus on clean, tested, maintainable
 - **Technology**: Expo 53, React Native 0.79, @react-navigation
 - **Responsibility**: iOS app — Dashboard, Signatur view, quiz renderer, voice agent, offline contribution queue
 
+### Shared Library
+
+- **Directory**: [`shared/`](shared/)
+- **Technology**: TypeScript (ESM), Zod 4.3, Vitest
+- **Responsibility**: Cross-component logic — signal math, quiz definitions/scoring, fusion-ring/signatur engine math, agent configs, experience/transit/weekly schemas, i18n keys. Consumed by `frontend` and `mobile` via workspace import. No DOM, no React, no native APIs.
+
 ---
 
 ## Component Isolation
@@ -40,7 +47,7 @@ The `3-code/<component>/` directories contain **only steering files** (e.g., `CL
 
 Isolation rules:
 
-- **No code in steering directories** -- never place source files, configuration files, or build artifacts inside `3-code/frontend/`, `3-code/api-server/`, or `3-code/mobile/`. These directories hold only `CLAUDE.<component>.md` and similar steering documents.
+- **No code in steering directories** -- never place source files, configuration files, or build artifacts inside `3-code/frontend/`, `3-code/api-server/`, `3-code/mobile/`, or `3-code/shared/`. These directories hold only `CLAUDE.<component>.md` and similar steering documents.
 - **No cross-component configuration** -- configuration that spans multiple components should never be necessary. If such a situation arises, treat it as a potential design flaw or incorrect component separation. Stop work, notify the user with a clear description of the conflict, and propose alternative actions (e.g., refactoring responsibilities, introducing a new component, or adjusting the design).
 - **Do not rename or move component directories** -- the directory names and code paths listed above are fixed; renaming or relocating them breaks cross-phase references and tooling assumptions.
 
