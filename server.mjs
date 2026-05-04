@@ -2101,6 +2101,9 @@ async function computeActiveImpactsCore(userId) {
             if (persistErr) {
               console.warn('[impact/active] Self-heal persist failed:', persistErr.message);
             }
+          })
+          .catch((persistErr) => {
+            console.warn('[impact/active] Self-heal persist failed:', persistErr?.message || persistErr);
           });
       }
     } catch (err) {
