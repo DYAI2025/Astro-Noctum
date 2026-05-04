@@ -2163,7 +2163,7 @@ app.post('/api/experience/bootstrap', requireUserAuth, async (req, res) => {
               throw bafeErr;
             }
 
-            if (errorName && !isRetryableError) {
+            if (!isRetryableError) {
               throw bafeErr;
             }
           }
