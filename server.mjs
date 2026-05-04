@@ -2158,7 +2158,7 @@ app.post('/api/experience/bootstrap', requireUserAuth, async (req, res) => {
             }
           } catch (bafeErr) {
             const errorName = bafeErr?.name;
-            const isRetryableError = errorName === 'AbortError' || errorName === 'TimeoutError' || errorName === 'TypeError';
+            const isRetryableError = !errorName || errorName === 'AbortError' || errorName === 'TimeoutError' || errorName === 'TypeError';
             if (attempt === maxAttempts) {
               throw bafeErr;
             }
