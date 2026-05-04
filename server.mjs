@@ -2299,12 +2299,13 @@ app.post('/api/experience/bootstrap', requireUserAuth, async (req, res) => {
               break;
             }
           } catch (bafeErr) {
-            const isAbortError = bafeErr?.name === 'AbortError';
+            const errorName = bafeErr?.name;
+            const isRetryableError = !errorName || errorName === 'AbortError' || errorName === 'TimeoutError' || errorName === 'TypeError';
             if (attempt === maxAttempts) {
               throw bafeErr;
             }
 
-            if (!isAbortError && bafeErr?.name && bafeErr.name !== 'TypeError') {
+            if (!isRetryableError) {
               throw bafeErr;
             }
           }
