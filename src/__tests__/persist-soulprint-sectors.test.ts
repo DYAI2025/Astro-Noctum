@@ -145,3 +145,33 @@ describe('persistSoulprintSectors', () => {
     );
   });
 });
+
+
+describe('recomputeSoulprintFromAstroJson', () => {
+  beforeEach(() => {
+    process.env.NODE_ENV = 'test';
+    process.env.SUPABASE_URL = 'https://example.supabase.co';
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-key';
+    vi.resetModules();
+  });
+
+  it('normalizes wrapped astro_json payloads via .bafe before recomputation', async () => {
+    const mod = await import('../../server.mjs');
+    const recompute = mod.recomputeSoulprintFromAstroJson as (astroJson: unknown) => number[];
+
+    const normalizedChart = {
+      bazi: { day_master: 'wood', season: 'spring' },
+      western: { zodiac_sign: 'aries', moon_sign: 'leo', ascendant: 'sagittarius' },
+      wuxing: { dominant: 'wood', distribution: { wood: 0.5, fire: 0.2, earth: 0.1, metal: 0.1, water: 0.1 } },
+    };
+
+    const wrapped = {
+      bafe: normalizedChart,
+      western: { zodiac_sign: 'pisces', moon_sign: 'cancer', ascendant: 'taurus' },
+      wuxing: { dominant: 'water' },
+      bazi: { day_master: 'water' },
+    };
+
+    expect(recompute(wrapped)).toEqual(recompute(normalizedChart));
+  });
+});
