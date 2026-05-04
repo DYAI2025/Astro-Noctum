@@ -313,12 +313,22 @@ app.use('/api/', (req, res, next) => {
 });
 
 // ── Rate Limiting ────────────────────────────────────────────────────
+const HIGH_FREQUENCY_API_PREFIXES = [
+  "/transit-state",
+  "/impact/active",
+  "/experience/daily",
+  "/vibes",
+];
+
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 min
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests, please try again later." },
+  // app.use('/api/', ...) strips the mount path from req.path, so these
+  // prefixes must be relative to /api and not include '/api'.
+  skip: (req) => HIGH_FREQUENCY_API_PREFIXES.some((prefix) => req.path.startsWith(prefix)),
 });
 app.use("/api/", apiLimiter);
 
