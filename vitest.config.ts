@@ -8,7 +8,11 @@ export default defineConfig({
     environment: "happy-dom",
     globals: true,
     setupFiles: ["./src/test-setup.tsx"],
-    include: ["src/**/__tests__/**/*.{test,spec}.{ts,tsx}"],
+    include: [
+      "src/**/__tests__/**/*.{test,spec}.{ts,tsx}",
+      "server/__tests__/**/*.{test,spec}.{mjs,ts}",
+      "packages/shared/src/**/__tests__/**/*.{test,spec}.{ts,tsx}",
+    ],
     // Stub React Native and Expo modules so mobile code can be tested in Node
     server: {
       deps: {
