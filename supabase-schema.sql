@@ -223,3 +223,23 @@ CREATE POLICY "Users can read own quota" ON ai_quota
 -- service_role only — never authenticated. PostgREST cannot reach these.
 -- Each function also raises 42501 if auth.uid() != p_user_id and the
 -- caller is not service_role — defense in depth.)
+
+-- ── Stripe webhook event dedup log ─────────────────────────────────
+-- Mirrors supabase-migrations/20260507_stripe_events.sql. PRIMARY KEY
+-- on the Stripe event ID is the dedup mechanism. RLS on with no policy
+-- → service_role only.
+CREATE TABLE IF NOT EXISTS stripe_events (
+  id              TEXT        PRIMARY KEY,
+  type            TEXT        NOT NULL,
+  livemode        BOOLEAN     NOT NULL,
+  api_version     TEXT,
+  received_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  processed_at    TIMESTAMPTZ,
+  process_error   TEXT,
+  raw_payload     JSONB
+);
+
+CREATE INDEX IF NOT EXISTS stripe_events_type_idx ON stripe_events (type);
+CREATE INDEX IF NOT EXISTS stripe_events_received_idx ON stripe_events (received_at DESC);
+
+ALTER TABLE stripe_events ENABLE ROW LEVEL SECURITY;
