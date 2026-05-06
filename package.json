@@ -10,6 +10,7 @@
     "build": "npm run check:runtime-imports && vite build",
     "preview": "vite preview",
     "check:text-integrity": "node scripts/check-text-integrity.mjs",
+    "check:secrets": "node scripts/check-secret-leak.mjs",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "clean": "rm -rf dist",
