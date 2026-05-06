@@ -5418,12 +5418,9 @@ async function verifySupabaseUser(req) {
 // ── Stripe: Create Checkout Session ──────────────────────────────────
 // Reuses existing Stripe customer if one exists in profiles.stripe_customer_id,
 // otherwise creates a new customer and saves the ID immediately.
-app.post("/api/checkout", async (req, res) => {
+app.post("/api/checkout", requireUserAuth, async (req, res) => {
   if (!supabaseServer) return res.status(500).json({ error: "Database not configured" });
 
-  // Verify the caller is the authenticated user
-  const authedUser = await verifySupabaseUser(req);
-  if (!authedUser) return res.status(401).json({ error: "Unauthorized" });
   if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_PRICE_ID) {
     console.error('[STRIPE] Checkout called without configured Stripe variables');
     return res.status(503).json({
@@ -5435,8 +5432,16 @@ app.post("/api/checkout", async (req, res) => {
   const stripePriceId = process.env.STRIPE_PRICE_ID;
 
   const telemetry = extractClientTelemetry(req);
-  const userId = authedUser.id;
-  const userEmail = authedUser.email || req.body.userEmail;
+  // requireUserAuth populates req.userId. Email comes from a fresh
+  // auth-admin lookup so we don't trust client-supplied req.body.userEmail
+  // (audit finding #10b — receipt-spoofing edge case).
+  const userId = req.userId;
+  const { data: { user: authedUser } } = await supabaseServer.auth.admin.getUserById(userId);
+  const userEmail = authedUser?.email;
+  if (!userEmail) {
+    console.error('[Stripe] Checkout: could not resolve email for authed user', { userId });
+    return res.status(500).json({ error: "User email missing" });
+  }
   const platform =
     (typeof req.body?.platform === "string" ? req.body.platform : telemetry.appPlatform || "web")
       .trim()
@@ -5529,12 +5534,17 @@ app.post("/api/checkout", async (req, res) => {
 });
 
 // ── Stripe: Customer Portal (manage billing) ──────────────────────────
-app.post("/api/customer-portal", async (req, res) => {
+app.post("/api/customer-portal", requireUserAuth, async (req, res) => {
   if (!supabaseServer) return res.status(500).json({ error: "Database not configured" });
-
-  const authedUser = await verifySupabaseUser(req);
-  if (!authedUser) return res.status(401).json({ error: "Unauthorized" });
   if (!stripe) return res.status(503).json({ error: "Payment not configured" });
+
+  // Hydrate authedUser from Supabase admin lookup so the rest of the
+  // handler body keeps the same shape it had under verifySupabaseUser.
+  const { data: { user: authedUser } } = await supabaseServer.auth.admin.getUserById(req.userId);
+  if (!authedUser) {
+    console.error('[Stripe] Customer portal: admin.getUserById returned null', { userId: req.userId });
+    return res.status(500).json({ error: "User lookup failed" });
+  }
 
   const returnUrl = sanitizeCheckoutReturnUrl(req.body?.returnUrl, APP_URL);
 
@@ -5818,10 +5828,7 @@ app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async
 });
 
 // ── Share URL ────────────────────────────────────────────────────────
-app.post("/api/share", async (req, res) => {
-  const authedUser = await verifySupabaseUser(req);
-  if (!authedUser) return res.status(401).json({ error: "Unauthorized" });
-
+app.post("/api/share", requireUserAuth, async (req, res) => {
   const telemetry = extractClientTelemetry(req);
   if (telemetry.appPlatform || telemetry.appVersion || telemetry.deviceId) {
     console.log(
@@ -5829,7 +5836,7 @@ app.post("/api/share", async (req, res) => {
     );
   }
 
-  const userId = authedUser.id;
+  const userId = req.userId;
 
   if (!supabaseServer) {
     return res.status(500).json({ error: "Supabase not configured on server" });
