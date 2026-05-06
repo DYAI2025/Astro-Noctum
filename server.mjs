@@ -8,6 +8,8 @@ import compression from "compression";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { createGenAiRouter } from "./server/ai-router.mjs";
+import { aiRouter } from "./server/routes/ai.routes.mjs";
+import { requestIdMiddleware } from "./server/middleware/requestId.mjs";
 import Stripe from 'stripe';
 
 // Exponential-backoff fetch helper used by the bootstrap endpoint.
@@ -328,6 +330,16 @@ app.use('/api/', (req, res, next) => {
   }
   express.urlencoded({ extended: true })(req, res, next);
 });
+
+// ── Request ID + AI Route Hardening ──────────────────────────────────
+// Attach a request_id to every request so log correlation and structured
+// error responses can reference it. Then mount the hardened AI router
+// BEFORE any direct app.post('/api/interpret', ...) registrations — the
+// router runs auth + payload guard + rate limit + Zod validation, then
+// next('route') lets the existing handlers below execute the actual
+// Gemini call. Public access to AI endpoints is no longer possible.
+app.use(requestIdMiddleware);
+app.use('/api', aiRouter);
 
 // ── Rate Limiting ────────────────────────────────────────────────────
 // max: 100/15min was too tight — a single authenticated dashboard mount
