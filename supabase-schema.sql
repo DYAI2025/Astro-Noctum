@@ -207,5 +207,7 @@ CREATE POLICY "Users can read own quota" ON ai_quota
   FOR SELECT USING (auth.uid() = user_id);
 
 -- RPCs: reserve_ai_quota, commit_ai_quota, refund_ai_quota
--- (Definitions live only in the migration file — re-running the schema
--- file as DDL bootstrap won't overwrite them; run the migration to deploy.)
+-- (Definitions live only in the migration file. EXECUTE granted to
+-- service_role only — never authenticated. PostgREST cannot reach these.
+-- Each function also raises 42501 if auth.uid() != p_user_id and the
+-- caller is not service_role — defense in depth.)

@@ -79,6 +79,16 @@ DECLARE
   v_period_end   TIMESTAMPTZ;
   v_row          ai_quota%ROWTYPE;
 BEGIN
+  -- Defense in depth: only service_role (server-side) may operate on
+  -- quota for an arbitrary user. PostgREST never reaches this — see the
+  -- REVOKE below — but we keep the check so a future GRANT mistake
+  -- cannot turn into a cross-user DoS.
+  IF current_setting('request.jwt.claim.role', true) <> 'service_role'
+     AND auth.uid() IS DISTINCT FROM p_user_id THEN
+    RAISE EXCEPTION 'forbidden: cannot reserve quota for another user'
+      USING ERRCODE = '42501';
+  END IF;
+
   SELECT period_start, period_end
     INTO v_period_start, v_period_end
     FROM _ai_quota_period_bounds(p_period);
@@ -128,6 +138,12 @@ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE
   v_period_start TIMESTAMPTZ;
 BEGIN
+  IF current_setting('request.jwt.claim.role', true) <> 'service_role'
+     AND auth.uid() IS DISTINCT FROM p_user_id THEN
+    RAISE EXCEPTION 'forbidden: cannot commit quota for another user'
+      USING ERRCODE = '42501';
+  END IF;
+
   SELECT period_start INTO v_period_start FROM _ai_quota_period_bounds(p_period);
   UPDATE ai_quota
     SET used = used + 1,
@@ -150,6 +166,12 @@ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE
   v_period_start TIMESTAMPTZ;
 BEGIN
+  IF current_setting('request.jwt.claim.role', true) <> 'service_role'
+     AND auth.uid() IS DISTINCT FROM p_user_id THEN
+    RAISE EXCEPTION 'forbidden: cannot refund quota for another user'
+      USING ERRCODE = '42501';
+  END IF;
+
   SELECT period_start INTO v_period_start FROM _ai_quota_period_bounds(p_period);
   UPDATE ai_quota
     SET reserved = GREATEST(0, reserved - 1),
@@ -161,6 +183,8 @@ BEGIN
 END;
 $$;
 
-GRANT EXECUTE ON FUNCTION reserve_ai_quota(UUID, TEXT, TEXT, TEXT, INTEGER) TO authenticated, service_role;
-GRANT EXECUTE ON FUNCTION commit_ai_quota(UUID, TEXT, TEXT) TO authenticated, service_role;
-GRANT EXECUTE ON FUNCTION refund_ai_quota(UUID, TEXT, TEXT) TO authenticated, service_role;
+-- service_role only — never `authenticated`. PostgREST cannot reach
+-- these RPCs. The JS service uses SUPABASE_SERVICE_ROLE_KEY.
+GRANT EXECUTE ON FUNCTION reserve_ai_quota(UUID, TEXT, TEXT, TEXT, INTEGER) TO service_role;
+GRANT EXECUTE ON FUNCTION commit_ai_quota(UUID, TEXT, TEXT) TO service_role;
+GRANT EXECUTE ON FUNCTION refund_ai_quota(UUID, TEXT, TEXT) TO service_role;
