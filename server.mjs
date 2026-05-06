@@ -2142,7 +2142,7 @@ async function computeActiveImpactsCore(userId) {
         // Errors here are swallowed — the in-memory rawHarmony is already
         // usable for the current response.
         const mergedAstro = { ...profile.astro_json, fusion: fusionResp };
-        supabaseServer
+        void supabaseServer
           .from('astro_profiles')
           .update({ astro_json: mergedAstro })
           .eq('user_id', userId)
@@ -2150,6 +2150,11 @@ async function computeActiveImpactsCore(userId) {
             if (persistErr) {
               console.warn('[impact/active] Self-heal persist failed:', persistErr.message);
             }
+          })
+          // Explicitly handle fire-and-forget rejections so transient Supabase
+          // failures remain non-fatal and never surface as unhandled rejections.
+          .catch((persistErr) => {
+            console.warn('[impact/active] Self-heal persist failed:', persistErr?.message || persistErr);
           });
       }
     } catch (err) {
