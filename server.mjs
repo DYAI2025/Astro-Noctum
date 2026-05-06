@@ -5580,6 +5580,60 @@ app.post("/api/customer-portal", async (req, res) => {
   }
 });
 
+// ── Stripe webhook helpers ────────────────────────────────────────────
+// Resolve userId from event payload either via metadata (preferred path,
+// set during checkout / subscription creation) or by looking up the
+// stripe_customer_id in the profiles table. Catches Dashboard manual
+// interventions and retention-stripped metadata that previously caused
+// silent no-ops in the webhook (audit finding #5).
+async function resolveUserIdFromEvent(event) {
+  const obj = event.data?.object;
+  if (!obj) return null;
+  if (obj.metadata?.userId) return obj.metadata.userId;
+  if (obj.subscription_data?.metadata?.userId) return obj.subscription_data.metadata.userId;
+
+  const customerId =
+    typeof obj.customer === "string" ? obj.customer
+      : obj.customer?.id ?? null;
+  if (!customerId || !supabaseServer) return null;
+
+  const { data } = await supabaseServer
+    .from("profiles")
+    .select("id")
+    .eq("stripe_customer_id", customerId)
+    .maybeSingle();
+  return data?.id ?? null;
+}
+
+// Single source of truth for the two-table tier sync. Eliminates the
+// drift in subscription.deleted where missing metadata.userId would
+// update profiles but skip astro_profiles (audit finding #12 + #17).
+async function syncTier({ userId, tier, periodEnd = null, subscriptionId = null, customerId = null }) {
+  if (!supabaseServer) return { ok: false, reason: "supabase-unavailable" };
+  if (!userId) return { ok: false, reason: "missing-user-id" };
+
+  const profileUpdate = { tier };
+  if (subscriptionId) profileUpdate.stripe_subscription_id = subscriptionId;
+  if (customerId) profileUpdate.stripe_customer_id = customerId;
+  if (periodEnd !== null) profileUpdate.subscription_end = periodEnd;
+
+  const results = await Promise.allSettled([
+    supabaseServer.from("profiles").update(profileUpdate).eq("id", userId),
+    supabaseServer.from("astro_profiles").update({ tier }).eq("user_id", userId),
+  ]);
+
+  const profileError =
+    results[0].status === "fulfilled" ? results[0].value.error : results[0].reason;
+  const astroError =
+    results[1].status === "fulfilled" ? results[1].value.error : results[1].reason;
+
+  return {
+    ok: !profileError && !astroError,
+    profileError,
+    astroError,
+  };
+}
+
 // ── Stripe: Webhook (raw body required for signature verification) ───
 app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async (req, res) => {
   if (!stripe) return res.status(503).end();
@@ -5605,45 +5659,35 @@ app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async
   // ── Event: checkout completed → subscription created ──────────────────
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
-    const userId = session.metadata?.userId;
-    if (userId && supabaseServer) {
-      // Update BOTH tables — profiles stores Stripe metadata, astro_profiles stores tier
-      const [profileResult, astroResult] = await Promise.allSettled([
-        supabaseServer
-          .from("profiles")
-          .update({
-            tier: "premium",
-            stripe_customer_id: session.customer,
-            stripe_subscription_id: session.subscription,
-          })
-          .eq("id", userId),
-        supabaseServer
-          .from("astro_profiles")
-          .update({ tier: "premium" })
-          .eq("user_id", userId),
-      ]);
-
-      if (profileResult.status === "fulfilled" && profileResult.value.error) {
-        console.error("[Stripe] checkout profiles update failed:", profileResult.value.error.message);
+    const userId = await resolveUserIdFromEvent(event);
+    if (userId) {
+      const result = await syncTier({
+        userId,
+        tier: "premium",
+        customerId: session.customer,
+        subscriptionId: session.subscription,
+      });
+      if (result.profileError) {
+        console.error("[Stripe] checkout profiles update failed:", result.profileError.message ?? result.profileError);
       }
-      if (astroResult.status === "fulfilled" && astroResult.value.error) {
-        console.error("[Stripe] checkout astro_profiles update failed:", astroResult.value.error.message);
+      if (result.astroError) {
+        console.error("[Stripe] checkout astro_profiles update failed:", result.astroError.message ?? result.astroError);
       }
-      const anyError =
-        (profileResult.status === "rejected") ||
-        (astroResult.status === "rejected") ||
-        (profileResult.status === "fulfilled" && profileResult.value.error) ||
-        (astroResult.status === "fulfilled" && astroResult.value.error);
-      if (!anyError) {
+      if (result.ok) {
         console.log(`[Stripe] User ${userId} upgraded to premium (sub: ${session.subscription})`);
       }
+    } else {
+      console.error("[Stripe] checkout.session.completed: could not resolve userId", { sessionId: session.id });
     }
 
   // ── Event: subscription updated (renewal, plan change, cancel scheduled) ─
   } else if (event.type === "customer.subscription.updated") {
     const sub = event.data.object;
-    const userId = sub.metadata?.userId;
-    if (!userId || !supabaseServer) return res.json({ received: true });
+    const userId = await resolveUserIdFromEvent(event);
+    if (!userId) {
+      console.error("[Stripe] subscription.updated: could not resolve userId", { subId: sub.id });
+      return res.json({ received: true });
+    }
 
     const periodEnd = sub.current_period_end
       ? new Date(sub.current_period_end * 1000).toISOString()
@@ -5658,35 +5702,26 @@ app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async
       sub.status === "trialing" ||
       ((sub.status === "past_due" || sub.status === "unpaid") && stillInGrace);
 
-    const [profileResult, astroResult] = await Promise.allSettled([
-      supabaseServer
-        .from("profiles")
-        .update({
-          tier: isPremium ? "premium" : "free",
-          stripe_subscription_id: sub.id,
-          subscription_end: periodEnd,
-        })
-        .eq("stripe_customer_id", sub.customer),
-      // Keep astro_profiles in sync — it may be read by components that don't join profiles
-      supabaseServer
-        .from("astro_profiles")
-        .update({ tier: isPremium ? "premium" : "free" })
-        .eq("user_id", userId),
-    ]);
-
-    if (profileResult.status === "fulfilled" && profileResult.value.error) {
-      console.error("[Stripe] subscription.updated profiles failed:", profileResult.value.error.message);
+    const result = await syncTier({
+      userId,
+      tier: isPremium ? "premium" : "free",
+      subscriptionId: sub.id,
+      periodEnd,
+    });
+    if (result.profileError) {
+      console.error("[Stripe] subscription.updated profiles failed:", result.profileError.message ?? result.profileError);
     }
-    if (astroResult.status === "fulfilled" && astroResult.value.error) {
-      console.error("[Stripe] subscription.updated astro_profiles failed:", astroResult.value.error.message);
+    if (result.astroError) {
+      console.error("[Stripe] subscription.updated astro_profiles failed:", result.astroError.message ?? result.astroError);
     }
-    if (!(profileResult.value?.error || astroResult.value?.error)) {
+    if (result.ok) {
       console.log(`[Stripe] Subscription ${sub.id} updated — status=${sub.status}, periodEnd=${periodEnd}`);
     }
 
   // ── Event: subscription deleted (hard cancel, billing failure after retries) ─
   } else if (event.type === "customer.subscription.deleted") {
     const sub = event.data.object;
+    const userId = await resolveUserIdFromEvent(event);
     // sub.current_period_end is still set — grant access until that date
     const periodEnd = sub.current_period_end
       ? new Date(sub.current_period_end * 1000).toISOString()
@@ -5694,69 +5729,48 @@ app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async
 
     const now = new Date();
     const stillInGrace = periodEnd && new Date(periodEnd) > now;
+    const tier = stillInGrace ? "premium" : "free";
 
-    const customerId =
-      typeof sub.customer === "string"
-        ? sub.customer
-        : sub.customer && typeof sub.customer === "object"
-          ? sub.customer.id
-          : null;
-
-    if (!customerId) {
-      console.error("[Stripe] subscription.deleted missing customer id on subscription object");
+    if (!userId) {
+      console.error("[Stripe] subscription.deleted: could not resolve userId", { subId: sub.id });
     } else {
-      const results = await Promise.allSettled([
-        supabaseServer
-          .from("profiles")
-          .update({
-            tier: stillInGrace ? "premium" : "free",
-            subscription_end: periodEnd,
-          })
-          .eq("stripe_customer_id", customerId),
-        // Only update astro_profiles if we have a userId from metadata
-        ...(sub.metadata?.userId
-          ? [supabaseServer
-              .from("astro_profiles")
-              .update({ tier: stillInGrace ? "premium" : "free" })
-              .eq("user_id", sub.metadata.userId)]
-          : []),
-      ]);
-
-      const profileResult = results[0];
-      const astroResult = results.length > 1 ? results[1] : null;
-      if (profileResult.status === "fulfilled" && profileResult.value.error) {
-        console.error("[Stripe] subscription.deleted profiles failed:", profileResult.value.error.message);
+      const result = await syncTier({ userId, tier, periodEnd });
+      if (result.profileError) {
+        console.error("[Stripe] subscription.deleted profiles failed:", result.profileError.message ?? result.profileError);
       }
-      if (astroResult?.status === "fulfilled" && astroResult.value.error) {
-        console.error("[Stripe] subscription.deleted astro_profiles failed:", astroResult.value.error.message);
+      if (result.astroError) {
+        console.error("[Stripe] subscription.deleted astro_profiles failed:", result.astroError.message ?? result.astroError);
       }
-      if (!profileResult.value?.error && !astroResult?.value?.error) {
-        console.log(`[Stripe] Subscription deleted — grace until ${periodEnd}, tier=${stillInGrace ? "premium" : "free"}`);
+      if (result.ok) {
+        console.log(`[Stripe] Subscription deleted — grace until ${periodEnd}, tier=${tier}`);
       }
     }
+
   // ── Event: invoice payment succeeded (renewal confirmed) ──────────────
   } else if (event.type === "invoice.payment_succeeded") {
     const invoice = event.data.object;
-    if (invoice.billing_reason === "subscription_cycle" && supabaseServer) {
+    // Two-stage gate (audit finding #13): only act on subscription cycles
+    // that have actually been paid. A draft/uncollectible invoice firing
+    // this event would otherwise extend subscription_end incorrectly.
+    if (invoice.billing_reason !== "subscription_cycle") {
+      // Pass through silently — first-cycle invoices come from
+      // checkout.session.completed instead.
+    } else if (invoice.status !== "paid") {
+      console.warn(`[Stripe] invoice.payment_succeeded ignored — invoice.status=${invoice.status} (expected paid)`, { invoiceId: invoice.id });
+    } else {
+      const userId = await resolveUserIdFromEvent(event);
       const periodEnd = invoice.lines?.data?.[0]?.period?.end
         ? new Date(invoice.lines.data[0].period.end * 1000).toISOString()
         : null;
-      // Normalize customer to an ID string in case Stripe sends an expanded object
-      const customerId =
-        typeof invoice.customer === "string"
-          ? invoice.customer
-          : invoice.customer?.id;
-      if (!customerId) {
-        console.error("[Stripe] invoice.payment_succeeded: missing customer ID on invoice", {
-          invoiceId: invoice.id,
-        });
+      if (!userId) {
+        console.error("[Stripe] invoice.payment_succeeded: could not resolve userId", { invoiceId: invoice.id });
       } else if (periodEnd) {
-        const { error } = await supabaseServer
-          .from("profiles")
-          .update({ tier: "premium", subscription_end: periodEnd })
-          .eq("stripe_customer_id", customerId);
-        if (error) console.error("[Stripe] invoice.payment_succeeded update failed:", error);
-        else console.log(`[Stripe] Renewal confirmed for customer ${customerId}, end=${periodEnd}`);
+        const result = await syncTier({ userId, tier: "premium", periodEnd });
+        if (result.profileError) {
+          console.error("[Stripe] invoice.payment_succeeded profiles failed:", result.profileError.message ?? result.profileError);
+        } else if (result.ok) {
+          console.log(`[Stripe] Renewal confirmed for user ${userId}, end=${periodEnd}`);
+        }
       }
     }
 

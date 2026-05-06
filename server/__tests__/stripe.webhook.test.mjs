@@ -84,6 +84,26 @@ describe('Stripe webhook raw-body regression guard', () => {
     expect(receivedBytes.toString('utf8')).toBe(payload);
   });
 
+  it('STRIPE-REG-007: webhook resolves userId via metadata OR stripe_customer_id', () => {
+    const src = readFileSync(SERVER_FILE, 'utf8');
+    expect(src).toMatch(/resolveUserIdFromEvent/);
+    // The fallback path must read from profiles by stripe_customer_id.
+    expect(src).toMatch(/stripe_customer_id/);
+  });
+
+  it('STRIPE-REG-008: tier sync goes through a single helper (no duplicated two-table logic)', () => {
+    const src = readFileSync(SERVER_FILE, 'utf8');
+    expect(src).toMatch(/async function syncTier\b/);
+    // The helper must update both profiles and astro_profiles.
+    expect(src).toMatch(/from\(['"]profiles['"]\)\.update/);
+    expect(src).toMatch(/from\(['"]astro_profiles['"]\)\.update/);
+  });
+
+  it('STRIPE-REG-009: invoice.payment_succeeded gates on invoice.status === "paid"', () => {
+    const src = readFileSync(SERVER_FILE, 'utf8');
+    expect(src).toMatch(/invoice\.status\s*!==\s*['"]paid['"]/);
+  });
+
   it('STRIPE-REG-006: integration — non-stripe /api/* routes still get parsed JSON', async () => {
     // The flip side of REG-005: confirm the skip is NARROW. Other routes
     // under /api/ must still get express.json() parsing, otherwise the
