@@ -1,5 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { isTourStepVisible } from '../hooks/useDashboardTour';
 
 const mockFrom = vi.fn();
 
@@ -108,5 +109,24 @@ describe('useDashboardTour', () => {
     expect(result.current.tourStep).toBe('done');
     expect(result.current.persistError).not.toBeNull();
     expect(result.current.persistError).toContain('DB write failed');
+  });
+});
+
+describe('isTourStepVisible (TASK-1.1)', () => {
+  it('TOUR-VIS-001: step 0 is always visible (no scroll gate)', () => {
+    expect(isTourStepVisible(0, new Set())).toBe(true);
+    expect(isTourStepVisible(0, new Set([1]))).toBe(true);
+  });
+
+  it('TOUR-VIS-002: step 1 is hidden until its sentinel has scrolled into view', () => {
+    expect(isTourStepVisible(1, new Set())).toBe(false);
+    expect(isTourStepVisible(1, new Set([1]))).toBe(true);
+  });
+
+  it('TOUR-VIS-003: tourStep "done" is NEVER visible (the actual TASK-1.1 bug)', () => {
+    // Bug repro: previous logic was `tourStep === 0 || tourStep === 'done' || …`
+    // which kept the tour overlay on screen forever after completion.
+    expect(isTourStepVisible('done', new Set())).toBe(false);
+    expect(isTourStepVisible('done', new Set([1]))).toBe(false);
   });
 });

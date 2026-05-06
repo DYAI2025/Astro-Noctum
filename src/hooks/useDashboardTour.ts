@@ -103,3 +103,22 @@ export function useDashboardTour(userId: string | undefined) {
     restart,
   };
 }
+
+/**
+ * Pure visibility predicate for the dashboard tour overlay.
+ *
+ * - Step 0 (planet section): always visible — anchor is near the top.
+ * - Step 1 (levi/agents): visible only after the sentinel has scrolled
+ *   into view. Without that gate the overlay would render off-screen.
+ * - 'done' (tour completed): NEVER visible. Previously this branch
+ *   returned true, which kept the overlay on screen forever after
+ *   completion (DEVELOPMENT_BRIEF TASK-1.1).
+ */
+export function isTourStepVisible(
+  tourStep: TourStep,
+  scrollReached: ReadonlySet<number>,
+): boolean {
+  if (tourStep === 0) return true;
+  if (tourStep === 1) return scrollReached.has(1);
+  return false; // 'done' or any future terminal state
+}

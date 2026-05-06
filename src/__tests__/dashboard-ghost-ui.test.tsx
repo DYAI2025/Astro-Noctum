@@ -48,6 +48,12 @@ vi.mock('@/src/hooks/useDashboardTour', () => ({
     skip: vi.fn(),
     restart: vi.fn(),
   }),
+  // Pure helper — re-export real semantics so 'done' hides the overlay.
+  // (Mock keeps it consistent with the production module.)
+  isTourStepVisible: (
+    tourStep: 0 | 1 | 'done',
+    scrollReached: ReadonlySet<number>,
+  ) => tourStep === 0 || (tourStep === 1 && scrollReached.has(1)),
 }));
 
 vi.mock('@/src/hooks/useFirstRunDaily', () => ({

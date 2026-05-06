@@ -31,7 +31,7 @@ import { TourOverlay } from "./dashboard/TourOverlay";
 import { MagnetsturmKarte } from "./dashboard/MagnetsturmKarte";
 import { NatalSignaturStatic } from "./dashboard/NatalSignaturStatic";
 import { useSignaturSignal } from "../hooks/useSignaturSignal";
-import { useDashboardTour } from "@/src/hooks/useDashboardTour";
+import { isTourStepVisible, useDashboardTour } from "@/src/hooks/useDashboardTour";
 import { usePlanetarium } from "@/src/contexts/PlanetariumContext";
 import { useDeviceLocation } from "@/src/hooks/useDeviceLocation";
 import { SkyModeToggle } from "./dashboard/SkyModeToggle";
@@ -133,9 +133,9 @@ export function Dashboard({
     : tourStep === 1 ? leviSentinelRef
     : undefined;
 
-  // Step 0 is immediate; step 1 waits for scroll
-  const isTourStepVisible = tourStep === 0 || tourStep === 'done'
-    || (tourStep === 1 && scrollReached.has(1));
+  // Step 0 is immediate; step 1 waits for scroll; 'done' hides the overlay.
+  // See `isTourStepVisible` in useDashboardTour.ts (DEVELOPMENT_BRIEF TASK-1.1).
+  const tourOverlayVisible = isTourStepVisible(tourStep, scrollReached);
 
   useEffect(() => {
     if (tourStep !== 1) return;
@@ -539,7 +539,7 @@ export function Dashboard({
       </AnimatePresence>
 
       {/* ═══ TOUR OVERLAY ════════════════════════════════════════════ */}
-      {isTourStepVisible && (
+      {tourOverlayVisible && (
         <TourOverlay
           step={tourStep}
           birthDate={birthDate || ''}
