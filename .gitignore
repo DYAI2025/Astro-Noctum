@@ -28,3 +28,7 @@ __pycache__/
 # Local-only artefacts (prototype references + session kickoff docs)
 Cymantics/
 H_SESSION_KICKOFF.md
+
+# Local tooling state (claude-flow swarm coordination, ruflo MCP memory DB)
+.swarm/
+ruvector.db
