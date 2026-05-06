@@ -104,6 +104,25 @@ describe('Stripe webhook raw-body regression guard', () => {
     expect(src).toMatch(/invoice\.status\s*!==\s*['"]paid['"]/);
   });
 
+  it('STRIPE-REG-010: webhook handler claims events via stripeEvents service before side effects', () => {
+    const src = readFileSync(SERVER_FILE, 'utf8');
+    expect(src).toMatch(/claimStripeEvent\s*\(\s*event\s*\)/);
+    expect(src).toMatch(/markStripeEventProcessed\s*\(\s*event\.id\s*\)/);
+    // The claim must happen AFTER constructEvent (signature first) and
+    // BEFORE any side-effect branch.
+    const constructIdx = src.indexOf('stripe.webhooks.constructEvent');
+    const claimIdx = src.indexOf('claimStripeEvent(event)');
+    const firstBranchIdx = src.indexOf('event.type === "checkout.session.completed"');
+    expect(constructIdx).toBeGreaterThan(0);
+    expect(claimIdx).toBeGreaterThan(constructIdx);
+    expect(firstBranchIdx).toBeGreaterThan(claimIdx);
+  });
+
+  it('STRIPE-REG-011: dedup short-circuit returns { received: true, dedup: true }', () => {
+    const src = readFileSync(SERVER_FILE, 'utf8');
+    expect(src).toMatch(/dedup:\s*true/);
+  });
+
   it('STRIPE-REG-006: integration — non-stripe /api/* routes still get parsed JSON', async () => {
     // The flip side of REG-005: confirm the skip is NARROW. Other routes
     // under /api/ must still get express.json() parsing, otherwise the

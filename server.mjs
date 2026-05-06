@@ -13,6 +13,7 @@ import { requestIdMiddleware } from "./server/middleware/requestId.mjs";
 import { requireOwnership } from "./server/middleware/ownership.mjs";
 import { elevenLabsAuth } from "./server/middleware/elevenLabsAuth.mjs";
 import { transitStateCache } from "./server/services/cache.service.mjs";
+import { claimStripeEvent, markStripeEventProcessed } from "./server/services/stripeEvents.service.mjs";
 import Stripe from 'stripe';
 
 // Exponential-backoff fetch helper used by the bootstrap endpoint.
@@ -5656,6 +5657,16 @@ app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
+  // ── Dedup gate ──────────────────────────────────────────────────────
+  // Stripe retries webhooks on 5xx and on slow responses. Every event
+  // ID is INSERTed into stripe_events before any side-effect; duplicate
+  // event IDs hit the unique-violation path and we ack 200 OK without
+  // re-running tier updates. See server/services/stripeEvents.service.mjs.
+  const claimed = await claimStripeEvent(event);
+  if (!claimed) {
+    return res.json({ received: true, dedup: true });
+  }
+
   // ── Event: checkout completed → subscription created ──────────────────
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
@@ -5786,6 +5797,10 @@ app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async
     console.log(`[Stripe] Checkout expired for session ${session.id}`);
   }
 
+  // Mark the event as fully processed in the dedup log. Errors are
+  // swallowed inside the helper — a failed mark must not block the
+  // 200 OK to Stripe (otherwise Stripe retries → re-claim → re-fail).
+  await markStripeEventProcessed(event.id);
   res.json({ received: true });
 });
 
