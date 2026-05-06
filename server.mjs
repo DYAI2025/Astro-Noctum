@@ -2300,7 +2300,12 @@ app.post('/api/experience/bootstrap', requireUserAuth, async (req, res) => {
             }
           } catch (bafeErr) {
             const errorName = bafeErr?.name;
-            const isRetryableError = !errorName || errorName === 'AbortError' || errorName === 'TimeoutError' || errorName === 'TypeError';
+            // Preserve the prior fallback behavior for nameless fetch errors:
+            // retry them until maxAttempts instead of failing the loop early.
+            const isRetryableError = !errorName
+              || errorName === 'AbortError'
+              || errorName === 'TimeoutError'
+              || errorName === 'TypeError';
             if (attempt === maxAttempts) {
               throw bafeErr;
             }
