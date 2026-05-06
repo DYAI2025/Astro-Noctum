@@ -5468,7 +5468,9 @@ app.post("/api/checkout", async (req, res) => {
     let customerId = profile?.stripe_customer_id;
 
     if (!customerId) {
-      // First checkout — create Stripe customer and persist ID
+      // First checkout — create Stripe customer and persist ID.
+      // Idempotency key scopes to user so rage-clicks don't create
+      // parallel Stripe customers (audit finding #2).
       const customer = await stripe.customers.create({
         email: userEmail,
         metadata: {
@@ -5476,6 +5478,8 @@ app.post("/api/checkout", async (req, res) => {
           platform,
           appVersion: telemetry.appVersion || "",
         },
+      }, {
+        idempotencyKey: `customer-create-${userId}`,
       });
       customerId = customer.id;
 
@@ -5485,6 +5489,11 @@ app.post("/api/checkout", async (req, res) => {
         .eq("id", userId);
     }
 
+    // Day-windowed idempotency key matches Stripe's 24h cache. Same
+    // user, same calendar day → same session URL (resilient to
+    // double-submit). Day-2 retry gets a fresh session instead of a
+    // potentially-expired Day-1 session.
+    const todayUtc = new Date().toISOString().slice(0, 10);
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [{ price: stripePriceId, quantity: 1 }],
@@ -5503,6 +5512,8 @@ app.post("/api/checkout", async (req, res) => {
         appVersion: telemetry.appVersion || "",
         deviceId: telemetry.deviceId || "",
       },
+    }, {
+      idempotencyKey: `checkout-${userId}-${todayUtc}`,
     });
     res.json({
       url: session.url,
@@ -5552,6 +5563,8 @@ app.post("/api/customer-portal", async (req, res) => {
           userId: authedUser.id,
           source: "portal-recovery",
         },
+      }, {
+        idempotencyKey: `customer-portal-recovery-${authedUser.id}`,
       });
       customerId = customer.id;
 
