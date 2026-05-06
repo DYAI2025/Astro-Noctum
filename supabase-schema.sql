@@ -140,6 +140,18 @@ ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT;
 ALTER TABLE profiles
 ADD COLUMN IF NOT EXISTS stripe_payment_id TEXT;
 
+-- Subscription state (set by Stripe webhook). Mirrors
+-- supabase-migrations/20260324_stripe_subscription_columns.sql so a
+-- clean rebuild from this schema file matches prod.
+ALTER TABLE profiles
+  ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT;
+
+ALTER TABLE profiles
+  ADD COLUMN IF NOT EXISTS subscription_end TIMESTAMPTZ;
+
+COMMENT ON COLUMN profiles.stripe_subscription_id IS 'Stripe subscription ID (sub_xxx). Set on checkout.session.completed via webhook.';
+COMMENT ON COLUMN profiles.subscription_end IS 'UTC timestamp when current subscription period ends. Set on subscription.updated/deleted/invoice.payment_succeeded. Used to grant access until period end on cancellation.';
+
 CREATE INDEX IF NOT EXISTS idx_profiles_tier ON profiles(tier);
 
 -- === Contribution Events (Quiz results for Fusion Ring) ===
