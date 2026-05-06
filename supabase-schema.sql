@@ -174,3 +174,38 @@ CREATE POLICY "users_delete_own_events" ON public.contribution_events
 
 CREATE POLICY "anon_insert_events" ON public.contribution_events
   FOR INSERT TO anon WITH CHECK (user_id IS NULL);
+
+-- ── AI Quota tracking ─────────────────────────────────────────────────
+-- Atomic per-user quota for AI provider calls (Gemini / OpenRouter).
+-- Limits are passed as RPC arguments; server reads them from env vars.
+-- See supabase-migrations/20260506_ai_quota.sql for the full migration.
+
+CREATE TABLE IF NOT EXISTS ai_quota (
+  id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id       UUID        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  route_group   TEXT        NOT NULL,
+  period_start  TIMESTAMPTZ NOT NULL,
+  period_end    TIMESTAMPTZ NOT NULL,
+  "limit"       INTEGER     NOT NULL,
+  used          INTEGER     NOT NULL DEFAULT 0,
+  reserved      INTEGER     NOT NULL DEFAULT 0,
+  tier          TEXT        NOT NULL DEFAULT 'free',
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT ai_quota_unique_period UNIQUE (user_id, route_group, period_start),
+  CONSTRAINT ai_quota_used_nonneg CHECK (used >= 0),
+  CONSTRAINT ai_quota_reserved_nonneg CHECK (reserved >= 0),
+  CONSTRAINT ai_quota_limit_pos CHECK ("limit" > 0)
+);
+
+CREATE INDEX IF NOT EXISTS ai_quota_user_route_idx
+  ON ai_quota (user_id, route_group, period_start);
+
+ALTER TABLE ai_quota ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can read own quota" ON ai_quota
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- RPCs: reserve_ai_quota, commit_ai_quota, refund_ai_quota
+-- (Definitions live only in the migration file — re-running the schema
+-- file as DDL bootstrap won't overwrite them; run the migration to deploy.)
