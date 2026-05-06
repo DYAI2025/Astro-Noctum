@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased] - 2026-05-06 — Backend Hardening Sprint (Phases 1 + 2 + 3 partial)
+## [Unreleased] - 2026-05-06 — Backend Hardening Sprint (Phases 1 + 2 + 3 complete)
 
 ### Features
 
@@ -14,6 +14,9 @@
 - **ElevenLabs tool-auth middleware** (`server/middleware/elevenLabsAuth.mjs`) — `crypto.timingSafeEqual` Bearer-secret check replaces the four inline `token !== ELEVENLABS_TOOL_SECRET` comparisons on `/api/profile/:userId`, `/api/agent/conversation`, `/api/agent/daily/:userId`, and `/api/agent/match`. Fail-closed: returns 503 `AI_CONFIG_MISSING` when `ELEVENLABS_TOOL_SECRET` is unset/empty so misconfigured deploys can't accidentally accept random tokens. Structured-envelope responses (AUTH_REQUIRED / AUTH_INVALID / AI_CONFIG_MISSING) instead of the previous `{"error":"Unauthorized"}` string.
 - **Server log redaction utility** (`server/utils/redact.mjs`) — deep-copy redactor that replaces values for known-secret keys (`Authorization`, `Cookie`, `GEMINI_API_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `stripe-signature`, `ELEVENLABS_TOOL_SECRET`, `password`, `token`, `api_key`, `secret`, etc.) with `[REDACTED]`. Bounded recursion (MAX_DEPTH=6) so cycles cannot blow the stack. Case-insensitive exact-key match — innocent fields like `tokens_used` stay readable. Never mutates input.
 - **Structured request logger** (`server/observability/logger.mjs`) — emits one JSON line per request with `request_id` / `method` / `route` / `status` / `latency_ms` / `provider` / `cache_status` / `quota_status` / `error_code`. User IDs and IPs go through SHA-256 → 12-char hex (`hashId`) so logs are user-groupable without carrying PII into log storage. Library-only — no route emits log lines yet; wiring into the request lifecycle is a follow-up.
+- **Stripe webhook raw-body regression guard** (`server/__tests__/stripe.webhook.test.mjs`) — six tests guarding against the class of bugs where a future body-parser refactor silently breaks Stripe signature verification. STRIPE-REG-005 is the strong guard: an integration test that mirrors `server.mjs:317–328`'s parser order, sends a real POST with `Content-Type: application/json`, and asserts the handler sees `req.body` as a `Buffer` (raw bytes), not a parsed object. Static checks (REG-001..004) read `server.mjs` and assert the `/webhook/stripe` skip + `express.raw` registration are present. REG-006 is the flip side — confirms the skip is narrow so other `/api/*` routes still get parsed JSON.
+- **Public-data cache service with stale-if-error** (`server/services/publicData.service.mjs`) — generic upstream HTTP fetcher with three layers of resilience: (1) cache via the shared `publicDataCache` singleton, with per-call `ttlMs` so different upstreams can have different lifetimes; (2) stale-if-error fallback — each successful fetch updates a last-good store, and a subsequent failure (network error, non-2xx, or AbortController timeout) returns the last-good payload with `stale: true`; (3) per-call AbortController timeout (default 8 s). Throws `{ code: 'UPSTREAM_UNAVAILABLE' }` only when upstream fails AND no last-good exists. Library-only — wiring on `/api/space-weather`, `/api/aurora`, and `/api/jieqi` is a follow-up.
+- **Secret-leak CI scanner** (`scripts/check-secret-leak.mjs`, npm `check:secrets`) — walks `dist/` after `vite build` and exits 1 on any value-shape match for known server-only secrets: Stripe `sk_live_`/`sk_test_`/`whsec_`, Supabase service-role JWT (≥280-char signature), Gemini `AIza` + 35 chars, OpenRouter `sk-or-v1-`, AWS `AKIA`, ElevenLabs tool-secret env-shaped literal. Public-facing keys (Stripe `pk_live_`, Supabase anon JWT) are deliberately allowed. Patterns target value shapes — env-var names alone are fine in the bundle since Vite uses them as runtime flags. Verified manually against current `dist/`: 64 files scanned, zero hits.
 
 ### Refactoring
 
@@ -22,14 +25,13 @@
 
 ### Tests
 
-- 100 server-side tests (was 47): ApiError classes (5), request ID middleware (4), auth middleware (5), error handler (5), AI rate limit (3), Zod validate (6), AI schemas (9), AI routes (10), ownership middleware (4), AI quota service (12), cache service (10), ElevenLabs auth middleware (7), redact utility (14), and structured logger (6). 5 client tests for `useSignaturSignal` cover polling cadence (POLL-001..005). Full suite: 2196/2196.
+- 125 server-side tests (was 47): ApiError classes (5), request ID middleware (4), auth middleware (5), error handler (5), AI rate limit (3), Zod validate (6), AI schemas (9), AI routes (10), ownership middleware (4), AI quota service (12), cache service (10), ElevenLabs auth middleware (7), redact utility (14), structured logger (6), Stripe webhook regression (6), public-data service (8), and secret-leak scanner (11). 5 client tests for `useSignaturSignal` cover polling cadence (POLL-001..005). Full suite: 2221/2221.
 
 ### Notes
 
-- Implementation plan: `docs/plans/2026-05-06-backend-hardening.md` (Phases 1 + 2 + 3 partial of 5).
-- Review-fix plans: `docs/plans/2026-05-06-backend-hardening-review-fixes.md` (Phase 1) + `docs/plans/2026-05-06-phase2-review-fixes.md` (Phase 2) + `docs/plans/2026-05-06-phase3-review-fixes.md` (Phase 3 partial — wires elevenLabsAuth onto its four callers).
-- AI quota service is **wired** into the codebase but **not yet attached** to any route. The next sprint chunk wires it onto `/api/interpret` and `/api/analyze/conversation`, then expands to `/api/experience/*` and `/api/agent/*`.
-- Phase 3 partial: Tasks 15 (ElevenLabs auth middleware) and 16 (redact + logger) shipped; the elevenLabsAuth middleware is now wired onto `/api/profile/:userId`, `/api/agent/conversation`, `/api/agent/daily/:userId`, and `/api/agent/match`. Tasks 17 (Stripe webhook regression test), 18 (public-data stale-if-error cache), and 19 (CI secret-scan) are still pending — they'll land in the next batch.
+- Implementation plan: `docs/plans/2026-05-06-backend-hardening.md` (Phases 1 + 2 + 3 of 5 complete).
+- Review-fix plans: Phase 1 (`docs/plans/2026-05-06-backend-hardening-review-fixes.md`), Phase 2 (`docs/plans/2026-05-06-phase2-review-fixes.md`), Phase 3 partial (`docs/plans/2026-05-06-phase3-review-fixes.md`), Phase 3 ship-housekeeping (`docs/plans/2026-05-06-phase3-ship-housekeeping.md`), Phase 3 final (`docs/plans/2026-05-06-phase3-final-review-fixes.md`).
+- All 19 backend-hardening tasks complete. Three deliberate non-wirings remain as the natural next sprint chunk (each documented in commit messages): (1) attach the AI quota service to `/api/interpret` + `/api/analyze/conversation` + `/api/experience/*` + `/api/agent/*`; (2) attach the public-data stale-if-error wrapper to `/api/space-weather`, `/api/aurora`, and `/api/jieqi`; (3) wire `npm run check:secrets` into the `build` script so CI fails on accidental secret bundling.
 
 ## [Unreleased] - 2026-04-21 — Sprint S-DASH-SIGNATUR-GAPS
 
