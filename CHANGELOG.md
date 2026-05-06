@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased] - 2026-05-06 — Backend Hardening Sprint (Phase 1)
+## [Unreleased] - 2026-05-06 — Backend Hardening Sprint (Phases 1 + 2)
 
 ### Features
 
@@ -8,6 +8,9 @@
 - **Structured error envelope + ApiError classes** (`server/errors/apiErrors.mjs`, `server/middleware/errorHandler.mjs`) — every server-thrown `ApiError` and every middleware-direct response now uses the same shape: `{ error: { code, message, request_id, recoverable, retry_after, details? } }`. 13 typed codes (`AUTH_REQUIRED`, `AUTH_INVALID`, `FORBIDDEN`, `VALIDATION_FAILED`, `PAYLOAD_TOO_LARGE`, `RATE_LIMITED`, `AI_QUOTA_EXCEEDED`, `AI_TIMEOUT`, `AI_PROVIDER_UNAVAILABLE`, `AI_PROVIDER_RATE_LIMITED`, `AI_OUTPUT_INVALID`, `AI_CONFIG_MISSING`, `INTERNAL_ERROR`). Stack traces never leak in response bodies.
 - **Request ID propagation** (`server/middleware/requestId.mjs`, mounted globally in `server.mjs:340`) — every request gets a `req.requestId` (`req_<uuid>`). Echoed back as `X-Request-Id` header. Client-supplied `X-Request-Id` is honoured only if it matches the safe regex `^req_[a-zA-Z0-9_-]{1,64}$`; malicious values (HTML, oversized strings) are silently replaced.
 - **AI endpoint inventory** (`docs/security/ai-endpoint-inventory.md`) — snapshot of all 11 routes that call Gemini/OpenRouter, current protection layer, and follow-ups (quota wiring, output validation, rate-limit gaps on `/api/synastry` and `/api/horoscope/daily`).
+- **AI quota infrastructure** (`supabase-migrations/20260506_ai_quota.sql` + `supabase-migrations/20260506_ai_quota_lockdown.sql` + `server/services/aiQuota.service.mjs`) — Postgres-side `ai_quota` table with race-safe `reserve_ai_quota` / `commit_ai_quota` / `refund_ai_quota` RPCs (atomic `UPDATE … WHERE (used + reserved) < limit RETURNING` pattern). JS service wraps the RPCs with daily/monthly tier limits read from env vars (`AI_DAILY_FREE_LIMIT` / `AI_DAILY_PREMIUM_LIMIT` / `AI_MONTHLY_FREE_LIMIT` / `AI_MONTHLY_PREMIUM_LIMIT`). Service is library-only — no route calls it yet. Lockdown migration revokes the `authenticated` grant and adds an in-body `auth.uid() = p_user_id` check; only `service_role` can reach the RPCs.
+- **Transit-state server-side cache + ownership middleware** (`server/middleware/ownership.mjs` + `server/services/cache.service.mjs` + `server.mjs`) — `requireOwnership('userId')` middleware compares `req.params.userId` against `req.userId` and returns 403 FORBIDDEN with the structured envelope when they differ. The `MemoryCache` class backs both `transitStateCache` (10 s default TTL via `TRANSIT_STATE_CACHE_TTL_MS`) and `publicDataCache` (5 min default via `PUBLIC_DATA_CACHE_TTL_MS`). `/api/transit-state/:userId` reads/writes the cache in both live and fallback paths and emits `X-Cache: HIT|MISS`. `/api/contribute` and `/api/contribution/space-weather` call `transitStateCache.del(userId)` so quiz and space-weather contribution events bust the cache immediately instead of waiting for TTL expiry.
+- **Visibility-aware client polling** (`src/hooks/useSignaturSignal.ts`) — transit-state polling slows from 800 ms (~75 req/min/user) to 8 s active / 45 s hidden (~7.5 req/min visible, ~1.3 req/min backgrounded). `visibilitychange` listener fires an immediate refresh when the tab returns to focus. Existing exponential backoff and online/offline handling preserved unchanged.
 
 ### Refactoring
 
@@ -16,13 +19,14 @@
 
 ### Tests
 
-- 47 new server-side tests covering ApiError classes (5), request ID middleware (4), auth middleware (5), error handler (5), AI rate limit (3), Zod validate (6), AI schemas (9), and AI routes (10). Full suite remains green at 2138 passing.
+- 73 server-side tests (was 47): ApiError classes (5), request ID middleware (4), auth middleware (5), error handler (5), AI rate limit (3), Zod validate (6), AI schemas (9), AI routes (10), ownership middleware (4), AI quota service (12), and cache service (10). 5 new client tests for `useSignaturSignal` cover the polling cadence (POLL-001..005). Full suite: 2169/2169.
 
 ### Notes
 
-- Implementation plan: `docs/plans/2026-05-06-backend-hardening.md` (Phase 1 of 5).
-- Review-fix plan: `docs/plans/2026-05-06-backend-hardening-review-fixes.md`.
-- AI quota service, transit-state cache, ElevenLabs auth refactor, structured logging, public-data cache, and CI secret-scan are scheduled for Phases 2–5 of the sprint.
+- Implementation plan: `docs/plans/2026-05-06-backend-hardening.md` (Phases 1 + 2 of 5).
+- Review-fix plans: `docs/plans/2026-05-06-backend-hardening-review-fixes.md` (Phase 1) + `docs/plans/2026-05-06-phase2-review-fixes.md` (Phase 2).
+- AI quota service is **wired** into the codebase but **not yet attached** to any route. The next sprint chunk wires it onto `/api/interpret` and `/api/analyze/conversation`, then expands to `/api/experience/*` and `/api/agent/*`.
+- ElevenLabs auth refactor, structured logger + redact, public-data stale-if-error cache, Stripe-webhook regression test, and the CI secret-scan are scheduled for Phase 3 (Tasks 15–19 in the main plan).
 
 ## [Unreleased] - 2026-04-21 — Sprint S-DASH-SIGNATUR-GAPS
 
