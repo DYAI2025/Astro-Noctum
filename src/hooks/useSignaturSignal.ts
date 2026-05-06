@@ -25,10 +25,33 @@ type SignaturSignalState = {
 };
 
 const clampTarget = (value: number): number => Math.max(-1, Math.min(2, value));
-const POLL_INTERVAL_MS = 800;
+
+/**
+ * Polling cadence (Phase 2 — Task 14, 2026-05-06 backend hardening sprint).
+ *
+ * Was 800ms — fired ~1125 requests per 15 minutes per dashboard mount and
+ * burnt the global API rate-limit before the global polling skip-list was
+ * added in Sprint S-DASH-SIGNATUR-GAPS. Now:
+ *
+ *   ACTIVE  — visible tab, ~7.5 polls/min. Server cache (10s TTL, see
+ *             server.mjs:/api/transit-state) absorbs consecutive same-user
+ *             polls; ring on screen still feels live (transits don't
+ *             change faster than the eye can perceive).
+ *   HIDDEN  — backgrounded tab; effectively pause-and-keep-warm so the
+ *             ring is fresh when the user returns. visibilitychange also
+ *             triggers an immediate fetch.
+ *   OFFLINE — keep checking but don't burn battery.
+ *   ERROR   — exponential backoff capped at 30s.
+ */
+export const ACTIVE_POLL_INTERVAL_MS = 8_000;
+export const HIDDEN_POLL_INTERVAL_MS = 45_000;
 const OFFLINE_POLL_INTERVAL_MS = 15_000;
 const ERROR_BASE_RETRY_MS = 3_000;
 const ERROR_MAX_RETRY_MS = 30_000;
+
+function isTabHidden(): boolean {
+  return typeof document !== 'undefined' && document.visibilityState === 'hidden';
+}
 
 export const useSignaturSignal = (userId: string): SignaturSignalState => {
   const [signalData, setSignalData] = useState<FusionSignalData | null>(null);
@@ -148,7 +171,7 @@ export const useSignaturSignal = (userId: string): SignaturSignalState => {
       if (!mountedRef.current) return;
 
       if (ok) {
-        scheduleNext(POLL_INTERVAL_MS);
+        scheduleNext(isTabHidden() ? HIDDEN_POLL_INTERVAL_MS : ACTIVE_POLL_INTERVAL_MS);
         return;
       }
 
@@ -171,8 +194,20 @@ export const useSignaturSignal = (userId: string): SignaturSignalState => {
       }
     };
 
+    const onVisibilityChange = () => {
+      // Becoming visible: re-fetch immediately so the ring is fresh by the
+      // time the user looks at it. Becoming hidden: let the next scheduled
+      // poll naturally extend to HIDDEN_POLL_INTERVAL_MS — no need to clear
+      // the existing timer.
+      if (!isTabHidden() && mountedRef.current) {
+        retryCountRef.current = 0;
+        void poll();
+      }
+    };
+
     window.addEventListener('online', onOnline);
     window.addEventListener('offline', onOffline);
+    document.addEventListener('visibilitychange', onVisibilityChange);
     void poll();
 
     return () => {
@@ -180,6 +215,7 @@ export const useSignaturSignal = (userId: string): SignaturSignalState => {
       clearTimer();
       window.removeEventListener('online', onOnline);
       window.removeEventListener('offline', onOffline);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
     };
   }, [fetchTransitState]);
 
