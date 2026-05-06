@@ -1,5 +1,29 @@
 # Changelog
 
+## [Unreleased] - 2026-05-06 — Backend Hardening Sprint (Phase 1)
+
+### Features
+
+- **AI endpoint hardening** (`server/routes/ai.routes.mjs`, mounted in `server.mjs:341`) — `POST /api/interpret` and `POST /api/analyze/conversation` are no longer public. Both routes now require Supabase JWT auth, are rate-limited per-user (10/10min free tier, 60/10min premium tier — both ENV-configurable via `AI_FREE_USER_LIMIT` / `AI_PREMIUM_USER_LIMIT` / `AI_WINDOW_MS`) and per-IP (`AI_IP_LIMIT`, default 30/10min), enforce a serialized-body size cap (50 KiB for `/interpret`, 25 KiB for `/analyze/conversation`, configurable via `AI_PAYLOAD_LIMIT_BYTES` / `AI_CONVERSATION_PAYLOAD_LIMIT_BYTES`), and validate the request body against Zod schemas that strip unknown keys, sanitise null bytes, and reject oversized objects. Existing handlers run unchanged via `next('route')` after the new middleware chain. (Dev brief §1, Tasks 1–9.)
+- **Structured error envelope + ApiError classes** (`server/errors/apiErrors.mjs`, `server/middleware/errorHandler.mjs`) — every server-thrown `ApiError` and every middleware-direct response now uses the same shape: `{ error: { code, message, request_id, recoverable, retry_after, details? } }`. 13 typed codes (`AUTH_REQUIRED`, `AUTH_INVALID`, `FORBIDDEN`, `VALIDATION_FAILED`, `PAYLOAD_TOO_LARGE`, `RATE_LIMITED`, `AI_QUOTA_EXCEEDED`, `AI_TIMEOUT`, `AI_PROVIDER_UNAVAILABLE`, `AI_PROVIDER_RATE_LIMITED`, `AI_OUTPUT_INVALID`, `AI_CONFIG_MISSING`, `INTERNAL_ERROR`). Stack traces never leak in response bodies.
+- **Request ID propagation** (`server/middleware/requestId.mjs`, mounted globally in `server.mjs:340`) — every request gets a `req.requestId` (`req_<uuid>`). Echoed back as `X-Request-Id` header. Client-supplied `X-Request-Id` is honoured only if it matches the safe regex `^req_[a-zA-Z0-9_-]{1,64}$`; malicious values (HTML, oversized strings) are silently replaced.
+- **AI endpoint inventory** (`docs/security/ai-endpoint-inventory.md`) — snapshot of all 11 routes that call Gemini/OpenRouter, current protection layer, and follow-ups (quota wiring, output validation, rate-limit gaps on `/api/synastry` and `/api/horoscope/daily`).
+
+### Refactoring
+
+- **Auth middleware extracted** (`server/middleware/auth.mjs`) — `requireUserAuth` is now a standalone module that responds with the structured JSON envelope directly (no error-handler dependency). Production deploys without `SUPABASE_SERVICE_ROLE_KEY` now log a fatal warning at boot.
+- **Vitest config** (`vitest.config.ts`) — `include` patterns extended to cover `server/__tests__/**/*.{test,spec}.{mjs,ts}` and `packages/shared/src/**/__tests__/**/*.{test,spec}.{ts,tsx}`.
+
+### Tests
+
+- 47 new server-side tests covering ApiError classes (5), request ID middleware (4), auth middleware (5), error handler (5), AI rate limit (3), Zod validate (6), AI schemas (9), and AI routes (10). Full suite remains green at 2138 passing.
+
+### Notes
+
+- Implementation plan: `docs/plans/2026-05-06-backend-hardening.md` (Phase 1 of 5).
+- Review-fix plan: `docs/plans/2026-05-06-backend-hardening-review-fixes.md`.
+- AI quota service, transit-state cache, ElevenLabs auth refactor, structured logging, public-data cache, and CI secret-scan are scheduled for Phases 2–5 of the sprint.
+
 ## [Unreleased] - 2026-04-21 — Sprint S-DASH-SIGNATUR-GAPS
 
 ### Features
