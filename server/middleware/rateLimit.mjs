@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 
 function rateLimitHandler(req, res) {
   const resetTime = req.rateLimit?.resetTime;
@@ -20,7 +20,10 @@ export function aiIpRateLimit() {
   return rateLimit({
     windowMs: parseInt(process.env.AI_WINDOW_MS ?? '600000', 10),
     max: parseInt(process.env.AI_IP_LIMIT ?? '30', 10),
-    keyGenerator: req => req.ip ?? 'unknown',
+    // ipKeyGenerator handles IPv6 prefix-bucketing — required by v7+ when a
+    // custom keyGenerator reads req.ip directly. Without it, IPv6 clients
+    // could bypass per-IP limits.
+    keyGenerator: req => ipKeyGenerator(req.ip ?? 'unknown'),
     handler: rateLimitHandler,
     standardHeaders: true,
     legacyHeaders: false,
@@ -34,7 +37,8 @@ export function aiUserRateLimit(tier = 'free') {
   return rateLimit({
     windowMs: parseInt(process.env.AI_WINDOW_MS ?? '600000', 10),
     max,
-    keyGenerator: req => req.userId ?? req.ip ?? 'unknown',
+    keyGenerator: req =>
+      req.userId ? `user:${req.userId}` : ipKeyGenerator(req.ip ?? 'unknown'),
     handler: rateLimitHandler,
     standardHeaders: true,
     legacyHeaders: false,
