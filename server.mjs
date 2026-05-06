@@ -315,9 +315,6 @@ app.use('/api/', (req, res, next) => {
 // ── Rate Limiting ────────────────────────────────────────────────────
 const HIGH_FREQUENCY_API_PREFIXES = [
   "/transit-state",
-  "/impact/active",
-  "/experience/daily",
-  "/vibes",
 ];
 
 const apiLimiter = rateLimit({
