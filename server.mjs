@@ -10,6 +10,8 @@ import rateLimit from "express-rate-limit";
 import { createGenAiRouter } from "./server/ai-router.mjs";
 import { aiRouter } from "./server/routes/ai.routes.mjs";
 import { requestIdMiddleware } from "./server/middleware/requestId.mjs";
+import { requireOwnership } from "./server/middleware/ownership.mjs";
+import { transitStateCache } from "./server/services/cache.service.mjs";
 import Stripe from 'stripe';
 
 // Exponential-backoff fetch helper used by the bootstrap endpoint.
@@ -1433,20 +1435,29 @@ function mapFufireEvent(ev, generatedAt) {
 // ── /api/transit-state/:userId ───────────────────────────────────────
 // POSTs to FuFirE /transit/state with soulprint + quiz sectors,
 // falls back to profile-derived synthetic state on any error.
-app.get("/api/transit-state/:userId", requireUserAuth, async (req, res) => {
+app.get("/api/transit-state/:userId", requireUserAuth, requireOwnership("userId"), async (req, res) => {
   const userId = String(req.params.userId || "").trim();
   if (!userId) return res.status(400).json({ error: "Missing userId" });
 
-  // Require an authenticated user and ensure they are only accessing their own state.
-  const authenticatedUserId = String(req.userId || "").trim();
-  if (!authenticatedUserId) {
-    return res.status(401).json({ error: "Authentication required" });
-  }
-  if (authenticatedUserId !== userId) {
-    return res.status(403).json({ error: "Forbidden: cannot access another user's transit state" });
-  }
-
   res.set("Cache-Control", "no-store");
+
+  // ── Server-side cache (Phase 2 — Task 13) ─────────────────────────
+  // Default TTL 10s (TRANSIT_STATE_CACHE_TTL_MS). The Visibility-API-aware
+  // client polls every 8s when active, so 10s catches consecutive polls of
+  // the same user. /api/contribute should call transitStateCache.del(userId)
+  // when a quiz event mutates the underlying soulprint — currently relies
+  // on natural TTL expiration.
+  const cached = transitStateCache.get(userId);
+  if (cached) {
+    res.set("X-Cache", "HIT");
+    if (cached.headers) {
+      for (const [name, value] of Object.entries(cached.headers)) {
+        res.set(name, value);
+      }
+    }
+    return res.status(cached.status).json(cached.body);
+  }
+  res.set("X-Cache", "MISS");
 
   const clamp01 = (value) => Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0));
   const hashToUnit = (seed) => {
@@ -1493,9 +1504,17 @@ app.get("/api/transit-state/:userId", requireUserAuth, async (req, res) => {
     // (for the frontend). No-placeholder-fake directive: UI must be able
     // to distinguish live transits from synthesized natal-fallback data.
     payload._meta = { source, reason };
+    const fallbackHeader = profile ? "profile-derived" : "neutral";
+    // Cache fallback responses too — they are the heaviest path (Supabase
+    // round-trip + neutral derivation) and dominant under FuFirE outage.
+    transitStateCache.set(userId, {
+      status: 200,
+      body: payload,
+      headers: { "X-Transit-Fallback": fallbackHeader },
+    });
     return res
       .status(200)
-      .set("X-Transit-Fallback", profile ? "profile-derived" : "neutral")
+      .set("X-Transit-Fallback", fallbackHeader)
       .json(payload);
   };
 
@@ -1571,6 +1590,7 @@ app.get("/api/transit-state/:userId", requireUserAuth, async (req, res) => {
       _meta: { source: "live" },
     };
 
+    transitStateCache.set(userId, { status: 200, body: response });
     return res.status(200).json(response);
   } catch (err) {
     return respondWithFallback(err?.message || "unexpected error");
@@ -3583,6 +3603,12 @@ app.post("/api/contribute", async (req, res) => {
     console.error("[contribute] insert error:", insertErr.message);
     return res.status(500).json({ error: "Failed to save contribution" });
   }
+
+  // Bust the user's transit-state cache so the next poll recomputes the
+  // ring with the new contribution. Without this, the dashboard would
+  // show stale ring data for up to TRANSIT_STATE_CACHE_TTL_MS after a
+  // quiz event.
+  transitStateCache.del(user.id);
 
   return res.status(201).json({ ok: true });
 });
