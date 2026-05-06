@@ -11,6 +11,7 @@ import { createGenAiRouter } from "./server/ai-router.mjs";
 import { aiRouter } from "./server/routes/ai.routes.mjs";
 import { requestIdMiddleware } from "./server/middleware/requestId.mjs";
 import { requireOwnership } from "./server/middleware/ownership.mjs";
+import { elevenLabsAuth } from "./server/middleware/elevenLabsAuth.mjs";
 import { transitStateCache } from "./server/services/cache.service.mjs";
 import Stripe from 'stripe';
 
@@ -4670,7 +4671,9 @@ if (process.env.NODE_ENV !== "production") {
 // ── Supabase (server-side, service role key) ────────────────────────
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const ELEVENLABS_TOOL_SECRET = process.env.ELEVENLABS_TOOL_SECRET;
+// ELEVENLABS_TOOL_SECRET is read inside server/middleware/elevenLabsAuth.mjs
+// — no module-level constant needed here. The OPTIONAL_ENV_VARS startup
+// check still warns when the secret is missing.
 
 const supabaseServer =
   SUPABASE_URL && SUPABASE_SERVICE_KEY
@@ -4680,17 +4683,7 @@ const supabaseServer =
     : null;
 
 // ── GET /api/profile/:userId — ElevenLabs Custom Tool endpoint ──────
-app.get("/api/profile/:userId", async (req, res) => {
-  // Verify bearer token
-  const authHeader = req.headers.authorization || "";
-  const token = authHeader.replace("Bearer ", "").trim();
-
-  // Only log auth failures — never log success/token match details in production
-
-  if (!ELEVENLABS_TOOL_SECRET || token !== ELEVENLABS_TOOL_SECRET) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
+app.get("/api/profile/:userId", elevenLabsAuth, async (req, res) => {
   if (!supabaseServer) {
     return res.status(500).json({ error: "Supabase not configured on server" });
   }
@@ -4919,15 +4912,7 @@ app.get("/api/profile/:userId", async (req, res) => {
 });
 
 // ── POST /api/agent/conversation — Save agent conversation summary ──
-app.post("/api/agent/conversation", async (req, res) => {
-  // Verify bearer token
-  const authHeader = req.headers.authorization || "";
-  const token = authHeader.replace("Bearer ", "").trim();
-
-  if (!ELEVENLABS_TOOL_SECRET || token !== ELEVENLABS_TOOL_SECRET) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
+app.post("/api/agent/conversation", elevenLabsAuth, async (req, res) => {
   if (!supabaseServer) {
     return res.status(500).json({ error: "Supabase not configured on server" });
   }
@@ -4962,14 +4947,7 @@ app.post("/api/agent/conversation", async (req, res) => {
 });
 
 // ── GET /api/agent/daily/:userId — Daily horoscope for ElevenLabs agent ──
-app.get("/api/agent/daily/:userId", async (req, res) => {
-  const authHeader = req.headers.authorization || "";
-  const token = authHeader.replace("Bearer ", "").trim();
-
-  if (!ELEVENLABS_TOOL_SECRET || token !== ELEVENLABS_TOOL_SECRET) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
+app.get("/api/agent/daily/:userId", elevenLabsAuth, async (req, res) => {
   if (!supabaseServer) {
     return res.status(500).json({ error: "Supabase not configured on server" });
   }
@@ -5083,14 +5061,7 @@ app.get("/api/agent/daily/:userId", async (req, res) => {
 });
 
 // ── POST /api/agent/match — Partner match analysis for ElevenLabs agent ──
-app.post("/api/agent/match", async (req, res) => {
-  const authHeader = req.headers.authorization || "";
-  const token = authHeader.replace("Bearer ", "").trim();
-
-  if (!ELEVENLABS_TOOL_SECRET || token !== ELEVENLABS_TOOL_SECRET) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
+app.post("/api/agent/match", elevenLabsAuth, async (req, res) => {
   if (!supabaseServer) {
     return res.status(500).json({ error: "Supabase not configured on server" });
   }
