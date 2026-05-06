@@ -187,7 +187,7 @@ if (missing.length > 0) {
   console.warn(`[server] WARNING: Missing env vars (dev mode): ${missing.join(', ')}`);
 }
 
-const OPTIONAL_ENV_VARS = ['GEMINI_API_KEY', 'OPENROUTER_API_KEY', 'ELEVENLABS_TOOL_SECRET', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_BUY_ID', 'SUPERGLUE_API_KEY'];
+const OPTIONAL_ENV_VARS = ['GEMINI_API_KEY', 'OPENROUTER_API_KEY', 'ELEVENLABS_TOOL_SECRET', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_PRICE_ID', 'SUPERGLUE_API_KEY'];
 for (const v of OPTIONAL_ENV_VARS) {
   if (!process.env[v]) {
     console.warn(`[server] Optional env var not set: ${v} (some features may be degraded)`);
@@ -1064,48 +1064,9 @@ app.post('/api/synastry', requireUserAuth, requirePremium, async (req, res) => {
   });
 });
 
-// ── /api/create-checkout-session ─────────────────────────────────
-app.post('/api/create-checkout-session', requireUserAuth, async (req, res) => {
-  if (!stripe) {
-    return res.status(503).json({ error: 'Stripe not configured' });
-  }
-
-  try {
-    const { returnUrl } = req.body;
-    if (!returnUrl) {
-      return res.status(400).json({ error: 'returnUrl is required' });
-    }
-
-    const sanitizedReturnUrl = sanitizeCheckoutReturnUrl(
-      returnUrl,
-      `${APP_URL}?upgrade=success`
-    );
-
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price: process.env.STRIPE_BUY_ID,
-          quantity: 1,
-        },
-      ],
-      success_url: sanitizedReturnUrl,
-      cancel_url: `${APP_URL}`,
-      customer_email: req.body.email || undefined,
-      metadata: {
-        userId: req.userId,
-        appPlatform: req.body.appPlatform || 'web',
-      },
-    });
-
-    console.log(`[stripe] checkout session created: ${session.id} for user ${req.userId}`);
-    res.json({ sessionId: session.id, url: session.url });
-  } catch (err) {
-    console.error('[stripe] checkout session creation failed:', err.message);
-    res.status(500).json({ error: 'Failed to create checkout session' });
-  }
-});
+// /api/create-checkout-session was a legacy one-time-payment endpoint
+// using STRIPE_BUY_ID. Removed 2026-05-07 — see docs/plans/2026-05-07-stripe-rebuild.md.
+// All checkout traffic now goes through /api/checkout (subscription).
 
 // [REMOVED] First /api/webhook/stripe handler — was shadowing the complete
 // lifecycle handler below (line ~4675). See docs/plans/2026-04-09-stripe-webhook-merge-and-match-auth.md
