@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased] - 2026-05-06 — Backend Hardening Sprint (Phases 1 + 2)
+## [Unreleased] - 2026-05-06 — Backend Hardening Sprint (Phases 1 + 2 + 3 partial)
 
 ### Features
 
@@ -11,6 +11,9 @@
 - **AI quota infrastructure** (`supabase-migrations/20260506_ai_quota.sql` + `supabase-migrations/20260506_ai_quota_lockdown.sql` + `server/services/aiQuota.service.mjs`) — Postgres-side `ai_quota` table with race-safe `reserve_ai_quota` / `commit_ai_quota` / `refund_ai_quota` RPCs (atomic `UPDATE … WHERE (used + reserved) < limit RETURNING` pattern). JS service wraps the RPCs with daily/monthly tier limits read from env vars (`AI_DAILY_FREE_LIMIT` / `AI_DAILY_PREMIUM_LIMIT` / `AI_MONTHLY_FREE_LIMIT` / `AI_MONTHLY_PREMIUM_LIMIT`). Service is library-only — no route calls it yet. Lockdown migration revokes the `authenticated` grant and adds an in-body `auth.uid() = p_user_id` check; only `service_role` can reach the RPCs.
 - **Transit-state server-side cache + ownership middleware** (`server/middleware/ownership.mjs` + `server/services/cache.service.mjs` + `server.mjs`) — `requireOwnership('userId')` middleware compares `req.params.userId` against `req.userId` and returns 403 FORBIDDEN with the structured envelope when they differ. The `MemoryCache` class backs both `transitStateCache` (10 s default TTL via `TRANSIT_STATE_CACHE_TTL_MS`) and `publicDataCache` (5 min default via `PUBLIC_DATA_CACHE_TTL_MS`). `/api/transit-state/:userId` reads/writes the cache in both live and fallback paths and emits `X-Cache: HIT|MISS`. `/api/contribute` and `/api/contribution/space-weather` call `transitStateCache.del(userId)` so quiz and space-weather contribution events bust the cache immediately instead of waiting for TTL expiry.
 - **Visibility-aware client polling** (`src/hooks/useSignaturSignal.ts`) — transit-state polling slows from 800 ms (~75 req/min/user) to 8 s active / 45 s hidden (~7.5 req/min visible, ~1.3 req/min backgrounded). `visibilitychange` listener fires an immediate refresh when the tab returns to focus. Existing exponential backoff and online/offline handling preserved unchanged.
+- **ElevenLabs tool-auth middleware** (`server/middleware/elevenLabsAuth.mjs`) — `crypto.timingSafeEqual` Bearer-secret check replaces the four inline `token !== ELEVENLABS_TOOL_SECRET` comparisons on `/api/profile/:userId`, `/api/agent/conversation`, `/api/agent/daily/:userId`, and `/api/agent/match`. Fail-closed: returns 503 `AI_CONFIG_MISSING` when `ELEVENLABS_TOOL_SECRET` is unset/empty so misconfigured deploys can't accidentally accept random tokens. Structured-envelope responses (AUTH_REQUIRED / AUTH_INVALID / AI_CONFIG_MISSING) instead of the previous `{"error":"Unauthorized"}` string.
+- **Server log redaction utility** (`server/utils/redact.mjs`) — deep-copy redactor that replaces values for known-secret keys (`Authorization`, `Cookie`, `GEMINI_API_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `stripe-signature`, `ELEVENLABS_TOOL_SECRET`, `password`, `token`, `api_key`, `secret`, etc.) with `[REDACTED]`. Bounded recursion (MAX_DEPTH=6) so cycles cannot blow the stack. Case-insensitive exact-key match — innocent fields like `tokens_used` stay readable. Never mutates input.
+- **Structured request logger** (`server/observability/logger.mjs`) — emits one JSON line per request with `request_id` / `method` / `route` / `status` / `latency_ms` / `provider` / `cache_status` / `quota_status` / `error_code`. User IDs and IPs go through SHA-256 → 12-char hex (`hashId`) so logs are user-groupable without carrying PII into log storage. Library-only — no route emits log lines yet; wiring into the request lifecycle is a follow-up.
 
 ### Refactoring
 
@@ -19,14 +22,14 @@
 
 ### Tests
 
-- 73 server-side tests (was 47): ApiError classes (5), request ID middleware (4), auth middleware (5), error handler (5), AI rate limit (3), Zod validate (6), AI schemas (9), AI routes (10), ownership middleware (4), AI quota service (12), and cache service (10). 5 new client tests for `useSignaturSignal` cover the polling cadence (POLL-001..005). Full suite: 2169/2169.
+- 100 server-side tests (was 47): ApiError classes (5), request ID middleware (4), auth middleware (5), error handler (5), AI rate limit (3), Zod validate (6), AI schemas (9), AI routes (10), ownership middleware (4), AI quota service (12), cache service (10), ElevenLabs auth middleware (7), redact utility (14), and structured logger (6). 5 client tests for `useSignaturSignal` cover polling cadence (POLL-001..005). Full suite: 2196/2196.
 
 ### Notes
 
-- Implementation plan: `docs/plans/2026-05-06-backend-hardening.md` (Phases 1 + 2 of 5).
-- Review-fix plans: `docs/plans/2026-05-06-backend-hardening-review-fixes.md` (Phase 1) + `docs/plans/2026-05-06-phase2-review-fixes.md` (Phase 2).
+- Implementation plan: `docs/plans/2026-05-06-backend-hardening.md` (Phases 1 + 2 + 3 partial of 5).
+- Review-fix plans: `docs/plans/2026-05-06-backend-hardening-review-fixes.md` (Phase 1) + `docs/plans/2026-05-06-phase2-review-fixes.md` (Phase 2) + `docs/plans/2026-05-06-phase3-review-fixes.md` (Phase 3 partial — wires elevenLabsAuth onto its four callers).
 - AI quota service is **wired** into the codebase but **not yet attached** to any route. The next sprint chunk wires it onto `/api/interpret` and `/api/analyze/conversation`, then expands to `/api/experience/*` and `/api/agent/*`.
-- ElevenLabs auth refactor, structured logger + redact, public-data stale-if-error cache, Stripe-webhook regression test, and the CI secret-scan are scheduled for Phase 3 (Tasks 15–19 in the main plan).
+- Phase 3 partial: Tasks 15 (ElevenLabs auth middleware) and 16 (redact + logger) shipped; the elevenLabsAuth middleware is now wired onto `/api/profile/:userId`, `/api/agent/conversation`, `/api/agent/daily/:userId`, and `/api/agent/match`. Tasks 17 (Stripe webhook regression test), 18 (public-data stale-if-error cache), and 19 (CI secret-scan) are still pending — they'll land in the next batch.
 
 ## [Unreleased] - 2026-04-21 — Sprint S-DASH-SIGNATUR-GAPS
 
