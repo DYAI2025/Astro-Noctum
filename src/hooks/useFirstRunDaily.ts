@@ -129,6 +129,12 @@ export function useFirstRunDaily(
     const now = new Date();
     const currentHour = now.getHours();
     const isTodayTarget = !customDate || customDate === todayKey();
+    // Deliberate delivery window: modal auto-open is suppressed outside 06:00–17:59 local time.
+    // Rationale: daily content is morning-oriented; late-night auto-open is disruptive.
+    // Note: Dashboard.tsx currently does NOT consume `showModal` (Wireframe F3 decision —
+    // auto-open is disabled entirely). This guard therefore has no active effect, but is
+    // retained so the behaviour can be re-enabled cleanly when/if auto-open is restored.
+    // Decision 2026-05-06: keep guard, do not remove (Option B confirmed by Ben).
     const isWithinDeliveryWindow = currentHour >= 6 && currentHour < 18;
     const targetDate = customDate || todayKey();
 

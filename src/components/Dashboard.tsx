@@ -384,6 +384,8 @@ export function Dashboard({
             dayMode={dailyData?.fusion?.day_mode ?? 'pulse'}
             birthSign={birthSign}
             impulsText={dailyData?.fusion?.synthesis || dailyData?.fusion?.summary}
+            profileIncomplete={!metaLoading && !metaError && profileMeta.birthInput === null}
+            onCompleteProfile={onReset}
             onOpenDayModal={dailyEnabled ? () => setIsDayModalOpen(true) : undefined}
           />
         </SectionErrorBoundary>

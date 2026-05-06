@@ -54,6 +54,15 @@ export interface DailyChartHeroProps {
    * preferred over rendering a meaningless placeholder.
    */
   impulsText?: string;
+  /**
+   * True when the user's birth data (date + coordinates) is missing in the DB,
+   * causing useFirstRunDaily to exit early without fetching.
+   * Renders a profile-completion nudge in place of the Tagesimpuls section
+   * instead of silently showing nothing.
+   */
+  profileIncomplete?: boolean;
+  /** Called when the user clicks the profile-completion CTA. Typically onReset. */
+  onCompleteProfile?: () => void;
   /** Optional callback to open the day-detail modal (feature-flagged) */
   onOpenDayModal?: () => void;
 }
@@ -211,6 +220,8 @@ export function DailyChartHero({
   dayMode,
   birthSign,
   impulsText,
+  profileIncomplete,
+  onCompleteProfile,
   onOpenDayModal,
 }: DailyChartHeroProps) {
   const { lang } = useLanguage();
@@ -381,8 +392,8 @@ export function DailyChartHero({
       </div>
 
 
-      {/* ── D. Tagesimpuls — centered headline + real daily horoscope ──── */}
-      {hasImpuls && (
+      {/* ── D. Tagesimpuls — real daily horoscope, or profile-completion nudge ── */}
+      {hasImpuls ? (
         <section
           className="mt-2 pt-5 border-t"
           style={{ borderColor: 'var(--tile-border)' }}
@@ -414,7 +425,33 @@ export function DailyChartHero({
             </div>
           )}
         </section>
-      )}
+      ) : profileIncomplete ? (
+        <section
+          className="mt-2 pt-5 border-t text-center"
+          style={{ borderColor: 'var(--tile-border)' }}
+          data-testid="day-impulse-incomplete"
+        >
+          <p
+            className="text-sm leading-relaxed max-w-prose mx-auto"
+            style={{ color: 'var(--tile-text-secondary)', opacity: 0.6 }}
+          >
+            {isDe
+              ? 'Der Tagesimpuls wird berechnet, sobald dein Geburtsprofil vollst\u00e4ndig ist.'
+              : 'Your daily impulse is calculated once your birth profile is complete.'}
+          </p>
+          {onCompleteProfile && (
+            <button
+              type="button"
+              onClick={onCompleteProfile}
+              className="mt-3 text-[10px] font-serif tracking-wide focus-visible:ring-1 focus-visible:ring-current focus-visible:outline-none rounded"
+              style={{ color: 'var(--tile-accent)', opacity: 0.7 }}
+              data-testid="complete-profile-trigger"
+            >
+              {isDe ? 'Profil vervollst\u00e4ndigen \u2192' : 'Complete profile \u2192'}
+            </button>
+          )}
+        </section>
+      ) : null}
     </div>
   );
 }
