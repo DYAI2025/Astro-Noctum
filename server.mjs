@@ -4356,6 +4356,10 @@ app.post("/api/contribution/space-weather", async (req, res) => {
     return res.status(500).json({ error: "Failed to persist contribution", detail: insertErr.message });
   }
 
+  // Bust the user's transit-state cache so the next poll sees the new
+  // space-weather contribution. Mirrors /api/contribute (Task 13).
+  transitStateCache.del(user.id);
+
   console.log(`[contribution/space-weather] upserted module_id=${moduleId} for user=${user.id}`);
   return res.status(201).json({ ok: true, module_id: moduleId });
 });
