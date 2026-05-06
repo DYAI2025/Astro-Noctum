@@ -134,4 +134,4 @@ Your basic fusion chart (Western + BaZi + WuXing + AI interpretation preview + 3
 
 Premium unlocks the full AI fusion interpretation, Levi Bazi voice agent, and all 15+ personality quizzes for just 4.99 EUR/month — with every quiz result included.
 
-**[Try Bazodiac Free →](https://bazodiac.com)**
+**[Try Bazodiac Free →](https://bazodiac.space)**

@@ -50,7 +50,7 @@ Systematically diagnose the ElevenLabs tool integration failure.
 
 6. **Test the endpoint directly** — with a known user UUID:
    ```bash
-   curl -s "https://astro-noctum-production.up.railway.app/api/profile/<uuid>" \
+   curl -s "https://bazodiac.space/api/profile/<uuid>" \
      -H "Authorization: Bearer <ELEVENLABS_TOOL_SECRET>" | head -100
    ```
    Expected: JSON with `display_name`, `birth_date`, `zodiac_sign`, etc.

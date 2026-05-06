@@ -274,6 +274,22 @@ describe('baziToChladniParams — dominant element', () => {
     const { dominantElement } = baziToChladniParams(pillars, {}, 0.5);
     expect(dominantElement).toBe('Water');
   });
+
+
+  it('normalizes lowercase and localized element keys', () => {
+    const pillars = {
+      year:  makePillar('甲'),
+      month: makePillar('乙'),
+      day:   makePillar('丙'),
+      hour:  makePillar('丁'),
+    };
+    const { dominantElement } = baziToChladniParams(
+      pillars,
+      { water: 0.2, feuer: 0.81, metal: 0.1 },
+      0.5,
+    );
+    expect(dominantElement).toBe('Fire');
+  });
 });
 
 // ── baziToChladniParams — unknown stem fallback ──────────────────────────────

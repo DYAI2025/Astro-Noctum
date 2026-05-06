@@ -207,7 +207,22 @@ export function SignaturCymaticsCanvas({
     <div
       ref={containerRef}
       className={className}
-      style={{ position: 'relative', width: '100%', aspectRatio: '1 / 1', maxWidth: MAX_SIZE }}
+      // Height-dominant square: fill parent vertically, derive width from
+      // aspectRatio. `width: 'auto'` is required because callers historically
+      // pass `className="h-full w-full"`, and Tailwind's `w-full` would otherwise
+      // force width: 100% alongside height: 100% — both dimensions constrained
+      // causes the browser to ignore `aspectRatio`, making the canvas stretch
+      // to the parent's landscape aspect (oval container bug, 2026-04-19).
+      // `marginInline: auto` centers the square horizontally in wider parents.
+      style={{
+        position: 'relative',
+        height: '100%',
+        width: 'auto',
+        aspectRatio: '1 / 1',
+        maxWidth: MAX_SIZE,
+        maxHeight: MAX_SIZE,
+        marginInline: 'auto',
+      }}
       data-testid="cymatics-canvas-container"
     >
       <canvas

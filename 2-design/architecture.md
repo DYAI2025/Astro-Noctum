@@ -172,7 +172,7 @@ Bazodiac operates with two complementary signal formulas mapped to the three-lay
 
 ### Layer 1 — Permanent Signal (Master Signal)
 
-**Location**: Backend (`server.mjs`, `bazodiac_engine/`, `src/lib/master-signal/`)
+**Location**: Backend (`server.mjs`, `src/lib/master-signal/`) and shared library (`packages/shared/src/signatur/bazodiac-engine.ts` — TS port consumed by web + mobile). The original Python reference (`bazodiac_engine/`) has been archived to `archive/bazodiac_engine/` (`DEC-bazodiac-engine-archived`).
 **Scope**: Time-independent fusion of signal sources.
 **Used for**: Horoscopes, narratives, cross-reference engine, GCB tagging.
 
@@ -464,4 +464,5 @@ The quiz generator pipeline defines a formal, reusable mapping from quiz answers
 - [`DEC-dashboard-volatile-first`](decisions/DEC-dashboard-volatile-first.md) — Dashboard section ordering: volatile/live content always above static natal data
 - [`DEC-fusion-bazi-sheng-ke`](decisions/DEC-fusion-bazi-sheng-ke.md) — Planet-to-Wu-Xing-element mapping + Sheng/Ke resonance algorithm (locked)
 - [`archive/TRUENORTH.md`](../archive/TRUENORTH.md) — Three-layer autopoietic model and five governing laws
-- `bazodiac_engine/ARCHITECTURE.md` — Signal engine internals and projection modules
+- [`DEC-bazodiac-engine-archived`](decisions/DEC-bazodiac-engine-archived.md) — Python reference engine archived 2026-05-01; production source-of-truth is `packages/shared/src/signatur/bazodiac-engine.ts` (TS port)
+- `archive/bazodiac_engine/ARCHITECTURE.md` — historical Python signal engine internals (reference only, not production)

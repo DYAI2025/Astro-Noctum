@@ -118,6 +118,7 @@ export function useFirstRunDaily(
   quizSectors: number[],
   birthSign: string | null,
   customDate?: string, // YYYY-MM-DD
+  locale: string = 'de-DE',
 ): UseFirstRunDailyResult {
   const [dailyData, setDailyData] = useState<DailyResponse | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -125,6 +126,10 @@ export function useFirstRunDaily(
   const lastFetchedDateRef = useRef<string | null>(null);
 
   useEffect(() => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const isTodayTarget = !customDate || customDate === todayKey();
+    const isWithinDeliveryWindow = currentHour >= 6 && currentHour < 18;
     const targetDate = customDate || todayKey();
 
     // Guard: need userId + birthData; soulprint can be null (synthetic fallback).
@@ -162,7 +167,7 @@ export function useFirstRunDaily(
           const cached = getCachedDaily();
           if (cached) {
             setDailyData(cached);
-            if (!alreadySeen) setShowModal(true);
+            if (!alreadySeen && isWithinDeliveryWindow) setShowModal(true);
             return;
           }
         }
@@ -185,7 +190,7 @@ export function useFirstRunDaily(
           soulprintSectors ?? Array(12).fill(0.5),
           quizSectors,
           targetDate,
-          'de-DE',
+          locale,
           transitInfluences,
           birthSign ?? '',
         );
@@ -194,7 +199,7 @@ export function useFirstRunDaily(
 
         if (isToday) setCachedDaily(data);
         setDailyData(data);
-        if (!alreadySeen) setShowModal(true);
+        if (!alreadySeen && (!isTodayTarget || isWithinDeliveryWindow)) setShowModal(true);
       } catch (err) {
         // Graceful fallback: use local deterministic daily so DashboardTagesEnergie always renders
         console.warn('[useFirstRunDaily] Error occurred, using local fallback:', err);
@@ -203,7 +208,7 @@ export function useFirstRunDaily(
           // Adjust fallback date to target
           fallback.date = targetDate;
           setDailyData(fallback);
-          if (!alreadySeen) setShowModal(true);
+          if (!alreadySeen && (!isTodayTarget || isWithinDeliveryWindow)) setShowModal(true);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -213,7 +218,7 @@ export function useFirstRunDaily(
     return () => {
       cancelled = true;
     };
-  }, [userId, birthData, soulprintSectors, quizSectors, birthSign, customDate]);
+  }, [userId, birthData, soulprintSectors, quizSectors, birthSign, customDate, locale]);
 
   const handleClose = useCallback(() => {
     setShowModal(false);

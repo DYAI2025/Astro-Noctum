@@ -10,7 +10,7 @@ export const LEGAL_CONTENT = {
       title: "Legal Notice (Impressum)",
       body: `Bazodiac
 Operated by: Benjamin Poersch
-Email: contact@bazodiac.com
+Email: ben.poersch@dyai.app
 
 Responsible for content according to § 18 Abs. 2 MStV:
 Benjamin Poersch
@@ -24,7 +24,7 @@ We are not willing or obliged to participate in dispute resolution proceedings b
       title: "Impressum",
       body: `Bazodiac
 Betrieben von: Benjamin Poersch
-E-Mail: contact@bazodiac.com
+E-Mail: ben.poersch@dyai.app
 
 Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV:
 Benjamin Poersch
@@ -39,7 +39,7 @@ Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer 
     en: {
       title: "Privacy Policy",
       body: `1. Data Controller
-Benjamin Poersch, contact@bazodiac.com
+Benjamin Poersch, ben.poersch@dyai.app
 
 2. Data Collected
 - Account data: email address, hashed password (via Supabase Auth)
@@ -61,7 +61,7 @@ Benjamin Poersch, contact@bazodiac.com
 Your data is stored as long as your account exists. Upon account deletion, all personal data is removed within 30 days.
 
 6. Your Rights (Art. 15-21 GDPR)
-You have the right to access, rectification, erasure, restriction, data portability, and objection. Contact: contact@bazodiac.com
+You have the right to access, rectification, erasure, restriction, data portability, and objection. Contact: ben.poersch@dyai.app
 
 7. Cookies
 Bazodiac uses only technically necessary cookies (session authentication). No tracking cookies or third-party advertising cookies are used.
@@ -72,7 +72,7 @@ We may update this policy. The current version is always available on this page.
     de: {
       title: "Datenschutzerklärung",
       body: `1. Verantwortlicher
-Benjamin Poersch, contact@bazodiac.com
+Benjamin Poersch, ben.poersch@dyai.app
 
 2. Erhobene Daten
 - Kontodaten: E-Mail-Adresse, gehashtes Passwort (über Supabase Auth)
@@ -94,7 +94,7 @@ Benjamin Poersch, contact@bazodiac.com
 Ihre Daten werden gespeichert, solange Ihr Konto besteht. Bei Kontolöschung werden alle personenbezogenen Daten innerhalb von 30 Tagen entfernt.
 
 6. Ihre Rechte (Art. 15-21 DSGVO)
-Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit und Widerspruch. Kontakt: contact@bazodiac.com
+Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit und Widerspruch. Kontakt: ben.poersch@dyai.app
 
 7. Cookies
 Bazodiac verwendet ausschließlich technisch notwendige Cookies (Session-Authentifizierung). Es werden keine Tracking-Cookies oder Werbe-Cookies von Drittanbietern eingesetzt.

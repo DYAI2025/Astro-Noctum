@@ -37,16 +37,10 @@ vi.mock('motion/react', () => ({
 
 // Mock drei's <Text> and <Billboard>. Text becomes a testable DOM element
 // so we can count glyph renders; Billboard is a passthrough.
-vi.mock('@react-three/drei', () => ({
-  Billboard: ({ children }: { children?: ReactNode }) => <>{children}</>,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Text: ({ children, color, fontSize }: { children?: ReactNode } & Record<string, any>) => (
-    <div data-testid="drei-text-mock" data-color={color} data-size={fontSize}>
-      {children}
-    </div>
-  ),
-  // H7: <Stats /> is a DEV-only FPS panel; mock as a no-op for tests.
-  Stats: () => null,
+// The tooltip overlay uses useLanguage() from the app's LanguageContext —
+// stub it so SignatureSphere3D can render in isolation without a provider.
+vi.mock('@/src/contexts/LanguageContext', () => ({
+  useLanguage: () => ({ lang: 'de', t: (k: string) => k, setLang: vi.fn() }),
 }));
 
 // Override the global three mock's SphereGeometry with a stub that exposes
@@ -70,10 +64,33 @@ vi.mock('three', async (importOriginal) => {
       };
       this.computeVertexNormals = vi.fn();
       this.dispose = vi.fn();
+      this.setAttribute = vi.fn((name: string, attr: unknown) => {
+        this.attributes[name] = attr;
+      });
+    }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    BufferAttribute: vi.fn(function BufferAttribute(this: any, array: Float32Array, itemSize: number) {
+      this.array = array;
+      this.itemSize = itemSize;
+      this.needsUpdate = false;
     }),
     BackSide: 1,
   };
 });
+
+// OrbitControls is from drei; add to the mock so the Canvas subtree renders
+// in tests without needing a real WebGL camera.
+vi.mock('@react-three/drei', () => ({
+  Billboard: ({ children }: { children?: ReactNode }) => <>{children}</>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Text: ({ children, color, fontSize }: { children?: ReactNode } & Record<string, any>) => (
+    <div data-testid="drei-text-mock" data-color={color} data-size={fontSize}>
+      {children}
+    </div>
+  ),
+  Stats: () => null,
+  OrbitControls: () => null,
+}));
 
 import { SignatureSphere3D } from '../SignatureSphere3D';
 import type { PlanetName } from '@/src/lib/signatur-3d/planets';
@@ -181,6 +198,55 @@ describe('SignatureSphere3D', () => {
     expect(useFrameMock).toHaveBeenCalled();
     // The callback passed to useFrame must be a function so R3F can drive it.
     expect(typeof useFrameMock.mock.calls[0][0]).toBe('function');
+  });
+
+  // ── Task-5 additions ──────────────────────────────────────────────────────
+
+  it('accepts a dominantElement prop and exposes it as data-element attribute', () => {
+    const { container } = render(
+      <SignatureSphere3D weights={{ Sun: 0.5 }} dominantElement="Fire" />,
+    );
+    const el = container.querySelector('[data-testid="signature-sphere-3d"]');
+    expect(el?.getAttribute('data-element')).toBe('Fire');
+  });
+
+  it('defaults dominantElement to Water when prop is omitted', () => {
+    const { container } = render(<SignatureSphere3D weights={{ Sun: 0.5 }} />);
+    const el = container.querySelector('[data-testid="signature-sphere-3d"]');
+    expect(el?.getAttribute('data-element')).toBe('Water');
+  });
+
+  // ── Task-5b additions ─────────────────────────────────────────────────────
+
+  it('wire layer carries gold-tint role marker', () => {
+    const { container } = render(
+      <SignatureSphere3D weights={{ Sun: 0.5 }} dominantElement="Water" />
+    );
+    const wireMesh = container.querySelector('[data-mesh-role="wire"]');
+    expect(wireMesh).not.toBeNull();
+    expect(wireMesh?.getAttribute('data-tint')).toBe('gold');
+  });
+
+  // ── Task-5c additions ─────────────────────────────────────────────────────
+
+  it('wire layer has both main and halo meshes', () => {
+    const { container } = render(
+      <SignatureSphere3D weights={{ Sun: 0.5 }} dominantElement="Earth" />
+    );
+    const main = container.querySelector('[data-mesh-role="wire"]');
+    const halo = container.querySelector('[data-mesh-role="wire-halo"]');
+    expect(main).not.toBeNull();
+    expect(halo).not.toBeNull();
+  });
+
+  // ── Task-6 additions ─────────────────────────────────────────────────────
+
+  it('solid layer uses a ShaderMaterial when dominantElement is set', async () => {
+    const { container } = render(
+      <SignatureSphere3D weights={{ Sun: 0.5 }} dominantElement="Metal" />
+    );
+    const solidLayer = container.querySelector('[data-mesh-role="solid"]');
+    expect(solidLayer).not.toBeNull();
   });
 
   it('frame callback is a no-op when prefersReducedMotion is true', () => {

@@ -88,6 +88,8 @@ export const useSignaturSignal = (userId: string): SignaturSignalState => {
         baseSignals,
         thirtyDayAvg,
         transitIntensity,
+        source: transitState._meta?.source ?? 'live',
+        sourceReason: transitState._meta?.reason,
       });
 
       setSignalData(nextSignalData);

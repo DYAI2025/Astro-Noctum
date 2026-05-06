@@ -1,0 +1,25 @@
+# Runtime memory tiers — per-developer, per-session state.
+# These directories accumulate live observations (shell output, paths,
+# session telemetry) that are personal and should NOT ship in the repo.
+# The Python scripts under memory/ ARE source and are tracked.
+
+# Live session telemetry: AGENT_LEARNINGS.jsonl + snapshots
+memory/episodic/
+
+# Memory promotion candidates (short-lived, contain personal paths).
+memory/candidates/
+
+# Personal preferences (explicit name).
+memory/personal/
+
+# Working state: per-developer review queue.
+memory/working/
+
+# Auto-distilled lessons stream (the curated .md siblings ARE tracked).
+memory/semantic/lessons.jsonl
+
+# Runtime feature flags.
+memory/.features.json
+
+# Python bytecode anywhere under .agent/.
+__pycache__/

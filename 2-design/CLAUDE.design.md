@@ -36,6 +36,8 @@ This phase defines **how** we're building the system. Focus on architecture, dat
 | [DEC-vibes-gemini-strategy](decisions/DEC-vibes-gemini-strategy.md) | Gemini for Vibes and Weekly Insights generation with two-level caching | When modifying Vibes/Weekly generation logic, model, prompts, or cache strategy |
 | [DEC-navigation-shell](decisions/DEC-navigation-shell.md) | Top bar: 3 primary items + Settings menu; horizontal bar preserved; mobile responsive | When adding nav items, implementing top bar or Settings, or making mobile layout decisions |
 | [DEC-display-name-db-only](decisions/DEC-display-name-db-only.md) | display_name stored in DB only — never forwarded to FuFirE or any calculation engine | When designing onboarding endpoint, FuFirE request payloads, or profile-related API contracts |
+| [DEC-cymatics-renderer](decisions/DEC-cymatics-renderer.md) | Cymatics (Chladni) as 2D Signatur renderer; V1/V2/V3 deprecated | When modifying Signatur render path, quiz→visual mapping, or rendering-engine fallback |
+| [DEC-quiz-data-model-migration](decisions/DEC-quiz-data-model-migration.md) | Option C — `contribution_events` stays as Ring source; `user_quiz_answers` + `user_quiz_profile` added append-only for Axiom 1/8/9/10 (Sprint B) | When adding Quiz-DB migrations, extending QuizDefinition, writing `/api/contribute` / `/api/quiz/answer` handlers, or touching Kranz/Ring pipelines |
 
 ---
 

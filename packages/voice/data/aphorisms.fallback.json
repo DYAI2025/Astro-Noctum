@@ -1,0 +1,112 @@
+[
+  {
+    "id": "fallback-001",
+    "status": "approved",
+    "text": {
+      "de": "Was du heute aus Angst verschiebst, wird morgen aus Gewohnheit liegen bleiben.",
+      "en": "What you postpone out of fear today will stay undone out of habit tomorrow.",
+      "original": null
+    },
+    "source": { "author": "Bazodiac", "work": "fallback corpus", "year": 2026, "original_language": "de", "translator_de": null, "translator_en": "Bazodiac, kuratiert" },
+    "copyright": "eigene-Übersetzung",
+    "attribution_status": "verified",
+    "attribution_note": null,
+    "mode_tags": ["pulse"],
+    "tone_tags": ["ruhig", "kontemplativ"],
+    "element_affinity": [],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 14, "word_count_en": 16,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "fallback-002",
+    "status": "approved",
+    "text": {
+      "de": "Wer den Fluss kennt, fürchtet die Brücke nicht.",
+      "en": "Who knows the river does not fear the bridge.",
+      "original": null
+    },
+    "source": { "author": "Bazodiac", "work": "fallback corpus", "year": 2026, "original_language": "de", "translator_de": null, "translator_en": "Bazodiac, kuratiert" },
+    "copyright": "eigene-Übersetzung",
+    "attribution_status": "verified",
+    "attribution_note": null,
+    "mode_tags": ["pulse", "trace"],
+    "tone_tags": ["weisheitlich"],
+    "element_affinity": ["wasser"],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 9, "word_count_en": 10,
+    "quality_rating": 5,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "fallback-003",
+    "status": "approved",
+    "text": {
+      "de": "Es ist nicht das Was, sondern das Wie.",
+      "en": "It is not the what, but the how.",
+      "original": "Nicht das Was, sondern das Wie."
+    },
+    "source": { "author": "Helmuth von Moltke", "work": "Militärische Werke", "year": 1892, "original_language": "de", "translator_de": null, "translator_en": "Bazodiac, kuratiert" },
+    "copyright": "PD",
+    "attribution_status": "verified",
+    "attribution_note": null,
+    "mode_tags": ["trace"],
+    "tone_tags": ["scharf", "klar"],
+    "element_affinity": ["metall"],
+    "figure_affinity": ["day_master"],
+    "season_affinity": [],
+    "word_count_de": 8, "word_count_en": 9,
+    "quality_rating": 5,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "fallback-004",
+    "status": "approved",
+    "text": {
+      "de": "Der Stein wird vom Wasser geformt, nicht von der Kraft.",
+      "en": "The stone is shaped by water, not by force.",
+      "original": null
+    },
+    "source": { "author": "nach Laozi", "work": "Daodejing 78 (sinngemäß)", "year": -300, "original_language": "zh", "translator_de": "Bazodiac, kuratiert", "translator_en": "Bazodiac, kuratiert" },
+    "copyright": "eigene-Übersetzung",
+    "attribution_status": "disputed",
+    "attribution_note": "Sinngemäß aus Daodejing 78; nicht wörtliches Zitat.",
+    "mode_tags": ["pulse"],
+    "tone_tags": ["ruhig", "weisheitlich"],
+    "element_affinity": ["wasser"],
+    "figure_affinity": [],
+    "season_affinity": ["fruehling"],
+    "word_count_de": 10, "word_count_en": 9,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "fallback-005",
+    "status": "approved",
+    "text": {
+      "de": "Zuerst kommt die Reibung, dann die Form.",
+      "en": "First the friction, then the form.",
+      "original": null
+    },
+    "source": { "author": "Bazodiac", "work": "fallback corpus", "year": 2026, "original_language": "de", "translator_de": null, "translator_en": "Bazodiac, kuratiert" },
+    "copyright": "eigene-Übersetzung",
+    "attribution_status": "verified",
+    "attribution_note": null,
+    "mode_tags": ["spannung"],
+    "tone_tags": ["scharf", "drängend"],
+    "element_affinity": ["feuer", "metall"],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 7, "word_count_en": 7,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  }
+]

@@ -100,4 +100,4 @@ At less than half the monthly price, Bazodiac delivers three astrological system
 
 ---
 
-**[Try Bazodiac Free →](https://bazodiac.com)**
+**[Try Bazodiac Free →](https://bazodiac.space)**

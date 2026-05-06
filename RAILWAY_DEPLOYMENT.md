@@ -34,7 +34,7 @@ You **must** set the following environment variables in the Railway dashboard fo
 ### Optional
 - `GEMINI_API_KEY`: Required for AI horoscope interpretations.
 - `ELEVENLABS_TOOL_SECRET`: Protects server-side tool endpoints.
-- `APP_URL`: The public URL of your application (e.g., `https://your-app.up.railway.app`). If not set, some links may default to `bazodiac.com`.
+- `APP_URL`: The public URL of your application (e.g., `https://your-app.up.railway.app`). If not set, some links may default to `bazodiac.space`.
 - `VITE_GOOGLE_PLACES_API_KEY`: Enables city autocomplete in the birth form.
 
 ## Deployment Steps

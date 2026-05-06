@@ -3,7 +3,7 @@
   "name": "get_user_astro_profile",
   "description": "Retrieves the user astrology profile including name, signs, birth data, chart calculations, and past conversation summaries. Call this IMMEDIATELY at conversation start to personalize advice.",
   "api_schema": {
-    "url": "https://astro-noctum-production.up.railway.app/api/profile/{user_id}",
+    "url": "https://bazodiac.space/api/profile/{user_id}",
     "method": "GET",
     "path_params_schema": [
       {

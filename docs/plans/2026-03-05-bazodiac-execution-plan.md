@@ -331,7 +331,7 @@ app.post('/api/webhook/stripe', express.raw({ type: 'application/json' }), async
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_PRICE_ID=price_...
 STRIPE_WEBHOOK_SECRET=whsec_...
-APP_URL=https://bazodiac.com
+APP_URL=https://bazodiac.space
 ```
 
 **Step 4: Commit**
@@ -637,7 +637,7 @@ git commit -m "feat: social sharing with share URL + WhatsApp/Twitter/LinkedIn b
 # media/robots.txt (served from publicDir)
 User-agent: *
 Allow: /
-Sitemap: https://bazodiac.com/sitemap.xml
+Sitemap: https://bazodiac.space/sitemap.xml
 ```
 
 **Step 2: sitemap.xml**
@@ -646,7 +646,7 @@ Sitemap: https://bazodiac.com/sitemap.xml
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.w3.org/2000/01/sitemap-protocol">
   <url>
-    <loc>https://bazodiac.com/</loc>
+    <loc>https://bazodiac.space/</loc>
     <lastmod>2026-03-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
@@ -666,7 +666,7 @@ Hinweis: Wird in Iteration 5 mit Content-Seiten erweitert.
   "@type": "WebApplication",
   "name": "Bazodiac",
   "description": "Fusion astrology combining Western zodiac, Chinese BaZi, and Wu-Xing Five Elements",
-  "url": "https://bazodiac.com",
+  "url": "https://bazodiac.space",
   "applicationCategory": "Lifestyle",
   "operatingSystem": "Web",
   "offers": {
@@ -679,7 +679,7 @@ Hinweis: Wird in Iteration 5 mit Content-Seiten erweitert.
 </script>
 
 <!-- Additional OG tags -->
-<meta property="og:image" content="https://bazodiac.com/og-image.jpg" />
+<meta property="og:image" content="https://bazodiac.space/og-image.jpg" />
 <meta property="og:locale" content="de_DE" />
 <meta property="og:locale:alternate" content="en_US" />
 <meta name="twitter:card" content="summary_large_image" />

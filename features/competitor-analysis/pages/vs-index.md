@@ -32,6 +32,6 @@ Our competitors are excellent at what they do within Western astrology. Bazodiac
 
 ---
 
-**[Try Bazodiac Free →](https://bazodiac.com)**
+**[Try Bazodiac Free →](https://bazodiac.space)**
 
 *All comparisons based on publicly available information as of March 2025. We verify competitor features quarterly.*

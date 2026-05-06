@@ -154,4 +154,4 @@ The best way to decide is to try both. Co-Star's free tier is generous. Bazodiac
 
 If you've been using Co-Star and wondering "is this all there is?" — the answer is no. There are two more ancient systems waiting to show you a side of yourself you haven't seen.
 
-**[Try Bazodiac Free →](https://bazodiac.com)**
+**[Try Bazodiac Free →](https://bazodiac.space)**

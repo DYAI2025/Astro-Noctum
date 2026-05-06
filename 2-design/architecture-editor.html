@@ -1,0 +1,858 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bazodiac (Astro-Noctum) · Architecture Editor</title><style>
+body{margin:0;background:#08090d;color:#f0e6c8;font-family:ui-monospace,Menlo,Consolas,monospace;overflow:hidden}header{position:fixed;top:0;left:0;right:0;height:58px;display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:#08090df7;border-bottom:1px solid #c9a84c44;z-index:5}h1{font-size:15px;color:#c9a84c;margin:0}button{background:#111827;color:#f0e6c8;border:1px solid #c9a84c66;border-radius:5px;padding:6px 9px;margin:2px;cursor:pointer}button:hover{color:#e8c97a;border-color:#e8c97a}#canvas{position:fixed;inset:58px 380px 0 0;overflow:auto}#scene{position:relative;width:1600px;height:1000px}svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.node{position:absolute;transform:translate(-50%,-50%);min-width:130px;background:#111827ee;border:1px solid #c9a84c66;border-radius:8px;padding:10px;text-align:center;cursor:pointer}.node:hover,.active{border-color:#e8c97a}.modified:after{content:'●';position:absolute;right:5px;top:3px;color:#c9a84c}.deleted{opacity:.4;text-decoration:line-through}.icon{font-size:21px;display:block}.sub{display:block;color:#8a7f9a;font-size:11px}#panel{position:fixed;right:0;top:58px;bottom:0;width:380px;background:#0d0f16f8;border-left:1px solid #c9a84c44;overflow:auto;padding:14px}.card{border-bottom:1px solid #ffffff18;padding:10px 0}.tag{display:inline-block;border:1px solid #77a7ff77;border-radius:99px;padding:2px 6px;margin:2px;font-size:11px}textarea,input,select{width:100%;box-sizing:border-box;background:#08090d;color:#f0e6c8;border:1px solid #c9a84c55;border-radius:5px;padding:6px;margin:4px 0 8px}textarea{min-height:90px}#modal{display:none;position:fixed;inset:7%;background:#08090d;border:1px solid #c9a84c77;z-index:10;box-shadow:0 0 80px #000}#modal.open{display:flex;flex-direction:column}#modal textarea{flex:1;border:0;border-top:1px solid #ffffff22;border-radius:0;margin:0;padding:16px;white-space:pre}.row{border:1px solid #ffffff18;border-radius:6px;padding:7px;margin:6px 0}.muted{color:#8a7f9a;font-size:12px}</style></head><body>
+<header><div><h1 id="title"></h1><div class="muted">editable architecture → dev brief → full snapshot</div></div><div><button onclick="toggleEdit()" id="editBtn">EDIT MODE</button><button onclick="addNode()">ADD NODE</button><button onclick="saveLocal()">SAVE</button><button onclick="loadLocal()">LOAD</button><button onclick="downloadJSON()">EXPORT DATA</button><button onclick="showBrief()">EXPORT CHANGES</button><button onclick="showSnapshot()">EXPORT ALL STATES</button></div></header>
+<div id="canvas"><div id="scene"><svg id="lines"></svg></div></div><aside id="panel">Select a node.</aside><div id="modal"><header style="position:static"><h1 id="modalTitle"></h1><div><button onclick="copyModal()">COPY</button><button onclick="downloadModal()">DOWNLOAD</button><button onclick="closeModal()">CLOSE</button></div></header><textarea id="modalText"></textarea></div>
+<script id="data" type="application/json">{
+  "project": {
+    "name": "Bazodiac (Astro-Noctum)",
+    "domain": "mixed",
+    "repo": "github.com/DYAI2025/Astro-Noctum",
+    "timestamp": "2026-05-02T00:00:00+02:00",
+    "description": "Fusion-Astrology Web + Mobile App combining Western astrology, Chinese BaZi, and Wu-Xing Five Elements via deterministic chart calculation, AI interpretation, and voice agents."
+  },
+  "nodes": [
+    {
+      "id": "user-web",
+      "x": 140,
+      "y": 180,
+      "type": "entry",
+      "icon": "◎",
+      "label": "User (Web)",
+      "sub": "browser",
+      "detail": {
+        "title": "User (Web)",
+        "subtitle": "entry · browser session",
+        "tags": [
+          "entry",
+          "user"
+        ],
+        "flow": [
+          "Open Bazodiac SPA",
+          "Sign in (Supabase auth)",
+          "Enter birth data",
+          "View Signatur + Daily horoscope"
+        ],
+        "apis": [],
+        "schemas": [],
+        "notes": "Primary entry. German UI, dark luxury aesthetic.",
+        "constraints": [
+          "Mobile-first readability <10s"
+        ],
+        "risks": []
+      }
+    },
+    {
+      "id": "user-mobile",
+      "x": 140,
+      "y": 420,
+      "type": "entry",
+      "icon": "◎",
+      "label": "User (iOS)",
+      "sub": "Expo app",
+      "detail": {
+        "title": "User (iOS Native)",
+        "subtitle": "entry · mobile session",
+        "tags": [
+          "entry",
+          "mobile"
+        ],
+        "flow": [
+          "Open iOS app",
+          "Bootstrap version-gate (/api/mobile/bootstrap)",
+          "Auth + onboarding",
+          "View dashboard"
+        ],
+        "apis": [],
+        "schemas": [],
+        "notes": "Expo-managed, offline contribution queue with auto-flush.",
+        "constraints": [],
+        "risks": []
+      }
+    },
+    {
+      "id": "frontend",
+      "x": 460,
+      "y": 180,
+      "type": "ui",
+      "icon": "▦",
+      "label": "frontend",
+      "sub": "React 19 SPA",
+      "detail": {
+        "title": "Web Frontend",
+        "subtitle": "component · React 19 SPA",
+        "tags": [
+          "component",
+          "ui",
+          "web"
+        ],
+        "flow": [
+          "Vite dev server",
+          "Auth via Supabase JS client",
+          "Polls /api/transit-state, /api/experience/daily",
+          "Renders 3D Signatur (Three.js + GLSL)",
+          "ElevenLabs voice widget"
+        ],
+        "apis": [],
+        "schemas": [],
+        "notes": "Code: src/. Tailwind v4, Framer Motion, Zod runtime validation.",
+        "constraints": [
+          "3D 60fps target on M1+",
+          "Touch targets ≥44px"
+        ],
+        "risks": [
+          "WebGL silent-degrade on low-end devices (defect H4)"
+        ]
+      }
+    },
+    {
+      "id": "mobile",
+      "x": 460,
+      "y": 420,
+      "type": "ui",
+      "icon": "▤",
+      "label": "mobile",
+      "sub": "Expo 53 / RN 0.79",
+      "detail": {
+        "title": "iOS Native App",
+        "subtitle": "component · Expo + React Native",
+        "tags": [
+          "component",
+          "ui",
+          "mobile"
+        ],
+        "flow": [
+          "Expo dev client",
+          "AsyncStorage cache + SecureStore identity",
+          "WebView for ElevenLabs voice",
+          "Offline contribution queue"
+        ],
+        "apis": [],
+        "schemas": [],
+        "notes": "Code: apps/mobile/. expo-gl + three.js for SignaturCanvas (not yet mounted).",
+        "constraints": [
+          "30fps native",
+          "<2s first frame"
+        ],
+        "risks": [
+          "3D renderer not yet shipped"
+        ]
+      }
+    },
+    {
+      "id": "shared",
+      "x": 760,
+      "y": 300,
+      "type": "domain",
+      "icon": "◇",
+      "label": "shared",
+      "sub": "@bazodiac/shared",
+      "detail": {
+        "title": "Shared Library",
+        "subtitle": "component · cross-platform TS",
+        "tags": [
+          "component",
+          "library",
+          "typescript"
+        ],
+        "flow": [
+          "Re-exported via packages/shared/src/index.ts",
+          "Imported by frontend (~13 files) and mobile via workspace dep",
+          "No DOM, no React, no native APIs"
+        ],
+        "apis": [],
+        "schemas": [
+          {
+            "name": "QuizDefinition",
+            "purpose": "22 quiz definitions, scoring engine"
+          },
+          {
+            "name": "AGENTS",
+            "purpose": "Levi + Eve voice agent configs"
+          },
+          {
+            "name": "DailyResponseSchema",
+            "purpose": "Zod schema for /api/experience/daily"
+          },
+          {
+            "name": "bazodiac-engine.ts",
+            "purpose": "TS port of master signal math"
+          }
+        ],
+        "notes": "Pure TS, Zod 4.3, Vitest. Sub-modules: agents/, api/, experience/, fusion-bazi/, fusion-ring/, i18n/, quizzes/, signatur/, transit/, weekly/.",
+        "constraints": [
+          "No side effects (Zod schemas exported, .parse() called by consumers)"
+        ],
+        "risks": [
+          "Server-side drift: server.mjs cannot import TS — synastry templates manually mirrored (DEC-narrative-engine-hybrid)"
+        ]
+      }
+    },
+    {
+      "id": "api-server",
+      "x": 1080,
+      "y": 300,
+      "type": "api",
+      "icon": "▣",
+      "label": "api-server",
+      "sub": "Express / Node 20",
+      "detail": {
+        "title": "API Server",
+        "subtitle": "component · Express orchestration",
+        "tags": [
+          "component",
+          "api",
+          "node"
+        ],
+        "flow": [
+          "Receive HTTPS request from frontend/mobile",
+          "Validate Supabase JWT (requireUserAuth middleware)",
+          "Rate-limit /api/* (apiLimiter, 2000/15min)",
+          "Proxy to BAFE / Gemini / ElevenLabs / Stripe / NOAA / NASA-DONKI / JPL-Horizons / NeoWs",
+          "Cache responses (in-memory + Supabase L2)",
+          "Return JSON or stream"
+        ],
+        "apis": [
+          {
+            "method": "POST",
+            "path": "/api/calculate/:endpoint",
+            "desc": "Proxy to BAFE /calculate/<bazi|western|fusion|wuxing|tst>",
+            "params": [
+              "endpoint: enum"
+            ],
+            "consumers": [
+              "frontend"
+            ],
+            "auth": "bearer",
+            "status": "active"
+          },
+          {
+            "method": "POST",
+            "path": "/api/chart",
+            "desc": "Proxy to BAFE /chart",
+            "params": [],
+            "consumers": [
+              "frontend",
+              "mobile"
+            ],
+            "auth": "bearer",
+            "status": "active"
+          },
+          {
+            "method": "POST",
+            "path": "/api/synastry",
+            "desc": "Compute Western+BaZi synastry between user and partner",
+            "params": [
+              "partner_id: UUID"
+            ],
+            "consumers": [
+              "frontend"
+            ],
+            "auth": "bearer+premium",
+            "status": "active"
+          },
+          {
+            "method": "GET",
+            "path": "/api/transit-state/:userId",
+            "desc": "Current sector ring + transit + delta",
+            "params": [
+              "userId: UUID"
+            ],
+            "consumers": [
+              "frontend"
+            ],
+            "auth": "bearer",
+            "status": "active"
+          },
+          {
+            "method": "POST",
+            "path": "/api/experience/daily",
+            "desc": "Daily Experience: Western + BaZi + Fusion narrative + impact (DAILY_EXPERIENCE_v2)",
+            "params": [
+              "birth",
+              "soulprint_sectors",
+              "quiz_sectors",
+              "target_date",
+              "include?: ['impact']"
+            ],
+            "consumers": [
+              "frontend",
+              "mobile"
+            ],
+            "auth": "bearer",
+            "status": "active"
+          },
+          {
+            "method": "POST",
+            "path": "/api/experience/bootstrap",
+            "desc": "Initial Experience state + soulprint persist",
+            "params": [
+              "birth"
+            ],
+            "consumers": [
+              "frontend",
+              "mobile"
+            ],
+            "auth": "bearer",
+            "status": "active"
+          },
+          {
+            "method": "POST",
+            "path": "/api/vibes",
+            "desc": "On-demand 2-3h vibes signal (Gemini-generated)",
+            "params": [],
+            "consumers": [
+              "frontend"
+            ],
+            "auth": "bearer+tier",
+            "status": "active"
+          },
+          {
+            "method": "POST",
+            "path": "/api/weekly-insights",
+            "desc": "Weekly 7-life-area insights (top-3 expanded)",
+            "params": [],
+            "consumers": [
+              "frontend"
+            ],
+            "auth": "bearer",
+            "status": "active"
+          },
+          {
+            "method": "POST",
+            "path": "/api/contribute",
+            "desc": "Quiz contribution → contribution_events upsert",
+            "params": [],
+            "consumers": [
+              "frontend",
+              "mobile"
+            ],
+            "auth": "bearer",
+            "status": "active"
+          },
+          {
+            "method": "GET",
+            "path": "/api/space-weather",
+            "desc": "NOAA→DONKI Kp index with cache+fallback",
+            "params": [],
+            "consumers": [
+              "frontend"
+            ],
+            "auth": "public",
+            "status": "active"
+          },
+          {
+            "method": "POST",
+            "path": "/api/checkout",
+            "desc": "Stripe checkout session",
+            "params": [
+              "telemetry"
+            ],
+            "consumers": [
+              "frontend",
+              "mobile"
+            ],
+            "auth": "public",
+            "status": "active"
+          },
+          {
+            "method": "POST",
+            "path": "/api/webhook/stripe",
+            "desc": "Stripe webhook for subscription events",
+            "params": [],
+            "consumers": [
+              "stripe"
+            ],
+            "auth": "stripe-signature",
+            "status": "active"
+          },
+          {
+            "method": "GET",
+            "path": "/api/profile/:userId",
+            "desc": "ElevenLabs Custom Tool: profile + last 5 conversations",
+            "params": [
+              "userId"
+            ],
+            "consumers": [
+              "elevenlabs"
+            ],
+            "auth": "service",
+            "status": "active"
+          },
+          {
+            "method": "POST",
+            "path": "/api/agent/conversation",
+            "desc": "Save voice agent conversation",
+            "params": [],
+            "consumers": [
+              "elevenlabs"
+            ],
+            "auth": "service",
+            "status": "active"
+          },
+          {
+            "method": "POST",
+            "path": "/api/interpret",
+            "desc": "Gemini interpretation proxy (server-side key)",
+            "params": [
+              "prompt"
+            ],
+            "consumers": [
+              "frontend"
+            ],
+            "auth": "public",
+            "status": "active"
+          }
+        ],
+        "schemas": [],
+        "notes": "Code: server.mjs (~5948 lines) + server/ai-router.mjs (Gemini→OpenRouter fallback). Single-file design.",
+        "constraints": [
+          "Stripe webhook needs raw body parsing",
+          "BAFE proxy uses ordered fallback chain (internal + public URL)"
+        ],
+        "risks": [
+          "Single-file 5948 LOC = maintainability risk",
+          "JS-mirror of shared TS schemas drifts (DEC-narrative-engine-hybrid)"
+        ]
+      }
+    },
+    {
+      "id": "bafe",
+      "x": 1380,
+      "y": 80,
+      "type": "external",
+      "icon": "✦",
+      "label": "BAFE",
+      "sub": "Swiss Ephemeris",
+      "detail": {
+        "title": "BAFE (BaZi Astro Fusion Engine)",
+        "subtitle": "external · chart calculation",
+        "tags": [
+          "external",
+          "engine"
+        ],
+        "flow": [
+          "/calculate/{bazi,western,fusion,wuxing,tst}",
+          "/chart",
+          "/transit/state",
+          "/transit/now"
+        ],
+        "apis": [],
+        "schemas": [],
+        "notes": "Deployed separately on Railway. Swiss Ephemeris pinned (DEC-swiss-ephemeris). Public + internal Railway URL.",
+        "constraints": [],
+        "risks": [
+          "Single point of failure for chart math"
+        ]
+      }
+    },
+    {
+      "id": "supabase",
+      "x": 1380,
+      "y": 200,
+      "type": "data",
+      "icon": "▢",
+      "label": "Supabase",
+      "sub": "Auth + Postgres",
+      "detail": {
+        "title": "Supabase",
+        "subtitle": "external · auth + persistence",
+        "tags": [
+          "external",
+          "db",
+          "auth"
+        ],
+        "flow": [
+          "Auth (JWT issuance)",
+          "PostgreSQL with RLS",
+          "Service role bypass for admin endpoints"
+        ],
+        "apis": [],
+        "schemas": [
+          {
+            "name": "astro_profiles",
+            "purpose": "user_id, birth data, astro_json (bazi/western/wuxing), soulprint_sectors[12]"
+          },
+          {
+            "name": "contribution_events",
+            "purpose": "Quiz cluster contributions, cluster-gated, JSONB sector weights"
+          },
+          {
+            "name": "user_quiz_answers (planned)",
+            "purpose": "Append-only quiz answer history (RLS: no UPDATE/DELETE) — Sprint B"
+          },
+          {
+            "name": "user_quiz_profile (planned)",
+            "purpose": "Aggregated element_profile[5] + sector_profile[12] — Sprint B"
+          },
+          {
+            "name": "agent_conversations",
+            "purpose": "Voice session history, partitioned by agent_type (Levi|Eve)"
+          },
+          {
+            "name": "vibes_cache",
+            "purpose": "L2 cache: user_id + hour_bucket + engine_version"
+          },
+          {
+            "name": "weekly_insights_cache",
+            "purpose": "L2 cache: user_id + iso_week + engine_version"
+          }
+        ],
+        "notes": "DEC-supabase-backend: dual-context (anon for client, service-role for server admin).",
+        "constraints": [
+          "RLS must enforce ownership"
+        ],
+        "risks": [
+          "Service-role key leakage = total DB compromise"
+        ]
+      }
+    },
+    {
+      "id": "gemini",
+      "x": 1380,
+      "y": 320,
+      "type": "external",
+      "icon": "✧",
+      "label": "Gemini",
+      "sub": "AI interpretation",
+      "detail": {
+        "title": "Google Gemini",
+        "subtitle": "external · LLM",
+        "tags": [
+          "external",
+          "ai"
+        ],
+        "flow": [
+          "gemini-3-flash-preview model",
+          "15s timeout",
+          "Used for: interpret, vibes, weekly, daily narratives, agent summary, conversation analyze"
+        ],
+        "apis": [],
+        "schemas": [],
+        "notes": "Server-side key only in production (VITE_GEMINI_API_KEY only in dev). OpenRouter fallback chain via server/ai-router.mjs.",
+        "constraints": [],
+        "risks": [
+          "429 quota exhaustion → ai-router falls through to OpenRouter free tier"
+        ]
+      }
+    },
+    {
+      "id": "elevenlabs",
+      "x": 1380,
+      "y": 440,
+      "type": "external",
+      "icon": "▶",
+      "label": "ElevenLabs",
+      "sub": "Voice agents",
+      "detail": {
+        "title": "ElevenLabs Voice",
+        "subtitle": "external · multi-agent voice",
+        "tags": [
+          "external",
+          "voice"
+        ],
+        "flow": [
+          "Levi (primary, empathic)",
+          "Eve (bold/modern)",
+          "Custom Tool calls /api/profile/:userId, /api/agent/*"
+        ],
+        "apis": [],
+        "schemas": [],
+        "notes": "DEC-multi-agent-voice. Config-driven via AGENTS array in shared. ELEVENLABS_TOOL_SECRET auth.",
+        "constraints": [
+          "Adding agents = AgentConfig + env var + DB migration only"
+        ],
+        "risks": [
+          "Eve disabled if VITE_ELEVENLABS_EVE_AGENT_ID missing → 'coming soon' UI"
+        ]
+      }
+    },
+    {
+      "id": "stripe",
+      "x": 1380,
+      "y": 560,
+      "type": "external",
+      "icon": "$",
+      "label": "Stripe",
+      "sub": "Payments",
+      "detail": {
+        "title": "Stripe",
+        "subtitle": "external · payments",
+        "tags": [
+          "external",
+          "payments"
+        ],
+        "flow": [
+          "Checkout session creation",
+          "Webhook handlers (subscription created/updated/canceled)",
+          "Customer Portal links"
+        ],
+        "apis": [],
+        "schemas": [],
+        "notes": "/api/checkout, /api/customer-portal, /api/webhook/stripe (raw body). authLimiter on /api/checkout + /api/customer-portal.",
+        "constraints": [
+          "Webhook signature verification mandatory"
+        ],
+        "risks": []
+      }
+    },
+    {
+      "id": "noaa-donki",
+      "x": 1380,
+      "y": 680,
+      "type": "external",
+      "icon": "☀",
+      "label": "NOAA / DONKI",
+      "sub": "Space weather",
+      "detail": {
+        "title": "NOAA SWPC + NASA DONKI",
+        "subtitle": "external · space weather aggregator",
+        "tags": [
+          "external",
+          "data"
+        ],
+        "flow": [
+          "Kp index (primary: NOAA)",
+          "DONKI events fallback",
+          "X-ray flux + solar cycle indices"
+        ],
+        "apis": [],
+        "schemas": [],
+        "notes": "5-min cache for /api/space-weather/extended, 15-min for /api/space-weather. NOAA endpoint drift documented in Sprint A (2026-04-21 hotfix).",
+        "constraints": [],
+        "risks": [
+          "NOAA endpoint format change broke production once (31.03.2026)"
+        ]
+      }
+    },
+    {
+      "id": "nasa-neows",
+      "x": 1380,
+      "y": 800,
+      "type": "external",
+      "icon": "☄",
+      "label": "NASA NeoWs",
+      "sub": "Near-Earth Objects",
+      "detail": {
+        "title": "NASA Near-Earth Object Web Service",
+        "subtitle": "external · NEO data",
+        "tags": [
+          "external",
+          "data"
+        ],
+        "flow": [
+          "7-day forward feed",
+          "Top 5 closest NEOs by distance"
+        ],
+        "apis": [],
+        "schemas": [],
+        "notes": "/api/neo/upcoming. 6h cache. DEMO_KEY fallback if NASA_API_KEY missing.",
+        "constraints": [],
+        "risks": []
+      }
+    },
+    {
+      "id": "jpl-horizons",
+      "x": 1380,
+      "y": 900,
+      "type": "external",
+      "icon": "✶",
+      "label": "JPL Horizons",
+      "sub": "Geometry verify",
+      "detail": {
+        "title": "JPL Horizons",
+        "subtitle": "external · ephemeris verification",
+        "tags": [
+          "external",
+          "data"
+        ],
+        "flow": [
+          "Body-to-body ephemeris query",
+          "1h cache per (body1, body2, date)"
+        ],
+        "apis": [],
+        "schemas": [],
+        "notes": "/api/geometry/verify. Used for verified geometry events (e.g., conjunctions).",
+        "constraints": [],
+        "risks": []
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "user-web",
+      "to": "frontend",
+      "style": "primary",
+      "relation": "user-flow",
+      "protocol": "HTTPS",
+      "label": "uses"
+    },
+    {
+      "from": "user-mobile",
+      "to": "mobile",
+      "style": "primary",
+      "relation": "user-flow",
+      "protocol": "internal",
+      "label": "uses"
+    },
+    {
+      "from": "frontend",
+      "to": "shared",
+      "style": "dependency",
+      "relation": "dependency",
+      "protocol": "internal",
+      "label": "imports"
+    },
+    {
+      "from": "mobile",
+      "to": "shared",
+      "style": "dependency",
+      "relation": "dependency",
+      "protocol": "internal",
+      "label": "imports"
+    },
+    {
+      "from": "frontend",
+      "to": "api-server",
+      "style": "api",
+      "relation": "api-call",
+      "protocol": "HTTPS",
+      "label": "/api/*",
+      "data": "JWT bearer"
+    },
+    {
+      "from": "mobile",
+      "to": "api-server",
+      "style": "api",
+      "relation": "api-call",
+      "protocol": "HTTPS",
+      "label": "/api/*",
+      "data": "JWT bearer"
+    },
+    {
+      "from": "frontend",
+      "to": "supabase",
+      "style": "data",
+      "relation": "data-flow",
+      "protocol": "HTTPS",
+      "label": "auth + RLS reads"
+    },
+    {
+      "from": "mobile",
+      "to": "supabase",
+      "style": "data",
+      "relation": "data-flow",
+      "protocol": "HTTPS",
+      "label": "auth + RLS reads"
+    },
+    {
+      "from": "api-server",
+      "to": "bafe",
+      "style": "api",
+      "relation": "api-call",
+      "protocol": "HTTP",
+      "label": "proxy /chart, /calculate/*",
+      "data": "natal/transit data"
+    },
+    {
+      "from": "api-server",
+      "to": "supabase",
+      "style": "data",
+      "relation": "data-flow",
+      "protocol": "HTTPS",
+      "label": "service role",
+      "data": "profiles, caches, conversations"
+    },
+    {
+      "from": "api-server",
+      "to": "gemini",
+      "style": "api",
+      "relation": "api-call",
+      "protocol": "HTTPS",
+      "label": "narratives + interpret"
+    },
+    {
+      "from": "api-server",
+      "to": "elevenlabs",
+      "style": "api",
+      "relation": "api-call",
+      "protocol": "HTTPS",
+      "label": "agent context"
+    },
+    {
+      "from": "elevenlabs",
+      "to": "api-server",
+      "style": "event",
+      "relation": "event-flow",
+      "protocol": "HTTPS",
+      "label": "Custom Tool calls",
+      "data": "/api/profile, /api/agent/*"
+    },
+    {
+      "from": "api-server",
+      "to": "stripe",
+      "style": "api",
+      "relation": "api-call",
+      "protocol": "HTTPS",
+      "label": "checkout sessions"
+    },
+    {
+      "from": "stripe",
+      "to": "api-server",
+      "style": "event",
+      "relation": "event-flow",
+      "protocol": "HTTPS",
+      "label": "webhook /api/webhook/stripe"
+    },
+    {
+      "from": "api-server",
+      "to": "noaa-donki",
+      "style": "data",
+      "relation": "data-flow",
+      "protocol": "HTTPS",
+      "label": "Kp + events",
+      "data": "5-15min cached"
+    },
+    {
+      "from": "api-server",
+      "to": "nasa-neows",
+      "style": "data",
+      "relation": "data-flow",
+      "protocol": "HTTPS",
+      "label": "NEO feed",
+      "data": "6h cached"
+    },
+    {
+      "from": "api-server",
+      "to": "jpl-horizons",
+      "style": "data",
+      "relation": "data-flow",
+      "protocol": "HTTPS",
+      "label": "geometry verify",
+      "data": "1h cached"
+    }
+  ],
+  "changes": []
+}</script><script>
+let model=JSON.parse(data.textContent),map={},active=null,edit=false,fileName='architecture.md';
+const E=s=>String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+const now=()=>new Date().toISOString();
+function rebuild(){map=Object.fromEntries((model.nodes||[]).map(n=>[n.id,n]));}
+function change(c){model.changes=model.changes||[];model.changes.push({id:'c_'+Math.random().toString(36).slice(2,9),timestamp:now(),...c});render();}
+function render(){rebuild();title.textContent=(model.project?.name||'Architecture')+' · '+(model.changes?.length||0)+' changes';scene.querySelectorAll('.node').forEach(n=>n.remove());(model.nodes||[]).forEach(n=>{let el=document.createElement('div');el.className='node '+(n._deleted?'deleted ':'')+((model.changes||[]).some(c=>c.nodeId===n.id)?'modified':'');el.style.left=n.x+'px';el.style.top=n.y+'px';el.onclick=()=>openNode(n.id);el.innerHTML=`<span class="icon">${E(n.icon||'◇')}</span>${E(n.label||n.id)}<span class="sub">${E(n.sub||n.type||'')}</span>`;scene.appendChild(el)});drawEdges();if(active)openNode(active)}
+function drawEdges(){lines.innerHTML='';(model.edges||[]).forEach(e=>{let a=map[e.from],b=map[e.to];if(!a||!b)return;let p=document.createElementNS('http://www.w3.org/2000/svg','path'),dx=b.x-a.x;p.setAttribute('d',`M ${a.x} ${a.y} C ${a.x+dx*.45} ${a.y}, ${b.x-dx*.45} ${b.y}, ${b.x} ${b.y}`);p.setAttribute('fill','none');p.setAttribute('stroke',e.style==='api'?'#77a7ff99':'#c9a84c99');p.setAttribute('stroke-width','1.4');if(['api','event','data'].includes(e.style))p.setAttribute('stroke-dasharray','5 5');lines.appendChild(p)})}
+function row(x){return `<div class="row">${x}</div>`}
+function openNode(id){active=id;let n=map[id],d=n.detail||{};panel.innerHTML=`<div class="card"><h2>${E(d.title||n.label||id)}</h2><div class="muted">${E(d.subtitle||n.type||'component')}</div>${(d.tags||[]).map(t=>`<span class="tag">${E(t)}</span>`).join('')}<p>${E(d.notes||'')}</p>${edit?'<button onclick="editNode()">EDIT NODE</button><button onclick="deleteNode()">DELETE NODE</button>':''}</div><div class="card"><b>Flow</b>${(d.flow||[]).map((s,i)=>row(`${i+1}. ${E(s)} ${edit?`<button onclick="editFlow(${i})">edit</button><button onclick="deleteFlow(${i})">del</button>`:''}`)).join('')}${edit?'<button onclick="addFlow()">ADD FLOW</button>':''}</div><div class="card"><b>API Routes</b>${(d.apis||[]).map((a,i)=>row(`<code>${E(a.method)} ${E(a.path)}</code><br>${E(a.desc||'')} ${edit?`<button onclick="editApi(${i})">edit</button><button onclick="deleteApi(${i})">del</button>`:''}`)).join('')}${edit?'<button onclick="addApi()">ADD API</button>':''}</div><div class="card"><b>Edges</b>${(model.edges||[]).map((e,i)=>({...e,i})).filter(e=>e.from===id||e.to===id).map(e=>row(`${E(e.from)} → ${E(e.to)} · ${E(e.relation||e.style||'edge')} ${edit?`<button onclick="rerouteEdge(${e.i})">reroute</button><button onclick="deleteEdge(${e.i})">del</button>`:''}`)).join('')}${edit?'<button onclick="addEdge()">ADD EDGE</button>':''}</div>`;}
+function toggleEdit(){edit=!edit;editBtn.textContent=edit?'EDIT MODE ON':'EDIT MODE';render()}
+function form(h){panel.insertAdjacentHTML('afterbegin',`<div class="card">${h}</div>`)}
+function editNode(){let n=map[active],d=n.detail;form(`<input id=f_label value="${E(n.label)}"><input id=f_sub value="${E(n.sub)}"><input id=f_title value="${E(d.title)}"><input id=f_subtitle value="${E(d.subtitle)}"><textarea id=f_notes>${E(d.notes||'')}</textarea><input id=f_tags value="${E((d.tags||[]).join(', '))}"><button onclick="saveNode()">SAVE</button>`)}
+function saveNode(){let n=map[active],before=JSON.parse(JSON.stringify(n));n.label=f_label.value;n.sub=f_sub.value;n.detail.title=f_title.value;n.detail.subtitle=f_subtitle.value;n.detail.notes=f_notes.value;n.detail.tags=f_tags.value.split(',').map(x=>x.trim()).filter(Boolean);change({type:'modify',target:'node',nodeId:active,before,after:JSON.parse(JSON.stringify(n)),description:'Modified node '+active})}
+function addFlow(){form(`<textarea id=f_flow></textarea><button onclick="saveNewFlow()">ADD</button>`)}function saveNewFlow(){let n=map[active];n.detail.flow=n.detail.flow||[];n.detail.flow.push(f_flow.value);change({type:'add',target:'flow',nodeId:active,after:f_flow.value,description:'Added flow step to '+active})}
+function editFlow(i){form(`<textarea id=f_flow>${E(map[active].detail.flow[i])}</textarea><button onclick="saveFlow(${i})">SAVE</button>`)}function saveFlow(i){let n=map[active],before=n.detail.flow[i];n.detail.flow[i]=f_flow.value;change({type:'modify',target:'flow',nodeId:active,before,after:f_flow.value,description:'Modified flow step '+(i+1)+' of '+active})}function deleteFlow(i){let n=map[active],before=n.detail.flow.splice(i,1)[0];change({type:'delete',target:'flow',nodeId:active,before,description:'Deleted flow step from '+active})}
+function apiEditor(a={method:'GET',path:'',desc:'',params:[]},cb='saveNewApi()'){form(`<select id=f_method>${['GET','POST','PUT','PATCH','DELETE'].map(m=>`<option ${m===a.method?'selected':''}>${m}</option>`).join('')}</select><input id=f_path value="${E(a.path)}" placeholder="/api/path"><textarea id=f_desc>${E(a.desc||'')}</textarea><textarea id=f_params>${E((a.params||[]).join('\n'))}</textarea><button onclick="${cb}">SAVE</button>`)}
+function readApi(){return{method:f_method.value,path:f_path.value,desc:f_desc.value,params:f_params.value.split('\n').map(x=>x.trim()).filter(Boolean)}}function addApi(){apiEditor()}function saveNewApi(){let n=map[active],a=readApi();n.detail.apis=n.detail.apis||[];n.detail.apis.push(a);change({type:'add',target:'api',nodeId:active,after:a,description:'Added API '+a.method+' '+a.path+' to '+active})}function editApi(i){apiEditor(map[active].detail.apis[i],`saveApi(${i})`)}function saveApi(i){let n=map[active],before=JSON.parse(JSON.stringify(n.detail.apis[i])),a=readApi();n.detail.apis[i]=a;change({type:'modify',target:'api',nodeId:active,before,after:a,description:'Modified API '+before.method+' '+before.path+' to '+a.method+' '+a.path})}function deleteApi(i){let n=map[active],before=n.detail.apis.splice(i,1)[0];change({type:'delete',target:'api',nodeId:active,before,description:'Deleted API '+before.method+' '+before.path+' from '+active})}
+function addNode(){let id=prompt('New node id in kebab-case');if(!id||map[id])return;let n={id,x:250+model.nodes.length*60,y:480,type:'custom',icon:'◇',label:id,sub:'',detail:{title:id,subtitle:'custom',tags:[],flow:[],apis:[],schemas:[],notes:'',constraints:[],risks:[]}};model.nodes.push(n);change({type:'add',target:'node',nodeId:id,after:n,description:'Added node '+id})}function deleteNode(){let n=map[active],before=JSON.parse(JSON.stringify(n));n._deleted=true;change({type:'delete',target:'node',nodeId:active,before,description:'Marked node '+active+' for deletion'})}
+function addEdge(){let to=prompt('Target node id');if(!to||!map[to])return;let e={from:active,to,style:'secondary',relation:'dependency',label:''};model.edges.push(e);change({type:'add',target:'edge',nodeId:active,after:e,description:'Added edge '+active+' to '+to})}function rerouteEdge(i){let e=model.edges[i],to=prompt('New target node id',e.to);if(!to||!map[to])return;let before=JSON.parse(JSON.stringify(e));e.to=to;change({type:'reroute',target:'edge',edgeIndex:i,nodeId:active,before,after:JSON.parse(JSON.stringify(e)),description:'Rerouted edge '+before.from+' to '+before.to+' into '+e.from+' to '+e.to})}function deleteEdge(i){let before=model.edges.splice(i,1)[0];change({type:'delete',target:'edge',edgeIndex:i,before,description:'Deleted edge '+before.from+' to '+before.to})}
+function saveLocal(){localStorage.setItem('omni-architecture-model',JSON.stringify(model));alert('saved')}function loadLocal(){let raw=localStorage.getItem('omni-architecture-model');if(raw){model=JSON.parse(raw);render()}}function dl(name,text,type='text/plain'){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click()}function downloadJSON(){dl('architecture.json',JSON.stringify(model,null,2),'application/json')}
+function devBrief(){let cs=model.changes||[];if(!cs.length)return '# Development Brief: No Changes\n\nNo architecture edits have been recorded.';return `# Development Brief: Architecture Change Request\n\n## 1. Brief Metadata\n- Project: ${model.project?.name||'Unknown'}\n- Generated: ${now()}\n- Source: architecture editor change log\n- Change Count: ${cs.length}\n\n## 2. Change Summary\n| Type | Target | Component | Summary |\n|---|---|---|---|\n${cs.map(c=>`| ${c.type} | ${c.target} | ${c.nodeId||''} | ${String(c.description||'').replaceAll('|','/')} |`).join('\n')}\n\n## 3. Surgical Edit Instructions\n${cs.map((c,i)=>`### Change ${i+1}: ${c.description||c.target}\n- Type: ${c.type}\n- Target: ${c.target}\n- Component: ${c.nodeId||'n/a'}\n- Before:\n\`\`\`json\n${JSON.stringify(c.before??null,null,2)}\n\`\`\`\n- After:\n\`\`\`json\n${JSON.stringify(c.after??null,null,2)}\n\`\`\`\n- Required implementation: update the affected architecture object exactly as shown above.`).join('\n\n')}\n\n## 4. Acceptance Criteria\n- [ ] All before/after changes are implemented exactly.\n- [ ] Modified endpoints, flows, and edges are covered by tests or documented manual checks.\n\n## 5. Non-Goals\n- Do not refactor unrelated components.\n`}
+function snapshot(){let nodes=[...(model.nodes||[])].sort((a,b)=>a.id.localeCompare(b.id)),ed=[...(model.edges||[])].sort((a,b)=>(a.from+a.to).localeCompare(b.from+b.to)),apis=[];nodes.forEach(n=>(n.detail?.apis||[]).forEach(a=>apis.push({node:n.id,...a})));apis.sort((a,b)=>(a.path+a.method).localeCompare(b.path+b.method));return `# Architecture Snapshot: ${model.project?.name||'Project'}\n\n## 0. Header Block\n- Project: ${model.project?.name||'Unknown'}\n- Domain: ${model.project?.domain||'unknown'}\n- Repo: ${model.project?.repo||''}\n- Generated: ${now()}\n- Nodes: ${nodes.length}\n- Edges: ${ed.length}\n- Endpoints: ${apis.length}\n\n## Table of Contents\n1. Introduction & Goals\n2. Constraints\n3. Context & Scope\n4. Solution Strategy\n5. Building Block View\n6. Runtime View - User Flows\n7. API Reference\n8. Module Catalogue\n9. Glossary\n\n## 1. Introduction & Goals\n${model.project?.description||'No description provided.'}\n\n## 2. Constraints\n${nodes.flatMap(n=>n.detail?.constraints||[]).map(x=>'- '+x).join('\n')||'- Unknown - search required'}\n\n## 3. Context & Scope\n\`\`\`mermaid\nflowchart LR\n${ed.map(e=>`  ${id(e.from)}[${e.from}] --> ${id(e.to)}[${e.to}]`).join('\n')}\n\`\`\`\n\n## 4. Solution Strategy\n- Architecture is represented as editable nodes and edges.\n- Changes are captured as before/after deltas.\n\n## 5. Building Block View\n\`\`\`mermaid\nflowchart TD\n${nodes.map(n=>`  ${id(n.id)}[${n.label||n.id}]`).join('\n')}\n${ed.map(e=>`  ${id(e.from)} --> ${id(e.to)}`).join('\n')}\n\`\`\`\n\n## 6. Runtime View - User Flows\n${nodes.map(n=>`### ${n.label||n.id}\n${(n.detail?.flow||[]).map((s,i)=>`${i+1}. ${s}`).join('\n')||'No flow documented.'}`).join('\n\n')}\n\n## 7. API Reference\n### 7.1 Endpoint Index\n| Method | Path | Module | Description |\n|---|---|---|---|\n${apis.map(a=>`| ${a.method||''} | ${a.path||''} | ${a.node} | ${String(a.desc||'').replaceAll('|','/')} |`).join('\n')||'| | | | |'}\n\n### 7.2 Endpoint Details\n${apis.map(a=>`#### ${a.method} ${a.path}\n- Module: ${a.node}\n- Description: ${a.desc||''}\n- Parameters:\n${(a.params||[]).map(p=>'  - '+p).join('\n')||'  - none documented'}`).join('\n\n')||'No endpoints documented.'}\n\n## 8. Module Catalogue\n| Module | Type | Responsibility | Tags | Notes |\n|---|---|---|---|---|\n${nodes.map(n=>`| ${n.id} | ${n.type||''} | ${String(n.detail?.subtitle||n.sub||'').replaceAll('|','/')} | ${(n.detail?.tags||[]).join(', ')} | ${String(n.detail?.notes||'').replaceAll('|','/')} |`).join('\n')}\n\n## 9. Glossary\n| Term | Meaning |\n|---|---|\n| Node | Architecture component, module, service, view, agent, data object, or external system. |\n| Edge | Relationship, flow, API call, dependency, event, data movement, or ownership link. |\n`}function id(s){return String(s).replace(/[^a-zA-Z0-9_]/g,'_')}function showBrief(){fileName='development-brief.md';openModal('Development Brief',devBrief())}function showSnapshot(){fileName='architecture-snapshot.md';openModal('Architecture Snapshot',snapshot())}function openModal(t,x){modalTitle.textContent=t;modalText.value=x;modal.classList.add('open')}function closeModal(){modal.classList.remove('open')}function copyModal(){navigator.clipboard.writeText(modalText.value)}function downloadModal(){dl(fileName,modalText.value,'text/markdown')}render();
+</script></body></html>

@@ -1,0 +1,74 @@
+import { describe, it, expect } from 'vitest';
+import {
+  ELEMENT_INDEX,
+  MATERIAL_PROPS,
+  PLASTICITY,
+  SURFACE_PALETTES,
+  paletteToVec3Array,
+  type WuxingElement,
+} from '../wuxing-surfaces';
+
+describe('wuxing-surfaces constants', () => {
+  it('maps each Wuxing element to a unique integer index 0..4', () => {
+    const indices = (['Fire', 'Earth', 'Wood', 'Metal', 'Water'] as WuxingElement[])
+      .map((el) => ELEMENT_INDEX[el]);
+    expect(new Set(indices).size).toBe(5);
+    expect(Math.min(...indices)).toBe(0);
+    expect(Math.max(...indices)).toBe(4);
+  });
+
+  it('defines material properties for all 5 elements', () => {
+    (['Fire', 'Earth', 'Wood', 'Metal', 'Water'] as WuxingElement[]).forEach((el) => {
+      expect(MATERIAL_PROPS[el]).toBeDefined();
+      expect(MATERIAL_PROPS[el].specStrength).toBeGreaterThanOrEqual(0);
+      expect(MATERIAL_PROPS[el].specStrength).toBeLessThanOrEqual(1);
+      expect(MATERIAL_PROPS[el].specExp).toBeGreaterThan(0);
+    });
+  });
+
+  it('metal has the strongest specular, fire the weakest', () => {
+    expect(MATERIAL_PROPS.Metal.specStrength).toBeGreaterThan(MATERIAL_PROPS.Water.specStrength);
+    expect(MATERIAL_PROPS.Water.specStrength).toBeGreaterThan(MATERIAL_PROPS.Wood.specStrength);
+    expect(MATERIAL_PROPS.Fire.specStrength).toBeLessThan(MATERIAL_PROPS.Earth.specStrength);
+  });
+
+  it('plasticity is bounded 0.3..1.5 for all elements', () => {
+    (['Fire', 'Earth', 'Wood', 'Metal', 'Water'] as WuxingElement[]).forEach((el) => {
+      expect(PLASTICITY[el]).toBeGreaterThanOrEqual(0.3);
+      expect(PLASTICITY[el]).toBeLessThanOrEqual(1.5);
+    });
+  });
+});
+
+describe('wuxing-surfaces palettes', () => {
+  it('defines dark and bright palette for all 5 elements', () => {
+    (['Fire', 'Earth', 'Wood', 'Metal', 'Water'] as WuxingElement[]).forEach((el) => {
+      expect(SURFACE_PALETTES[el].dark).toBeDefined();
+      expect(SURFACE_PALETTES[el].bright).toBeDefined();
+      expect(SURFACE_PALETTES[el].dark.inner).toHaveLength(3);
+      expect(SURFACE_PALETTES[el].dark.mid).toHaveLength(3);
+      expect(SURFACE_PALETTES[el].dark.outer).toHaveLength(3);
+      expect(SURFACE_PALETTES[el].bright.inner).toHaveLength(3);
+      expect(SURFACE_PALETTES[el].bright.mid).toHaveLength(3);
+      expect(SURFACE_PALETTES[el].bright.outer).toHaveLength(3);
+    });
+  });
+
+  it('paletteToVec3Array yields 9 floats normalized 0..1', () => {
+    const arr = paletteToVec3Array(SURFACE_PALETTES.Fire.dark);
+    expect(arr).toHaveLength(9);
+    arr.forEach((v) => {
+      expect(v).toBeGreaterThanOrEqual(0);
+      expect(v).toBeLessThanOrEqual(1);
+    });
+  });
+
+  it('paletteToVec3Array normalizes correctly for Metal bright palette', () => {
+    const arr = paletteToVec3Array(SURFACE_PALETTES.Metal.bright);
+    expect(arr).toHaveLength(9);
+    arr.forEach((v) => {
+      expect(v).toBeGreaterThanOrEqual(0);
+      expect(v).toBeLessThanOrEqual(1);
+    });
+  });
+});

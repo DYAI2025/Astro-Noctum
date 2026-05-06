@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import React from 'react';
 import { SignaturRenderer } from '@/src/components/signatur-renderer/SignaturRenderer';
 
 vi.mock('motion/react', async () => {
@@ -12,6 +13,24 @@ vi.mock('motion/react', async () => {
     },
   };
 });
+
+// Mock SignatureSphere3D — R3F's <Canvas> requires WebGL which jsdom does not
+// provide. The mock preserves the `data-element` attribute the renderer's
+// dominantElement test asserts on.
+vi.mock('@/src/components/signatur-3d/SignatureSphere3D', () => ({
+  SignatureSphere3D: ({
+    dominantElement,
+    className,
+  }: {
+    dominantElement?: string;
+    className?: string;
+  }) =>
+    React.createElement('div', {
+      'data-testid': 'mock-sphere-3d',
+      'data-element': dominantElement,
+      className,
+    }),
+}));
 
 vi.mock('@/src/hooks/useSignaturSignal', () => ({
   useSignaturSignal: () => ({
@@ -61,5 +80,21 @@ describe('SignaturRenderer', () => {
 
     expect(screen.getByText('Reduced Motion / fallback mode active')).toBeInTheDocument();
     expect(screen.getByText(/Resolution: 50%/i)).toBeInTheDocument();
+  });
+
+  it('forwards chladniParams.dominantElement to SignatureSphere3D', () => {
+    const { container } = render(
+      <SignaturRenderer
+        userId="u1"
+        labels={labels}
+        chladniParams={{
+          m: 4, n: 3, a: 1, b: 1,
+          dominantElement: 'Wood',
+          harmonyIndex: 0.6,
+        }}
+      />
+    );
+    const sphere = container.querySelector('[data-element]');
+    expect(sphere?.getAttribute('data-element')).toBe('Wood');
   });
 });
