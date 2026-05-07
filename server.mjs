@@ -5473,20 +5473,31 @@ app.post("/api/checkout", requireUserAuth, async (req, res) => {
     let customerId = profile?.stripe_customer_id;
 
     if (!customerId) {
-      // First checkout — create Stripe customer and persist ID.
-      // Idempotency key scopes to user so rage-clicks don't create
-      // parallel Stripe customers (audit finding #2).
-      const customer = await stripe.customers.create({
+      // First checkout — try to recover an orphan Stripe customer (e.g.
+      // from a prior failed profiles.update) before creating a new one.
+      // Stripe customers.list email-match is exact (audit finding #11).
+      const existing = await stripe.customers.list({
         email: userEmail,
-        metadata: {
-          userId,
-          platform,
-          appVersion: telemetry.appVersion || "",
-        },
-      }, {
-        idempotencyKey: `customer-create-${userId}`,
+        limit: 1,
       });
-      customerId = customer.id;
+      if (existing.data.length > 0) {
+        customerId = existing.data[0].id;
+        console.log(`[Stripe] checkout: re-linked existing customer ${customerId} for user ${userId}`);
+      } else {
+        // Idempotency key scopes to user so rage-clicks don't create
+        // parallel Stripe customers (audit finding #2).
+        const customer = await stripe.customers.create({
+          email: userEmail,
+          metadata: {
+            userId,
+            platform,
+            appVersion: telemetry.appVersion || "",
+          },
+        }, {
+          idempotencyKey: `customer-create-${userId}`,
+        });
+        customerId = customer.id;
+      }
 
       await supabaseServer
         .from("profiles")
@@ -5567,16 +5578,36 @@ app.post("/api/customer-portal", requireUserAuth, async (req, res) => {
     let customerId = profile?.stripe_customer_id;
 
     if (!customerId) {
-      const customer = await stripe.customers.create({
-        email: authedUser.email || undefined,
-        metadata: {
-          userId: authedUser.id,
-          source: "portal-recovery",
-        },
-      }, {
-        idempotencyKey: `customer-portal-recovery-${authedUser.id}`,
-      });
-      customerId = customer.id;
+      // Look up an existing customer by email before creating one.
+      // A premium user reaching the portal recovery path means the DB
+      // lost its stripe_customer_id (data drift) — but Stripe almost
+      // certainly still has the customer record.
+      let recoveredId = null;
+      if (authedUser.email) {
+        const existing = await stripe.customers.list({
+          email: authedUser.email,
+          limit: 1,
+        });
+        if (existing.data.length > 0) {
+          recoveredId = existing.data[0].id;
+          console.log(`[Stripe] portal recovery: re-linked existing customer ${recoveredId}`);
+        }
+      }
+
+      if (recoveredId) {
+        customerId = recoveredId;
+      } else {
+        const customer = await stripe.customers.create({
+          email: authedUser.email || undefined,
+          metadata: {
+            userId: authedUser.id,
+            source: "portal-recovery",
+          },
+        }, {
+          idempotencyKey: `customer-portal-recovery-${authedUser.id}`,
+        });
+        customerId = customer.id;
+      }
 
       const { error: customerPersistError } = await supabaseServer
         .from("profiles")

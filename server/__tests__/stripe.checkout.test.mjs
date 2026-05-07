@@ -22,6 +22,17 @@ describe('Stripe checkout idempotency', () => {
     expect(src).toMatch(/new Date\(\)\.toISOString\(\)\.slice\(0,\s*10\)/);
   });
 
+  it('STRIPE-RECOVERY-001: customer-portal looks up existing customer by email before creating', () => {
+    const src = readFileSync(SERVER_FILE, 'utf8');
+    expect(src).toMatch(/stripe\.customers\.list\(\s*\{[^}]*email/);
+    expect(src).toMatch(/portal recovery: re-linked/);
+  });
+
+  it('STRIPE-RECOVERY-002: /api/checkout customer creation also list-before-creates', () => {
+    const src = readFileSync(SERVER_FILE, 'utf8');
+    expect(src).toMatch(/checkout: re-linked existing customer/);
+  });
+
   it('STRIPE-IDEMP-004: every stripe.customers.create + stripe.checkout.sessions.create call has an idempotencyKey', () => {
     const src = readFileSync(SERVER_FILE, 'utf8');
     // Walk the file and ensure no naked Stripe write call exists.
