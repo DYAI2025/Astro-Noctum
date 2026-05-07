@@ -1,5 +1,49 @@
 # Changelog
 
+## [Unreleased] - 2026-05-07 — Stripe Integration Rebuild (Phases A–D complete)
+
+### Features
+
+- **Stripe webhook state machine + dedup** (`supabase-migrations/20260507_stripe_events.sql` + `server/services/stripeEvents.service.mjs` + `server.mjs`) — every webhook event ID is INSERTed into a new `stripe_events` table before any side-effect. Duplicate event IDs (Stripe retry storm, replay) hit the `23505` unique-violation path and the handler returns `{ received: true, dedup: true }` without re-running tier updates. Strict order: signature verify → claim event (dedup) → resolve userId → branch on event type → unified `syncTier()` → mark processed → 200 OK. RLS on the table with no policy (service_role only, mirrors the `ai_quota` lockdown pattern).
+- **Webhook userId resolution with `stripe_customer_id` fallback** (`resolveUserIdFromEvent` in `server.mjs`) — Stripe Dashboard manual interventions, refund flows, and retention-stripped metadata previously caused `customer.subscription.updated`/`.deleted` to silent-no-op. The resolver tries `metadata.userId` first, then falls back to a `profiles.stripe_customer_id` lookup. Closes the gap where a sub change without metadata went unprocessed.
+- **Unified two-table tier sync** (`syncTier()` helper in `server.mjs`) — single source of truth for the `profiles` + `astro_profiles` updates triggered by every webhook branch. Eliminates the drift where `subscription.deleted` events with missing `metadata.userId` would update `profiles` but skip `astro_profiles`, leaving `astro_profiles.tier` stuck at `'premium'`.
+- **Idempotency keys on every Stripe write** — `stripe.customers.create` calls scope by user (`customer-create-${userId}` and `customer-portal-recovery-${userId}`); `stripe.checkout.sessions.create` uses a day-windowed key (`checkout-${userId}-${todayUtc}`) that matches Stripe's 24h cache so a Day-2 retry gets a fresh session URL instead of a stale one. Rage-clicks no longer create parallel customers or duplicate sessions.
+- **List-before-create on customer recovery** — both `/api/checkout` and `/api/customer-portal` customer-creation paths now `stripe.customers.list({ email, limit: 1 })` before creating, re-linking an existing Stripe customer if found. Closes the orphan-duplication path where a failed `profiles.update` after a successful `customers.create` would cause the next checkout to create a second customer for the same user.
+- **`invoice.status === 'paid'` guard on renewals** — `invoice.payment_succeeded` now requires both `billing_reason === 'subscription_cycle'` AND `invoice.status === 'paid'` before extending `subscription_end`. Defensive against draft/uncollectible invoices that should never extend the period.
+- **Stripe routes pivot to `requireUserAuth` middleware** (`/api/checkout`, `/api/customer-portal`, `/api/share`) — bypasses the legacy inline `verifySupabaseUser(req)` and gets the structured envelope `{ error: { code, message, request_id, recoverable, retry_after } }`. Email source is now the verified Supabase admin user (via `auth.admin.getUserById`), not client-supplied `req.body.userEmail` — closes the receipt-spoofing edge case.
+- **Auth-shape harmonisation across all 15 routes** (`server.mjs`) — the inline `requireUserAuth` at `server.mjs:620` was deleted in favour of importing the structured-envelope module from `server/middleware/auth.mjs`. All 15 routes that previously used the inline version (`/api/calculate/*`, `/api/chart`, `/api/synastry`, `/api/transit-state/:userId`, `/api/impact/active`, `/api/experience/*`, `/api/vibes`, `/api/weekly-insights`, `/api/agent/summary`, plus the 3 Stripe routes above) now produce the same envelope shape. Eliminates 5 plain-string error variants (`'Authentication required'` / `'Invalid or expired session'` / `'Unauthorized'` / `'Auth service not configured'` / `'Auth service temporarily unavailable'`).
+- **Server-side conversion analytics on `checkout.session.completed`** — webhook now emits a structured JSON line via `logRequest()` (Phase 3 of the backend hardening sprint): `{ provider: 'stripe', quotaStatus: 'checkout_completed', latency_ms, user_id_hash, request_id }`. Closes the funnel blind spot where the client-side `trackEvent('upgrade_clicked')` only fired from `<UpgradeButton/>` and missed the 4 duplicate handlers from the Dashboard sprint TASK-1.2 inventory.
+- **Schema/migration parity for Stripe subscription columns** (`supabase-schema.sql`) — added `stripe_subscription_id` + `subscription_end` to mirror `supabase-migrations/20260324_stripe_subscription_columns.sql`. A clean DB rebuild now matches prod; the webhook no longer no-ops with column-not-found.
+
+### Refactoring / removed
+
+- **Dead `/api/create-checkout-session` removed** — was a legacy one-time-payment endpoint using `STRIPE_BUY_ID` while the live `/api/checkout` uses `STRIPE_PRICE_ID` (subscription). No client called it; the boot-time `OPTIONAL_ENV_VARS` boot warning swapped from `STRIPE_BUY_ID` (dead) to `STRIPE_PRICE_ID` (live).
+- **Dead `DashboardLeviSection` component + 4 visual-regression tests removed** — defined and exported but never imported anywhere; superseded by `AgentSection`. (TASK-1.2 inventory finding C1.)
+
+### Database
+
+- **`stripe_events` table** (migration `20260507_stripe_events.sql`) — PRIMARY KEY on Stripe event ID; RLS enabled with no policy (service_role only). Webhook dedup mechanism.
+- **`stripe_subscription_id` + `subscription_end` columns added to `profiles`** in `supabase-schema.sql` to match the already-deployed `20260324_stripe_subscription_columns.sql` migration.
+
+### Documentation
+
+- **API version pin documented** (`server.mjs:212–222`) — comment block above `new Stripe(...)` explains why `apiVersion: '2024-12-15'` is sticky (subscription period info still on `subscription.current_period_end`; newer API versions move it to `subscription_items[*].current_period_end` which would break the webhook reads). Future SDK upgrades need to audit those reads.
+- **AI quota service** (Phase 3 of the prior backend hardening sprint) is **wired** into the codebase but **still not yet attached** to any route. Pending for a future sprint.
+- **Audit doc** — `docs/upgrade-cta-inventory-2026-05-07.md` (Dashboard sprint TASK-1.2): inventory of the 9 active upgrade CTAs across the dashboard surface, with consolidation recommendations for TASK-1.3.
+
+### Tests
+
+- 25 new server-side tests covering: Stripe webhook regression guards (5 → 11 — added `STRIPE-REG-007..011` for the helpers and dedup wire-up), `stripeEvents` service (8), and Stripe checkout idempotency + recovery (6 — `STRIPE-IDEMP-001..004`, `STRIPE-RECOVERY-001..002`).
+- 11 existing tests in `src/__tests__/api-routes.test.ts` and `src/__tests__/stripe-webhook.test.ts` migrated to the new helper structure (assertions now point at `syncTier()` / `resolveUserIdFromEvent()` / structured envelope shape rather than inline strings).
+- Full suite: 2239/2239.
+
+### Notes
+
+- Implementation plan: `docs/plans/2026-05-07-stripe-rebuild.md` (Phases A–D, 14 tasks).
+- 14 of 17 audit findings closed by code; 1 (#15 webhook duration metric) covered by the structured logger's `latency_ms` field; 2 (#7, #14, #16) closed by Phase D. **All 17 findings resolved.**
+- Migrations applied to prod: `20260324_stripe_subscription_columns.sql` (verified), `20260507_stripe_events.sql` (applied + smoke-tested per session log).
+- The `verifySupabaseUser(req)` helper still exists in `server.mjs` for legacy non-stripe contexts but no longer guards any route — slated for cleanup in a future pass.
+
 ## [Unreleased] - 2026-05-06 — Backend Hardening Sprint (Phases 1 + 2 + 3 complete)
 
 ### Features
