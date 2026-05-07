@@ -38,6 +38,17 @@
 //   expect(upgradeButtons).toHaveLength(1);  // free
 //   expect(upgradeButtons).toHaveLength(0);  // premium
 //
+// Phase D3+D4 invariant (nav-locks) — RECORDED HERE, NOT TESTED IN ISOLATION:
+// The desktop and mobile premium-only nav-lock buttons in src/App.tsx (the
+// /atlas locks for free users) MUST invoke useUpgradeCheckout's
+// startUpgradeCheckout — they no longer call any local POST /api/checkout.
+// Mounting App() for a single click test would require >40 LOC of router,
+// auth, fusion-ring, premium, planetarium, agent, and ambient-player
+// providers — out of scope for this baseline. The contract is enforced by
+// the file structure (`grep "handleUpgrade" src/App.tsx` must return zero
+// matches) and is exercised end-to-end via the SCV-FREE-001 / SCV-PREM-001
+// matchers below in Phase F-final.
+//
 // References:
 //   docs/plans/2026-05-07-dashboard-cta-consolidation.md  Phase F (Task 10/11)
 //   docs/upgrade-cta-inventory-2026-05-07.md
@@ -45,6 +56,7 @@
 //   src/components/PremiumGate.tsx:32       — duplicate CTA path (DROP in Phase C)
 //   src/components/dashboard/AgentSection.tsx:180  — duplicate CTA path (DROP in Phase D)
 //   src/components/AgentFloatingWidget.tsx:209     — duplicate CTA path (HIDE in Phase D)
+//   src/App.tsx                                    — nav-locks → useUpgradeCheckout (Phase D3+D4)
 //
 import { describe, it } from 'vitest';
 

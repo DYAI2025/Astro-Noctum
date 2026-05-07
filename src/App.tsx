@@ -20,6 +20,7 @@ import { saveDisplayName } from "./services/supabase";
 import type { OnboardingBirthData } from "./components/BirthForm";
 import { BrandedLoader } from "./components/BrandedLoader";
 import { usePremium } from "./hooks/usePremium";
+import { useUpgradeCheckout } from "./hooks/useUpgradeCheckout";
 import { isFeatureEnabled } from "./lib/feature-flags";
 import type { BootstrapResponse, SignatureDeltaResponse } from "./lib/schemas/experience";
 import { Volume2, VolumeX, Settings, X, Moon, Sun, Home, Lock } from "lucide-react";
@@ -391,14 +392,11 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
     setLegalSection(null);
   }, [location.pathname]);
 
-  const handleUpgrade = async () => {
-    try {
-      const { authedFetch } = await import("@/src/lib/authedFetch");
-      const res = await authedFetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" } });
-      const { url } = await res.json();
-      if (url) window.location.href = url;
-    } catch { /* ignore */ }
-  };
+  // Centralised upgrade-to-premium client owner — analytics + 6-key error
+  // disambiguation + re-entry guard. Same hook the dashboard's
+  // <UpgradeButton/> uses; the nav-lock surface is too small for visible
+  // error copy, so we let `error` track silently for analytics only.
+  const upgrade = useUpgradeCheckout();
 
   const isSignaturRoute = location.pathname === "/signatur";
   const isOnboardingRoute = location.pathname === "/onboarding";
@@ -452,8 +450,9 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
               return (
                 <button
                   key={link.to}
-                  onClick={handleUpgrade}
-                  className={`${navItemClass()} opacity-40 cursor-pointer`}
+                  onClick={upgrade.startUpgradeCheckout}
+                  disabled={upgrade.isLoading}
+                  className={`${navItemClass()} opacity-40 cursor-pointer disabled:cursor-wait`}
                   title={t("nav.atlasPremium")}
                 >
                   <Lock className="w-3 h-3 shrink-0" aria-hidden="true" />
@@ -665,8 +664,9 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
             return (
               <button
                 key={link.to}
-                onClick={handleUpgrade}
-                className={`${mobileNavItemClass(false)} opacity-40`}
+                onClick={upgrade.startUpgradeCheckout}
+                disabled={upgrade.isLoading}
+                className={`${mobileNavItemClass(false)} opacity-40 disabled:cursor-wait`}
                 title={t("nav.atlasPremium")}
               >
                 {icon}
