@@ -75,13 +75,18 @@ describe('AgentSection', () => {
     expect(callButton.textContent).toContain('anrufen');
   });
 
-  it('non-premium user sees upgrade CTA', () => {
+  it('non-premium user sees lock-only treatment, no button', () => {
     render(<AgentSection agent={AGENTS[0]} {...baseProps} isPremium={false} />);
 
-    // Non-premium renders the premium variant button with Lock icon and t('dashboard.premium.cta')
-    const upgradeButton = screen.getByRole('button');
-    expect(upgradeButton).toBeDefined();
-    expect(upgradeButton.textContent).toContain('dashboard.premium.cta');
+    // Free users now see a non-interactive lock indicator (lock icon + "Premium-Inhalt")
+    // The dashboard's bottom upgrade card is the single prime CTA.
+    const lock = screen.getByTestId('agent-card-locked');
+    expect(lock).toBeDefined();
+    expect(lock.textContent).toContain('dashboard.premium.lockLabel');
+
+    // No button rendered for the free-user branch
+    const buttons = screen.queryAllByRole('button');
+    expect(buttons).toHaveLength(0);
   });
 
   it('shows Coming Soon when env var missing', () => {
