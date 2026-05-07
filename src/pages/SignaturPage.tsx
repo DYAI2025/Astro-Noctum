@@ -20,6 +20,7 @@ import { upsertDissonanceState } from '@/src/services/supabase';
 import { ClusterSidebar } from '@/src/components/signatur/ClusterSidebar';
 import { DissonanceValues } from '@/src/components/settings/DissonanceValues';
 import { PremiumUpgradeModal } from '@/src/components/signatur/PremiumUpgradeModal';
+import { SignaturUpgradeCard } from '@/src/components/signatur/SignaturUpgradeCard';
 import { ClusterPipeline } from '@/src/components/signatur/ClusterPipeline';
 import {
   CLUSTER_REGISTRY,
@@ -438,6 +439,9 @@ export default function SignaturPage() {
           onClose={() => setPremiumCluster(null)}
         />
       )}
+
+      {/* Persistent upgrade card — visible to free users only. */}
+      <SignaturUpgradeCard />
     </div>
   );
 }

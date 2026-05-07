@@ -171,6 +171,10 @@ const translationsEn: DeepStringRecord = {
       description: "This cluster is part of the premium experience. Unlock deeper insights into your signature.",
       ctaLabel: "Unlock Premium",
     },
+    upgradeCard: {
+      title: "Unlock your full Signatur experience",
+      subtitle: "Premium clusters, advanced quizzes, and more",
+    },
   },
   signatureReveal: {
     soulprintCalculating: "Calculating your soulprint…",
@@ -662,6 +666,10 @@ const translationsDe: DeepStringRecord = {
       closeLabel: "Schließen",
       description: "Dieser Cluster ist Teil des Premium-Erlebnisses. Schalte tiefere Einblicke in deine Signatur frei.",
       ctaLabel: "Premium freischalten",
+    },
+    upgradeCard: {
+      title: "Schalte deine volle Signatur-Erfahrung frei",
+      subtitle: "Premium-Cluster, erweiterte Quizzes und mehr",
     },
   },
   signatureReveal: {
