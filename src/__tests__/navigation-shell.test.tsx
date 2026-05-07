@@ -8,6 +8,13 @@ import { AgentProvider } from "../contexts/AgentContext";
 import { LanguageProvider } from "../contexts/LanguageContext";
 import { isFeatureEnabled } from "../lib/feature-flags";
 
+// UpgradeButton (rendered transitively when isPremium=false) now uses
+// useAuth via the useUpgradeCheckout hook. Stub it so the popup tree
+// does not need a real AuthProvider.
+vi.mock("../contexts/AuthContext", () => ({
+  useAuth: () => ({ user: { id: "u1" } }),
+}));
+
 const t = (key: string) => key;
 
 // ── 1. Contextual link visibility per route ─────────────────────────

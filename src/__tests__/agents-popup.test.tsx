@@ -4,6 +4,13 @@ import { AgentsPopup } from "../components/navigation/AgentsPopup";
 import { AgentProvider } from "../contexts/AgentContext";
 import { LanguageProvider } from "../contexts/LanguageContext";
 
+// UpgradeButton (rendered transitively when isPremium=false) now uses
+// useAuth via the useUpgradeCheckout hook. Stub it so the popup tree
+// does not need a real AuthProvider.
+vi.mock("../contexts/AuthContext", () => ({
+  useAuth: () => ({ user: { id: "u1" } }),
+}));
+
 function renderPopup(overrides: { isPremium?: boolean; lang?: "de" | "en" } = {}) {
   const onClose = vi.fn();
   const onStopAudio = vi.fn();
