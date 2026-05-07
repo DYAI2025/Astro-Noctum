@@ -44,26 +44,37 @@ describe('Stripe webhook: checkout.session.completed', () => {
   });
 
   it('saves stripe_customer_id from session', () => {
+    // Phase B refactor extracted the two-table update into syncTier().
+    // The checkout block now passes session.customer as customerId; the
+    // helper's body assigns it to profileUpdate.stripe_customer_id.
     const checkoutBlock = serverCode.match(
       /checkout\.session\.completed[\s\S]*?(?=\} else if \(event\.type === "customer)/
     )?.[0];
-    expect(checkoutBlock).toContain('stripe_customer_id: session.customer');
+    expect(checkoutBlock).toContain('customerId: session.customer');
+    expect(serverCode).toContain('profileUpdate.stripe_customer_id = customerId');
   });
 
   it('saves stripe_subscription_id (not payment_intent)', () => {
     const checkoutBlock = serverCode.match(
       /checkout\.session\.completed[\s\S]*?(?=\} else if \(event\.type === "customer)/
     )?.[0];
-    expect(checkoutBlock).toContain('stripe_subscription_id: session.subscription');
-    expect(checkoutBlock).not.toContain('stripe_payment_id');
+    // Same indirection through syncTier — checkout block passes
+    // session.subscription as subscriptionId.
+    expect(checkoutBlock).toContain('subscriptionId: session.subscription');
+    expect(serverCode).toContain('profileUpdate.stripe_subscription_id = subscriptionId');
+    // Crucially: never falls back to the legacy one-time-payment column.
+    expect(serverCode).not.toContain('stripe_payment_id =');
   });
 
-  it('looks up user by metadata.userId', () => {
+  it('looks up user by metadata.userId (with stripe_customer_id fallback)', () => {
     const checkoutBlock = serverCode.match(
       /checkout\.session\.completed[\s\S]*?(?=\} else if \(event\.type === "customer)/
     )?.[0];
-    expect(checkoutBlock).toContain('session.metadata?.userId');
-    expect(checkoutBlock).toContain('.eq("id", userId)');
+    // Phase B Task 6 added resolveUserIdFromEvent — falls back to a
+    // profiles.stripe_customer_id lookup when metadata.userId is missing.
+    expect(checkoutBlock).toContain('resolveUserIdFromEvent(event)');
+    expect(serverCode).toContain('obj.metadata?.userId');
+    expect(serverCode).toContain('.eq("stripe_customer_id", customerId)');
   });
 });
 
@@ -93,14 +104,20 @@ describe('Stripe webhook: customer.subscription.updated', () => {
       /customer\.subscription\.updated[\s\S]*?(?=\} else if \(event\.type === "customer\.subscription\.deleted)/
     )?.[0];
     expect(subBlock).toContain('sub.current_period_end');
-    expect(subBlock).toContain('subscription_end: periodEnd');
+    // After Phase B, periodEnd is forwarded to syncTier() which writes
+    // profileUpdate.subscription_end. Branch + helper both verified.
+    expect(subBlock).toMatch(/syncTier\(\s*\{[\s\S]*?periodEnd[\s\S]*?\}\s*\)/);
+    expect(serverCode).toContain('profileUpdate.subscription_end = periodEnd');
   });
 
-  it('matches user by stripe_customer_id (not userId)', () => {
+  it('matches user by stripe_customer_id (not userId) — via resolveUserIdFromEvent fallback', () => {
     const subBlock = serverCode.match(
       /customer\.subscription\.updated[\s\S]*?(?=\} else if \(event\.type === "customer\.subscription\.deleted)/
     )?.[0];
-    expect(subBlock).toContain('.eq("stripe_customer_id", sub.customer)');
+    // Phase B Task 6 routes user-resolution through the helper which
+    // falls back to profiles.stripe_customer_id when metadata is missing.
+    expect(subBlock).toContain('resolveUserIdFromEvent(event)');
+    expect(serverCode).toContain('.eq("stripe_customer_id", customerId)');
   });
 });
 
@@ -129,7 +146,8 @@ describe('Stripe webhook: customer.subscription.deleted', () => {
     const delBlock = serverCode.match(
       /customer\.subscription\.deleted[\s\S]*?(?=\} else if \(event\.type === "invoice)/
     )?.[0];
-    expect(delBlock).toContain('subscription_end: periodEnd');
+    // syncTier() forwards periodEnd to profileUpdate.subscription_end.
+    expect(delBlock).toMatch(/syncTier\(\s*\{[\s\S]*?periodEnd[\s\S]*?\}\s*\)/);
   });
 });
 
@@ -138,20 +156,26 @@ describe('Stripe webhook: invoice.payment_succeeded', () => {
     expect(serverCode).toContain('invoice.payment_succeeded');
   });
 
-  it('only processes subscription_cycle renewals', () => {
+  it('only processes subscription_cycle renewals (and skips draft invoices)', () => {
     const invoiceBlock = serverCode.match(
       /invoice\.payment_succeeded[\s\S]*?(?=\} else if \(event\.type === "invoice\.payment_failed)/
     )?.[0];
     expect(invoiceBlock).toBeTruthy();
-    expect(invoiceBlock).toContain('billing_reason === "subscription_cycle"');
+    // Phase B Task 6 added an early-return guard. Either form of the
+    // billing_reason check is acceptable.
+    expect(invoiceBlock).toMatch(/billing_reason\s*(===|!==)\s*"subscription_cycle"/);
+    // Audit finding #13 — must also gate on invoice.status === "paid"
+    // so draft / uncollectible invoices don't extend the period.
+    expect(invoiceBlock).toMatch(/invoice\.status\s*!==\s*['"]paid['"]/);
   });
 
   it('extends subscription_end on successful renewal', () => {
     const invoiceBlock = serverCode.match(
       /invoice\.payment_succeeded[\s\S]*?(?=\} else if \(event\.type === "invoice\.payment_failed)/
     )?.[0];
-    expect(invoiceBlock).toContain('subscription_end: periodEnd');
-    expect(invoiceBlock).toContain('tier: "premium"');
+    // syncTier() carries tier='premium' + periodEnd into the two-table
+    // update. Both pieces verified — branch passes them, helper writes them.
+    expect(invoiceBlock).toMatch(/syncTier\(\s*\{[\s\S]*?tier:\s*"premium"[\s\S]*?periodEnd[\s\S]*?\}\s*\)/);
   });
 });
 

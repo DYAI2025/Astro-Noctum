@@ -85,7 +85,13 @@ describe('server api routes', () => {
   });
 
   describe('BAFE proxy auth guard', () => {
-    it('returns 401 when no Authorization header is sent', async () => {
+    // 2026-05-07 stripe rebuild Task 10: server.mjs's inline
+    // requireUserAuth was deleted in favour of the import from
+    // server/middleware/auth.mjs. All 15 routes that used the inline
+    // version now return the structured envelope:
+    //   { error: { code, message, request_id, recoverable, retry_after } }
+    // instead of the legacy plain-string shape.
+    it('returns 401 AUTH_REQUIRED when no Authorization header is sent', async () => {
       const app = await loadTestApp();
       // No fetch mock needed — middleware returns before any fetch is called
       const res = await request(app)
@@ -93,10 +99,11 @@ describe('server api routes', () => {
         .set('Content-Type', 'application/json')
         .send({ date: '2000-01-01T12:00:00', tz: 'UTC', lat: 52, lon: 13 });
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('Authentication required');
+      expect(res.body.error.code).toBe('AUTH_REQUIRED');
+      expect(res.body.error.recoverable).toBe(false);
     });
 
-    it('returns 401 when Authorization token is rejected by Supabase', async () => {
+    it('returns 401 AUTH_INVALID when Authorization token is rejected by Supabase', async () => {
       const app = await loadTestApp();
       // Mock ALL fetch calls to simulate Supabase returning auth error.
       // The Supabase client calls fetch internally for auth.getUser().
@@ -114,16 +121,16 @@ describe('server api routes', () => {
         .set('Authorization', 'Bearer not-a-real-token')
         .send({ date: '2000-01-01T12:00:00', tz: 'UTC', lat: 52, lon: 13 });
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('Invalid or expired session');
+      expect(res.body.error.code).toBe('AUTH_INVALID');
     });
 
-    it('returns 401 on GET /api/chart when no Authorization header', async () => {
+    it('returns 401 AUTH_REQUIRED on GET /api/chart when no Authorization header', async () => {
       const app = await loadTestApp();
       const res = await request(app)
         .get('/api/chart')
         .query({ date: '2000-01-01T12:00:00', tz: 'UTC', lat: '52', lon: '13' });
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('Authentication required');
+      expect(res.body.error.code).toBe('AUTH_REQUIRED');
     });
 
     it('returns 401 on POST /api/checkout when no Authorization header', async () => {
@@ -133,7 +140,12 @@ describe('server api routes', () => {
         .set('Content-Type', 'application/json')
         .send({});
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('Unauthorized');
+      // /api/checkout migrated to requireUserAuth middleware in
+      // 2026-05-07 stripe rebuild Task 10 — now returns the structured
+      // envelope { error: { code, message, request_id, recoverable } }
+      // instead of the legacy plain-string { error: "Unauthorized" }.
+      expect(res.body.error.code).toBe('AUTH_REQUIRED');
+      expect(res.body.error.recoverable).toBe(false);
     });
 
     it('returns 401 on POST /api/customer-portal when no Authorization header', async () => {
@@ -143,7 +155,8 @@ describe('server api routes', () => {
         .set('Content-Type', 'application/json')
         .send({});
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('Unauthorized');
+      expect(res.body.error.code).toBe('AUTH_REQUIRED');
+      expect(res.body.error.recoverable).toBe(false);
     });
   });
 });

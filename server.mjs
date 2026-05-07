@@ -11,6 +11,7 @@ import { createGenAiRouter } from "./server/ai-router.mjs";
 import { aiRouter } from "./server/routes/ai.routes.mjs";
 import { requestIdMiddleware } from "./server/middleware/requestId.mjs";
 import { requireOwnership } from "./server/middleware/ownership.mjs";
+import { requireUserAuth } from "./server/middleware/auth.mjs";
 import { elevenLabsAuth } from "./server/middleware/elevenLabsAuth.mjs";
 import { transitStateCache } from "./server/services/cache.service.mjs";
 import { claimStripeEvent, markStripeEventProcessed } from "./server/services/stripeEvents.service.mjs";
@@ -616,27 +617,12 @@ function bafeFallbackUrlsFromCandidates(routeCandidates) {
   return urls;
 }
 
-// ── Auth middleware — validates Supabase JWT ─────────────────────────
-async function requireUserAuth(req, res, next) {
-  if (!supabaseServer) {
-    return res.status(503).json({ error: "Auth service not configured" });
-  }
-  const authHeader = req.headers.authorization || "";
-  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
-  if (!token) {
-    return res.status(401).json({ error: "Authentication required" });
-  }
-  try {
-    const { data: { user }, error } = await supabaseServer.auth.getUser(token);
-    if (error || !user) {
-      return res.status(401).json({ error: "Invalid or expired session" });
-    }
-    req.userId = user.id;
-    next();
-  } catch {
-    return res.status(503).json({ error: "Auth service temporarily unavailable" });
-  }
-}
+// requireUserAuth is imported from ./server/middleware/auth.mjs above.
+// It produces the structured envelope { error: { code, message,
+// request_id, recoverable, retry_after } }. All routes that previously
+// used the local inline function (with its plain-string responses) now
+// get the envelope shape — see api-routes.test.ts for the migrated
+// assertions.
 
 // ── Tier middleware ─────────────────────────────────────────────────────────
 //
