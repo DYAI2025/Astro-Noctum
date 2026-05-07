@@ -15,6 +15,8 @@ import { requireUserAuth } from "./server/middleware/auth.mjs";
 import { elevenLabsAuth } from "./server/middleware/elevenLabsAuth.mjs";
 import { transitStateCache } from "./server/services/cache.service.mjs";
 import { claimStripeEvent, markStripeEventProcessed } from "./server/services/stripeEvents.service.mjs";
+import { logRequest } from "./server/observability/logger.mjs";
+import { hashId } from "./server/utils/redact.mjs";
 import Stripe from 'stripe';
 
 // Exponential-backoff fetch helper used by the bootstrap endpoint.
@@ -208,6 +210,15 @@ const geminiClient = createGenAiRouter({
 });
 
 // ── Stripe client (server-side only) ──────────────────────────────
+// API version pinned to '2024-12-15' deliberately:
+//   - SDK: stripe@^20.4.0 (matches this API version's typing).
+//   - Subscription period info still on `subscription.current_period_end`.
+//     Newer API versions move it to subscription_items[*].current_period_end,
+//     which would break the webhook handler's reads in
+//     customer.subscription.updated and customer.subscription.deleted.
+// To upgrade: bump the SDK + apiVersion together AND audit every
+// `current_period_end` access for the new path. See
+// docs/plans/2026-05-07-stripe-rebuild.md (audit finding #16).
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-12-15' })
   : null;
@@ -5468,7 +5479,7 @@ app.post("/api/checkout", requireUserAuth, async (req, res) => {
       });
       if (existing.data.length > 0) {
         customerId = existing.data[0].id;
-        console.log(`[Stripe] checkout: re-linked existing customer ${customerId} for user ${userId}`);
+        console.log(`[Stripe] checkout: re-linked existing customer ${customerId} for user ${hashId(userId)}`);
       } else {
         // Idempotency key scopes to user so rage-clicks don't create
         // parallel Stripe customers (audit finding #2).
@@ -5677,6 +5688,7 @@ async function syncTier({ userId, tier, periodEnd = null, subscriptionId = null,
 
 // ── Stripe: Webhook (raw body required for signature verification) ───
 app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async (req, res) => {
+  const startedAt = Date.now();
   if (!stripe) return res.status(503).end();
   if (!process.env.STRIPE_WEBHOOK_SECRET) {
     console.error('[STRIPE] Webhook received but STRIPE_WEBHOOK_SECRET is not set!');
@@ -5725,7 +5737,28 @@ app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async
         console.error("[Stripe] checkout astro_profiles update failed:", result.astroError.message ?? result.astroError);
       }
       if (result.ok) {
-        console.log(`[Stripe] User ${userId} upgraded to premium (sub: ${session.subscription})`);
+        // PII-safe log: userId hashed via SHA-256 → 12-char hex (audit
+        // finding #14). Subscription ID stays unhashed for support
+        // debugging — it's not user-identifying.
+        console.log(`[Stripe] User ${hashId(userId)} upgraded to premium (sub: ${session.subscription})`);
+
+        // Server-side conversion analytics (audit finding #7). The
+        // structured logger from Phase 3 of the backend hardening
+        // sprint emits one JSON line per request; Railway's log
+        // aggregator picks it up and downstream tools can correlate
+        // by request_id without ever seeing raw user IDs.
+        logRequest({
+          requestId: req.requestId ?? null,
+          method: 'POST',
+          route: '/api/webhook/stripe',
+          status: 200,
+          latencyMs: Date.now() - startedAt,
+          userId,                           // logRequest hashes internally
+          errorCode: null,
+          provider: 'stripe',
+          cacheStatus: null,
+          quotaStatus: 'checkout_completed',
+        });
       }
     } else {
       console.error("[Stripe] checkout.session.completed: could not resolve userId", { sessionId: session.id });
@@ -5820,7 +5853,7 @@ app.post("/api/webhook/stripe", express.raw({ type: "application/json" }), async
         if (result.profileError) {
           console.error("[Stripe] invoice.payment_succeeded profiles failed:", result.profileError.message ?? result.profileError);
         } else if (result.ok) {
-          console.log(`[Stripe] Renewal confirmed for user ${userId}, end=${periodEnd}`);
+          console.log(`[Stripe] Renewal confirmed for user ${hashId(userId)}, end=${periodEnd}`);
         }
       }
     }
