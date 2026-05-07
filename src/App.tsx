@@ -13,6 +13,7 @@ import { FusionRingProvider } from "./contexts/FusionRingContext";
 import { AppLayoutProvider } from "./contexts/AppLayoutContext";
 import { AgentProvider, useAgent } from "./contexts/AgentContext";
 import { AgentFloatingWidget } from "./components/AgentFloatingWidget";
+import { shouldShowFloatingWidget } from "./lib/floating-widget-gate";
 import { AppRoutes } from "./router";
 import { bootstrapExperience } from "./services/experience";
 import { saveDisplayName } from "./services/supabase";
@@ -288,18 +289,6 @@ export default function App() {
   // phase first — even if BAFE already finished in the background.
   const hasCompleteProfile = profileDataReady && (!hasStartedOnboarding || onboardingPhase === 'done');
 
-  // ── Levi upgrade handler (shared across all pages) ──────────────────
-  const handleLeviUpgrade = async () => {
-    try {
-      const res = await (await import("@/src/lib/authedFetch")).authedFetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      const { url } = await res.json();
-      if (url) window.location.href = url;
-    } catch { /* ignore */ }
-  };
-
   return (
     <BrowserRouter>
       <AgentProvider>
@@ -318,12 +307,13 @@ export default function App() {
           onResumeAudio: ambiente.resume,
           isFirstReading,
         }}>
-          {/* Agent Floating Widget — lives OUTSIDE the router, survives navigation */}
+          {/* Agent Floating Widget — lives OUTSIDE the router, survives
+              navigation. Gated by route + premium status (Phase D2): premium
+              users see it everywhere, free users only on /signatur. */}
           {hasCompleteProfile && (
-            <AgentFloatingWidget
+            <FloatingWidgetGate
               userId={user.id}
               isPremium={premium.isPremium}
-              onUpgrade={handleLeviUpgrade}
               onStopAudio={ambiente.pause}
               onResumeAudio={ambiente.resume}
             />
@@ -765,5 +755,30 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
       </nav>
       )}
     </motion.div>
+  );
+}
+
+// ─── Floating Widget Gate ──────────────────────────────────────────────
+// Tiny route-aware wrapper around <AgentFloatingWidget/>. Lives inside
+// <BrowserRouter> so it can read location.pathname via useLocation().
+// Phase D2 single-CTA invariant: free users only see the widget on
+// /signatur; on /, the dashboard's bottom upgrade card is the sole CTA.
+interface FloatingWidgetGateProps {
+  userId: string;
+  isPremium: boolean;
+  onStopAudio: () => void;
+  onResumeAudio: () => void;
+}
+
+function FloatingWidgetGate({ userId, isPremium, onStopAudio, onResumeAudio }: FloatingWidgetGateProps) {
+  const location = useLocation();
+  if (!shouldShowFloatingWidget(isPremium, location.pathname)) return null;
+  return (
+    <AgentFloatingWidget
+      userId={userId}
+      isPremium={isPremium}
+      onStopAudio={onStopAudio}
+      onResumeAudio={onResumeAudio}
+    />
   );
 }
