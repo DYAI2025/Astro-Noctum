@@ -117,14 +117,14 @@ When an artifact (goal, user story, requirement) is no longer relevant:
 
 | File | Type | Priority | Status | Summary |
 |------|------|----------|--------|---------|
-| [REQ-F-tour-overlay-state](requirements/REQ-F-tour-overlay-state.md) | Functional | Must-have | Draft | Tour overlay strictly tied to tourStep state; hidden when tourStep === 'done' |
-| [REQ-USA-fallback-indicator](requirements/REQ-USA-fallback-indicator.md) | Usability | Must-have | Draft | Visible fallback indicator when daily content uses v1-local-fallback engine_version |
-| [REQ-USA-profile-incomplete-cta](requirements/REQ-USA-profile-incomplete-cta.md) | Usability | Must-have | Draft | Daily-pulse section shows profile-completion CTA when birth data missing |
-| [REQ-F-impact-active-contract](requirements/REQ-F-impact-active-contract.md) | Functional | Must-have | Draft | /api/impact/active contract documented; no dual-source for coherence values |
+| [REQ-F-tour-overlay-state](requirements/REQ-F-tour-overlay-state.md) | Functional | Must-have | Approved | Tour overlay strictly tied to tourStep state; hidden when tourStep === 'done' |
+| [REQ-USA-fallback-indicator](requirements/REQ-USA-fallback-indicator.md) | Usability | Must-have | Approved | Visible fallback indicator when daily content uses v1-local-fallback engine_version |
+| [REQ-USA-profile-incomplete-cta](requirements/REQ-USA-profile-incomplete-cta.md) | Usability | Must-have | Approved | Daily-pulse section shows profile-completion CTA when birth data missing |
+| [REQ-F-impact-active-contract](requirements/REQ-F-impact-active-contract.md) | Functional | Must-have | Approved | /api/impact/active contract documented; no dual-source for coherence values |
 | [REQ-USA-dashboard-section-order](requirements/REQ-USA-dashboard-section-order.md) | Usability | Should-have | Draft | Dashboard sections in agreed information hierarchy: TagespulsCard/DailyChartHero → Signatur → Active Influences → Daily Impulse → Agents → Blueprint |
-| [REQ-USA-signature-first-viewport](requirements/REQ-USA-signature-first-viewport.md) | Usability | Must-have | Draft | Signature anchor reachable from dashboard's first viewport for completed profiles |
-| [REQ-USA-signature-empty-state](requirements/REQ-USA-signature-empty-state.md) | Usability | Must-have | Draft | Incomplete-profile signature anchor shows explicit empty state, not blank |
-| [REQ-REL-signature-error-isolation](requirements/REQ-REL-signature-error-isolation.md) | Reliability | Must-have | Draft | Signature renderer failures contained by SectionErrorBoundary; rest of dashboard unaffected |
+| [REQ-USA-signature-first-viewport](requirements/REQ-USA-signature-first-viewport.md) | Usability | Must-have | Approved | Signature anchor reachable from dashboard's first viewport for completed profiles |
+| [REQ-USA-signature-empty-state](requirements/REQ-USA-signature-empty-state.md) | Usability | Must-have | Approved | Incomplete-profile signature anchor shows explicit empty state, not blank |
+| [REQ-REL-signature-error-isolation](requirements/REQ-REL-signature-error-isolation.md) | Reliability | Must-have | Approved | Signature renderer failures contained by SectionErrorBoundary; rest of dashboard unaffected |
 | [REQ-PERF-signature-no-direct-embed](requirements/REQ-PERF-signature-no-direct-embed.md) | Performance | Should-have | Draft | No direct SignaturRenderer in dashboard until perf measured + decision recorded |
 | [REQ-F-aphorism-approval-gate](requirements/REQ-F-aphorism-approval-gate.md) | Functional | Should-have | Draft | Phase T blocked until aphorisms.json has ≥15 approved with mode coverage |
 | [REQ-F-daily-pulse-determinism](requirements/REQ-F-daily-pulse-determinism.md) | Functional | Should-have | Draft | daily-pulse endpoint deterministic per (userId, date, locale) |
@@ -132,21 +132,21 @@ When an artifact (goal, user story, requirement) is no longer relevant:
 | [REQ-F-useDailyPulse-null-guard](requirements/REQ-F-useDailyPulse-null-guard.md) | Functional | Should-have | Draft | useDailyPulse handles birthData === null with explicit zero-value shape |
 | [REQ-F-tagespuls-feature-flag](requirements/REQ-F-tagespuls-feature-flag.md) | Functional | Should-have | Draft | Tagespuls Neu-Architektur gated by tagespuls_neu_v1; flag-off behavior unchanged |
 | [REQ-USA-tagespuls-card-phases](requirements/REQ-USA-tagespuls-card-phases.md) | Usability | Should-have | Draft | TagespulsCard renders Phase 1 (aphorism + Council) and Phase 2 (interpretation + back) |
-| [REQ-USA-cta-singular](requirements/REQ-USA-cta-singular.md) | Usability | Must-have | Draft | Free user dashboard exactly one primary upgrade CTA; premium zero |
-| [REQ-F-checkout-single-trigger](requirements/REQ-F-checkout-single-trigger.md) | Functional | Must-have | Draft | One POST /api/checkout per CTA click; button disabled during request |
-| [REQ-F-checkout-stripe-redirect](requirements/REQ-F-checkout-stripe-redirect.md) | Functional | Must-have | Draft | Successful checkout response sets window.location.href to Stripe URL |
-| [REQ-USA-checkout-error-categories](requirements/REQ-USA-checkout-error-categories.md) | Usability | Must-have | Draft | Distinct user messages per checkout error class (401/403/503/200-no-url/network/not-logged-in) |
-| [REQ-F-agent-card-no-checkout](requirements/REQ-F-agent-card-no-checkout.md) | Functional | Must-have | Draft | Agent cards don't trigger /api/checkout independently; lock-hint or callback only |
-| [REQ-F-manage-subscription](requirements/REQ-F-manage-subscription.md) | Functional | Must-have | Draft | Premium user can view + manage subscription via Stripe Customer Portal (cancel, payment method, billing history) |
+| [REQ-USA-cta-singular](requirements/REQ-USA-cta-singular.md) | Usability | Must-have | Approved | Free user dashboard exactly one primary upgrade CTA; premium zero |
+| [REQ-F-checkout-single-trigger](requirements/REQ-F-checkout-single-trigger.md) | Functional | Must-have | Approved | One POST /api/checkout per CTA click; button disabled during request |
+| [REQ-F-checkout-stripe-redirect](requirements/REQ-F-checkout-stripe-redirect.md) | Functional | Must-have | Approved | Successful checkout response sets window.location.href to Stripe URL |
+| [REQ-USA-checkout-error-categories](requirements/REQ-USA-checkout-error-categories.md) | Usability | Must-have | Approved | Distinct user messages per checkout error class (401/403/503/200-no-url/network/not-logged-in) |
+| [REQ-F-agent-card-no-checkout](requirements/REQ-F-agent-card-no-checkout.md) | Functional | Must-have | Approved | Agent cards don't trigger /api/checkout independently; lock-hint or callback only |
+| [REQ-F-manage-subscription](requirements/REQ-F-manage-subscription.md) | Functional | Must-have | Approved | Premium user can view + manage subscription via Stripe Customer Portal (cancel, payment method, billing history) |
 | [REQ-PERF-polling-budget](requirements/REQ-PERF-polling-budget.md) | Performance | Should-have | Draft | Aggregate client polling < ~1000 req / 15 min / dashboard mount |
 | [REQ-PERF-polling-visibility](requirements/REQ-PERF-polling-visibility.md) | Performance | Should-have | Draft | Polling hooks respect document.visibilityState; hidden = pause or ≥60s interval |
 | [REQ-MNT-single-poller-per-source](requirements/REQ-MNT-single-poller-per-source.md) | Maintainability | Should-have | Draft | Each external data source has exactly one poller per dashboard mount |
-| [REQ-COMP-consent-record](requirements/REQ-COMP-consent-record.md) | Compliance | Must-have | Draft | Active consent record per user per processing purpose with version + timestamp |
-| [REQ-COMP-data-export](requirements/REQ-COMP-data-export.md) | Compliance | Must-have | Draft | User can request machine-readable JSON export per Art. 20 portability |
-| [REQ-COMP-rtbf](requirements/REQ-COMP-rtbf.md) | Compliance | Must-have | Draft | Art. 17 RTBF flow purges all per-user records across Supabase + Stripe within target window |
-| [REQ-COMP-analytics-pii-free](requirements/REQ-COMP-analytics-pii-free.md) | Compliance | Must-have | Draft | Analytics events PII-free; identifiers hashed/pseudonymized at boundary |
-| [REQ-COMP-llm-purpose-consent](requirements/REQ-COMP-llm-purpose-consent.md) | Compliance | Must-have | Draft | LLM calls covered by user consent for the specific purpose; cross-purpose rejected |
-| [REQ-COMP-privacy-notice](requirements/REQ-COMP-privacy-notice.md) | Compliance | Must-have | Draft | Public privacy notice describes purposes, retention, sub-processors, data-subject rights |
+| [REQ-COMP-consent-record](requirements/REQ-COMP-consent-record.md) | Compliance | Must-have | Approved | Active consent record per user per processing purpose with version + timestamp |
+| [REQ-COMP-data-export](requirements/REQ-COMP-data-export.md) | Compliance | Must-have | Approved | User can request machine-readable JSON export per Art. 20 portability |
+| [REQ-COMP-rtbf](requirements/REQ-COMP-rtbf.md) | Compliance | Must-have | Approved | Art. 17 RTBF flow purges all per-user records across Supabase + Stripe within target window |
+| [REQ-COMP-analytics-pii-free](requirements/REQ-COMP-analytics-pii-free.md) | Compliance | Must-have | Approved | Analytics events PII-free; identifiers hashed/pseudonymized at boundary |
+| [REQ-COMP-llm-purpose-consent](requirements/REQ-COMP-llm-purpose-consent.md) | Compliance | Must-have | Approved | LLM calls covered by user consent for the specific purpose; cross-purpose rejected |
+| [REQ-COMP-privacy-notice](requirements/REQ-COMP-privacy-notice.md) | Compliance | Must-have | Approved | Public privacy notice describes purposes, retention, sub-processors, data-subject rights |
 <!-- Add rows as requirements are created. File column: [REQ-CLASS-kebab-name](requirements/REQ-CLASS-kebab-name.md) -->
 
 

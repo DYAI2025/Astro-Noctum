@@ -2,7 +2,7 @@
 
 **Type**: Compliance
 
-**Status**: Draft
+**Status**: Approved
 
 **Priority**: Must-have
 

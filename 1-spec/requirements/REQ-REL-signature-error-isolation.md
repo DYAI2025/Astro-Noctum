@@ -2,7 +2,7 @@
 
 **Type**: Reliability
 
-**Status**: Draft
+**Status**: Approved
 
 **Priority**: Must-have
 
