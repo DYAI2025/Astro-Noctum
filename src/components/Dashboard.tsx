@@ -6,8 +6,8 @@ import { usePremium } from "../hooks/usePremium";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { LegalFooter } from "./LegalFooter";
-import { UpgradeButton } from "./UpgradeButton";
 import { ManageSubscription } from "./ManageSubscription";
+import { DashboardBottomUpgradeCard } from "./dashboard/DashboardBottomUpgradeCard";
 import { DayModeModal } from "./dashboard/DayModeModal";
 import { useFirstRunDaily } from "../hooks/useFirstRunDaily";
 import { supabase } from "../lib/supabase";
@@ -22,7 +22,6 @@ import { useSpaceWeather } from "../hooks/useSpaceWeather";
 import { isFeatureEnabled } from "../lib/feature-flags";
 import { useFusionRingContext } from "../contexts/FusionRingContext";
 
-import { Card } from "./ui/card";
 import {
   syntheticSoulprintFromSign,
 } from "@/src/lib/signatur/weight-utils";
@@ -483,21 +482,8 @@ export function Dashboard({
       </motion.div>
 
       {/* ═══ UPGRADE BANNER (freemium only) ══════════════════════════ */}
-      {!isPremium && (
-        <Card variant="gold" className="w-full max-w-6xl p-6 flex items-center justify-between gap-4"
-          {...fadeIn(0.28)}
-        >
-          <div>
-            <p className="text-sm font-medium text-ink">
-              {t("dashboard.upgradeCard.title")}
-            </p>
-            <p className="text-xs text-ink/50 mt-1">
-              {t("dashboard.upgradeCard.subtitle")}
-            </p>
-          </div>
-          <UpgradeButton />
-        </Card>
-      )}
+      <DashboardBottomUpgradeCard delay={0.28} />
+
 
       {/* ── Tour sentinel: step 3 anchors at the navigation hints area ── */}
       <div ref={navHintsSentinelRef} className="h-px" aria-hidden="true" />
