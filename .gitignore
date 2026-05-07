@@ -1,0 +1,41 @@
+# macOS
+.DS_Store
+
+# Local agent / runtime state (not portable across machines)
+.swarm/
+.claude/homunculus/
+ruvector.db
+
+# Node.js (preemptive — Astro-Noctum is presumed JS/TS once code phase begins)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs (preemptive)
+dist/
+build/
+.next/
+.cache/
+.turbo/
+.vercel/
+
+# Env / secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Backups
+*.bak
+*.orig
