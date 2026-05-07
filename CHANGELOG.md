@@ -1,5 +1,34 @@
 # Changelog
 
+## [Unreleased] - 2026-05-07 — Dashboard CTA Consolidation (Phases A–F complete)
+
+### Features
+
+- **Centralized upgrade-checkout hook** (`src/hooks/useUpgradeCheckout.ts`) — single owner of POST `/api/checkout`, redirect, error normalization, analytics, and in-flight re-entry guard. Maps the server's mixed legacy + structured envelope onto 6 typed error keys (`auth_required`, `already_premium`, `network`, `stripe_unavailable`, `server`, `unknown`). Replaces 4 silent duplicate handlers (`UpgradeButton`, `App.tsx.handleUpgrade`, `App.tsx.handleLeviUpgrade`, `AgentSection.handleUpgrade`) that bypassed analytics and had no error UI. `useRef` re-entry guard prevents same-tick double-click from firing two requests.
+- **Disambiguated upgrade-checkout error UX** (`src/i18n/translations.ts`, `src/components/UpgradeButton.tsx`) — replaces the single generic `dashboard.premium.checkoutError` with 6 specific i18n strings (DE+EN). User now sees "Bitte zuerst anmelden" / "Du hast bereits Premium" / "Verbindungsproblem" / "Zahlung derzeit nicht verfügbar" / etc. instead of the old catch-all.
+- **9 conversion-funnel analytics events** (`src/lib/analytics.ts`) — `upgrade_checkout_started` / `_success_redirect` / `_error_<6 keys>` / `_blocked_in_flight`. Funnel visible from every upgrade entry point (dashboard CTA + nav-locks). Legacy `upgrade_clicked` keeps firing for back-compat with existing GA4 dashboards.
+- **Persistent upgrade card on `/signatur`** (`src/components/signatur/SignaturUpgradeCard.tsx`) — single CTA mirroring the dashboard's bottom card. Free users on the Signatur page now have a persistent upsell; the existing `<PremiumUpgradeModal/>` stays for the cluster-tap upsell flow (different intent).
+- **Single-CTA invariant on `/`** — free users now see exactly ONE upgrade button (the gold bottom card) instead of the previous 4–5 simultaneous CTAs. Composition is enforced per-surface via 41 new tests + the composite contract map in `dashboard-single-cta.test.tsx`.
+
+### Refactoring / removed
+
+- **`<PremiumGate/>` becomes info-only** (`src/components/PremiumGate.tsx`) — drops the inline `<UpgradeButton/>` from all 5 mount points (DashboardAstroSection, DashboardInterpretationSection, DashboardTagesEnergie, WuXingPage, SynastryPage). Locked sections now show a Lock icon + "Premium-Inhalt" label + teaser + "schalte unten frei" hint. The unused `ctaLabel` prop was dropped (no call site passed it).
+- **`<UpgradeButton/>` rewritten as a thin shell** (`src/components/UpgradeButton.tsx`, 49 LOC) — local `isRedirecting` / `error` state and inline POST `/api/checkout` are gone; everything lives in the hook now. The component is just label + disabled-while-loading + disambiguated error paragraph.
+- **`AgentSection` free-branch becomes lock-only** (`src/components/dashboard/AgentSection.tsx`) — drops the duplicate `handleUpgrade` (~14 LOC) and the `useAgent.setUpgrading` consumer. Renders Lock + "Premium-Inhalt" div instead of a button.
+- **`AgentFloatingWidget` hidden for free users on `/`** (`src/App.tsx` + `src/lib/floating-widget-gate.ts` + `src/components/AgentFloatingWidget.tsx`) — extracted gate as a pure function. Premium users see widget on every route; free users only on `/signatur` (where `<PremiumUpgradeModal/>` handles cluster-tap upsell). `App.tsx.handleLeviUpgrade` and the widget's `onUpgrade` prop chain deleted. Widget mount uses an inner `<FloatingWidgetGate/>` because `useLocation` requires the `BrowserRouter` context.
+- **App.tsx desktop + mobile nav-locks via hook** (`src/App.tsx`) — premium-only nav items (e.g. `/atlas`) used to call a silent local `handleUpgrade` with no analytics. They now use `useUpgradeCheckout` for funnel parity. Drops 8 LOC of duplicate POST logic.
+- **Dashboard's bottom upgrade card extracted** (`src/components/dashboard/DashboardBottomUpgradeCard.tsx`) — was inline JSX in `Dashboard.tsx:486–499`. Extraction makes the single-CTA invariant testable without mounting the full Dashboard. Side benefit: the framer-motion fade-in actually animates now (the previous inline version spread `fadeIn(0.28)` props onto a plain `<div>`-rendering `<Card>`, silently no-op).
+
+### Tests
+
+- 41 new tests across 7 new test files (`use-upgrade-checkout`, `upgrade-button`, `premium-gate`, `floating-widget-gate`, `signatur-page-upgrade-card`, `dashboard-single-cta`, plus the new `agent-section` assertions). 4 existing test files (`agents-popup`, `navigation-shell`, `dashboard-tages-energie`, `premium-gate-a11y`) updated with `useAuth` mocks because they transitively render `<UpgradeButton/>` which now reads `useAuth().user`. Full suite: 2280/2280 (was 2239/2239). 0 todos, 0 skipped. `tsc --noEmit` clean. `npm run build` succeeds in 6.32s.
+
+### Notes
+
+- Implementation plan: `docs/plans/2026-05-07-dashboard-cta-consolidation.md` (Phases A–F, 11 tasks).
+- Closes the duplicate-CTA findings from `docs/upgrade-cta-inventory-2026-05-07.md` (TASK-1.2 / TASK-1.3) and the silent-handler findings from TASK-1.4 (analytics + error UX). The single-CTA contract is now traceable per surface — see `dashboard-single-cta.test.tsx::SCV-COMPOSITE` for the contract map.
+- Pending follow-up (server-side, NOT blocking): the `/api/checkout` 400 path is currently overloaded — only used today for "already premium" but the structured envelope's `error.code: 'FORBIDDEN'` is not yet emitted. The client hook's structured-envelope branch is wired and ready; classification tightens automatically when the server adds the code.
+
 ## [Unreleased] - 2026-05-07 — Stripe Integration Rebuild (Phases A–D complete)
 
 ### Features

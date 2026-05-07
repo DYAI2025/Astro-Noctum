@@ -32,11 +32,10 @@ export function AgentSection({
   dominantEl,
 }: AgentSectionProps) {
   const { lang, t } = useLanguage();
-  const { agentStates, startAgent, stopAgent, setUpgrading } = useAgent();
+  const { agentStates, startAgent, stopAgent } = useAgent();
 
   const state = agentStates[agent.id];
   const isActive = state.active;
-  const isUpgrading = state.upgrading;
 
   const sectionRef = useRef<HTMLDivElement>(null);
 
@@ -93,22 +92,6 @@ export function AgentSection({
   const handleHangUp = () => {
     stopAgent(agent.id);
     onResumeAudio();
-  };
-
-  const handleUpgrade = async () => {
-    setUpgrading(agent.id, true);
-    try {
-      const { authedFetch } = await import('@/src/lib/authedFetch');
-      const res = await authedFetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      const { url } = await res.json();
-      if (url) window.location.href = url;
-      else setUpgrading(agent.id, false);
-    } catch {
-      setUpgrading(agent.id, false);
-    }
   };
 
   // ── Status dot colors (driven by agent config) ────────────────────────
@@ -174,16 +157,13 @@ export function AgentSection({
           )}
         </Button>
       ) : (
-        <Button
-          variant="premium"
-          className="w-full sm:w-auto sm:self-start font-sans"
-          onClick={handleUpgrade}
-          disabled={isUpgrading}
+        <div
+          className="inline-flex items-center gap-2 text-sm text-ink/40 self-start"
+          data-testid="agent-card-locked"
         >
-          {isUpgrading ? '…' : (
-            <><Lock className="w-4 h-4" /> {t('dashboard.premium.cta')}</>
-          )}
-        </Button>
+          <Lock className="w-4 h-4" aria-hidden="true" />
+          <span>{t('dashboard.premium.lockLabel')}</span>
+        </div>
       )}
 
       {/* ElevenLabs widget lives only in AgentFloatingWidget (App-level)

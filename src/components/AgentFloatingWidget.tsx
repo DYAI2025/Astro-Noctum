@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Phone, PhoneOff, Minimize2, Maximize2, Lock } from 'lucide-react';
+import { Phone, PhoneOff, Minimize2, Maximize2 } from 'lucide-react';
 import { useAgent } from '../contexts/AgentContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { AGENTS } from '@/packages/shared/src/agents/config';
@@ -63,7 +63,6 @@ function useElevenLabsWidget(agentId: string | undefined, dynamicVars: string) {
 interface AgentFloatingWidgetProps {
   userId: string;
   isPremium: boolean;
-  onUpgrade: () => void;
   onStopAudio: () => void;
   onResumeAudio: () => void;
 }
@@ -71,7 +70,6 @@ interface AgentFloatingWidgetProps {
 export function AgentFloatingWidget({
   userId,
   isPremium,
-  onUpgrade,
   onStopAudio,
   onResumeAudio,
 }: AgentFloatingWidgetProps) {
@@ -118,6 +116,7 @@ export function AgentFloatingWidget({
   return (
     <>
     <div
+      data-testid="agent-floating-widget"
       className="fixed z-[99999] transition-all duration-300 ease-out"
       style={{
         bottom: widgetExpanded
@@ -176,7 +175,7 @@ export function AgentFloatingWidget({
                 {isActive ? t('dashboard.levi.activeDesc') : t('dashboard.levi.readyDesc')}
               </p>
 
-              {isPremium ? (
+              {isPremium && (
                 <button
                   onClick={isActive ? handleHangUp : handleCall}
                   className={`w-full py-2.5 px-4 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all ${
@@ -203,13 +202,6 @@ export function AgentFloatingWidget({
                       <Phone className="w-4 h-4" /> {agent.name} anrufen
                     </>
                   )}
-                </button>
-              ) : (
-                <button
-                  onClick={onUpgrade}
-                  className="w-full py-2.5 px-4 rounded-xl text-sm font-medium flex items-center justify-center gap-2 bg-gradient-to-r from-[#8B6914] to-[#D4AF37] text-white hover:brightness-110 transition-all"
-                >
-                  <Lock className="w-4 h-4" /> {t('dashboard.premium.cta')}
                 </button>
               )}
 

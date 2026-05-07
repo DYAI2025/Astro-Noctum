@@ -12,6 +12,9 @@ vi.mock('../contexts/LanguageContext', () => ({
 }));
 vi.mock('../lib/analytics', () => ({ trackEvent: vi.fn() }));
 vi.mock('../lib/authedFetch', () => ({ authedFetch: vi.fn() }));
+vi.mock('../contexts/AuthContext', () => ({
+  useAuth: () => ({ user: { id: 'u1' } }),
+}));
 
 describe('PremiumGate accessibility', () => {
   it('hides blurred content from screen readers when not premium', () => {

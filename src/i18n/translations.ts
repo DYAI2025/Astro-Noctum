@@ -171,6 +171,10 @@ const translationsEn: DeepStringRecord = {
       description: "This cluster is part of the premium experience. Unlock deeper insights into your signature.",
       ctaLabel: "Unlock Premium",
     },
+    upgradeCard: {
+      title: "Unlock your full Signatur experience",
+      subtitle: "Premium clusters, advanced quizzes, and more",
+    },
   },
   signatureReveal: {
     soulprintCalculating: "Calculating your soulprint…",
@@ -330,6 +334,16 @@ const translationsEn: DeepStringRecord = {
       teaserLevi: "Talk to Levi Bazi, your personal astrological voice agent.",
       cta: "Upgrade — 4,99 \u20AC",
       checkoutError: "Checkout could not be started. Please try again later.",
+      lockLabel: "Premium content",
+      unlockHint: "Unlock with the upgrade button below.",
+      errors: {
+        authRequired: "Please sign in first.",
+        alreadyPremium: "You already have Premium.",
+        network: "Connection problem. Please check your network.",
+        stripeUnavailable: "Payment is temporarily unavailable. Please try again later.",
+        server: "Something went wrong on our side. Please try again.",
+        unknown: "Checkout could not be started. Please try again later.",
+      },
     },
     upgradeCard: {
       title: "Unlock your full cosmic profile",
@@ -653,6 +667,10 @@ const translationsDe: DeepStringRecord = {
       description: "Dieser Cluster ist Teil des Premium-Erlebnisses. Schalte tiefere Einblicke in deine Signatur frei.",
       ctaLabel: "Premium freischalten",
     },
+    upgradeCard: {
+      title: "Schalte deine volle Signatur-Erfahrung frei",
+      subtitle: "Premium-Cluster, erweiterte Quizzes und mehr",
+    },
   },
   signatureReveal: {
     soulprintCalculating: "Soulprint wird berechnet…",
@@ -812,6 +830,16 @@ const translationsDe: DeepStringRecord = {
       teaserLevi: "Sprich mit Levi Bazi, deinem persönlichen astrologischen Sprach-Agenten.",
       cta: "Upgrade — 4,99 \u20AC",
       checkoutError: "Checkout konnte nicht gestartet werden. Bitte versuche es später erneut.",
+      lockLabel: "Premium-Inhalt",
+      unlockHint: "Schalte ihn mit dem Upgrade-Button unten frei.",
+      errors: {
+        authRequired: "Bitte zuerst anmelden.",
+        alreadyPremium: "Du hast bereits Premium.",
+        network: "Verbindungsproblem. Bitte Netzwerk prüfen.",
+        stripeUnavailable: "Zahlung derzeit nicht verfügbar. Versuche es später erneut.",
+        server: "Auf unserer Seite ist etwas schiefgegangen. Bitte erneut versuchen.",
+        unknown: "Checkout konnte nicht gestartet werden. Bitte versuche es später erneut.",
+      },
     },
     upgradeCard: {
       title: "Schalte dein volles kosmisches Profil frei",
