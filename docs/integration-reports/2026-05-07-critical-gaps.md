@@ -14,7 +14,9 @@ Das Daily Horoscope (Tageshoroskop) **funktioniert bereits bei den Sprachagenten
 
 **Probleme:**
 - Auf dem Dashboard befindet sich aktuell nur ein **Platzhalter**.
-- Das vollständige Tageshoroskop wird **nicht über die FooFire API abgerufen**, obwohl die Datenstruktur und der Aufbau in der Dokumentation bereits definiert sind.
+- Das vollständige Tageshoroskop wird **nicht über die FooFire API[^1] abgerufen**, obwohl die Datenstruktur und der Aufbau in der Dokumentation bereits definiert sind.
+
+[^1]: Im User-Wording „FooFire" — im Codebase-Verzeichnis als `FuFirE` geführt (`~/Projects/codebase/FuFirE/`). Wahrscheinlich identische Komponente, abweichende Schreibweise.
 - Beim Login des Users muss das vollständige Daily Pulse (inkl. Aphorismen) **automatisch geladen und angezeigt** werden.
 - Die Aphorismen sind **nur ein Teil** des gesamten Daily Pulse Features, nicht das Feature selbst.
 
@@ -58,8 +60,8 @@ Die 3D-Signaturkugel ist bereits implementiert, wird aber **im Dashboard nicht a
 | Requirements | 30 (19 Approved) | 63 | `origin/main` granularer, mehrere Sprints akkumuliert |
 | Constraints | 7 | 6 | nahezu disjunkt — Lokal: GDPR / Engine-Immutabilität / Stripe-Stack / Polling / Aphorism-Approval / Degraded-State / Signatur-No-Rebuild; Remote: german-ui / mobile-first / dark-luxury / no-unexplained-numbers / quiz-signatur-axiome / resource-oriented-framing |
 | Assumptions | 5 | 5 | disjunkt — Lokal: LLM-Determinismus / WebGL / Stripe-Uptime / Supabase-Scale / German-User-Base; Remote: ElevenLabs / Gemini-Quality / NOAA / Fusion-Sufficiency / UED-Metrics |
-| Decisions | 0 (nur Templates) | ~30+ | Remote dominant |
-| User Stories | 0 (bewusst übersprungen) | unbekannt | nicht audited |
+| Decisions | 0 (nur Templates) | 29 | Remote dominant — alle unter `2-design/decisions/` (nicht im Repo-Root wie lokal) |
+| User Stories | 0 (bewusst übersprungen) | **46** | Remote hat 46 `US-*.md` (z. B. `US-daily-impulse-text`, `US-daily-coherence-visibility`, `US-daily-action-recommendation`, `US-daily-single-api-call`, `US-daily-active-planets`). **Vor Reformulierung der Daily-Pulse-Reqs sichten** — Remote-User-Stories liefern möglicherweise bereits Coverage, die unsere reformulierten Anforderungen redundant macht. |
 
 ### Überdeckung der lokalen Goals
 
@@ -68,7 +70,7 @@ Die 3D-Signaturkugel ist bereits implementiert, wird aber **im Dashboard nicht a
 | `GOAL-reliable-daily-orientation` | `GOAL-daily-chart-coherence-first`, `GOAL-dashboard-signatur-hygiene` | wahrscheinlich überdeckt; Remote-Reqs (z. B. `REQ-F-daily-chart-coherence-hero`, `REQ-F-coherence-hero-impact-datasource`, `REQ-F-daily-chart-dashboard-order`, `REQ-F-dashboard-identity-cards`, `REQ-F-dashboard-live-daily-signals`) sind granularer und produkttauglicher |
 | `GOAL-discoverable-signature-anchor` | `GOAL-signatur-cymatics` + 4 weitere Signatur-Goals + `GOAL-dashboard-signatur-hygiene` | überdeckt auf Goal-Ebene; allerdings adressiert kein Remote-Req explizit die *Dashboard-Verankerung* (Gap #2 oben) → lokale 4 Reqs sind net-new auf REQ-Ebene |
 | `GOAL-aphorism-personalized-interpretation` | kein Äquivalent | net-new, aber **falsch gerahmt** (siehe Gap #1) — sollte als Sub-Goal eines übergeordneten "Daily Pulse Dashboard"-Goals neu formuliert werden |
-| `GOAL-clean-upgrade-funnel` | kein Goal-Äquivalent; PR #327 hat es allerdings *implementiert* | net-new auf Spec-Ebene — codifiziert was PR #327 baute, schützt vor Regression |
+| `GOAL-clean-upgrade-funnel` | **partiell überdeckt** durch `DEC-conversion-tiers` (Tier 0/1/2-Architektur, single CTA, no FOMO, server-side gates, locked-card UX); PR #327 hat die UI-Seite implementiert | net-new auf Spec-Ebene **nur für operative Details** (per-error-class messaging, exactly-one-POST-per-click, ManageSubscription) — die strategische Richtung steht bereits im DEC. Vor Anlage prüfen, ob ein zusätzlicher Goal überhaupt benötigt wird oder die Reqs direkt unter `DEC-conversion-tiers` referenziert werden können |
 | `GOAL-sustainable-client-polling` | kein Äquivalent | net-new |
 | `GOAL-gdpr-compliant-data-handling` | kein Äquivalent | net-new — füllt Gap #3 |
 
@@ -77,7 +79,7 @@ Die 3D-Signaturkugel ist bereits implementiert, wird aber **im Dashboard nicht a
 | Lokales Constraint | `origin/main`-Äquivalent | Verdikt |
 |---------------------|---------------------------|---------|
 | `CON-no-formula-changes` | nicht explizit | net-new |
-| `CON-stripe-payment-stack` | implizit über `DEC-conversion-tiers` (zu prüfen) | wahrscheinlich net-new als Spec-Artefakt |
+| `CON-stripe-payment-stack` | nicht durch `DEC-conversion-tiers` abgedeckt (verifiziert: dieser DEC regelt Tier-Architektur, nicht Payment-Provider) | net-new als Spec-Artefakt |
 | `CON-no-signatur-v3-rebuild` | nicht explizit | net-new |
 | `CON-aphorisms-human-approved` | nicht explizit | net-new |
 | `CON-greenops-polling-budget` | nicht explizit | net-new |
@@ -112,9 +114,9 @@ Alle 7 lokalen Constraints sind net-new gegenüber `origin/main`.
    - `CON-greenops-polling-budget`, `CON-degraded-state-transparency`, `CON-no-formula-changes`, `CON-stripe-payment-stack`, `CON-no-signatur-v3-rebuild`
    - 3 × Polling-Reqs (`REQ-PERF-polling-budget`, `REQ-PERF-polling-visibility`, `REQ-MNT-single-poller-per-source`)
    - `GOAL-sustainable-client-polling`
-3. **Upgrade-Funnel als Spec** (codifiziert PR #327 für Regressionsschutz):
-   - 5 × Upgrade-Reqs (`REQ-USA-cta-singular`, `REQ-F-checkout-single-trigger`, `REQ-F-checkout-stripe-redirect`, `REQ-USA-checkout-error-categories`, `REQ-F-agent-card-no-checkout`, `REQ-F-manage-subscription`)
-   - `GOAL-clean-upgrade-funnel`
+3. **Upgrade-Funnel als Spec** (codifiziert PR #327 für Regressionsschutz; teilweise überlappt mit `DEC-conversion-tiers`):
+   - 6 × Upgrade-Reqs (`REQ-USA-cta-singular`, `REQ-F-checkout-single-trigger`, `REQ-F-checkout-stripe-redirect`, `REQ-USA-checkout-error-categories`, `REQ-F-agent-card-no-checkout`, `REQ-F-manage-subscription`)
+   - `GOAL-clean-upgrade-funnel` — vor Anlage prüfen, ob `DEC-conversion-tiers` als Architektur-Decision die Goal-Ebene bereits abdeckt
 
 ### Reframe vor Integration (Gap #1)
 
@@ -142,7 +144,9 @@ Alle 7 lokalen Constraints sind net-new gegenüber `origin/main`.
 | `1-spec/requirements/REQ-*.md` | `1-objectives/requirements/REQ-*.md` |
 | `1-spec/constraints/CON-*.md` | `1-objectives/constraints/CON-*.md` |
 | `1-spec/assumptions/ASM-*.md` | `1-objectives/assumptions/ASM-*.md` |
-| `decisions/PROCEDURES.md` etc. | `2-design/decisions/PROCEDURES.md` |
+| `decisions/PROCEDURES.md` etc. | `2-design/decisions/PROCEDURES.md` (PROCEDURES.md existiert dort bereits — überschreibend nur, wenn der Inhalt aktualisiert werden soll) |
+| `docs/dev-briefs/2026-05-07-*.md` | `docs/dev-briefs/2026-05-07-*.md` (Pfad existiert auf origin/main konventionell; vorhandene Inhalte vor dem Schreiben prüfen) |
+| `docs/integration-reports/*.md` | `docs/integration-reports/*.md` (neuer Pfad — wenn die Repo-Owner diesen Report selbst integrieren wollen) |
 
 ---
 
@@ -150,9 +154,9 @@ Alle 7 lokalen Constraints sind net-new gegenüber `origin/main`.
 
 Wenn man dem obigen Cherry-Pick-Plan folgt:
 
-- **+12 Goals → 1** netto (Daily-Pulse-Goal als Ersatz für aphorism-Goal; alle anderen lokalen Goals werden gedroppt oder bestehende Remote-Goals erben unsere Reqs); plus `GOAL-clean-upgrade-funnel`, `GOAL-sustainable-client-polling`, `GOAL-gdpr-compliant-data-handling` = **+4 Goals**.
+- **Goals: 6 lokale → +4 net-new auf origin/main** — 1 reformulierter Daily-Pulse-Dashboard-Goal (Ersatz für `GOAL-aphorism-personalized-interpretation`) + `GOAL-clean-upgrade-funnel` + `GOAL-sustainable-client-polling` + `GOAL-gdpr-compliant-data-handling`. 2 lokale Goals werden gedroppt (`GOAL-reliable-daily-orientation`, `GOAL-discoverable-signature-anchor`) — deren Requirements wandern unter bestehende Remote-Goals.
 - **+~22 Requirements** (6 GDPR + 6 Upgrade-Funnel + 3 Polling + 4 Signatur-Verankerung + 3 reformulierte Daily-Pulse-Reqs)
-- **+5 bis 7 Constraints** (GDPR, Polling-Budget, Degraded-State, No-Formula-Changes, No-Signatur-Rebuild, Stripe-Stack, Aphorisms-Approval)
+- **+7 Constraints** (GDPR, Polling-Budget, Degraded-State, No-Formula-Changes, No-Signatur-Rebuild, Stripe-Stack, Aphorisms-Approval — alle net-new)
 - **+4 Assumptions** (LLM-Determinismus, WebGL, Stripe-Uptime, Supabase-Scale)
 - **+1 Dev-Brief** preserved unter `docs/dev-briefs/`
 
