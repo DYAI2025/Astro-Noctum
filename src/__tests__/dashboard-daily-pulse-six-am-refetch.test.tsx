@@ -15,6 +15,14 @@
  * uses `vi.useFakeTimers()` + `vi.setSystemTime()` + `vi.advanceTimersByTime()`
  * to deterministically simulate the 06:00 crossing without waiting on
  * real wall-clock time.
+ *
+ * ── Vitest fake-timer semantics ─────────────────────────────────────
+ * Pinned to Vitest's current `useFakeTimers({ shouldAdvanceTime, advanceTimeDelta })`
+ * + `advanceTimersByTimeAsync` semantics. `shouldAdvanceTime: true` keeps
+ * React's internal scheduling from stalling under fake timers; without it
+ * the test hangs on the first waitFor. If a future Vitest major release
+ * changes this contract, revisit — the failure mode would be a 5s test
+ * timeout on the first waitFor rather than a clean assertion error.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, waitFor, act } from '@testing-library/react';

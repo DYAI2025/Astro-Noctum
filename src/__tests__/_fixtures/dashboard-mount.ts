@@ -212,6 +212,14 @@ export const componentStubs = {
   dashboardBottomUpgradeCard: () => ({ DashboardBottomUpgradeCard: () => null }),
   dayModeModal: () => ({ DayModeModal: () => null }),
   skyModeToggle: () => ({ SkyModeToggle: () => null }),
+  /**
+   * ⚠️ Stub of DailyChartHero — used by tests that focus on Dashboard behavior
+   * (e.g., does fetchDailyExperience fire on mount). DO NOT enable this stub
+   * when the unit-under-test IS DailyChartHero — the assertion would silently
+   * pass against the stub instead of the real component. See
+   * `daily-chart-hero-no-placeholder.test.tsx` for the correct pattern
+   * (imports DailyChartHero directly without this stub).
+   */
   dailyChartHero: () => ({
     DailyChartHero: () => React.createElement('div', { 'data-testid': 'daily-chart-hero' }),
   }),
