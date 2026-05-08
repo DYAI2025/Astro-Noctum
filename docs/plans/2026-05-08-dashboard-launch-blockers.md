@@ -14,6 +14,36 @@
 
 ---
 
+## Operational Principle (NON-NEGOTIABLE)
+
+**No placeholders. No silent fallbacks. Errors are surfaced — visibly — with a machine-readable code and a short English description of what failed.**
+
+Decreed by the project owner on 2026-05-08:
+
+> *"Es dürfen keine Platzhalter oder irreführende Fallbacks angewandt werden. Diese sind umgehend vollständig durch wahrheitsgemäße Fehlermeldungen auszutauschen. Wenn etwas fehlschlägt, erwartet man eine Fehlermeldung und kein Kaschieren von unzulänglichem Code. Der Fehler muss deutlich sichtbar sein mit Fehlercode und kurzer Meldung auf Englisch was genau fehlschlägt."*
+
+### Rules
+
+1. **Every error path renders `[ERROR-CODE] Short English message`** in the UI surface that owns the failure. Not in a hidden console log; not at low opacity; not masquerading as a "loading" or "preview" state. The message must be **prominent**, machine-readable (so support / engineering can immediately diagnose), and in English (so error codes are stable across locales).
+2. **No fallback content substitutes for missing real data.** If `fetchDailyExperience` fails, `dailyData` is `null`, and an error state is propagated. The UI does NOT manufacture a synthetic "Heute fließt deine Energie ruhig…" string.
+3. **Existing silent markers must become visible.** `engine_version === 'v1-local-fallback'` is currently set but never rendered. After this plan, that marker is either removed (because the fallback path is gone) or surfaced as `[DAILY-PULSE-FALLBACK-ENGINE]` if any consumer still relies on it.
+4. **All new code must follow this principle.** Any new hook / service / component added during the plan must declare its error state explicitly. Catch-blocks that swallow errors silently are violations of plan compliance.
+
+### Canonical error code shape
+
+`[DOMAIN-OPERATION-CAUSE]` — uppercase, hyphen-separated, English. Examples:
+
+- `[DAILY-PULSE-FETCH-FAILED-503]` — server returned 503
+- `[DAILY-PULSE-FETCH-FAILED-NETWORK]` — fetch rejection (offline, DNS failure)
+- `[DAILY-PULSE-FETCH-FAILED-VALIDATION]` — Zod schema parse failure on response
+- `[DAILY-PULSE-PROFILE-INCOMPLETE]` — birth data missing in DB (rendered as actionable error rather than silent suppression)
+- `[SIGNATUR-SPHERE-WEBGL-INIT-FAILED]` — WebGL context could not be created
+- `[SIGNATUR-SPHERE-WEIGHTS-MISSING]` — required `weights` prop not provided
+
+The exact codes are decided per task as they arise; the **shape** is fixed.
+
+---
+
 ## Pre-flight (do once, before any task)
 
 ### P0.1: Clone or pull production repo
@@ -63,6 +93,16 @@ Before touching code, read these in full to load context:
 ---
 
 ## Phase 1 — Daily Pulse: Real FuFirE on every login + 06:00 rotation + zero placeholder
+
+### Execution order (per user directive 2026-05-08)
+
+Task 1.11 (loading prop wire-up) is **high-priority** and runs **immediately after Task 1.3**. The reason: today's state mismatch between `useFirstRunDaily.loading` (returned but unused) and `Dashboard.tsx`'s synthesized `loading={(metaLoading || transitLoading) && impactHarmonyIndex == null}` is itself a visibility bug — the component can never show its proper loading skeleton for daily-pulse fetch states. Fixing that early lets the rest of the phase show progress in the dev server.
+
+**Effective execution order:** 1.1 → 1.2 → 1.3 → **1.11** → 1.4 → 1.5 → 1.6 → 1.7 → 1.8 → 1.9 → 1.10 → **1.12** → 1.13.
+
+(Task 1.12 is also expanded to wire `error` from hook to component, since both `loading` and `error` flow through the same Dashboard → DailyChartHero edge.)
+
+---
 
 ### Task 1.1: Audit — locate the actual placeholder text
 
@@ -620,7 +660,7 @@ describe('DailyChartHero — no placeholder text when impulsText is undefined', 
     expect(screen.getByTestId('daily-chart-hero-skeleton')).toBeInTheDocument();
   });
 
-  it('renders an "unavailable" indicator when not loading and no data', () => {
+  it('renders an [ERROR-CODE] error block when error prop is set', () => {
     render(
       <DailyChartHero
         impulsText={undefined}
@@ -629,9 +669,33 @@ describe('DailyChartHero — no placeholder text when impulsText is undefined', 
         baseCoherence={0.5}
         positiveDailyDelta={0}
         displayedCoherence={0.5}
+        error={{ code: 'DAILY-PULSE-FETCH-FAILED-503', message: 'FuFirE /api/experience/daily returned HTTP 503.' }}
       />,
     );
-    expect(screen.getByTestId('daily-pulse-unavailable')).toBeInTheDocument();
+    const errorBlock = screen.getByTestId('daily-pulse-error');
+    expect(errorBlock).toBeInTheDocument();
+    expect(screen.getByTestId('daily-pulse-error-code')).toHaveTextContent('[DAILY-PULSE-FETCH-FAILED-503]');
+    expect(screen.getByTestId('daily-pulse-error-message')).toHaveTextContent('FuFirE /api/experience/daily returned HTTP 503.');
+    expect(errorBlock).toHaveAttribute('role', 'alert');
+  });
+
+  it('renders error block instead of impulse when both error AND impulsText are set', () => {
+    // Doctrine: error wins over stale data. Never pretend a cached value is live
+    // when something is currently failing.
+    render(
+      <DailyChartHero
+        impulsText="stale cached horoscope text"
+        dayMode="pulse"
+        loading={false}
+        baseCoherence={0.5}
+        positiveDailyDelta={0}
+        displayedCoherence={0.5}
+        error={{ code: 'DAILY-PULSE-FETCH-FAILED-NETWORK', message: 'Network error reaching /api/experience/daily.' }}
+      />,
+    );
+    expect(screen.getByTestId('daily-pulse-error')).toBeInTheDocument();
+    // Stale text MUST NOT be rendered as Tagesimpuls when error is active
+    expect(screen.queryByText('stale cached horoscope text')).toBeNull();
   });
 });
 ```
@@ -642,7 +706,7 @@ describe('DailyChartHero — no placeholder text when impulsText is undefined', 
 npx vitest run src/__tests__/daily-chart-hero-no-placeholder.test.tsx
 ```
 
-Expected: FAIL — `daily-pulse-loading` and/or `daily-pulse-unavailable` testids do not exist; the component currently renders different text.
+Expected: FAIL — the `daily-pulse-error` testid does not exist yet (Task 1.10 adds it), and the component currently renders different text in the no-impulsText path.
 
 **Step 3: Commit the failing test**
 
@@ -653,52 +717,83 @@ git commit -m "test(daily-chart-hero): no placeholder text when impulsText is un
 
 ---
 
-### Task 1.10: Add unavailable state to `DailyChartHero` (loading skeleton already exists)
+### Task 1.10: Add ERROR state to `DailyChartHero` with explicit code + English message (replaces "unavailable")
 
 **Realität-Check (aus P0.4):**
-- `DailyChartHero` **hat bereits einen `loading` Prop** (`src/components/dashboard/DailyChartHero.tsx:34`).
-- Wenn `loading: true`, rendert es bereits `<DailyChartHeroSkeleton />` (Zeile 252) mit `data-testid="daily-chart-hero-skeleton"`.
-- Wenn `impulsText` leer/undefined ist und nicht `profileIncomplete`, rendert die Tagesimpuls-Section **gar nichts** (`: null` am Ende von Zeile 454) — also bereits kein generischer Platzhalter.
-- **Der einzige fehlende Zustand:** explizites "unavailable" wenn der Fetch fehlschlug (heute durch Fallback maskiert; nach Task 1.12 ist das aber genau die Lücke, die jetzt sichtbar wird, weil `dailyData` dann `null` bleibt).
+- `DailyChartHero` **hat bereits einen `loading` Prop** (`src/components/dashboard/DailyChartHero.tsx:34`) und rendert `<DailyChartHeroSkeleton />` (Zeile 252).
+- Wenn `impulsText` leer/undefined und nicht `profileIncomplete` → die Tagesimpuls-Section rendert nichts (`: null` Zeile 454).
+- Bisheriger fehlender Zustand: explizite Fehleranzeige bei Fetch-Versagen.
+
+**Doctrine compliance:** Per the operational principle above, this branch must render `[ERROR-CODE] Short English message` **prominently** when the daily-pulse fetch failed. No vague "unavailable", no low-opacity hint. The user must immediately see what broke.
 
 **Files:**
 - Modify: `src/components/dashboard/DailyChartHero.tsx`
+- Add new prop: `error?: { code: string; message: string } | null`
 
-**Step 1: Verify existing structure**
+**Step 1: Add `error` prop to the interface**
 
-Read `DailyChartHero.tsx`. Confirm:
-- `loading` prop exists, skeleton rendered.
-- `hasImpuls` gate (Zeile 263) suppresses the section when impulsText is empty.
-- `profileIncomplete` branch handles missing-profile state.
+In `DailyChartHeroProps` (around Zeile 33-68):
 
-**Step 2: Add a third branch — "unavailable" — to the Tagesimpuls section**
-
-Find the existing Tagesimpuls section (`{hasImpuls ? (...) : profileIncomplete ? (...) : null}` ≈ Zeilen 396-454). Replace the trailing `: null` with an "unavailable" branch:
-
-```tsx
-) : profileIncomplete ? (
-  // ... existing profileIncomplete branch unchanged
-) : (
-  <section
-    className="mt-2 pt-5 border-t text-center"
-    style={{ borderColor: 'var(--tile-border)' }}
-    data-testid="daily-pulse-unavailable"
-  >
-    <p
-      className="text-sm leading-relaxed max-w-prose mx-auto"
-      style={{ color: 'var(--tile-text-secondary)', opacity: 0.6 }}
-    >
-      {isDe
-        ? 'Tagespuls heute nicht verfügbar — bitte neu laden.'
-        : 'Daily pulse unavailable today — please reload.'}
-    </p>
-  </section>
-)}
+```ts
+/**
+ * Error state propagated from useFirstRunDaily when the daily-pulse fetch failed.
+ * When non-null, renders a prominent [CODE] message error block in place of the
+ * Tagesimpuls section. Per project doctrine: errors are surfaced, not masked.
+ */
+error?: { code: string; message: string } | null;
 ```
 
-> **Important:** The "unavailable" message is **factual**, not generic. It does not pretend to be horoscope content. This matches the user's requirement: *"Es dürfen keine generischen oder Placeholder-Texte mehr verwendet werden."*
+**Step 2: Destructure `error` in the component signature**
 
-> **Test ID rename:** the failing test in Task 1.9 expects `data-testid="daily-pulse-loading"` for the skeleton. The existing skeleton uses `daily-chart-hero-skeleton`. Decision: **rename test expectation, not the existing testid** — many other tests likely consume `daily-chart-hero-skeleton`. Update Task 1.9's test to query `daily-chart-hero-skeleton` instead of `daily-pulse-loading`.
+In the `export function DailyChartHero({...}: DailyChartHeroProps)` destructure (Zeile 213-226), add `error,`.
+
+**Step 3: Add the third branch — ERROR — to the Tagesimpuls section**
+
+Find the existing Tagesimpuls section (`{hasImpuls ? (...) : profileIncomplete ? (...) : null}` ≈ Zeilen 396-454). Replace the trailing `: null` with the error branch, AND prefer the error branch over `hasImpuls` if both are set (an error overrides any cached/stale impulsText):
+
+```tsx
+{error ? (
+  <section
+    className="mt-2 pt-5 border-t"
+    style={{ borderColor: 'var(--tile-border)' }}
+    data-testid="daily-pulse-error"
+    role="alert"
+  >
+    <div
+      className="rounded-lg border px-4 py-3 max-w-prose mx-auto"
+      style={{
+        borderColor: 'rgba(220, 38, 38, 0.4)',
+        background: 'rgba(220, 38, 38, 0.08)',
+      }}
+    >
+      <p
+        className="text-xs font-mono mb-1"
+        style={{ color: 'rgb(248, 113, 113)' }}
+        data-testid="daily-pulse-error-code"
+      >
+        [{error.code}]
+      </p>
+      <p
+        className="text-sm leading-relaxed"
+        style={{ color: 'var(--tile-text-primary)' }}
+        data-testid="daily-pulse-error-message"
+      >
+        {error.message}
+      </p>
+    </div>
+  </section>
+) : hasImpuls ? (
+  // ... existing hasImpuls branch unchanged (Zeilen 397-427)
+) : profileIncomplete ? (
+  // ... existing profileIncomplete branch unchanged (Zeilen 428-453)
+) : null}
+```
+
+> **Why this position:** If both `error` AND `impulsText` are set (e.g. stale cached data from earlier mount + new fetch failure), **error wins**. The doctrine says: never render data that pretends to be live when something failed.
+
+> **Visual treatment:** Bordered, rose-tinted background. Monospace error code on first line. Body message in primary text color, full opacity. `role="alert"` for screen-reader accessibility.
+
+> **Profile-incomplete branch stays as-is**: that's not an error — it's a known state with a user-actionable CTA. Don't recolor it red.
 
 **Step 3: Run the test**
 
@@ -725,82 +820,176 @@ git commit -m "feat(daily-chart-hero): replace placeholder with loading skeleton
 
 ---
 
-### Task 1.11: Wire `loading` from `useFirstRunDaily` into `DailyChartHero`
+### Task 1.11: HIGH-PRIORITY — Wire `loading` AND `error` from `useFirstRunDaily` into `DailyChartHero`
+
+**Per user directive 2026-05-08, executed early (after Task 1.3, before Task 1.4).**
+
+**Why this is high-priority:** Today, `useFirstRunDaily` returns `loading` (Zeile 29 of the interface) and Dashboard.tsx **destructures it not** (Zeile 289 of `Dashboard.tsx`). Instead the synthesized `loading={(metaLoading || transitLoading) && impactHarmonyIndex == null}` (Zeile 377) is wired in — that's `useActiveImpacts`-loading, not daily-pulse-loading. Result: DailyChartHero can never show its skeleton for daily-pulse fetch states. The component is effectively rendering with `loading={false}` even when the daily-pulse is loading. **This is a visibility bug for itself — fix it first.**
+
+**Two wires in one task (both flow through the Dashboard → DailyChartHero edge):**
+
+1. **`loading`** wire — exists today, fix the destructure. Available immediately.
+2. **`error`** wire — depends on Task 1.12 having added `error` to the hook's return type. Add the wire here in TDD-anticipation; the test passes once 1.12 lands.
 
 **Files:**
-- Modify: `src/components/Dashboard.tsx` (around line 376 — the `<DailyChartHero ... />` call)
+- Modify: `src/components/Dashboard.tsx` (around line 289 — the `useFirstRunDaily(...)` call site, and line 376 — the `<DailyChartHero ... />` call)
 
-**Step 1: Pass `loading` prop**
+**Step 1: Update the destructure**
 
-Find the `<DailyChartHero` call site (~line 376 in `Dashboard.tsx`). Add `loading={dailyLoading}` (or whatever the loading state is named in `useFirstRunDaily`'s return object).
+Replace Dashboard.tsx Zeile 289-297:
 
 ```tsx
-const { dailyData, dayHarmonic, nightHarmonic, loading: dailyLoading, handleClose: handleDailyClose } = useFirstRunDaily(...);
-// ...
+const {
+  dailyData,
+  dayHarmonic,
+  nightHarmonic,
+  loading: dailyLoading,
+  error: dailyError,                       // populated by Task 1.12
+  handleClose: handleDailyClose,
+} = useFirstRunDaily(
+  userId,
+  profileMeta.birthInput,
+  effectiveSoulprint,
+  profileMeta.quizSectors,
+  birthSign,
+  skyMode === 'current' ? currentDate.toISOString().split('T')[0] : undefined,
+  lang === 'en' ? 'en-US' : 'de-DE',
+);
+```
+
+> **Note:** If Task 1.12 has not yet run, `dailyError` is `undefined` (the hook doesn't expose it yet). Tests in Task 1.12 will exercise the populated path. TypeScript will warn — that's expected; treat the warning as an inter-task TODO that 1.12 closes.
+
+**Step 2: Replace the synthesized `loading` prop with the real one**
+
+Find Zeile 376-389. Replace `loading={(metaLoading || transitLoading) && impactHarmonyIndex == null}` with:
+
+```tsx
 <DailyChartHero
-  // ... existing props
-  loading={dailyLoading}
+  loading={dailyLoading || (metaLoading && impactHarmonyIndex == null)}
+  error={dailyError ?? null}
+  // ... existing props (baseCoherence, positiveDailyDelta, etc.) unchanged
   impulsText={dailyData?.fusion?.synthesis || dailyData?.fusion?.summary}
   // ...
 />
 ```
 
-**Step 2: Run the dashboard mount test from Task 1.2 + the no-placeholder test**
+> **Why the OR:** `dailyLoading` covers the FuFirE-fetch path; `metaLoading && impactHarmonyIndex == null` covers the active-impacts path. We keep both because the dashboard genuinely has two parallel loading states; the skeleton should show as long as **either** is in flight. If you want to be stricter (only daily-pulse loading drives the skeleton), drop the second clause and surface active-impacts loading via a different affordance later.
+
+**Step 3: Run all relevant tests**
 
 ```bash
-npx vitest run src/__tests__/dashboard-daily-pulse-fetch.test.tsx src/__tests__/daily-chart-hero-no-placeholder.test.tsx
+npx vitest run \
+  src/__tests__/dashboard-daily-pulse-fetch.test.tsx \
+  src/__tests__/daily-chart-hero-no-placeholder.test.tsx
 ```
 
-Expected: both PASS.
+Expected:
+- Tests that exist today: PASS.
+- The error-test from Task 1.9 will fail until Task 1.12 lands — that's the TDD expectation. Document this in the commit message.
 
-**Step 3: Commit**
+**Step 4: Commit**
 
 ```bash
 git add src/components/Dashboard.tsx
-git commit -m "feat(dashboard): wire daily-pulse loading state into DailyChartHero"
+git commit -m "feat(dashboard): wire daily-pulse loading + error from hook into DailyChartHero (HIGH-PRIO per doctrine)"
 ```
+
+> **Compliance note:** This is the wire-up for the doctrine surface. Task 1.10 implements the rendering. Task 1.12 implements the error-classification source. All three together close the doctrine loop.
 
 ---
 
-### Task 1.12: Remove `buildFallbackDaily` from the auto-fetch path
+### Task 1.12: Remove `buildFallbackDaily` from auto-fetch path AND propagate explicit error state
+
+**Doctrine compliance:** Catch-block must NOT substitute synthetic content. It must classify the failure into a stable error code and propagate `error: { code, message }` so DailyChartHero (Task 1.10) can render `[CODE] message`.
 
 **Files:**
 - Modify: `src/hooks/useFirstRunDaily.ts`
 
-**Step 1: Audit `buildFallbackDaily` usage**
+**Step 1: Extend the result type with `error`**
 
-```bash
-git grep -n "buildFallbackDaily" src/
-```
-
-Expected: invocations in `useFirstRunDaily.ts` (the catch-block of the fetch effect) and possibly in tests.
-
-**Step 2: Replace the catch-block fallback with explicit "unavailable" state**
-
-Find the `try/catch` around `fetchDailyExperience`. Currently it likely sets `dailyData` to `buildFallbackDaily(lang)` on error. Change it to leave `dailyData` as `null` and ensure `loading` becomes `false`:
+Update `UseFirstRunDailyResult` (Zeile 23-31):
 
 ```ts
-try {
-  const data = await fetchDailyExperience(...);
-  setDailyData(data);
-  setCachedDaily(data);
-} catch (err) {
-  // Do NOT substitute a fallback. Surface "unavailable" via null + loading=false.
-  // The UI handles this via DailyChartHero's data-testid="daily-pulse-unavailable".
-  console.warn('[useFirstRunDaily] fetchDailyExperience failed; surfacing unavailable state', err);
-  setDailyData(null);
-} finally {
-  setLoading(false);
+interface UseFirstRunDailyResult {
+  dailyData: DailyResponse | null;
+  dayHarmonic: DayHarmonicState | null;
+  nightHarmonic: DayHarmonicState | null;
+  showModal: boolean;
+  loading: boolean;
+  /**
+   * Non-null when the most recent fetch attempt failed. The UI consumes this
+   * via DailyChartHero.error to render [CODE] message prominently.
+   * Cleared on next successful fetch. Per project doctrine 2026-05-08: no
+   * synthetic fallbacks; failures must be visible.
+   */
+  error: { code: string; message: string } | null;
+  handleClose: () => void;
 }
 ```
 
-**Step 3: Keep the export of `buildFallbackDaily` in place** for now (other consumers may exist). Add a deprecation comment:
+Add the state inside the hook body:
+
+```ts
+const [error, setError] = useState<{ code: string; message: string } | null>(null);
+```
+
+Return it from the hook (Zeile 253). Mock it in any existing test that destructures the hook result.
+
+**Step 2: Classify failures in the catch-block**
+
+Replace the existing catch-block (`useFirstRunDaily.ts:209-218`):
+
+```ts
+} catch (err) {
+  // Per project doctrine 2026-05-08: surface failures explicitly,
+  // do NOT substitute synthetic fallback content.
+  if (cancelled) return;
+
+  let code = 'DAILY-PULSE-FETCH-FAILED-UNKNOWN';
+  let message = 'Daily horoscope fetch failed.';
+
+  if (err instanceof Error) {
+    // Match the error shapes thrown by fetchDailyExperience (see services/experience.ts:64)
+    const m = err.message.match(/Daily horoscope failed:\s*(\d{3})/);
+    if (m) {
+      code = `DAILY-PULSE-FETCH-FAILED-${m[1]}`;
+      message = `FuFirE /api/experience/daily returned HTTP ${m[1]}.`;
+    } else if (err.name === 'TypeError' || err.message.toLowerCase().includes('fetch')) {
+      code = 'DAILY-PULSE-FETCH-FAILED-NETWORK';
+      message = `Network error reaching /api/experience/daily: ${err.message}`;
+    } else if (err.message.includes('parse') || err.name === 'ZodError') {
+      code = 'DAILY-PULSE-FETCH-FAILED-VALIDATION';
+      message = `Daily-pulse response failed schema validation: ${err.message}`;
+    } else {
+      message = err.message;
+    }
+  }
+
+  console.error(`[useFirstRunDaily] [${code}]`, message, err);
+  setDailyData(null);
+  setError({ code, message });
+} finally {
+  if (!cancelled) setLoading(false);
+}
+```
+
+**Step 3: Clear `error` on successful fetch**
+
+In the success path (after `setDailyData(data)`), add:
+
+```ts
+setError(null); // clear any prior error state on success
+```
+
+**Step 4: Mark `buildFallbackDaily` as deprecated; do NOT delete (existing tests still import it)**
 
 ```ts
 /**
- * @deprecated As of 2026-05-08, the daily-pulse pipeline does not auto-substitute
- * fallback content. UI now surfaces an explicit "unavailable" state when the
- * FuFirE fetch fails. Remove this function once no consumers remain.
+ * @deprecated 2026-05-08 — Replaced by explicit error-state propagation per
+ * project doctrine: errors are surfaced, not masked. This export remains only
+ * because src/__tests__/daily-fallback.test.ts and daily-inline-rendering.test.ts
+ * still import it for direct unit tests of its shape. New code MUST NOT call
+ * this function. Remove once those tests are migrated or deleted.
  *
  * Tracked in: docs/plans/2026-05-08-dashboard-launch-blockers.md
  */
@@ -809,7 +998,11 @@ export function buildFallbackDaily(locale: string = 'de'): DailyResponse {
 }
 ```
 
-**Step 4: Run all daily-pulse tests**
+**Step 5: Wire `error` into Dashboard.tsx and DailyChartHero (already done in Task 1.11)**
+
+Confirm Task 1.11's prior wiring also passes `error={dailyError}` to `<DailyChartHero>`. If not, extend.
+
+**Step 6: Run all daily-pulse tests**
 
 ```bash
 npx vitest run src/__tests__/daily-pulse-* src/__tests__/dashboard-daily-pulse-* src/__tests__/daily-chart-hero-*
@@ -817,11 +1010,11 @@ npx vitest run src/__tests__/daily-pulse-* src/__tests__/dashboard-daily-pulse-*
 
 Expected: all PASS.
 
-**Step 5: Commit**
+**Step 7: Commit**
 
 ```bash
 git add src/hooks/useFirstRunDaily.ts
-git commit -m "feat(daily-pulse): remove fallback substitution; surface unavailable state instead"
+git commit -m "feat(daily-pulse): remove fallback substitution; propagate explicit [CODE] error state per doctrine"
 ```
 
 ---
@@ -1219,7 +1412,7 @@ gh pr create --base main --title "fix(dashboard): launch blockers — Daily Puls
 Two launch blockers from 2026-05-08:
 
 **1. Daily Pulse / Tageshoroskop on Dashboard**
-- Replaced placeholder text with explicit loading skeleton (`data-testid="daily-pulse-loading"`) and unavailable state (`data-testid="daily-pulse-unavailable"`).
+- Replaced placeholder text with explicit loading skeleton (existing `data-testid="daily-chart-hero-skeleton"`) and prominent error state (`data-testid="daily-pulse-error"` with `[ERROR-CODE] message`) — per project doctrine: errors surfaced, not masked.
 - Removed `buildFallbackDaily` substitution from the auto-fetch path; UI now surfaces "unavailable" rather than generic content.
 - Added `dailyCacheKey()` with 06:00 local-time boundary (replaces midnight-based `todayKey()` in cache lookups).
 - Added auto-refetch trigger: when local time crosses 06:00 with the dashboard mounted, the hook clears its cache and refetches without page reload.
