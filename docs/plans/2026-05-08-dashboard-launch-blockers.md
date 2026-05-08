@@ -123,9 +123,9 @@ Expected: find one or both of:
 - A literal placeholder string in `DailyChartHero.tsx` rendered when `impulsText` is undefined.
 - The fallback path in `useFirstRunDaily.ts` returning generic text via `buildFallbackDaily` when the API call fails.
 
-**Step 2: Document findings in a temporary scratch file**
+**Step 2: Document findings in a scratch file**
 
-Create `docs/plans/_scratch/2026-05-08-daily-pulse-audit.md` (gitignored) with:
+Create `docs/plans/_scratch/2026-05-08-daily-pulse-audit.md` with:
 - Exact file:line of placeholder string(s)
 - Whether `useFirstRunDaily` is actually invoked on dashboard mount with a complete birth profile (read the hook signature + Dashboard.tsx call site)
 - Whether the cache key strategy honors a 06:00 boundary or only a midnight boundary (read `todayKey()` in `useFirstRunDaily.ts`)
