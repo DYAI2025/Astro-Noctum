@@ -42,14 +42,22 @@ interface UseFirstRunDailyResult {
 
 // ── Cache key helper ──────────────────────────────────────────────────
 
-// Returns the LOCAL calendar date as YYYY-MM-DD.
-// toISOString() returns UTC — in any timezone ahead of UTC, that would
-// still show yesterday's date after local midnight.
-//
-// @deprecated Prefer dailyCacheKey() — it honors the 06:00 local-time
-// day-window boundary that matches user expectations ("today's horoscope"
-// = waking day, not calendar day). todayKey is kept until Task 1.6 has
-// migrated all consumers.
+/**
+ * Returns the LOCAL calendar date as YYYY-MM-DD.
+ *
+ * `toISOString()` returns UTC — in any timezone ahead of UTC, that
+ * would still show yesterday's date after local midnight. This helper
+ * uses local-date getters to avoid that pitfall.
+ *
+ * @deprecated 2026-05-08 — Use {@link dailyCacheKey} for cache lookups.
+ * `dailyCacheKey()` honors the 06:00 local-time day-window boundary that
+ * matches user expectations ("today's horoscope" = waking day, not the
+ * calendar day). `todayKey` is retained only because two existing test
+ * files (`daily-fallback.test.ts`, `daily-inline-rendering.test.ts`)
+ * still import it. Remove once those tests are migrated or deleted —
+ * tracked in `docs/plans/2026-05-08-dashboard-launch-blockers.md`
+ * (Phase 3 cleanup).
+ */
 export function todayKey(): string {
   const now = new Date();
   const y = now.getFullYear();
@@ -94,11 +102,14 @@ export function dailyCacheKey(): string {
 
 /**
  * Read the cached daily-horoscope payload IF it belongs to the current
- * day-window (06:00 local boundary, see dailyCacheKey()). Returns null
- * if no cache exists, the cache is stale, or parsing fails.
+ * day-window (06:00 local boundary, see {@link dailyCacheKey}). Returns
+ * null if no cache exists, the cache is stale, or parsing fails.
  *
- * Exported as of Task 1.6 (2026-05-08) so the cache-rotation contract
- * can be tested directly.
+ * @internal Exported as of Task 1.6 (2026-05-08) for direct contract
+ * testing in `src/__tests__/daily-pulse-six-am-cache-rotation.test.ts`.
+ * Production code should consume the cache via the `useFirstRunDaily`
+ * hook — not via direct calls — to preserve the hook's invariants
+ * (dedupe via `lastFetchedDateRef`, error-state propagation, etc.).
  */
 export function getCachedDaily(): DailyResponse | null {
   try {
@@ -119,8 +130,10 @@ export function getCachedDaily(): DailyResponse | null {
  * key. The next read will only return this payload while the local clock
  * is within the same 06:00→05:59 window.
  *
- * Exported as of Task 1.6 (2026-05-08) so the cache-rotation contract
- * can be tested directly.
+ * @internal Exported as of Task 1.6 (2026-05-08) for direct contract
+ * testing in `src/__tests__/daily-pulse-six-am-cache-rotation.test.ts`.
+ * Production code should consume the cache via the `useFirstRunDaily`
+ * hook — not via direct calls.
  */
 export function setCachedDaily(data: DailyResponse): void {
   try {

@@ -19,6 +19,23 @@
  *
  * Per project doctrine 2026-05-08: behavior is described explicitly,
  * not abstractly. This test pins the cache-rotation contract.
+ *
+ * ── Why dynamic `await import(...)` instead of static? ───────────────
+ * The cache helpers are imported dynamically inside each test body so
+ * that during the failing-test snapshot phase (Task 1.6 step 1) the
+ * test would fail with a clear runtime `TypeError: setCachedDaily is
+ * not a function` rather than a TypeScript compile-error masking the
+ * real failure. Vitest's tsconfig already excludes test files from
+ * `tsc --noEmit`, but dynamic import keeps the test legible during
+ * red→green TDD migrations and is consistent with the plan-snippet.
+ *
+ * ── Module-cache note ────────────────────────────────────────────────
+ * Vitest caches dynamically-imported modules within a worker. The
+ * second `await import(...)` returns the already-loaded module — the
+ * cache helpers are pure (no module-level closures over `Date`), so
+ * fake-timers work correctly across calls. If a future refactor
+ * introduces module-level Date capture, this test will need
+ * `vi.resetModules()` between assertions.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
