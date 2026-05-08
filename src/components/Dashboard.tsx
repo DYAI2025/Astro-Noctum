@@ -286,7 +286,14 @@ export function Dashboard({
 
   const birthSign = apiData?.western?.zodiac_sign ?? null;
 
-  const { dailyData, dayHarmonic, nightHarmonic, handleClose: handleDailyClose } = useFirstRunDaily(
+  const {
+    dailyData,
+    dayHarmonic,
+    nightHarmonic,
+    loading: dailyLoading,
+    error: dailyError,
+    handleClose: handleDailyClose,
+  } = useFirstRunDaily(
     userId,
     profileMeta.birthInput,
     effectiveSoulprint,
@@ -374,7 +381,8 @@ export function Dashboard({
       <motion.div {...fadeIn(0.02)}>
         <SectionErrorBoundary name="DailyChartHero">
           <DailyChartHero
-            loading={(metaLoading || transitLoading) && impactHarmonyIndex == null}
+            loading={dailyLoading || ((metaLoading || transitLoading) && impactHarmonyIndex == null)}
+            error={dailyError ?? null}
             baseCoherence={impactBaseCoherence}
             positiveDailyDelta={impactPositiveDailyDelta}
             displayedCoherence={impactDisplayedCoherence}

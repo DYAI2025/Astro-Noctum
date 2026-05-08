@@ -27,6 +27,16 @@ interface UseFirstRunDailyResult {
   nightHarmonic: DayHarmonicState | null;
   showModal: boolean;
   loading: boolean;
+  /**
+   * Non-null when the most recent fetch attempt failed. UI consumes via
+   * DailyChartHero.error to render `[CODE] message` prominently.
+   * Cleared on next successful fetch. Per project doctrine 2026-05-08:
+   * no synthetic fallbacks — failures must be visible.
+   *
+   * Currently always null in this commit (Task 1.11). Task 1.12 wires
+   * the catch-block to classify failures and call setError.
+   */
+  error: { code: string; message: string } | null;
   handleClose: () => void;
 }
 
@@ -123,6 +133,10 @@ export function useFirstRunDaily(
   const [dailyData, setDailyData] = useState<DailyResponse | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  // Error state — populated by Task 1.12's catch-block classifier.
+  // For now always null; the wire is in place so Dashboard.tsx can already
+  // consume it (Task 1.11 wiring).
+  const [error] = useState<{ code: string; message: string } | null>(null);
   const lastFetchedDateRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -250,5 +264,5 @@ export function useFirstRunDaily(
     return nh !== undefined ? computeNightHarmonic(nh) : null;
   }, [dailyData]);
 
-  return { dailyData, dayHarmonic, nightHarmonic, showModal, loading, handleClose };
+  return { dailyData, dayHarmonic, nightHarmonic, showModal, loading, error, handleClose };
 }

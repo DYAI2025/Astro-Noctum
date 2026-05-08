@@ -65,6 +65,15 @@ export interface DailyChartHeroProps {
   onCompleteProfile?: () => void;
   /** Optional callback to open the day-detail modal (feature-flagged) */
   onOpenDayModal?: () => void;
+  /**
+   * Error state propagated from useFirstRunDaily when the daily-pulse fetch failed.
+   * When non-null, Task 1.10 will render a prominent `[CODE] message` block in
+   * place of the Tagesimpuls section. Per project doctrine 2026-05-08:
+   * errors are surfaced, not masked.
+   *
+   * Wire established in Task 1.11. Render branch landing in Task 1.10.
+   */
+  error?: { code: string; message: string } | null;
 }
 
 // ── Split Coherence Ring ───────────────────────────────────────────────────────
