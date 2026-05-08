@@ -232,6 +232,7 @@ export function DailyChartHero({
   profileIncomplete,
   onCompleteProfile,
   onOpenDayModal,
+  error,
 }: DailyChartHeroProps) {
   const { lang } = useLanguage();
   const isDe = lang === 'de';
@@ -401,8 +402,42 @@ export function DailyChartHero({
       </div>
 
 
-      {/* ── D. Tagesimpuls — real daily horoscope, or profile-completion nudge ── */}
-      {hasImpuls ? (
+      {/* ── D. Tagesimpuls — error state wins, then real horoscope, then profile nudge ──
+            Per project doctrine 2026-05-08: errors are surfaced, not masked.
+            Error renders a prominent [CODE] block with role="alert" and beats
+            stale impulsText so a cached value from a prior successful fetch never
+            appears alongside an active error (no masquerade). */}
+      {error ? (
+        <section
+          className="mt-2 pt-5 border-t"
+          style={{ borderColor: 'var(--tile-border)' }}
+          data-testid="daily-pulse-error"
+          role="alert"
+        >
+          <div
+            className="rounded-lg border px-4 py-3 max-w-prose mx-auto"
+            style={{
+              borderColor: 'rgba(220, 38, 38, 0.4)',
+              background: 'rgba(220, 38, 38, 0.08)',
+            }}
+          >
+            <p
+              className="text-xs font-mono mb-1"
+              style={{ color: 'rgb(248, 113, 113)' }}
+              data-testid="daily-pulse-error-code"
+            >
+              [{error.code}]
+            </p>
+            <p
+              className="text-sm leading-relaxed"
+              style={{ color: 'var(--tile-text-primary)' }}
+              data-testid="daily-pulse-error-message"
+            >
+              {error.message}
+            </p>
+          </div>
+        </section>
+      ) : hasImpuls ? (
         <section
           className="mt-2 pt-5 border-t"
           style={{ borderColor: 'var(--tile-border)' }}
