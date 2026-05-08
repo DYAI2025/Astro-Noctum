@@ -45,11 +45,50 @@ interface UseFirstRunDailyResult {
 // Returns the LOCAL calendar date as YYYY-MM-DD.
 // toISOString() returns UTC — in any timezone ahead of UTC, that would
 // still show yesterday's date after local midnight.
+//
+// @deprecated Prefer dailyCacheKey() — it honors the 06:00 local-time
+// day-window boundary that matches user expectations ("today's horoscope"
+// = waking day, not calendar day). todayKey is kept until Task 1.6 has
+// migrated all consumers.
 export function todayKey(): string {
   const now = new Date();
   const y = now.getFullYear();
   const m = String(now.getMonth() + 1).padStart(2, '0');
   const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+/**
+ * Day-window key for daily-horoscope caching.
+ *
+ * The day window rotates at 06:00 local time, not midnight — users
+ * perceive "today's horoscope" as referring to the waking day, not the
+ * calendar day. Times between 00:00 and 05:59 belong to the previous
+ * day's window.
+ *
+ * Returns a YYYY-MM-DD string identifying the day-window.
+ *
+ * Example trace (Europe/Berlin, no DST switch):
+ *   2026-05-07 23:59 → "2026-05-07"   (still in May 7's window)
+ *   2026-05-08 04:00 → "2026-05-07"   (still in May 7's window — pre-rotation)
+ *   2026-05-08 05:59 → "2026-05-07"   (last second of May 7's window)
+ *   2026-05-08 06:00 → "2026-05-08"   (rotation: enter May 8's window)
+ *   2026-05-08 23:59 → "2026-05-08"   (in May 8's window)
+ *
+ * Year, leap-year, and month boundaries are delegated to Date.setDate(0)
+ * semantics (which roll back to the last day of the previous month,
+ * accounting for variable month lengths and leap days). Verified by
+ * src/__tests__/daily-pulse-six-am-rotation.test.ts.
+ */
+export function dailyCacheKey(): string {
+  const now = new Date();
+  const windowedDate = new Date(now);
+  if (now.getHours() < 6) {
+    windowedDate.setDate(now.getDate() - 1);
+  }
+  const y = windowedDate.getFullYear();
+  const m = String(windowedDate.getMonth() + 1).padStart(2, '0');
+  const d = String(windowedDate.getDate()).padStart(2, '0');
   return `${y}-${m}-${d}`;
 }
 
