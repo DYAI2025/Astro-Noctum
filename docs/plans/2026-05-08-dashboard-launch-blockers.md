@@ -505,9 +505,29 @@ git commit -m "test(daily-pulse): assert auto-refetch when 06:00 crosses while m
 **Files:**
 - Modify: `src/hooks/useFirstRunDaily.ts`
 
-**Step 1: Add a `useEffect` that schedules a refetch at the next 06:00 local time**
+**Realität-Check (aus P0.4):**
+- The existing fetch effect in `useFirstRunDaily.ts:128-227` is **inlined** in a `useEffect` body — there's no `runDailyFetch` callback to reuse.
+- A re-fetch guard `lastFetchedDateRef` (Zeile 126, 143-144) prevents repeated fetches for the same date key. **The 06:00 listener must reset this ref**, otherwise no second fetch happens.
 
-Inside the hook body (after the existing fetch effect), add:
+**Step 1: Refactor the fetch effect's body into a reusable `useCallback`**
+
+Extract the async IIFE inside the existing `useEffect` (Zeile 148-222) into a `useCallback`:
+
+```ts
+const runDailyFetch = useCallback(async () => {
+  // ... move the existing IIFE body here, dependencies same as the useEffect's deps
+}, [userId, birthData, soulprintSectors, quizSectors, birthSign, customDate, locale]);
+
+useEffect(() => {
+  // existing guards (userId, birthData, lastFetchedDateRef) stay
+  // call runDailyFetch() instead of the inline IIFE
+  runDailyFetch();
+}, [runDailyFetch]);
+```
+
+This is a ≤10-line restructure that doesn't change behavior — verify the existing test from Task 1.2 still passes after the refactor.
+
+**Step 2: Add the 06:00 listener `useEffect` after the existing fetch effect**
 
 ```ts
 // ── Auto-refetch at the next 06:00 local time ──────────────────────────
@@ -520,19 +540,23 @@ useEffect(() => {
   }
   const msUntilNext6am = next6am.getTime() - now.getTime();
   const timer = setTimeout(() => {
-    // Invalidate the cache and trigger refetch by clearing the local state
-    // and depending on the existing fetch effect's dependency on `dailyCacheKey()`.
+    // 1) Invalidate localStorage cache
     localStorage.removeItem('daily_horoscope_cache');
+    // 2) Reset the dedupe ref — without this, runDailyFetch's
+    //    `targetDate === lastFetchedDateRef.current` guard would skip the refetch.
+    lastFetchedDateRef.current = null;
+    // 3) Reset hook state so consumers see a loading transition
     setDailyData(null);
     setLoading(true);
-    // Re-run the fetch — call the same function the existing effect uses.
+    // 4) Trigger the fetch
     runDailyFetch();
   }, msUntilNext6am);
   return () => clearTimeout(timer);
-}, [dailyCacheKey()]); // re-arms after each rotation
+}, [runDailyFetch]);
+// Note: deliberately NOT depending on dailyCacheKey() — the timer re-arms
+// itself after firing because runDailyFetch's identity changes when the
+// fetch effect's deps change, OR we let the next dashboard mount re-arm.
 ```
-
-> **Note for the engineer:** the exact integration depends on how the existing fetch effect is structured in `useFirstRunDaily`. If it uses an inner `runDailyFetch` callback, call that. If the fetch is inlined, extract it to a `useCallback` first (still ≤5 line refactor), then reuse. Read the hook before writing — don't blindly paste this snippet.
 
 **Step 2: Run the test**
 
@@ -592,8 +616,8 @@ describe('DailyChartHero — no placeholder text when impulsText is undefined', 
     expect(screen.queryByText(/dein tagespuls erscheint/i)).toBeNull();
     expect(screen.queryByText(/wird vorbereitet/i)).toBeNull();
     expect(screen.queryByText(/dummy|lorem|placeholder/i)).toBeNull();
-    // Must contain a loading affordance (skeleton or spinner with a testid):
-    expect(screen.getByTestId('daily-pulse-loading')).toBeInTheDocument();
+    // Must contain a loading affordance (existing skeleton testid, do NOT rename):
+    expect(screen.getByTestId('daily-chart-hero-skeleton')).toBeInTheDocument();
   });
 
   it('renders an "unavailable" indicator when not loading and no data', () => {
@@ -629,40 +653,52 @@ git commit -m "test(daily-chart-hero): no placeholder text when impulsText is un
 
 ---
 
-### Task 1.10: Implement loading skeleton + unavailable state in `DailyChartHero`
+### Task 1.10: Add unavailable state to `DailyChartHero` (loading skeleton already exists)
+
+**Realität-Check (aus P0.4):**
+- `DailyChartHero` **hat bereits einen `loading` Prop** (`src/components/dashboard/DailyChartHero.tsx:34`).
+- Wenn `loading: true`, rendert es bereits `<DailyChartHeroSkeleton />` (Zeile 252) mit `data-testid="daily-chart-hero-skeleton"`.
+- Wenn `impulsText` leer/undefined ist und nicht `profileIncomplete`, rendert die Tagesimpuls-Section **gar nichts** (`: null` am Ende von Zeile 454) — also bereits kein generischer Platzhalter.
+- **Der einzige fehlende Zustand:** explizites "unavailable" wenn der Fetch fehlschlug (heute durch Fallback maskiert; nach Task 1.12 ist das aber genau die Lücke, die jetzt sichtbar wird, weil `dailyData` dann `null` bleibt).
 
 **Files:**
 - Modify: `src/components/dashboard/DailyChartHero.tsx`
 
-**Step 1: Add `loading` to the props interface (if not already present)**
+**Step 1: Verify existing structure**
 
-Read the file. If the interface lacks a `loading` boolean, add it (optional, default false).
+Read `DailyChartHero.tsx`. Confirm:
+- `loading` prop exists, skeleton rendered.
+- `hasImpuls` gate (Zeile 263) suppresses the section when impulsText is empty.
+- `profileIncomplete` branch handles missing-profile state.
 
-**Step 2: Replace any literal placeholder string with conditional rendering**
+**Step 2: Add a third branch — "unavailable" — to the Tagesimpuls section**
 
-In the section that currently renders the impulse text (likely inside a `<p>` or `<motion.div>`):
+Find the existing Tagesimpuls section (`{hasImpuls ? (...) : profileIncomplete ? (...) : null}` ≈ Zeilen 396-454). Replace the trailing `: null` with an "unavailable" branch:
 
 ```tsx
-{loading ? (
-  <div data-testid="daily-pulse-loading" className="animate-pulse">
-    <div className="h-4 w-3/4 bg-white/10 rounded mb-2" />
-    <div className="h-4 w-1/2 bg-white/10 rounded" />
-  </div>
-) : impulsText ? (
-  <p className="text-sm leading-relaxed">{impulsText}</p>
+) : profileIncomplete ? (
+  // ... existing profileIncomplete branch unchanged
 ) : (
-  <p
+  <section
+    className="mt-2 pt-5 border-t text-center"
+    style={{ borderColor: 'var(--tile-border)' }}
     data-testid="daily-pulse-unavailable"
-    className="text-xs"
-    style={{ color: 'var(--tile-text-secondary)', opacity: 0.6 }}
   >
-    {/* No fallback text. State the truth. */}
-    {isDe ? 'Tagespuls heute nicht verfügbar — bitte neu laden.' : 'Daily pulse unavailable today — please reload.'}
-  </p>
+    <p
+      className="text-sm leading-relaxed max-w-prose mx-auto"
+      style={{ color: 'var(--tile-text-secondary)', opacity: 0.6 }}
+    >
+      {isDe
+        ? 'Tagespuls heute nicht verfügbar — bitte neu laden.'
+        : 'Daily pulse unavailable today — please reload.'}
+    </p>
+  </section>
 )}
 ```
 
 > **Important:** The "unavailable" message is **factual**, not generic. It does not pretend to be horoscope content. This matches the user's requirement: *"Es dürfen keine generischen oder Placeholder-Texte mehr verwendet werden."*
+
+> **Test ID rename:** the failing test in Task 1.9 expects `data-testid="daily-pulse-loading"` for the skeleton. The existing skeleton uses `daily-chart-hero-skeleton`. Decision: **rename test expectation, not the existing testid** — many other tests likely consume `daily-chart-hero-skeleton`. Update Task 1.9's test to query `daily-chart-hero-skeleton` instead of `daily-pulse-loading`.
 
 **Step 3: Run the test**
 
@@ -823,14 +859,22 @@ Open the dev URL (likely `http://localhost:5173`), log in.
 - Read: `src/lib/signatur-3d/wuxing-surfaces.ts` (full — the `WuxingElement` type)
 - Read: `src/components/signatur-renderer/SignaturRenderer.tsx` (full — to see how the sphere is wrapped on `/signatur`)
 
+**Realität-Check (aus P0.4):** Die wichtigsten Punkte aus dem Source-Read sind hier vorab aufgelistet, damit Task 2.1 nicht in die Irre geht:
+
+- **Prop-Name:** `dominantElement` (NICHT `wuxingElement`).
+- **Accepted values:** `'Fire' | 'Earth' | 'Wood' | 'Metal' | 'Water'` — **großgeschrieben englisch** (siehe `src/lib/signatur-3d/wuxing-surfaces.ts`).
+- **`weights` ist Pflicht-Prop** (`Readonly<Partial<Record<PlanetName, number>>>`), nicht optional. Ohne weights rendert die Kugel nicht. Source: `SignatureSphere3D.tsx:62`.
+- **Optionale Props:** `planetariumMode` (default true), `kpIndex` (default 0), `className`.
+- **Requires no `chladniParams` prop** — Chladni-Displacement wird intern aus `weights` berechnet (`buildDisplacedSphere` in derselben Datei).
+- **Defensive Coercion bereits eingebaut:** `wuxing-material.ts:coerceWuxingElement()` fällt auf `'Water'` zurück bei invalider Eingabe (z.B. `'Metall'`-Drift). Wir können `apiData.wuxing.dominant_element as WuxingElement` mit gutem Gewissen weiterreichen.
+
 **Step 1: Document the contract**
 
-Create `docs/plans/_scratch/2026-05-08-signatur-3d-contract.md` with:
-- The `SignatureSphere3DProps` interface (exact shape).
-- The Wuxing prop name and accepted values (`WuxingElement` is `'wood' | 'fire' | 'earth' | 'metal' | 'water'`).
-- Any required parent context (`PlanetariumContext`, `LanguageContext`, etc.).
-- Whether the sphere requires `chladniParams` to render or has a self-contained default.
-- The performance characteristics noted in the source (e.g., the H5 morph at 15fps).
+Create `docs/plans/_scratch/2026-05-08-signatur-3d-contract.md` mit:
+- `SignatureSphere3DProps`-Interface (ahead-of-time vom Realität-Check oben).
+- Mapping-Pfad für `weights`: existiert ein Helper, der Soulprint (12 sectors) → `Record<PlanetName, number>` mappt? Suche in `src/lib/signatur/weight-utils.ts` und `src/lib/signatur-3d/`. Document the helper name + signature.
+- Required parent context (`PlanetariumContext` für planetariumMode, `LanguageContext` für Tooltip-Sprache).
+- Performance-Hinweise (H5-Morph 15 fps, OrbitControls, Reduced-Motion-Short-Circuit).
 
 **Step 2: Commit the audit**
 
@@ -857,7 +901,7 @@ import { Dashboard } from '@/src/components/Dashboard';
 
 vi.mock('@/src/components/signatur-3d/SignatureSphere3D', () => ({
   SignatureSphere3D: vi.fn((props) => (
-    <div data-testid="signature-sphere-3d" data-wuxing={props.wuxingElement} />
+    <div data-testid="signature-sphere-3d" data-element={props.dominantElement} />
   )),
 }));
 vi.mock('@/src/services/experience');
@@ -865,7 +909,7 @@ vi.mock('@/src/lib/supabase', () => ({ supabase: { from: vi.fn() } }));
 
 describe('Dashboard — SignatureSphere3D with Wuxing overlay', () => {
   it('mounts SignatureSphere3D and passes the dominant Wuxing element', () => {
-    const apiData = makeApiDataWithDominantWuxing('fire');
+    const apiData = makeApiDataWithDominantWuxing('Fire');
     render(
       <MemoryRouter>
         <Dashboard
@@ -883,15 +927,20 @@ describe('Dashboard — SignatureSphere3D with Wuxing overlay', () => {
     );
     const sphere = screen.getByTestId('signature-sphere-3d');
     expect(sphere).toBeInTheDocument();
-    expect(sphere.getAttribute('data-wuxing')).toBe('fire');
+    expect(sphere.getAttribute('data-element')).toBe('Fire');
   });
 });
 
-function makeApiDataWithDominantWuxing(elem: 'fire' | 'water' | 'wood' | 'earth' | 'metal') {
-  // Read src/types/bafe.ts ApiData shape; populate the path that drives
-  // the dashboard's "dominant Wuxing element" selection.
-  // Likely path: apiData.wuxing.dominant_element OR apiData.bazi.dominant_wuxing
-  return {} as never;
+function makeApiDataWithDominantWuxing(elem: 'Fire' | 'Water' | 'Wood' | 'Earth' | 'Metal') {
+  // apiData.wuxing.dominant_element is `string`-typed (per src/types/bafe.ts)
+  // but Test-Fixtures durchweg use the uppercase English form ('Fire', 'Wood', ...).
+  // Fill ApiData with the minimum fields the Dashboard reads; this is mainly
+  // apiData.western.zodiac_sign + apiData.wuxing.dominant_element.
+  return {
+    western: { zodiac_sign: 'Aries' },
+    bazi: { zodiac_sign: 'Tiger' },
+    wuxing: { dominant_element: elem },
+  } as never;
 }
 ```
 
@@ -934,45 +983,55 @@ git commit -m "docs(decision): signatur 3D mount strategy — direct embed with 
 
 ---
 
-### Task 2.4: Compute the dominant Wuxing element from `apiData`
+### Task 2.4: Compute Planet-Weights for `SignatureSphere3D` (NOT Wuxing — that comes from apiData directly)
+
+**Realität-Check (aus P0.4):**
+- `apiData.wuxing.dominant_element` is **already a string** in `ApiData` (`src/types/bafe.ts:47, 109`). Fixtures use `'Fire'`, `'Wood'`, `'Earth'`, `'Water'` (uppercase English) — directly compatible with the `WuxingElement` type. **Kein `computeDominantWuxing`-Helper nötig.**
+- Was wirklich gebraucht wird: ein Mapping von Soulprint (`number[]` mit 12 Sektoren) **oder** vom `zodiac_sign` zu `Record<PlanetName, number>` (das `weights`-Pflicht-Prop von `SignatureSphere3D`).
+- Dashboard.tsx hat bereits `effectiveSoulprint` (`number[]`) und nutzt `syntheticSoulprintFromSign` aus `@/src/lib/signatur/weight-utils` (Zeile 25-27). Wahrscheinlich existiert dort auch ein `soulprintToPlanetWeights` oder ähnlich.
 
 **Files:**
-- Read: `src/lib/astro-data/wuxing.ts` (existing wuxing utilities)
-- Read: `src/types/bafe.ts` (ApiData shape — find the wuxing distribution field)
-- Possibly add: `src/lib/astro-data/dominant-wuxing.ts` (only if a helper doesn't exist)
+- Read: `src/lib/signatur/weight-utils.ts`
+- Read: `src/components/signatur-renderer/SignaturRenderer.tsx` (sieht wie der `/signatur`-Page Helper aus, der auch zur Sphere fährt — gibt vor wie `weights` typisch berechnet wird).
 
-**Step 1: Search for an existing helper**
+**Step 1: Locate the soulprint→PlanetWeights helper**
 
 ```bash
-git grep -n "dominant.*wuxing\|dominantWuxing\|dominant_element" src/lib/ src/hooks/ src/components/
+git grep -n "PlanetName\|soulprintToPlanet\|planetWeights" src/lib/signatur/ src/components/signatur-renderer/
 ```
 
-Expected: a helper exists (most production codebases have one). If found, use it. If not, write a small one.
+Erwartet: ein Helper wie `soulprintToPlanetWeights(soulprint: number[]): Record<PlanetName, number>` existiert. Falls ja: dokumentiere Pfad + Signatur in `docs/plans/_scratch/2026-05-08-signatur-3d-contract.md`.
 
-**Step 2: If no helper exists — failing test**
+**Step 2: If no helper exists — write a tiny one**
+
+If grep returns nothing, write a 5-line helper in `src/lib/signatur/weight-utils.ts`:
 
 ```ts
-// src/__tests__/dominant-wuxing.test.ts (only if helper is missing)
-import { describe, it, expect } from 'vitest';
-import { computeDominantWuxing } from '@/src/lib/astro-data/dominant-wuxing';
+import { PLANETS, type PlanetName } from '@/src/lib/signatur-3d/planets';
 
-describe('computeDominantWuxing', () => {
-  it('returns the element with the highest count', () => {
-    expect(computeDominantWuxing({ wood: 1, fire: 4, earth: 1, metal: 1, water: 1 })).toBe('fire');
-  });
-  it('returns null on empty distribution', () => {
-    expect(computeDominantWuxing({})).toBeNull();
-  });
-});
+/**
+ * Map a 12-sector soulprint to per-planet amplitude weights.
+ * Distributes sector values across the canonical PLANETS list.
+ */
+export function soulprintToPlanetWeights(soulprint: number[]): Record<PlanetName, number> {
+  // ... ≤10 lines; mirror SignaturRenderer's existing approach.
+}
 ```
 
-**Step 3: Implement the helper** (only if missing). 5-line function. Run the test. Commit.
+Mit minimalem TDD-Test in `src/__tests__/soulprint-to-planet-weights.test.ts`.
 
-**Step 4: If a helper already exists** — skip Steps 2 and 3. Just note its location for use in Task 2.5.
+**Step 3: If helper exists** — skip Step 2. Use the existing helper directly in Task 2.5.
 
 ---
 
 ### Task 2.5: Mount `SignatureSphere3D` in `Dashboard.tsx`
+
+**Realität-Check (aus P0.4):**
+- Prop-Name ist `dominantElement`, NICHT `wuxingElement`.
+- `dominantElement` accepts `'Fire' | 'Earth' | 'Wood' | 'Metal' | 'Water'` (englisch, großgeschrieben). `apiData.wuxing.dominant_element` liefert genau diese Strings (per Test-Fixtures verifiziert).
+- `weights` ist Pflicht-Prop. Wir brauchen den Helper aus Task 2.4.
+- `usePlanetarium()` Context liefert `planetariumMode` — Dashboard.tsx Zeile 117 hat ihn bereits.
+- `useSpaceWeather()` liefert `kpIndex` — Dashboard.tsx Zeile 259 hat ihn bereits.
 
 **Files:**
 - Modify: `src/components/Dashboard.tsx`
@@ -983,38 +1042,51 @@ Top of `Dashboard.tsx`, alongside the other signatur imports:
 
 ```tsx
 import { SignatureSphere3D } from "./signatur-3d/SignatureSphere3D";
+import type { WuxingElement } from "@/src/lib/signatur-3d/wuxing-surfaces";
+import { soulprintToPlanetWeights } from "@/src/lib/signatur/weight-utils"; // path per Task 2.4
 ```
 
-**Step 2: Compute the dominant Wuxing element**
+**Step 2: Compute weights and the dominant element**
 
-Inside the Dashboard function, after `apiData` is available:
+Inside the Dashboard function, AFTER `effectiveSoulprint` is computed (existing Zeile 281-285):
 
 ```tsx
-// ── Dominant Wuxing element for signatur sphere overlay ──
-const dominantWuxing = useMemo(
-  () => computeDominantWuxing(apiData?.wuxing?.distribution ?? {}),
-  [apiData?.wuxing?.distribution],
+// ── 3D Signatur Sphere data prep ──
+const planetWeights = useMemo(
+  () => soulprintToPlanetWeights(effectiveSoulprint),
+  [effectiveSoulprint],
 );
+
+// dominant_element is `string` per ApiData; the values come from BAFE
+// already in 'Fire'/'Earth'/'Wood'/'Metal'/'Water' shape. coerceWuxingElement
+// inside wuxing-material.ts defends against drift (e.g. 'Metall' → 'Water').
+const dominantElement = (apiData?.wuxing?.dominant_element ?? 'Water') as WuxingElement;
 ```
 
-(Adjust the path `apiData.wuxing.distribution` to whatever the actual field is per your Task 2.4 audit.)
+**Step 3: Mount `SignatureSphere3D` BEFORE the existing `<NatalSignaturStatic>` block (~Zeile 429)**
 
-**Step 3: Replace the existing `<NatalSignaturStatic>` block at ~line 429 with the 3D sphere**
+We do NOT delete `NatalSignaturStatic` — it's the static accordion below. We add the 3D sphere as a NEW section above it (or in the existing position 3 slot, depending on Phase 3 hierarchy decisions). Insert before the `<SectionErrorBoundary name="NatalSignaturStatic">`:
 
 ```tsx
-{/* ═══ 2. SIGNATUR 3D SPHERE WITH WUXING OVERLAY ═══════════════════════ */}
+{/* ═══ 3. SIGNATUR 3D SPHERE WITH WUXING OVERLAY (NEW) ═════════════════ */}
 <motion.div {...fadeIn(0.1)}>
   <SectionErrorBoundary name="SignatureSphere3D">
     <SignatureSphere3D
-      // ... pass the props determined by your Task 2.1 audit
-      wuxingElement={dominantWuxing ?? undefined}
-      // chladniParams, planetWeights, userId, labels, etc.
+      weights={planetWeights}
+      dominantElement={dominantElement}
+      kpIndex={spaceWeather.kpIndex}
+      planetariumMode={planetariumMode}
     />
   </SectionErrorBoundary>
 </motion.div>
+
+{/* ═══ 4. BLUEPRINT — natal accordion (existing, becomes position 4) ═══ */}
+<SectionErrorBoundary name="NatalSignaturStatic">
+  {/* ... existing NatalSignaturStatic block unchanged */}
+</SectionErrorBoundary>
 ```
 
-> **Crucial:** Do not delete `<NatalSignaturStatic>` yet. Keep it as a fallback for now: render it only when `dominantWuxing === null` (no profile data) so users without complete profiles still see something. The error-boundary fallback is a separate path (renderer crash).
+> **Crucial:** `NatalSignaturStatic` bleibt unverändert als kollabierter Accordion-Block weiter unten. Die 3D-Kugel ist ein NEUES Element oberhalb — kein Replace. So sehen User mit komplettem Profil beide (3D-Kugel + statische Identität-Pills im Accordion bei Bedarf), und User mit unvollständigem Profil sehen weiterhin die NatalSignaturStatic-Struktur (die mit leeren Pills umgehen kann).
 
 **Step 4: Run the test from Task 2.2**
 
