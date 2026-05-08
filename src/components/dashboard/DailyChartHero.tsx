@@ -417,13 +417,13 @@ export function DailyChartHero({
           <div
             className="rounded-lg border px-4 py-3 max-w-prose mx-auto"
             style={{
-              borderColor: 'rgba(220, 38, 38, 0.4)',
-              background: 'rgba(220, 38, 38, 0.08)',
+              borderColor: 'var(--color-error-border, rgba(220, 38, 38, 0.4))',
+              background: 'var(--color-error-bg, rgba(220, 38, 38, 0.08))',
             }}
           >
             <p
               className="text-xs font-mono mb-1"
-              style={{ color: 'rgb(248, 113, 113)' }}
+              style={{ color: 'var(--color-error-code, rgb(248, 113, 113))' }}
               data-testid="daily-pulse-error-code"
             >
               [{error.code}]

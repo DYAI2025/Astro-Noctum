@@ -52,34 +52,57 @@ const baseProps: DailyChartHeroProps = {
   error: null,
 };
 
+// ── Why source-level assertions ─────────────────────────────────────
+// JSDom's CSSOM rejects CSS Custom Properties (`var(...)`) during inline-
+// style normalization. The result is that `getAttribute('style')`,
+// `el.style.borderColor`, and `outerHTML` all return values WITHOUT the
+// `var()` form — even when React rendered it correctly. Real browsers
+// preserve `var()` because Chromium/Firefox/Safari support it natively.
+//
+// To pin the theme-token contract reliably, we assert against the
+// component SOURCE FILE — checking that the JSX literally contains the
+// `var(--color-error-*, fallback)` form. This is a static-analysis-style
+// test: regression-armor that doesn't depend on JSDom's CSS support.
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+const componentPath = resolve(
+  __dirname,
+  '..',
+  'components',
+  'dashboard',
+  'DailyChartHero.tsx',
+);
+const componentSource = readFileSync(componentPath, 'utf-8');
+
 describe('DailyChartHero error block — theme-token compatibility (F1)', () => {
-  it('inline border + background styles are wrapped in var() form', () => {
-    const { container } = render(
-      <DailyChartHero
-        {...baseProps}
-        error={{ code: 'TEST-CODE', message: 'test message' }}
-      />,
-    );
-    const errorSection = container.querySelector('[data-testid="daily-pulse-error"]');
-    expect(errorSection).not.toBeNull();
-    const innerBlock = errorSection!.querySelector('div');
-    expect(innerBlock).not.toBeNull();
-    const inlineStyle = innerBlock!.getAttribute('style') ?? '';
-    // Both color props MUST use var(...) so future theme tokens can override
-    expect(inlineStyle, 'borderColor should be var()-wrapped').toMatch(/border[a-z-]*:\s*var\(/i);
-    expect(inlineStyle, 'background should be var()-wrapped').toMatch(/background[a-z-]*:\s*var\(/i);
+  // Regex strategy: assert prefix only — `var(--color-error-<token>` followed
+  // by word-boundary. Doesn't try to match the closing `)` because nested
+  // rgba() parens inside the fallback would require recursive regex.
+  // The presence of the prefix is sufficient evidence of the var()-wrapper
+  // contract; fallback content is style and out-of-scope for this test.
+  it('borderColor uses var(--color-error-border, ...) form in component source', () => {
+    expect(componentSource).toMatch(/borderColor:\s*['"]var\(--color-error-border\b/);
   });
 
-  it('error code text color is wrapped in var() form', () => {
+  it('background uses var(--color-error-bg, ...) form in component source', () => {
+    expect(componentSource).toMatch(/background:\s*['"]var\(--color-error-bg\b/);
+  });
+
+  it('error-code color uses var(--color-error-code, ...) form in component source', () => {
+    expect(componentSource).toMatch(/color:\s*['"]var\(--color-error-code\b/);
+  });
+
+  // Sanity check: the actual element still renders with the testid so the
+  // theme-token wrapper doesn't break the JSDom render path
+  it('error block still renders correctly under JSDom (sanity)', () => {
     const { container } = render(
       <DailyChartHero
         {...baseProps}
         error={{ code: 'TEST-CODE', message: 'test message' }}
       />,
     );
-    const codeEl = container.querySelector('[data-testid="daily-pulse-error-code"]');
-    expect(codeEl).not.toBeNull();
-    const codeStyle = codeEl!.getAttribute('style') ?? '';
-    expect(codeStyle, 'error-code color should be var()-wrapped').toMatch(/color:\s*var\(/i);
+    expect(container.querySelector('[data-testid="daily-pulse-error"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="daily-pulse-error-code"]')).not.toBeNull();
   });
 });
