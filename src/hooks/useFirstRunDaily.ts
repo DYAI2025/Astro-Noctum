@@ -92,12 +92,20 @@ export function dailyCacheKey(): string {
   return `${y}-${m}-${d}`;
 }
 
-function getCachedDaily(): DailyResponse | null {
+/**
+ * Read the cached daily-horoscope payload IF it belongs to the current
+ * day-window (06:00 local boundary, see dailyCacheKey()). Returns null
+ * if no cache exists, the cache is stale, or parsing fails.
+ *
+ * Exported as of Task 1.6 (2026-05-08) so the cache-rotation contract
+ * can be tested directly.
+ */
+export function getCachedDaily(): DailyResponse | null {
   try {
     const raw = localStorage.getItem('daily_horoscope_cache');
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    if (parsed?.date === todayKey() && parsed?.data) {
+    if (parsed?.date === dailyCacheKey() && parsed?.data) {
       return parsed.data as DailyResponse;
     }
     return null;
@@ -106,11 +114,19 @@ function getCachedDaily(): DailyResponse | null {
   }
 }
 
-function setCachedDaily(data: DailyResponse): void {
+/**
+ * Persist the daily-horoscope payload tagged with the current day-window
+ * key. The next read will only return this payload while the local clock
+ * is within the same 06:00→05:59 window.
+ *
+ * Exported as of Task 1.6 (2026-05-08) so the cache-rotation contract
+ * can be tested directly.
+ */
+export function setCachedDaily(data: DailyResponse): void {
   try {
     localStorage.setItem(
       'daily_horoscope_cache',
-      JSON.stringify({ date: todayKey(), data }),
+      JSON.stringify({ date: dailyCacheKey(), data }),
     );
   } catch {
     // localStorage full or unavailable — ignore
