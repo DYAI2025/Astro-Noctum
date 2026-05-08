@@ -212,17 +212,10 @@ export function useFirstRunDaily(
   //
   //    Cancellation moved from `let cancelled` (closure flag) to AbortSignal
   //    so the same callback can be invoked from both the mount-effect and
-  //    the listener, each with their own cancellation handle.
-  //
-  //    TODO(perf): the AbortSignal is currently advisory-only — it gates
-  //    state updates after each `await`, but does NOT propagate to
-  //    fetchDailyExperience → authedFetch → fetch(). On unmount during a
-  //    slow network call, the underlying request still runs to completion
-  //    and its result is discarded. To make abort actually cancel the
-  //    network call, thread `signal` through services/experience.ts and
-  //    lib/authedFetch.ts. Tracked in
-  //    docs/plans/2026-05-08-dashboard-launch-blockers.md (out-of-scope
-  //    Phase-3 cleanup).
+  //    the listener, each with their own cancellation handle. The signal is
+  //    forwarded into fetchDailyExperience → authedFetch → fetch() so an
+  //    aborted controller actually cancels the in-flight network request
+  //    (F3 of docs/plans/2026-05-09-sustainable-findings-cleanup.md).
   const runDailyFetch = useCallback(async (opts: { signal?: AbortSignal } = {}) => {
     const now = new Date();
     const currentHour = now.getHours();
@@ -296,6 +289,9 @@ export function useFirstRunDaily(
         locale,
         transitInfluences,
         birthSign ?? '',
+        // F3: forward signal so an aborted controller cancels the actual
+        // network call, not just the post-await state writes.
+        { signal: opts.signal },
       );
 
       if (opts.signal?.aborted) return;
