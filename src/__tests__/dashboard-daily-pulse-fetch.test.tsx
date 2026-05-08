@@ -8,184 +8,140 @@
  * Per project doctrine 2026-05-08: errors are surfaced, not masked. This test
  * gates the success path; companion tests in Tasks 1.9-1.12 cover the error
  * path with explicit [CODE] message rendering.
+ *
+ * Refactored 2026-05-08 (Task 1.7) to use the shared dashboard-mount fixture.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, waitFor } from '@testing-library/react';
-import React from 'react';
+import { baseDashboardProps } from './_fixtures/dashboard-mount';
 
-// ── Router ─────────────────────────────────────────────────────────────────
-vi.mock('react-router-dom', () => ({
-  useNavigate: () => vi.fn(),
-  useLocation: () => ({ pathname: '/' }),
-  Link: ({ children, ...props }: any) => <a {...props}>{children}</a>,
-}));
+// ── Async vi.mock factories — use the fixture lazily to satisfy hoisting ──
+vi.mock('react-router-dom', async () => {
+  const { contextMocks } = await import('./_fixtures/dashboard-mount');
+  return contextMocks.router();
+});
+vi.mock('@/src/contexts/LanguageContext', async () => {
+  const { contextMocks } = await import('./_fixtures/dashboard-mount');
+  return contextMocks.language();
+});
+vi.mock('@/src/contexts/AuthContext', async () => {
+  const { contextMocks } = await import('./_fixtures/dashboard-mount');
+  return contextMocks.auth();
+});
+vi.mock('@/src/contexts/PlanetariumContext', async () => {
+  const { contextMocks } = await import('./_fixtures/dashboard-mount');
+  return contextMocks.planetarium();
+});
+vi.mock('@/src/contexts/FusionRingContext', async () => {
+  const { contextMocks } = await import('./_fixtures/dashboard-mount');
+  return contextMocks.fusionRing();
+});
+vi.mock('@/src/hooks/usePremium', async () => {
+  const { hookMocks } = await import('./_fixtures/dashboard-mount');
+  return hookMocks.premium();
+});
+vi.mock('@/src/hooks/useDashboardTour', async () => {
+  const { hookMocks } = await import('./_fixtures/dashboard-mount');
+  return hookMocks.dashboardTour();
+});
+vi.mock('@/src/hooks/useDeviceLocation', async () => {
+  const { hookMocks } = await import('./_fixtures/dashboard-mount');
+  return hookMocks.deviceLocation();
+});
+vi.mock('@/src/hooks/useCelestialOrrery', async () => {
+  const { hookMocks } = await import('./_fixtures/dashboard-mount');
+  return hookMocks.celestialOrrery();
+});
+vi.mock('@/src/hooks/useSpaceWeather', async () => {
+  const { hookMocks } = await import('./_fixtures/dashboard-mount');
+  return hookMocks.spaceWeather();
+});
+vi.mock('@/src/hooks/useSignaturSignal', async () => {
+  const { hookMocks } = await import('./_fixtures/dashboard-mount');
+  return hookMocks.signaturSignal();
+});
+vi.mock('@/src/hooks/useActiveImpacts', async () => {
+  const { hookMocks } = await import('./_fixtures/dashboard-mount');
+  return hookMocks.activeImpacts();
+});
+vi.mock('@/src/lib/feature-flags', async () => {
+  const { featureFlagsMock } = await import('./_fixtures/dashboard-mount');
+  return featureFlagsMock();
+});
+vi.mock('@/src/lib/supabase', async () => {
+  const { supabaseMockObject } = await import('./_fixtures/dashboard-mount');
+  return supabaseMockObject();
+});
+vi.mock('@/src/services/experience', async () => {
+  const { fetchDailyExperienceMockObject } = await import('./_fixtures/dashboard-mount');
+  return fetchDailyExperienceMockObject();
+});
 
-// ── Contexts ───────────────────────────────────────────────────────────────
-vi.mock('@/src/contexts/LanguageContext', () => ({
-  useLanguage: () => ({ lang: 'de' as const, t: (k: string) => k }),
-}));
-vi.mock('@/src/contexts/AuthContext', () => ({
-  useAuth: () => ({ user: { id: 'test-user-id' } }),
-}));
-vi.mock('@/src/contexts/PlanetariumContext', () => ({
-  usePlanetarium: () => ({
-    setPlanetariumMode: vi.fn(),
-    planetariumMode: false,
-    skyMode: 'natal',
-  }),
-}));
-vi.mock('@/src/contexts/FusionRingContext', () => ({
-  useFusionRingContext: () => ({ events: [] }),
-}));
+// Heavy components (stubbed via fixture)
+vi.mock('@/src/components/dashboard/DashboardAstroSection', async () => {
+  const { componentStubs } = await import('./_fixtures/dashboard-mount');
+  return componentStubs.dashboardAstroSection();
+});
+vi.mock('@/src/components/dashboard/DashboardInterpretationSection', async () => {
+  const { componentStubs } = await import('./_fixtures/dashboard-mount');
+  return componentStubs.dashboardInterpretationSection();
+});
+vi.mock('@/src/components/dashboard/AgentSection', async () => {
+  const { componentStubs } = await import('./_fixtures/dashboard-mount');
+  return componentStubs.agentSection();
+});
+vi.mock('@/src/components/dashboard/SectionErrorBoundary', async () => {
+  const { componentStubs } = await import('./_fixtures/dashboard-mount');
+  return componentStubs.sectionErrorBoundary();
+});
+vi.mock('@/src/components/dashboard/TourOverlay', async () => {
+  const { componentStubs } = await import('./_fixtures/dashboard-mount');
+  return componentStubs.tourOverlay();
+});
+vi.mock('@/src/components/dashboard/MagnetsturmKarte', async () => {
+  const { componentStubs } = await import('./_fixtures/dashboard-mount');
+  return componentStubs.magnetsturmKarte();
+});
+vi.mock('@/src/components/dashboard/NatalSignaturStatic', async () => {
+  const { componentStubs } = await import('./_fixtures/dashboard-mount');
+  return componentStubs.natalSignaturStatic();
+});
+vi.mock('@/src/components/dashboard/DashboardBottomUpgradeCard', async () => {
+  const { componentStubs } = await import('./_fixtures/dashboard-mount');
+  return componentStubs.dashboardBottomUpgradeCard();
+});
+vi.mock('@/src/components/dashboard/DayModeModal', async () => {
+  const { componentStubs } = await import('./_fixtures/dashboard-mount');
+  return componentStubs.dayModeModal();
+});
+vi.mock('@/src/components/dashboard/SkyModeToggle', async () => {
+  const { componentStubs } = await import('./_fixtures/dashboard-mount');
+  return componentStubs.skyModeToggle();
+});
+vi.mock('@/src/components/dashboard/DailyChartHero', async () => {
+  const { componentStubs } = await import('./_fixtures/dashboard-mount');
+  return componentStubs.dailyChartHero();
+});
+vi.mock('@/src/components/ShareCard', async () => {
+  const { componentStubs } = await import('./_fixtures/dashboard-mount');
+  return componentStubs.shareCard();
+});
+vi.mock('@/src/components/LegalFooter', async () => {
+  const { componentStubs } = await import('./_fixtures/dashboard-mount');
+  return componentStubs.legalFooter();
+});
+vi.mock('@/src/components/ManageSubscription', async () => {
+  const { componentStubs } = await import('./_fixtures/dashboard-mount');
+  return componentStubs.manageSubscription();
+});
+vi.mock('@/src/components/BirthChartOrrery', async () => {
+  const { componentStubs } = await import('./_fixtures/dashboard-mount');
+  return componentStubs.birthChartOrrery();
+});
 
-// ── Hooks not under test ───────────────────────────────────────────────────
-vi.mock('@/src/hooks/usePremium', () => ({
-  usePremium: () => ({ isPremium: false, loading: false }),
-}));
-vi.mock('@/src/hooks/useDashboardTour', () => ({
-  useDashboardTour: () => ({ tourStep: 'done' as const, next: vi.fn(), skip: vi.fn() }),
-  isTourStepVisible: () => false,
-}));
-vi.mock('@/src/hooks/useDeviceLocation', () => ({
-  useDeviceLocation: () => null,
-}));
-vi.mock('@/src/hooks/useCelestialOrrery', () => ({
-  useCelestialOrrery: () => ({
-    simTime: 0,
-    currentDate: new Date('2026-05-08T12:00:00'),
-    isPlaying: false,
-    setIsPlaying: vi.fn(),
-  }),
-}));
-vi.mock('@/src/hooks/useSpaceWeather', () => ({
-  useSpaceWeather: () => ({ kpIndex: 2, solarPressure: 0.3, loading: false }),
-}));
-vi.mock('@/src/hooks/useSignaturSignal', () => ({
-  useSignaturSignal: () => ({ events: [], loading: false }),
-}));
-vi.mock('@/src/hooks/useActiveImpacts', () => ({
-  useActiveImpacts: () => ({
-    harmonyIndex: 0.5,
-    baseCoherence: 50,
-    positiveDailyDelta: 0,
-    displayedCoherence: 50,
-  }),
-}));
-vi.mock('@/src/lib/feature-flags', () => ({ isFeatureEnabled: () => false }));
-
-// ── Supabase: returns a COMPLETE astro_profile so birthInput populates ─────
-//    Without this, useFirstRunDaily's `if (!userId || !birthData)` guard
-//    suppresses the fetch and we never reach the assertion.
-vi.mock('@/src/lib/supabase', () => ({
-  supabase: {
-    from: (table: string) => ({
-      select: () => ({
-        eq: () => ({
-          maybeSingle: () => {
-            if (table === 'astro_profiles') {
-              return Promise.resolve({
-                data: {
-                  birth_date: '1990-01-15',
-                  birth_time: '12:00',
-                  iana_time_zone: 'Europe/Berlin',
-                  birth_lat: 52.52,
-                  birth_lng: 13.405,
-                  soulprint_sectors: Array(12).fill(0.5),
-                },
-                error: null,
-              });
-            }
-            if (table === 'birth_data') {
-              return Promise.resolve({ data: { place_label: 'Berlin' }, error: null });
-            }
-            if (table === 'profiles') {
-              return Promise.resolve({ data: { daily_modal_seen_date: null }, error: null });
-            }
-            return Promise.resolve({ data: null, error: null });
-          },
-        }),
-      }),
-      update: () => ({
-        eq: () => ({ then: (cb: any) => cb({ error: null }) }),
-      }),
-    }),
-  },
-}));
-
-// ── The thing we're spying on ──────────────────────────────────────────────
-vi.mock('@/src/services/experience', () => ({
-  fetchDailyExperience: vi.fn(() =>
-    Promise.resolve({
-      date: '2026-05-08',
-      western: { summary: '', themes: [], caution: '', opportunity: '', evidence: {} },
-      eastern: { summary: '', themes: [], caution: '', opportunity: '', evidence: {} },
-      fusion: {
-        summary: 'real summary',
-        synthesis: 'Real horoscope text from FuFirE',
-        action: 'do something',
-        pushworthy: false,
-        push_text: '',
-        harmony_index: 0.5,
-        day_mode: 'pulse',
-      },
-      meta: { engine_version: 'fufire-v2' },
-    }),
-  ),
-}));
-
-// ── Heavy components — replaced with stubs to keep the test focused ────────
-vi.mock('@/src/components/dashboard/DashboardAstroSection', () => ({
-  DashboardAstroSection: () => <div data-testid="astro-section" />,
-}));
-vi.mock('@/src/components/dashboard/DashboardInterpretationSection', () => ({
-  DashboardInterpretationSection: () => <div data-testid="interp" />,
-}));
-vi.mock('@/src/components/dashboard/AgentSection', () => ({
-  AgentSection: () => <div data-testid="agent-section" />,
-}));
-vi.mock('@/src/components/dashboard/SectionErrorBoundary', () => ({
-  SectionErrorBoundary: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}));
-vi.mock('@/src/components/dashboard/TourOverlay', () => ({ TourOverlay: () => null }));
-vi.mock('@/src/components/dashboard/MagnetsturmKarte', () => ({ MagnetsturmKarte: () => null }));
-vi.mock('@/src/components/dashboard/NatalSignaturStatic', () => ({
-  NatalSignaturStatic: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-}));
-vi.mock('@/src/components/dashboard/DashboardBottomUpgradeCard', () => ({
-  DashboardBottomUpgradeCard: () => null,
-}));
-vi.mock('@/src/components/dashboard/DayModeModal', () => ({ DayModeModal: () => null }));
-vi.mock('@/src/components/dashboard/SkyModeToggle', () => ({ SkyModeToggle: () => null }));
-vi.mock('@/src/components/dashboard/DailyChartHero', () => ({
-  DailyChartHero: () => <div data-testid="daily-chart-hero" />,
-}));
-vi.mock('@/src/components/ShareCard', () => ({ ShareCard: () => null }));
-vi.mock('@/src/components/LegalFooter', () => ({ LegalFooter: () => null }));
-vi.mock('@/src/components/ManageSubscription', () => ({ ManageSubscription: () => null }));
-vi.mock('@/src/components/BirthChartOrrery', () => ({ BirthChartOrrery: () => null }));
-
-// ── Imports under test (after mocks above) ─────────────────────────────────
+// ── Imports under test (after vi.mock above) ──────────────────────────
 import { Dashboard } from '@/src/components/Dashboard';
 import * as experienceModule from '@/src/services/experience';
-
-// ApiData stub: only the fields Dashboard actually reads
-const minimalApiData = {
-  western: { zodiac_sign: 'Aries', moon_sign: 'Cancer', ascendant_sign: 'Leo' },
-  bazi: { zodiac_sign: 'Dragon' },
-  wuxing: { dominant_element: 'Wood' },
-} as any;
-
-const baseProps = {
-  interpretation: '',
-  apiData: minimalApiData,
-  userId: 'test-user-id',
-  birthDate: '1990-01-15',
-  onReset: vi.fn(),
-  isLoading: false,
-  apiIssues: [],
-  onStopAudio: vi.fn(),
-  onResumeAudio: vi.fn(),
-};
 
 describe('Dashboard — Daily Pulse fetch on mount', () => {
   beforeEach(() => {
@@ -194,10 +150,10 @@ describe('Dashboard — Daily Pulse fetch on mount', () => {
   });
 
   it('calls fetchDailyExperience exactly once on mount when birth profile is complete', async () => {
-    render(<Dashboard {...baseProps} />);
+    render(<Dashboard {...baseDashboardProps()} />);
 
-    // The fetch is async — Supabase profile query first, then localStorage check,
-    // then the actual fetchDailyExperience call. Allow up to 3s for the chain.
+    // The fetch is async — supabase query first, then localStorage check,
+    // then fetchDailyExperience. Allow up to 3s for the chain.
     await waitFor(
       () => {
         expect(experienceModule.fetchDailyExperience).toHaveBeenCalledTimes(1);
