@@ -107,4 +107,27 @@ describe('DailyChartHero — placeholder-free contract (project doctrine 2026-05
     // The Tagesimpuls section testid (used in success path) must also not appear
     expect(screen.queryByTestId('day-impulse-section')).toBeNull();
   });
+
+  // F2 of docs/plans/2026-05-09-sustainable-findings-cleanup.md.
+  // Regression armor for the negative path: error=null + impulsText set →
+  // impulse renders, error block absent. Pins the "happy path stays happy"
+  // contract.
+  it('does NOT render error block when error is null and impulsText is set', () => {
+    render(
+      <DailyChartHero
+        {...baseProps}
+        impulsText="real horoscope text from a successful fetch"
+        error={null}
+      />,
+    );
+    // Error block must be absent
+    expect(screen.queryByTestId('daily-pulse-error')).toBeNull();
+    expect(screen.queryByTestId('daily-pulse-error-code')).toBeNull();
+    expect(screen.queryByTestId('daily-pulse-error-message')).toBeNull();
+    // Impulse section must be present with the real text
+    expect(screen.getByTestId('day-impulse-section')).toBeInTheDocument();
+    expect(
+      screen.getByText('real horoscope text from a successful fetch'),
+    ).toBeInTheDocument();
+  });
 });
