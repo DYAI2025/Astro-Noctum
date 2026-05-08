@@ -207,7 +207,13 @@ export function useFirstRunDaily(
   const [error] = useState<{ code: string; message: string } | null>(null);
   const lastFetchedDateRef = useRef<string | null>(null);
 
-  useEffect(() => {
+  // ── Fetch logic — extracted to a callback so the 06:00 listener below
+  //    can reuse it without duplicating ~80 LOC.
+  //
+  //    Cancellation moved from `let cancelled` (closure flag) to AbortSignal
+  //    so the same callback can be invoked from both the mount-effect and
+  //    the listener, each with their own cancellation handle.
+  const runDailyFetch = useCallback(async (opts: { signal?: AbortSignal } = {}) => {
     const now = new Date();
     const currentHour = now.getHours();
     const isTodayTarget = !customDate || customDate === todayKey();
@@ -221,92 +227,131 @@ export function useFirstRunDaily(
     const targetDate = customDate || todayKey();
 
     // Guard: need userId + birthData; soulprint can be null (synthetic fallback).
-    // Also avoid re-fetching the same date.
+    // Also avoid re-fetching the same date — but the 06:00 listener resets
+    // `lastFetchedDateRef.current = null` before invoking us, so this guard
+    // releases on each scheduled rotation.
     if (!userId || !birthData || targetDate === lastFetchedDateRef.current) return;
     lastFetchedDateRef.current = targetDate;
 
-    let cancelled = false;
+    // Controls ONLY the auto-open modal — dailyData is ALWAYS loaded
+    // because the inline DashboardTagesEnergie section needs it regardless.
+    let alreadySeen = false;
 
-    (async () => {
-      // Controls ONLY the auto-open modal — dailyData is ALWAYS loaded
-      // because the inline DashboardTagesEnergie section needs it regardless.
-      let alreadySeen = false;
+    try {
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('daily_modal_seen_date')
+        .eq('id', userId)
+        .maybeSingle();
 
-      try {
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('daily_modal_seen_date')
-          .eq('id', userId)
-          .maybeSingle();
+      if (opts.signal?.aborted) return;
 
-        if (profileError) {
-          console.warn('[useFirstRunDaily] Profile query failed, showing modal:', profileError.message);
-          alreadySeen = false;
-        } else if (profile?.daily_modal_seen_date === targetDate) {
-          alreadySeen = true;
-        }
-
-        if (cancelled) return;
-
-        // 2. Check localStorage cache — serves BOTH inline display and modal.
-        // Only cache for today's date.
-        const isToday = targetDate === todayKey();
-        if (isToday) {
-          const cached = getCachedDaily();
-          if (cached) {
-            setDailyData(cached);
-            if (!alreadySeen && isWithinDeliveryWindow) setShowModal(true);
-            return;
-          }
-        }
-
-        // 3. Fetch fresh daily experience — needed for inline TagesEnergie
-        // Compute today's transit influences (client-side ephemeris)
-        const rawInfluences = birthSign ? computeTodayPlanetInfluences(birthSign) : null;
-        const transitInfluences: TransitInfluenceInput[] = rawInfluences
-          ? Object.entries(rawInfluences).map(([planet, inf]) => ({
-              planet,
-              aspectDeg: inf.aspectDeg,
-              fieldStrength: inf.fieldStrength,
-              isResonant: inf.isResonant,
-            }))
-          : [];
-
-        setLoading(true);
-        const data = await fetchDailyExperience(
-          birthData,
-          soulprintSectors ?? Array(12).fill(0.5),
-          quizSectors,
-          targetDate,
-          locale,
-          transitInfluences,
-          birthSign ?? '',
-        );
-
-        if (cancelled) return;
-
-        if (isToday) setCachedDaily(data);
-        setDailyData(data);
-        if (!alreadySeen && (!isTodayTarget || isWithinDeliveryWindow)) setShowModal(true);
-      } catch (err) {
-        // Graceful fallback: use local deterministic daily so DashboardTagesEnergie always renders
-        console.warn('[useFirstRunDaily] Error occurred, using local fallback:', err);
-        if (!cancelled) {
-          const fallback = buildFallbackDaily();
-          // Adjust fallback date to target
-          fallback.date = targetDate;
-          setDailyData(fallback);
-          if (!alreadySeen && (!isTodayTarget || isWithinDeliveryWindow)) setShowModal(true);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
+      if (profileError) {
+        console.warn('[useFirstRunDaily] Profile query failed, showing modal:', profileError.message);
+        alreadySeen = false;
+      } else if (profile?.daily_modal_seen_date === targetDate) {
+        alreadySeen = true;
       }
-    })();
 
-    return () => {
-      cancelled = true;
-    };
+      // Check localStorage cache — serves BOTH inline display and modal.
+      // Only cache for today's date.
+      const isToday = targetDate === todayKey();
+      if (isToday) {
+        const cached = getCachedDaily();
+        if (cached) {
+          setDailyData(cached);
+          if (!alreadySeen && isWithinDeliveryWindow) setShowModal(true);
+          return;
+        }
+      }
+
+      // Fetch fresh daily experience — needed for inline TagesEnergie.
+      // Compute today's transit influences (client-side ephemeris).
+      const rawInfluences = birthSign ? computeTodayPlanetInfluences(birthSign) : null;
+      const transitInfluences: TransitInfluenceInput[] = rawInfluences
+        ? Object.entries(rawInfluences).map(([planet, inf]) => ({
+            planet,
+            aspectDeg: inf.aspectDeg,
+            fieldStrength: inf.fieldStrength,
+            isResonant: inf.isResonant,
+          }))
+        : [];
+
+      setLoading(true);
+      const data = await fetchDailyExperience(
+        birthData,
+        soulprintSectors ?? Array(12).fill(0.5),
+        quizSectors,
+        targetDate,
+        locale,
+        transitInfluences,
+        birthSign ?? '',
+      );
+
+      if (opts.signal?.aborted) return;
+
+      if (isToday) setCachedDaily(data);
+      setDailyData(data);
+      if (!alreadySeen && (!isTodayTarget || isWithinDeliveryWindow)) setShowModal(true);
+    } catch (err) {
+      // Graceful fallback: use local deterministic daily so DashboardTagesEnergie always renders.
+      // Task 1.12 will replace this with explicit error-state propagation per project doctrine
+      // 2026-05-08 (errors are surfaced, not masked).
+      console.warn('[useFirstRunDaily] Error occurred, using local fallback:', err);
+      if (!opts.signal?.aborted) {
+        const fallback = buildFallbackDaily();
+        // Adjust fallback date to target
+        fallback.date = targetDate;
+        setDailyData(fallback);
+        if (!alreadySeen && (!isTodayTarget || isWithinDeliveryWindow)) setShowModal(true);
+      }
+    } finally {
+      if (!opts.signal?.aborted) setLoading(false);
+    }
   }, [userId, birthData, soulprintSectors, quizSectors, birthSign, customDate, locale]);
+
+  // Mount-fetch: run when deps change. Reuses the callback above.
+  useEffect(() => {
+    const ac = new AbortController();
+    runDailyFetch({ signal: ac.signal });
+    return () => ac.abort();
+  }, [runDailyFetch]);
+
+  // ── 06:00 day-window listener ─────────────────────────────────────────
+  // Per project doctrine 2026-05-08 + user requirement: "Morgens um 6 Uhr
+  // muss es automatisch auf das neue Tageshoroskop wechseln." This effect
+  // schedules a single setTimeout that fires at the next 06:00 LOCAL time,
+  // resets the dedupe ref, clears the (now-stale) cache, and re-invokes
+  // runDailyFetch so the dashboard rolls onto the new day-window without
+  // a page reload. The setTimeout is short enough (≤24 h) for setTimeout's
+  // 32-bit integer ms range to hold without rollover.
+  useEffect(() => {
+    const now = new Date();
+    const next6am = new Date(now);
+    next6am.setHours(6, 0, 0, 0);
+    if (now.getTime() >= next6am.getTime()) {
+      next6am.setDate(next6am.getDate() + 1);
+    }
+    const msUntilNext6am = next6am.getTime() - now.getTime();
+
+    const timer = setTimeout(() => {
+      // Clear the localStorage cache: at this point dailyCacheKey() has
+      // rotated to the new day-window, so the existing entry would no
+      // longer match anyway. Removing it explicitly keeps localStorage
+      // tidy and avoids stale data lingering across user-tab visits.
+      localStorage.removeItem('daily_horoscope_cache');
+      // Reset the dedupe ref so runDailyFetch's `targetDate ===
+      // lastFetchedDateRef.current` guard releases.
+      lastFetchedDateRef.current = null;
+      // Reset state so consumers see the loading transition cleanly.
+      setDailyData(null);
+      // Trigger the refetch. No AbortSignal here — if the component
+      // unmounts mid-fetch, React 18 silently ignores the state updates.
+      runDailyFetch();
+    }, msUntilNext6am);
+
+    return () => clearTimeout(timer);
+  }, [runDailyFetch]);
 
   const handleClose = useCallback(() => {
     setShowModal(false);
