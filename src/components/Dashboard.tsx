@@ -138,6 +138,10 @@ export function Dashboard({
   const tourOverlayVisible = isTourStepVisible(tourStep, scrollReached);
 
   useEffect(() => {
+    // TODO(analytics): trackEvent('dashboard_first_interaction') on first user action
+  }, []);
+
+  useEffect(() => {
     if (tourStep !== 1) return;
 
     const sentinel = leviSentinelRef.current;

@@ -47,7 +47,10 @@ export function SignaturAnchorCard({ dominantElement, birthSign }: Props) {
       </div>
       <button
         type="button"
-        onClick={() => navigate('/signatur')}
+        onClick={() => {
+          // TODO(analytics): trackEvent('signatur_sphere_interaction')
+          navigate('/signatur');
+        }}
         className="text-sm text-gold hover:text-gold/80 transition-colors whitespace-nowrap"
       >
         {t('signatur.anchor.cta')}
