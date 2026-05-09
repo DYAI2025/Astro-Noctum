@@ -250,6 +250,103 @@ describe('createGenAiRouter — fallback chain', () => {
     expect(DEFAULT_FREE_MODEL_CHAIN.length).toBeGreaterThanOrEqual(3);
   });
 
+  // ── Groq tier coverage (I-4) ────────────────────────────────────────────
+  // Three tests proving the Groq layer between Gemini-direct and OpenRouter
+  // works end-to-end. Pre-PR-#333 there was zero coverage of the Groq path.
+
+  it('GROQ-TIER-1: Gemini exhausted → first Groq model serves the request', async () => {
+    // Gemini direct throws 429 → router should call Groq before OpenRouter.
+    mockGenerateContent.mockRejectedValueOnce(new Error('429 RESOURCE_EXHAUSTED'));
+    const fetchMock = mockFetchOnce([{ text: 'from-groq' }]);
+
+    const router = createGenAiRouter({
+      geminiApiKey: 'g',
+      groqApiKey: 'q',
+      openrouterApiKey: 'o',
+      groqModelChain: ['llama-3.3-70b-versatile'],
+      freeModelChain: ['should-not-reach:free'],
+    })!;
+    const out = await router.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: 'hi',
+    });
+
+    expect(out.text).toBe('from-groq');
+    expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    // Assert the call hit Groq's URL, not OpenRouter's.
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(String(url)).toBe('https://api.groq.com/openai/v1/chat/completions');
+    const body = JSON.parse(String((init as RequestInit).body));
+    expect(body.model).toBe('llama-3.3-70b-versatile');
+    expect(body.messages).toEqual([{ role: 'user', content: 'hi' }]);
+  });
+
+  it('GROQ-TIER-2: cascades through multiple Groq models when each returns 429', async () => {
+    mockGenerateContent.mockRejectedValueOnce(new Error('429 RESOURCE_EXHAUSTED'));
+    const fetchMock = mockFetchOnce([
+      { ok: false, status: 429, text: '{"error":"rate limit"}' },
+      { ok: false, status: 429, text: '{"error":"rate limit"}' },
+      { text: 'third-groq-wins' },
+    ]);
+
+    const router = createGenAiRouter({
+      geminiApiKey: 'g',
+      groqApiKey: 'q',
+      openrouterApiKey: undefined,
+      groqModelChain: ['first-groq', 'second-groq', 'third-groq'],
+    })!;
+    const out = await router.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: 'hi',
+    });
+
+    expect(out.text).toBe('third-groq-wins');
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    // All three calls must hit Groq URL — none should fall to OpenRouter
+    // because OPENROUTER_API_KEY was deliberately undefined.
+    for (const [url] of fetchMock.mock.calls) {
+      expect(String(url)).toContain('api.groq.com');
+    }
+  });
+
+  it('GROQ-TIER-3: Groq exhausted → falls through to OpenRouter (full 3-tier cascade)', async () => {
+    // Worst-case prod scenario: Gemini quota out, all Groq models 429,
+    // OpenRouter first model 404 (deprecated), second OpenRouter wins.
+    mockGenerateContent.mockRejectedValueOnce(new Error('429 RESOURCE_EXHAUSTED'));
+    const fetchMock = mockFetchOnce([
+      // Two Groq attempts, both 429
+      { ok: false, status: 429, text: '{"error":"groq quota"}' },
+      { ok: false, status: 429, text: '{"error":"groq quota"}' },
+      // First OpenRouter 404 (deprecated model)
+      { ok: false, status: 404, text: '{"error":"No endpoints found"}' },
+      // Second OpenRouter succeeds
+      { text: 'openrouter-saves-the-day' },
+    ]);
+
+    const router = createGenAiRouter({
+      geminiApiKey: 'g',
+      groqApiKey: 'q',
+      openrouterApiKey: 'o',
+      groqModelChain: ['groq-a', 'groq-b'],
+      freeModelChain: ['openrouter-dead', 'openrouter-alive'],
+    })!;
+    const out = await router.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: 'hi',
+    });
+
+    expect(out.text).toBe('openrouter-saves-the-day');
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+
+    // Assert call order: Groq first, then OpenRouter.
+    expect(String(fetchMock.mock.calls[0][0])).toContain('api.groq.com');
+    expect(String(fetchMock.mock.calls[1][0])).toContain('api.groq.com');
+    expect(String(fetchMock.mock.calls[2][0])).toContain('openrouter.ai');
+    expect(String(fetchMock.mock.calls[3][0])).toContain('openrouter.ai');
+  });
+
   it('defaults the OpenRouter HTTP-Referer header to https://bazodiac.space', async () => {
     // Regression guard: default `referer` in createGenAiRouter must stay at
     // the production custom domain, not revert to a Railway-internal URL.
