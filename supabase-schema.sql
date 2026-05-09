@@ -325,7 +325,12 @@ CREATE TABLE IF NOT EXISTS daily_interpretations (
   locale                   TEXT        NOT NULL DEFAULT 'de',
   text                     TEXT        NOT NULL,
   created_at               TIMESTAMPTZ NOT NULL DEFAULT now(),
-  CONSTRAINT daily_interpretations_unique_pulse_archetype_locale UNIQUE (daily_pulse_id, selected_archetype_key, locale)
+  -- Per 2026-05-09 audit C-3 ("Es geht nur einmal am Tag"): at most one
+  -- interpretation row per daily_pulse_id. Server-side pre-check returns
+  -- 409 ALREADY_DECIDED before insertion; this constraint is the DB-layer
+  -- backstop for concurrent inserts. See migration
+  -- 20260510_daily_interpretation_one_per_pulse.sql.
+  CONSTRAINT daily_interpretations_one_per_pulse UNIQUE (daily_pulse_id)
 );
 
 ALTER TABLE daily_interpretations ENABLE ROW LEVEL SECURITY;

@@ -3283,16 +3283,32 @@ app.post('/api/daily-interpretation', requireUserAuth, dailyInterpretationLimite
       return res.status(404).json({ error: { code: 'PULSE_NOT_FOUND' } });
     }
 
-    // L2: idempotent — same (pulse, archetype, locale) → same row.
+    // L2: at most one decision per daily_pulse_id (enforced by
+    // unique constraint daily_interpretations_one_per_pulse, mirrored
+    // here so the server returns a structured 409 instead of leaking
+    // a Postgres unique-violation error). Per 2026-05-09 audit C-3.
     const { data: existing } = await supabaseServer
       .from('daily_interpretations')
-      .select('id, text')
+      .select('id, text, selected_archetype_key, locale')
       .eq('daily_pulse_id', dailyPulseId)
-      .eq('selected_archetype_key', archetypeKey)
-      .eq('locale', locale)
       .maybeSingle();
     if (existing) {
-      return res.json({ id: existing.id, text: existing.text });
+      // Same archetype + same locale = idempotent re-pick (page reload,
+      // double-click) — return 200 with the cached row.
+      if (existing.selected_archetype_key === archetypeKey && existing.locale === locale) {
+        return res.json({ id: existing.id, text: existing.text });
+      }
+      // Different archetype or locale on the SAME pulse = user already
+      // decided. 409 with the locked decision so the client can render
+      // the locked Phase 2 instead of nagging.
+      return res.status(409).json({
+        error: {
+          code: 'ALREADY_DECIDED',
+          locked_archetype_key: existing.selected_archetype_key,
+          locked_locale: existing.locale,
+          text: existing.text,
+        },
+      });
     }
 
     if (!geminiClient) {

@@ -216,6 +216,8 @@ describe('POST /api/daily-interpretation — no-placeholders contract', () => {
     const cachedRow = {
       id: 'interp-uuid-cached',
       text: 'cached interpretation text from previous call',
+      selected_archetype_key: 'mond',
+      locale: 'de',
     };
     mockFetch({ existing: cachedRow });
     const app = await loadApp(makeGeminiTextMock('SHOULD NOT BE CALLED — IDEMPOTENT HIT'));
@@ -254,6 +256,70 @@ describe('POST /api/daily-interpretation — no-placeholders contract', () => {
 
     expect(res.status).toBe(400);
     expect(res.body?.error?.code).toBe('INVALID_BODY');
+  });
+
+  it('DIN-LOCK-001: 2nd different archetype on same pulse returns 409 ALREADY_DECIDED', async () => {
+    // Per 2026-05-09 audit C-3: spec requires "Es geht nur einmal am Tag".
+    // First pick already created a daily_interpretations row for 'mond'.
+    // Second pick with a DIFFERENT archetype on the SAME pulse must NOT
+    // create a 2nd row — server returns 409 with the locked decision in
+    // the envelope so the client can render the locked Phase 2 instead
+    // of nagging.
+    const lockedRow = {
+      id: 'int-existing',
+      text: 'Locked Mond text',
+      selected_archetype_key: 'mond',
+      locale: 'de',
+    };
+    mockFetch({ existing: lockedRow });
+    const geminiClass = makeGeminiTextMock('SHOULD NOT BE CALLED — LOCK GUARD');
+    const app = await loadApp(geminiClass);
+
+    const res = await request(app)
+      .post('/api/daily-interpretation')
+      .set(AUTH_HEADER)
+      .set('Content-Type', 'application/json')
+      .send({
+        daily_pulse_id: 'pulse-uuid-1',
+        selected_archetype_key: 'sonne',
+        locale: 'de',
+      });
+
+    expect(res.status).toBe(409);
+    expect(res.body?.error?.code).toBe('ALREADY_DECIDED');
+    expect(res.body?.error?.locked_archetype_key).toBe('mond');
+    expect(res.body?.error?.text).toBe('Locked Mond text');
+  });
+
+  it('DIN-LOCK-002: 2nd call with SAME archetype + locale → 200 idempotent (existing row returned)', async () => {
+    // Page reload / double-click: same (pulse, archetype, locale) returns
+    // the cached row, NOT 409. Pre-existing idempotency contract preserved
+    // under the new pulse-id-only query.
+    const lockedRow = {
+      id: 'int-existing',
+      text: 'Locked Mond text',
+      selected_archetype_key: 'mond',
+      locale: 'de',
+    };
+    mockFetch({ existing: lockedRow });
+    const geminiClass = makeGeminiTextMock('SHOULD NOT BE CALLED — IDEMPOTENT HIT');
+    const app = await loadApp(geminiClass);
+
+    const res = await request(app)
+      .post('/api/daily-interpretation')
+      .set(AUTH_HEADER)
+      .set('Content-Type', 'application/json')
+      .send({
+        daily_pulse_id: 'pulse-uuid-1',
+        selected_archetype_key: 'mond',
+        locale: 'de',
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.id).toBe('int-existing');
+    expect(res.body.text).toBe('Locked Mond text');
+    // Confirm no AI call (otherwise the mock would have replaced the text).
+    expect(res.body.text).not.toContain('SHOULD NOT BE CALLED');
   });
 
   it('DIN-RATE-001: 7th call within 1h window returns 429 RATE_LIMITED', async () => {
