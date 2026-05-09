@@ -175,6 +175,11 @@ const translationsEn: DeepStringRecord = {
       title: "Unlock your full Signatur experience",
       subtitle: "Premium clusters, advanced quizzes, and more",
     },
+    anchor: {
+      title: "Your Signature",
+      cta: "View signature →",
+      empty: "Profile incomplete",
+    },
   },
   signatureReveal: {
     soulprintCalculating: "Calculating your soulprint…",
@@ -670,6 +675,11 @@ const translationsDe: DeepStringRecord = {
     upgradeCard: {
       title: "Schalte deine volle Signatur-Erfahrung frei",
       subtitle: "Premium-Cluster, erweiterte Quizzes und mehr",
+    },
+    anchor: {
+      title: "Deine Signatur",
+      cta: "Signatur ansehen →",
+      empty: "Profil unvollständig",
     },
   },
   signatureReveal: {

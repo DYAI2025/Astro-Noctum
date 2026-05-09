@@ -38,6 +38,7 @@ import { getConstellationForSign } from "../lib/astro-data/constellationFromSign
 import { useCelestialOrrery } from "../hooks/useCelestialOrrery";
 import { CITIES } from "../lib/astronomy/data";
 import { DailyChartHero } from "./dashboard/DailyChartHero";
+import { SignaturAnchorCard } from "./dashboard/SignaturAnchorCard";
 import { useActiveImpacts } from "../hooks/useActiveImpacts";
 
 const BirthChartOrrery = lazy(() => import("./BirthChartOrrery").then(m => ({ default: m.BirthChartOrrery })));
@@ -390,6 +391,16 @@ export function Dashboard({
             // modal; the modal itself handles fallback-aware rendering.
             onOpenDayModal={dailyEnabled ? () => setIsDayModalOpen(true) : undefined}
             isFallback={dailyData?.meta?.engine_version === 'v1-local-fallback'}
+          />
+        </SectionErrorBoundary>
+      </motion.div>
+
+      {/* ═══ 1.5 SIGNATUR ANCHOR — preview + CTA, no WebGL on dashboard (TASK-2.2) ═══ */}
+      <motion.div {...fadeIn(0.08)}>
+        <SectionErrorBoundary name="SignaturAnchor">
+          <SignaturAnchorCard
+            dominantElement={apiData?.wuxing?.dominant_element}
+            birthSign={apiData?.western?.zodiac_sign}
           />
         </SectionErrorBoundary>
       </motion.div>
