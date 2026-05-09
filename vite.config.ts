@@ -17,15 +17,17 @@ export default defineConfig(({mode}) => {
       hmr: process.env.DISABLE_HMR !== 'true',
       proxy: {
         '/api/calculate': {
-          // Railway deployment serves at /calculate/* (no /api prefix).
-          // The old Vercel deployment (bafe.vercel.app) is no longer available.
-          target: env.VITE_BAFE_BASE_URL || 'https://bafe-production.up.railway.app',
+          // BAFE Fly.io serves /calculate/* (no /api prefix).
+          // Railway (bafe-production.up.railway.app) remains as Signatur-App fallback only;
+          // the old Vercel deployment (bafe.vercel.app) is dead and removed from CSP in S-1.
+          target: env.VITE_BAFE_BASE_URL || 'https://bafe-2u0e2a.fly.dev',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api\/calculate/, '/calculate'),
         },
         '/chart': {
-          // calculateAll() calls /chart directly on FuFirE (not under /calculate/).
-          target: env.VITE_BAFE_BASE_URL || 'https://bafe-production.up.railway.app',
+          // Proxy direct /chart requests to the BAFE backend. Frontend
+          // calculateAll() uses /api/chart via the same-origin proxy below.
+          target: env.VITE_BAFE_BASE_URL || 'https://bafe-2u0e2a.fly.dev',
           changeOrigin: true,
         },
         '/api/auth': {

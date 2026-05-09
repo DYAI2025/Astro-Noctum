@@ -384,7 +384,7 @@ If BAFE schema changes, update the mappers in `api.ts` — the Dashboard expects
 
 ### External Dependencies
 
-- **BAFE API**: Astrology calculation backend (routes at `/calculate/{bazi,western,fusion,wuxing,tst}` and `/chart`). Default: `https://bafe.vercel.app`. BAFE is not always reachable from dev environments (see Known Issues).
+- **BAFE API**: Astrology calculation backend. Fly.io production default: `https://bafe-2u0e2a.fly.dev` (per BAFE API Reference 2026-05-08) with routes at `/calculate/{bazi,western,fusion,wuxing,tst}`. Legacy Railway fallback: `bafe-production.up.railway.app`, where `/chart` remains available for Signatur-App compatibility only; treat `/chart` as Railway-only until Phase 2 migrates the app to the new Fly.io endpoints. BAFE is not always reachable from dev environments (see Known Issues).
 - **Supabase**: Auth + Postgres. Schema in `supabase-schema.sql`. Tables: `profiles`, `birth_data`, `astro_profiles`, `natal_charts`, `contribution_events`, `agent_conversations`. RLS enabled on all tables. Signup trigger auto-creates profile row. `contribution_events` stores quiz sector weights (upserted on `user_id,module_id`) — read by the transit-state proxy to compute `quiz_sectors`.
 - **Gemini API**: Text generation via `@google/genai` SDK (model: `gemini-3-flash-preview`). Falls back to hardcoded German text if unavailable.
 - **ElevenLabs**: Voice agent widget (Levi Bazi). Tool configs in `elevenlabs-tool.json` and `elevenlabs-tool-save-conversation.json`. The widget calls back to `/api/profile/:userId` on the server (requires `ELEVENLABS_TOOL_SECRET` Bearer auth).
@@ -407,7 +407,7 @@ Vite serves from `public/` directory (configured as `publicDir: 'public'` in `vi
 
 ### Deployment
 
-Railway via `nixpacks.toml` + `railway.json`. Build: `npm ci && npm run build`. Start: `node server.mjs`. The Express server handles BAFE routing with fallback from Railway internal networking (IPv6, often unreliable) to public URL.
+Railway via `nixpacks.toml` + `railway.json`. Build: `npm ci && npm run build`. Start: `node server.mjs`. The Express server handles BAFE routing with fallback from Railway internal networking (IPv6, often unreliable) to public URL. Production BAFE host is Fly.io (`bafe-2u0e2a.fly.dev`); Railway is retained as a legacy fallback for the Signatur-App. The Express server's BAFE_PUBLIC_URL falls back to Fly.io when no env override is set (S-1 migration 2026-05-09).
 
 ### Path Alias
 
