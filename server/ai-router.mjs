@@ -71,7 +71,7 @@ const GROQ_TIMEOUT_MS = 30_000;
  * Non-cascadable errors (401 auth, 400 bad request, network drop) bubble
  * so the caller sees them — fallback would mask real bugs.
  */
-function isQuotaOr429Error(err) {
+function isCascadableProviderError(err) {
   if (!err) return false;
   const status = err.status ?? err.statusCode ?? err?.error?.code;
   if (status === 429 || status === 404 || status === 503 || status === 502) return true;
@@ -126,9 +126,10 @@ function geminiContentsToMessages(contents, systemInstruction) {
  */
 function normalizeOpenRouterModel(requestedModel, fallbackModel) {
   if (!requestedModel) return fallbackModel;
-  // If caller passed an OpenRouter slug directly, only let it override the
-  // matching chain entry. Otherwise we collapse the entire fallback chain
-  // into repeated attempts against the same model.
+  // If caller passed an OpenRouter slug directly, let it override only the
+  // matching chain entry. For all other chain entries we use the chain
+  // entry itself, so the cascade rotates through diverse providers as
+  // designed (we do NOT collapse the chain into a single model).
   if (requestedModel.includes('/')) {
     return requestedModel === fallbackModel ? requestedModel : fallbackModel;
   }
@@ -137,7 +138,7 @@ function normalizeOpenRouterModel(requestedModel, fallbackModel) {
 
 /**
  * Single Groq call. OpenAI-compatible chat-completions API. Throws on any
- * non-2xx; router decides cascade based on {@link isQuotaOr429Error}.
+ * non-2xx; router decides cascade based on {@link isCascadableProviderError}.
  */
 async function callGroq({ apiKey, model, request }) {
   const systemInstruction = request?.config?.systemInstruction;
@@ -179,7 +180,7 @@ async function callGroq({ apiKey, model, request }) {
 
 /**
  * Single OpenRouter call. Throws on any non-2xx response; the router above
- * decides whether to fall through based on {@link isQuotaOr429Error}.
+ * decides whether to fall through based on {@link isCascadableProviderError}.
  */
 async function callOpenRouter({ apiKey, model, request, referer, title }) {
   const systemInstruction = request?.config?.systemInstruction;
@@ -285,7 +286,7 @@ export function createGenAiRouter({
         return result;
       } catch (err) {
         lastErr = err;
-        if (!isQuotaOr429Error(err)) {
+        if (!isCascadableProviderError(err)) {
           // Non-quota error — surface it rather than wasting the rest of the chain.
           throw err;
         }
