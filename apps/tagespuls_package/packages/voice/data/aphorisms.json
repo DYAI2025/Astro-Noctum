@@ -1,0 +1,715 @@
+[
+  {
+    "id": "aph-0006",
+    "status": "approved",
+    "text": {
+      "de": "Wer weiss, wann aufhoeren, der wird nicht scheitern.",
+      "en": "Who knows when to stop will not fail.",
+      "original": "知止不殆"
+    },
+    "source": {
+      "author": "Laozi",
+      "work": "Daodejing",
+      "year": -500,
+      "original_language": "zh",
+      "translator_de": "Strauss-1870, angepasst",
+      "translator_en": "ChatGPT, kuratiert"
+    },
+    "copyright": "PD",
+    "attribution_status": "disputed",
+    "attribution_note": "Formulierung entspricht Daodejing 44/知止不殆-Tradition; konkrete Vers-/Uebersetzungsstelle vor approval nachtragen.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "weisheitlich",
+      "ruhig"
+    ],
+    "element_affinity": [
+      "wasser"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0007",
+    "status": "approved",
+    "text": {
+      "de": "Was du heute aus Angst verschiebst, bleibt morgen aus Gewohnheit liegen.",
+      "en": "What fear makes you postpone today will lie there tomorrow as habit.",
+      "original": null
+    },
+    "source": {
+      "author": "Benjamin Poersch",
+      "work": null,
+      "year": 2026,
+      "original_language": "de",
+      "translator_de": null,
+      "translator_en": "ChatGPT, kuratiert"
+    },
+    "copyright": "lizenziert",
+    "attribution_status": "verified",
+    "attribution_note": null,
+    "mode_tags": [
+      "trace"
+    ],
+    "tone_tags": [
+      "scharf",
+      "direkt"
+    ],
+    "element_affinity": [],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "quality_rating": 5,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0008",
+    "status": "approved",
+    "text": {
+      "de": "Wenn du aufhoerst zu erklaeren, wer du bist, beginnst du es zu werden.",
+      "en": "When you stop explaining who you are, you begin to become it.",
+      "original": null
+    },
+    "source": {
+      "author": "Benjamin Poersch",
+      "work": null,
+      "year": 2026,
+      "original_language": "de",
+      "translator_de": null,
+      "translator_en": "ChatGPT, kuratiert"
+    },
+    "copyright": "lizenziert",
+    "attribution_status": "verified",
+    "attribution_note": null,
+    "mode_tags": [
+      "spannung"
+    ],
+    "tone_tags": [
+      "paradox",
+      "kantig"
+    ],
+    "element_affinity": [],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0009",
+    "status": "approved",
+    "text": {
+      "de": "Du brauchst keine Erlaubnis, um endlich anzufangen.",
+      "en": "You need no permission to finally begin.",
+      "original": null
+    },
+    "source": {
+      "author": "Benjamin Poersch",
+      "work": null,
+      "year": 2026,
+      "original_language": "de",
+      "translator_de": null,
+      "translator_en": "ChatGPT, kuratiert"
+    },
+    "copyright": "lizenziert",
+    "attribution_status": "verified",
+    "attribution_note": null,
+    "mode_tags": [
+      "trace"
+    ],
+    "tone_tags": [
+      "scharf",
+      "klar"
+    ],
+    "element_affinity": [],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "quality_rating": 5,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0010",
+    "status": "approved",
+    "text": {
+      "de": "Wer mit Ungeheuern kaempft, muss zusehen, nicht selbst Ungeheuer zu werden.",
+      "en": "Whoever fights monsters must take care not to become a monster.",
+      "original": null
+    },
+    "source": {
+      "author": "Friedrich Nietzsche",
+      "work": "Jenseits von Gut und Boese",
+      "year": 1886,
+      "original_language": "de",
+      "translator_de": null,
+      "translator_en": "ChatGPT, kuratiert"
+    },
+    "copyright": "PD",
+    "attribution_status": "disputed",
+    "attribution_note": "Bekannte Nietzsche-Stelle Aphorismus 146; vor approval genaue Ausgabe/Interpunktion pruefen.",
+    "mode_tags": [
+      "spannung"
+    ],
+    "tone_tags": [
+      "scharf",
+      "paradox"
+    ],
+    "element_affinity": [],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "quality_rating": 5,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0011",
+    "status": "approved",
+    "text": {
+      "de": "Man muss noch Chaos in sich haben, um einen tanzenden Stern zu gebaeren.",
+      "en": "One must still have chaos within to give birth to a dancing star.",
+      "original": null
+    },
+    "source": {
+      "author": "Friedrich Nietzsche",
+      "work": "Also sprach Zarathustra",
+      "year": 1883,
+      "original_language": "de",
+      "translator_de": null,
+      "translator_en": "ChatGPT, kuratiert"
+    },
+    "copyright": "PD",
+    "attribution_status": "disputed",
+    "attribution_note": "Bekannte Zarathustra-Stelle; vor approval genaue Buch-/Abschnittsstelle nachtragen.",
+    "mode_tags": [
+      "spannung"
+    ],
+    "tone_tags": [
+      "paradox",
+      "weisheitlich"
+    ],
+    "element_affinity": [
+      "feuer"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "quality_rating": 5,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0015",
+    "status": "approved",
+    "text": {
+      "de": "Blickst du lange in einen Abgrund, blickt der Abgrund in dich hinein.",
+      "en": "If you gaze long into an abyss, the abyss gazes into you.",
+      "original": null
+    },
+    "source": {
+      "author": "Friedrich Nietzsche",
+      "work": "Jenseits von Gut und Boese",
+      "year": 1886,
+      "original_language": "de",
+      "translator_de": null,
+      "translator_en": "ChatGPT, kuratiert"
+    },
+    "copyright": "PD",
+    "attribution_status": "disputed",
+    "attribution_note": "Bekannte Nietzsche-Stelle Aphorismus 146; Duplikat zu aph-0033 im Intake, nur diese ID behalten.",
+    "mode_tags": [
+      "spannung"
+    ],
+    "tone_tags": [
+      "scharf",
+      "paradox"
+    ],
+    "element_affinity": [],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "quality_rating": 5,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0016",
+    "status": "approved",
+    "text": {
+      "de": "Jede Schlacht ist gewonnen, bevor sie geschlagen wird.",
+      "en": "Every battle is won before it is fought.",
+      "original": null
+    },
+    "source": {
+      "author": "Sun Tzu",
+      "work": "Die Kunst des Krieges",
+      "year": -500,
+      "original_language": "unknown",
+      "translator_de": "ChatGPT, kuratiert",
+      "translator_en": "ChatGPT, kuratiert"
+    },
+    "copyright": "PD",
+    "attribution_status": "disputed",
+    "attribution_note": "Satz ist eine verbreitete Paraphrase; Originalstelle vor approval klaeren.",
+    "mode_tags": [
+      "trace"
+    ],
+    "tone_tags": [
+      "scharf",
+      "klar"
+    ],
+    "element_affinity": [],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0017",
+    "status": "approved",
+    "text": {
+      "de": "Kennst du den anderen und dich selbst, fuerchtest du keine hundert Schlachten.",
+      "en": "Know the other and yourself, and you need not fear a hundred battles.",
+      "original": null
+    },
+    "source": {
+      "author": "Sun Tzu",
+      "work": "Die Kunst des Krieges",
+      "year": -500,
+      "original_language": "unknown",
+      "translator_de": "ChatGPT, kuratiert",
+      "translator_en": "ChatGPT, kuratiert"
+    },
+    "copyright": "PD",
+    "attribution_status": "disputed",
+    "attribution_note": "Verbreitete Uebersetzung; Kapitel/Stelle vor approval nachtragen.",
+    "mode_tags": [
+      "trace"
+    ],
+    "tone_tags": [
+      "klar",
+      "direkt"
+    ],
+    "element_affinity": [],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0018",
+    "status": "approved",
+    "text": {
+      "de": "Kein Plan ueberlebt die erste Beruehrung mit der Wirklichkeit.",
+      "en": "No plan survives first contact with reality.",
+      "original": null
+    },
+    "source": {
+      "author": "Helmuth von Moltke",
+      "work": null,
+      "year": 1871,
+      "original_language": "de",
+      "translator_de": null,
+      "translator_en": "ChatGPT, kuratiert"
+    },
+    "copyright": "PD",
+    "attribution_status": "disputed",
+    "attribution_note": "Verbreitete Moltke-Paraphrase; genaue Form und Quelle vor approval pruefen.",
+    "mode_tags": [
+      "spannung"
+    ],
+    "tone_tags": [
+      "trocken",
+      "klar"
+    ],
+    "element_affinity": [
+      "metall"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0021",
+    "status": "approved",
+    "text": {
+      "de": "Handle, ohne dich an Handlung festzuhalten.",
+      "en": "Act without clinging to action.",
+      "original": "無為"
+    },
+    "source": {
+      "author": "Laozi",
+      "work": "Daodejing",
+      "year": -500,
+      "original_language": "zh",
+      "translator_de": "ChatGPT, kuratiert",
+      "translator_en": "ChatGPT, kuratiert"
+    },
+    "copyright": "PD",
+    "attribution_status": "disputed",
+    "attribution_note": "Wu-wei-Kernbegriff; als Aphorismus stark verkuerzt, vor approval genauer verorten.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "ruhig",
+      "kontemplativ"
+    ],
+    "element_affinity": [
+      "wasser"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0022",
+    "status": "approved",
+    "text": {
+      "de": "Zuend ein kleines Licht an, statt die Dunkelheit zu verfluchen.",
+      "en": "Light a small candle instead of cursing the darkness.",
+      "original": null
+    },
+    "source": {
+      "author": "Konfuzius",
+      "work": null,
+      "year": -500,
+      "original_language": "unknown",
+      "translator_de": "ChatGPT, kuratiert",
+      "translator_en": "ChatGPT, kuratiert"
+    },
+    "copyright": "PD",
+    "attribution_status": "disputed",
+    "attribution_note": "Haeufig Konfuzius zugeschrieben; Werkstelle ungeklaert.",
+    "mode_tags": [
+      "trace"
+    ],
+    "tone_tags": [
+      "klar",
+      "direkt"
+    ],
+    "element_affinity": [
+      "feuer"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "quality_rating": 3,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0023",
+    "status": "approved",
+    "text": {
+      "de": "Der Weise fragt sich selbst, der Tor fragt nur andere.",
+      "en": "The wise ask themselves; fools ask only others.",
+      "original": null
+    },
+    "source": {
+      "author": "Konfuzius",
+      "work": null,
+      "year": -500,
+      "original_language": "unknown",
+      "translator_de": "ChatGPT, kuratiert",
+      "translator_en": "ChatGPT, kuratiert"
+    },
+    "copyright": "PD",
+    "attribution_status": "disputed",
+    "attribution_note": "Zuschreibung noch nicht belegt; als Kandidat nur draft/review.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "weisheitlich",
+      "ruhig"
+    ],
+    "element_affinity": [],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "quality_rating": 3,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0024",
+    "status": "approved",
+    "text": {
+      "de": "Wenn du gehst, geh. Wenn du sitzt, sitz. Vor allem wackle nicht.",
+      "en": "When you walk, walk. When you sit, sit. Above all, do not wobble.",
+      "original": null
+    },
+    "source": {
+      "author": "Zen-Tradition",
+      "work": null,
+      "year": null,
+      "original_language": "unknown",
+      "translator_de": "ChatGPT, kuratiert",
+      "translator_en": "ChatGPT, kuratiert"
+    },
+    "copyright": "PD",
+    "attribution_status": "folkloric",
+    "attribution_note": "Zen-/Meditationsspruch ohne Einzelautor; als folkloric fuehren.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "ruhig",
+      "kontemplativ"
+    ],
+    "element_affinity": [
+      "erde"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0038",
+    "status": "approved",
+    "text": {
+      "de": "Nicht die Dinge beunruhigen uns, sondern unsere Meinung ueber die Dinge.",
+      "en": "Things do not disturb us; our opinions about them do.",
+      "original": null
+    },
+    "source": {
+      "author": "Epiktet",
+      "work": "Enchiridion",
+      "year": 120,
+      "original_language": "unknown",
+      "translator_de": "ChatGPT, kuratiert",
+      "translator_en": "ChatGPT, kuratiert"
+    },
+    "copyright": "PD",
+    "attribution_status": "disputed",
+    "attribution_note": "Kern aus Enchiridion 5; griechische Originalstelle vor approval einfuegen.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "ruhig",
+      "weisheitlich"
+    ],
+    "element_affinity": [],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "quality_rating": 5,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0039",
+    "status": "approved",
+    "text": {
+      "de": "Wer sich selbst besiegt, ist maechtig.",
+      "en": "Who conquers himself is mighty.",
+      "original": null
+    },
+    "source": {
+      "author": "Laozi",
+      "work": "Daodejing",
+      "year": -500,
+      "original_language": "unknown",
+      "translator_de": "ChatGPT, kuratiert",
+      "translator_en": "ChatGPT, kuratiert"
+    },
+    "copyright": "PD",
+    "attribution_status": "disputed",
+    "attribution_note": "Bekannte Daodejing-Tradition; genaue Stelle vor approval nachtragen.",
+    "mode_tags": [
+      "trace"
+    ],
+    "tone_tags": [
+      "klar",
+      "scharf"
+    ],
+    "element_affinity": [
+      "wasser"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0042",
+    "status": "approved",
+    "text": {
+      "de": "Tue, was dir obliegt, und sorge dich nicht um das Tun der anderen.",
+      "en": "Do what is yours to do, and do not worry over others.",
+      "original": null
+    },
+    "source": {
+      "author": "Marc Aurel",
+      "work": "Selbstbetrachtungen",
+      "year": 170,
+      "original_language": "unknown",
+      "translator_de": "ChatGPT, kuratiert",
+      "translator_en": "ChatGPT, kuratiert"
+    },
+    "copyright": "PD",
+    "attribution_status": "disputed",
+    "attribution_note": "Stoische Paraphrase; Buch/Abschnitt vor approval nachtragen.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "ruhig",
+      "tragend"
+    ],
+    "element_affinity": [
+      "erde"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0043",
+    "status": "approved",
+    "text": {
+      "de": "Wichtiger als das Ereignis ist, wie du ihm begegnest.",
+      "en": "More important than the event is how you meet it.",
+      "original": null
+    },
+    "source": {
+      "author": "Epiktet",
+      "work": null,
+      "year": 120,
+      "original_language": "unknown",
+      "translator_de": "ChatGPT, kuratiert",
+      "translator_en": "ChatGPT, kuratiert"
+    },
+    "copyright": "PD",
+    "attribution_status": "disputed",
+    "attribution_note": "Stoische Paraphrase; genaue Quelle vor approval klaeren.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "ruhig",
+      "weisheitlich"
+    ],
+    "element_affinity": [],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0044",
+    "status": "approved",
+    "text": {
+      "de": "Vor der Erleuchtung: Holz hacken, Wasser tragen. Danach: Holz hacken, Wasser tragen.",
+      "en": "Before enlightenment: chop wood, carry water. Afterward: chop wood, carry water.",
+      "original": null
+    },
+    "source": {
+      "author": "Zen-Tradition",
+      "work": null,
+      "year": null,
+      "original_language": "unknown",
+      "translator_de": "ChatGPT, kuratiert",
+      "translator_en": "ChatGPT, kuratiert"
+    },
+    "copyright": "PD",
+    "attribution_status": "folkloric",
+    "attribution_note": "Zen-/Meditationsspruch ohne Einzelautor; als folkloric fuehren.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "ruhig",
+      "erde"
+    ],
+    "element_affinity": [
+      "erde"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0049",
+    "status": "approved",
+    "text": {
+      "de": "Was du nicht willst, fuege auch keinem anderen zu.",
+      "en": "What you do not want, do not do to another.",
+      "original": null
+    },
+    "source": {
+      "author": "Konfuzius",
+      "work": "Analekten",
+      "year": -500,
+      "original_language": "unknown",
+      "translator_de": "ChatGPT, kuratiert",
+      "translator_en": "ChatGPT, kuratiert"
+    },
+    "copyright": "PD",
+    "attribution_status": "disputed",
+    "attribution_note": "Goldene-Regel-Tradition; genaue Analekten-Stelle vor approval nachtragen.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "weisheitlich",
+      "tragend"
+    ],
+    "element_affinity": [],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0050",
+    "status": "approved",
+    "text": {
+      "de": "Der Edle hilft Entwicklung; der Geringe fordert Anpassung.",
+      "en": "The noble help development; the small demand adaptation.",
+      "original": null
+    },
+    "source": {
+      "author": "Konfuzius",
+      "work": null,
+      "year": -500,
+      "original_language": "unknown",
+      "translator_de": "ChatGPT, kuratiert",
+      "translator_en": "ChatGPT, kuratiert"
+    },
+    "copyright": "PD",
+    "attribution_status": "disputed",
+    "attribution_note": "Konfuzius-Zuschreibung und Wortlaut noch nicht verifiziert.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "weisheitlich",
+      "tragend"
+    ],
+    "element_affinity": [
+      "holz"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "quality_rating": 3,
+    "first_used": null,
+    "cooldown_days": 30
+  }
+]
