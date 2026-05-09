@@ -19,13 +19,13 @@ export default defineConfig(({mode}) => {
         '/api/calculate': {
           // Railway deployment serves at /calculate/* (no /api prefix).
           // The old Vercel deployment (bafe.vercel.app) is no longer available.
-          target: env.VITE_BAFE_BASE_URL || 'https://bafe-production.up.railway.app',
+          target: env.VITE_BAFE_BASE_URL || 'https://bafe-2u0e2a.fly.dev',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api\/calculate/, '/calculate'),
         },
         '/chart': {
           // calculateAll() calls /chart directly on FuFirE (not under /calculate/).
-          target: env.VITE_BAFE_BASE_URL || 'https://bafe-production.up.railway.app',
+          target: env.VITE_BAFE_BASE_URL || 'https://bafe-2u0e2a.fly.dev',
           changeOrigin: true,
         },
         '/api/auth': {
