@@ -1,0 +1,64 @@
+openapi: 3.1.0
+info:
+  title: Bazodiac Tagespuls API
+  version: 0.1.0
+paths:
+  /v1/users/{userId}/daily-pulse:
+    get:
+      summary: Load or create the user's phase-1 Tagespuls.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: date
+          in: query
+          required: true
+          schema: { type: string, format: date }
+        - name: locale
+          in: query
+          required: false
+          schema: { type: string, enum: [de, en], default: de }
+      responses:
+        '200':
+          description: Daily pulse
+  /v1/users/{userId}/daily-interpretation:
+    post:
+      summary: Create phase-2 Tagesdeutung after council selection.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [daily_pulse_id, selected_archetype_key, locale]
+              properties:
+                daily_pulse_id: { type: string }
+                selected_archetype_key:
+                  type: string
+                  enum: [sonne, mond, aszendent, day_master, jahrestier, wuxing_dom]
+                locale: { type: string, enum: [de, en] }
+      responses:
+        '200':
+          description: Daily interpretation
+  /v1/users/{userId}/council:
+    get:
+      summary: Load the Rat der sechs for this user.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Council figures
+components:
+  schemas:
+    DayMode:
+      type: string
+      enum: [pulse, trace, spannung]
