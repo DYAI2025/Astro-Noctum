@@ -54,10 +54,9 @@ export const DEFAULT_GROQ_MODEL_CHAIN = Object.freeze([
   'llama-3.2-3b-preview',
 ]);
 
+const PROVIDER_TIMEOUT_MS = 30_000;
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const OPENROUTER_TIMEOUT_MS = 30_000;
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_TIMEOUT_MS = 30_000;
 
 /**
  * Detect "model unavailable" failures that should trigger next-model
@@ -78,6 +77,24 @@ function isCascadableProviderError(err) {
   if (status === 429 || status === 404 || status === 503 || status === 502) return true;
   const msg = String(err?.message || err || '').toLowerCase();
   return /429|resource_exhausted|quota|rate.?limit|exceeded your current quota|no endpoints found|model overloaded|bad gateway/.test(msg);
+}
+
+/**
+ * Redact potentially sensitive fields from a provider error body before
+ * including it in an error message. Defensive — provider errors usually
+ * don't leak credentials, but request IDs and internal trace IDs are best
+ * kept out of error chains that might bubble to clients via `err.message`.
+ *
+ * Strips: authorization headers, bearer tokens (anywhere in raw text),
+ * api_key fields, request_id values. Truly malformed bodies fall through
+ * as-is (we only redact what we can confidently identify).
+ */
+function redactErrorBody(raw) {
+  if (typeof raw !== 'string' || !raw) return '';
+  return raw
+    .replace(/"(?:authorization|api[_-]?key|access[_-]?token|x-amz-security-token)"\s*:\s*"[^"]*"/gi, '"[redacted]":"[redacted]"')
+    .replace(/(bearer\s+)[A-Za-z0-9._-]+/gi, '$1[redacted]')
+    .replace(/("request_id"\s*:\s*)"[^"]*"/g, '$1"[redacted]"');
 }
 
 /**
@@ -152,7 +169,7 @@ async function callGroq({ apiKey, model, request }) {
   if (wantsJson) body.response_format = { type: 'json_object' };
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), GROQ_TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), PROVIDER_TIMEOUT_MS);
   try {
     const res = await fetch(GROQ_URL, {
       method: 'POST',
@@ -166,7 +183,8 @@ async function callGroq({ apiKey, model, request }) {
     clearTimeout(timer);
     if (!res.ok) {
       const raw = await res.text().catch(() => '');
-      const err = new Error(`groq ${model} ${res.status}: ${raw.slice(0, 300)}`);
+      const defanged = redactErrorBody(raw);
+      const err = new Error(`groq ${model} ${res.status}: ${defanged.slice(0, 300)}`);
       err.status = res.status;
       throw err;
     }
@@ -197,7 +215,7 @@ async function callOpenRouter({ apiKey, model, request, referer, title }) {
   if (wantsJson) body.response_format = { type: 'json_object' };
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), OPENROUTER_TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), PROVIDER_TIMEOUT_MS);
   try {
     const res = await fetch(OPENROUTER_URL, {
       method: 'POST',
@@ -214,7 +232,8 @@ async function callOpenRouter({ apiKey, model, request, referer, title }) {
     clearTimeout(timer);
     if (!res.ok) {
       const raw = await res.text().catch(() => '');
-      const err = new Error(`openrouter ${model} ${res.status}: ${raw.slice(0, 300)}`);
+      const defanged = redactErrorBody(raw);
+      const err = new Error(`openrouter ${model} ${res.status}: ${defanged.slice(0, 300)}`);
       err.status = res.status;
       throw err;
     }
@@ -246,6 +265,9 @@ export function createGenAiRouter({
   openrouterApiKey,
   freeModelChain = DEFAULT_FREE_MODEL_CHAIN,
   groqModelChain = DEFAULT_GROQ_MODEL_CHAIN,
+  // OpenRouter-specific — Groq doesn't use these. Kept on the factory
+  // signature for now to avoid a breaking change; if more provider-
+  // specific knobs accumulate, refactor to per-tier config objects.
   referer = 'https://bazodiac.space',
   title = 'Bazodiac',
   aggregateBudgetMs = DEFAULT_AGGREGATE_BUDGET_MS,
@@ -256,6 +278,9 @@ export function createGenAiRouter({
   if (!hasGemini && !hasGroq && !hasOpenRouter) return null;
 
   const direct = hasGemini ? new GoogleGenAI({ apiKey: geminiApiKey }) : null;
+  // An empty array passed by a caller falls back to the DEFAULT chain —
+  // this is a defensive guard against accidental zero-length config, NOT
+  // a way to disable a tier. To disable a tier, omit its API key.
   const chain = Array.isArray(freeModelChain) && freeModelChain.length > 0 ? freeModelChain : DEFAULT_FREE_MODEL_CHAIN;
   const groqChain = Array.isArray(groqModelChain) && groqModelChain.length > 0 ? groqModelChain : DEFAULT_GROQ_MODEL_CHAIN;
 
