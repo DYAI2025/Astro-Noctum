@@ -3283,6 +3283,25 @@ app.post('/api/daily-interpretation', requireUserAuth, dailyInterpretationLimite
       return res.status(404).json({ error: { code: 'PULSE_NOT_FOUND' } });
     }
 
+    // C-1 (2026-05-09 audit): reload astro_profiles so the prompt
+    // builder can name the user's ACTUAL sign/element for the chosen
+    // archetype — not just the archetype key. Without this, the LLM
+    // would have to invent the sign (hallucination) or stay generic
+    // (no value over slot_2/3).
+    const { data: profileRow } = await supabaseServer
+      .from('astro_profiles')
+      .select('astro_json')
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (!profileRow?.astro_json || Object.keys(profileRow.astro_json).length === 0) {
+      // Profile was deleted or zeroed between pulse-creation and now.
+      // 422 forces the client to re-onboard — cleaner than 503.
+      return res.status(422).json({ error: { code: 'PROFILE_REQUIRED' } });
+    }
+    const interpretationCouncil = buildCouncilFromProfile(profileRow.astro_json);
+    const archetypeMatch = interpretationCouncil.find((c) => c.key === archetypeKey);
+    const signOrElement = archetypeMatch?.signOrElement ?? null;
+
     // L2: at most one decision per daily_pulse_id (enforced by
     // unique constraint daily_interpretations_one_per_pulse, mirrored
     // here so the server returns a structured 409 instead of leaking
@@ -3317,7 +3336,7 @@ app.post('/api/daily-interpretation', requireUserAuth, dailyInterpretationLimite
 
     let text;
     try {
-      const prompt = buildTagespulsInterpretationPrompt({ pulse, archetypeKey, locale });
+      const prompt = buildTagespulsInterpretationPrompt({ pulse, archetypeKey, signOrElement, locale });
       const result = await geminiClient.models.generateContent({
         model: 'gemini-2.0-flash',
         contents: prompt,

@@ -27,15 +27,33 @@ const PULSE_ROW = {
 };
 
 /**
+ * Default astro_profiles fixture used by mockFetch unless overridden via
+ * opts.profile = null (= "no row, profile missing") or opts.profile = {...}.
+ *
+ * Has Libra moon so DIN-PERSONAL-001 can verify the prompt builder
+ * surfaces 'Libra' for archetypeKey='mond'.
+ */
+const PROFILE_FIXTURE = {
+  user_id: 'user-1',
+  astro_json: {
+    western: { zodiac_sign: 'Taurus', moon_sign: 'Libra', ascendant_sign: 'Libra' },
+    bazi: { day_master: 'Ding', zodiac_sign: 'Dog' },
+    wuxing: { dominant_element: 'Holz' },
+  },
+};
+
+/**
  * @param {object} opts
  * @param {object|null} [opts.pulse]      — daily_pulses row or null
  * @param {object|null} [opts.existing]   — existing daily_interpretations row
  * @param {object|null} [opts.inserted]   — what insert returns (default uses 'gen-text')
+ * @param {object|null} [opts.profile]    — astro_profiles row override (default PROFILE_FIXTURE)
  */
 function mockFetch(opts = {}) {
   const pulse = 'pulse' in opts ? opts.pulse : PULSE_ROW;
   const existing = 'existing' in opts ? opts.existing : null;
   const inserted = opts.inserted ?? null;
+  const profile = 'profile' in opts ? opts.profile : PROFILE_FIXTURE;
 
   vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
     const url = typeof input === 'string' ? input
@@ -60,6 +78,23 @@ function mockFetch(opts = {}) {
         headers: new Headers({ 'content-type': 'application/json' }),
         json: async () => data,
         text: async () => JSON.stringify(data),
+      };
+    }
+
+    if (url.includes('/astro_profiles')) {
+      // C-1: server reloads astro_profiles to inject the user's actual
+      // signOrElement into the interpretation prompt. Tests get the
+      // PROFILE_FIXTURE by default unless `profile: null` is passed.
+      const headers = init?.headers || {};
+      const acceptRaw = headers instanceof Headers ? headers.get('accept') : (headers['Accept'] ?? headers.accept ?? '');
+      const wantsObject = String(acceptRaw || '').includes('vnd.pgrst.object');
+      const list = profile ? [profile] : [];
+      const body = wantsObject ? (list[0] ?? null) : list;
+      return {
+        ok: true, status: 200,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => body,
+        text: async () => JSON.stringify(body),
       };
     }
 
@@ -320,6 +355,80 @@ describe('POST /api/daily-interpretation — no-placeholders contract', () => {
     expect(res.body.text).toBe('Locked Mond text');
     // Confirm no AI call (otherwise the mock would have replaced the text).
     expect(res.body.text).not.toContain('SHOULD NOT BE CALLED');
+  });
+
+  it('DIN-PERSONAL-001: prompt contains user\'s actual signOrElement (Libra), not just archetype key', async () => {
+    // Spec C-1: spec requires "individuelle texte pro element/Zeichen"
+    // — the LLM must NAME the user's actual sign for the picked
+    // archetype. Without this, the LLM either stays generic or
+    // hallucinates a random sign (e.g. invents "Skorpion-Mond" when
+    // the user is actually a Libra moon).
+
+    // Capture the prompt that the geminiClient receives.
+    const captured = { prompt: '' };
+    const geminiCapturingMock = {
+      GoogleGenAI: class {
+        models = {
+          generateContent: vi.fn(async (req) => {
+            captured.prompt =
+              typeof req?.contents === 'string'
+                ? req.contents
+                : JSON.stringify(req?.contents ?? '');
+            return { text: 'Dein Libra-Mond zeigt heute eine ruhige Wachsamkeit. Eine Schicht unter der Oberfläche wird sichtbar. Schau hin, ohne sofort zu bewerten.' };
+          }),
+        };
+        getGenerativeModel = vi.fn().mockReturnValue({
+          generateContent: vi.fn().mockResolvedValue({ response: { text: () => '' } }),
+        });
+      },
+    };
+
+    // Profile fixture has Libra moon; archetypeKey='mond' → server
+    // must extract signOrElement='Libra' and inject it into the prompt.
+    mockFetch({ inserted: { id: 'interp-personal', text: 'persisted' } });
+    const app = await loadApp(geminiCapturingMock);
+
+    const res = await request(app)
+      .post('/api/daily-interpretation')
+      .set(AUTH_HEADER)
+      .set('Content-Type', 'application/json')
+      .send({
+        daily_pulse_id: 'pulse-uuid-1',
+        selected_archetype_key: 'mond',
+        locale: 'de',
+      });
+
+    expect(res.status).toBe(200);
+    // Critical: the prompt must NAME the user's actual moon sign.
+    expect(captured.prompt).toMatch(/Libra/);
+    // Sanity: still contains the archetype key.
+    expect(captured.prompt).toMatch(/mond/i);
+    // Anti-hallucination guard: prompt explicitly states the
+    // signOrElement, not leaving the LLM to invent one.
+    expect(captured.prompt).toMatch(/signOrElement/i);
+  });
+
+  it('DIN-PERSONAL-002: missing astro_profiles → 422 PROFILE_REQUIRED (no AI call)', async () => {
+    // Edge case: profile was deleted or zeroed between pulse-creation
+    // and now. Server must not feed an empty profile to the prompt
+    // builder (which would cascade into UNKNOWN sign + LLM may
+    // hallucinate or stay generic). 422 forces the client to re-onboard.
+    mockFetch({ profile: null });
+    const geminiNoCall = makeGeminiTextMock('SHOULD NOT BE CALLED — PROFILE_REQUIRED');
+    const app = await loadApp(geminiNoCall);
+
+    const res = await request(app)
+      .post('/api/daily-interpretation')
+      .set(AUTH_HEADER)
+      .set('Content-Type', 'application/json')
+      .send({
+        daily_pulse_id: 'pulse-uuid-1',
+        selected_archetype_key: 'mond',
+        locale: 'de',
+      });
+
+    expect(res.status).toBe(422);
+    expect(res.body?.error?.code).toBe('PROFILE_REQUIRED');
   });
 
   it('DIN-RATE-001: 7th call within 1h window returns 429 RATE_LIMITED', async () => {

@@ -206,7 +206,7 @@ Output STRICT JSON only. No markdown, no commentary. Schema:
  * @param {{pulse: any, archetypeKey: string, locale: 'de'|'en'}} input
  * @returns {string}
  */
-export function buildInterpretationPrompt({ pulse, archetypeKey, locale }) {
+export function buildInterpretationPrompt({ pulse, archetypeKey, signOrElement, locale }) {
   if (!VALID_ARCHETYPE_KEYS.includes(archetypeKey)) {
     throw new Error(`invalid archetype key: ${archetypeKey}`);
   }
@@ -216,6 +216,13 @@ export function buildInterpretationPrompt({ pulse, archetypeKey, locale }) {
     intensity < 0.4 ? 'low'
       : intensity < 0.7 ? 'mid'
         : 'high';
+
+  // signOrElement is the user's ACTUAL data point for the chosen
+  // archetype — e.g. archetypeKey='mond' → 'Libra' (Western moon
+  // sign), archetypeKey='wuxing_dom' → 'Holz', etc. If the profile
+  // is incomplete (signOrElement is null or '—'), we instruct the
+  // LLM to NOT invent a sign. Per 2026-05-09 audit C-1.
+  const sign = signOrElement && signOrElement !== '—' ? signOrElement : null;
 
   return `
 You are Bazodiac's Tagesdeutung voice (Phase 2). You write in "Poetic Realism" with worldly imagery — never astro-mechanik.
@@ -227,12 +234,17 @@ CONTEXT:
 - Slot 2 (Brücke): "${pulse.slot_2 ?? ''}"
 - Slot 3 (Impuls): "${pulse.slot_3 ?? ''}"
 - Selected archetype: ${archetypeKey}
+- User's signOrElement for this archetype: ${sign ?? 'UNKNOWN — DO NOT invent a sign'}
 - Output language: ${lang}
 
 GEMEINSAME REGELN:
 - 50-90 Wörter, 3-4 Sätze (intensity high: 4 erlaubt, max 4)
 - Du-Form
-- Zeichen- und Element-Namen erlaubt (Skorpion, Wasser, Holz)
+- DU MUSST das konkrete Zeichen/Element benennen (siehe "User's
+  signOrElement" oben). Schreibe z.B. "Dein Skorpion-Mond" oder
+  "Deine Wasser-Energie", nicht "der Mond" oder "ein Element".
+- WENN signOrElement = UNKNOWN: vermeide Sign-spezifische Aussagen
+  ganz — bleib bei archetypischen Qualitäten ohne ein Sign zu erfinden.
 - Astrologische Mechanik VERBOTEN ("weil Mars in Konjunktion …")
 - Keine Wertung des Tages (gut/schwer/herausfordernd)
 - Aphorismus-Bezug erkennbar, aber NICHT zitieren — semantisch fortführen
