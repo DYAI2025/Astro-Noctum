@@ -39,6 +39,7 @@ import { useCelestialOrrery } from "../hooks/useCelestialOrrery";
 import { CITIES } from "../lib/astronomy/data";
 import { DailyChartHero } from "./dashboard/DailyChartHero";
 import { SignaturAnchorCard } from "./dashboard/SignaturAnchorCard";
+import { TagespulsCard } from "./dashboard/TagespulsCard";
 import { useActiveImpacts } from "../hooks/useActiveImpacts";
 
 const BirthChartOrrery = lazy(() => import("./BirthChartOrrery").then(m => ({ default: m.BirthChartOrrery })));
@@ -374,6 +375,15 @@ export function Dashboard({
         <div className="flex shrink-0 items-center gap-3 pt-1">
         </div>
       </motion.header>
+
+      {/* ═══ 0. TAGESPULS — curated aphorism + LLM slots + Rat-der-sechs (Phase F) ═══ */}
+      {isFeatureEnabled('tagespuls_neu_v1') && (
+        <motion.div {...fadeIn(0.0)}>
+          <SectionErrorBoundary name="TagespulsCard">
+            <TagespulsCard onCompleteProfile={onReset} />
+          </SectionErrorBoundary>
+        </motion.div>
+      )}
 
       {/* ═══ 1. DAILY CHART HERO (unified volatile hero — DEC-dashboard-volatile-first) ═══ */}
       <motion.div {...fadeIn(0.02)}>
