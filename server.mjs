@@ -3344,10 +3344,14 @@ app.post('/api/daily-interpretation', requireUserAuth, dailyInterpretationLimite
       .eq('user_id', userId)
       .maybeSingle();
     if (!profileRow?.astro_json || Object.keys(profileRow.astro_json).length === 0) {
-      // Rare race window: daily_pulse exists (so /api/daily-pulse
-      // already loaded the profile successfully), but the profile was
-      // deleted/zeroed between then and this call. 422 forces the
-      // client to re-onboard — cleaner than 503.
+      // M-3: Near-impossible race window. /api/daily-pulse already
+      // loaded the profile successfully (otherwise this request's
+      // pulse_id couldn't exist). Reaching this 422 means the profile
+      // was deleted/zeroed BETWEEN the pulse-create call and this
+      // interpretation call — typically a deliberate user action
+      // (e.g., "reset my chart" between picking the figure and
+      // submitting). 422 forces the client to re-onboard rather than
+      // surfacing a confusing 503 or generic 500.
       return res.status(422).json({ error: { code: 'PROFILE_REQUIRED' } });
     }
     const interpretationCouncil = buildCouncilFromProfile(profileRow.astro_json);
@@ -3416,6 +3420,12 @@ app.post('/api/daily-interpretation', requireUserAuth, dailyInterpretationLimite
           });
         }
       }
+      // M-5: prefer Postgres `code` over `message` to avoid logging
+      // row data that the message field MIGHT contain. Supabase JS
+      // errors don't typically carry user content in `message` (they
+      // surface PG codes like 23505, 23503, etc.), but `code || message`
+      // is belt-and-braces. If a future Supabase change exposes more in
+      // `message`, swap to redactLog(insErr) from server/utils/redact.mjs.
       console.error('[daily-interpretation] Persist failed:', insErr?.code || insErr?.message);
       return res.status(500).json({ error: { code: 'PERSIST_FAILED' } });
     }
