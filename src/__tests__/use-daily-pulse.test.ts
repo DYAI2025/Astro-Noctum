@@ -246,4 +246,85 @@ describe('useDailyPulse', () => {
     expect(result.current.pulse?.aphorism.slot_2).toBeNull();
     expect(result.current.pulse?.aphorism.slot_3).toBeNull();
   });
+
+  // ── 409 ALREADY_DECIDED handling (PR #335 review I-4) ──────────────────────
+  // The hook surfaces a server 409 as if it were the current selection,
+  // so the user sees their own previous choice rendered in Phase 2 with
+  // no error UI. Three regression guards:
+
+  it('DPH-LOCK-001: 409 with full envelope surfaces locked archetype as selection', async () => {
+    // Pulse loads normally
+    authedFetch.mockResolvedValueOnce(makeRes(200, VALID_PULSE));
+    // Then user picks 'sonne' but server returns 409 — they already picked 'mond' earlier.
+    authedFetch.mockResolvedValueOnce(
+      makeRes(409, {
+        error: {
+          code: 'ALREADY_DECIDED',
+          locked_archetype_key: 'mond',
+          text: 'Locked Mond text from earlier today',
+        },
+      }),
+    );
+    const useDailyPulse = await loadHook();
+    const { result } = renderHook(() => useDailyPulse('de'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    act(() => {
+      result.current.selectCouncilFigure('sonne');
+    });
+    await waitFor(() => expect(result.current.loadingInterpretation).toBe(false));
+
+    // Hook surfaces the LOCKED archetype, not what the user clicked.
+    expect(result.current.selectedFigure).toBe('mond');
+    expect(result.current.interpretation?.text).toBe('Locked Mond text from earlier today');
+    // No error envelope — locked decision is the canonical Phase 2 view.
+    expect(result.current.interpretationError).toBeNull();
+  });
+
+  it('DPH-LOCK-002: 409 with malformed envelope (missing locked_archetype_key) falls back to error UI', async () => {
+    // Defense-in-depth: if the server ever sends a malformed 409 (e.g.,
+    // bug in error formatting), the hook must not silently set
+    // selectedFigure to undefined. It falls through to the generic
+    // error mapping so the user sees a retry button rather than a
+    // blank Phase 2.
+    authedFetch.mockResolvedValueOnce(makeRes(200, VALID_PULSE));
+    authedFetch.mockResolvedValueOnce(
+      makeRes(409, { error: { code: 'ALREADY_DECIDED' /* missing locked_* + text */ } }),
+    );
+    const useDailyPulse = await loadHook();
+    const { result } = renderHook(() => useDailyPulse('de'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    act(() => {
+      result.current.selectCouncilFigure('sonne');
+    });
+    await waitFor(() => expect(result.current.loadingInterpretation).toBe(false));
+
+    // Did NOT silently lock — user keeps the archetype they clicked
+    // (or the existing selection state) but gets a proper error code.
+    expect(result.current.interpretation).toBeNull();
+    // Status 409 maps to the generic 'unknown' bucket via mapStatusToError.
+    expect(result.current.interpretationError?.code).toBe('unknown');
+  });
+
+  it('DPH-LOCK-003: 409 with locked_archetype_key but missing text falls back to error UI', async () => {
+    // Defensive: text is the rendered content. Without it, surfacing
+    // the locked archetype with no text would render Phase 2 with an
+    // empty body. Better to force a retry.
+    authedFetch.mockResolvedValueOnce(makeRes(200, VALID_PULSE));
+    authedFetch.mockResolvedValueOnce(
+      makeRes(409, { error: { code: 'ALREADY_DECIDED', locked_archetype_key: 'mond' /* missing text */ } }),
+    );
+    const useDailyPulse = await loadHook();
+    const { result } = renderHook(() => useDailyPulse('de'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    act(() => {
+      result.current.selectCouncilFigure('sonne');
+    });
+    await waitFor(() => expect(result.current.loadingInterpretation).toBe(false));
+
+    expect(result.current.interpretation).toBeNull();
+    expect(result.current.interpretationError?.code).toBe('unknown');
+  });
 });
