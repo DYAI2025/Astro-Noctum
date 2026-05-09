@@ -249,6 +249,14 @@ GEMEINSAME REGELN:
 - Keine Wertung des Tages (gut/schwer/herausfordernd)
 - Aphorismus-Bezug erkennbar, aber NICHT zitieren — semantisch fortführen
 - Keine Affirmation, keine Pinterest-Esoterik
+- DU MUSST mindestens eine konkrete Information geben, die slot_2
+  und slot_3 NICHT enthielten — typischerweise eine archetypische
+  Eigenschaft des konkreten Zeichens/Elements oder eine konkrete
+  Tagessituation, in der dieses Zeichen besonders trägt/spannt.
+- VERBOT: slot_2 oder slot_3 paraphrasieren. Wenn dein Output ohne
+  Bedeutungsverlust durch slot_2 oder slot_3 ersetzbar wäre, regener
+  intern, bevor du antwortest. Die Tagesdeutung muss EIGENSTÄNDIG
+  Wert liefern, nicht zwei Sätze umformulieren.
 
 MODUS-LOGIK (zwingend):
 - pulse:    Hauptbezug = gewählter Archetyp + 1-3 weitere Figuren mitgenannt, ohne Hervorhebung. Tragend.

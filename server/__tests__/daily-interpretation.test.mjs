@@ -468,4 +468,52 @@ describe('POST /api/daily-interpretation — no-placeholders contract', () => {
     expect(blocked.body?.error?.code).toBe('RATE_LIMITED');
     expect(blocked.body?.error?.retry_after).toBe(3600);
   });
+
+  it('DIN-PERSONAL-003: prompt forbids paraphrasing slot_2 / slot_3', async () => {
+    // Spec I-1: "Keine Wieerhlungen" — the interpretation must add
+    // value beyond what slot_2 (Brücke) and slot_3 (Handlungsimpuls)
+    // already said. Without an explicit guard, the LLM can rephrase
+    // slot_2 in archetype-flavored language and call that the
+    // Tagesdeutung — formally compliant but spec-violating.
+
+    const captured = { prompt: '' };
+    const geminiCapturingMock = {
+      GoogleGenAI: class {
+        models = {
+          generateContent: vi.fn(async (req) => {
+            captured.prompt =
+              typeof req?.contents === 'string'
+                ? req.contents
+                : JSON.stringify(req?.contents ?? '');
+            return { text: 'Dein Libra-Mond zeigt heute eine ruhige Wachsamkeit, eine Schicht unter der Oberfläche wird sichtbar.' };
+          }),
+        };
+        getGenerativeModel = vi.fn().mockReturnValue({
+          generateContent: vi.fn().mockResolvedValue({ response: { text: () => '' } }),
+        });
+      },
+    };
+
+    mockFetch({ inserted: { id: 'interp-anti-paraphrase', text: 'persisted' } });
+    const app = await loadApp(geminiCapturingMock);
+
+    const res = await request(app)
+      .post('/api/daily-interpretation')
+      .set(AUTH_HEADER)
+      .set('Content-Type', 'application/json')
+      .send({
+        daily_pulse_id: 'pulse-uuid-1',
+        selected_archetype_key: 'mond',
+        locale: 'de',
+      });
+
+    expect(res.status).toBe(200);
+    // Assert anti-paraphrase guards are present in the prompt:
+    // POSITIVE rule: "MUSS Information ... nicht in slot_2 / slot_3"
+    expect(captured.prompt).toMatch(/MUSS.+Information.+slot_2.*slot_3|slot_2.*slot_3.+NICHT.*enthielten/is);
+    // NEGATIVE rule: explicit verbot of paraphrasing
+    expect(captured.prompt).toMatch(/VERBOT.+paraphrasieren/i);
+    // Regenerate clause: if output ≈ slot_2 or slot_3, regenerate.
+    expect(captured.prompt).toMatch(/regener/i);
+  });
 });
