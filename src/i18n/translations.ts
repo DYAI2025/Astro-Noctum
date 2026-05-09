@@ -506,6 +506,34 @@ const translationsEn: DeepStringRecord = {
     hourStem: "Hour Pillar",
     dominantElement: "Dominant Element",
   },
+  tagespuls: {
+    loading: "Loading today...",
+    bridge: "Bridge to today",
+    impulse: "Action impulse",
+    council: {
+      title: "Who guides you today?",
+      sonne: "Sun",
+      mond: "Moon",
+      aszendent: "Ascendant",
+      day_master: "Day Master",
+      jahrestier: "Year Animal",
+      wuxing_dom: "Wu Xing",
+    },
+    back: "Choose another guide",
+    modes: {
+      pulse: "PULSE",
+      trace: "TRACE",
+      spannung: "TENSION",
+    },
+    errors: {
+      profileRequired: "Please complete your birth data.",
+      profileCta: "Complete data",
+      network: "Connection issue.",
+      aiUnavailable: "Cannot load today yet. Please try again shortly.",
+      retry: "Try again",
+      unknown: "Something went wrong.",
+    },
+  },
 } as const;
 
 const translationsDe: DeepStringRecord = {
@@ -1006,6 +1034,34 @@ const translationsDe: DeepStringRecord = {
     monthStem: "Monatssäule",
     hourStem: "Stundensäule",
     dominantElement: "Dominantes Element",
+  },
+  tagespuls: {
+    loading: "Heute wird geladen...",
+    bridge: "Brücke ins Heute",
+    impulse: "Handlungsimpuls",
+    council: {
+      title: "Wer begleitet dich heute?",
+      sonne: "Sonne",
+      mond: "Mond",
+      aszendent: "Aszendent",
+      day_master: "Tag-Meister",
+      jahrestier: "Jahrestier",
+      wuxing_dom: "Wu Xing",
+    },
+    back: "Andere Figur wählen",
+    modes: {
+      pulse: "PULS",
+      trace: "SPUR",
+      spannung: "SPANNUNG",
+    },
+    errors: {
+      profileRequired: "Bitte ergänze deine Geburtsdaten.",
+      profileCta: "Daten ergänzen",
+      network: "Verbindungsproblem.",
+      aiUnavailable: "Heute können wir noch nicht laden. Bitte gleich erneut.",
+      retry: "Erneut versuchen",
+      unknown: "Etwas ist schiefgelaufen.",
+    },
   },
 };
 
