@@ -21,7 +21,8 @@
     "start": "npm run check:runtime-imports && node server.mjs",
     "typecheck:src": "bash ./scripts/ci-typecheck-src.sh",
     "typecheck": "node ./scripts/run-typecheck.mjs",
-    "check:runtime-imports": "node scripts/check-runtime-ts-imports.mjs"
+    "check:runtime-imports": "node scripts/check-runtime-ts-imports.mjs",
+    "seed:aphorisms": "node --env-file=.env scripts/seed-aphorisms.mjs"
   },
   "engines": {
     "node": ">=20.19.0"
