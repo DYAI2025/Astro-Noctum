@@ -1,5 +1,37 @@
 # Changelog
 
+## [Unreleased] - 2026-05-07 — Dashboard Stability Hotfixes (PR 1 of dashboard-flow-tagespuls plan)
+
+### Bug fixes
+
+- **`/signatur` no longer crashes** (`src/components/signatur-3d/SignatureSphere3D.tsx`) — react-three-fiber's `applyProps` treats unknown JSX attributes on `<mesh>`/`<group>` as Three.js property setters. `data-tint="gold"` and three `data-mesh-role` attributes (lines 373, 390-391, 411 from April commit `33a1119`) triggered `Uncaught Error: R3F: Cannot set "data-tint"`. The page-level `ErrorBoundary` caught it and rendered "Etwas ist schiefgelaufen" instead of the Chladni sphere. **This was the actual root cause of the user-reported "Signatur kaputt"** — not a data-flow issue. Removed the data-* attrs (they were non-functional on R3F nodes anyway — CSS selectors don't reach `Three.Object3D`). Source-level guard tests prevent re-introduction. Three sibling tests in `SignatureSphere3D.test.tsx` (Task-5b/5c/6 additions) that asserted the `[data-mesh-role]` / `[data-tint]` selectors were deleted — they only passed because the test file's Canvas mock short-circuits R3F's `applyProps`, letting the attrs fall through to JSDOM. They validated the bug, not the feature, and violated the file's own scope statement ("Internal scene-graph coverage beyond that is out of scope").
+- **`/api/experience/daily` cache no longer poisoned by fallback payloads** (`server.mjs`) — when the AI router fully exhausts (Gemini 429 + OpenRouter unset/exhausted/empty payload/malformed JSON), the daily handler falls back to `buildDailyFallbackPayload()`. Previously that fallback was written into both the L1 in-memory `horoscopeCache` and the L2 `daily_horoscope_cache` Supabase table — for the next 24h every request for the same `(user, date, lang)` returned the cached generic text without retrying the AI router. Even after the Gemini quota reset, users saw the generic "Heute fließt deine Energie ruhig…" all day. Fix: gate both cache writes on `parsedData.meta.engine_version !== 'v1-server-fallback'`. Real AI responses cache as before; fallback responses go to the client without poisoning the cache, forcing a retry on the next request. Original plan's HOTFIX-B (OpenRouter fallback + 24h cache) was already implemented in `server/ai-router.mjs` and `server.mjs:1563` — the live investigation surfaced this narrower bug.
+
+### Features
+
+- **Visible fallback indicator on `DailyChartHero`** (`src/components/dashboard/DailyChartHero.tsx`, `src/components/Dashboard.tsx`) — new optional `isFallback` prop. When `useFirstRunDaily()` falls back to `buildFallbackDaily()` (FuFirE/Gemini outage), Dashboard now passes `isFallback={dailyData?.meta?.engine_version === 'v1-local-fallback'}`. Hero renders a 9px-opacity-40% line under the impuls paragraph: `"↻ Heute nicht verfügbar — generischer Inhalt"` (DE) / `"↻ Unavailable today — generic content"` (EN). Real API response → no label. Profile-incomplete → no label (different state already handled).
+- **Em-dash placeholders for null space-weather drivers** (`src/components/dashboard/DailyChartHero.tsx`) — Driver Strip values (Kp, solar pressure, transit count) now render `—` when nullish/non-finite instead of crashing on `.toFixed()` or showing `NaN%`. Belt-and-braces guard for upstream NOAA outage or pre-resolution `useSpaceWeather()` hydration.
+
+### Documentation
+
+- **Coherence data-source audit** (`docs/2026-05-07-coherence-data-sources.md`) — verdict: ✅ single source of truth. All three coherence fields (`baseCoherence`, `positiveDailyDelta`, `displayedCoherence`) flow `astro_profiles.astro_json.fusion.harmony_index` + NOAA solar_pressure → `computeActiveImpacts` (server.mjs:2151) → `POST /api/impact/active` → `useActiveImpacts` hook → `Dashboard.tsx:269` → `DailyChartHero`. No parallel client computation. **Surfaced sharp edge:** the Zod schema validates each field independently as `[0,100]` integers but does NOT enforce the `displayed === base + delta` invariant — a future server regression would render an incoherent ring with no runtime error, caught only by the contract test.
+- **`/api/impact/active` contract documented** (`src/hooks/useActiveImpacts.ts`) — comment at the fetch callsite explains the empty `{}` body is intentional: server resolves `req.userId` via `requireUserAuth`, loads `astro_profiles` server-side, computes impacts without client input. Reference: `server.mjs:2198`.
+- **Vertiefen-button is fallback-agnostic** (`src/components/Dashboard.tsx`) — comment at the `onOpenDayModal` callsite documents that the `dailyEnabled` gate is independent of `dailyData` presence by design. Fallback data is a valid basis for opening the detail modal; the modal itself handles fallback-aware rendering.
+
+### Tests
+
+- **2 source-level guard tests** (`src/components/signatur-3d/__tests__/no-r3f-data-attrs.test.tsx`) — `SS3D-NO-DATA-001/002` prevent re-introduction of `data-mesh-role` / `data-tint` on R3F nodes.
+- **3 cache-poisoning regression tests** (`server/__tests__/experience-daily-no-cache-poisoning.test.mjs`) — `EDF-NCP-001` (real AI cached), `EDF-NCP-002` (fallback returned but NOT cached), `EDF-NCP-003` (consecutive failed-AI calls both retry the pipeline — closes the symptom directly).
+- **3 fallback-indicator tests** (`src/__tests__/daily-chart-hero-fallback-label.test.tsx`) — `DCH-FB-001/002/003` covering visible-when-fallback, hidden-when-real, hidden-when-impuls-empty.
+- **3 driver-dash tests** (`src/__tests__/daily-chart-hero-driver-dashes.test.tsx`) — `DCH-DASH-001/002/003` covering happy path, single-null Kp, all-null degenerate state.
+- Full suite: **2288/2288 passing** (was 2280/2280 pre-PR; net +11 = +2 guard +3 cache +3 indicator +3 dash − 0 from the 3 deleted obsolete tests counted in the +14 new). 245 test files. `tsc --noEmit` clean. `npm run build` succeeds in 10.35s.
+
+### Notes
+
+- Implementation plan: `docs/plans/2026-05-07-dashboard-flow-tagespuls-3d.md` (PR 1 = HOTFIX-A + HOTFIX-B + Phase D + Phase 4; PR 2 = Phase 2 + 3 + 5; PR 3 = Phase T, gated on aphorism approvals).
+- The plan's HOTFIX-B was authored before `server/ai-router.mjs` landed — the live investigation surfaced that the original fallback + 24h cache were already in place, and the actual symptom was the cache-poisoning narrowing described above. Plan kept for traceability; implementation was redirected.
+- Pending follow-ups (not blocking PR 1): (a) add a runtime invariant check for `displayed === base + delta` on `/api/impact/active` responses to harden the coherence contract surfaced by the audit; (b) the Driver-Strip TS types claim `kpIndex: number` (non-nullable) but the user-reported NaN/undefined symptom proves an upstream cast lies somewhere — worth tracing.
+
 ## [Unreleased] - 2026-05-07 — Dashboard CTA Consolidation (Phases A–F complete)
 
 ### Features
