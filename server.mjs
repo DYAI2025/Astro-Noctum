@@ -1777,62 +1777,6 @@ function buildWeeklyFallbackAreas(areaScores) {
   });
 }
 
-function buildDailyFallbackPayload({ targetDate, lang, bafeData }) {
-  const german = lang !== 'en';
-  const dayMaster = bafeData?.bazi?.pillars?.day?.stem || '';
-  const sunSign = bafeData?.western?.zodiac_sign || (german ? 'dein Zeichen' : 'your sign');
-  const moonSign = bafeData?.western?.moon_sign || (german ? 'dein Mondzeichen' : 'your moon sign');
-  const harmonyIndex = 0.52;
-  const dayMode = harmonyIndex >= 0.5 ? 'trace' : 'pulse';
-  const synthesis = german
-    ? 'Heute entsteht Zug in deinem Alltag. Was innerlich klar ist, will sichtbar werden.'
-    : 'Today carries momentum. What is clear inside wants to become visible.';
-
-  return {
-    date: targetDate,
-    western: {
-      summary: german
-        ? `${sunSign} bringt heute Fokus auf klare Prioritäten.`
-        : `${sunSign} brings a focus on clear priorities today.`,
-      themes: german ? ['Ausrichtung', 'Klarheit'] : ['Alignment', 'Clarity'],
-      caution: german
-        ? 'Verteile deine Aufmerksamkeit nicht auf zu viele Baustellen.'
-        : 'Avoid splitting your attention across too many fronts.',
-      opportunity: german
-        ? 'Ein bewusst gesetzter Schritt kann heute viel tragen.'
-        : 'One deliberate step can carry a lot today.',
-      evidence: { transit_sectors: [1, 5] },
-    },
-    eastern: {
-      summary: german
-        ? `${moonSign} öffnet den Blick für feine Signale im Umfeld.`
-        : `${moonSign} opens your attention to subtle signals around you.`,
-      themes: german ? ['Wahrnehmung', 'Timing'] : ['Perception', 'Timing'],
-      caution: german
-        ? 'Handle nicht aus Druck, sondern aus innerer Ruhe.'
-        : 'Act from calm intent, not pressure.',
-      opportunity: german
-        ? 'Eine kleine Kurskorrektur verbessert den Tagesfluss deutlich.'
-        : 'A small course correction can improve the flow of your day.',
-      evidence: { day_master: dayMaster },
-    },
-    fusion: {
-      summary: german
-        ? 'Der Tag zeigt eine konkrete Tendenz mit gut nutzbarer Klarheit.'
-        : 'The day shows a concrete tendency with usable clarity.',
-      synthesis,
-      action: german
-        ? 'Entscheide heute eine Sache klar und setze sie direkt um.'
-        : 'Choose one thing clearly today and implement it directly.',
-      pushworthy: true,
-      push_text: german ? 'Heute ist ein guter Moment für einen klaren Schritt.' : 'Today is a good moment for one clear step.',
-      harmony_index: harmonyIndex,
-      day_mode: dayMode,
-    },
-    meta: { engine_version: 'v1-server-fallback' },
-  };
-}
-
 app.get("/api/horoscope/daily/:userId", async (req, res) => {
   const userId = String(req.params.userId || "").trim();
   if (!userId) return res.status(400).json({ error: "Missing userId" });
@@ -2883,16 +2827,19 @@ NEVER use in synthesis: "weil", "da heute", planet names (Mars, Venus etc.), "di
     let parsedData = null;
 
     if (!jsonStr) {
-      console.error("[experience/daily] Empty response text from model, using fallback payload");
-      parsedData = buildDailyFallbackPayload({ targetDate, lang, bafeData });
-    } else {
-      jsonStr = extractJsonPayload(jsonStr);
-      try {
-        parsedData = JSON.parse(jsonStr);
-      } catch (parseErr) {
-        console.warn('[experience/daily] Model JSON parse failed, using structured fallback:', parseErr?.message || parseErr);
-        parsedData = buildDailyFallbackPayload({ targetDate, lang, bafeData });
-      }
+      console.warn('[experience/daily] Empty response text from model; returning 503 (no fallback)');
+      return res.status(503).json({
+        error: { code: 'AI_UNAVAILABLE', retry_after: 300, recoverable: true }
+      });
+    }
+    jsonStr = extractJsonPayload(jsonStr);
+    try {
+      parsedData = JSON.parse(jsonStr);
+    } catch (parseErr) {
+      console.warn('[experience/daily] Model JSON parse failed; returning 503 (no fallback):', parseErr?.message || parseErr);
+      return res.status(503).json({
+        error: { code: 'AI_UNAVAILABLE', retry_after: 300, recoverable: true }
+      });
     }
 
     // Ensure harmony_index + day_mode are always present regardless of model output
@@ -2906,38 +2853,32 @@ NEVER use in synthesis: "weil", "da heute", planet names (Mars, Venus etc.), "di
       appendNightHarmony(parsedData, now);
     }
 
-    // HOTFIX-B (cache-poisoning guard): refuse to cache server-side fallback payloads.
-    // When the AI provider returns empty/malformed output we still respond to the client,
-    // but caching the generic fallback would freeze every user on the same canned text for
-    // the next 24h (HOROSCOPE_CACHE_TTL) — even after Gemini quota resets at midnight UTC.
-    // Real AI responses still cache as before; only fallback short-circuits both L1 and L2.
-    const isServerFallback = parsedData?.meta?.engine_version === 'v1-server-fallback';
+    // Phase G (KILL ALL PLACEHOLDERS): The server-side fallback path is gone —
+    // empty/malformed AI responses now return 503 instead of synthesizing generic
+    // text. Therefore only real AI payloads ever reach this point and caching is
+    // unconditional. The previous HOTFIX-B cache-poisoning guard is no longer
+    // necessary because the poisoning source (buildDailyFallbackPayload) was removed.
+    horoscopeCache.set(cacheKeyD, { data: parsedData, timestamp: Date.now() });
 
-    if (!isServerFallback) {
-      horoscopeCache.set(cacheKeyD, { data: parsedData, timestamp: Date.now() });
-
-      if (supabaseServer) {
-        // Persist to L2 (fire-and-forget) — badges not cached (computed fresh each request)
-        supabaseServer
-          .from('daily_horoscope_cache')
-          .upsert({
-            user_id: userId,
-            local_date: targetDate,
-            engine_version: 'v1-gemini-daily',
-            signature_version: 1,
-            payload_json: parsedData,
-          }, { onConflict: 'user_id,local_date,engine_version,signature_version' })
-          .then(({ error }) => {
-            if (error) {
-              console.warn('[daily] DB cache upsert failed:', error.message);
-            }
-          })
-          .catch((err) => {
-            console.error('[daily] DB cache upsert rejected:', err);
-          });
-      }
-    } else {
-      console.warn('[experience/daily] Skipping L1+L2 cache write for server fallback payload (forces retry on next request)');
+    if (supabaseServer) {
+      // Persist to L2 (fire-and-forget) — badges not cached (computed fresh each request)
+      supabaseServer
+        .from('daily_horoscope_cache')
+        .upsert({
+          user_id: userId,
+          local_date: targetDate,
+          engine_version: 'v1-gemini-daily',
+          signature_version: 1,
+          payload_json: parsedData,
+        }, { onConflict: 'user_id,local_date,engine_version,signature_version' })
+        .then(({ error }) => {
+          if (error) {
+            console.warn('[daily] DB cache upsert failed:', error.message);
+          }
+        })
+        .catch((err) => {
+          console.error('[daily] DB cache upsert rejected:', err);
+        });
     }
 
     const responseData = await prepareDailyResponse(parsedData);

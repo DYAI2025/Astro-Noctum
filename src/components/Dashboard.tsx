@@ -401,10 +401,8 @@ export function Dashboard({
             profileIncomplete={!metaLoading && !metaError && profileMeta.birthInput === null}
             onCompleteProfile={onReset}
             // onOpenDayModal is intentionally passed regardless of dailyData
-            // presence. Fallback data is a valid basis for opening the detail
-            // modal; the modal itself handles fallback-aware rendering.
+            // presence. The modal handles its own loading/error states honestly.
             onOpenDayModal={dailyEnabled ? () => setIsDayModalOpen(true) : undefined}
-            isFallback={dailyData?.meta?.engine_version === 'v1-local-fallback'}
           />
         </SectionErrorBoundary>
       </motion.div>

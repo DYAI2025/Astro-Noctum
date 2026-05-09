@@ -28,7 +28,7 @@ const MOCK_DAILY: DailyResponse = {
   eastern: { summary: 'East', themes: [], caution: '', opportunity: '', evidence: {} },
   fusion: {
     summary: 'Fusion',
-    synthesis: 'Heute fließt Energie ruhig.',
+    synthesis: 'Test fixture synthesis line.',
     action: 'Innehalten.',
     pushworthy: false,
     push_text: '',
@@ -123,6 +123,6 @@ describe('DashboardTagesEnergie — resonance badges', () => {
         isPremium={true}
       />,
     );
-    expect(screen.getByText('Heute fließt Energie ruhig.')).toBeInTheDocument();
+    expect(screen.getByText('Test fixture synthesis line.')).toBeInTheDocument();
   });
 });
