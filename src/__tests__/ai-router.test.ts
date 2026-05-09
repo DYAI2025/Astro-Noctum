@@ -347,6 +347,52 @@ describe('createGenAiRouter — fallback chain', () => {
     expect(String(fetchMock.mock.calls[3][0])).toContain('openrouter.ai');
   });
 
+  it('CASCADE-BUDGET: aborts cascade after aggregate timeout (90s default)', async () => {
+    // Real-world bound: a dashboard load shouldn't hang for >90s waiting
+    // for the cascade to exhaust. Each leg has its own 30s per-call timeout
+    // but stacking 10 legs (Gemini + 4 Groq + 5 OpenRouter) = 275s worst
+    // case. Assert the router enforces an aggregate ceiling.
+    //
+    // Strategy: each leg fails fast with a cascadable 503 so the loop
+    // iterates; the budget fires between iterations once cumulative time
+    // exceeds 1s.
+    const slowFail = () =>
+      new Promise<never>((_resolve, reject) => {
+        setTimeout(() => {
+          const err = Object.assign(new Error('503 model overloaded'), { status: 503 });
+          reject(err);
+        }, 250);
+      });
+    mockGenerateContent.mockImplementationOnce(slowFail);
+    const fetchMock = vi.fn(slowFail);
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    const router = createGenAiRouter({
+      geminiApiKey: 'g',
+      groqApiKey: 'q',
+      openrouterApiKey: 'o',
+      groqModelChain: ['groq-a', 'groq-b'],
+      freeModelChain: ['or-a', 'or-b'],
+      aggregateBudgetMs: 1_000,
+    })!;
+
+    const start = Date.now();
+    await expect(
+      router.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: 'hi',
+      }),
+    ).rejects.toThrow(/aggregate budget|cascade timeout/i);
+    const elapsed = Date.now() - start;
+
+    // Sanity: budget kicked in before all 5 attempts (1 Gemini + 2 Groq +
+    // 2 OR) had a chance to run their full 250ms each (= 1250ms total).
+    expect(elapsed).toBeLessThan(1_500);
+    // And at least 2 attempts must have happened (otherwise the budget
+    // didn't even let the loop progress).
+    expect(mockGenerateContent.mock.calls.length + fetchMock.mock.calls.length).toBeGreaterThanOrEqual(2);
+  });
+
   it('defaults the OpenRouter HTTP-Referer header to https://bazodiac.space', async () => {
     // Regression guard: default `referer` in createGenAiRouter must stay at
     // the production custom domain, not revert to a Railway-internal URL.

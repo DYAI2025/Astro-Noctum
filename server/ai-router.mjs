@@ -232,6 +232,13 @@ async function callOpenRouter({ apiKey, model, request, referer, title }) {
  * return `null` so the existing `if (!geminiClient)` guards at every
  * call-site keep working.
  */
+/**
+ * Default aggregate cascade budget. Caps worst-case latency for a
+ * dashboard request: even if every provider times out at 30s/leg, the
+ * router throws after 90s rather than 275s.
+ */
+const DEFAULT_AGGREGATE_BUDGET_MS = 90_000;
+
 export function createGenAiRouter({
   geminiApiKey,
   groqApiKey,
@@ -240,6 +247,7 @@ export function createGenAiRouter({
   groqModelChain = DEFAULT_GROQ_MODEL_CHAIN,
   referer = 'https://bazodiac.space',
   title = 'Bazodiac',
+  aggregateBudgetMs = DEFAULT_AGGREGATE_BUDGET_MS,
 } = {}) {
   const hasGemini = typeof geminiApiKey === 'string' && geminiApiKey.length > 0;
   const hasGroq = typeof groqApiKey === 'string' && groqApiKey.length > 0;
@@ -251,6 +259,7 @@ export function createGenAiRouter({
   const groqChain = Array.isArray(groqModelChain) && groqModelChain.length > 0 ? groqModelChain : DEFAULT_GROQ_MODEL_CHAIN;
 
   async function generateContent(request) {
+    const startedAt = Date.now();
     const attempts = [];
     if (direct) {
       attempts.push({
@@ -277,6 +286,16 @@ export function createGenAiRouter({
     }
     let lastErr = null;
     for (let i = 0; i < attempts.length; i++) {
+      // Aggregate-budget guard: don't start a new leg if we've already
+      // burned more than the budget. Per-leg AbortControllers still cap
+      // individual call latency.
+      if (Date.now() - startedAt >= aggregateBudgetMs) {
+        const total = Date.now() - startedAt;
+        console.warn(`[ai-router] aggregate budget exhausted after ${total}ms, giving up`);
+        const budgetErr = new Error(`[ai-router] aggregate budget exhausted (${total}ms >= ${aggregateBudgetMs}ms)`);
+        budgetErr.code = 'CASCADE_TIMEOUT';
+        throw budgetErr;
+      }
       const { label, call } = attempts[i];
       try {
         const result = await call();
