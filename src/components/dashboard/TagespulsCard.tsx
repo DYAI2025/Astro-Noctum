@@ -13,7 +13,7 @@
  *   Phase 2 (after `selectedFigure`):
  *     - Selected figure header + sign/element
  *     - Personalized interpretation text
- *     - "← Andere Figur wählen" back button
+ *     - NO back button — Phase 2 is irreversible (spec C-2: one decision per day)
  *
  * NO PLACEHOLDER FALLBACK RENDERING. When slot_2 / slot_3 are null the
  * corresponding section is omitted entirely — never replaced with generic
@@ -130,18 +130,25 @@ function CouncilButton({
   signOrElement,
   label,
   onClick,
+  disabled = false,
 }: {
   figureKey: string;
   signOrElement: string;
   label: string;
   onClick: () => void;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       data-figure-key={figureKey}
-      className="flex flex-col items-start gap-1 rounded-xl border border-white/10 bg-white/5 p-3 text-left text-sm text-ink/90 hover:bg-white/10 hover:border-white/25 focus:outline-none focus:ring-2 focus:ring-white/30"
+      className={
+        disabled
+          ? 'flex flex-col items-start gap-1 rounded-xl border border-white/5 bg-white/5 p-3 text-left text-sm text-ink/40 cursor-not-allowed'
+          : 'flex flex-col items-start gap-1 rounded-xl border border-white/10 bg-white/5 p-3 text-left text-sm text-ink/90 hover:bg-white/10 hover:border-white/25 focus:outline-none focus:ring-2 focus:ring-white/30'
+      }
     >
       <span className="text-xs uppercase tracking-[0.18em] text-ink/60">{label}</span>
       <span className="text-base font-medium text-ink">{signOrElement}</span>
@@ -163,7 +170,6 @@ export function TagespulsCard({ onCompleteProfile }: TagespulsCardProps) {
     loadingInterpretation,
     interpretationError,
     selectCouncilFigure,
-    resetFigure,
   } = useDailyPulse(lang === 'en' ? 'en' : 'de');
 
   // ── Loading ─────────────────────────────────────────────────────────────
@@ -225,17 +231,9 @@ export function TagespulsCard({ onCompleteProfile }: TagespulsCardProps) {
         data-testid="tagespuls-card"
         data-phase="interpretation"
       >
-        <button
-          type="button"
-          onClick={resetFigure}
-          className="text-xs uppercase tracking-[0.2em] text-ink/60 hover:text-ink focus:outline-none focus:underline"
-          data-testid="tagespuls-back"
-        >
-          ← {t('tagespuls.back')}
-        </button>
-
         {/* Aphorism stays visible above the interpretation as the
-            curated foundation. */}
+            curated foundation. After the user picks an archetype the
+            decision is irreversible (spec C-2: "Kein 'Zurück' Button"). */}
         <blockquote className="border-l-2 border-gold/40 pl-4 text-base text-ink/85 italic">
           "{aph.slot_1}"
           {aph.author && (
@@ -344,6 +342,10 @@ export function TagespulsCard({ onCompleteProfile }: TagespulsCardProps) {
               signOrElement={c.signOrElement}
               label={t(COUNCIL_KEY_TO_I18N[c.key] ?? 'tagespuls.council.sonne')}
               onClick={() => selectCouncilFigure(c.key)}
+              // After the user picks (selectedFigure becomes non-null) or
+              // while a request is in-flight, all 6 buttons lock —
+              // spec C-3: "Es geht nur einmal am Tag".
+              disabled={selectedFigure !== null || loadingInterpretation}
             />
           ))}
         </div>

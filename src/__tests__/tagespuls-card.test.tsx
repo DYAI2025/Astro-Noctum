@@ -68,7 +68,6 @@ interface HookOverrides {
   interpretationError?: DailyPulseError | null;
   refresh?: () => void;
   selectCouncilFigure?: (k: string) => void;
-  resetFigure?: () => void;
 }
 
 function setHookState(overrides: HookOverrides = {}) {
@@ -82,7 +81,6 @@ function setHookState(overrides: HookOverrides = {}) {
     loadingInterpretation: false,
     interpretationError: null,
     selectCouncilFigure: vi.fn(),
-    resetFigure: vi.fn(),
     ...overrides,
   });
 }
@@ -231,8 +229,6 @@ describe('TagespulsCard', () => {
     );
     // Aphorism still visible above.
     expect(container.textContent).toContain(FULL_PULSE.aphorism.slot_1);
-    // Back button is present.
-    expect(screen.getByTestId('tagespuls-back')).toBeTruthy();
   });
 
   it('TPC-008: phase 2 ai_unavailable → retry inline, aphorism stays', () => {
@@ -267,17 +263,91 @@ describe('TagespulsCard', () => {
     expect(selectCouncilFigure).toHaveBeenCalledWith('sonne');
   });
 
-  it('TPC-010: phase 2 back button calls resetFigure', () => {
-    const resetFigure = vi.fn();
+  it('TPC-NO-BACK-001: Phase 2 has NO back button (one-decision-per-day spec)', () => {
+    // Per the 2026-05-09 product audit C-2: after the user picks an
+    // archetype, they cannot un-pick. The "← Andere Figur wählen"
+    // button must not render.
     setHookState({
       pulse: FULL_PULSE,
-      selectedFigure: 'jahrestier',
-      interpretation: { id: 'i', text: 'Hund führt heute mit Treue.' },
-      resetFigure,
+      selectedFigure: 'mond',
+      interpretation: {
+        id: 'int-1',
+        text: 'Dein Mond Libra zeigt heute eine ruhige Wachsamkeit.',
+      },
+      loadingInterpretation: false,
+      interpretationError: null,
     });
 
     render(<TagespulsCard />);
-    fireEvent.click(screen.getByTestId('tagespuls-back'));
-    expect(resetFigure).toHaveBeenCalledTimes(1);
+
+    // Phase 2 visible — interpretation is rendered
+    expect(screen.getByText(/Dein Mond Libra/)).toBeInTheDocument();
+
+    // The back button MUST NOT exist in any form
+    expect(screen.queryByTestId('tagespuls-back')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Andere Figur wählen/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Choose another guide/i)).not.toBeInTheDocument();
+    // Also: the resetFigure handler shouldn't be wired anywhere visible
+    // (this is implicit — the buttons that would call it don't exist).
+  });
+
+  it('TPC-LOCK-001: council buttons absent or disabled in Phase 2 (one-decision-per-day)', () => {
+    // Per 2026-05-09 audit C-3: after the user picks an archetype, the
+    // entire council is visually locked. Phase 2 currently doesn't
+    // re-render council buttons (they only show in Phase 1), so the
+    // assertion is "no council buttons visible in Phase 2". If a future
+    // refactor re-renders them in Phase 2, they MUST be disabled.
+    setHookState({
+      pulse: FULL_PULSE,
+      selectedFigure: 'mond',
+      interpretation: { id: 'int-1', text: 'Dein Mond Libra zeigt heute …' },
+    });
+    const { container } = render(<TagespulsCard />);
+
+    const buttons = Array.from(
+      container.querySelectorAll<HTMLButtonElement>('[data-figure-key]'),
+    );
+    if (buttons.length === 0) {
+      expect(buttons).toHaveLength(0);
+      return;
+    }
+    for (const b of buttons) {
+      expect(b.hasAttribute('disabled')).toBe(true);
+    }
+  });
+
+  it('TPC-LOCK-002: Phase 1 council buttons enabled before pick, disabled while loading', () => {
+    // Sanity: in Phase 1, before any pick, buttons are enabled.
+    // While the interpretation request is in-flight (loadingInterpretation),
+    // they disable to prevent a 2nd-figure double-click.
+    setHookState({
+      pulse: FULL_PULSE,
+      selectedFigure: null,
+      interpretation: null,
+      loadingInterpretation: false,
+    });
+    const { container, rerender } = render(<TagespulsCard />);
+
+    let buttons = Array.from(
+      container.querySelectorAll<HTMLButtonElement>('[data-figure-key]'),
+    );
+    expect(buttons).toHaveLength(6);
+    for (const b of buttons) {
+      expect(b.hasAttribute('disabled')).toBe(false);
+    }
+
+    // Now trigger the loading state.
+    setHookState({
+      pulse: FULL_PULSE,
+      selectedFigure: null,
+      interpretation: null,
+      loadingInterpretation: true,
+    });
+    rerender(<TagespulsCard />);
+
+    buttons = Array.from(container.querySelectorAll<HTMLButtonElement>('[data-figure-key]'));
+    for (const b of buttons) {
+      expect(b.hasAttribute('disabled')).toBe(true);
+    }
   });
 });

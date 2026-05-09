@@ -3283,16 +3283,51 @@ app.post('/api/daily-interpretation', requireUserAuth, dailyInterpretationLimite
       return res.status(404).json({ error: { code: 'PULSE_NOT_FOUND' } });
     }
 
-    // L2: idempotent — same (pulse, archetype, locale) → same row.
+    // C-1 (2026-05-09 audit): reload astro_profiles so the prompt
+    // builder can name the user's ACTUAL sign/element for the chosen
+    // archetype — not just the archetype key. Without this, the LLM
+    // would have to invent the sign (hallucination) or stay generic
+    // (no value over slot_2/3).
+    const { data: profileRow } = await supabaseServer
+      .from('astro_profiles')
+      .select('astro_json')
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (!profileRow?.astro_json || Object.keys(profileRow.astro_json).length === 0) {
+      // Profile was deleted or zeroed between pulse-creation and now.
+      // 422 forces the client to re-onboard — cleaner than 503.
+      return res.status(422).json({ error: { code: 'PROFILE_REQUIRED' } });
+    }
+    const interpretationCouncil = buildCouncilFromProfile(profileRow.astro_json);
+    const archetypeMatch = interpretationCouncil.find((c) => c.key === archetypeKey);
+    const signOrElement = archetypeMatch?.signOrElement ?? null;
+
+    // L2: at most one decision per daily_pulse_id (enforced by
+    // unique constraint daily_interpretations_one_per_pulse, mirrored
+    // here so the server returns a structured 409 instead of leaking
+    // a Postgres unique-violation error). Per 2026-05-09 audit C-3.
     const { data: existing } = await supabaseServer
       .from('daily_interpretations')
-      .select('id, text')
+      .select('id, text, selected_archetype_key, locale')
       .eq('daily_pulse_id', dailyPulseId)
-      .eq('selected_archetype_key', archetypeKey)
-      .eq('locale', locale)
       .maybeSingle();
     if (existing) {
-      return res.json({ id: existing.id, text: existing.text });
+      // Same archetype + same locale = idempotent re-pick (page reload,
+      // double-click) — return 200 with the cached row.
+      if (existing.selected_archetype_key === archetypeKey && existing.locale === locale) {
+        return res.json({ id: existing.id, text: existing.text });
+      }
+      // Different archetype or locale on the SAME pulse = user already
+      // decided. 409 with the locked decision so the client can render
+      // the locked Phase 2 instead of nagging.
+      return res.status(409).json({
+        error: {
+          code: 'ALREADY_DECIDED',
+          locked_archetype_key: existing.selected_archetype_key,
+          locked_locale: existing.locale,
+          text: existing.text,
+        },
+      });
     }
 
     if (!geminiClient) {
@@ -3301,7 +3336,7 @@ app.post('/api/daily-interpretation', requireUserAuth, dailyInterpretationLimite
 
     let text;
     try {
-      const prompt = buildTagespulsInterpretationPrompt({ pulse, archetypeKey, locale });
+      const prompt = buildTagespulsInterpretationPrompt({ pulse, archetypeKey, signOrElement, locale });
       const result = await geminiClient.models.generateContent({
         model: 'gemini-2.0-flash',
         contents: prompt,

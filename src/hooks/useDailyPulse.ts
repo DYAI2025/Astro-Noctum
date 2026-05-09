@@ -54,7 +54,6 @@ export interface UseDailyPulseResult {
   loadingInterpretation: boolean;
   interpretationError: DailyPulseError | null;
   selectCouncilFigure: (key: string) => void;
-  resetFigure: () => void;
 }
 
 function todayDateStr(): string {
@@ -92,11 +91,6 @@ export function useDailyPulse(locale: 'de' | 'en' = 'de'): UseDailyPulseResult {
 
   const refresh = useCallback(() => {
     setRefreshTick((t) => t + 1);
-  }, []);
-
-  const resetFigure = useCallback(() => {
-    setSelectedFigure(null);
-    setInterpretationError(null);
   }, []);
 
   // ── Phase 1 fetch: pulse + aphorism + council ─────────────────────────
@@ -218,14 +212,35 @@ export function useDailyPulse(locale: 'de' | 'en' = 'de'): UseDailyPulseResult {
           });
 
           if (!resp.ok) {
-            let retryAfter: number | undefined;
+            let body: Record<string, unknown> | null = null;
             try {
-              const body = await resp.json();
-              const fromBody = body?.error?.retry_after;
-              if (typeof fromBody === 'number') retryAfter = fromBody;
+              body = (await resp.json()) as Record<string, unknown>;
             } catch {
               // ignore
             }
+
+            // 409 ALREADY_DECIDED — server reports an existing decision
+            // for this pulse_id (different archetype or different locale).
+            // Surface the locked decision as if it were the current
+            // selection so the user sees their own previous choice
+            // rendered in Phase 2 — no error UI. Per 2026-05-09 audit C-3.
+            if (resp.status === 409) {
+              const errEnv = (body?.error as Record<string, unknown> | undefined) ?? undefined;
+              const lockedKey = errEnv?.locked_archetype_key;
+              const lockedText = errEnv?.text;
+              if (typeof lockedKey === 'string' && typeof lockedText === 'string') {
+                setSelectedFigure(lockedKey);
+                setInterpretationByKey((prev) => ({
+                  ...prev,
+                  [lockedKey]: { id: 'locked', text: lockedText },
+                }));
+                setLoadingInterpretation(false);
+                return;
+              }
+            }
+
+            const fromBody = (body?.error as Record<string, unknown> | undefined)?.retry_after;
+            const retryAfter = typeof fromBody === 'number' ? fromBody : undefined;
             setInterpretationError(mapStatusToError(resp.status, retryAfter));
             setLoadingInterpretation(false);
             return;
@@ -265,6 +280,5 @@ export function useDailyPulse(locale: 'de' | 'en' = 'de'): UseDailyPulseResult {
     loadingInterpretation,
     interpretationError,
     selectCouncilFigure,
-    resetFigure,
   };
 }
