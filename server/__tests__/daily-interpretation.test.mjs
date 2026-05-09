@@ -255,4 +255,42 @@ describe('POST /api/daily-interpretation — no-placeholders contract', () => {
     expect(res.status).toBe(400);
     expect(res.body?.error?.code).toBe('INVALID_BODY');
   });
+
+  it('DIN-RATE-001: 7th call within 1h window returns 429 RATE_LIMITED', async () => {
+    // Fresh app instance → fresh in-memory limiter store. All 7 calls
+    // share the same per-user (req.userId === 'user-1') bucket because
+    // the auth mock resolves every Authorization header to user-1.
+    // Calls 1–6 burn the quota (each is a normal happy-path 200), the
+    // 7th must be blocked by the limiter BEFORE it reaches the handler.
+    const generatedText = 'rate-limit test text';
+    mockFetch({ inserted: { id: 'interp-uuid-rl', text: generatedText } });
+    const app = await loadApp(makeGeminiTextMock(generatedText));
+
+    const body = {
+      daily_pulse_id: 'pulse-uuid-1',
+      selected_archetype_key: 'mond',
+      locale: 'de',
+    };
+
+    // Burn the 6-call quota.
+    for (let i = 0; i < 6; i++) {
+      const res = await request(app)
+        .post('/api/daily-interpretation')
+        .set(AUTH_HEADER)
+        .set('Content-Type', 'application/json')
+        .send(body);
+      expect(res.status).toBe(200);
+    }
+
+    // 7th call → 429 RATE_LIMITED.
+    const blocked = await request(app)
+      .post('/api/daily-interpretation')
+      .set(AUTH_HEADER)
+      .set('Content-Type', 'application/json')
+      .send(body);
+
+    expect(blocked.status).toBe(429);
+    expect(blocked.body?.error?.code).toBe('RATE_LIMITED');
+    expect(blocked.body?.error?.retry_after).toBe(3600);
+  });
 });

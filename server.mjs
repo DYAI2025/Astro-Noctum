@@ -398,6 +398,23 @@ const authLimiter = rateLimit({
 app.use("/api/checkout", authLimiter);
 app.use("/api/customer-portal", authLimiter);
 
+// Per-user limiter for /api/daily-interpretation. The route triggers a
+// Gemini call on every miss, so an unbounded client could burn the
+// project's daily LLM quota. 6/h matches the natural use case (one call
+// per archetype × 6 archetypes per pulse) with enough headroom for the
+// user to compare archetypes without enabling silent quota burn.
+// Per-user keyGenerator (req.userId from requireUserAuth upstream), NOT
+// per-IP — users behind shared NAT shouldn't punish each other.
+const dailyInterpretationLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,         // 1 hour
+  max: 6,                           // 6 calls per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.userId || req.ip,
+  message: { error: { code: 'RATE_LIMITED', retry_after: 3600 } },
+  skip: (req) => req.method === 'OPTIONS',
+});
+
 const distPath = path.join(__dirname, "dist");
 
 // BAFE API URLs - build ordered list for fallback chain.
@@ -3227,7 +3244,7 @@ app.get('/api/daily-pulse', requireUserAuth, async (req, res) => {
 });
 
 // ── POST /api/daily-interpretation ──────────────────────────────────
-app.post('/api/daily-interpretation', requireUserAuth, express.json({ limit: '10kb' }), async (req, res) => {
+app.post('/api/daily-interpretation', requireUserAuth, dailyInterpretationLimiter, express.json({ limit: '10kb' }), async (req, res) => {
   try {
     const userId = req.userId;
     const body = req.body ?? {};
