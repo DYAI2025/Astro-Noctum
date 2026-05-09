@@ -27,24 +27,26 @@ type SignaturSignalState = {
 const clampTarget = (value: number): number => Math.max(-1, Math.min(2, value));
 
 /**
- * Polling cadence (Phase 2 — Task 14, 2026-05-06 backend hardening sprint).
+ * Polling cadence (TASK-5.1 — 2026-05-09 GreenOps sprint;
+ * see docs/plans/2026-05-07-dashboard-flow-tagespuls-3d.md §Phase 5).
  *
- * Was 800ms — fired ~1125 requests per 15 minutes per dashboard mount and
- * burnt the global API rate-limit before the global polling skip-list was
- * added in Sprint S-DASH-SIGNATUR-GAPS. Now:
+ * History:
+ *   - 800ms (legacy) — hammered the global rate-limiter, ~1125 req / 15 min.
+ *   - 8s active / 45s hidden (2026-05-06 backend hardening) — first cut.
+ *   - 15s active / 60s hidden (2026-05-09 GreenOps) — current. Cuts
+ *     transit-state traffic ~70% during typical browsing without
+ *     hurting perceived liveness (server cache TTL absorbs the gap;
+ *     transits don't visibly change faster than the eye can resolve).
  *
- *   ACTIVE  — visible tab, ~7.5 polls/min. Server cache (10s TTL, see
- *             server.mjs:/api/transit-state) absorbs consecutive same-user
- *             polls; ring on screen still feels live (transits don't
- *             change faster than the eye can perceive).
+ *   ACTIVE  — visible tab, 4 polls/min.
  *   HIDDEN  — backgrounded tab; effectively pause-and-keep-warm so the
  *             ring is fresh when the user returns. visibilitychange also
  *             triggers an immediate fetch.
  *   OFFLINE — keep checking but don't burn battery.
  *   ERROR   — exponential backoff capped at 30s.
  */
-export const ACTIVE_POLL_INTERVAL_MS = 8_000;
-export const HIDDEN_POLL_INTERVAL_MS = 45_000;
+export const ACTIVE_POLL_INTERVAL_MS = 15_000;
+export const HIDDEN_POLL_INTERVAL_MS = 60_000;
 const OFFLINE_POLL_INTERVAL_MS = 15_000;
 const ERROR_BASE_RETRY_MS = 3_000;
 const ERROR_MAX_RETRY_MS = 30_000;
