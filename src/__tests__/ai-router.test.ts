@@ -21,6 +21,14 @@ vi.mock('@google/genai', () => ({
   },
 }));
 
+const mockLogEvent = vi.fn();
+vi.mock('../../server/observability/logger.mjs', () => ({
+  // Preserve the existing logRequest export shape so any module that imports
+  // both still type-checks; only logEvent matters for these tests.
+  logRequest: vi.fn(),
+  logEvent: (fields: Record<string, unknown>) => mockLogEvent(fields),
+}));
+
 // Import AFTER the mock is registered.
 // Using a dynamic import so the default export is re-evaluated fresh per test
 // (not strictly necessary with vi.mock, but keeps the test easy to reason about).
@@ -49,6 +57,7 @@ function mockFetchOnce(responseOverrides: Array<{ ok?: boolean; status?: number;
 describe('createGenAiRouter — fallback chain', () => {
   beforeEach(() => {
     mockGenerateContent.mockReset();
+    mockLogEvent.mockReset();
   });
   afterEach(() => {
     globalThis.fetch = originalFetch;
@@ -391,6 +400,65 @@ describe('createGenAiRouter — fallback chain', () => {
     // And at least 2 attempts must have happened (otherwise the budget
     // didn't even let the loop progress).
     expect(mockGenerateContent.mock.calls.length + fetchMock.mock.calls.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('METRICS: emits ai_router_cascade + ai_router_recovery events on cascade success', async () => {
+    mockGenerateContent.mockRejectedValueOnce(new Error('429 RESOURCE_EXHAUSTED'));
+    const fetchMock = mockFetchOnce([{ text: 'recovered' }]);
+
+    const router = createGenAiRouter({
+      geminiApiKey: 'g',
+      groqApiKey: undefined,
+      openrouterApiKey: 'o',
+      freeModelChain: ['meta-llama/llama-3.3-70b-instruct:free'],
+    })!;
+    await router.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: 'hi',
+    });
+
+    // Cascade event: gemini-direct failed, falling through.
+    expect(mockLogEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: 'ai_router_cascade',
+        from: 'gemini-direct',
+      }),
+    );
+    // Recovery event: succeeded via openrouter at attempt index 1.
+    expect(mockLogEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: 'ai_router_recovery',
+        via: 'openrouter:meta-llama/llama-3.3-70b-instruct:free',
+      }),
+    );
+
+    void fetchMock;
+  });
+
+  it('METRICS: emits ai_router_exhausted when all providers fail', async () => {
+    mockGenerateContent.mockRejectedValueOnce(new Error('429 RESOURCE_EXHAUSTED'));
+    const fetchMock = mockFetchOnce([
+      { ok: false, status: 429, text: '{"e":1}' },
+      { ok: false, status: 429, text: '{"e":2}' },
+    ]);
+
+    const router = createGenAiRouter({
+      geminiApiKey: 'g',
+      groqApiKey: undefined,
+      openrouterApiKey: 'o',
+      freeModelChain: ['a:free', 'b:free'],
+    })!;
+    await expect(
+      router.models.generateContent({ model: 'x', contents: 'q' }),
+    ).rejects.toThrow();
+
+    expect(mockLogEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: 'ai_router_exhausted',
+        totalAttempts: 3,
+      }),
+    );
+    void fetchMock;
   });
 
   it('defaults the OpenRouter HTTP-Referer header to https://bazodiac.space', async () => {

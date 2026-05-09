@@ -23,6 +23,7 @@
  */
 
 import { GoogleGenAI } from '@google/genai';
+import { logEvent } from './observability/logger.mjs';
 
 /**
  * OpenRouter free-tier models, ordered by preference. Each has its own
@@ -292,6 +293,12 @@ export function createGenAiRouter({
       if (Date.now() - startedAt >= aggregateBudgetMs) {
         const total = Date.now() - startedAt;
         console.warn(`[ai-router] aggregate budget exhausted after ${total}ms, giving up`);
+        logEvent({
+          event: 'ai_router_exhausted',
+          reason: 'CASCADE_TIMEOUT',
+          totalAttempts: i,
+          elapsedMs: total,
+        });
         const budgetErr = new Error(`[ai-router] aggregate budget exhausted (${total}ms >= ${aggregateBudgetMs}ms)`);
         budgetErr.code = 'CASCADE_TIMEOUT';
         throw budgetErr;
@@ -301,6 +308,12 @@ export function createGenAiRouter({
         const result = await call();
         if (i > 0) {
           console.warn(`[ai-router] recovered via ${label} after ${i} failed attempt(s)`);
+          logEvent({
+            event: 'ai_router_recovery',
+            via: label,
+            failedAttempts: i,
+            elapsedMs: Date.now() - startedAt,
+          });
         }
         return result;
       } catch (err) {
@@ -310,8 +323,20 @@ export function createGenAiRouter({
           throw err;
         }
         console.warn(`[ai-router] ${label} quota/429, falling through`);
+        logEvent({
+          event: 'ai_router_cascade',
+          from: label,
+          to: i + 1 < attempts.length ? attempts[i + 1].label : null,
+          errorStatus: err?.status ?? null,
+        });
       }
     }
+    logEvent({
+      event: 'ai_router_exhausted',
+      reason: 'ALL_PROVIDERS_FAILED',
+      totalAttempts: attempts.length,
+      elapsedMs: Date.now() - startedAt,
+    });
     throw lastErr ?? new Error('[ai-router] all providers exhausted');
   }
 
