@@ -23,6 +23,7 @@
  */
 
 import { GoogleGenAI } from '@google/genai';
+import { logEvent } from './observability/logger.mjs';
 
 /**
  * OpenRouter free-tier models, ordered by preference. Each has its own
@@ -53,10 +54,9 @@ export const DEFAULT_GROQ_MODEL_CHAIN = Object.freeze([
   'llama-3.2-3b-preview',
 ]);
 
+const PROVIDER_TIMEOUT_MS = 30_000;
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const OPENROUTER_TIMEOUT_MS = 30_000;
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_TIMEOUT_MS = 30_000;
 
 /**
  * Detect "model unavailable" failures that should trigger next-model
@@ -71,12 +71,30 @@ const GROQ_TIMEOUT_MS = 30_000;
  * Non-cascadable errors (401 auth, 400 bad request, network drop) bubble
  * so the caller sees them — fallback would mask real bugs.
  */
-function isQuotaOr429Error(err) {
+function isCascadableProviderError(err) {
   if (!err) return false;
   const status = err.status ?? err.statusCode ?? err?.error?.code;
   if (status === 429 || status === 404 || status === 503 || status === 502) return true;
   const msg = String(err?.message || err || '').toLowerCase();
   return /429|resource_exhausted|quota|rate.?limit|exceeded your current quota|no endpoints found|model overloaded|bad gateway/.test(msg);
+}
+
+/**
+ * Redact potentially sensitive fields from a provider error body before
+ * including it in an error message. Defensive — provider errors usually
+ * don't leak credentials, but request IDs and internal trace IDs are best
+ * kept out of error chains that might bubble to clients via `err.message`.
+ *
+ * Strips: authorization headers, bearer tokens (anywhere in raw text),
+ * api_key fields, request_id values. Truly malformed bodies fall through
+ * as-is (we only redact what we can confidently identify).
+ */
+function redactErrorBody(raw) {
+  if (typeof raw !== 'string' || !raw) return '';
+  return raw
+    .replace(/"(?:authorization|api[_-]?key|access[_-]?token|x-amz-security-token)"\s*:\s*"[^"]*"/gi, '"[redacted]":"[redacted]"')
+    .replace(/(bearer\s+)[A-Za-z0-9._-]+/gi, '$1[redacted]')
+    .replace(/("request_id"\s*:\s*)"[^"]*"/g, '$1"[redacted]"');
 }
 
 /**
@@ -126,9 +144,10 @@ function geminiContentsToMessages(contents, systemInstruction) {
  */
 function normalizeOpenRouterModel(requestedModel, fallbackModel) {
   if (!requestedModel) return fallbackModel;
-  // If caller passed an OpenRouter slug directly, only let it override the
-  // matching chain entry. Otherwise we collapse the entire fallback chain
-  // into repeated attempts against the same model.
+  // If caller passed an OpenRouter slug directly, let it override only the
+  // matching chain entry. For all other chain entries we use the chain
+  // entry itself, so the cascade rotates through diverse providers as
+  // designed (we do NOT collapse the chain into a single model).
   if (requestedModel.includes('/')) {
     return requestedModel === fallbackModel ? requestedModel : fallbackModel;
   }
@@ -137,7 +156,7 @@ function normalizeOpenRouterModel(requestedModel, fallbackModel) {
 
 /**
  * Single Groq call. OpenAI-compatible chat-completions API. Throws on any
- * non-2xx; router decides cascade based on {@link isQuotaOr429Error}.
+ * non-2xx; router decides cascade based on {@link isCascadableProviderError}.
  */
 async function callGroq({ apiKey, model, request }) {
   const systemInstruction = request?.config?.systemInstruction;
@@ -150,7 +169,7 @@ async function callGroq({ apiKey, model, request }) {
   if (wantsJson) body.response_format = { type: 'json_object' };
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), GROQ_TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), PROVIDER_TIMEOUT_MS);
   try {
     const res = await fetch(GROQ_URL, {
       method: 'POST',
@@ -164,7 +183,8 @@ async function callGroq({ apiKey, model, request }) {
     clearTimeout(timer);
     if (!res.ok) {
       const raw = await res.text().catch(() => '');
-      const err = new Error(`groq ${model} ${res.status}: ${raw.slice(0, 300)}`);
+      const defanged = redactErrorBody(raw);
+      const err = new Error(`groq ${model} ${res.status}: ${defanged.slice(0, 300)}`);
       err.status = res.status;
       throw err;
     }
@@ -179,7 +199,7 @@ async function callGroq({ apiKey, model, request }) {
 
 /**
  * Single OpenRouter call. Throws on any non-2xx response; the router above
- * decides whether to fall through based on {@link isQuotaOr429Error}.
+ * decides whether to fall through based on {@link isCascadableProviderError}.
  */
 async function callOpenRouter({ apiKey, model, request, referer, title }) {
   const systemInstruction = request?.config?.systemInstruction;
@@ -195,7 +215,7 @@ async function callOpenRouter({ apiKey, model, request, referer, title }) {
   if (wantsJson) body.response_format = { type: 'json_object' };
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), OPENROUTER_TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), PROVIDER_TIMEOUT_MS);
   try {
     const res = await fetch(OPENROUTER_URL, {
       method: 'POST',
@@ -212,7 +232,8 @@ async function callOpenRouter({ apiKey, model, request, referer, title }) {
     clearTimeout(timer);
     if (!res.ok) {
       const raw = await res.text().catch(() => '');
-      const err = new Error(`openrouter ${model} ${res.status}: ${raw.slice(0, 300)}`);
+      const defanged = redactErrorBody(raw);
+      const err = new Error(`openrouter ${model} ${res.status}: ${defanged.slice(0, 300)}`);
       err.status = res.status;
       throw err;
     }
@@ -231,14 +252,25 @@ async function callOpenRouter({ apiKey, model, request, referer, title }) {
  * return `null` so the existing `if (!geminiClient)` guards at every
  * call-site keep working.
  */
+/**
+ * Default aggregate cascade budget. Caps worst-case latency for a
+ * dashboard request: even if every provider times out at 30s/leg, the
+ * router throws after 90s rather than 275s.
+ */
+const DEFAULT_AGGREGATE_BUDGET_MS = 90_000;
+
 export function createGenAiRouter({
   geminiApiKey,
   groqApiKey,
   openrouterApiKey,
   freeModelChain = DEFAULT_FREE_MODEL_CHAIN,
   groqModelChain = DEFAULT_GROQ_MODEL_CHAIN,
+  // OpenRouter-specific — Groq doesn't use these. Kept on the factory
+  // signature for now to avoid a breaking change; if more provider-
+  // specific knobs accumulate, refactor to per-tier config objects.
   referer = 'https://bazodiac.space',
   title = 'Bazodiac',
+  aggregateBudgetMs = DEFAULT_AGGREGATE_BUDGET_MS,
 } = {}) {
   const hasGemini = typeof geminiApiKey === 'string' && geminiApiKey.length > 0;
   const hasGroq = typeof groqApiKey === 'string' && groqApiKey.length > 0;
@@ -246,10 +278,14 @@ export function createGenAiRouter({
   if (!hasGemini && !hasGroq && !hasOpenRouter) return null;
 
   const direct = hasGemini ? new GoogleGenAI({ apiKey: geminiApiKey }) : null;
+  // An empty array passed by a caller falls back to the DEFAULT chain —
+  // this is a defensive guard against accidental zero-length config, NOT
+  // a way to disable a tier. To disable a tier, omit its API key.
   const chain = Array.isArray(freeModelChain) && freeModelChain.length > 0 ? freeModelChain : DEFAULT_FREE_MODEL_CHAIN;
   const groqChain = Array.isArray(groqModelChain) && groqModelChain.length > 0 ? groqModelChain : DEFAULT_GROQ_MODEL_CHAIN;
 
   async function generateContent(request) {
+    const startedAt = Date.now();
     const attempts = [];
     if (direct) {
       attempts.push({
@@ -276,22 +312,56 @@ export function createGenAiRouter({
     }
     let lastErr = null;
     for (let i = 0; i < attempts.length; i++) {
+      // Aggregate-budget guard: don't start a new leg if we've already
+      // burned more than the budget. Per-leg AbortControllers still cap
+      // individual call latency.
+      if (Date.now() - startedAt >= aggregateBudgetMs) {
+        const total = Date.now() - startedAt;
+        console.warn(`[ai-router] aggregate budget exhausted after ${total}ms, giving up`);
+        logEvent({
+          event: 'ai_router_exhausted',
+          reason: 'CASCADE_TIMEOUT',
+          totalAttempts: i,
+          elapsedMs: total,
+        });
+        const budgetErr = new Error(`[ai-router] aggregate budget exhausted (${total}ms >= ${aggregateBudgetMs}ms)`);
+        budgetErr.code = 'CASCADE_TIMEOUT';
+        throw budgetErr;
+      }
       const { label, call } = attempts[i];
       try {
         const result = await call();
         if (i > 0) {
           console.warn(`[ai-router] recovered via ${label} after ${i} failed attempt(s)`);
+          logEvent({
+            event: 'ai_router_recovery',
+            via: label,
+            failedAttempts: i,
+            elapsedMs: Date.now() - startedAt,
+          });
         }
         return result;
       } catch (err) {
         lastErr = err;
-        if (!isQuotaOr429Error(err)) {
+        if (!isCascadableProviderError(err)) {
           // Non-quota error — surface it rather than wasting the rest of the chain.
           throw err;
         }
         console.warn(`[ai-router] ${label} quota/429, falling through`);
+        logEvent({
+          event: 'ai_router_cascade',
+          from: label,
+          to: i + 1 < attempts.length ? attempts[i + 1].label : null,
+          errorStatus: err?.status ?? null,
+        });
       }
     }
+    logEvent({
+      event: 'ai_router_exhausted',
+      reason: 'ALL_PROVIDERS_FAILED',
+      totalAttempts: attempts.length,
+      elapsedMs: Date.now() - startedAt,
+    });
     throw lastErr ?? new Error('[ai-router] all providers exhausted');
   }
 

@@ -21,6 +21,14 @@ vi.mock('@google/genai', () => ({
   },
 }));
 
+const mockLogEvent = vi.fn();
+vi.mock('../../server/observability/logger.mjs', () => ({
+  // Preserve the existing logRequest export shape so any module that imports
+  // both still type-checks; only logEvent matters for these tests.
+  logRequest: vi.fn(),
+  logEvent: (fields: Record<string, unknown>) => mockLogEvent(fields),
+}));
+
 // Import AFTER the mock is registered.
 // Using a dynamic import so the default export is re-evaluated fresh per test
 // (not strictly necessary with vi.mock, but keeps the test easy to reason about).
@@ -49,6 +57,7 @@ function mockFetchOnce(responseOverrides: Array<{ ok?: boolean; status?: number;
 describe('createGenAiRouter — fallback chain', () => {
   beforeEach(() => {
     mockGenerateContent.mockReset();
+    mockLogEvent.mockReset();
   });
   afterEach(() => {
     globalThis.fetch = originalFetch;
@@ -248,6 +257,208 @@ describe('createGenAiRouter — fallback chain', () => {
     // Sanity: chain still has at least 3 working models so the cascade is
     // meaningful when one provider is exhausted.
     expect(DEFAULT_FREE_MODEL_CHAIN.length).toBeGreaterThanOrEqual(3);
+  });
+
+  // ── Groq tier coverage (I-4) ────────────────────────────────────────────
+  // Three tests proving the Groq layer between Gemini-direct and OpenRouter
+  // works end-to-end. Pre-PR-#333 there was zero coverage of the Groq path.
+
+  it('GROQ-TIER-1: Gemini exhausted → first Groq model serves the request', async () => {
+    // Gemini direct throws 429 → router should call Groq before OpenRouter.
+    mockGenerateContent.mockRejectedValueOnce(new Error('429 RESOURCE_EXHAUSTED'));
+    const fetchMock = mockFetchOnce([{ text: 'from-groq' }]);
+
+    const router = createGenAiRouter({
+      geminiApiKey: 'g',
+      groqApiKey: 'q',
+      openrouterApiKey: 'o',
+      groqModelChain: ['llama-3.3-70b-versatile'],
+      freeModelChain: ['should-not-reach:free'],
+    })!;
+    const out = await router.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: 'hi',
+    });
+
+    expect(out.text).toBe('from-groq');
+    expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    // Assert the call hit Groq's URL, not OpenRouter's.
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(String(url)).toBe('https://api.groq.com/openai/v1/chat/completions');
+    const body = JSON.parse(String((init as RequestInit).body));
+    expect(body.model).toBe('llama-3.3-70b-versatile');
+    expect(body.messages).toEqual([{ role: 'user', content: 'hi' }]);
+  });
+
+  it('GROQ-TIER-2: cascades through multiple Groq models when each returns 429', async () => {
+    mockGenerateContent.mockRejectedValueOnce(new Error('429 RESOURCE_EXHAUSTED'));
+    const fetchMock = mockFetchOnce([
+      { ok: false, status: 429, text: '{"error":"rate limit"}' },
+      { ok: false, status: 429, text: '{"error":"rate limit"}' },
+      { text: 'third-groq-wins' },
+    ]);
+
+    const router = createGenAiRouter({
+      geminiApiKey: 'g',
+      groqApiKey: 'q',
+      openrouterApiKey: undefined,
+      groqModelChain: ['first-groq', 'second-groq', 'third-groq'],
+    })!;
+    const out = await router.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: 'hi',
+    });
+
+    expect(out.text).toBe('third-groq-wins');
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    // All three calls must hit Groq URL — none should fall to OpenRouter
+    // because OPENROUTER_API_KEY was deliberately undefined.
+    for (const [url] of fetchMock.mock.calls) {
+      expect(String(url)).toContain('api.groq.com');
+    }
+  });
+
+  it('GROQ-TIER-3: Groq exhausted → falls through to OpenRouter (full 3-tier cascade)', async () => {
+    // Worst-case prod scenario: Gemini quota out, all Groq models 429,
+    // OpenRouter first model 404 (deprecated), second OpenRouter wins.
+    mockGenerateContent.mockRejectedValueOnce(new Error('429 RESOURCE_EXHAUSTED'));
+    const fetchMock = mockFetchOnce([
+      // Two Groq attempts, both 429
+      { ok: false, status: 429, text: '{"error":"groq quota"}' },
+      { ok: false, status: 429, text: '{"error":"groq quota"}' },
+      // First OpenRouter 404 (deprecated model)
+      { ok: false, status: 404, text: '{"error":"No endpoints found"}' },
+      // Second OpenRouter succeeds
+      { text: 'openrouter-saves-the-day' },
+    ]);
+
+    const router = createGenAiRouter({
+      geminiApiKey: 'g',
+      groqApiKey: 'q',
+      openrouterApiKey: 'o',
+      groqModelChain: ['groq-a', 'groq-b'],
+      freeModelChain: ['openrouter-dead', 'openrouter-alive'],
+    })!;
+    const out = await router.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: 'hi',
+    });
+
+    expect(out.text).toBe('openrouter-saves-the-day');
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+
+    // Assert call order: Groq first, then OpenRouter.
+    expect(String(fetchMock.mock.calls[0][0])).toContain('api.groq.com');
+    expect(String(fetchMock.mock.calls[1][0])).toContain('api.groq.com');
+    expect(String(fetchMock.mock.calls[2][0])).toContain('openrouter.ai');
+    expect(String(fetchMock.mock.calls[3][0])).toContain('openrouter.ai');
+  });
+
+  it('CASCADE-BUDGET: aborts cascade after aggregate timeout (90s default)', async () => {
+    // Real-world bound: a dashboard load shouldn't hang for >90s waiting
+    // for the cascade to exhaust. Each leg has its own 30s per-call timeout
+    // but stacking 10 legs (Gemini + 4 Groq + 5 OpenRouter) = 275s worst
+    // case. Assert the router enforces an aggregate ceiling.
+    //
+    // Strategy: each leg fails fast with a cascadable 503 so the loop
+    // iterates; the budget fires between iterations once cumulative time
+    // exceeds 1s.
+    const slowFail = () =>
+      new Promise<never>((_resolve, reject) => {
+        setTimeout(() => {
+          const err = Object.assign(new Error('503 model overloaded'), { status: 503 });
+          reject(err);
+        }, 250);
+      });
+    mockGenerateContent.mockImplementationOnce(slowFail);
+    const fetchMock = vi.fn(slowFail);
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    const router = createGenAiRouter({
+      geminiApiKey: 'g',
+      groqApiKey: 'q',
+      openrouterApiKey: 'o',
+      groqModelChain: ['groq-a', 'groq-b'],
+      freeModelChain: ['or-a', 'or-b'],
+      aggregateBudgetMs: 1_000,
+    })!;
+
+    const start = Date.now();
+    await expect(
+      router.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: 'hi',
+      }),
+    ).rejects.toThrow(/aggregate budget|cascade timeout/i);
+    const elapsed = Date.now() - start;
+
+    // Sanity: budget kicked in before all 5 attempts (1 Gemini + 2 Groq +
+    // 2 OR) had a chance to run their full 250ms each (= 1250ms total).
+    expect(elapsed).toBeLessThan(1_500);
+    // And at least 2 attempts must have happened (otherwise the budget
+    // didn't even let the loop progress).
+    expect(mockGenerateContent.mock.calls.length + fetchMock.mock.calls.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('METRICS: emits ai_router_cascade + ai_router_recovery events on cascade success', async () => {
+    mockGenerateContent.mockRejectedValueOnce(new Error('429 RESOURCE_EXHAUSTED'));
+    const fetchMock = mockFetchOnce([{ text: 'recovered' }]);
+
+    const router = createGenAiRouter({
+      geminiApiKey: 'g',
+      groqApiKey: undefined,
+      openrouterApiKey: 'o',
+      freeModelChain: ['meta-llama/llama-3.3-70b-instruct:free'],
+    })!;
+    await router.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: 'hi',
+    });
+
+    // Cascade event: gemini-direct failed, falling through.
+    expect(mockLogEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: 'ai_router_cascade',
+        from: 'gemini-direct',
+      }),
+    );
+    // Recovery event: succeeded via openrouter at attempt index 1.
+    expect(mockLogEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: 'ai_router_recovery',
+        via: 'openrouter:meta-llama/llama-3.3-70b-instruct:free',
+      }),
+    );
+
+    void fetchMock;
+  });
+
+  it('METRICS: emits ai_router_exhausted when all providers fail', async () => {
+    mockGenerateContent.mockRejectedValueOnce(new Error('429 RESOURCE_EXHAUSTED'));
+    const fetchMock = mockFetchOnce([
+      { ok: false, status: 429, text: '{"e":1}' },
+      { ok: false, status: 429, text: '{"e":2}' },
+    ]);
+
+    const router = createGenAiRouter({
+      geminiApiKey: 'g',
+      groqApiKey: undefined,
+      openrouterApiKey: 'o',
+      freeModelChain: ['a:free', 'b:free'],
+    })!;
+    await expect(
+      router.models.generateContent({ model: 'x', contents: 'q' }),
+    ).rejects.toThrow();
+
+    expect(mockLogEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: 'ai_router_exhausted',
+        totalAttempts: 3,
+      }),
+    );
+    void fetchMock;
   });
 
   it('defaults the OpenRouter HTTP-Referer header to https://bazodiac.space', async () => {

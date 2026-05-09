@@ -57,3 +57,23 @@ export function logRequest({
   };
   console.log(JSON.stringify(entry));
 }
+
+/**
+ * Emit a structured JSON event line for system-level events that aren't
+ * tied to a specific HTTP request (AI router cascade, cache eviction,
+ * background refresh outcomes). Same JSON-on-stdout pipeline as
+ * `logRequest`, no daemon dependency.
+ *
+ * Privacy: callers MUST NOT pass raw user IDs / IPs / API keys / prompt
+ * bodies. Pass already-hashed identifiers if user attribution is needed.
+ *
+ * @param {object} fields  Arbitrary structured fields. `event` is required;
+ *                          `timestamp` is added automatically.
+ */
+export function logEvent(fields) {
+  const entry = {
+    timestamp: new Date().toISOString(),
+    ...fields,
+  };
+  console.log(JSON.stringify(entry));
+}
