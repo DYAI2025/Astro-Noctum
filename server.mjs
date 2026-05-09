@@ -1820,7 +1820,7 @@ function buildDailyFallbackPayload({ targetDate, lang, bafeData }) {
       harmony_index: harmonyIndex,
       day_mode: dayMode,
     },
-    meta: { engine_version: 'v1-gemini-daily' },
+    meta: { engine_version: 'v1-server-fallback' },
   };
 }
 
@@ -2897,27 +2897,38 @@ NEVER use in synthesis: "weil", "da heute", planet names (Mars, Venus etc.), "di
       appendNightHarmony(parsedData, now);
     }
 
-    horoscopeCache.set(cacheKeyD, { data: parsedData, timestamp: Date.now() });
+    // HOTFIX-B (cache-poisoning guard): refuse to cache server-side fallback payloads.
+    // When the AI provider returns empty/malformed output we still respond to the client,
+    // but caching the generic fallback would freeze every user on the same canned text for
+    // the next 24h (HOROSCOPE_CACHE_TTL) — even after Gemini quota resets at midnight UTC.
+    // Real AI responses still cache as before; only fallback short-circuits both L1 and L2.
+    const isServerFallback = parsedData?.meta?.engine_version === 'v1-server-fallback';
 
-    if (supabaseServer) {
-      // Persist to L2 (fire-and-forget) — badges not cached (computed fresh each request)
-      supabaseServer
-        .from('daily_horoscope_cache')
-        .upsert({
-          user_id: userId,
-          local_date: targetDate,
-          engine_version: 'v1-gemini-daily',
-          signature_version: 1,
-          payload_json: parsedData,
-        }, { onConflict: 'user_id,local_date,engine_version,signature_version' })
-        .then(({ error }) => {
-          if (error) {
-            console.warn('[daily] DB cache upsert failed:', error.message);
-          }
-        })
-        .catch((err) => {
-          console.error('[daily] DB cache upsert rejected:', err);
-        });
+    if (!isServerFallback) {
+      horoscopeCache.set(cacheKeyD, { data: parsedData, timestamp: Date.now() });
+
+      if (supabaseServer) {
+        // Persist to L2 (fire-and-forget) — badges not cached (computed fresh each request)
+        supabaseServer
+          .from('daily_horoscope_cache')
+          .upsert({
+            user_id: userId,
+            local_date: targetDate,
+            engine_version: 'v1-gemini-daily',
+            signature_version: 1,
+            payload_json: parsedData,
+          }, { onConflict: 'user_id,local_date,engine_version,signature_version' })
+          .then(({ error }) => {
+            if (error) {
+              console.warn('[daily] DB cache upsert failed:', error.message);
+            }
+          })
+          .catch((err) => {
+            console.error('[daily] DB cache upsert rejected:', err);
+          });
+      }
+    } else {
+      console.warn('[experience/daily] Skipping L1+L2 cache write for server fallback payload (forces retry on next request)');
     }
 
     const responseData = await prepareDailyResponse(parsedData);

@@ -370,7 +370,6 @@ function AnimatedScene({
         <mesh
           geometry={wireGeom}
           raycast={SKIP_RAYCAST}
-          data-mesh-role="wire-halo"
           scale={1.005}
           renderOrder={1}
         >
@@ -387,8 +386,6 @@ function AnimatedScene({
         <mesh
           geometry={wireGeom}
           raycast={SKIP_RAYCAST}
-          data-mesh-role="wire"
-          data-tint="gold"
           renderOrder={2}
         >
           <meshStandardMaterial
@@ -408,7 +405,6 @@ function AnimatedScene({
         <mesh
           geometry={solidGeom}
           raycast={SKIP_RAYCAST}
-          data-mesh-role="solid"
           material={wuxingMaterial}
         />
 

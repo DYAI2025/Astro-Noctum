@@ -65,6 +65,13 @@ export interface DailyChartHeroProps {
   onCompleteProfile?: () => void;
   /** Optional callback to open the day-detail modal (feature-flagged) */
   onOpenDayModal?: () => void;
+  /**
+   * True when `dailyData.meta.engine_version === 'v1-local-fallback'`, i.e.
+   * useFirstRunDaily fell back to buildFallbackDaily because FuFirE/Gemini
+   * was unreachable. Renders a small low-contrast indicator under the
+   * Tagesimpuls paragraph so users know the content is generic.
+   */
+  isFallback?: boolean;
 }
 
 // ── Split Coherence Ring ───────────────────────────────────────────────────────
@@ -223,6 +230,7 @@ export function DailyChartHero({
   profileIncomplete,
   onCompleteProfile,
   onOpenDayModal,
+  isFallback = false,
 }: DailyChartHeroProps) {
   const { lang } = useLanguage();
   const isDe = lang === 'de';
@@ -231,23 +239,35 @@ export function DailyChartHero({
   const base = baseCoherence ?? displayed;
   const delta = positiveDailyDelta ?? 0;
 
+  // Defensive null-guards: spaceWeather and individual values may be null/undefined
+  // during NOAA SWPC outages, before useSpaceWeather() resolves, or when an old
+  // localStorage cache hydrates with missing keys. Render em-dash "—" for any
+  // missing value — visible degraded state, no crash, no misleading "Kp null"
+  // or "0%" rendering. (TASK-4.3)
+  const kp = spaceWeather?.kpIndex;
+  const sp = spaceWeather?.solarPressure;
+  const transitCount = transitEvents?.length;
   const drivers = useMemo(() => [
     {
       label: isDe ? 'Geomagnetik' : 'Geomagnetic',
-      value: `Kp ${spaceWeather.kpIndex}`,
-      state: classifyKp(spaceWeather.kpIndex),
+      value: kp != null && Number.isFinite(kp) ? `Kp ${kp}` : '—',
+      state: kp != null && Number.isFinite(kp) ? classifyKp(kp) : 'calm' as const,
     },
     {
       label: isDe ? 'Solardruck' : 'Solar pressure',
-      value: `${Math.round(spaceWeather.solarPressure * 100)}%`,
-      state: classifySolarPressure(spaceWeather.solarPressure),
+      value: sp != null && Number.isFinite(sp) ? `${Math.round(sp * 100)}%` : '—',
+      state: sp != null && Number.isFinite(sp) ? classifySolarPressure(sp) : 'calm' as const,
     },
     {
       label: isDe ? 'Transit-Aktivität' : 'Transit activity',
-      value: `${transitEvents.length} ${isDe ? 'aktiv' : 'active'}`,
-      state: classifyTransitCount(transitEvents.length),
+      value: transitCount != null
+        ? `${transitCount} ${isDe ? 'aktiv' : 'active'}`
+        : '—',
+      state: transitCount != null
+        ? classifyTransitCount(transitCount)
+        : 'calm' as const,
     },
-  ], [spaceWeather.kpIndex, spaceWeather.solarPressure, transitEvents.length, isDe]);
+  ], [kp, sp, transitCount, isDe]);
 
   if (loading) return <DailyChartHeroSkeleton />;
 
@@ -411,6 +431,17 @@ export function DailyChartHero({
           >
             {impulsText}
           </p>
+          {isFallback && (
+            <p
+              className="text-[9px] text-center mt-2"
+              style={{ color: 'var(--tile-text-secondary)', opacity: 0.4 }}
+              data-testid="fallback-indicator"
+            >
+              {isDe
+                ? '↻ Heute nicht verfügbar — generischer Inhalt'
+                : '↻ Unavailable today — generic content'}
+            </p>
+          )}
           {onOpenDayModal && (
             <div className="mt-3 text-center">
               <button
