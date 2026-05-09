@@ -386,6 +386,7 @@ export function Dashboard({
             profileIncomplete={!metaLoading && !metaError && profileMeta.birthInput === null}
             onCompleteProfile={onReset}
             onOpenDayModal={dailyEnabled ? () => setIsDayModalOpen(true) : undefined}
+            isFallback={dailyData?.meta?.engine_version === 'v1-local-fallback'}
           />
         </SectionErrorBoundary>
       </motion.div>

@@ -65,6 +65,13 @@ export interface DailyChartHeroProps {
   onCompleteProfile?: () => void;
   /** Optional callback to open the day-detail modal (feature-flagged) */
   onOpenDayModal?: () => void;
+  /**
+   * True when `dailyData.meta.engine_version === 'v1-local-fallback'`, i.e.
+   * useFirstRunDaily fell back to buildFallbackDaily because FuFirE/Gemini
+   * was unreachable. Renders a small low-contrast indicator under the
+   * Tagesimpuls paragraph so users know the content is generic.
+   */
+  isFallback?: boolean;
 }
 
 // ── Split Coherence Ring ───────────────────────────────────────────────────────
@@ -223,6 +230,7 @@ export function DailyChartHero({
   profileIncomplete,
   onCompleteProfile,
   onOpenDayModal,
+  isFallback = false,
 }: DailyChartHeroProps) {
   const { lang } = useLanguage();
   const isDe = lang === 'de';
@@ -411,6 +419,17 @@ export function DailyChartHero({
           >
             {impulsText}
           </p>
+          {isFallback && (
+            <p
+              className="text-[9px] text-center mt-2"
+              style={{ color: 'var(--tile-text-secondary)', opacity: 0.4 }}
+              data-testid="fallback-indicator"
+            >
+              {isDe
+                ? '↻ Heute nicht verfügbar — generischer Inhalt'
+                : '↻ Unavailable today — generic content'}
+            </p>
+          )}
           {onOpenDayModal && (
             <div className="mt-3 text-center">
               <button
