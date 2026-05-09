@@ -25,7 +25,8 @@ export default defineConfig(({mode}) => {
           rewrite: (path) => path.replace(/^\/api\/calculate/, '/calculate'),
         },
         '/chart': {
-          // calculateAll() calls /chart directly on FuFirE (not under /calculate/).
+          // Proxy direct /chart requests to the BAFE backend. Frontend
+          // calculateAll() uses /api/chart via the same-origin proxy below.
           target: env.VITE_BAFE_BASE_URL || 'https://bafe-2u0e2a.fly.dev',
           changeOrigin: true,
         },
