@@ -620,4 +620,165 @@ describe('POST /api/daily-interpretation — no-placeholders contract', () => {
     // The pre-check GET fired once + the race-recovery re-fetch GET fired once = 2 total.
     expect(interpretationGetCount).toBe(2);
   });
+
+  it('DIN-LOOPHOLE-001: user has DE decision, EN pick for same Kalendertag returns 409 (cross-locale lock)', async () => {
+    // Audit follow-up I-3: daily_pulses are keyed (user_id, date, locale)
+    // so a user switching locale gets a NEW pulse_id. Without a
+    // (user_id, date)-scoped lock, they could pick again — getting two
+    // decisions on the same Kalendertag, violating spec C-3.
+    //
+    // Setup: user has TWO pulses today (pulse-de, pulse-en). User
+    // already picked 'mond' on the DE pulse. Now they call the EN
+    // endpoint with archetype='sonne'. Server must scope the lock by
+    // (user, date), find the DE 'mond' decision, return 409.
+
+    const dePulse = { ...PULSE_ROW, id: 'pulse-de', locale: 'de' };
+    const enPulse = { ...PULSE_ROW, id: 'pulse-en', locale: 'en' };
+    const lockedDeRow = {
+      id: 'int-locked-de',
+      text: 'Mond DE locked text',
+      selected_archetype_key: 'mond',
+      locale: 'de',
+      daily_pulse_id: 'pulse-de',
+    };
+
+    let dailyPulsesGetCount = 0;
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      const url = typeof input === 'string' ? input
+        : input instanceof URL ? input.toString()
+          : input?.url ?? '';
+      const method = (init?.method || 'GET').toUpperCase();
+
+      if (url.includes('auth/v1/user')) {
+        return {
+          ok: true, status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ id: 'user-1', email: 't@test.com', aud: 'authenticated' }),
+          text: async () => JSON.stringify({ id: 'user-1' }),
+        };
+      }
+      if (url.includes('/daily_pulses')) {
+        dailyPulsesGetCount += 1;
+        // 1st call: auth-boundary lookup (eq id, eq user_id) — request
+        //           hits EN pulse, return that.
+        // 2nd call: per-date scope lookup (eq user_id, eq date) — return
+        //           BOTH pulses so the loophole-victim DE row is reachable.
+        const data = dailyPulsesGetCount === 1 ? [enPulse] : [dePulse, enPulse];
+        return {
+          ok: true, status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => data,
+          text: async () => JSON.stringify(data),
+        };
+      }
+      if (url.includes('/daily_interpretations')) {
+        // .in('daily_pulse_id', ['pulse-de','pulse-en']).order().limit(1)
+        // → returns earliest = the DE row
+        return {
+          ok: true, status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => [lockedDeRow],
+          text: async () => JSON.stringify([lockedDeRow]),
+        };
+      }
+      // astro_profiles, etc. — should NOT be hit (lock short-circuits).
+      return {
+        ok: true, status: 200,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({}),
+        text: async () => '{}',
+      };
+    });
+
+    const geminiClass = makeGeminiTextMock('SHOULD NOT BE CALLED — CROSS-LOCALE LOCK');
+    const app = await loadApp(geminiClass);
+
+    const res = await request(app)
+      .post('/api/daily-interpretation')
+      .set(AUTH_HEADER)
+      .set('Content-Type', 'application/json')
+      .send({
+        daily_pulse_id: 'pulse-en',
+        selected_archetype_key: 'sonne',
+        locale: 'en',
+      });
+
+    expect(res.status).toBe(409);
+    expect(res.body?.error?.code).toBe('ALREADY_DECIDED');
+    expect(res.body?.error?.locked_archetype_key).toBe('mond');
+    expect(res.body?.error?.text).toBe('Mond DE locked text');
+  });
+
+  it('DIN-LOOPHOLE-002: same archetype, different locale → 409 (locked text in original locale)', async () => {
+    // Edge case: user has 'mond DE' decision, switches to EN, picks
+    // 'mond' again. Same archetype but different locale. Per spec
+    // C-3 ("first decision wins"), this is locked — user sees their
+    // original DE text, not a fresh EN re-translation.
+    const dePulse = { ...PULSE_ROW, id: 'pulse-de', locale: 'de' };
+    const enPulse = { ...PULSE_ROW, id: 'pulse-en', locale: 'en' };
+    const lockedDeRow = {
+      id: 'int-locked-de',
+      text: 'Original DE Mond text',
+      selected_archetype_key: 'mond',
+      locale: 'de',
+      daily_pulse_id: 'pulse-de',
+    };
+
+    let dailyPulsesGetCount = 0;
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      const url = typeof input === 'string' ? input
+        : input instanceof URL ? input.toString()
+          : input?.url ?? '';
+      if (url.includes('auth/v1/user')) {
+        return {
+          ok: true, status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ id: 'user-1', email: 't@test.com', aud: 'authenticated' }),
+          text: async () => JSON.stringify({ id: 'user-1' }),
+        };
+      }
+      if (url.includes('/daily_pulses')) {
+        dailyPulsesGetCount += 1;
+        const data = dailyPulsesGetCount === 1 ? [enPulse] : [dePulse, enPulse];
+        return {
+          ok: true, status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => data,
+          text: async () => JSON.stringify(data),
+        };
+      }
+      if (url.includes('/daily_interpretations')) {
+        return {
+          ok: true, status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => [lockedDeRow],
+          text: async () => JSON.stringify([lockedDeRow]),
+        };
+      }
+      return {
+        ok: true, status: 200,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({}),
+        text: async () => '{}',
+      };
+    });
+
+    const geminiClass = makeGeminiTextMock('SHOULD NOT BE CALLED');
+    const app = await loadApp(geminiClass);
+
+    const res = await request(app)
+      .post('/api/daily-interpretation')
+      .set(AUTH_HEADER)
+      .set('Content-Type', 'application/json')
+      .send({
+        daily_pulse_id: 'pulse-en',
+        selected_archetype_key: 'mond',  // same archetype
+        locale: 'en',                    // different locale
+      });
+
+    expect(res.status).toBe(409);
+    expect(res.body?.error?.code).toBe('ALREADY_DECIDED');
+    expect(res.body?.error?.locked_archetype_key).toBe('mond');
+    expect(res.body?.error?.text).toBe('Original DE Mond text');
+  });
 });

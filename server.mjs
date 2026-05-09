@@ -3283,15 +3283,37 @@ app.post('/api/daily-interpretation', requireUserAuth, dailyInterpretationLimite
       return res.status(404).json({ error: { code: 'PULSE_NOT_FOUND' } });
     }
 
-    // C-3 short-circuit (audit follow-up I-1): existing-row check FIRST,
-    // before the profile reload. Most requests after first pick are
-    // page-reloads / re-mounts that hit the cache or the lock; in those
-    // cases we don't need to load the profile at all.
-    const { data: existing } = await supabaseServer
+    // C-3 short-circuit (audit follow-up I-1, I-3): existing-row check
+    // FIRST, before the profile reload. Most requests after first pick
+    // are page-reloads / re-mounts that hit the cache or the lock; in
+    // those cases we don't need to load the profile at all.
+    //
+    // I-3 (locale-switching loophole): query interpretations across ALL
+    // of this user's pulses for (user_id, date), not just the requested
+    // pulse_id. Without this, a user could pick on locale=de, switch to
+    // locale=en (which uses a different daily_pulse_id by design — pulses
+    // are keyed (user_id, date, locale)), and pick again — getting two
+    // decisions on the same Kalendertag. Spec C-3 forbids that.
+    //
+    // Step 1: collect all pulse_ids for this user on this date.
+    const { data: pulsesForDate } = await supabaseServer
+      .from('daily_pulses')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('date', pulse.date);
+    const pulseIdsForDate = (pulsesForDate ?? []).map((p) => p.id);
+
+    // Step 2: find the first interpretation (if any) across those pulses.
+    // .order('created_at') + .limit(1) implements "first decision wins"
+    // semantics, consistent with the migration cleanup that resolved
+    // historic loophole-victim rows.
+    const { data: existingList } = await supabaseServer
       .from('daily_interpretations')
-      .select('id, text, selected_archetype_key, locale')
-      .eq('daily_pulse_id', dailyPulseId)
-      .maybeSingle();
+      .select('id, text, selected_archetype_key, locale, daily_pulse_id')
+      .in('daily_pulse_id', pulseIdsForDate)
+      .order('created_at', { ascending: true })
+      .limit(1);
+    const existing = existingList?.[0] ?? null;
     if (existing) {
       // Same archetype + same locale = idempotent re-pick (page reload,
       // double-click) — return 200 with the cached row.
