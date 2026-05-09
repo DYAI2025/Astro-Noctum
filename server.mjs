@@ -295,7 +295,7 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://unpkg.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "blob:", "https:", "https://*.tile.openstreetmap.org"],
-      connectSrc: ["'self'", "https://*.supabase.co", "wss://*.supabase.co", "https://generativelanguage.googleapis.com", "https://bafe-production.up.railway.app", "https://bafe.vercel.app", "https://nominatim.openstreetmap.org", "https://*.tile.openstreetmap.org", "https://elevenlabs.io", "https://*.elevenlabs.io", "wss://elevenlabs.io", "wss://*.elevenlabs.io", "wss://api.elevenlabs.io", "https://*.google-analytics.com", "https://*.analytics.google.com", "https://*.googlesyndication.com", "https://pagead2.googlesyndication.com", "https://fundingchoicesmessages.google.com", "https://*.adtrafficquality.google", "https://www.googletagmanager.com", "https://api.nasa.gov", "https://services.swpc.noaa.gov"],
+      connectSrc: ["'self'", "https://*.supabase.co", "wss://*.supabase.co", "https://generativelanguage.googleapis.com", "https://bafe-2u0e2a.fly.dev", "https://bafe-production.up.railway.app", "https://bafe.vercel.app", "https://nominatim.openstreetmap.org", "https://*.tile.openstreetmap.org", "https://elevenlabs.io", "https://*.elevenlabs.io", "wss://elevenlabs.io", "wss://*.elevenlabs.io", "wss://api.elevenlabs.io", "https://*.google-analytics.com", "https://*.analytics.google.com", "https://*.googlesyndication.com", "https://pagead2.googlesyndication.com", "https://fundingchoicesmessages.google.com", "https://*.adtrafficquality.google", "https://www.googletagmanager.com", "https://api.nasa.gov", "https://services.swpc.noaa.gov"],
       frameSrc: ["'self'", "https://elevenlabs.io", "https://*.elevenlabs.io", "https://checkout.stripe.com", "https://pagead2.googlesyndication.com", "https://googleads.g.doubleclick.net", "https://fundingchoicesmessages.google.com"],
       mediaSrc: ["'self'", "blob:", "https://elevenlabs.io", "https://*.elevenlabs.io"],
       workerSrc: ["'self'", "blob:", "https://elevenlabs.io", "https://*.elevenlabs.io", "https://unpkg.com"],
@@ -400,7 +400,7 @@ const stripTrailingSlash = (url) => url ? url.replace(/\/+$/, "") : url;
 const BAFE_PUBLIC_URL = stripTrailingSlash(
   process.env.BAFE_BASE_URL ||
   process.env.VITE_BAFE_BASE_URL ||
-  "https://bafe-production.up.railway.app"
+  "https://bafe-2u0e2a.fly.dev"
 );
 
 const BAFE_INTERNAL_URL = stripTrailingSlash(process.env.BAFE_INTERNAL_URL) || null;
@@ -1505,7 +1505,7 @@ app.get("/api/transit-state/:userId", requireUserAuth, requireOwnership("userId"
     // Step 3: POST to FuFirE /transit/state
     const bafePrimaryUrl = process.env.BAFE_INTERNAL_URL
       || process.env.VITE_BAFE_BASE_URL
-      || "https://bafe-production.up.railway.app";
+      || "https://bafe-2u0e2a.fly.dev";
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
@@ -1856,7 +1856,7 @@ app.get("/api/horoscope/daily/:userId", async (req, res) => {
       try {
         const bafePrimaryUrl = process.env.BAFE_INTERNAL_URL
           || process.env.VITE_BAFE_BASE_URL
-          || "https://bafe-production.up.railway.app";
+          || "https://bafe-2u0e2a.fly.dev";
 
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
