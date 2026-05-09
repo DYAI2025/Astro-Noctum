@@ -519,7 +519,6 @@ const translationsEn: DeepStringRecord = {
       jahrestier: "Year Animal",
       wuxing_dom: "Wu Xing",
     },
-    back: "Choose another guide",
     modes: {
       pulse: "PULSE",
       trace: "TRACE",
@@ -1048,7 +1047,6 @@ const translationsDe: DeepStringRecord = {
       jahrestier: "Jahrestier",
       wuxing_dom: "Wu Xing",
     },
-    back: "Andere Figur wählen",
     modes: {
       pulse: "PULS",
       trace: "SPUR",

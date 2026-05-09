@@ -190,19 +190,16 @@ describe('useDailyPulse', () => {
     });
     await waitFor(() => expect(result.current.interpretation).not.toBeNull());
 
-    // Reset back to phase 1, then re-select the same figure.
-    act(() => {
-      result.current.resetFigure();
-    });
-    expect(result.current.selectedFigure).toBeNull();
-
+    // Re-select the same figure (no reset — Phase 2 is irreversible per
+    // spec C-2, but re-tapping the same key must still be a no-op cache
+    // hit so re-renders don't re-spend an LLM call).
     act(() => {
       result.current.selectCouncilFigure('sonne');
     });
     expect(result.current.selectedFigure).toBe('sonne');
     // Still only 2 authedFetch calls in total: 1 pulse + 1 interpretation.
     expect(authedFetch).toHaveBeenCalledTimes(2);
-    // Cached interpretation is immediately available again.
+    // Cached interpretation is still available.
     expect(result.current.interpretation?.text).toBe('Heute trägt die Sonne dich ruhig.');
   });
 

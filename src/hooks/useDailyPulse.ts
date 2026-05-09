@@ -54,7 +54,6 @@ export interface UseDailyPulseResult {
   loadingInterpretation: boolean;
   interpretationError: DailyPulseError | null;
   selectCouncilFigure: (key: string) => void;
-  resetFigure: () => void;
 }
 
 function todayDateStr(): string {
@@ -92,11 +91,6 @@ export function useDailyPulse(locale: 'de' | 'en' = 'de'): UseDailyPulseResult {
 
   const refresh = useCallback(() => {
     setRefreshTick((t) => t + 1);
-  }, []);
-
-  const resetFigure = useCallback(() => {
-    setSelectedFigure(null);
-    setInterpretationError(null);
   }, []);
 
   // ── Phase 1 fetch: pulse + aphorism + council ─────────────────────────
@@ -265,6 +259,5 @@ export function useDailyPulse(locale: 'de' | 'en' = 'de'): UseDailyPulseResult {
     loadingInterpretation,
     interpretationError,
     selectCouncilFigure,
-    resetFigure,
   };
 }

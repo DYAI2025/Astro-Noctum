@@ -13,7 +13,7 @@
  *   Phase 2 (after `selectedFigure`):
  *     - Selected figure header + sign/element
  *     - Personalized interpretation text
- *     - "← Andere Figur wählen" back button
+ *     - NO back button — Phase 2 is irreversible (spec C-2: one decision per day)
  *
  * NO PLACEHOLDER FALLBACK RENDERING. When slot_2 / slot_3 are null the
  * corresponding section is omitted entirely — never replaced with generic
@@ -163,7 +163,6 @@ export function TagespulsCard({ onCompleteProfile }: TagespulsCardProps) {
     loadingInterpretation,
     interpretationError,
     selectCouncilFigure,
-    resetFigure,
   } = useDailyPulse(lang === 'en' ? 'en' : 'de');
 
   // ── Loading ─────────────────────────────────────────────────────────────
@@ -225,17 +224,9 @@ export function TagespulsCard({ onCompleteProfile }: TagespulsCardProps) {
         data-testid="tagespuls-card"
         data-phase="interpretation"
       >
-        <button
-          type="button"
-          onClick={resetFigure}
-          className="text-xs uppercase tracking-[0.2em] text-ink/60 hover:text-ink focus:outline-none focus:underline"
-          data-testid="tagespuls-back"
-        >
-          ← {t('tagespuls.back')}
-        </button>
-
         {/* Aphorism stays visible above the interpretation as the
-            curated foundation. */}
+            curated foundation. After the user picks an archetype the
+            decision is irreversible (spec C-2: "Kein 'Zurück' Button"). */}
         <blockquote className="border-l-2 border-gold/40 pl-4 text-base text-ink/85 italic">
           "{aph.slot_1}"
           {aph.author && (

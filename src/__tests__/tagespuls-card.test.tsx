@@ -68,7 +68,6 @@ interface HookOverrides {
   interpretationError?: DailyPulseError | null;
   refresh?: () => void;
   selectCouncilFigure?: (k: string) => void;
-  resetFigure?: () => void;
 }
 
 function setHookState(overrides: HookOverrides = {}) {
@@ -82,7 +81,6 @@ function setHookState(overrides: HookOverrides = {}) {
     loadingInterpretation: false,
     interpretationError: null,
     selectCouncilFigure: vi.fn(),
-    resetFigure: vi.fn(),
     ...overrides,
   });
 }
@@ -231,8 +229,6 @@ describe('TagespulsCard', () => {
     );
     // Aphorism still visible above.
     expect(container.textContent).toContain(FULL_PULSE.aphorism.slot_1);
-    // Back button is present.
-    expect(screen.getByTestId('tagespuls-back')).toBeTruthy();
   });
 
   it('TPC-008: phase 2 ai_unavailable → retry inline, aphorism stays', () => {
@@ -267,17 +263,31 @@ describe('TagespulsCard', () => {
     expect(selectCouncilFigure).toHaveBeenCalledWith('sonne');
   });
 
-  it('TPC-010: phase 2 back button calls resetFigure', () => {
-    const resetFigure = vi.fn();
+  it('TPC-NO-BACK-001: Phase 2 has NO back button (one-decision-per-day spec)', () => {
+    // Per the 2026-05-09 product audit C-2: after the user picks an
+    // archetype, they cannot un-pick. The "← Andere Figur wählen"
+    // button must not render.
     setHookState({
       pulse: FULL_PULSE,
-      selectedFigure: 'jahrestier',
-      interpretation: { id: 'i', text: 'Hund führt heute mit Treue.' },
-      resetFigure,
+      selectedFigure: 'mond',
+      interpretation: {
+        id: 'int-1',
+        text: 'Dein Mond Libra zeigt heute eine ruhige Wachsamkeit.',
+      },
+      loadingInterpretation: false,
+      interpretationError: null,
     });
 
     render(<TagespulsCard />);
-    fireEvent.click(screen.getByTestId('tagespuls-back'));
-    expect(resetFigure).toHaveBeenCalledTimes(1);
+
+    // Phase 2 visible — interpretation is rendered
+    expect(screen.getByText(/Dein Mond Libra/)).toBeInTheDocument();
+
+    // The back button MUST NOT exist in any form
+    expect(screen.queryByTestId('tagespuls-back')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Andere Figur wählen/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Choose another guide/i)).not.toBeInTheDocument();
+    // Also: the resetFigure handler shouldn't be wired anywhere visible
+    // (this is implicit — the buttons that would call it don't exist).
   });
 });

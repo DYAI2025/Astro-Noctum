@@ -45,7 +45,6 @@ vi.mock('@/src/hooks/useDailyPulse', () => ({
     loadingInterpretation: false,
     interpretationError: null,
     selectCouncilFigure: vi.fn(),
-    resetFigure: vi.fn(),
   }),
 }));
 
