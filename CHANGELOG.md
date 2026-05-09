@@ -1,5 +1,36 @@
 # Changelog
 
+## [Unreleased] - 2026-05-07 — Dashboard 3D Anchor + GreenOps (PR 2 of dashboard-flow-tagespuls plan)
+
+### Features
+
+- **`SignaturAnchorCard` on the dashboard** (`src/components/dashboard/SignaturAnchorCard.tsx`, `src/components/Dashboard.tsx`, `src/i18n/translations.ts`) — new static anchor section between `DailyChartHero` and `AgentSection`. Shows the user's birth sign + dominant Wu-Xing element with a "Signatur ansehen →" / "View signature →" CTA navigating to `/signatur`. **No WebGL on the dashboard mount** — performance-safe, the 3D Chladni sphere only loads when the user explicitly opts in by tapping the CTA. Empty state ("Profil unvollständig" / "Profile incomplete") when either prop is missing. Brief calls this "Option B"; Option A (embedded R3F on dashboard) is deferred until B is stable in prod. New i18n subkey `signatur.anchor.{title,cta,empty}` (DE+EN).
+
+### Performance
+
+- **Visibility-aware Signatur polling** (`src/hooks/useSignaturSignal.ts`) — bumped `VISIBLE_INTERVAL` from 8s to 15s and `HIDDEN_INTERVAL` from 45s to 60s. The hook had been hardened on 2026-05-06 with visibility detection, exponential-backoff on errors, and `online`/`offline` listeners — this task just shifts the cadence per the dashboard-flow plan's GreenOps targets. The plan's "currently every 800ms" framing referred to the legacy regression baseline; the actual code was already self-rescheduling at sane intervals. Net effect: ~50% reduction in transit-state requests for an active session, more during background tabs.
+- **Single `useSpaceWeather()` poller per dashboard mount** (`src/components/dashboard/MagnetsturmKarte.tsx`, `src/components/Dashboard.tsx`) — `MagnetsturmKarte` previously called `useSpaceWeather()` directly, duplicating the 5-minute NOAA SWPC poller already running in `Dashboard.tsx`. Now `MagnetsturmKarte` accepts `spaceWeather` as a prop; Dashboard is the single hook caller and passes the value down. Reduces NOAA SWPC requests from 2 → 1 per 5-min window per dashboard mount. The `useSpaceWeather()` callsites in `SignaturPage.tsx` and `SignaturRenderer.tsx` were intentionally left untouched — separate page mounts have separate page-scoped pollers, which is correct.
+
+### Documentation
+
+- **3D Signatur pipeline audit** (`docs/2026-05-07-signatur-3d-pipeline-audit.md`) — verdict: ✅ **robust**. The Wu-Xing DE/EN drift hypothesis was **refuted**. Both `services/api.ts` (mapper writing 10-key dict with EN+DE entries) AND `baziToChladniParams` itself (via `normalizeWuxingElementKey`, accepting `feuer/holz/wasser/erde/metall` case-insensitively) independently handle bilingual input. **No separate fix-track needed.** Two minor cosmetic observations: zero-weight profiles bias to Water due to `best = 'Water'` initialization, and `harmony_index` field read via dynamic key access never finds the field (cosmetic, not user-facing).
+- **Dashboard hierarchy audit** (`docs/2026-05-07-dashboard-hierarchy-audit.md`) — verdict: 🚨 **major mismatch deferred**. 5 of 8 brief-target sections aligned (DailyChartHero #1, SignaturAnchorCard #2, AgentSection #3, DashboardAstroSection #4, DashboardBottomUpgradeCard #8). 1 section out of order (`DashboardInterpretationSection` is at position #9, brief said #5 — moving up 4 slots crosses `planetariumSentinelRef`, `navHintsSentinelRef`, the `#interpretation-section` deep-link anchor, the Planetarium block, MagnetsturmKarte, and the Bottom Upgrade Card; non-mechanical reorder). 1 section in the brief that's not in code (`DashboardTagesEnergie` was deliberately retired in commit `882eea8` 2026-04-15 as a duplicate of DailyChartHero — the brief target is stale here). 4 sections in code that aren't in the brief (BirthChartOrrery, SkyModeToggle, ShareCard, LegalFooter — likely intentional). Reorder deferred to a dedicated PO-led hierarchy sprint. **Plan recommendation:** update the `2026-05-07-dashboard-flow-tagespuls-3d.md` target to drop `DashboardTagesEnergie` and either keep Interpretation at the epilogue position or formally re-confirm intended position before code changes.
+
+### Tests / Refactoring
+
+- **3 SignaturAnchorCard tests** (`src/__tests__/signatur-anchor-card.test.tsx`) — `SAC-001/002/003` covering preview render, navigation on click, empty-state-when-no-profile.
+- **3 visibility-aware polling tests** (`src/__tests__/use-signatur-signal-polling.test.ts`) — `USS-POLL-001/002/003`/004/005 covering visible 15s cadence, hidden 60s cadence, immediate refresh on visibility change.
+- **1 prop-driven MagnetsturmKarte test** (`src/__tests__/magnetsturm-karte-prop-driven.test.tsx`) — `MK-PROP-001` asserting render-from-prop without hook call. **12 existing tests in `src/__tests__/MagnetsturmKarte.test.tsx`** adapted to the new prop interface (no deletions; mock pattern `vi.mock('../hooks/useSpaceWeather', ...)` swapped for inline fixture passed via `spaceWeather` prop).
+- **`TODO(analytics):` markers** at three user-action surfaces (`src/components/Dashboard.tsx`, `src/components/dashboard/DayModeModal.tsx`, `src/components/dashboard/SignaturAnchorCard.tsx`) for `dashboard_first_interaction`, `daily_detail_open_rate`, `signatur_sphere_interaction`. Stubs only — future analytics-focused sprint will wire `trackEvent` calls.
+- Full suite: **2299/2299 passing** (was 2288/2288 at end of PR 1; net +11 = +3 SAC +5 polling +3 KP +1 MK-PROP −1 from re-running the existing 12 MK tests with the new fixture). 248 test files. `tsc --noEmit` clean. `npm run build` succeeds in 11.90s.
+
+### Notes
+
+- Implementation plan: `docs/plans/2026-05-07-dashboard-flow-tagespuls-3d.md` (PR 2 = Phase 2 + Phase 3 + Phase 5).
+- The plan's TASK-5.1 referenced 800ms polling — that was the historical regression baseline, not the current state. The hook was already at 8s/45s after the 2026-05-06 backend hardening sprint. This task just bumped the constants to align with the dashboard-flow plan's targets (15s/60s).
+- The plan's TASK-3.1 expected DashboardTagesEnergie in the dashboard hierarchy, but it was deliberately retired 3 weeks ago as a duplicate of DailyChartHero. The hierarchy audit recommends the plan be updated rather than the code reverted.
+- Pending follow-ups (not blocking): (a) deduplicate `useSpaceWeather()` between SignaturPage and SignaturRenderer if they ever co-mount; (b) zero-weight profile bias to Water in `baziToChladniParams` is cosmetic but worth fixing if user reports surface; (c) PO refinement of dashboard hierarchy target before TASK-3.1 reorder is attempted; (d) wire actual `trackEvent` calls behind the new TODO markers when the analytics sprint runs.
+
 ## [Unreleased] - 2026-05-07 — Dashboard Stability Hotfixes (PR 1 of dashboard-flow-tagespuls plan)
 
 ### Bug fixes

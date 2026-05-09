@@ -38,6 +38,7 @@ import { getConstellationForSign } from "../lib/astro-data/constellationFromSign
 import { useCelestialOrrery } from "../hooks/useCelestialOrrery";
 import { CITIES } from "../lib/astronomy/data";
 import { DailyChartHero } from "./dashboard/DailyChartHero";
+import { SignaturAnchorCard } from "./dashboard/SignaturAnchorCard";
 import { useActiveImpacts } from "../hooks/useActiveImpacts";
 
 const BirthChartOrrery = lazy(() => import("./BirthChartOrrery").then(m => ({ default: m.BirthChartOrrery })));
@@ -135,6 +136,10 @@ export function Dashboard({
   // Step 0 is immediate; step 1 waits for scroll; 'done' hides the overlay.
   // See `isTourStepVisible` in useDashboardTour.ts (DEVELOPMENT_BRIEF TASK-1.1).
   const tourOverlayVisible = isTourStepVisible(tourStep, scrollReached);
+
+  useEffect(() => {
+    // TODO(analytics): trackEvent('dashboard_first_interaction') on first user action
+  }, []);
 
   useEffect(() => {
     if (tourStep !== 1) return;
@@ -394,6 +399,16 @@ export function Dashboard({
         </SectionErrorBoundary>
       </motion.div>
 
+      {/* ═══ 1.5 SIGNATUR ANCHOR — preview + CTA, no WebGL on dashboard (TASK-2.2) ═══ */}
+      <motion.div {...fadeIn(0.08)}>
+        <SectionErrorBoundary name="SignaturAnchor">
+          <SignaturAnchorCard
+            dominantElement={apiData?.wuxing?.dominant_element}
+            birthSign={apiData?.western?.zodiac_sign}
+          />
+        </SectionErrorBoundary>
+      </motion.div>
+
       {/* ── Tour sentinel: step 0 anchors at the planet section ── */}
       <div ref={astroSentinelRef} className="h-px" aria-hidden="true" />
 
@@ -481,7 +496,7 @@ export function Dashboard({
       {/* ═══ 5. MAGNETSTURM (self-hides when Kp < 4) ════════════════ */}
       <motion.div {...fadeIn(0.26)}>
         <SectionErrorBoundary name="MagnetsturmKarte">
-          <MagnetsturmKarte />
+          <MagnetsturmKarte spaceWeather={spaceWeather} />
         </SectionErrorBoundary>
       </motion.div>
 
