@@ -171,6 +171,85 @@ describe('createGenAiRouter — fallback chain', () => {
     expect(DEFAULT_FREE_MODEL_CHAIN.every((m) => m.includes(':free'))).toBe(true);
   });
 
+  it('CASCADE-404: rolls through OpenRouter when first model returns 404 (model deprecated)', async () => {
+    // Real-world failure mode 2026-05-09: google/gemini-*:free slots were
+    // removed from OpenRouter and now return 404 "No endpoints found".
+    // The router MUST treat that as cascadable (try the next model) instead
+    // of bubbling — otherwise every Tagespuls slot generation returns null.
+    mockGenerateContent.mockRejectedValueOnce(new Error('429 RESOURCE_EXHAUSTED'));
+    const fetchMock = mockFetchOnce([
+      { ok: false, status: 404, text: '{"error":"No endpoints found for google/gemini-flash-1.5:free"}' },
+      { text: 'second-model-wins' },
+    ]);
+
+    const router = createGenAiRouter({
+      geminiApiKey: 'g',
+      openrouterApiKey: 'o',
+      freeModelChain: ['google/gemini-flash-1.5:free', 'meta-llama/llama-3.3-70b-instruct:free'],
+    })!;
+    const out = await router.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: 'hi',
+    });
+
+    expect(out.text).toBe('second-model-wins');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('CASCADE-503: rolls through OpenRouter when first model returns 503 (overloaded)', async () => {
+    mockGenerateContent.mockRejectedValueOnce(new Error('429 RESOURCE_EXHAUSTED'));
+    const fetchMock = mockFetchOnce([
+      { ok: false, status: 503, text: '{"error":"model overloaded"}' },
+      { text: 'second-after-503' },
+    ]);
+
+    const router = createGenAiRouter({
+      geminiApiKey: 'g',
+      openrouterApiKey: 'o',
+      freeModelChain: ['first:free', 'second:free'],
+    })!;
+    const out = await router.models.generateContent({ model: 'x', contents: 'q' });
+    expect(out.text).toBe('second-after-503');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('CASCADE-502: rolls through OpenRouter when first model returns 502 (bad gateway)', async () => {
+    mockGenerateContent.mockRejectedValueOnce(new Error('429 RESOURCE_EXHAUSTED'));
+    const fetchMock = mockFetchOnce([
+      { ok: false, status: 502, text: 'upstream provider error' },
+      { text: 'second-after-502' },
+    ]);
+
+    const router = createGenAiRouter({
+      geminiApiKey: 'g',
+      openrouterApiKey: 'o',
+      freeModelChain: ['first:free', 'second:free'],
+    })!;
+    const out = await router.models.generateContent({ model: 'x', contents: 'q' });
+    expect(out.text).toBe('second-after-502');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('DEFAULT-CHAIN: does not include the deprecated google/gemini-*:free models', () => {
+    // Guard: as of 2026-05-09 OpenRouter removed both google/gemini-2.0-flash-exp:free
+    // and google/gemini-flash-1.5:free. Including them would make every Tagespuls
+    // pulse generation start with two guaranteed 404s before reaching a working
+    // model — pure latency tax.
+    const deprecated = [
+      'google/gemini-2.0-flash-exp:free',
+      'google/gemini-flash-1.5:free',
+    ];
+    for (const dead of deprecated) {
+      expect(
+        DEFAULT_FREE_MODEL_CHAIN,
+        `default chain still includes deprecated model "${dead}"`,
+      ).not.toContain(dead);
+    }
+    // Sanity: chain still has at least 3 working models so the cascade is
+    // meaningful when one provider is exhausted.
+    expect(DEFAULT_FREE_MODEL_CHAIN.length).toBeGreaterThanOrEqual(3);
+  });
+
   it('defaults the OpenRouter HTTP-Referer header to https://bazodiac.space', async () => {
     // Regression guard: default `referer` in createGenAiRouter must stay at
     // the production custom domain, not revert to a Railway-internal URL.
