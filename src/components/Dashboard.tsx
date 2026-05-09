@@ -492,7 +492,7 @@ export function Dashboard({
       {/* ═══ 5. MAGNETSTURM (self-hides when Kp < 4) ════════════════ */}
       <motion.div {...fadeIn(0.26)}>
         <SectionErrorBoundary name="MagnetsturmKarte">
-          <MagnetsturmKarte />
+          <MagnetsturmKarte spaceWeather={spaceWeather} />
         </SectionErrorBoundary>
       </motion.div>
 
