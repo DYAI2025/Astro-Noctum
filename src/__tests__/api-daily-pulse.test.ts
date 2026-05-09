@@ -415,7 +415,7 @@ describe('POST /api/daily-interpretation', () => {
       text: 'Bestehende Tagesdeutung.',
     };
 
-    let interpretationsInserted = false;
+    let interpretationsInsertCount = 0;
 
     installFetch({
       gemini: () => geminiInterpretationResponse('Frische Tagesdeutung.'),
@@ -440,12 +440,12 @@ describe('POST /api/daily-interpretation', () => {
           const method = (init?.method ?? 'GET').toUpperCase();
           if (method === 'POST') {
             // .insert(...).select('id, text').single() → single object response.
-            interpretationsInserted = true;
+            interpretationsInsertCount += 1;
             return ok(existingRow);
           }
           // GET .eq.eq.eq.maybeSingle() → array shape.
           // First call: empty (no row yet); subsequent: return existing row.
-          if (interpretationsInserted) {
+          if (interpretationsInsertCount > 0) {
             return ok([existingRow]);
           }
           return ok([]);
@@ -477,6 +477,10 @@ describe('POST /api/daily-interpretation', () => {
     expect(res2.status).toBe(200);
     expect(res2.body.id).toBe(res1.body.id);
     expect(res2.body.text).toBe(res1.body.text);
+    // Idempotency invariant: the second call MUST hit the L2 idempotent-row
+    // return path and NOT re-insert. Without this assertion, a regression
+    // that double-writes would still pass via the "same id returned" check.
+    expect(interpretationsInsertCount).toBe(1);
   });
 
   it('returns 429 RATE_LIMITED after 6 calls in 1h window', async () => {
