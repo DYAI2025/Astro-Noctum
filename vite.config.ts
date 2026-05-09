@@ -17,8 +17,9 @@ export default defineConfig(({mode}) => {
       hmr: process.env.DISABLE_HMR !== 'true',
       proxy: {
         '/api/calculate': {
-          // Railway deployment serves at /calculate/* (no /api prefix).
-          // The old Vercel deployment (bafe.vercel.app) is no longer available.
+          // BAFE Fly.io serves /calculate/* (no /api prefix).
+          // Railway (bafe-production.up.railway.app) remains as Signatur-App fallback only;
+          // the old Vercel deployment (bafe.vercel.app) is dead and removed from CSP in S-1.
           target: env.VITE_BAFE_BASE_URL || 'https://bafe-2u0e2a.fly.dev',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api\/calculate/, '/calculate'),
