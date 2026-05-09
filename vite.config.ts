@@ -74,6 +74,16 @@ export default defineConfig(({mode}) => {
           target: 'http://localhost:3001',
           changeOrigin: true,
         },
+        '/api/daily-pulse': {
+          // Tagespuls phase 1 — server.mjs registers app.get('/api/daily-pulse').
+          target: 'http://localhost:3001',
+          changeOrigin: true,
+        },
+        '/api/daily-interpretation': {
+          // Tagespuls phase 2 — server.mjs registers app.post('/api/daily-interpretation').
+          target: 'http://localhost:3001',
+          changeOrigin: true,
+        },
       },
     },
     build: {
