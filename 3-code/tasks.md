@@ -153,6 +153,39 @@
 
 ---
 
+## Phase: Completed — S-TAGESPULS (Tagespuls neu-architecture + KILL ALL PLACEHOLDERS)
+
+**Sprint Goal:** Tagespuls als zentrales tägliches Feature shippen (kuratierter Aphorismus + LLM-generierte Brücke + Handlungsimpuls + Rat-der-sechs-Wahl), und gleichzeitig **alle generischen Pseudo-Horoskop-Fallback-Pfade strukturell entfernen** (Server-`buildDailyFallbackPayload`, Client-`buildFallbackDaily`, TASK-D2 isFallback-Indicator). Architektur-Entscheidung: Express-Routes statt Supabase Edge Functions ([`DEC-tagespuls-on-express`](../2-design/decisions/DEC-tagespuls-on-express.md)).
+
+**Sprint completion:** 2026-05-09. PRs #328 (Stability Hotfixes) → #329 (3D Anchor + GreenOps) → #331 (Tagespuls + KILL ALL PLACEHOLDERS) merged sequentially. Suite 2323/2323 grün, tsc clean, build OK.
+
+| ID | Task | Component | Req | Status | Notes |
+|----|------|-----------|-----|--------|-------|
+| TGP-A | Build aphorisms.json from 21 markdown sources (override status=draft → approved per Ben's authorization) | shared | — | Done | commit `12229da` — `scripts/build-aphorisms-json.mjs` (zero-dep YAML parser); 21 entries, modes pulse=10 / spannung=5 / trace=6, quality 3⭐=3 / 4⭐=12 / 5⭐=6 |
+| TGP-B | Supabase migration — 5 tables (aphorisms / cosmic_weather_snapshots / daily_pulses / daily_interpretations / aphorism_usage_events), `slot_2`+`slot_3` NULLABLE, RLS service-role-only | api-server | — | Done | commit `23074d5` — `supabase-migrations/20260509_tagespuls_tables.sql` applied via Supabase MCP. `supabase-schema.sql` kept in parity per `feedback_schema_migration_alignment.md` |
+| TGP-C | Seed 21 aphorisms to live Supabase aphorisms table | shared | — | Done | commit `bb60ffb` — `scripts/seed-aphorisms.mjs` + npm script `seed:aphorisms` (idempotent via `onConflict: 'id'`); verified 21 / 21 approved in DB |
+| TGP-D | `GET /api/daily-pulse` Express route + `POST /api/daily-interpretation` Express route + `server/services/tagespuls.service.mjs` helpers | api-server | — | Done | commit `05a26e1` — server.mjs:3058–3286 + 3288–3380. 11 integration tests (DPL-001..006 + DIN-001..005, incl. IDOR DIN-002 + idempotency DIN-004). 422 PROFILE_REQUIRED, 503 AI_UNAVAILABLE, 503 APHORISM_POOL_EMPTY, 400 INVALID_LOCALE/INVALID_DATE — alle Fehlerpfade typisiert, kein Fallback-Text. |
+| TGP-E | `useDailyPulse` hook + `TagespulsCard` 2-phasen-Komponente (kombinierte WahlMoment + TagesdeutungCard intern, default render-null wenn slot_2/slot_3 null) | frontend | — | Done | commit `0c49361` — `src/hooks/useDailyPulse.ts`, `src/components/dashboard/TagespulsCard.tsx`, `src/lib/schemas/daily-pulse.ts`, i18n keys `tagespuls.*` (DE+EN). 18 Tests (DPH-001..008 + TPC-001..010). TPC-003/004 walk DOM textContent für FORBIDDEN_PLACEHOLDER_STRINGS — codifiziert No-Placeholder-Vertrag als Test-Assertion |
+| TGP-F | Mount TagespulsCard ÜBER DailyChartHero auf Dashboard, feature flag `tagespuls_neu_v1` default ON (per Ben's "ich möchte das jetzt sichtbar dargestellt"-Direktive) | frontend | — | Done | commit `1d43dfb` — Dashboard.tsx:380–385 mit `fadeIn(0.0)`. `feature-flags.ts`: flag default true. localStorage override key `ff_tagespuls_neu_v1`. 3 Tests (TPF-001/002/003) |
+| TGP-G | **KILL ALL PLACEHOLDERS** — `buildDailyFallbackPayload()` aus server.mjs entfernt; `buildFallbackDaily()` aus useFirstRunDaily.ts entfernt; TASK-D2 `isFallback` prop+indicator aus DailyChartHero+Dashboard entfernt; i18n keys gelöscht; 3 obsolete Test-Suites gelöscht/umgeformt | api-server, frontend | — | Done | commit `65b2227` — Server gibt 503 AI_UNAVAILABLE statt synthetischen Text. Client zeigt loading/profile-CTA/retry — niemals Fallback-Text. Forbidden-string regression guard: `tagespuls-card.test.tsx:102` `FORBIDDEN_PLACEHOLDER_STRINGS` array assertet ZERO matches in DOM |
+| TGP-CLEANUP-1 | Rate-limit `/api/daily-interpretation` zu 6/h/user (Gemini-Quota-DoS prevention, code-review MEDIUM-4) | api-server | — | Done | commit `c39033d` — `dailyInterpretationLimiter` per-user keyGenerator. Test DIN-RATE-001: 7. Call → 429 RATE_LIMITED |
+| TGP-CLEANUP-2 | Annotate reference `apps/tagespuls_package/packages/db/schema.sql` mit 11-line design-only banner (code-review INFO-1) | api-server | — | Done | commit `6af4f0c` — Banner zeigt 3 intentional divergences (user_astro_profiles dropped, slot_2/3 nullable, auth.users FK). Verhindert dass schema.sql als Produktions-Truth gelesen wird |
+| TGP-WIP-1 | Commit `apps/tagespuls_package/packages/` (openapi.yaml + Python build/select/validate scripts + voice/src/tagespuls.ts reference + sample data) | api-server | — | Done | commit `71cafcc` |
+| TGP-WIP-2 | Commit `apps/tagespuls_package/{README.md,docs/,.claude/skills/,knowledge/}` (21 source markdowns + aphorism-curator + day-pulse-trace skills + design docs) | shared | — | Done | commit `e78f825` — Source markdowns retain authored status (`draft`/`review`); Status-Flip auf `approved` passiert NUR im JSON-Build-Schritt |
+| TGP-DEC | Decision artifact: `DEC-tagespuls-on-express` — formalize Express-statt-EdgeFunctions architecture choice | api-server | — | Done | commit dieses Sprints — `2-design/decisions/DEC-tagespuls-on-express.md`. Re-activation triggers dokumentiert |
+
+### Pending follow-ups (deferred, nicht blockierend)
+
+| ID | Task | Component | Severity | Notes |
+|----|------|-----------|----------|-------|
+| TGP-F1 | Zod-shape `astro_profiles.astro_json` am Server-Boundary für Tagespuls-Routes | api-server | LOW | Aktuell leichtfertige defensive Reads via `?.fusion?.harmony_index?.harmony_index`. Hardening-Pass für Determinismus + bessere Fehlermeldungen. |
+| TGP-F2 | `aphorism_usage_events` cleanup-on-profile-rebirth migration | api-server | LOW | Wenn User Geburtsdaten ändert, sollte Cooldown-Ledger zurückgesetzt werden — sonst könnten erste paar Tage nach Rebirth einen suboptimalen Aphorismus ziehen |
+| TGP-F3 | Explicit "no slots available today" UX state für seltenen LLM-out-on-first-pulse Fall | frontend | LOW | Aktuelles Verhalten: Aphorismus allein wird gerendert (korrekt, kein Fallback). UX könnte das fehlen der Slots expliziter acknowledgen statt stumm zu omitten |
+| TGP-F4 | Migration zu Supabase Edge Functions evaluieren | api-server | DEFERRED | Re-activation triggers in `DEC-tagespuls-on-express` definiert: globale Latenz-Komplaint, Multi-Region, Express-Connection-Ceiling. Aktuell N/A |
+| TGP-F5 | `PROMPT_MODULE_DAILY_HOROSCOPE.md V3`-konforme separate Komponenten (`WahlMoment`, `TagesdeutungCard`) als optionaler Refactor | frontend | DEFERRED | Per Ben 2026-05-09: kombinierte Form bleibt Produktions-Form. Re-evaluation nur wenn UX-Daten das fordern |
+
+---
+
 ## Phase: Completed — S-DAUP (Dashboard Aufräumen)
 
 **Sprint Goal:** Bestätigte Bugs im Dashboard beheben: Four Pillars-Duplikat entfernen, Sunsign/BaZi/Wuxing Kacheln auf Detail-View umbauen, leeren Blueprint-Placeholder fixen, DayModeModal Dark-Mode-Kontrast korrigieren, MiniSignature-Skalierung prüfen.
