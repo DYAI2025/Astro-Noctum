@@ -342,9 +342,18 @@ export function TagespulsCard({ onCompleteProfile }: TagespulsCardProps) {
               signOrElement={c.signOrElement}
               label={t(COUNCIL_KEY_TO_I18N[c.key] ?? 'tagespuls.council.sonne')}
               onClick={() => selectCouncilFigure(c.key)}
-              // After the user picks (selectedFigure becomes non-null) or
-              // while a request is in-flight, all 6 buttons lock —
-              // spec C-3: "Es geht nur einmal am Tag".
+              // Lock conditions per spec C-3: "Es geht nur einmal am Tag".
+              //
+              // `loadingInterpretation`: in-flight request — prevent
+              //   double-click race (user clicks figure A, then B before
+              //   A returns; the second click would queue a 2nd LLM call).
+              //
+              // `selectedFigure !== null`: belt-and-braces. Phase 1 only
+              //   renders when selectedFigure === null (line 215 routes
+              //   to Phase 2 once it's set), so this branch is normally
+              //   unreachable from a re-render. Kept as defensive guard
+              //   for hypothetical future layouts where Phase 1 + Phase 2
+              //   coexist (e.g., embedded preview).
               disabled={selectedFigure !== null || loadingInterpretation}
             />
           ))}

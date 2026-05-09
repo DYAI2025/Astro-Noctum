@@ -3283,34 +3283,37 @@ app.post('/api/daily-interpretation', requireUserAuth, dailyInterpretationLimite
       return res.status(404).json({ error: { code: 'PULSE_NOT_FOUND' } });
     }
 
-    // C-1 (2026-05-09 audit): reload astro_profiles so the prompt
-    // builder can name the user's ACTUAL sign/element for the chosen
-    // archetype — not just the archetype key. Without this, the LLM
-    // would have to invent the sign (hallucination) or stay generic
-    // (no value over slot_2/3).
-    const { data: profileRow } = await supabaseServer
-      .from('astro_profiles')
-      .select('astro_json')
+    // C-3 short-circuit (audit follow-up I-1, I-3): existing-row check
+    // FIRST, before the profile reload. Most requests after first pick
+    // are page-reloads / re-mounts that hit the cache or the lock; in
+    // those cases we don't need to load the profile at all.
+    //
+    // I-3 (locale-switching loophole): query interpretations across ALL
+    // of this user's pulses for (user_id, date), not just the requested
+    // pulse_id. Without this, a user could pick on locale=de, switch to
+    // locale=en (which uses a different daily_pulse_id by design — pulses
+    // are keyed (user_id, date, locale)), and pick again — getting two
+    // decisions on the same Kalendertag. Spec C-3 forbids that.
+    //
+    // Step 1: collect all pulse_ids for this user on this date.
+    const { data: pulsesForDate } = await supabaseServer
+      .from('daily_pulses')
+      .select('id')
       .eq('user_id', userId)
-      .maybeSingle();
-    if (!profileRow?.astro_json || Object.keys(profileRow.astro_json).length === 0) {
-      // Profile was deleted or zeroed between pulse-creation and now.
-      // 422 forces the client to re-onboard — cleaner than 503.
-      return res.status(422).json({ error: { code: 'PROFILE_REQUIRED' } });
-    }
-    const interpretationCouncil = buildCouncilFromProfile(profileRow.astro_json);
-    const archetypeMatch = interpretationCouncil.find((c) => c.key === archetypeKey);
-    const signOrElement = archetypeMatch?.signOrElement ?? null;
+      .eq('date', pulse.date);
+    const pulseIdsForDate = (pulsesForDate ?? []).map((p) => p.id);
 
-    // L2: at most one decision per daily_pulse_id (enforced by
-    // unique constraint daily_interpretations_one_per_pulse, mirrored
-    // here so the server returns a structured 409 instead of leaking
-    // a Postgres unique-violation error). Per 2026-05-09 audit C-3.
-    const { data: existing } = await supabaseServer
+    // Step 2: find the first interpretation (if any) across those pulses.
+    // .order('created_at') + .limit(1) implements "first decision wins"
+    // semantics, consistent with the migration cleanup that resolved
+    // historic loophole-victim rows.
+    const { data: existingList } = await supabaseServer
       .from('daily_interpretations')
-      .select('id, text, selected_archetype_key, locale')
-      .eq('daily_pulse_id', dailyPulseId)
-      .maybeSingle();
+      .select('id, text, selected_archetype_key, locale, daily_pulse_id')
+      .in('daily_pulse_id', pulseIdsForDate)
+      .order('created_at', { ascending: true })
+      .limit(1);
+    const existing = existingList?.[0] ?? null;
     if (existing) {
       // Same archetype + same locale = idempotent re-pick (page reload,
       // double-click) — return 200 with the cached row.
@@ -3324,11 +3327,36 @@ app.post('/api/daily-interpretation', requireUserAuth, dailyInterpretationLimite
         error: {
           code: 'ALREADY_DECIDED',
           locked_archetype_key: existing.selected_archetype_key,
-          locked_locale: existing.locale,
           text: existing.text,
         },
       });
     }
+
+    // C-1 (2026-05-09 audit): reload astro_profiles so the prompt
+    // builder can name the user's ACTUAL sign/element for the chosen
+    // archetype — not just the archetype key. Without this, the LLM
+    // would have to invent the sign (hallucination) or stay generic
+    // (no value over slot_2/3). Reordered after the existing-row check
+    // (audit follow-up I-1) so cache hits skip this DB roundtrip.
+    const { data: profileRow } = await supabaseServer
+      .from('astro_profiles')
+      .select('astro_json')
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (!profileRow?.astro_json || Object.keys(profileRow.astro_json).length === 0) {
+      // M-3: Near-impossible race window. /api/daily-pulse already
+      // loaded the profile successfully (otherwise this request's
+      // pulse_id couldn't exist). Reaching this 422 means the profile
+      // was deleted/zeroed BETWEEN the pulse-create call and this
+      // interpretation call — typically a deliberate user action
+      // (e.g., "reset my chart" between picking the figure and
+      // submitting). 422 forces the client to re-onboard rather than
+      // surfacing a confusing 503 or generic 500.
+      return res.status(422).json({ error: { code: 'PROFILE_REQUIRED' } });
+    }
+    const interpretationCouncil = buildCouncilFromProfile(profileRow.astro_json);
+    const archetypeMatch = interpretationCouncil.find((c) => c.key === archetypeKey);
+    const signOrElement = archetypeMatch?.signOrElement ?? null;
 
     if (!geminiClient) {
       return res.status(503).json({ error: { code: 'AI_UNAVAILABLE', retry_after: 300 } });
@@ -3369,7 +3397,36 @@ app.post('/api/daily-interpretation', requireUserAuth, dailyInterpretationLimite
       .single();
 
     if (insErr || !row) {
-      console.error('[daily-interpretation] Persist failed:', insErr?.message);
+      // Audit follow-up I-2: race-condition victim. Between our
+      // pre-check and this insert, a concurrent request snuck in and
+      // created the row. The unique constraint
+      // daily_interpretations_one_per_pulse rejects us with Postgres
+      // 23505. Re-fetch the winning row and return 409 with the same
+      // envelope shape as the pre-check path — race-losers get the
+      // same UX as pre-check-hits, not a generic 500.
+      if (insErr?.code === '23505') {
+        const { data: winner } = await supabaseServer
+          .from('daily_interpretations')
+          .select('id, text, selected_archetype_key')
+          .eq('daily_pulse_id', dailyPulseId)
+          .maybeSingle();
+        if (winner) {
+          return res.status(409).json({
+            error: {
+              code: 'ALREADY_DECIDED',
+              locked_archetype_key: winner.selected_archetype_key,
+              text: winner.text,
+            },
+          });
+        }
+      }
+      // M-5: prefer Postgres `code` over `message` to avoid logging
+      // row data that the message field MIGHT contain. Supabase JS
+      // errors don't typically carry user content in `message` (they
+      // surface PG codes like 23505, 23503, etc.), but `code || message`
+      // is belt-and-braces. If a future Supabase change exposes more in
+      // `message`, swap to redactLog(insErr) from server/utils/redact.mjs.
+      console.error('[daily-interpretation] Persist failed:', insErr?.code || insErr?.message);
       return res.status(500).json({ error: { code: 'PERSIST_FAILED' } });
     }
 
