@@ -15,6 +15,15 @@ import { requireUserAuth } from "./server/middleware/auth.mjs";
 import { elevenLabsAuth } from "./server/middleware/elevenLabsAuth.mjs";
 import { transitStateCache } from "./server/services/cache.service.mjs";
 import { claimStripeEvent, markStripeEventProcessed } from "./server/services/stripeEvents.service.mjs";
+import {
+  dayModeFromHarmony as tagespulsDayModeFromHarmony,
+  simpleHash as tagespulsSimpleHash,
+  harmonyIndexFromAstroJson,
+  buildCouncilFromProfile,
+  buildSlotPrompt as buildTagespulsSlotPrompt,
+  buildInterpretationPrompt as buildTagespulsInterpretationPrompt,
+  ARCHETYPE_KEYS as TAGESPULS_ARCHETYPE_KEYS,
+} from "./server/services/tagespuls.service.mjs";
 import { logRequest } from "./server/observability/logger.mjs";
 import { hashId } from "./server/utils/redact.mjs";
 import Stripe from 'stripe';
@@ -388,6 +397,23 @@ const authLimiter = rateLimit({
 });
 app.use("/api/checkout", authLimiter);
 app.use("/api/customer-portal", authLimiter);
+
+// Per-user limiter for /api/daily-interpretation. The route triggers a
+// Gemini call on every miss, so an unbounded client could burn the
+// project's daily LLM quota. 6/h matches the natural use case (one call
+// per archetype × 6 archetypes per pulse) with enough headroom for the
+// user to compare archetypes without enabling silent quota burn.
+// Per-user keyGenerator (req.userId from requireUserAuth upstream), NOT
+// per-IP — users behind shared NAT shouldn't punish each other.
+const dailyInterpretationLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,         // 1 hour
+  max: 6,                           // 6 calls per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.userId || req.ip,
+  message: { error: { code: 'RATE_LIMITED', retry_after: 3600 } },
+  skip: (req) => req.method === 'OPTIONS',
+});
 
 const distPath = path.join(__dirname, "dist");
 
@@ -1768,62 +1794,6 @@ function buildWeeklyFallbackAreas(areaScores) {
   });
 }
 
-function buildDailyFallbackPayload({ targetDate, lang, bafeData }) {
-  const german = lang !== 'en';
-  const dayMaster = bafeData?.bazi?.pillars?.day?.stem || '';
-  const sunSign = bafeData?.western?.zodiac_sign || (german ? 'dein Zeichen' : 'your sign');
-  const moonSign = bafeData?.western?.moon_sign || (german ? 'dein Mondzeichen' : 'your moon sign');
-  const harmonyIndex = 0.52;
-  const dayMode = harmonyIndex >= 0.5 ? 'trace' : 'pulse';
-  const synthesis = german
-    ? 'Heute entsteht Zug in deinem Alltag. Was innerlich klar ist, will sichtbar werden.'
-    : 'Today carries momentum. What is clear inside wants to become visible.';
-
-  return {
-    date: targetDate,
-    western: {
-      summary: german
-        ? `${sunSign} bringt heute Fokus auf klare Prioritäten.`
-        : `${sunSign} brings a focus on clear priorities today.`,
-      themes: german ? ['Ausrichtung', 'Klarheit'] : ['Alignment', 'Clarity'],
-      caution: german
-        ? 'Verteile deine Aufmerksamkeit nicht auf zu viele Baustellen.'
-        : 'Avoid splitting your attention across too many fronts.',
-      opportunity: german
-        ? 'Ein bewusst gesetzter Schritt kann heute viel tragen.'
-        : 'One deliberate step can carry a lot today.',
-      evidence: { transit_sectors: [1, 5] },
-    },
-    eastern: {
-      summary: german
-        ? `${moonSign} öffnet den Blick für feine Signale im Umfeld.`
-        : `${moonSign} opens your attention to subtle signals around you.`,
-      themes: german ? ['Wahrnehmung', 'Timing'] : ['Perception', 'Timing'],
-      caution: german
-        ? 'Handle nicht aus Druck, sondern aus innerer Ruhe.'
-        : 'Act from calm intent, not pressure.',
-      opportunity: german
-        ? 'Eine kleine Kurskorrektur verbessert den Tagesfluss deutlich.'
-        : 'A small course correction can improve the flow of your day.',
-      evidence: { day_master: dayMaster },
-    },
-    fusion: {
-      summary: german
-        ? 'Der Tag zeigt eine konkrete Tendenz mit gut nutzbarer Klarheit.'
-        : 'The day shows a concrete tendency with usable clarity.',
-      synthesis,
-      action: german
-        ? 'Entscheide heute eine Sache klar und setze sie direkt um.'
-        : 'Choose one thing clearly today and implement it directly.',
-      pushworthy: true,
-      push_text: german ? 'Heute ist ein guter Moment für einen klaren Schritt.' : 'Today is a good moment for one clear step.',
-      harmony_index: harmonyIndex,
-      day_mode: dayMode,
-    },
-    meta: { engine_version: 'v1-server-fallback' },
-  };
-}
-
 app.get("/api/horoscope/daily/:userId", async (req, res) => {
   const userId = String(req.params.userId || "").trim();
   if (!userId) return res.status(400).json({ error: "Missing userId" });
@@ -2874,16 +2844,19 @@ NEVER use in synthesis: "weil", "da heute", planet names (Mars, Venus etc.), "di
     let parsedData = null;
 
     if (!jsonStr) {
-      console.error("[experience/daily] Empty response text from model, using fallback payload");
-      parsedData = buildDailyFallbackPayload({ targetDate, lang, bafeData });
-    } else {
-      jsonStr = extractJsonPayload(jsonStr);
-      try {
-        parsedData = JSON.parse(jsonStr);
-      } catch (parseErr) {
-        console.warn('[experience/daily] Model JSON parse failed, using structured fallback:', parseErr?.message || parseErr);
-        parsedData = buildDailyFallbackPayload({ targetDate, lang, bafeData });
-      }
+      console.warn('[experience/daily] Empty response text from model; returning 503 (no fallback)');
+      return res.status(503).json({
+        error: { code: 'AI_UNAVAILABLE', retry_after: 300, recoverable: true }
+      });
+    }
+    jsonStr = extractJsonPayload(jsonStr);
+    try {
+      parsedData = JSON.parse(jsonStr);
+    } catch (parseErr) {
+      console.warn('[experience/daily] Model JSON parse failed; returning 503 (no fallback):', parseErr?.message || parseErr);
+      return res.status(503).json({
+        error: { code: 'AI_UNAVAILABLE', retry_after: 300, recoverable: true }
+      });
     }
 
     // Ensure harmony_index + day_mode are always present regardless of model output
@@ -2897,38 +2870,32 @@ NEVER use in synthesis: "weil", "da heute", planet names (Mars, Venus etc.), "di
       appendNightHarmony(parsedData, now);
     }
 
-    // HOTFIX-B (cache-poisoning guard): refuse to cache server-side fallback payloads.
-    // When the AI provider returns empty/malformed output we still respond to the client,
-    // but caching the generic fallback would freeze every user on the same canned text for
-    // the next 24h (HOROSCOPE_CACHE_TTL) — even after Gemini quota resets at midnight UTC.
-    // Real AI responses still cache as before; only fallback short-circuits both L1 and L2.
-    const isServerFallback = parsedData?.meta?.engine_version === 'v1-server-fallback';
+    // Phase G (KILL ALL PLACEHOLDERS): The server-side fallback path is gone —
+    // empty/malformed AI responses now return 503 instead of synthesizing generic
+    // text. Therefore only real AI payloads ever reach this point and caching is
+    // unconditional. The previous HOTFIX-B cache-poisoning guard is no longer
+    // necessary because the poisoning source (buildDailyFallbackPayload) was removed.
+    horoscopeCache.set(cacheKeyD, { data: parsedData, timestamp: Date.now() });
 
-    if (!isServerFallback) {
-      horoscopeCache.set(cacheKeyD, { data: parsedData, timestamp: Date.now() });
-
-      if (supabaseServer) {
-        // Persist to L2 (fire-and-forget) — badges not cached (computed fresh each request)
-        supabaseServer
-          .from('daily_horoscope_cache')
-          .upsert({
-            user_id: userId,
-            local_date: targetDate,
-            engine_version: 'v1-gemini-daily',
-            signature_version: 1,
-            payload_json: parsedData,
-          }, { onConflict: 'user_id,local_date,engine_version,signature_version' })
-          .then(({ error }) => {
-            if (error) {
-              console.warn('[daily] DB cache upsert failed:', error.message);
-            }
-          })
-          .catch((err) => {
-            console.error('[daily] DB cache upsert rejected:', err);
-          });
-      }
-    } else {
-      console.warn('[experience/daily] Skipping L1+L2 cache write for server fallback payload (forces retry on next request)');
+    if (supabaseServer) {
+      // Persist to L2 (fire-and-forget) — badges not cached (computed fresh each request)
+      supabaseServer
+        .from('daily_horoscope_cache')
+        .upsert({
+          user_id: userId,
+          local_date: targetDate,
+          engine_version: 'v1-gemini-daily',
+          signature_version: 1,
+          payload_json: parsedData,
+        }, { onConflict: 'user_id,local_date,engine_version,signature_version' })
+        .then(({ error }) => {
+          if (error) {
+            console.warn('[daily] DB cache upsert failed:', error.message);
+          }
+        })
+        .catch((err) => {
+          console.error('[daily] DB cache upsert rejected:', err);
+        });
     }
 
     const responseData = await prepareDailyResponse(parsedData);
@@ -2936,6 +2903,436 @@ NEVER use in synthesis: "weil", "da heute", planet names (Mars, Venus etc.), "di
   } catch (err) {
     console.error('[experience/daily] Error:', err.message);
     res.status(502).json({ error: 'experience_unavailable' });
+  }
+});
+
+// ── Tagespuls (no-placeholders) ─────────────────────────────────────
+// Two routes serving the Tagespuls neu-architecture from Phase B+C:
+//   GET  /api/daily-pulse           — Phase 1: aphorism + slot_2/slot_3
+//   POST /api/daily-interpretation  — Phase 2: archetype-specific Tagesdeutung
+//
+// Architecture invariants — DO NOT introduce fallback text generation:
+//   * slot_1 (aphorism) is always real curated content, never generated.
+//   * slot_2/slot_3 are nullable. AI router exhaustion → store + return null.
+//   * Missing astro_profiles.astro_json → 422 PROFILE_REQUIRED, never fake data.
+//   * Total interpretation LLM failure → 503 AI_UNAVAILABLE with retry_after.
+//   * Cache rows with null slots are NOT written to L1 — let the next request retry.
+
+const dailyPulseCache = new Map(); // key → { ts, payload }
+const DAILY_PULSE_CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
+
+function tagespulsCacheKey(userId, date, locale) {
+  return `daily-pulse:${userId}:${date}:${locale}`;
+}
+
+/**
+ * Picks an aphorism for the user/date/mode tuple following §7 of
+ * PROMPT_MODULE_TAGESPULS_TAGESDEUTUNG.md: filter by approved + mode_tag,
+ * exclude cooldown conflicts, take the top 5 by quality_rating, and
+ * deterministically pick by FNV hash of (user_id:date:mode). Returns
+ * null when even the relaxed pool (cooldown ignored) is empty.
+ */
+async function selectAphorismForUser({ userId, date, mode, supabase }) {
+  if (!supabase) return null;
+
+  // Step 1: cooldown set — aphorisms used within 30 days
+  const cutoff = new Date(date + 'T00:00:00Z');
+  cutoff.setUTCDate(cutoff.getUTCDate() - 30);
+  const cutoffStr = cutoff.toISOString().slice(0, 10);
+
+  const { data: usageRows } = await supabase
+    .from('aphorism_usage_events')
+    .select('aphorism_id')
+    .eq('user_id', userId)
+    .gte('date', cutoffStr);
+  const cooldownIds = new Set((usageRows ?? []).map((r) => r.aphorism_id));
+
+  // Step 2: load eligible pool — approved + mode_tag contains current mode.
+  // Postgres array @> operator via Supabase: .contains('mode_tags', [mode]).
+  const { data: pool, error: poolErr } = await supabase
+    .from('aphorisms')
+    .select('id, text_de, text_en, author, work, attribution_status, mode_tags, quality_rating, cooldown_days')
+    .eq('status', 'approved')
+    .contains('mode_tags', [mode])
+    .order('quality_rating', { ascending: false })
+    .order('id', { ascending: true });
+
+  if (poolErr || !pool || pool.length === 0) {
+    return null;
+  }
+
+  // Step 3: cooldown-aware filter; if everything filtered out, fall back
+  // to the full pool (so the user always gets *something* from the
+  // approved corpus — only a truly empty corpus returns null).
+  let candidates = pool.filter((a) => !cooldownIds.has(a.id));
+  if (candidates.length === 0) candidates = pool;
+
+  const top5 = candidates.slice(0, 5);
+  const seed = tagespulsSimpleHash(`${userId}:${date}:${mode}`);
+  return top5[seed % top5.length];
+}
+
+/**
+ * Drives geminiClient through the existing router and parses a strict
+ * JSON object back. Returns { slot_2, slot_3 } each as string or null.
+ * Never throws — exhaustion / parse failure → both nulls.
+ */
+async function generateTagespulsSlots({ aphorism, mode, intensity, locale, harmony }) {
+  if (!geminiClient) return { slot_2: null, slot_3: null };
+
+  try {
+    const prompt = buildTagespulsSlotPrompt({ aphorism, mode, intensity, locale, harmony });
+    const result = await geminiClient.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: prompt,
+      config: {
+        temperature: 0.7,
+        responseMimeType: 'application/json',
+      },
+    });
+
+    const rawText =
+      typeof result?.text === 'string'
+        ? result.text
+        : typeof result?.response?.text === 'string'
+          ? result.response.text
+          : '';
+    const jsonStr = extractJsonPayload(rawText);
+    if (!jsonStr) return { slot_2: null, slot_3: null };
+
+    const parsed = JSON.parse(jsonStr);
+    const slot2 = typeof parsed?.slot_2 === 'string' ? parsed.slot_2.trim() : null;
+    const slot3 = typeof parsed?.slot_3 === 'string' ? parsed.slot_3.trim() : null;
+    return {
+      slot_2: slot2 && slot2.length > 0 ? slot2 : null,
+      slot_3: slot3 && slot3.length > 0 ? slot3 : null,
+    };
+  } catch (err) {
+    console.warn('[daily-pulse] slot_2/3 generation failed:', err?.message || err?.code || err);
+    return { slot_2: null, slot_3: null };
+  }
+}
+
+// ── GET /api/daily-pulse ────────────────────────────────────────────
+app.get('/api/daily-pulse', requireUserAuth, async (req, res) => {
+  try {
+    const userId = req.userId;
+    const date = String(req.query.date ?? new Date().toISOString().slice(0, 10));
+    const locale = String(req.query.locale ?? 'de');
+
+    if (!['de', 'en'].includes(locale)) {
+      return res.status(400).json({ error: { code: 'INVALID_LOCALE' } });
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return res.status(400).json({ error: { code: 'INVALID_DATE' } });
+    }
+
+    const cacheKey = tagespulsCacheKey(userId, date, locale);
+
+    // L1 cache — only populated when slots are non-null.
+    const l1 = dailyPulseCache.get(cacheKey);
+    if (l1 && Date.now() - l1.ts < DAILY_PULSE_CACHE_TTL) {
+      return res.json(l1.payload);
+    }
+
+    if (!supabaseServer) {
+      return res.status(503).json({ error: { code: 'DB_UNAVAILABLE' } });
+    }
+
+    // L2: existing daily_pulses row?
+    const { data: existing } = await supabaseServer
+      .from('daily_pulses')
+      .select('id, user_id, date, locale, mode, intensity, harmony_index, aphorism_id, slot_1, slot_2, slot_3, weather_stale')
+      .eq('user_id', userId)
+      .eq('date', date)
+      .eq('locale', locale)
+      .maybeSingle();
+
+    // Profile is required for any further work (council, mode if no row, regeneration).
+    const { data: profileRow } = await supabaseServer
+      .from('astro_profiles')
+      .select('astro_json')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (!profileRow?.astro_json || Object.keys(profileRow.astro_json).length === 0) {
+      return res.status(422).json({ error: { code: 'PROFILE_REQUIRED' } });
+    }
+
+    const harmony = harmonyIndexFromAstroJson(profileRow.astro_json);
+    if (harmony === null) {
+      // The profile exists but isn't enriched yet (Superglue/BAFE worker
+      // hasn't run or partially failed). Treat the same as missing profile —
+      // the client should re-onboard / retry, not see a default Tagespuls.
+      return res.status(422).json({ error: { code: 'PROFILE_REQUIRED' } });
+    }
+    const council = buildCouncilFromProfile(profileRow.astro_json);
+
+    // L2 hit: serve as-is when slots present, otherwise re-attempt slot generation.
+    if (existing) {
+      // Look up the aphorism row for the response (status, attribution).
+      const { data: aphRow } = existing.aphorism_id
+        ? await supabaseServer
+            .from('aphorisms')
+            .select('id, text_de, text_en, author, work, attribution_status')
+            .eq('id', existing.aphorism_id)
+            .maybeSingle()
+        : { data: null };
+
+      let slot2 = existing.slot_2;
+      let slot3 = existing.slot_3;
+      let updated = false;
+
+      // Re-attempt slot generation only when at least one is null.
+      if ((!slot2 || !slot3) && aphRow) {
+        const generated = await generateTagespulsSlots({
+          aphorism: aphRow,
+          mode: existing.mode,
+          intensity: Number(existing.intensity ?? 0),
+          locale,
+          harmony,
+        });
+        if (generated.slot_2 && generated.slot_3) {
+          slot2 = generated.slot_2;
+          slot3 = generated.slot_3;
+          updated = true;
+        }
+      }
+
+      if (updated) {
+        await supabaseServer
+          .from('daily_pulses')
+          .update({ slot_2: slot2, slot_3: slot3 })
+          .eq('id', existing.id);
+        // Track usage now that the row is "complete" (cooldown ledger).
+        if (existing.aphorism_id) {
+          await supabaseServer
+            .from('aphorism_usage_events')
+            .upsert({
+              aphorism_id: existing.aphorism_id,
+              user_id: userId,
+              date,
+              daily_pulse_id: existing.id,
+            }, { onConflict: 'aphorism_id,user_id,date' });
+        }
+      }
+
+      const payload = {
+        id: existing.id,
+        user_id: userId,
+        date,
+        locale,
+        mode: existing.mode,
+        intensity: Number(existing.intensity ?? 0),
+        harmony_index: existing.harmony_index !== null ? Number(existing.harmony_index) : harmony,
+        aphorism: aphRow
+          ? {
+              id: aphRow.id,
+              author: aphRow.author,
+              attribution_status: aphRow.attribution_status,
+              slot_1: existing.slot_1,
+              slot_2: slot2,
+              slot_3: slot3,
+            }
+          : {
+              id: null,
+              author: null,
+              attribution_status: null,
+              slot_1: existing.slot_1,
+              slot_2: slot2,
+              slot_3: slot3,
+            },
+        council,
+        weather_stale: !!existing.weather_stale,
+      };
+
+      // Only cache to L1 when both slots are populated — never lock the
+      // user into a partial state.
+      if (slot2 && slot3) {
+        dailyPulseCache.set(cacheKey, { ts: Date.now(), payload });
+      }
+
+      return res.json(payload);
+    }
+
+    // No L2 row — generate from scratch.
+    const { mode, intensity } = tagespulsDayModeFromHarmony(harmony);
+    const aphorism = await selectAphorismForUser({ userId, date, mode, supabase: supabaseServer });
+    if (!aphorism) {
+      // Should never happen with the 21-row seeded corpus, but if the
+      // approved pool for this mode is genuinely empty, fail loudly
+      // rather than synthesizing a fake aphorism.
+      return res.status(503).json({ error: { code: 'APHORISM_POOL_EMPTY' } });
+    }
+
+    const slot1 = locale === 'en' ? (aphorism.text_en || aphorism.text_de) : aphorism.text_de;
+
+    const { slot_2: slot2, slot_3: slot3 } = await generateTagespulsSlots({
+      aphorism,
+      mode,
+      intensity,
+      locale,
+      harmony,
+    });
+
+    // Persist daily_pulses row regardless of slot success — slot_2/slot_3
+    // are nullable by design (see migration 20260509).
+    const { data: pulseRow, error: pulseErr } = await supabaseServer
+      .from('daily_pulses')
+      .upsert({
+        user_id: userId,
+        date,
+        locale,
+        mode,
+        intensity,
+        harmony_index: harmony,
+        aphorism_id: aphorism.id,
+        slot_1: slot1,
+        slot_2: slot2,
+        slot_3: slot3,
+        weather_stale: false,
+      }, { onConflict: 'user_id,date,locale' })
+      .select()
+      .single();
+
+    if (pulseErr || !pulseRow) {
+      console.error('[daily-pulse] Persist failed:', pulseErr?.message);
+      return res.status(500).json({ error: { code: 'PERSIST_FAILED' } });
+    }
+
+    // Track usage only when the row is complete — cooldown is honest.
+    if (slot2 && slot3) {
+      await supabaseServer
+        .from('aphorism_usage_events')
+        .upsert({
+          aphorism_id: aphorism.id,
+          user_id: userId,
+          date,
+          daily_pulse_id: pulseRow.id,
+        }, { onConflict: 'aphorism_id,user_id,date' });
+    }
+
+    const payload = {
+      id: pulseRow.id,
+      user_id: userId,
+      date,
+      locale,
+      mode,
+      intensity,
+      harmony_index: harmony,
+      aphorism: {
+        id: aphorism.id,
+        author: aphorism.author,
+        attribution_status: aphorism.attribution_status,
+        slot_1: slot1,
+        slot_2: slot2,
+        slot_3: slot3,
+      },
+      council,
+      weather_stale: false,
+    };
+
+    if (slot2 && slot3) {
+      dailyPulseCache.set(cacheKey, { ts: Date.now(), payload });
+    }
+
+    return res.json(payload);
+  } catch (err) {
+    console.error('[daily-pulse] Error:', err?.message || err);
+    return res.status(500).json({ error: { code: 'INTERNAL_ERROR' } });
+  }
+});
+
+// ── POST /api/daily-interpretation ──────────────────────────────────
+app.post('/api/daily-interpretation', requireUserAuth, dailyInterpretationLimiter, express.json({ limit: '10kb' }), async (req, res) => {
+  try {
+    const userId = req.userId;
+    const body = req.body ?? {};
+    const dailyPulseId = typeof body.daily_pulse_id === 'string' ? body.daily_pulse_id : null;
+    const archetypeKey = typeof body.selected_archetype_key === 'string' ? body.selected_archetype_key : null;
+    const locale = body.locale === 'en' ? 'en' : body.locale === 'de' ? 'de' : null;
+
+    if (!dailyPulseId || !archetypeKey || !locale) {
+      return res.status(400).json({ error: { code: 'INVALID_BODY' } });
+    }
+    if (!TAGESPULS_ARCHETYPE_KEYS.includes(archetypeKey)) {
+      return res.status(400).json({ error: { code: 'INVALID_BODY' } });
+    }
+
+    if (!supabaseServer) {
+      return res.status(503).json({ error: { code: 'DB_UNAVAILABLE' } });
+    }
+
+    // Auth boundary — pulse must belong to the requesting user.
+    const { data: pulse } = await supabaseServer
+      .from('daily_pulses')
+      .select('id, user_id, date, locale, mode, intensity, slot_1, slot_2, slot_3, aphorism_id')
+      .eq('id', dailyPulseId)
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (!pulse) {
+      return res.status(404).json({ error: { code: 'PULSE_NOT_FOUND' } });
+    }
+
+    // L2: idempotent — same (pulse, archetype, locale) → same row.
+    const { data: existing } = await supabaseServer
+      .from('daily_interpretations')
+      .select('id, text')
+      .eq('daily_pulse_id', dailyPulseId)
+      .eq('selected_archetype_key', archetypeKey)
+      .eq('locale', locale)
+      .maybeSingle();
+    if (existing) {
+      return res.json({ id: existing.id, text: existing.text });
+    }
+
+    if (!geminiClient) {
+      return res.status(503).json({ error: { code: 'AI_UNAVAILABLE', retry_after: 300 } });
+    }
+
+    let text;
+    try {
+      const prompt = buildTagespulsInterpretationPrompt({ pulse, archetypeKey, locale });
+      const result = await geminiClient.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: prompt,
+        config: { temperature: 0.7 },
+      });
+      const rawText =
+        typeof result?.text === 'string'
+          ? result.text
+          : typeof result?.response?.text === 'string'
+            ? result.response.text
+            : '';
+      text = rawText.trim();
+      if (!text || text.length < 10) {
+        throw new Error('Empty or too-short interpretation response');
+      }
+    } catch (err) {
+      console.warn('[daily-interpretation] LLM failed:', err?.message || err?.code || err);
+      return res.status(503).json({ error: { code: 'AI_UNAVAILABLE', retry_after: 300 } });
+    }
+
+    const { data: row, error: insErr } = await supabaseServer
+      .from('daily_interpretations')
+      .insert({
+        daily_pulse_id: dailyPulseId,
+        selected_archetype_key: archetypeKey,
+        locale,
+        text,
+      })
+      .select('id, text')
+      .single();
+
+    if (insErr || !row) {
+      console.error('[daily-interpretation] Persist failed:', insErr?.message);
+      return res.status(500).json({ error: { code: 'PERSIST_FAILED' } });
+    }
+
+    return res.json({ id: row.id, text: row.text });
+  } catch (err) {
+    console.error('[daily-interpretation] Error:', err?.message || err);
+    return res.status(500).json({ error: { code: 'INTERNAL_ERROR' } });
   }
 });
 

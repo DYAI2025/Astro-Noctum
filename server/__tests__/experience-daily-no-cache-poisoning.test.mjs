@@ -1,19 +1,20 @@
 // @vitest-environment node
 /**
- * HOTFIX-B regression tests — refuse to cache server-side fallback payloads.
+ * /api/experience/daily — cache & failure-mode contracts (Phase G).
  *
- * Bug: when the AI provider returned empty / malformed JSON, the daily handler
- * fell back to buildDailyFallbackPayload() and unconditionally wrote the result
- * into both the L1 (in-memory horoscopeCache Map) and L2 (Supabase
- * daily_horoscope_cache) caches. For the next 24h every request for the same
- * (user, date, lang) returned the canned fallback text without retrying the
- * AI router — even after Gemini quota reset. Symptom: "100% of users see the
- * same Tagesimpuls" reported 2026-05-07.
+ * History: this file originally guarded HOTFIX-B (PR #328), which made the
+ * server's fallback payload (engine_version === "v1-server-fallback") opt
+ * out of L1+L2 caches. In Phase G the entire fallback path was removed —
+ * empty/malformed AI now returns 503, router exhaustion returns 502. There
+ * is no synthesized horoscope text on any code path. Cache-poisoning of
+ * fake content is therefore impossible by construction.
  *
- * Fix: the fallback payload now carries `meta.engine_version === "v1-server-fallback"`,
- * and both cache writes are gated on that field. Real AI responses still cache
- * (engine_version === "v1-gemini-daily"); fallback responses go to the client
- * but force a retry on the next request.
+ * The reframed invariants checked here:
+ *   1. Real AI responses ARE cached (engine_version === "v1-gemini-daily").
+ *   2. Empty AI text returns 503 and the next request runs the full pipeline
+ *      (no row written to cache, no short-circuit).
+ *   3. Router exhaustion returns 502 and the next request runs the full
+ *      pipeline.
  */
 import request from 'supertest';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -130,12 +131,9 @@ async function loadApp(geminiMock) {
   return mod.app;
 }
 
-describe('experience/daily — fallback payloads must NOT poison caches (HOTFIX-B)', () => {
+describe('experience/daily — cache & failure-mode contracts (Phase G)', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
-    // Note: each test calls loadApp() which uses vi.doMock + vi.resetModules,
-    // so we don't need (and can't safely use) vi.unmock at this scope —
-    // hoisting would make it run before any tests, undermining doMock.
   });
 
   it('EDF-NCP-001: real AI response IS cached (engine_version v1-gemini-daily)', async () => {
@@ -190,9 +188,9 @@ describe('experience/daily — fallback payloads must NOT poison caches (HOTFIX-
     expect(chartCallsAfter).toBe(chartCallsBefore); // L1 cache hit, BAFE NOT re-fetched
   });
 
-  it('EDF-NCP-002: server fallback payload is RETURNED to client but NOT cached', async () => {
+  it('EDF-NCP-002: empty AI text → 503 AI_UNAVAILABLE, no cache write, retry on next call', async () => {
     mockExternalFetch();
-    // Empty Gemini response → handler falls back to buildDailyFallbackPayload()
+    // Empty Gemini response → Phase G handler returns 503 (no synthesized fallback).
     const app = await loadApp(makeGeminiTextMock(''));
 
     const first = await request(app)
@@ -201,12 +199,10 @@ describe('experience/daily — fallback payloads must NOT poison caches (HOTFIX-
       .set('Content-Type', 'application/json')
       .send(BIRTH_BODY);
 
-    expect(first.status).toBe(200);
-    // Distinguishing marker: this is the server fallback, not a real AI response.
-    expect(first.body?.meta?.engine_version).toBe('v1-server-fallback');
+    expect(first.status).toBe(503);
+    expect(first.body?.error?.code).toBe('AI_UNAVAILABLE');
+    expect(first.body?.error?.recoverable).toBe(true);
 
-    // Now make a second request — if cache poisoning was happening, this
-    // would skip the AI router. Instead, BAFE /chart should be called again.
     const fetchSpy = vi.mocked(globalThis.fetch);
     const chartCallsBefore = fetchSpy.mock.calls.filter(([u]) =>
       typeof u === 'string' && u.includes('/chart')
@@ -218,21 +214,19 @@ describe('experience/daily — fallback payloads must NOT poison caches (HOTFIX-
       .set('Content-Type', 'application/json')
       .send(BIRTH_BODY);
 
-    expect(second.status).toBe(200);
-
+    // Second call must hit the full pipeline again — no cache short-circuit.
+    expect(second.status).toBe(503);
     const chartCallsAfter = fetchSpy.mock.calls.filter(([u]) =>
       typeof u === 'string' && u.includes('/chart')
     ).length;
-    // Critical assertion: BAFE was re-fetched, meaning the fallback was NOT
-    // served from L1 cache. The handler retried the full pipeline.
     expect(chartCallsAfter).toBeGreaterThan(chartCallsBefore);
   });
 
   it('EDF-NCP-003: AI router exhausted → 502 to client AND no cache write (regression for "stuck Tagesimpuls")', async () => {
     mockExternalFetch();
     // Router throws on every call. Since OPENROUTER_API_KEY is unset, the
-    // chain is just Gemini direct → router fully exhausts → handler catches
-    // and returns 502. Critically, no cache write happens at all.
+    // chain is just Gemini direct → router fully exhausts → outer catch
+    // returns 502. Critically, no cache write happens at all.
     const app = await loadApp(makeGeminiAlwaysExhaustedMock());
 
     const fetchSpy = vi.mocked(globalThis.fetch);
@@ -251,8 +245,8 @@ describe('experience/daily — fallback payloads must NOT poison caches (HOTFIX-
     ).length;
 
     // Second request must invoke the full pipeline again — not be served from
-    // any cache layer. This is the user-reported "Heute fließt deine Energie
-    // ruhig" regression: the second call must hit the AI router fresh.
+    // any cache layer. This is the user-reported "stuck Tagesimpuls" regression:
+    // the second call must hit the AI router fresh.
     const second = await request(app)
       .post('/api/experience/daily')
       .set(AUTH_HEADER)

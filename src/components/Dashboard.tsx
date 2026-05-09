@@ -39,6 +39,7 @@ import { useCelestialOrrery } from "../hooks/useCelestialOrrery";
 import { CITIES } from "../lib/astronomy/data";
 import { DailyChartHero } from "./dashboard/DailyChartHero";
 import { SignaturAnchorCard } from "./dashboard/SignaturAnchorCard";
+import { TagespulsCard } from "./dashboard/TagespulsCard";
 import { useActiveImpacts } from "../hooks/useActiveImpacts";
 
 const BirthChartOrrery = lazy(() => import("./BirthChartOrrery").then(m => ({ default: m.BirthChartOrrery })));
@@ -375,6 +376,15 @@ export function Dashboard({
         </div>
       </motion.header>
 
+      {/* ═══ 0. TAGESPULS — curated aphorism + LLM slots + Rat-der-sechs (Phase F) ═══ */}
+      {isFeatureEnabled('tagespuls_neu_v1') && (
+        <motion.div {...fadeIn(0.0)}>
+          <SectionErrorBoundary name="TagespulsCard">
+            <TagespulsCard onCompleteProfile={onReset} />
+          </SectionErrorBoundary>
+        </motion.div>
+      )}
+
       {/* ═══ 1. DAILY CHART HERO (unified volatile hero — DEC-dashboard-volatile-first) ═══ */}
       <motion.div {...fadeIn(0.02)}>
         <SectionErrorBoundary name="DailyChartHero">
@@ -391,10 +401,8 @@ export function Dashboard({
             profileIncomplete={!metaLoading && !metaError && profileMeta.birthInput === null}
             onCompleteProfile={onReset}
             // onOpenDayModal is intentionally passed regardless of dailyData
-            // presence. Fallback data is a valid basis for opening the detail
-            // modal; the modal itself handles fallback-aware rendering.
+            // presence. The modal handles its own loading/error states honestly.
             onOpenDayModal={dailyEnabled ? () => setIsDayModalOpen(true) : undefined}
-            isFallback={dailyData?.meta?.engine_version === 'v1-local-fallback'}
           />
         </SectionErrorBoundary>
       </motion.div>

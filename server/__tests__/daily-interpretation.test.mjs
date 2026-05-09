@@ -1,0 +1,296 @@
+// @vitest-environment node
+/**
+ * POST /api/daily-interpretation — no-placeholders integration tests (Phase D).
+ *
+ * Architecture invariants under test:
+ *   * Auth boundary: pulse_id from another user → 404 (not 403, no leak).
+ *   * Idempotent: same combo twice → second serves from daily_interpretations row.
+ *   * AI exhausted → 503 AI_UNAVAILABLE (NOT a fallback string).
+ *   * Bad input → 400 INVALID_BODY.
+ */
+import request from 'supertest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+const AUTH_HEADER = { Authorization: 'Bearer test-token' };
+
+const PULSE_ROW = {
+  id: 'pulse-uuid-1',
+  user_id: 'user-1',
+  date: '2026-05-09',
+  locale: 'de',
+  mode: 'trace',
+  intensity: 0.72,
+  slot_1: 'Wer den Fluss kennt, fürchtet die Brücke nicht.',
+  slot_2: 'Du weißt heute mehr über deine Lage, als du dir zugestehst.',
+  slot_3: 'Schau hin, ohne sofort zu bewerten.',
+  aphorism_id: 'aph-0001',
+};
+
+/**
+ * @param {object} opts
+ * @param {object|null} [opts.pulse]      — daily_pulses row or null
+ * @param {object|null} [opts.existing]   — existing daily_interpretations row
+ * @param {object|null} [opts.inserted]   — what insert returns (default uses 'gen-text')
+ */
+function mockFetch(opts = {}) {
+  const pulse = 'pulse' in opts ? opts.pulse : PULSE_ROW;
+  const existing = 'existing' in opts ? opts.existing : null;
+  const inserted = opts.inserted ?? null;
+
+  vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+    const url = typeof input === 'string' ? input
+      : input instanceof URL ? input.toString()
+        : input?.url ?? '';
+    const method = (init?.method || (typeof input === 'object' && input?.method) || 'GET').toUpperCase();
+
+    if (url.includes('auth/v1/user')) {
+      const userBody = { id: 'user-1', email: 't@test.com', aud: 'authenticated' };
+      return {
+        ok: true, status: 200,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => userBody,
+        text: async () => JSON.stringify(userBody),
+      };
+    }
+
+    if (url.includes('/daily_pulses')) {
+      const data = pulse ? [pulse] : [];
+      return {
+        ok: true, status: 200,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => data,
+        text: async () => JSON.stringify(data),
+      };
+    }
+
+    if (url.includes('/daily_interpretations')) {
+      // Detect .single() / .maybeSingle() — both set Accept: application/vnd.pgrst.object+json
+      const headers = init?.headers || {};
+      const acceptRaw = headers instanceof Headers ? headers.get('accept') : (headers['Accept'] ?? headers.accept ?? '');
+      const wantsObject = String(acceptRaw || '').includes('vnd.pgrst.object');
+
+      if (method === 'POST') {
+        // INSERT — return the persisted row.
+        const row = inserted ?? {
+          id: 'interp-uuid-1',
+          text: 'GENERATED',
+        };
+        const body = wantsObject ? row : [row];
+        return {
+          ok: true, status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => body,
+          text: async () => JSON.stringify(body),
+        };
+      }
+      // GET (idempotency check) — maybeSingle returns object or null
+      const list = existing ? [existing] : [];
+      const body = wantsObject ? (list[0] ?? null) : list;
+      return {
+        ok: true, status: 200,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => body,
+        text: async () => JSON.stringify(body),
+      };
+    }
+
+    return {
+      ok: true, status: 200,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => ({}),
+      text: async () => '{}',
+    };
+  });
+}
+
+function makeGeminiTextMock(text) {
+  return {
+    GoogleGenAI: class {
+      models = {
+        generateContent: vi.fn().mockResolvedValue({ text }),
+      };
+      getGenerativeModel = vi.fn().mockReturnValue({
+        generateContent: vi.fn().mockResolvedValue({ response: { text: () => '' } }),
+      });
+    },
+  };
+}
+
+function makeGeminiAlwaysExhaustedMock() {
+  const err = Object.assign(new Error('quota exceeded'), { status: 429 });
+  return {
+    GoogleGenAI: class {
+      models = {
+        generateContent: vi.fn().mockRejectedValue(err),
+      };
+      getGenerativeModel = vi.fn().mockReturnValue({
+        generateContent: vi.fn().mockRejectedValue(err),
+      });
+    },
+  };
+}
+
+async function loadApp(geminiMock) {
+  vi.resetModules();
+  process.env.NODE_ENV = 'test';
+  process.env.SUPABASE_URL = 'https://example.supabase.co';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-key';
+  process.env.GEMINI_API_KEY = 'test-gemini-key';
+  process.env.BAFE_BASE_URL = 'https://bafe.test';
+  delete process.env.OPENROUTER_API_KEY;
+
+  if (geminiMock) {
+    vi.doMock('@google/genai', () => geminiMock);
+  }
+  const mod = await import('../../server.mjs');
+  return mod.app;
+}
+
+describe('POST /api/daily-interpretation — no-placeholders contract', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('DIN-001: happy path — pulse owned, AI succeeds → 200 with text', async () => {
+    const generatedText =
+      'Dein Skorpion-Mond bekommt heute Material zum Arbeiten. Du siehst eine Schicht unter der Oberfläche, die andere übersehen. Schau hin, ohne sofort zu bewerten.';
+    mockFetch({ inserted: { id: 'interp-uuid-1', text: generatedText } });
+    const app = await loadApp(makeGeminiTextMock(generatedText));
+
+    const res = await request(app)
+      .post('/api/daily-interpretation')
+      .set(AUTH_HEADER)
+      .set('Content-Type', 'application/json')
+      .send({
+        daily_pulse_id: 'pulse-uuid-1',
+        selected_archetype_key: 'mond',
+        locale: 'de',
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.text).toBe(generatedText);
+    expect(res.body.id).toBe('interp-uuid-1');
+  });
+
+  it('DIN-002: pulse_id from another user → 404 PULSE_NOT_FOUND (auth boundary)', async () => {
+    // The pulse-fetch query includes .eq('user_id', userId), so when the
+    // pulse belongs to a different user the row simply isn't returned.
+    // Mock that as "pulse: null".
+    mockFetch({ pulse: null });
+    const app = await loadApp(makeGeminiTextMock('SHOULD NOT BE CALLED'));
+
+    const res = await request(app)
+      .post('/api/daily-interpretation')
+      .set(AUTH_HEADER)
+      .set('Content-Type', 'application/json')
+      .send({
+        daily_pulse_id: 'pulse-of-user-2',
+        selected_archetype_key: 'sonne',
+        locale: 'de',
+      });
+
+    expect(res.status).toBe(404);
+    expect(res.body?.error?.code).toBe('PULSE_NOT_FOUND');
+  });
+
+  it('DIN-003: AI exhausted → 503 AI_UNAVAILABLE (NOT a fallback string)', async () => {
+    mockFetch();
+    const app = await loadApp(makeGeminiAlwaysExhaustedMock());
+
+    const res = await request(app)
+      .post('/api/daily-interpretation')
+      .set(AUTH_HEADER)
+      .set('Content-Type', 'application/json')
+      .send({
+        daily_pulse_id: 'pulse-uuid-1',
+        selected_archetype_key: 'mond',
+        locale: 'de',
+      });
+
+    expect(res.status).toBe(503);
+    expect(res.body?.error?.code).toBe('AI_UNAVAILABLE');
+    expect(res.body?.error?.retry_after).toBe(300);
+  });
+
+  it('DIN-004: idempotent — second call serves from daily_interpretations row, no AI call', async () => {
+    const cachedRow = {
+      id: 'interp-uuid-cached',
+      text: 'cached interpretation text from previous call',
+    };
+    mockFetch({ existing: cachedRow });
+    const app = await loadApp(makeGeminiTextMock('SHOULD NOT BE CALLED — IDEMPOTENT HIT'));
+
+    const res = await request(app)
+      .post('/api/daily-interpretation')
+      .set(AUTH_HEADER)
+      .set('Content-Type', 'application/json')
+      .send({
+        daily_pulse_id: 'pulse-uuid-1',
+        selected_archetype_key: 'mond',
+        locale: 'de',
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.id).toBe('interp-uuid-cached');
+    expect(res.body.text).toBe('cached interpretation text from previous call');
+    // The text is exactly the cached one — confirms no AI call (otherwise
+    // the mock would have replaced it with "SHOULD NOT BE CALLED ...").
+    expect(res.body.text).not.toContain('SHOULD NOT BE CALLED');
+  });
+
+  it('DIN-005: invalid archetype_key → 400 INVALID_BODY', async () => {
+    mockFetch();
+    const app = await loadApp(makeGeminiTextMock('any'));
+
+    const res = await request(app)
+      .post('/api/daily-interpretation')
+      .set(AUTH_HEADER)
+      .set('Content-Type', 'application/json')
+      .send({
+        daily_pulse_id: 'pulse-uuid-1',
+        selected_archetype_key: 'not-a-figure',
+        locale: 'de',
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.body?.error?.code).toBe('INVALID_BODY');
+  });
+
+  it('DIN-RATE-001: 7th call within 1h window returns 429 RATE_LIMITED', async () => {
+    // Fresh app instance → fresh in-memory limiter store. All 7 calls
+    // share the same per-user (req.userId === 'user-1') bucket because
+    // the auth mock resolves every Authorization header to user-1.
+    // Calls 1–6 burn the quota (each is a normal happy-path 200), the
+    // 7th must be blocked by the limiter BEFORE it reaches the handler.
+    const generatedText = 'rate-limit test text';
+    mockFetch({ inserted: { id: 'interp-uuid-rl', text: generatedText } });
+    const app = await loadApp(makeGeminiTextMock(generatedText));
+
+    const body = {
+      daily_pulse_id: 'pulse-uuid-1',
+      selected_archetype_key: 'mond',
+      locale: 'de',
+    };
+
+    // Burn the 6-call quota.
+    for (let i = 0; i < 6; i++) {
+      const res = await request(app)
+        .post('/api/daily-interpretation')
+        .set(AUTH_HEADER)
+        .set('Content-Type', 'application/json')
+        .send(body);
+      expect(res.status).toBe(200);
+    }
+
+    // 7th call → 429 RATE_LIMITED.
+    const blocked = await request(app)
+      .post('/api/daily-interpretation')
+      .set(AUTH_HEADER)
+      .set('Content-Type', 'application/json')
+      .send(body);
+
+    expect(blocked.status).toBe(429);
+    expect(blocked.body?.error?.code).toBe('RATE_LIMITED');
+    expect(blocked.body?.error?.retry_after).toBe(3600);
+  });
+});

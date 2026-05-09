@@ -27,6 +27,8 @@ interface UseFirstRunDailyResult {
   nightHarmonic: DayHarmonicState | null;
   showModal: boolean;
   loading: boolean;
+  /** True when the last fetch attempt failed (network/router/parse). dailyData will be null. */
+  error: { code: string; message: string } | null;
   handleClose: () => void;
 }
 
@@ -68,47 +70,6 @@ function setCachedDaily(data: DailyResponse): void {
   }
 }
 
-// ── Local fallback ────────────────────────────────────────────────────
-
-/**
- * Local fallback daily data when FuFirE/Gemini is unreachable.
- * Provides a deterministic day-mode signal so DashboardTagesEnergie always renders.
- */
-export function buildFallbackDaily(locale: string = 'de'): DailyResponse {
-  const today = todayKey();
-  const dateHash = today.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-  const harmony = 0.3 + (dateHash % 40) / 100;
-  const mode: 'pulse' | 'trace' = harmony >= 0.50 ? 'trace' : 'pulse';
-
-  const synthesisDe = mode === 'pulse'
-    ? 'Heute fließt deine Energie ruhig und gleichmäßig. Ein guter Tag, um innezuhalten und zu beobachten.'
-    : 'Die kosmischen Linien kreuzen sich heute \u2014 etwas bewegt sich. Sei aufmerksam für unerwartete Impulse.';
-  const synthesisEn = mode === 'pulse'
-    ? 'Your energy flows calmly today. A good day to pause and observe.'
-    : 'Cosmic lines cross today \u2014 something is stirring. Stay alert for unexpected impulses.';
-
-  const text = locale.startsWith('en') ? synthesisEn : synthesisDe;
-  const action = locale.startsWith('en') ? 'Take a moment of stillness.' : 'Nimm dir einen Moment der Stille.';
-
-  const emptySection = { summary: '', themes: [] as string[], caution: '', opportunity: '', evidence: {} };
-
-  return {
-    date: today,
-    western: emptySection,
-    eastern: emptySection,
-    fusion: {
-      summary: text,
-      synthesis: text,
-      action,
-      pushworthy: false,
-      push_text: '',
-      harmony_index: harmony,
-      day_mode: mode,
-    },
-    meta: { engine_version: 'v1-local-fallback' },
-  } as DailyResponse;
-}
-
 // ── Hook ──────────────────────────────────────────────────────────────
 
 export function useFirstRunDaily(
@@ -123,6 +84,7 @@ export function useFirstRunDaily(
   const [dailyData, setDailyData] = useState<DailyResponse | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<{ code: string; message: string } | null>(null);
   const lastFetchedDateRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -173,6 +135,7 @@ export function useFirstRunDaily(
           const cached = getCachedDaily();
           if (cached) {
             setDailyData(cached);
+            setError(null);
             if (!alreadySeen && isWithinDeliveryWindow) setShowModal(true);
             return;
           }
@@ -205,16 +168,19 @@ export function useFirstRunDaily(
 
         if (isToday) setCachedDaily(data);
         setDailyData(data);
+        setError(null);
         if (!alreadySeen && (!isTodayTarget || isWithinDeliveryWindow)) setShowModal(true);
       } catch (err) {
-        // Graceful fallback: use local deterministic daily so DashboardTagesEnergie always renders
-        console.warn('[useFirstRunDaily] Error occurred, using local fallback:', err);
+        // Phase G (KILL ALL PLACEHOLDERS): no synthesized fallback content.
+        // On API failure, dailyData stays null and `error` is set. Components
+        // that consume the hook handle null gracefully — the impuls section
+        // simply does not render rather than displaying generic placeholder text.
+        const message = err instanceof Error ? err.message : String(err);
+        const code = (err as { code?: string } | null)?.code ?? 'unavailable';
+        console.warn('[useFirstRunDaily] daily fetch failed:', message);
         if (!cancelled) {
-          const fallback = buildFallbackDaily();
-          // Adjust fallback date to target
-          fallback.date = targetDate;
-          setDailyData(fallback);
-          if (!alreadySeen && (!isTodayTarget || isWithinDeliveryWindow)) setShowModal(true);
+          setDailyData(null);
+          setError({ code, message });
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -250,5 +216,5 @@ export function useFirstRunDaily(
     return nh !== undefined ? computeNightHarmonic(nh) : null;
   }, [dailyData]);
 
-  return { dailyData, dayHarmonic, nightHarmonic, showModal, loading, handleClose };
+  return { dailyData, dayHarmonic, nightHarmonic, showModal, loading, error, handleClose };
 }
