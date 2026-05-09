@@ -384,7 +384,7 @@ If BAFE schema changes, update the mappers in `api.ts` — the Dashboard expects
 
 ### External Dependencies
 
-- **BAFE API**: Astrology calculation backend (routes at `/calculate/{bazi,western,fusion,wuxing,tst}` and `/chart`). Default: `https://bafe-2u0e2a.fly.dev` (Fly.io production per BAFE API Reference 2026-05-08; Railway `bafe-production.up.railway.app` retained as Signatur-App fallback only). BAFE is not always reachable from dev environments (see Known Issues).
+- **BAFE API**: Astrology calculation backend. Fly.io production default: `https://bafe-2u0e2a.fly.dev` (per BAFE API Reference 2026-05-08) with routes at `/calculate/{bazi,western,fusion,wuxing,tst}`. Legacy Railway fallback: `bafe-production.up.railway.app`, where `/chart` remains available for Signatur-App compatibility only; treat `/chart` as Railway-only until Phase 2 migrates the app to the new Fly.io endpoints. BAFE is not always reachable from dev environments (see Known Issues).
 - **Supabase**: Auth + Postgres. Schema in `supabase-schema.sql`. Tables: `profiles`, `birth_data`, `astro_profiles`, `natal_charts`, `contribution_events`, `agent_conversations`. RLS enabled on all tables. Signup trigger auto-creates profile row. `contribution_events` stores quiz sector weights (upserted on `user_id,module_id`) — read by the transit-state proxy to compute `quiz_sectors`.
 - **Gemini API**: Text generation via `@google/genai` SDK (model: `gemini-3-flash-preview`). Falls back to hardcoded German text if unavailable.
 - **ElevenLabs**: Voice agent widget (Levi Bazi). Tool configs in `elevenlabs-tool.json` and `elevenlabs-tool-save-conversation.json`. The widget calls back to `/api/profile/:userId` on the server (requires `ELEVENLABS_TOOL_SECRET` Bearer auth).
