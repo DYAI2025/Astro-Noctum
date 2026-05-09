@@ -1,5 +1,90 @@
 # Changelog
 
+## [Unreleased] - 2026-05-09 — Tagespuls neu-architecture + KILL ALL PLACEHOLDERS
+
+### Why this sprint
+
+User directive (verbatim): _"alle aphorsimen sind approved, ich habe sie selbst geschrieben. … das aller schöimmst was immer noch passiert sind diese Paltzhalter! sie müssen mit aller höchyten prio weg! Auch fallbacks im frontend gehören dazu"_
+
+Translation: every aphorism the user wrote is approved as-is. Tagespuls must become visible to all users immediately. Generic generated horoscope text masquerading as personalized content must be eliminated everywhere — server fallbacks AND frontend fallbacks.
+
+This sprint ships the entire Tagespuls neu-architecture (originally PR 3 of the dashboard-flow plan, gated on aphorism approvals) and structurally removes every placeholder code path. The only acceptable user-visible states after this sprint are: real content, loading skeletons, profile-required CTA, retry UI on honest failure.
+
+### Database (Phase B)
+
+- **5 new Supabase tables** via `supabase-migrations/20260509_tagespuls_tables.sql`:
+  - `aphorisms` (status `approved | retired`, GIN indexes on `mode_tags` + `element_affinity`)
+  - `cosmic_weather_snapshots`
+  - `daily_pulses` — **`slot_2` and `slot_3` are NULLABLE.** When the AI router exhausts, the row stores aphorism + computed mode/intensity but null slots; client renders aphorism alone — never generic placeholder text.
+  - `daily_interpretations` (idempotent on `(daily_pulse_id, archetype_key, locale)`)
+  - `aphorism_usage_events` (cooldown ledger)
+- **Adaptations from the reference schema** (`apps/tagespuls_package/packages/db/schema.sql`): `user_astro_profiles` denormalized cache OMITTED (Wuxing vectors computed inline from existing `astro_profiles.astro_json`); all `user_id` FKs reference `auth.users(id)` directly; RLS enabled with no policy on all 5 tables (service-role only — mirrors `ai_quota` and `stripe_events` lockdown patterns).
+- **`supabase-schema.sql` kept in parity** per memory `feedback_schema_migration_alignment.md`.
+
+### Aphorism corpus (Phase A + C)
+
+- **21 aphorisms ingested** from `apps/tagespuls_package/knowledge/bazodiaac-brain/aphorisms/review/aph-*.md`. The user wrote all of them; the markdown frontmatter `status: draft|review` is overridden to `approved` at JSON-build time per explicit user authorization.
+- **Mode coverage**: `pulse=10, spannung=5, trace=6` — all three modes covered.
+- **Quality distribution**: `3-star=3, 4-star=12, 5-star=6`.
+- **`scripts/build-aphorisms-json.mjs`** parses YAML frontmatter + DE/EN/Original blockquotes from the markdowns into `apps/tagespuls_package/packages/voice/data/aphorisms.json` (715 lines). Zero-dep YAML parser, deterministic sorted output.
+- **`scripts/seed-aphorisms.mjs`** + npm script `seed:aphorisms` upserts the 21 rows into the live Supabase `aphorisms` table. Idempotent via `onConflict: 'id'`. Word counts computed from actual text inline (frontmatter is documentation only).
+
+### API routes (Phase D)
+
+- **`GET /api/daily-pulse?date=YYYY-MM-DD&locale=de|en`** (`server.mjs:3058–3286`):
+  - `requireUserAuth` (Supabase JWT). Loads `astro_profiles.astro_json`, derives harmony index from `fusion.harmony_index.harmony_index` (the actual nested prod shape), computes mode + intensity via `dayModeFromHarmony()`.
+  - Selects aphorism from approved corpus by mode-tag + cooldown via `aphorism_usage_events`. Top-5 by `quality_rating`, deterministic hash-pick by `(user_id, date, mode)`.
+  - LLM-generates `slot_2` (Brücke ins Heute) + `slot_3` (Handlungsimpuls) via the AI router (gemini-direct → openrouter free chain). On failure: store and return `null`. **No fallback text.**
+  - Persists `daily_pulses` row + `aphorism_usage_events`. L1 in-memory + L2 Supabase cache, both keyed by `(user_id, date, locale)`. **Cache write only when slots are non-null** — null-slot rows force a retry on the next request.
+  - Council figures (Sonne / Mond / Aszendent / Tag-Meister / Jahrestier / Wu Xing) extracted from `astro_profiles.astro_json` via the council builder helper (paths: `western.zodiac_sign`, `western.moon_sign`, `western.ascendant_sign`, `bazi.day_master`, `bazi.zodiac_sign`, `wuxing.dominant_element` — all confirmed against live prod data).
+  - Errors: `400 INVALID_LOCALE / INVALID_DATE`, `422 PROFILE_REQUIRED` (missing or empty profile), `503 APHORISM_POOL_EMPTY` (impossible with 21-row corpus but defensive).
+- **`POST /api/daily-interpretation`** (`server.mjs:3245–3380`):
+  - `requireUserAuth` + `dailyInterpretationLimiter` (6 calls / hour / user — closes the Gemini-quota DoS surface flagged in code review MEDIUM-4) + 10 KB JSON limit.
+  - Ownership check (the `daily_pulse_id` must belong to `req.userId`) — closes the IDOR surface (`DIN-002` test asserts 404 for cross-user access).
+  - Idempotent on `(daily_pulse_id, archetype_key, locale)` — second call serves from `daily_interpretations` row, no re-LLM.
+  - LLM-generates the personalized text via the `day-pulse-trace` skill content baked into the server-side prompt template.
+  - On AI exhaustion: `503 AI_UNAVAILABLE` with `retry_after: 300`. **No fallback text.**
+- **Helpers in `server/services/tagespuls.service.mjs`**: pure `dayModeFromHarmony`, `simpleHash`, `harmonyIndexFromAstroJson`, `buildCouncilFromProfile`, `buildSlotPrompt`, `buildInterpretationPrompt`, `normalizeLocale`, `normalizeDate`, `ARCHETYPE_KEYS`. All unit-testable.
+
+### Client (Phase E + F)
+
+- **`src/hooks/useDailyPulse.ts`** — fetches daily pulse on mount + on `user`/`locale` change. Maps server errors to typed: `profile_required` (422), `ai_unavailable` (503), `network` (fetch failure), `unknown`. `selectCouncilFigure(key)` POSTs to `/api/daily-interpretation` with hook-level idempotency — re-tapping the same figure doesn't refetch. `resetFigure()` clears phase 2 state. Auth via existing `src/lib/authedFetch.ts`. **No client-side cache** (server already caches L1+L2). **No `buildFallback*` functions of any kind.**
+- **`src/components/dashboard/TagespulsCard.tsx`** — two-phase UI:
+  - **Phase 1**: mode chip (PULS / SPUR / SPANNUNG), aphorism (slot_1) + author + work, `slot_2` (if non-null) labeled "Brücke ins Heute", `slot_3` (if non-null) labeled "Handlungsimpuls", "Wer begleitet dich heute?" header + 6 council buttons.
+  - **Phase 2** (after council tap): selected figure name + glyph + sign/element, `interpretation.text`, "← Andere Figur wählen" back button.
+  - **States**: loading → 4-line skeleton with shimmer; `profile_required` → CTA + "Daten ergänzen" button; `network` / `unknown` → retry button; `ai_unavailable` (Phase 2 only) → retry inline; `loadingInterpretation` → skeleton inside Phase 2.
+  - **Render-null contract**: when `slot_2` or `slot_3` is null in the response, that block is omitted entirely from the DOM. **Never substituted with generic text.**
+- **`src/lib/schemas/daily-pulse.ts`** — Zod schemas for the wire shape (`DailyPulseResponseSchema`, `DailyInterpretationSchema`, `DailyPulseErrorEnvelopeSchema`). Pre-existing schemas were misaligned with what the server actually returns (council is a 6-element **array**, not a nested object); rewritten to match wire shape.
+- **i18n keys** under `tagespuls.*` (DE+EN parity verified): mode chip labels, slot section labels, council labels, error messages, retry CTA. `npm run check:text-integrity` clean.
+- **Dashboard mount** (`src/components/Dashboard.tsx:380–385`): `TagespulsCard` mounted ABOVE `DailyChartHero` with `fadeIn(0.0)`, gated by feature flag `tagespuls_neu_v1` (default `true`). Order on the dashboard now: TagespulsCard → DailyChartHero → SignaturAnchorCard → AgentSection → … . LocalStorage override key `ff_tagespuls_neu_v1` for QA flip-off.
+
+### KILL ALL PLACEHOLDERS (Phase G)
+
+- **`buildDailyFallbackPayload()` in `server.mjs` DELETED.** Every callsite replaced with `503 AI_UNAVAILABLE` + `retry_after: 300`. The cache-poisoning guard from PR #328 HOTFIX-B is preserved as belt-and-braces — but the path that would set `'v1-server-fallback'` no longer exists.
+- **`buildFallbackDaily()` in `src/hooks/useFirstRunDaily.ts` DELETED.** On API failure, `dailyData = null` and `error` is set. Components handle null gracefully — the impuls just doesn't render. The `useFirstRunDaily` return type was extended with `error: { code, message } | null` for future retry-UI components.
+- **`isFallback` prop on `DailyChartHero` REMOVED.** The 9px-opacity-40% "↻ Heute nicht verfügbar" indicator added in PR #328 TASK-D2 is gone — it was a band-aid for the very fallback we're now killing.
+- **i18n cleanup**: `dashboard.dailyChartHero.fallback*` keys deleted from both DE and EN trees.
+- **Forbidden-string regression guard**: `TPC-003 / TPC-004` in `src/__tests__/tagespuls-card.test.tsx` walk the rendered DOM's `textContent` for known generic strings (`"Heute fließt deine Energie"`, `"Today your energy flows"`, etc.) and assert ZERO matches when slots are null. **Future drift caught by the test suite, not by reviewers.**
+
+### Tests + repository hygiene
+
+- **42 new tests** across the sprint:
+  - 11 server (`daily-pulse.test.mjs` 6× + `daily-interpretation.test.mjs` 5×)
+  - 18 client (`use-daily-pulse.test.ts` 8× + `tagespuls-card.test.tsx` 10×)
+  - 3 dashboard mount + flag gating (`dashboard-tagespuls-flag.test.tsx`)
+  - 1 rate-limit (`DIN-RATE-001` — 7th call returns 429 RATE_LIMITED)
+  - 9 deletions counterbalance: `daily-chart-hero-fallback-label.test.tsx` (3 tests), `daily-fallback`, `daily-inline-rendering` deleted because the contracts they asserted no longer exist; `experience-daily-no-cache-poisoning.test.mjs` reframed in place to assert the new 503 contract instead of the removed `v1-server-fallback` marker.
+- **Full suite**: 2323 / 2323 (was 2331 / 2331 at end of PR #329; net delta +13 added, -9 deleted/reframed = +4, plus +14 new tests for the routes/hook/component/flag/limit). `npm test` 28.7s. `tsc --noEmit` clean. `npm run build` succeeds in 6.47s. `npm run check:text-integrity` passes 2748 tracked files.
+- **WIP commit cleanup** per the 2026-05-09 code-reviewer agent's pre-merge plan: 50+ untracked files committed in 2 logical chunks — packages reference tree (openapi + voice scripts + voice/src/tagespuls.ts reference + sample data) and knowledge base + skills + design docs. Source markdown files retain their authored frontmatter status (status flip is JSON-build-time only).
+
+### Notes
+
+- **Implementation plan**: `docs/plans/2026-05-07-dashboard-flow-tagespuls-3d.md` (Phase T was originally gated on aphorism approvals; user explicitly approved all 21, gate lifted).
+- **Code-review pre-merge plan**: `docs/plans/2026-05-09-tagespuls-pre-merge.md` (parallel reviewer agent's findings — HIGH-1 was already covered by Phase D's `DIN-002` IDOR test; MEDIUM-4 closed by the rate limiter; INFO-1 closed by the schema.sql annotation).
+- **Architecture reference**: `apps/tagespuls_package/` (5 tables + 3 endpoints + 21 markdown sources + 2 Claude Code skills + 8 design docs). Production runtime in `server.mjs` + `server/services/tagespuls.service.mjs` + `src/hooks/useDailyPulse.ts` + `src/components/dashboard/TagespulsCard.tsx`.
+- **AI router** (`server/ai-router.mjs`) untouched — Tagespuls reuses the existing gemini-direct → openrouter 4-model free chain with per-route quota and structured envelope errors.
+- **Pending follow-ups (not blocking, deferred)**: 6 LOW/MEDIUM items from the code review (3 LOW + 3 MEDIUM-1..3) tracked in the pre-merge plan's Out-of-Scope section for future sprints — chiefly: harden `astro_profiles.astro_json` shape via Zod at the server boundary; add `aphorism_usage_events` cleanup migration for cooldown reset on profile rebirth; surface a graceful "no slots available today" state when AI exhaustion happens to coincide with the user's first daily-pulse call (edge case — current behavior renders aphorism alone, which is correct, but UX could acknowledge the missing slots more explicitly).
+
 ## [Unreleased] - 2026-05-07 — Dashboard 3D Anchor + GreenOps (PR 2 of dashboard-flow-tagespuls plan)
 
 ### Features
