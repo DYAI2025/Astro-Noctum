@@ -2925,6 +2925,13 @@ function tagespulsCacheKey(userId, date, locale) {
   return `daily-pulse:${userId}:${date}:${locale}`;
 }
 
+// Test-only helper — guarded by NODE_ENV. Production callers cannot reach it.
+// Used by src/__tests__/api-daily-pulse.test.ts to reset the module-scoped
+// L1 cache between cases without re-importing server.mjs.
+export const __resetTagespulsCache = process.env.NODE_ENV === 'test'
+  ? () => dailyPulseCache.clear()
+  : () => { throw new Error('test-only helper'); };
+
 /**
  * Picks an aphorism for the user/date/mode tuple following §7 of
  * PROMPT_MODULE_TAGESPULS_TAGESDEUTUNG.md: filter by approved + mode_tag,
