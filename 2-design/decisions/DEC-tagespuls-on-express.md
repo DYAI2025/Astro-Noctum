@@ -1,11 +1,25 @@
----
-id: DEC-tagespuls-on-express
-status: Active
-date: 2026-05-09
-trigger: Choosing the runtime host for the Tagespuls neu-architecture (Phase T) endpoints — Express server (server.mjs) versus Supabase Edge Functions (supabase/functions/*)
----
-
 # DEC-tagespuls-on-express
+
+## Status
+Active
+
+## Category
+Architecture Decision Record
+
+## Scope
+Tagespuls neu-architecture runtime hosting for Phase T endpoints, specifically `GET /api/daily-pulse` and `POST /api/daily-interpretation`.
+
+## Source
+Phase T plan in `docs/plans/2026-05-07-dashboard-flow-tagespuls-3d.md`, subsequent 2026-05-09 review, and shipped implementation in PR #331.
+
+## Last updated
+2026-05-09
+
+## Triggers
+Choosing the runtime host for the Tagespuls neu-architecture (Phase T) endpoints — Express server (`server.mjs`) versus Supabase Edge Functions (`supabase/functions/*`).
+
+## Enforcement
+Implement Tagespuls endpoints on the existing Express server in `server.mjs`; do not introduce Supabase Edge Functions for these endpoints unless this decision is explicitly superseded.
 
 ## Decision
 
