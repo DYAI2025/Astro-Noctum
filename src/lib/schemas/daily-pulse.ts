@@ -51,6 +51,16 @@ export const PulseWireAphorismSchema = z.object({
 });
 export type PulseWireAphorism = z.infer<typeof PulseWireAphorismSchema>;
 
+// BUG-DAILY-003 + 004: server includes the user's locked decision for
+// today (if any) so the client can hydrate Phase 2 directly on mount,
+// preventing browser-back / refresh from showing a stale Phase 1 with
+// active selection buttons.
+export const ExistingDecisionSchema = z.object({
+  archetype_key: CouncilKeySchema,
+  text: z.string().min(1),
+});
+export type ExistingDecision = z.infer<typeof ExistingDecisionSchema>;
+
 export const DailyPulseResponseSchema = z.object({
   id: z.string(),
   user_id: z.string(),
@@ -62,6 +72,10 @@ export const DailyPulseResponseSchema = z.object({
   aphorism: PulseWireAphorismSchema,
   council: z.array(CouncilFigureSchema).length(6),
   weather_stale: z.boolean(),
+  // BUG-DAILY-003 + 004: source of truth for "user already picked today".
+  // Cross-locale scoped (per the I-3 fix from PR #336) so locale switches
+  // can't bypass the lock. Single roundtrip — no separate /check-decision.
+  existing_decision: ExistingDecisionSchema.nullable(),
 });
 export type DailyPulseResponse = z.infer<typeof DailyPulseResponseSchema>;
 

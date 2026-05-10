@@ -54,6 +54,9 @@ const VALID_PULSE = {
     { key: 'wuxing_dom', displayName: 'Wu-Xing dominant', signOrElement: 'Holz' },
   ],
   weather_stale: false,
+  // BUG-DAILY-003 + 004: default fixture state is "no decision yet".
+  // Tests that need a hydrated Phase 2 override this via spread.
+  existing_decision: null,
 };
 
 function makeRes(status: number, body: unknown, headers: Record<string, string> = {}): Response {
@@ -338,5 +341,44 @@ describe('useDailyPulse', () => {
 
     expect(result.current.interpretation).toBeNull();
     expect(result.current.interpretationError?.code).toBe('unknown');
+  });
+
+  // ── BUG-DAILY-003 + 004: persistent decision lock on mount ────────────────
+  it('DPH-LOCK-MOUNT-001: hook hydrates Phase 2 state from existing_decision on mount', async () => {
+    // BUG-DAILY-003 / BUG-DAILY-004: when the user already picked today,
+    // /api/daily-pulse includes existing_decision. Hook initializes
+    // selectedFigure + interpretation IMMEDIATELY — no Phase 1 flash.
+    authedFetch.mockResolvedValueOnce(makeRes(200, {
+      ...VALID_PULSE,
+      existing_decision: {
+        archetype_key: 'mond',
+        text: 'Locked Mond Libra deep interpretation',
+      },
+    }));
+    const useDailyPulse = await loadHook();
+
+    const { result } = renderHook(() => useDailyPulse('de'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    // Phase 2 state hydrated on mount, no second fetch needed
+    expect(result.current.selectedFigure).toBe('mond');
+    expect(result.current.interpretation?.text).toBe('Locked Mond Libra deep interpretation');
+    expect(result.current.interpretationError).toBeNull();
+    expect(authedFetch).toHaveBeenCalledTimes(1);  // ONLY /api/daily-pulse
+  });
+
+  it('DPH-LOCK-MOUNT-002: existing_decision=null → Phase 1 state (selectedFigure null)', async () => {
+    // Negative case: no decision yet → user can pick.
+    authedFetch.mockResolvedValueOnce(makeRes(200, {
+      ...VALID_PULSE,
+      existing_decision: null,
+    }));
+    const useDailyPulse = await loadHook();
+
+    const { result } = renderHook(() => useDailyPulse('de'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.selectedFigure).toBeNull();
+    expect(result.current.interpretation).toBeNull();
   });
 });

@@ -3086,6 +3086,33 @@ app.get('/api/daily-pulse', requireUserAuth, async (req, res) => {
     }
     const council = buildCouncilFromProfile(profileRow.astro_json);
 
+    // BUG-DAILY-003 + 004: query the user's existing decision for this
+    // (user_id, date). Cross-locale scoped so locale-switching can't
+    // bypass the lock — same path as PR #336's I-3 fix. Single roundtrip
+    // avoids a separate /api/check-decision endpoint.
+    const { data: pulseIdsForDateRows } = await supabaseServer
+      .from('daily_pulses')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('date', date);
+    const allPulseIdsForDate = (pulseIdsForDateRows ?? []).map((p) => p.id);
+    let existingDecision = null;
+    if (allPulseIdsForDate.length > 0) {
+      const { data: decisionRow } = await supabaseServer
+        .from('daily_interpretations')
+        .select('selected_archetype_key, text')
+        .in('daily_pulse_id', allPulseIdsForDate)
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (decisionRow) {
+        existingDecision = {
+          archetype_key: decisionRow.selected_archetype_key,
+          text: decisionRow.text,
+        };
+      }
+    }
+
     // L2 hit: serve as-is when slots present, otherwise re-attempt slot generation.
     if (existing) {
       // Look up the aphorism row for the response (status, attribution).
@@ -3175,6 +3202,7 @@ app.get('/api/daily-pulse', requireUserAuth, async (req, res) => {
             },
         council,
         weather_stale: !!existing.weather_stale,
+        existing_decision: existingDecision,
       };
 
       // BUG-DAILY-001: cache when consolidated impulse text is present.
@@ -3269,6 +3297,7 @@ app.get('/api/daily-pulse', requireUserAuth, async (req, res) => {
       },
       council,
       weather_stale: false,
+      existing_decision: existingDecision,
     };
 
     // BUG-DAILY-001: cache once consolidated text is present.
