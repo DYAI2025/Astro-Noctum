@@ -51,6 +51,10 @@ const FULL_PULSE: DailyPulseResponse = {
     author: 'Marcus Aurelius',
     attribution_status: 'verified',
     slot_1: 'Die Tage fließen, und nichts hält still.',
+    // BUG-DAILY-001: server combines slot_2 + slot_3 into impulse_text
+    // for legacy rows. Fixture mirrors the on-the-wire shape.
+    impulse_text:
+      'Du sitzt am Schreibtisch, der Kaffee dampft, und ein Gedanke schiebt sich vor. Schreib einen Satz auf, der den Tag öffnet.',
     slot_2: 'Du sitzt am Schreibtisch, der Kaffee dampft, und ein Gedanke schiebt sich vor.',
     slot_3: 'Schreib einen Satz auf, der den Tag öffnet.',
   },
@@ -119,7 +123,9 @@ describe('TagespulsCard', () => {
     expect(screen.getByTestId('tagespuls-card-skeleton')).toBeTruthy();
   });
 
-  it('TPC-002: real data renders aphorism + author + slot_2 + slot_3 + 6 council buttons', () => {
+  it('TPC-002: real data renders aphorism + author + impulse_text + 6 council buttons', () => {
+    // BUG-DAILY-001: slot_2 + slot_3 collapsed into single impulse_text
+    // section — no internal labels.
     setHookState({ pulse: FULL_PULSE });
     const { container } = render(<TagespulsCard />);
 
@@ -127,32 +133,37 @@ describe('TagespulsCard', () => {
     expect(container.textContent).toContain(FULL_PULSE.aphorism.slot_1);
     expect(container.textContent).toContain('Marcus Aurelius');
 
-    // Slot 2 and 3 visible
-    expect(screen.getByTestId('tagespuls-bridge')).toBeTruthy();
-    expect(screen.getByTestId('tagespuls-impulse')).toBeTruthy();
-    expect(container.textContent).toContain(FULL_PULSE.aphorism.slot_2);
-    expect(container.textContent).toContain(FULL_PULSE.aphorism.slot_3);
+    // Consolidated impulse text visible (no internal Bridge/Impulse labels)
+    expect(screen.getByTestId('tagespuls-impulse-text')).toBeTruthy();
+    expect(container.textContent).toContain(FULL_PULSE.aphorism.impulse_text);
+    // Old testids gone
+    expect(screen.queryByTestId('tagespuls-bridge')).toBeNull();
+    expect(screen.queryByTestId('tagespuls-impulse')).toBeNull();
 
     // 6 council buttons rendered
     const buttons = container.querySelectorAll('[data-figure-key]');
     expect(buttons).toHaveLength(6);
   });
 
-  it('TPC-003: slot_2 = null → bridge section omitted, NO placeholder text leaks', () => {
+  it('TPC-003: impulse_text null → impulse section omitted, NO placeholder text leaks', () => {
+    // BUG-DAILY-001: when the LLM router fails, impulse_text is null
+    // and the section is omitted entirely. No fallback copy injected.
     setHookState({
       pulse: {
         ...FULL_PULSE,
-        aphorism: { ...FULL_PULSE.aphorism, slot_2: null },
+        aphorism: { ...FULL_PULSE.aphorism, impulse_text: null, slot_2: null, slot_3: null },
       },
     });
     const { container } = render(<TagespulsCard />);
 
-    // The bridge subsection is entirely absent.
+    // The impulse subsection is entirely absent.
+    expect(screen.queryByTestId('tagespuls-impulse-text')).toBeNull();
+    // No legacy bridge/impulse testids either.
     expect(screen.queryByTestId('tagespuls-bridge')).toBeNull();
-    // The bridge label key is NOT rendered.
+    expect(screen.queryByTestId('tagespuls-impulse')).toBeNull();
+    // The internal label keys are NOT rendered.
     expect(container.textContent).not.toContain('tagespuls.bridge');
-    // The slot_3 section is unaffected — still rendered.
-    expect(screen.getByTestId('tagespuls-impulse')).toBeTruthy();
+    expect(container.textContent).not.toContain('tagespuls.impulse');
     // Aphorism is still visible.
     expect(container.textContent).toContain(FULL_PULSE.aphorism.slot_1);
     // No fallback strings.
@@ -349,5 +360,114 @@ describe('TagespulsCard', () => {
     for (const b of buttons) {
       expect(b.hasAttribute('disabled')).toBe(true);
     }
+  });
+
+  it('TPC-NO-LABELS-001: no internal Bridge/Impulse labels appear in Phase 1', () => {
+    // BUG-DAILY-001: "Bridge to today" / "Action impulse" are internal
+    // prompt labels and must never appear in user-facing UI.
+    setHookState({
+      pulse: {
+        ...FULL_PULSE,
+        aphorism: {
+          ...FULL_PULSE.aphorism,
+          impulse_text: 'Heute trägt Mass mehr als der nächste Beweis. Schau hin, ohne sofort zu bewerten.',
+          slot_2: null,
+          slot_3: null,
+        },
+      },
+      selectedFigure: null,
+    });
+    render(<TagespulsCard />);
+
+    // Anti-label DOM walk — neither EN nor DE label may appear
+    expect(screen.queryByText(/Bridge to today/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Brücke ins Heute/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Action impulse/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Handlungsimpuls/i)).not.toBeInTheDocument();
+
+    // The consolidated impulse text IS rendered
+    expect(screen.getByText(/Heute trägt Mass/i)).toBeInTheDocument();
+
+    // Old testids gone, new testid present
+    expect(screen.queryByTestId('tagespuls-bridge')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('tagespuls-impulse')).not.toBeInTheDocument();
+    expect(screen.getByTestId('tagespuls-impulse-text')).toBeInTheDocument();
+  });
+
+  it('TPC-NO-LABELS-002: legacy 2-slot row renders consolidated text only (server-side joined)', () => {
+    // Backward compat: cached rows from before this fix have both
+    // slot_2 and slot_3 populated. The server normalizes to
+    // impulse_text BEFORE returning. Component renders impulse_text
+    // only, never the raw slots as separate sections.
+    setHookState({
+      pulse: {
+        ...FULL_PULSE,
+        aphorism: {
+          ...FULL_PULSE.aphorism,
+          impulse_text: 'Legacy bridge text. Legacy action impulse text.',
+          slot_2: 'Legacy bridge text.',
+          slot_3: 'Legacy action impulse text.',
+        },
+      },
+      selectedFigure: null,
+    });
+    render(<TagespulsCard />);
+
+    expect(screen.queryByText(/Bridge to today|Brücke ins Heute|Action impulse|Handlungsimpuls/)).not.toBeInTheDocument();
+    expect(screen.getByText(/Legacy bridge text\. Legacy action impulse text\./)).toBeInTheDocument();
+    expect(screen.queryByTestId('tagespuls-bridge')).not.toBeInTheDocument();
+  });
+
+  it('TPC-PHASE2-IMPULSE-001: Phase 2 keeps the consolidated impulse_text visible above the interpretation', () => {
+    // BUG-DAILY-005: deep interpretation EXTENDS, doesn't REPLACE.
+    // The general daily impulse text stays visible in Phase 2 so the
+    // user has both layers — the day's general framing AND the
+    // archetype-specific deep interpretation.
+    setHookState({
+      pulse: {
+        ...FULL_PULSE,
+        aphorism: {
+          ...FULL_PULSE.aphorism,
+          impulse_text: 'Heute trägt Mass mehr als der nächste Beweis. Schau hin, ohne sofort zu bewerten.',
+          slot_2: null,
+          slot_3: null,
+        },
+      },
+      selectedFigure: 'mond',
+      interpretation: { id: 'int-1', text: 'Dein Mond Libra zeigt heute eine ruhige Wachsamkeit.' },
+      loadingInterpretation: false,
+    });
+    render(<TagespulsCard />);
+
+    // BOTH texts visible
+    expect(screen.getByText(/Heute trägt Mass/i)).toBeInTheDocument();
+    expect(screen.getByText(/Dein Mond Libra zeigt heute/i)).toBeInTheDocument();
+
+    // Anti-regression: still no internal labels
+    expect(screen.queryByText(/Brücke ins Heute|Bridge to today/)).not.toBeInTheDocument();
+  });
+
+  it('TPC-PHASE2-IMPULSE-002: Phase 2 with hydrated existing_decision (mount-time) also shows impulse_text', () => {
+    // Edge case: user lands on dashboard with an existing decision
+    // hydrated from the server (BUG-DAILY-003/004 fix). Phase 2 must
+    // still show the impulse_text — no flash, no missing daily framing.
+    setHookState({
+      pulse: {
+        ...FULL_PULSE,
+        aphorism: {
+          ...FULL_PULSE.aphorism,
+          impulse_text: 'consolidated impulse for today',
+          slot_2: null,
+          slot_3: null,
+        },
+      },
+      selectedFigure: 'sonne',
+      interpretation: { id: 'hydrated', text: 'Stier-Sonne deep interpretation hydrated from server' },
+      loadingInterpretation: false,
+    });
+    render(<TagespulsCard />);
+
+    expect(screen.getByText(/consolidated impulse for today/i)).toBeInTheDocument();
+    expect(screen.getByText(/Stier-Sonne deep interpretation/i)).toBeInTheDocument();
   });
 });

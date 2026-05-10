@@ -241,6 +241,21 @@ export function TagespulsCard({ onCompleteProfile }: TagespulsCardProps) {
           )}
         </blockquote>
 
+        {/*
+          BUG-DAILY-005: deep interpretation EXTENDS, doesn't REPLACE.
+          The consolidated impulse_text stays visible so the user has
+          both layers — general daily framing + archetype-specific
+          deep interpretation.
+        */}
+        {aph.impulse_text && (
+          <p
+            className="text-sm text-ink/80 leading-relaxed"
+            data-testid="tagespuls-impulse-text-phase2"
+          >
+            {aph.impulse_text}
+          </p>
+        )}
+
         <div className="space-y-2">
           <h3 className="text-lg font-medium text-ink">
             {figureLabel}
@@ -310,26 +325,22 @@ export function TagespulsCard({ onCompleteProfile }: TagespulsCardProps) {
       </blockquote>
 
       {/*
-        slot_2 / slot_3 are rendered ONLY when non-null. When the LLM
-        router returned null we omit the section entirely — the
-        no-placeholders directive forbids substituting generic copy.
-      */}
-      {aph.slot_2 && (
-        <div className="space-y-1" data-testid="tagespuls-bridge">
-          <span className="text-xs uppercase tracking-[0.2em] text-ink/55">
-            {t('tagespuls.bridge')}
-          </span>
-          <p className="text-sm text-ink/80 leading-relaxed">{aph.slot_2}</p>
-        </div>
-      )}
+        BUG-DAILY-001: consolidated impulse_text. The internal "Bridge to
+        today" / "Action impulse" labels were prompt structure, not
+        user-facing content — gone. The LLM weaves bridge + impulse +
+        aphorism context into ONE natural paragraph.
 
-      {aph.slot_3 && (
-        <div className="space-y-1" data-testid="tagespuls-impulse">
-          <span className="text-xs uppercase tracking-[0.2em] text-ink/55">
-            {t('tagespuls.impulse')}
-          </span>
-          <p className="text-sm text-ink/80 leading-relaxed">{aph.slot_3}</p>
-        </div>
+        Back-compat: if a cached row only has slot_2 + slot_3 (pre-fix),
+        the server joins them at the API boundary so impulse_text is
+        always populated when ANY slot data exists.
+      */}
+      {aph.impulse_text && (
+        <p
+          className="text-sm text-ink/80 leading-relaxed"
+          data-testid="tagespuls-impulse-text"
+        >
+          {aph.impulse_text}
+        </p>
       )}
 
       <div className="pt-2 space-y-3" data-testid="tagespuls-council">

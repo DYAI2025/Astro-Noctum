@@ -508,8 +508,6 @@ const translationsEn: DeepStringRecord = {
   },
   tagespuls: {
     loading: "Loading today...",
-    bridge: "Bridge to today",
-    impulse: "Action impulse",
     council: {
       title: "Who guides you today?",
       sonne: "Sun",
@@ -1036,8 +1034,6 @@ const translationsDe: DeepStringRecord = {
   },
   tagespuls: {
     loading: "Heute wird geladen...",
-    bridge: "Brücke ins Heute",
-    impulse: "Handlungsimpuls",
     council: {
       title: "Wer begleitet dich heute?",
       sonne: "Sonne",

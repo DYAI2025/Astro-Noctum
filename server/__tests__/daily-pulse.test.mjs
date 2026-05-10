@@ -217,12 +217,14 @@ describe('GET /api/daily-pulse — no-placeholders contract', () => {
     vi.restoreAllMocks();
   });
 
-  it('DPL-001: happy path — profile + AI succeed → 200 with aphorism + slots + council', async () => {
+  it('DPL-001: happy path — profile + AI succeed → 200 with aphorism + impulse_text + council', async () => {
+    // BUG-DAILY-001: prompt now emits a single { "impulse_text": "..." }
+    // shape. Server mirrors it into slot_2 (DB column reuse) and exposes
+    // it as impulse_text on the wire.
     mockFetch();
-    const slots = JSON.stringify({
-      slot_2: 'Du weißt heute mehr über deine Lage, als du dir zugestehst.',
-      slot_3: 'Schau hin, ohne sofort zu bewerten.',
-    });
+    const consolidated =
+      'Du weißt heute mehr über deine Lage, als du dir zugestehst. Schau hin, ohne sofort zu bewerten.';
+    const slots = JSON.stringify({ impulse_text: consolidated });
     const app = await loadApp(makeGeminiTextMock(slots));
 
     const res = await request(app)
@@ -231,8 +233,11 @@ describe('GET /api/daily-pulse — no-placeholders contract', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.aphorism.slot_1).toBe(APHORISM_ROW.text_de);
-    expect(res.body.aphorism.slot_2).toBe('Du weißt heute mehr über deine Lage, als du dir zugestehst.');
-    expect(res.body.aphorism.slot_3).toBe('Schau hin, ohne sofort zu bewerten.');
+    // Wire shape: impulse_text is the consolidated paragraph.
+    expect(res.body.aphorism.impulse_text).toBe(consolidated);
+    // Back-compat: slot_2 mirrors impulse_text, slot_3 is null.
+    expect(res.body.aphorism.slot_2).toBe(consolidated);
+    expect(res.body.aphorism.slot_3).toBeNull();
     expect(res.body.aphorism.author).toBe('Anonymous');
     expect(res.body.mode).toBe('trace'); // harmony 0.8711 >= 0.5
     expect(Array.isArray(res.body.council)).toBe(true);

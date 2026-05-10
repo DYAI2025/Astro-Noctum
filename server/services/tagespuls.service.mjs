@@ -173,18 +173,22 @@ CONTEXT:
 - Aphorismus (slot_1): "${aphText}" — ${author}${work}
 - Output language: ${lang}
 
-SLOT 2 (Brücke ins Heute):
-- 10-20 Wörter, max 25
+IMPULSE_TEXT (single consolidated paragraph — no internal labels):
+- 25-50 Wörter, 2-3 Sätze, EIN zusammenhängender Absatz
 - Du-Form, Alltags-Deutsch (or "you" form for English)
-- Anchor: a concrete situation, an inner state, OR an observation cue — pick ONE
-- Verboten: Zodiac-Name, Grad, Haus, Aspekt, BaZi-Insider-Wort, Element-Name in slot_2,
-  direkte Archetyp-Anrede, Wertung des Tages (gut/schlecht), Wiederholung des Aphorismus
-
-SLOT 3 (Handlungsimpuls):
-- 10-15 Wörter, max 20
-- Verb-getrieben, offener Ausgang, kein Versprechen
-- Erlaubte Formen: Imperativ / Frage / Beobachtungs-Vorschlag / Bedingungs-Satz
-- Verboten: Affirmation ("Du schaffst das"), Ermächtigungsfloskel, Warnung ("Vorsicht vor")
+- Webe drei Elemente in einen FLIESSENDEN Text:
+  * Brücke ins Heute (concrete situation, inner state, or observation cue)
+  * Handlungsimpuls (verb-driven, open-ended, no promise)
+  * (Aphorismus-Kontext semantisch fortgeführt, nicht zitiert)
+- Verboten:
+  * Strukturmarker im Output ("Brücke:", "Impuls:", "Heute:", numbered lists)
+  * Zodiac-Name, Grad, Haus, Aspekt, BaZi-Insider-Wort
+  * Element-Name (Holz/Wasser etc.) im Bridge-Teil
+  * Direkte Archetyp-Anrede ("Du Mond", "Liebe Sonne")
+  * Wertung des Tages (gut/schlecht)
+  * Wiederholung des Aphorismus
+  * Affirmation ("Du schaffst das"), Pinterest-Esoterik
+  * Warnung ("Vorsicht vor")
 
 MODUS-SCHÄRFE:
 - pulse:    tragend, sensorisch, einladend
@@ -193,8 +197,7 @@ MODUS-SCHÄRFE:
 
 Output STRICT JSON only. No markdown, no commentary. Schema:
 {
-  "slot_2": "string",
-  "slot_3": "string"
+  "impulse_text": "string"
 }
 `.trim();
 }

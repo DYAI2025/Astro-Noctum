@@ -154,6 +154,18 @@ export function useDailyPulse(locale: 'de' | 'en' = 'de'): UseDailyPulseResult {
         }
         setPulse(parsed.data);
         setError(null);
+        // BUG-DAILY-003 + 004: hydrate Phase 2 state from server's
+        // existing_decision so browser-back / refresh / direct URL
+        // load all show the locked Phase 2 immediately — no Phase 1
+        // flash with active selection buttons.
+        if (parsed.data.existing_decision) {
+          const { archetype_key, text } = parsed.data.existing_decision;
+          setSelectedFigure(archetype_key);
+          setInterpretationByKey((prev) => ({
+            ...prev,
+            [archetype_key]: { id: 'hydrated', text },
+          }));
+        }
         setLoading(false);
       } catch (err) {
         if (cancelled) return;
