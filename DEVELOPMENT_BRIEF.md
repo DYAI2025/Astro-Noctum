@@ -16,6 +16,8 @@
 6. GreenOps: Polling-Frequenz und Space-Weather-Deduplizierung.
 7. **Tagespuls-Neuarchitektur (Aphorismus + Rat-der-sechs-Wahl) — gemerged in PR #331 am 2026-05-09.** Phase T ist nicht mehr Non-Goal. Architektur-Entscheidung Express statt Edge Functions: siehe [`2-design/decisions/DEC-tagespuls-on-express.md`](2-design/decisions/DEC-tagespuls-on-express.md).
 
+> **Hinweis:** Etwaige nachfolgende Verweise im Brief auf `TASK-D2`, „Fallback-Label“ oder eine Fallback-Indikator-Phase sind nur noch historischer Planungsstand und **seit PR #331 obsolet**, da der Fallback-Pfad entfernt und Tagespuls in der gemergten Produktionsarchitektur aufgegangen ist.
+
 ## Non-Goals
 
 - Keine Änderungen an astrologischen Formeln, Scoring, Ephemeris, BaZi, Wu-Xing.
