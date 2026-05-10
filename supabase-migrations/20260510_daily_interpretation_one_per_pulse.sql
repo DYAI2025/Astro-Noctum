@@ -27,6 +27,24 @@ BEGIN
   END IF;
 END $$;
 
+-- Existing installs may already have multiple interpretations for one pulse
+-- because the old rule only prevented duplicate (pulse, archetype, locale)
+-- triples. Keep the earliest recorded decision for each daily_pulse_id and
+-- remove later picks before adding the stricter one-row-per-pulse constraint.
+WITH ranked_interpretations AS (
+  SELECT
+    id,
+    row_number() OVER (
+      PARTITION BY daily_pulse_id
+      ORDER BY created_at ASC, id ASC
+    ) AS decision_rank
+  FROM daily_interpretations
+)
+DELETE FROM daily_interpretations AS daily_interpretation
+USING ranked_interpretations
+WHERE daily_interpretation.id = ranked_interpretations.id
+  AND ranked_interpretations.decision_rank > 1;
+
 -- Add the new constraint: at most one interpretation per daily_pulse_id.
 ALTER TABLE daily_interpretations
   ADD CONSTRAINT daily_interpretations_one_per_pulse UNIQUE (daily_pulse_id);
