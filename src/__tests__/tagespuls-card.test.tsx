@@ -417,4 +417,57 @@ describe('TagespulsCard', () => {
     expect(screen.getByText(/Legacy bridge text\. Legacy action impulse text\./)).toBeInTheDocument();
     expect(screen.queryByTestId('tagespuls-bridge')).not.toBeInTheDocument();
   });
+
+  it('TPC-PHASE2-IMPULSE-001: Phase 2 keeps the consolidated impulse_text visible above the interpretation', () => {
+    // BUG-DAILY-005: deep interpretation EXTENDS, doesn't REPLACE.
+    // The general daily impulse text stays visible in Phase 2 so the
+    // user has both layers — the day's general framing AND the
+    // archetype-specific deep interpretation.
+    setHookState({
+      pulse: {
+        ...FULL_PULSE,
+        aphorism: {
+          ...FULL_PULSE.aphorism,
+          impulse_text: 'Heute trägt Mass mehr als der nächste Beweis. Schau hin, ohne sofort zu bewerten.',
+          slot_2: null,
+          slot_3: null,
+        },
+      },
+      selectedFigure: 'mond',
+      interpretation: { id: 'int-1', text: 'Dein Mond Libra zeigt heute eine ruhige Wachsamkeit.' },
+      loadingInterpretation: false,
+    });
+    render(<TagespulsCard />);
+
+    // BOTH texts visible
+    expect(screen.getByText(/Heute trägt Mass/i)).toBeInTheDocument();
+    expect(screen.getByText(/Dein Mond Libra zeigt heute/i)).toBeInTheDocument();
+
+    // Anti-regression: still no internal labels
+    expect(screen.queryByText(/Brücke ins Heute|Bridge to today/)).not.toBeInTheDocument();
+  });
+
+  it('TPC-PHASE2-IMPULSE-002: Phase 2 with hydrated existing_decision (mount-time) also shows impulse_text', () => {
+    // Edge case: user lands on dashboard with an existing decision
+    // hydrated from the server (BUG-DAILY-003/004 fix). Phase 2 must
+    // still show the impulse_text — no flash, no missing daily framing.
+    setHookState({
+      pulse: {
+        ...FULL_PULSE,
+        aphorism: {
+          ...FULL_PULSE.aphorism,
+          impulse_text: 'consolidated impulse for today',
+          slot_2: null,
+          slot_3: null,
+        },
+      },
+      selectedFigure: 'sonne',
+      interpretation: { id: 'hydrated', text: 'Stier-Sonne deep interpretation hydrated from server' },
+      loadingInterpretation: false,
+    });
+    render(<TagespulsCard />);
+
+    expect(screen.getByText(/consolidated impulse for today/i)).toBeInTheDocument();
+    expect(screen.getByText(/Stier-Sonne deep interpretation/i)).toBeInTheDocument();
+  });
 });

@@ -241,6 +241,21 @@ export function TagespulsCard({ onCompleteProfile }: TagespulsCardProps) {
           )}
         </blockquote>
 
+        {/*
+          BUG-DAILY-005: deep interpretation EXTENDS, doesn't REPLACE.
+          The consolidated impulse_text stays visible so the user has
+          both layers — general daily framing + archetype-specific
+          deep interpretation.
+        */}
+        {aph.impulse_text && (
+          <p
+            className="text-sm text-ink/80 leading-relaxed"
+            data-testid="tagespuls-impulse-text-phase2"
+          >
+            {aph.impulse_text}
+          </p>
+        )}
+
         <div className="space-y-2">
           <h3 className="text-lg font-medium text-ink">
             {figureLabel}
