@@ -38,6 +38,10 @@ const VALID_PULSE = {
     author: 'Marcus Aurelius',
     attribution_status: 'verified' as const,
     slot_1: 'Die Tage fließen, und nichts hält still.',
+    // BUG-DAILY-001: consolidated text on the wire. slot_2/slot_3
+    // remain populated for back-compat with cached rows.
+    impulse_text:
+      'Du sitzt am Schreibtisch, der Kaffee dampft, und ein Gedanke schiebt sich vor. Schreib einen Satz auf, der den Tag öffnet.',
     slot_2: 'Du sitzt am Schreibtisch, der Kaffee dampft, und ein Gedanke schiebt sich vor.',
     slot_3: 'Schreib einen Satz auf, der den Tag öffnet.',
   },
@@ -229,11 +233,18 @@ describe('useDailyPulse', () => {
     expect(result.current.interpretation).toBeNull();
   });
 
-  it('DPH-008: response with null slot_2/slot_3 still parses cleanly', async () => {
+  it('DPH-008: response with null impulse_text/slot_2/slot_3 still parses cleanly', async () => {
+    // BUG-DAILY-001: AI exhaustion → impulse_text is null. The hook
+    // must parse the response without error and surface the null state.
     authedFetch.mockResolvedValueOnce(
       makeRes(200, {
         ...VALID_PULSE,
-        aphorism: { ...VALID_PULSE.aphorism, slot_2: null, slot_3: null },
+        aphorism: {
+          ...VALID_PULSE.aphorism,
+          impulse_text: null,
+          slot_2: null,
+          slot_3: null,
+        },
       }),
     );
     const useDailyPulse = await loadHook();
@@ -243,6 +254,7 @@ describe('useDailyPulse', () => {
 
     expect(result.current.error).toBeNull();
     expect(result.current.pulse?.aphorism.slot_1).toBeTruthy();
+    expect(result.current.pulse?.aphorism.impulse_text).toBeNull();
     expect(result.current.pulse?.aphorism.slot_2).toBeNull();
     expect(result.current.pulse?.aphorism.slot_3).toBeNull();
   });

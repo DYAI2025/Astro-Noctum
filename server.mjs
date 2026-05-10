@@ -3010,11 +3010,20 @@ async function generateTagespulsSlots({ aphorism, mode, intensity, locale, harmo
     if (!jsonStr) return { slot_2: null, slot_3: null };
 
     const parsed = JSON.parse(jsonStr);
-    const slot2 = typeof parsed?.slot_2 === 'string' ? parsed.slot_2.trim() : null;
-    const slot3 = typeof parsed?.slot_3 === 'string' ? parsed.slot_3.trim() : null;
+    // BUG-DAILY-001: prompt now produces single impulse_text. Back-compat:
+    // if the model still emits the old slot_2/slot_3 shape (warm cache,
+    // older prompt), join them with a space.
+    const impulseText =
+      typeof parsed?.impulse_text === 'string'
+        ? parsed.impulse_text.trim()
+        : (typeof parsed?.slot_2 === 'string' && typeof parsed?.slot_3 === 'string'
+            ? `${parsed.slot_2.trim()} ${parsed.slot_3.trim()}`
+            : null);
     return {
-      slot_2: slot2 && slot2.length > 0 ? slot2 : null,
-      slot_3: slot3 && slot3.length > 0 ? slot3 : null,
+      // Mirror to slot_2 column for DB column reuse — the schema-level
+      // migration to a dedicated impulse_text column is deferred.
+      slot_2: impulseText && impulseText.length > 0 ? impulseText : null,
+      slot_3: null,
     };
   } catch (err) {
     console.warn('[daily-pulse] slot_2/3 generation failed:', err?.message || err?.code || err);
@@ -3092,8 +3101,11 @@ app.get('/api/daily-pulse', requireUserAuth, async (req, res) => {
       let slot3 = existing.slot_3;
       let updated = false;
 
-      // Re-attempt slot generation only when at least one is null.
-      if ((!slot2 || !slot3) && aphRow) {
+      // BUG-DAILY-001: re-attempt only when the consolidated text is
+      // truly missing (slot_2 null). New rows: slot_3 is permanently
+      // null by design — its presence/absence no longer signals an
+      // incomplete row.
+      if (!slot2 && aphRow) {
         const generated = await generateTagespulsSlots({
           aphorism: aphRow,
           mode: existing.mode,
@@ -3101,9 +3113,9 @@ app.get('/api/daily-pulse', requireUserAuth, async (req, res) => {
           locale,
           harmony,
         });
-        if (generated.slot_2 && generated.slot_3) {
+        if (generated.slot_2) {
           slot2 = generated.slot_2;
-          slot3 = generated.slot_3;
+          slot3 = generated.slot_3; // null on new prompt path
           updated = true;
         }
       }
@@ -3140,6 +3152,12 @@ app.get('/api/daily-pulse', requireUserAuth, async (req, res) => {
               author: aphRow.author,
               attribution_status: aphRow.attribution_status,
               slot_1: existing.slot_1,
+              // BUG-DAILY-001: consolidated text. New rows: slot_2 IS the
+              // consolidated text (slot_3 NULL). Legacy rows: join both.
+              impulse_text:
+                slot2 && slot3
+                  ? `${slot2} ${slot3}`
+                  : slot2 ?? null,
               slot_2: slot2,
               slot_3: slot3,
             }
@@ -3148,6 +3166,10 @@ app.get('/api/daily-pulse', requireUserAuth, async (req, res) => {
               author: null,
               attribution_status: null,
               slot_1: existing.slot_1,
+              impulse_text:
+                slot2 && slot3
+                  ? `${slot2} ${slot3}`
+                  : slot2 ?? null,
               slot_2: slot2,
               slot_3: slot3,
             },
@@ -3155,9 +3177,11 @@ app.get('/api/daily-pulse', requireUserAuth, async (req, res) => {
         weather_stale: !!existing.weather_stale,
       };
 
-      // Only cache to L1 when both slots are populated — never lock the
-      // user into a partial state.
-      if (slot2 && slot3) {
+      // BUG-DAILY-001: cache when consolidated impulse text is present.
+      // New rows: slot_2 IS the consolidated text, slot_3 NULL.
+      // Legacy rows: both slot_2 + slot_3 populated. Either way, slot_2
+      // truthy ⇒ the row has user-facing content and is safe to cache.
+      if (slot2) {
         dailyPulseCache.set(cacheKey, { ts: Date.now(), payload });
       }
 
@@ -3209,8 +3233,10 @@ app.get('/api/daily-pulse', requireUserAuth, async (req, res) => {
       return res.status(500).json({ error: { code: 'PERSIST_FAILED' } });
     }
 
-    // Track usage only when the row is complete — cooldown is honest.
-    if (slot2 && slot3) {
+    // BUG-DAILY-001: track usage when consolidated text is present.
+    // slot_3 is permanently null on new rows; slot_2 truthy ⇒ row is
+    // "complete" by the new definition. Cooldown remains honest.
+    if (slot2) {
       await supabaseServer
         .from('aphorism_usage_events')
         .upsert({
@@ -3234,6 +3260,10 @@ app.get('/api/daily-pulse', requireUserAuth, async (req, res) => {
         author: aphorism.author,
         attribution_status: aphorism.attribution_status,
         slot_1: slot1,
+        // BUG-DAILY-001: fresh rows write impulse_text into slot_2
+        // (slot_3 null), so impulse_text === slot_2 here. Kept distinct
+        // for the wire shape so a future schema migration is non-breaking.
+        impulse_text: slot2 ?? null,
         slot_2: slot2,
         slot_3: slot3,
       },
@@ -3241,7 +3271,8 @@ app.get('/api/daily-pulse', requireUserAuth, async (req, res) => {
       weather_stale: false,
     };
 
-    if (slot2 && slot3) {
+    // BUG-DAILY-001: cache once consolidated text is present.
+    if (slot2) {
       dailyPulseCache.set(cacheKey, { ts: Date.now(), payload });
     }
 

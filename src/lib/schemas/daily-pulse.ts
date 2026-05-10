@@ -40,6 +40,12 @@ export const PulseWireAphorismSchema = z.object({
   author: z.string().nullable(),
   attribution_status: AttributionStatusSchema.nullable(),
   slot_1: z.string(),
+  // BUG-DAILY-001: consolidated impulse text. Server combines legacy
+  // slot_2 + slot_3 rows into this field at read time. New rows write
+  // only impulse_text (mirrored to slot_2 in DB for column reuse).
+  // Component prefers impulse_text; slot_2 / slot_3 stay in the schema
+  // for back-compat with cached rows during the transition.
+  impulse_text: z.string().nullable(),
   slot_2: z.string().nullable(),
   slot_3: z.string().nullable(),
 });

@@ -142,16 +142,18 @@ const APHORISM_ROW = {
   cooldown_days: 30,
 };
 
-const geminiSlotResponse = (slot_2 = 'Heute trägt dich Stille.', slot_3 = 'Bewege dich langsam.') =>
+const geminiSlotResponse = (
+  impulseText = 'Heute trägt dich Stille. Bewege dich langsam.',
+) =>
   ok({
     candidates: [
       {
         content: {
-          parts: [{ text: JSON.stringify({ slot_2, slot_3 }) }],
+          parts: [{ text: JSON.stringify({ impulse_text: impulseText }) }],
         },
       },
     ],
-    text: JSON.stringify({ slot_2, slot_3 }),
+    text: JSON.stringify({ impulse_text: impulseText }),
   });
 
 const geminiInterpretationResponse = (text = 'Ein klarer Moment für deine Sonne. ' + 'Lorem ipsum dolor sit amet, consectetur.') =>
@@ -295,8 +297,10 @@ describe('GET /api/daily-pulse', () => {
               harmony_index: HARMONY_TRACE,
               aphorism_id: APHORISM_ROW.id,
               slot_1: APHORISM_ROW.text_de,
-              slot_2: 'Heute trägt dich Stille.',
-              slot_3: 'Bewege dich langsam.',
+              // BUG-DAILY-001: server now writes consolidated text into
+              // slot_2 (slot_3 NULL). Mirrors the parser output.
+              slot_2: 'Heute trägt dich Stille. Bewege dich langsam.',
+              slot_3: null,
               weather_stale: false,
             });
           }
@@ -326,10 +330,13 @@ describe('GET /api/daily-pulse', () => {
     expect(supabaseCount.value).toBe(supabaseCallsAfterFirst);
   });
 
-  it('happy path: returns aphorism + slots + council', async () => {
+  it('happy path: returns aphorism + impulse_text + council', async () => {
+    // BUG-DAILY-001: prompt → { impulse_text }. Server mirrors it into
+    // slot_2 (DB column reuse), exposes it on the wire as impulse_text.
+    const consolidated = 'Heute trägt dich Stille. Bewege dich langsam.';
     const { app } = await loadTestApp();
     installFetch({
-      gemini: () => geminiSlotResponse('Heute trägt dich Stille.', 'Bewege dich langsam.'),
+      gemini: () => geminiSlotResponse(consolidated),
       table: {
         daily_pulses: (_url, init) => {
           // POST = .upsert().select().single() — returns single object directly.
@@ -344,8 +351,8 @@ describe('GET /api/daily-pulse', () => {
               harmony_index: HARMONY_TRACE,
               aphorism_id: APHORISM_ROW.id,
               slot_1: APHORISM_ROW.text_de,
-              slot_2: 'Heute trägt dich Stille.',
-              slot_3: 'Bewege dich langsam.',
+              slot_2: consolidated,
+              slot_3: null,
               weather_stale: false,
             });
           }
@@ -367,8 +374,10 @@ describe('GET /api/daily-pulse', () => {
     expect(res.body.mode).toBe('trace');
     expect(typeof res.body.intensity).toBe('number');
     expect(res.body.aphorism.slot_1).toBe(APHORISM_ROW.text_de);
-    expect(res.body.aphorism.slot_2).toBe('Heute trägt dich Stille.');
-    expect(res.body.aphorism.slot_3).toBe('Bewege dich langsam.');
+    expect(res.body.aphorism.impulse_text).toBe(consolidated);
+    // Back-compat: slot_2 mirrors impulse_text, slot_3 is null.
+    expect(res.body.aphorism.slot_2).toBe(consolidated);
+    expect(res.body.aphorism.slot_3).toBeNull();
     expect(Array.isArray(res.body.council)).toBe(true);
     expect(res.body.council).toHaveLength(6);
     const keys = res.body.council.map((c: { key: string }) => c.key);
