@@ -310,7 +310,6 @@ app.use(helmet({
       frameSrc: ["'self'", "https://elevenlabs.io", "https://*.elevenlabs.io", "https://checkout.stripe.com", "https://pagead2.googlesyndication.com", "https://googleads.g.doubleclick.net", "https://fundingchoicesmessages.google.com"],
       mediaSrc: ["'self'", "blob:", "https://elevenlabs.io", "https://*.elevenlabs.io"],
       workerSrc: ["'self'", "blob:", "https://elevenlabs.io", "https://*.elevenlabs.io", "https://unpkg.com"],
-      workletSrc: ["'self'", "blob:", "data:", "https://unpkg.com", "https://cdn.jsdelivr.net", "https://elevenlabs.io", "https://*.elevenlabs.io"],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
     },

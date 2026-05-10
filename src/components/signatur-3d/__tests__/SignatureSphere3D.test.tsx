@@ -152,18 +152,18 @@ describe('SignatureSphere3D', () => {
   // ── H4 additions ─────────────────────────────────────────────────────────
 
   it('renders 12 glyphs (one per pole) even when all weights are sub-threshold', () => {
-    // All weights below TRAIL_THRESHOLD (0.35): glyphs still render (12), trails = 0.
+    // All weights below TRAIL_THRESHOLD (0.15): glyphs still render (12), trails = 0.
     const LOW: Readonly<Partial<Record<PlanetName, number>>> = {
-      Sun: 0.2,
-      Moon: 0.2,
-      Mercury: 0.2,
-      Venus: 0.2,
-      Mars: 0.2,
-      Jupiter: 0.2,
-      Saturn: 0.2,
-      Uranus: 0.2,
-      Neptune: 0.2,
-      Pluto: 0.2,
+      Sun: 0.1,
+      Moon: 0.1,
+      Mercury: 0.1,
+      Venus: 0.1,
+      Mars: 0.1,
+      Jupiter: 0.1,
+      Saturn: 0.1,
+      Uranus: 0.1,
+      Neptune: 0.1,
+      Pluto: 0.1,
     };
     const { queryAllByTestId } = render(<SignatureSphere3D weights={LOW} />);
     const glyphs = queryAllByTestId('drei-text-mock');
