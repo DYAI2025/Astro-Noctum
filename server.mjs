@@ -3459,16 +3459,23 @@ app.post('/api/daily-interpretation', requireUserAuth, dailyInterpretationLimite
       // Audit follow-up I-2: race-condition victim. Between our
       // pre-check and this insert, a concurrent request snuck in and
       // created the row. The unique constraint
-      // daily_interpretations_one_per_pulse rejects us with Postgres
+      // daily_interpretations_one_per_user_date rejects us with Postgres
       // 23505. Re-fetch the winning row and return 409 with the same
       // envelope shape as the pre-check path — race-losers get the
       // same UX as pre-check-hits, not a generic 500.
       if (insErr?.code === '23505') {
-        const { data: winner } = await supabaseServer
+        // The DB backstop is date-scoped (user_id, pulse_date), not just
+        // daily_pulse_id. A locale-switch race can lose against a row on
+        // a sibling pulse for the same Kalendertag, so recover via the
+        // same date-wide lookup as the pre-check instead of filtering to
+        // the requested pulse_id.
+        const { data: winnerList } = await supabaseServer
           .from('daily_interpretations')
-          .select('id, text, selected_archetype_key')
-          .eq('daily_pulse_id', dailyPulseId)
-          .maybeSingle();
+          .select('id, text, selected_archetype_key, locale, daily_pulse_id')
+          .in('daily_pulse_id', pulseIdsForDate)
+          .order('created_at', { ascending: true })
+          .limit(1);
+        const winner = winnerList?.[0] ?? null;
         if (winner) {
           return res.status(409).json({
             error: {
