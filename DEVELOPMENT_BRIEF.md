@@ -1,6 +1,6 @@
 # Development Brief: Dashboard Flow, Daily Pulse, 3D Signatur, Stripe CTA
 
-**Stand:** 2026-05-06  
+**Stand:** 2026-05-09  
 **Repo:** Astro-Noctum  
 **Executor:** Claude Code (führt diesen Brief aus)
 
@@ -14,6 +14,9 @@
 4. Dashboard-Informationshierarchie für Orientierung und Retention.
 5. Daily Chart API-Kontrakt bereinigen.
 6. GreenOps: Polling-Frequenz und Space-Weather-Deduplizierung.
+7. **Tagespuls-Neuarchitektur (Aphorismus + Rat-der-sechs-Wahl) — gemerged in PR #331 am 2026-05-09.** Phase T ist nicht mehr Non-Goal. Architektur-Entscheidung Express statt Edge Functions: siehe [`2-design/decisions/DEC-tagespuls-on-express.md`](2-design/decisions/DEC-tagespuls-on-express.md).
+
+> **Hinweis:** Etwaige nachfolgende Verweise im Brief auf `TASK-D2`, „Fallback-Label“ oder eine Fallback-Indikator-Phase sind nur noch historischer Planungsstand und **seit PR #331 obsolet**, da der Fallback-Pfad entfernt und Tagespuls in der gemergten Produktionsarchitektur aufgegangen ist.
 
 ## Non-Goals
 
@@ -21,7 +24,9 @@
 - Kein Rebuild der Signatur V3 als neues Feature.
 - Kein Austausch von Stripe oder der Payment-Architektur.
 - Keine AI-Quota-Migration (außer nachgewiesen als Checkout/Render-Blocker).
-- Kein Tagespuls-Neuarchitektur-Build (Aphorismus + Wahl-Moment) — separater Sprint.
+- ~~Kein Tagespuls-Neuarchitektur-Build~~ → **Erledigt 2026-05-09**, siehe Ziel 7.
+- Kein Aufstellungsbrett (späteres Feature, nicht in Scope).
+- Kein Refactor zu separaten `WahlMoment` / `TagesdeutungCard` Komponenten — bewusste Architektur-Entscheidung: kombinierte zwei-Phasen-`TagespulsCard.tsx` ist die Produktions-Form. Re-evaluation nur wenn UX-Daten das fordern.
 
 ---
 
