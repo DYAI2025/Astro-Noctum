@@ -321,17 +321,42 @@ ALTER TABLE daily_pulses ENABLE ROW LEVEL SECURITY;
 CREATE TABLE IF NOT EXISTS daily_interpretations (
   id                       UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   daily_pulse_id           UUID        NOT NULL REFERENCES daily_pulses(id) ON DELETE CASCADE,
+  user_id                  UUID        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  pulse_date               DATE        NOT NULL,
   selected_archetype_key   TEXT        NOT NULL CHECK (selected_archetype_key IN ('sonne','mond','aszendent','day_master','jahrestier','wuxing_dom')),
   locale                   TEXT        NOT NULL DEFAULT 'de',
   text                     TEXT        NOT NULL,
   created_at               TIMESTAMPTZ NOT NULL DEFAULT now(),
   -- Per 2026-05-09 audit C-3 ("Es geht nur einmal am Tag"): at most one
-  -- interpretation row per daily_pulse_id. Server-side pre-check returns
-  -- 409 ALREADY_DECIDED before insertion; this constraint is the DB-layer
-  -- backstop for concurrent inserts. See migration
-  -- 20260510_daily_interpretation_one_per_pulse.sql.
-  CONSTRAINT daily_interpretations_one_per_pulse UNIQUE (daily_pulse_id)
+  -- interpretation row per user/Kalendertag. A trigger copies user_id and
+  -- pulse_date from daily_pulses at write time, so concurrent locale-switch
+  -- inserts collide atomically on this constraint instead of slipping past
+  -- an application pre-check.
+  CONSTRAINT daily_interpretations_one_per_pulse UNIQUE (daily_pulse_id),
+  CONSTRAINT daily_interpretations_one_per_user_date UNIQUE (user_id, pulse_date)
 );
+
+CREATE OR REPLACE FUNCTION set_daily_interpretation_scope()
+RETURNS TRIGGER AS $$
+BEGIN
+  SELECT dp.user_id, dp.date
+    INTO NEW.user_id, NEW.pulse_date
+  FROM daily_pulses dp
+  WHERE dp.id = NEW.daily_pulse_id;
+
+  IF NEW.user_id IS NULL OR NEW.pulse_date IS NULL THEN
+    RAISE EXCEPTION 'daily_pulse_id % does not exist', NEW.daily_pulse_id
+      USING ERRCODE = '23503';
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_daily_interpretations_scope
+  BEFORE INSERT OR UPDATE OF daily_pulse_id ON daily_interpretations
+  FOR EACH ROW
+  EXECUTE FUNCTION set_daily_interpretation_scope();
 
 ALTER TABLE daily_interpretations ENABLE ROW LEVEL SECURITY;
 

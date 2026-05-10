@@ -520,7 +520,7 @@ describe('POST /api/daily-interpretation — no-placeholders contract', () => {
   it('DIN-RACE-001: 23505 from concurrent insert → 409 ALREADY_DECIDED with re-fetched winner', async () => {
     // Audit follow-up I-2: between our pre-check (which sees null) and
     // our INSERT, a concurrent request can sneak in and create the row.
-    // The unique constraint daily_interpretations_one_per_pulse rejects
+    // The unique constraint daily_interpretations_one_per_user_date rejects
     // us with Postgres 23505. We must NOT return generic 500 — instead
     // re-fetch the winning row and return 409 with the same envelope
     // shape as the pre-check path.
@@ -575,7 +575,7 @@ describe('POST /api/daily-interpretation — no-placeholders contract', () => {
           return {
             ok: false, status: 409,
             headers: new Headers({ 'content-type': 'application/json' }),
-            json: async () => ({ code: '23505', message: 'duplicate key value violates unique constraint "daily_interpretations_one_per_pulse"' }),
+            json: async () => ({ code: '23505', message: 'duplicate key value violates unique constraint "daily_interpretations_one_per_user_date"' }),
             text: async () => '{"code":"23505"}',
           };
         }
@@ -618,6 +618,102 @@ describe('POST /api/daily-interpretation — no-placeholders contract', () => {
     // No locked_locale field (M-2 — dropped as unused).
     expect(res.body?.error?.locked_locale).toBeUndefined();
     // The pre-check GET fired once + the race-recovery re-fetch GET fired once = 2 total.
+    expect(interpretationGetCount).toBe(2);
+  });
+
+  it('DIN-RACE-002: 23505 from cross-locale concurrent insert → 409 with date-scoped winner', async () => {
+    // Regression for PR #336 review: the pre-check is not sufficient on
+    // its own. Two locale-switch requests can both see no interpretation
+    // for the date and then race to insert different daily_pulse_id rows.
+    // The DB must reject the loser with the date-scoped unique constraint,
+    // and the server must re-fetch the winner across all pulse ids for the
+    // date rather than only the requested EN pulse.
+    const dePulse = { ...PULSE_ROW, id: 'pulse-de', locale: 'de' };
+    const enPulse = { ...PULSE_ROW, id: 'pulse-en', locale: 'en' };
+    const winnerRow = {
+      id: 'int-winner-de',
+      text: 'Concurrent DE winner picked mond',
+      selected_archetype_key: 'mond',
+      locale: 'de',
+      daily_pulse_id: 'pulse-de',
+    };
+
+    let dailyPulsesGetCount = 0;
+    let interpretationGetCount = 0;
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      const url = typeof input === 'string' ? input
+        : input instanceof URL ? input.toString()
+          : input?.url ?? '';
+      const method = (init?.method || 'GET').toUpperCase();
+
+      if (url.includes('auth/v1/user')) {
+        return {
+          ok: true, status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ id: 'user-1', email: 't@test.com', aud: 'authenticated' }),
+          text: async () => JSON.stringify({ id: 'user-1' }),
+        };
+      }
+      if (url.includes('/daily_pulses')) {
+        dailyPulsesGetCount += 1;
+        const data = dailyPulsesGetCount === 1 ? [enPulse] : [dePulse, enPulse];
+        return {
+          ok: true, status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => data,
+          text: async () => JSON.stringify(data),
+        };
+      }
+      if (url.includes('/astro_profiles')) {
+        return {
+          ok: true, status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => PROFILE_FIXTURE,
+          text: async () => JSON.stringify(PROFILE_FIXTURE),
+        };
+      }
+      if (url.includes('/daily_interpretations')) {
+        if (method === 'POST') {
+          return {
+            ok: false, status: 409,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: async () => ({ code: '23505', message: 'duplicate key value violates unique constraint "daily_interpretations_one_per_user_date"' }),
+            text: async () => '{"code":"23505"}',
+          };
+        }
+        interpretationGetCount += 1;
+        const list = interpretationGetCount === 1 ? [] : [winnerRow];
+        return {
+          ok: true, status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => list,
+          text: async () => JSON.stringify(list),
+        };
+      }
+      return {
+        ok: true, status: 200,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({}),
+        text: async () => '{}',
+      };
+    });
+
+    const app = await loadApp(makeGeminiTextMock('Generated EN text that loses the cross-locale race.'));
+
+    const res = await request(app)
+      .post('/api/daily-interpretation')
+      .set(AUTH_HEADER)
+      .set('Content-Type', 'application/json')
+      .send({
+        daily_pulse_id: 'pulse-en',
+        selected_archetype_key: 'sonne',
+        locale: 'en',
+      });
+
+    expect(res.status).toBe(409);
+    expect(res.body?.error?.code).toBe('ALREADY_DECIDED');
+    expect(res.body?.error?.locked_archetype_key).toBe('mond');
+    expect(res.body?.error?.text).toBe('Concurrent DE winner picked mond');
     expect(interpretationGetCount).toBe(2);
   });
 
