@@ -172,7 +172,7 @@
 | TGP-CLEANUP-2 | Annotate reference `apps/tagespuls_package/packages/db/schema.sql` mit 11-line design-only banner (code-review INFO-1) | api-server | — | Done | commit `6af4f0c` — Banner zeigt 3 intentional divergences (user_astro_profiles dropped, slot_2/3 nullable, auth.users FK). Verhindert dass schema.sql als Produktions-Truth gelesen wird |
 | TGP-WIP-1 | Commit `apps/tagespuls_package/packages/` (openapi.yaml + Python build/select/validate scripts + voice/src/tagespuls.ts reference + sample data) | api-server | — | Done | commit `71cafcc` |
 | TGP-WIP-2 | Commit `apps/tagespuls_package/{README.md,docs/,.claude/skills/,knowledge/}` (21 source markdowns + aphorism-curator + day-pulse-trace skills + design docs) | shared | — | Done | commit `e78f825` — Source markdowns retain authored status (`draft`/`review`); Status-Flip auf `approved` passiert NUR im JSON-Build-Schritt |
-| TGP-DEC | Decision artifact: `DEC-tagespuls-on-express` — formalize Express-statt-EdgeFunctions architecture choice | api-server | — | Done | commit dieses Sprints — `2-design/decisions/DEC-tagespuls-on-express.md`. Re-activation triggers dokumentiert |
+| TGP-DEC | Decision artifact: `DEC-tagespuls-on-express` — formalize Express-statt-EdgeFunctions architecture choice | api-server | — | Done | squashed in this sprint — no standalone commit hash; artifact: `2-design/decisions/DEC-tagespuls-on-express.md`. Re-activation triggers dokumentiert |
 
 ### Pending follow-ups (deferred, nicht blockierend)
 
