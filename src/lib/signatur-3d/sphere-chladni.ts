@@ -282,9 +282,11 @@ export function getPolePairs(radius: number): readonly [PolePoint, PolePoint][] 
  * poles, with a radial cymatic ripple superimposed. Used by H4 to build
  * tube-geometry trails on the sphere.
  *
- * The path linearly interpolates between `from` and `to`, re-projects each
- * sample onto the sphere surface (radius), then adds a radial ripple
- * `ripple · sin(t · π · frequency + time · 1e-3 · frequency/2)`.
+ * The path uses spherical interpolation between `from` and `to`, re-projects
+ * each sample onto the sphere surface (radius), then adds a radial ripple
+ * `ripple · sin(t · π · frequency + time · 1e-3 · frequency/2)`. Exact
+ * antipodal pairs get a deterministic perpendicular tangent so the path
+ * remains a visible great-circle branch instead of collapsing through origin.
  *
  * @param from      start pole
  * @param to        end pole
@@ -295,6 +297,73 @@ export function getPolePairs(radius: number): readonly [PolePoint, PolePoint][] 
  * @param time      monotonic ms (for animated ripple phase)
  * @returns         `steps + 1` PolePoints
  */
+function normalizePoint(p: PolePoint): PolePoint {
+  const len = Math.sqrt(p.x * p.x + p.y * p.y + p.z * p.z) || 1;
+  return { x: p.x / len, y: p.y / len, z: p.z / len };
+}
+
+function dotPoint(a: PolePoint, b: PolePoint): number {
+  return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+function crossPoint(a: PolePoint, b: PolePoint): PolePoint {
+  return {
+    x: a.y * b.z - a.z * b.y,
+    y: a.z * b.x - a.x * b.z,
+    z: a.x * b.y - a.y * b.x,
+  };
+}
+
+/**
+ * Deterministic tangent for antipodal pole pairs. A naive lerp between
+ * exact opposites collapses through the origin; this tangent selects a stable
+ * great-circle plane so every pole pair becomes a visible surface arc.
+ */
+function perpendicularUnitVector(dir: PolePoint): PolePoint {
+  const candidates: readonly PolePoint[] = [
+    { x: 1, y: 0, z: 0 },
+    { x: 0, y: 1, z: 0 },
+    { x: 0, y: 0, z: 1 },
+  ];
+  const leastAligned = candidates.reduce((best, candidate) => (
+    Math.abs(dotPoint(dir, candidate)) < Math.abs(dotPoint(dir, best)) ? candidate : best
+  ));
+
+  return normalizePoint(crossPoint(leastAligned, dir));
+}
+
+function interpolateGreatCircle(fromDir: PolePoint, toDir: PolePoint, t: number): PolePoint {
+  const dot = Math.max(-1, Math.min(1, dotPoint(fromDir, toDir)));
+
+  if (dot < -0.999999) {
+    const tangent = perpendicularUnitVector(fromDir);
+    const angle = Math.PI * t;
+    return {
+      x: Math.cos(angle) * fromDir.x + Math.sin(angle) * tangent.x,
+      y: Math.cos(angle) * fromDir.y + Math.sin(angle) * tangent.y,
+      z: Math.cos(angle) * fromDir.z + Math.sin(angle) * tangent.z,
+    };
+  }
+
+  if (dot > 0.999999) {
+    return normalizePoint({
+      x: fromDir.x + (toDir.x - fromDir.x) * t,
+      y: fromDir.y + (toDir.y - fromDir.y) * t,
+      z: fromDir.z + (toDir.z - fromDir.z) * t,
+    });
+  }
+
+  const angle = Math.acos(dot);
+  const sinAngle = Math.sin(angle);
+  const a = Math.sin((1 - t) * angle) / sinAngle;
+  const b = Math.sin(t * angle) / sinAngle;
+  return {
+    x: a * fromDir.x + b * toDir.x,
+    y: a * fromDir.y + b * toDir.y,
+    z: a * fromDir.z + b * toDir.z,
+  };
+}
+
 export function buildTrailPath(
   from: PolePoint,
   to: PolePoint,
@@ -306,41 +375,20 @@ export function buildTrailPath(
 ): readonly PolePoint[] {
   const n = steps ?? 48;
   const out: PolePoint[] = [];
+  const fromDir = normalizePoint(from);
+  const toDir = normalizePoint(to);
 
   for (let s = 0; s <= n; s++) {
     const t = s / n;
-    // lerp
-    const lx = from.x + (to.x - from.x) * t;
-    const ly = from.y + (to.y - from.y) * t;
-    const lz = from.z + (to.z - from.z) * t;
-
-    // normalize & scale to sphere surface (with tiny epsilon to stay stable
-    // when endpoints happen to be antipodal and t is exactly 0.5 — the lerp
-    // then hits the origin. We fall back to the `from` direction in that
-    // degenerate case.)
-    const len = Math.sqrt(lx * lx + ly * ly + lz * lz);
-    let nx: number;
-    let ny: number;
-    let nz: number;
-    if (len < 1e-9) {
-      const fromLen = Math.sqrt(from.x * from.x + from.y * from.y + from.z * from.z) || 1;
-      nx = from.x / fromLen;
-      ny = from.y / fromLen;
-      nz = from.z / fromLen;
-    } else {
-      nx = lx / len;
-      ny = ly / len;
-      nz = lz / len;
-    }
-
+    const dir = interpolateGreatCircle(fromDir, toDir, t);
     const rippleOffset =
       ripple * Math.sin(t * Math.PI * frequency + time * 0.001 * (frequency / 2));
     const effectiveRadius = radius + rippleOffset;
 
     out.push({
-      x: nx * effectiveRadius,
-      y: ny * effectiveRadius,
-      z: nz * effectiveRadius,
+      x: dir.x * effectiveRadius,
+      y: dir.y * effectiveRadius,
+      z: dir.z * effectiveRadius,
     });
   }
 
