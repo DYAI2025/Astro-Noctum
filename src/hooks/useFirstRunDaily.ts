@@ -161,6 +161,23 @@ export function useFirstRunDaily(
     const myGen = ++fetchGenRef.current;
     const isCurrent = () => fetchGenRef.current === myGen;
 
+    // I-1 from the 2026-05-11 PR #343 review: snapshot the live arrays
+    // at effect-entry so the async body uses the same content the
+    // dep-hash was computed from. This makes the relationship between
+    // `quizSectorsKey` / `soulprintSectorsKey` (in the dep array) and
+    // `quizSectors` / `soulprintSectors` (read inside the IIFE)
+    // explicit, and lets us drop the eslint-disable on the dep array.
+    //
+    // Contract: callers who pass a NEW array reference (different
+    // content) get a re-fetch with the new content — BUT only on a
+    // NEW target date (lastFetchedDateRef guard above short-circuits
+    // same-day re-fetches regardless of quiz content). Callers who
+    // mutate an array in place after render WITHOUT re-rendering get
+    // undefined behavior — that's a React anti-pattern and we don't
+    // support it.
+    const quizSectorsSnapshot = quizSectors;
+    const soulprintSectorsSnapshot = soulprintSectors;
+
     (async () => {
       // Controls ONLY the auto-open modal — dailyData is ALWAYS loaded
       // because the inline DashboardTagesEnergie section needs it regardless.
@@ -211,8 +228,8 @@ export function useFirstRunDaily(
         setLoading(true);
         const data = await fetchDailyExperience(
           birthData,
-          soulprintSectors ?? Array(12).fill(0.5),
-          quizSectors,
+          soulprintSectorsSnapshot ?? Array(12).fill(0.5),
+          quizSectorsSnapshot,
           targetDate,
           locale,
           transitInfluences,
@@ -248,13 +265,25 @@ export function useFirstRunDaily(
       }
     })();
     // Note: quizSectors and soulprintSectors are NOT in the dep array
-    // directly — their content-hash keys are. See comment near the keys
-    // for the rationale. The hook body still reads the live arrays, so
-    // the latest values are used inside the effect when it runs.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // directly — their content-hash keys are. The effect snapshots the
+    // live arrays at entry (see quizSectorsSnapshot /
+    // soulprintSectorsSnapshot above) so the body uses the same content
+    // the hash was computed from. ESLint's exhaustive-deps no longer
+    // fires because the body only reads the snapshots, not the live
+    // refs, after effect entry.
   }, [userId, birthData, soulprintSectorsKey, quizSectorsKey, birthSign, customDate, locale, retryTick]);
 
   const retry = useCallback(() => {
+    // I-2 from the 2026-05-11 PR #343 review: retry() is a no-op when
+    // there's nothing to recover from. Prevents accidental clicks on
+    // a future Retry button from spending an extra LLM call while the
+    // user already has valid data on screen.
+    //
+    // Guard interpretation: "healthy" = has data AND no error AND not
+    // currently loading. Any of those being off → recovery is plausibly
+    // wanted and we let it through.
+    if (loading) return;
+    if (!error && dailyData !== null) return;
     // Belt and braces: the catch block already clears the marker, but a
     // defensive clear here means retry() works even if some future code
     // path forgets to clear it. The state bump forces the effect to
@@ -262,7 +291,7 @@ export function useFirstRunDaily(
     lastFetchedDateRef.current = null;
     setError(null);
     setRetryTick((t) => t + 1);
-  }, []);
+  }, [loading, error, dailyData]);
 
   const handleClose = useCallback(() => {
     setShowModal(false);
