@@ -10,7 +10,41 @@ This phase contains the **implementation**. Focus on clean, tested, maintainable
 
 <!-- After running `/SDLC-decompose`, each identified component lives in its own subdirectory under `3-code/` with a `CLAUDE.<component>.md` file describing its directory, technology, and responsibility. List components here as they are decomposed. -->
 
-_(no components decomposed yet — run `/SDLC-decompose` after design completeness assessment passes)_
+### Shared Types
+
+- **Directory**: [`shared-types/`](shared-types/)
+- **Technology**: TypeScript (workspace package, no runtime)
+- **Responsibility**: Entity, DTO, error-envelope, and analytics-event types shared between all other components.
+
+### Web Frontend
+
+- **Directory**: [`web-frontend/`](web-frontend/)
+- **Technology**: TypeScript + React + Vite (+ Three.js for the frozen FS-2 SignaturRenderer)
+- **Responsibility**: React SPA — dashboard composition, Daily Pulse UI, Council selection, Signature anchor, Upgrade funnel UI, ManageSubscription UI, consent surfaces, polling hooks, analytics emission, privacy notice page.
+
+### Web Server
+
+- **Directory**: [`web-server/`](web-server/)
+- **Technology**: Node + TypeScript (existing `server.mjs`)
+- **Responsibility**: Legacy `/api/*` routes — Stripe Checkout entry, Stripe webhook receiver, Stripe Customer Portal session issuer, `/api/impact/active`. Hosts frozen FS-3 (Stripe stack) and the server-side portion of FS-1 (BaZi / Wu-Xing / ephemeris compute).
+
+### Edge Functions
+
+- **Directory**: [`edge-functions/`](edge-functions/)
+- **Technology**: Deno (Supabase Edge Functions runtime) + TypeScript
+- **Responsibility**: HTTP-triggered `/v1/users/:userId/*` endpoints (Daily Pulse, Daily Interpretation, Consents, Data Export, RTBF, Subscription State) plus cron-triggered scheduled jobs (RTBF scheduler, Stripe ↔ `subscription_state` reconciliation, daily cosmic-weather snapshot). Hosts the centralized LLM gateway.
+
+### Database
+
+- **Directory**: [`database/`](database/)
+- **Technology**: SQL (PostgreSQL via Supabase) + Supabase CLI
+- **Responsibility**: Supabase Postgres schema — 11 entities, RLS policies, indexes, seed scripts. Authoritative source for invariants I-DM-1 through I-DM-8.
+
+### Tagespuls Package
+
+- **Directory**: [`tagespuls-package/`](tagespuls-package/)
+- **Technology**: Python (build pipeline) + TypeScript (selection algorithm and shared types)
+- **Responsibility**: Operator-authored aphorism content vault, build pipeline producing `aphorisms.json` (only `status='approved'` entries), and the deterministic aphorism-selection algorithm. Operationally enforces [CON-aphorisms-human-approved](../1-spec/constraints/CON-aphorisms-human-approved.md).
 
 ---
 
