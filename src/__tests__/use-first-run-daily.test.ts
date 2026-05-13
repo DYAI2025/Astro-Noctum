@@ -130,4 +130,76 @@ describe('useFirstRunDaily — error recovery', () => {
     expect(result.current.error).toBeNull();
     expect(fetchDailyExperienceMock).toHaveBeenCalledTimes(2);
   });
+
+  it('FRD-RETRY-002: after a failed fetch, changing locale auto-recovers (ref cleared on failure)', async () => {
+    fetchDailyExperienceMock.mockRejectedValueOnce(new Error('503 service unavailable'));
+    fetchDailyExperienceMock.mockResolvedValueOnce(VALID_DAILY);
+
+    const useFirstRunDaily = await loadHook();
+
+    // Stable soulprint + quiz refs across renders so we isolate the
+    // locale change as the only dep that triggers the retry.
+    const STABLE_QUIZ: number[] = [];
+
+    const { result, rerender } = renderHook(
+      ({ locale }: { locale: string }) =>
+        useFirstRunDaily('user-1', VALID_BIRTH, null, STABLE_QUIZ, 'Taurus', undefined, locale),
+      { initialProps: { locale: 'de-DE' } },
+    );
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+      expect(result.current.error).not.toBeNull();
+    });
+
+    // Change locale — should re-trigger the effect because the ref was
+    // cleared in the catch block.
+    rerender({ locale: 'en-US' });
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+      expect(result.current.dailyData).not.toBeNull();
+    });
+
+    expect(fetchDailyExperienceMock).toHaveBeenCalledTimes(2);
+    expect(result.current.error).toBeNull();
+  });
+
+  it('FRD-RETRY-003: retry() during in-flight request is debounced (no second fetch)', async () => {
+    // Use a never-resolving promise so the first fetch stays in flight
+    // when retry() is called.
+    let resolveFirst: (value: unknown) => void;
+    fetchDailyExperienceMock.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveFirst = resolve;
+      }),
+    );
+
+    const useFirstRunDaily = await loadHook();
+
+    const STABLE_QUIZ: number[] = [];
+    const { result } = renderHook(() =>
+      useFirstRunDaily('user-1', VALID_BIRTH, null, STABLE_QUIZ, 'Taurus'),
+    );
+
+    await waitFor(() => expect(result.current.loading).toBe(true));
+    expect(fetchDailyExperienceMock).toHaveBeenCalledTimes(1);
+
+    // Call retry() while the first fetch is still in flight.
+    act(() => {
+      result.current.retry();
+    });
+
+    // The hook MUST NOT have dispatched a second concurrent fetch.
+    expect(fetchDailyExperienceMock).toHaveBeenCalledTimes(1);
+
+    // Resolve the original promise so we can clean up.
+    act(() => {
+      resolveFirst!(VALID_DAILY);
+    });
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+  });
 });
