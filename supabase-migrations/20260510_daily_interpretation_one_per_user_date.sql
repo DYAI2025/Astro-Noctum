@@ -35,6 +35,17 @@ CREATE TRIGGER trg_daily_interpretations_scope
   FOR EACH ROW
   EXECUTE FUNCTION set_daily_interpretation_scope();
 
+-- Defensive: remove any orphan interpretations whose daily_pulse_id no
+-- longer matches a daily_pulses row. The FK has ON DELETE CASCADE so
+-- this should never match — but if a manual SQL op or a historic
+-- FK-bypass left a stray row, the backfill below would leave its
+-- user_id/pulse_date NULL and the SET NOT NULL at the end of this
+-- migration would abort. One DELETE removes the foot-gun.
+DELETE FROM daily_interpretations di
+WHERE NOT EXISTS (
+  SELECT 1 FROM daily_pulses dp WHERE dp.id = di.daily_pulse_id
+);
+
 UPDATE daily_interpretations di
 SET user_id = dp.user_id,
     pulse_date = dp.date
