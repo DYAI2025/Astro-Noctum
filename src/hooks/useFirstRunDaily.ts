@@ -255,6 +255,16 @@ export function useFirstRunDaily(
   }, [userId, birthData, soulprintSectorsKey, quizSectorsKey, birthSign, customDate, locale, retryTick]);
 
   const retry = useCallback(() => {
+    // I-2 from the 2026-05-11 PR #343 review: retry() is a no-op when
+    // there's nothing to recover from. Prevents accidental clicks on
+    // a future Retry button from spending an extra LLM call while the
+    // user already has valid data on screen.
+    //
+    // Guard interpretation: "healthy" = has data AND no error AND not
+    // currently loading. Any of those being off → recovery is plausibly
+    // wanted and we let it through.
+    if (loading) return;
+    if (!error && dailyData !== null) return;
     // Belt and braces: the catch block already clears the marker, but a
     // defensive clear here means retry() works even if some future code
     // path forgets to clear it. The state bump forces the effect to
@@ -262,7 +272,7 @@ export function useFirstRunDaily(
     lastFetchedDateRef.current = null;
     setError(null);
     setRetryTick((t) => t + 1);
-  }, []);
+  }, [loading, error, dailyData]);
 
   const handleClose = useCallback(() => {
     setShowModal(false);

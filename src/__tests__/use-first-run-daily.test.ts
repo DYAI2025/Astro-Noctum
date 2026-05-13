@@ -202,4 +202,57 @@ describe('useFirstRunDaily — error recovery', () => {
       expect(result.current.loading).toBe(false);
     });
   });
+
+  it('FRD-RETRY-GUARD-001: retry() is a no-op when state is healthy (no error, has data)', async () => {
+    // I-2 from the 2026-05-11 PR #343 review: a user clicking a future
+    // "Retry" button while data is already loaded should NOT spend an
+    // extra LLM call. The retry callback only bumps the tick when
+    // there's actually something to recover from.
+    //
+    // Without the guard, retry() would: clear lastFetchedDateRef →
+    // bump retryTick → effect re-runs → cache hit short-circuits the
+    // network call BUT the dailyData state still gets re-assigned and
+    // the date marker re-set. Worse, if some future caller bypasses
+    // the cache (or the cache TTLs out / is cleared), retry() would
+    // spend a real LLM call.
+    //
+    // We simulate that "cache bypass" path by clearing localStorage
+    // between the initial load and the retry — that way `retry()`
+    // without the guard WOULD reach `fetchDailyExperience` again, and
+    // the test would catch it.
+    fetchDailyExperienceMock.mockResolvedValueOnce(VALID_DAILY);
+
+    const useFirstRunDaily = await loadHook();
+    const STABLE_QUIZ: number[] = [];
+    const { result } = renderHook(() =>
+      useFirstRunDaily('user-1', VALID_BIRTH, null, STABLE_QUIZ, 'Taurus'),
+    );
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+      expect(result.current.dailyData).not.toBeNull();
+    });
+    expect(result.current.error).toBeNull();
+    expect(fetchDailyExperienceMock).toHaveBeenCalledTimes(1);
+
+    // Force the network path so retry() without the guard would call
+    // the mock a second time. (See block comment above for rationale.)
+    window.localStorage.clear();
+
+    // Click retry while healthy — must be a no-op.
+    act(() => {
+      result.current.retry();
+    });
+
+    // Give the effect a chance to re-fire if the guard is missing.
+    await waitFor(() => {
+      // Loading must NOT have flipped on — retry() was a no-op.
+      expect(result.current.loading).toBe(false);
+    });
+
+    // No second fetch. Data unchanged. Error stays null.
+    expect(fetchDailyExperienceMock).toHaveBeenCalledTimes(1);
+    expect(result.current.dailyData).not.toBeNull();
+    expect(result.current.error).toBeNull();
+  });
 });
