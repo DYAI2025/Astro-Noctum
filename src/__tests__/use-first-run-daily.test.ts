@@ -41,6 +41,23 @@ const VALID_DAILY: any = {
   meta: { engine_version: 'v1-gemini-daily' },
 };
 
+/**
+ * Seed localStorage with a cached daily under today's local-calendar key.
+ * Mirrors the `setCachedDaily()` shape in useFirstRunDaily.ts so the
+ * cache-hit branch picks it up on first effect run.
+ */
+function seedTodayCache(data: unknown): void {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  const todayKey = `${y}-${m}-${d}`;
+  window.localStorage.setItem(
+    'daily_horoscope_cache',
+    JSON.stringify({ date: todayKey, data }),
+  );
+}
+
 const VALID_BIRTH = {
   date: '1990-05-15',
   time: '12:30',
@@ -254,5 +271,47 @@ describe('useFirstRunDaily — error recovery', () => {
     expect(fetchDailyExperienceMock).toHaveBeenCalledTimes(1);
     expect(result.current.dailyData).not.toBeNull();
     expect(result.current.error).toBeNull();
+  });
+
+  it('FRD-CACHE-001: cache-hit path sets the ref so same-deps re-renders do not re-fetch', async () => {
+    // I-3 from the 2026-05-11 PR #343 review: the cache-hit branch in
+    // useFirstRunDaily.ts (line 188-196) sets lastFetchedDateRef to
+    // prevent the next render from re-fetching. But no test covered
+    // that branch. A future refactor that removes the ref-set from
+    // cache-hit but keeps it on fresh-fetch would silently break
+    // recovery — and FRD-RETRY-001/002/003 wouldn't catch it.
+    //
+    // This test asserts the cache-hit contract:
+    //   1. localStorage has a cached daily → first mount hits cache,
+    //      no LLM call.
+    //   2. Re-render with same deps → ref-guard prevents a second
+    //      fetch even though deps look identical to React.
+    seedTodayCache(VALID_DAILY);
+
+    const useFirstRunDaily = await loadHook();
+    const STABLE_QUIZ: number[] = [];
+    const { result, rerender } = renderHook(() =>
+      useFirstRunDaily('user-1', VALID_BIRTH, null, STABLE_QUIZ, 'Taurus'),
+    );
+
+    // Wait for the cache-hit branch to complete.
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+      expect(result.current.dailyData).not.toBeNull();
+    });
+
+    // Cache served the data — fetchDailyExperience was never called.
+    expect(fetchDailyExperienceMock).toHaveBeenCalledTimes(0);
+    expect(result.current.error).toBeNull();
+
+    // Re-render with same deps. The ref-guard is what prevents the
+    // second hit when deps haven't changed.
+    rerender();
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    // Still zero LLM calls. Ref guard prevented a re-fetch.
+    expect(fetchDailyExperienceMock).toHaveBeenCalledTimes(0);
   });
 });
