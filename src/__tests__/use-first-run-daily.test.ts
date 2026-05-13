@@ -314,4 +314,39 @@ describe('useFirstRunDaily — error recovery', () => {
     // Still zero LLM calls. Ref guard prevented a re-fetch.
     expect(fetchDailyExperienceMock).toHaveBeenCalledTimes(0);
   });
+
+  it('FRD-SNAPSHOT-001: first fetch receives the quizSectors content passed at effect entry', async () => {
+    // I-1 from the 2026-05-11 PR #343 review: the effect's dep array
+    // uses content-hash strings (quizSectorsKey) but the body reads
+    // the live arrays. We snapshot the live array at effect-entry so
+    // the body uses the same snapshot the hash was computed from.
+    //
+    // The hook's actual contract is "one fetch per (user, today_date)
+    // — quiz/soulprint changes after a successful fetch do NOT re-fetch
+    // on the same day" (lastFetchedDateRef guard at the top of the
+    // effect). So this test can't assert "different quiz → different
+    // fetches"; that doesn't happen under the current contract.
+    //
+    // What it CAN lock: the FIRST fetch's quizSectors arg must match
+    // the value the caller passed at the render that triggered that
+    // fetch. A future refactor that, for example, memoizes the
+    // snapshot at hook-level (instead of effect-entry-level) would
+    // freeze stale state and fail this test on a re-mounted hook.
+    fetchDailyExperienceMock.mockResolvedValueOnce(VALID_DAILY);
+
+    const useFirstRunDaily = await loadHook();
+    const { result } = renderHook(() =>
+      useFirstRunDaily('user-1', VALID_BIRTH, null, [1, 2, 3], 'Taurus'),
+    );
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+      expect(result.current.dailyData).not.toBeNull();
+    });
+
+    expect(fetchDailyExperienceMock).toHaveBeenCalledTimes(1);
+    // fetchDailyExperience(birthData, soulprintSectors, quizSectors, date, locale, transit, sign)
+    const args = fetchDailyExperienceMock.mock.calls[0];
+    expect(args[2]).toEqual([1, 2, 3]);
+  });
 });
