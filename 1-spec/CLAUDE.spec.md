@@ -76,7 +76,10 @@ When an artifact (goal, user story, requirement) is no longer relevant:
 
 | File | Title | Trigger |
 |------|-------|---------|
-| _(none yet)_ | | |
+| [DEC-supabase-as-personal-data-store](../decisions/DEC-supabase-as-personal-data-store.md) | Supabase Postgres as primary personal-data store | When defining a new compliance or retention requirement affecting personal-data storage |
+| [DEC-llm-provider-gemini](../decisions/DEC-llm-provider-gemini.md) | Google Gemini as primary LLM provider | When adding a requirement that involves LLM-generated text |
+| [DEC-rtbf-grace-window-24h](../decisions/DEC-rtbf-grace-window-24h.md) | RTBF cancellation grace window is 24 hours | When adjusting the RTBF requirement family (REQ-COMP-rtbf, REQ-SEC-rtbf-authz) |
+| [DEC-aphorism-batch-approval-bp-2026-05-14](../decisions/DEC-aphorism-batch-approval-bp-2026-05-14.md) | Aphorism batch approval by plan artifact | When operator wants to approve a batch of aphorisms via plan rather than per-file edits |
 <!-- Add rows as decisions are recorded. File column: [DEC-kebab-name](../decisions/DEC-kebab-name.md) -->
 
 ---
@@ -147,6 +150,15 @@ When an artifact (goal, user story, requirement) is no longer relevant:
 | [REQ-COMP-analytics-pii-free](requirements/REQ-COMP-analytics-pii-free.md) | Compliance | Must-have | Approved | Analytics events PII-free; identifiers hashed/pseudonymized at boundary |
 | [REQ-COMP-llm-purpose-consent](requirements/REQ-COMP-llm-purpose-consent.md) | Compliance | Must-have | Approved | LLM calls covered by user consent for the specific purpose; cross-purpose rejected |
 | [REQ-COMP-privacy-notice](requirements/REQ-COMP-privacy-notice.md) | Compliance | Must-have | Approved | Public privacy notice describes purposes, retention, sub-processors, data-subject rights |
+| [REQ-SEC-edge-function-auth](requirements/REQ-SEC-edge-function-auth.md) | Security | Must-have | Approved | Edge Functions reject unauthenticated requests; userId path param must match JWT subject; 403 on mismatch |
+| [REQ-SEC-checkout-rate-limit](requirements/REQ-SEC-checkout-rate-limit.md) | Security | Must-have | Approved | POST /api/checkout rate-limited (≤10/min/user, ≤30/min/IP) and CSRF-protected |
+| [REQ-SEC-export-authz](requirements/REQ-SEC-export-authz.md) | Security | Must-have | Approved | Data-export endpoint enforces subject-only access; ≤5 exports/day/user; single-use download URLs |
+| [REQ-SEC-rtbf-authz](requirements/REQ-SEC-rtbf-authz.md) | Security | Must-have | Approved | RTBF trigger requires auth + out-of-band email confirmation + 24h grace window with cancel option |
+| [REQ-SEC-llm-gateway-hardening](requirements/REQ-SEC-llm-gateway-hardening.md) | Security | Must-have | Approved | LLM gateway rate-limits (≤50/h/user), escapes user input, redacts logs after ≤7 days |
+| [REQ-SEC-portal-session-tokens](requirements/REQ-SEC-portal-session-tokens.md) | Security | Must-have | Approved | Stripe Customer Portal URLs single-use, server-issued, TTL ≤5 min, never persisted client-side |
+| [REQ-SEC-tls-everywhere](requirements/REQ-SEC-tls-everywhere.md) | Security | Must-have | Approved | All HTTP traffic TLS 1.2+ with HSTS ≥6 months; plain-HTTP redirects 301 to HTTPS |
+| [REQ-SEC-no-secrets-in-client](requirements/REQ-SEC-no-secrets-in-client.md) | Security | Must-have | Approved | No server-side secrets in client bundles; build-time secret scan + deploy-time spot-check |
+| [REQ-SEC-auth-session-storage](requirements/REQ-SEC-auth-session-storage.md) | Security | Must-have | Approved | Auth tokens use Supabase Auth defaults (httpOnly preferred); localStorage requires recorded XSS-mitigation decision |
 <!-- Add rows as requirements are created. File column: [REQ-CLASS-kebab-name](requirements/REQ-CLASS-kebab-name.md) -->
 
 
@@ -173,7 +185,7 @@ When an artifact (goal, user story, requirement) is no longer relevant:
 | [CON-no-formula-changes](constraints/CON-no-formula-changes.md) | Technical | Active | Astrological formulas, scoring, ephemeris, BaZi, Wu-Xing calculations are immutable; only presentation/orchestration layers may change |
 | [CON-stripe-payment-stack](constraints/CON-stripe-payment-stack.md) | Technical | Active | Stripe Checkout is the sole payment processor; payment architecture (`POST /api/checkout` → redirect, webhooks as state truth) is not rebuilt |
 | [CON-no-signatur-v3-rebuild](constraints/CON-no-signatur-v3-rebuild.md) | Technical | Active | Signatur V3 renderer (`SignatureSphere3D`, `SignaturRenderer`, BaZi→Chladni pipeline) is not rebuilt; only its dashboard integration changes |
-| [CON-aphorisms-human-approved](constraints/CON-aphorisms-human-approved.md) | Operational | Active | Aphorisms entering production require Ben's manual `draft → approved` per file; no agent or LLM may auto-promote |
+| [CON-aphorisms-human-approved](constraints/CON-aphorisms-human-approved.md) | Operational | Deprecated (2026-05-14) | Aphorisms entering production require Ben's manual `draft → approved` per file; no agent or LLM may auto-promote |
 | [CON-greenops-polling-budget](constraints/CON-greenops-polling-budget.md) | Operational | Active | Client polling respects ~1000 req / 15 min / user; visibility-aware intervals; one poller per data source per dashboard mount |
 | [CON-degraded-state-transparency](constraints/CON-degraded-state-transparency.md) | Operational | Active | Fallback / stale / unavailable data must be visibly marked in UI; never presented as live personalized output |
 | [CON-gdpr-applies](constraints/CON-gdpr-applies.md) | Operational | Active | EU GDPR applies; lawful basis is consent (Art. 6(1)(a)) or contract; Art. 15–22 data-subject rights operationally supported; purpose limitation and data minimization enforced |

@@ -7,7 +7,7 @@
 ## Interfaces
 
 - **Content source:** per-aphorism markdown files at `knowledge/bazodiaac-brain/aphorisms/review/aph-*.md`.
-- **Approval transition:** operator (Ben) edits each markdown's `status: draft` → `status: approved` manually. No agent / build script / LLM may auto-promote.
+- **Approval transition:** operator (Ben) grants approval either by (a) per-file edit `status: draft` → `status: approved`, or (b) batch approval via a documented plan artifact per [DEC-aphorism-batch-approval-bp-2026-05-14](../../decisions/DEC-aphorism-batch-approval-bp-2026-05-14.md). Agents may apply `status: approved` ONLY to IDs explicitly enumerated in such a plan.
 - **Build output:** `packages/voice/data/aphorisms.json` — produced by `packages/voice/scripts/build_aphorisms.py`. Only `status='approved'` entries are emitted.
 - **Downstream:** `database` seed script consumes `aphorisms.json` and upserts into the `aphorisms` table.
 - **Type sharing:** `packages/voice/src/types.ts` is consumed by `edge-functions` (per dev brief Hinweis #11). Migration of these types into `shared-types` is a Code-phase implementation decision.
@@ -27,4 +27,4 @@
 
 | File | Title | Trigger |
 |------|-------|---------|
-| _(none yet — this component's behavior is operationally driven by [CON-aphorisms-human-approved](../../1-spec/constraints/CON-aphorisms-human-approved.md); no derived decisions exist yet.)_ | | |
+| [DEC-aphorism-batch-approval-bp-2026-05-14](../../decisions/DEC-aphorism-batch-approval-bp-2026-05-14.md) | Aphorism batch approval by plan artifact | When the operator approves a batch via plan rather than per-file edits |

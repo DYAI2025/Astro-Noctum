@@ -2,7 +2,7 @@
 
 **Category**: Operational
 
-**Status**: Active
+**Status**: Deprecated (2026-05-14, superseded by DEC-aphorism-batch-approval-bp-2026-05-14)
 
 **Source stakeholder**: [STK-ben](../stakeholders.md)
 
@@ -20,3 +20,7 @@ Aphorisms in the production pool carry attribution (author, work, year, translat
 - TASK-T1 (Supabase migration), TASK-T2 (seeding), TASK-T3+ (edge functions) are blocked until the gate is satisfied.
 - The build pipeline is operator-triggered, not agent-triggered. The agent may surface gate state and document blockages but does not run `build_aphorisms.py` autonomously when no approved entries exist.
 - Any future automation that proposes new aphorisms (e.g., LLM-generated additions) must still flow through the manual approval gate.
+
+## Deprecation Notice (2026-05-14)
+
+This constraint is deprecated. The hard human-in-the-loop gate (operator manually flips per-file `status: draft → approved`) is replaced by **batch-approval by the operator via a documented plan artifact**, recorded in [DEC-aphorism-batch-approval-bp-2026-05-14](../../decisions/DEC-aphorism-batch-approval-bp-2026-05-14.md). The decision shifts the approval surface from per-file edits to plan files, while preserving the rule that only Ben (the operator) may grant approval. Agents still cannot auto-promote without an explicit plan-encoded directive from Ben.
