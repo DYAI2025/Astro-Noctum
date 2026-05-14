@@ -1189,9 +1189,9 @@ describe('POST /api/daily-interpretation — no-placeholders contract', () => {
             text: async () => JSON.stringify(ids),
           };
         }
-        // POST upsert — pick row by body locale. Default to de since the
-        // mock can't easily inspect the body; the two GET calls warm
-        // distinct rows sequentially so we toggle by which flag is unset.
+        // POST upsert — pick row by locale from the request body when
+        // available. If the body is missing or can't be parsed, default
+        // to the `de` row.
         let parsed = {};
         try { parsed = init?.body ? JSON.parse(init.body) : {}; } catch (e) { void e; }
         const isEn = parsed?.locale === 'en';
