@@ -1,1 +1,1203 @@
-[]
+[
+  {
+    "id": "aph-0089",
+    "status": "approved",
+    "text": {
+      "de": "Die Geraden müssen aufpassen, wenn die Kurven auftauchen.",
+      "en": "The straight ones must watch out when the curves appear.",
+      "original": null
+    },
+    "source": {
+      "author": "Stanisław Jerzy Lec",
+      "work": "Unfrisierte Gedanken / zugeschrieben",
+      "year": null,
+      "original_language": "unknown",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "disputed",
+    "attribution_note": "Als Lec zugeschriebenes Bonmot aufgenommen, aber der exakte deutsche Wortlaut muss vor Veröffentlichung an einer verlässlichen Ausgabe geprüft werden.",
+    "mode_tags": [
+      "spannung"
+    ],
+    "tone_tags": [
+      "ironisch",
+      "scharf"
+    ],
+    "element_affinity": [],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 8,
+    "word_count_en": 10,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0090",
+    "status": "approved",
+    "text": {
+      "de": "Manche Menschen stehen aufrecht da, nur weil die Verhältnisse so krumm sind.",
+      "en": "Some people stand upright only because the circumstances are so crooked.",
+      "original": null
+    },
+    "source": {
+      "author": "Stanisław Jerzy Lec",
+      "work": "Unfrisierte Gedanken / zugeschrieben",
+      "year": null,
+      "original_language": "unknown",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "disputed",
+    "attribution_note": "Starker Lec-Kandidat. Der Sinn passt zu seiner aphoristischen Gesellschaftskritik; die exakte Ausgabe und Übersetzung müssen nachgetragen werden.",
+    "mode_tags": [
+      "spannung"
+    ],
+    "tone_tags": [
+      "ironisch",
+      "gesellschaftskritisch"
+    ],
+    "element_affinity": [
+      "erde"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 12,
+    "word_count_en": 11,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0091",
+    "status": "approved",
+    "text": {
+      "de": "Auch die stolzeste Mauer ist nur ein versteinertes Nein.",
+      "en": "Even the proudest wall is only a petrified no.",
+      "original": null
+    },
+    "source": {
+      "author": "Stanisław Jerzy Lec",
+      "work": "Unfrisierte Gedanken / zugeschrieben",
+      "year": null,
+      "original_language": "unknown",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "disputed",
+    "attribution_note": "Als Lec zugeschrieben notiert. Vor Integration muss geprüft werden, ob dies ein echter Lec-Wortlaut, eine Übersetzung oder eine spätere Paraphrase ist.",
+    "mode_tags": [
+      "spannung"
+    ],
+    "tone_tags": [
+      "ironisch",
+      "bildhaft"
+    ],
+    "element_affinity": [
+      "erde"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 9,
+    "word_count_en": 9,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0092",
+    "status": "approved",
+    "text": {
+      "de": "Die Wahrheit tut oft weh, aber die Lüge niemals gut.",
+      "en": "Truth often hurts, but lies never heal.",
+      "original": null
+    },
+    "source": {
+      "author": "Stanisław Jerzy Lec",
+      "work": "zugeschrieben / unsicher",
+      "year": null,
+      "original_language": "unknown",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "apocryphal",
+    "attribution_note": "Der Satz ist brauchbar als allgemeiner Aphorismus, aber aktuell nicht belastbar als Lec-Zitat. Empfehlung: nur als kuratorische Sentenz verwenden oder bis zur Quellenprüfung sperren.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "knapp",
+      "moralisch"
+    ],
+    "element_affinity": [],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 10,
+    "word_count_en": 7,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0093",
+    "status": "approved",
+    "text": {
+      "de": "Gedanken springen wie Flöhe, aber sie beißen nicht jeden.",
+      "en": "Thoughts jump like fleas, but they do not bite everyone.",
+      "original": null
+    },
+    "source": {
+      "author": "Stanisław Jerzy Lec",
+      "work": "Unfrisierte Gedanken / zugeschrieben",
+      "year": null,
+      "original_language": "unknown",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "disputed",
+    "attribution_note": "Sehr bekannter Lec-Kandidat. Exakter Wortlaut und Übersetzung sollten an einer Ausgabe der „Unfrisierten Gedanken“ geprüft werden.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "ironisch",
+      "geistreich"
+    ],
+    "element_affinity": [],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 9,
+    "word_count_en": 10,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0094",
+    "status": "approved",
+    "text": {
+      "de": "Manche Menschen haben ein Brett vor dem Kopf und halten sich für den Nagel der Welt.",
+      "en": "Some people have a board in front of their head and think themselves the nail of the world.",
+      "original": null
+    },
+    "source": {
+      "author": "Stanisław Jerzy Lec",
+      "work": "zugeschrieben / unsicher",
+      "year": null,
+      "original_language": "unknown",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "apocryphal",
+    "attribution_note": "Der Satz klingt lec-artig, ist aber derzeit nicht als Original gesichert. Nur als ungesicherte Zuschreibung führen.",
+    "mode_tags": [
+      "spannung"
+    ],
+    "tone_tags": [
+      "satirisch",
+      "scharf"
+    ],
+    "element_affinity": [],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 16,
+    "word_count_en": 18,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0095",
+    "status": "approved",
+    "text": {
+      "de": "Wenn du über Nacht berühmt werden willst, schlaf am Tag.",
+      "en": "If you want to become famous overnight, sleep during the day.",
+      "original": null
+    },
+    "source": {
+      "author": "Stanisław Jerzy Lec",
+      "work": "zugeschrieben / unsicher",
+      "year": null,
+      "original_language": "unknown",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "apocryphal",
+    "attribution_note": "Als humorvoller Aphorismus brauchbar, aber nicht zuverlässig als Lec belegt. Für die Hauptsammlung nur nach Quellenprüfung.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "ironisch",
+      "leicht"
+    ],
+    "element_affinity": [],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 10,
+    "word_count_en": 11,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0096",
+    "status": "approved",
+    "text": {
+      "de": "Rebellenkinder, ich bitte euch: Kämpft gegen den zähen Film der Konformität, mit dem sie euren Glanz ersticken wollen.",
+      "en": "Rebel children, I urge you, fight the turgid slick of conformity with which they seek to smother your glory.",
+      "original": null
+    },
+    "source": {
+      "author": "Russell Brand",
+      "work": "zugeschrieben / genaue Quelle offen",
+      "year": null,
+      "original_language": "en",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "disputed",
+    "attribution_note": "Im Gespräch als Russell-Brand-Zitat notiert. Der genaue Wortlaut und die Quelle müssen vor Integration geprüft werden.",
+    "mode_tags": [
+      "spannung"
+    ],
+    "tone_tags": [
+      "rebellisch",
+      "pathetisch"
+    ],
+    "element_affinity": [
+      "feuer"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 18,
+    "word_count_en": 19,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0097",
+    "status": "approved",
+    "text": {
+      "de": "Lass dich von deinem Talent führen, nicht von deinem Selbsthass. Die anderen Dinge musst du nur managen.",
+      "en": "Be led by your talent, not by your self-loathing. Those other things you just have to manage.",
+      "original": null
+    },
+    "source": {
+      "author": "Russell Brand",
+      "work": "zugeschrieben / genaue Quelle offen",
+      "year": null,
+      "original_language": "en",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "disputed",
+    "attribution_note": "Inhaltlich stark für Selbstentwicklung. Quelle und exakter Wortlaut sind noch zu prüfen.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "ermutigend",
+      "selbstreflexiv"
+    ],
+    "element_affinity": [
+      "feuer"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 17,
+    "word_count_en": 17,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0098",
+    "status": "approved",
+    "text": {
+      "de": "Mein Leben ist nur eine Reihe peinlicher Vorfälle, zusammengehalten dadurch, dass ich Menschen von diesen peinlichen Vorfällen erzähle.",
+      "en": "My life is just a series of embarrassing incidents strung together by telling people about those embarrassing incidents.",
+      "original": null
+    },
+    "source": {
+      "author": "Russell Brand",
+      "work": "zugeschrieben / genaue Quelle offen",
+      "year": null,
+      "original_language": "en",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "disputed",
+    "attribution_note": "Für Horoskoptexte nur geeignet, wenn die Tonalität humorvoll-selbstironisch sein darf. Quelle offen.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "selbstironisch",
+      "verletzlich"
+    ],
+    "element_affinity": [
+      "wasser"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 18,
+    "word_count_en": 18,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0099",
+    "status": "approved",
+    "text": {
+      "de": "Das Leben ist nie die Postkarte vom Leben, oder? Es fühlt sich nie so an, wie du willst, dass es aussieht.",
+      "en": "Life’s never a postcard of life, is it? It never feels like how you would want it to look like.",
+      "original": null
+    },
+    "source": {
+      "author": "Russell Brand",
+      "work": "zugeschrieben / genaue Quelle offen",
+      "year": null,
+      "original_language": "en",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "disputed",
+    "attribution_note": "Stark als moderner Reflexionssatz. Die Formulierung sollte vor Veröffentlichung an der Quelle geprüft werden.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "nachdenklich",
+      "alltagsnah"
+    ],
+    "element_affinity": [
+      "wasser"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 21,
+    "word_count_en": 20,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0100",
+    "status": "approved",
+    "text": {
+      "de": "Wenn dir etwas nicht gefällt, ändere es. Wenn du es nicht ändern kannst, ändere deine Haltung.",
+      "en": "If you don’t like something, change it. If you can’t change it, change your attitude.",
+      "original": null
+    },
+    "source": {
+      "author": "Maya Angelou",
+      "work": "zugeschrieben / häufig zitiert",
+      "year": null,
+      "original_language": "en",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "disputed",
+    "attribution_note": "Sehr bekannt und häufig Maya Angelou zugeschrieben. Vor „verified“-Status genaue Quelle nachtragen.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "praktisch",
+      "stärkend"
+    ],
+    "element_affinity": [
+      "erde"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 16,
+    "word_count_en": 15,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0101",
+    "status": "approved",
+    "text": {
+      "de": "Die Freiheit des Menschen liegt nicht darin, dass er tun kann, was er will, sondern dass er nicht tun muss, was er nicht will.",
+      "en": "Human freedom does not lie in being able to do whatever one wants, but in not having to do what one does not want.",
+      "original": null
+    },
+    "source": {
+      "author": "Simone de Beauvoir",
+      "work": "zugeschrieben / unsicher",
+      "year": null,
+      "original_language": "unknown",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "apocryphal",
+    "attribution_note": "Im Gespräch aufgenommen, aber nicht als belastbarer Beauvoir-Wortlaut gesichert. Nicht als Originalzitat veröffentlichen, bevor eine Primärstelle gefunden ist.",
+    "mode_tags": [
+      "spannung"
+    ],
+    "tone_tags": [
+      "philosophisch",
+      "freiheitsbezogen"
+    ],
+    "element_affinity": [],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 24,
+    "word_count_en": 24,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0102",
+    "status": "approved",
+    "text": {
+      "de": "Du musst nicht gut sein. Du musst nicht hundert Meilen auf Knien durch die Wüste gehen und bereuen. Du musst nur dem sanften Tier deines Körpers erlauben, zu lieben, was es liebt.",
+      "en": "You do not have to be good. You do not have to walk on your knees for a hundred miles through the desert, repenting. You only have to let the soft animal of your body love what it loves.",
+      "original": null
+    },
+    "source": {
+      "author": "Mary Oliver",
+      "work": "Wild Geese",
+      "year": 1986,
+      "original_language": "en",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "verified",
+    "attribution_note": null,
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "sanft",
+      "befreiend"
+    ],
+    "element_affinity": [
+      "wasser"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 32,
+    "word_count_en": 39,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0103",
+    "status": "approved",
+    "text": {
+      "de": "Jemand, den ich einst liebte, gab mir eine Schachtel voller Dunkelheit. Es brauchte Jahre, bis ich verstand, dass auch dies ein Geschenk war.",
+      "en": "Someone I loved once gave me a box full of darkness. It took me years to understand that this, too, was a gift.",
+      "original": null
+    },
+    "source": {
+      "author": "Mary Oliver",
+      "work": "The Uses of Sorrow",
+      "year": null,
+      "original_language": "en",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "verified",
+    "attribution_note": null,
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "tröstlich",
+      "tief"
+    ],
+    "element_affinity": [
+      "wasser"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 23,
+    "word_count_en": 23,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0104",
+    "status": "approved",
+    "text": {
+      "de": "Sind die Wolken froh, ihr Bündel Regen abzuladen?",
+      "en": "Are the clouds glad to unburden their bundle of rain?",
+      "original": null
+    },
+    "source": {
+      "author": "Mary Oliver",
+      "work": "zugeschrieben / genaue Quelle offen",
+      "year": null,
+      "original_language": "en",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "disputed",
+    "attribution_note": "Als poetische Frage stark. Die genaue Mary-Oliver-Quelle muss vor Integration nachgetragen werden.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "poetisch",
+      "fragend"
+    ],
+    "element_affinity": [
+      "wasser"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 8,
+    "word_count_en": 10,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0105",
+    "status": "approved",
+    "text": {
+      "de": "Jeder von uns trägt ein Zimmer in sich.",
+      "en": "Each of us carries a room within.",
+      "original": null
+    },
+    "source": {
+      "author": "Virginia Woolf",
+      "work": "zugeschrieben / unsicher",
+      "year": null,
+      "original_language": "en",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "PD",
+    "attribution_status": "apocryphal",
+    "attribution_note": "Dieser Satz wurde im Gespräch als Woolf-ähnlicher Gedanke aufgenommen, ist aber nicht als exakter Woolf-Wortlaut gesichert. Besser als kuratorische Paraphrase verwenden oder ersetzen.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "introspektiv",
+      "ruhig"
+    ],
+    "element_affinity": [
+      "wasser"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 8,
+    "word_count_en": 7,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0106",
+    "status": "approved",
+    "text": {
+      "de": "Ich bin verwurzelt, aber ich fließe.",
+      "en": "I am rooted, but I flow.",
+      "original": null
+    },
+    "source": {
+      "author": "Virginia Woolf",
+      "work": "The Waves",
+      "year": 1931,
+      "original_language": "en",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "PD",
+    "attribution_status": "verified",
+    "attribution_note": null,
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "poetisch",
+      "beweglich"
+    ],
+    "element_affinity": [
+      "wasser"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 6,
+    "word_count_en": 6,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0107",
+    "status": "approved",
+    "text": {
+      "de": "Um gut schreiben zu können, muss man intensiv leben.",
+      "en": "To write well, one must live intensely.",
+      "original": null
+    },
+    "source": {
+      "author": "Curator",
+      "work": "Gesprächsnotiz",
+      "year": 2026,
+      "original_language": "de",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "eigene-Übersetzung",
+    "attribution_status": "folkloric",
+    "attribution_note": "Kein gesichertes Fremdzitat. Als eigener Leitsatz oder unattribuierter Schreibaphorismus verwendbar.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "kreativ",
+      "lebensnah"
+    ],
+    "element_affinity": [
+      "feuer"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 9,
+    "word_count_en": 7,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0108",
+    "status": "approved",
+    "text": {
+      "de": "Tu, was du kannst, mit dem, was du hast, dort, wo du bist.",
+      "en": "Do what you can, with what you have, where you are.",
+      "original": null
+    },
+    "source": {
+      "author": "Theodore Roosevelt",
+      "work": "zugeschrieben / häufig zitiert",
+      "year": null,
+      "original_language": "en",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "PD",
+    "attribution_status": "disputed",
+    "attribution_note": "Sehr bekannt und häufig Theodore Roosevelt zugeschrieben. Für „verified“ genaue Quelle nachtragen.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "praktisch",
+      "entschlossen"
+    ],
+    "element_affinity": [
+      "erde"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 13,
+    "word_count_en": 11,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0109",
+    "status": "approved",
+    "text": {
+      "de": "Ein Leben, das nicht für andere gelebt wird, ist kein Leben.",
+      "en": "A life not lived for others is not a life.",
+      "original": null
+    },
+    "source": {
+      "author": "uncertain",
+      "work": "zugeschrieben / unsicher",
+      "year": null,
+      "original_language": "unknown",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "PD",
+    "attribution_status": "disputed",
+    "attribution_note": "Im Gespräch zunächst mit Albert Schweitzer assoziiert, doch die Zuschreibung ist unsicher. Es gibt ähnliche Formulierungen, die Einstein oder Mother Teresa zugeschrieben werden. Vor Integration unbedingt klären.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "ethisch",
+      "verbindend"
+    ],
+    "element_affinity": [
+      "wasser"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 11,
+    "word_count_en": 10,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0110",
+    "status": "approved",
+    "text": {
+      "de": "Die beste Art, deine Zukunft vorherzusagen, ist, sie zu erschaffen.",
+      "en": "The best way to predict your future is to create it.",
+      "original": null
+    },
+    "source": {
+      "author": "uncertain",
+      "work": "häufig Abraham Lincoln zugeschrieben",
+      "year": null,
+      "original_language": "en",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "apocryphal",
+    "attribution_note": "Nicht sauber als Lincoln-Zitat gesichert und häufig auch Peter Drucker oder anderen zugeschrieben. Nicht als Lincoln-Original verwenden.",
+    "mode_tags": [
+      "spannung"
+    ],
+    "tone_tags": [
+      "aktivierend",
+      "zukunftsorientiert"
+    ],
+    "element_affinity": [
+      "feuer"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 10,
+    "word_count_en": 11,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0111",
+    "status": "approved",
+    "text": {
+      "de": "Gib mir sechs Stunden, um einen Baum zu fällen, und ich werde die ersten vier damit verbringen, die Axt zu schärfen.",
+      "en": "Give me six hours to chop down a tree and I will spend the first four sharpening the axe.",
+      "original": null
+    },
+    "source": {
+      "author": "Abraham Lincoln",
+      "work": "zugeschrieben / apokryph",
+      "year": null,
+      "original_language": "en",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "PD",
+    "attribution_status": "apocryphal",
+    "attribution_note": "Sehr bekannt, aber als Lincoln-Zitat nicht belastbar gesichert. Als Sprichwort oder ungesicherte Zuschreibung führen.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "strategisch",
+      "ruhig"
+    ],
+    "element_affinity": [
+      "erde"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 21,
+    "word_count_en": 19,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0112",
+    "status": "approved",
+    "text": {
+      "de": "Der Stimmzettel ist stärker als die Kugel.",
+      "en": "The ballot is stronger than the bullet.",
+      "original": null
+    },
+    "source": {
+      "author": "Abraham Lincoln",
+      "work": "politische Rede / genaue Quelle prüfen",
+      "year": null,
+      "original_language": "en",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "PD",
+    "attribution_status": "disputed",
+    "attribution_note": "Der Nutzer sagte „ballad“, gemeint ist sehr wahrscheinlich „ballot“. Als Lincoln-Zitat bekannt, aber genaue Rede und Datierung sollten nachgetragen werden.",
+    "mode_tags": [
+      "spannung"
+    ],
+    "tone_tags": [
+      "politisch",
+      "entschieden"
+    ],
+    "element_affinity": [],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 7,
+    "word_count_en": 7,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0113",
+    "status": "approved",
+    "text": {
+      "de": "Haltung ist eine kleine Sache, die einen großen Unterschied macht.",
+      "en": "Attitude is a little thing that makes a big difference.",
+      "original": null
+    },
+    "source": {
+      "author": "Winston Churchill",
+      "work": "zugeschrieben / unsicher",
+      "year": null,
+      "original_language": "en",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "disputed",
+    "attribution_note": "Häufig Winston Churchill zugeschrieben. Die frühere Zuordnung zu John C. Maxwell sollte nicht übernommen werden. Exakte Quelle offen.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "motivierend",
+      "knapp"
+    ],
+    "element_affinity": [
+      "feuer"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 10,
+    "word_count_en": 10,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0114",
+    "status": "approved",
+    "text": {
+      "de": "Intuition ist die Summe der Lernerfahrung am Rande der Überforderung.",
+      "en": "Intuition is the sum of learning experience at the edge of being overwhelmed.",
+      "original": null
+    },
+    "source": {
+      "author": "Peter Kruse",
+      "work": "Vortrag / Interview / genaue Quelle offen",
+      "year": null,
+      "original_language": "de",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "disputed",
+    "attribution_note": "Sehr passender Peter-Kruse-Kandidat. Vor Integration genaue Quelle, Vortrag oder Interview nachtragen.",
+    "mode_tags": [
+      "spannung"
+    ],
+    "tone_tags": [
+      "systemisch",
+      "erkenntnisorientiert"
+    ],
+    "element_affinity": [],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 10,
+    "word_count_en": 13,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0115",
+    "status": "approved",
+    "text": {
+      "de": "Harmonische Systeme sind dumme Systeme. In der Natur entstehen Ordnungsmuster immer aus Widerspruch, nicht aus Harmonie.",
+      "en": "Harmonious systems are stupid systems. In nature, patterns of order always emerge from contradiction, not from harmony.",
+      "original": null
+    },
+    "source": {
+      "author": "Peter Kruse",
+      "work": "Vortrag / Interview / genaue Quelle offen",
+      "year": null,
+      "original_language": "de",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "disputed",
+    "attribution_note": "Als Kruse-Gedanke sehr plausibel und für Komplexität/Selbstentwicklung stark. Exakte Quelle und Wortlaut müssen geprüft werden.",
+    "mode_tags": [
+      "spannung"
+    ],
+    "tone_tags": [
+      "systemisch",
+      "provokant"
+    ],
+    "element_affinity": [],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 16,
+    "word_count_en": 17,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0116",
+    "status": "approved",
+    "text": {
+      "de": "Wir haben kluge Definitionen gefunden für Menschen, die wir nicht einladen: Arschlöcher.",
+      "en": "We have found clever definitions for people we do not invite: assholes.",
+      "original": null
+    },
+    "source": {
+      "author": "Anke Engelke",
+      "work": "zugeschrieben / Gesprächsnotiz",
+      "year": null,
+      "original_language": "de",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "disputed",
+    "attribution_note": "Der Ton ist deutlich vulgärer als die meisten Horoskop-Aphorismen. Nur verwenden, wenn der Kanal Ironie und Direktheit verträgt. Quelle offen.",
+    "mode_tags": [
+      "spannung"
+    ],
+    "tone_tags": [
+      "komisch",
+      "direkt"
+    ],
+    "element_affinity": [
+      "feuer"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 12,
+    "word_count_en": 12,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0117",
+    "status": "approved",
+    "text": {
+      "de": "Ein Herz kann gebrochen sein, aber es schlägt trotzdem weiter.",
+      "en": "A heart can be broken, but it keeps on beating just the same.",
+      "original": null
+    },
+    "source": {
+      "author": "Fannie Flagg / Filmfassung zugeschrieben",
+      "work": "Fried Green Tomatoes / genaue Fassung prüfen",
+      "year": 1991,
+      "original_language": "en",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "disputed",
+    "attribution_note": "Im Gespräch ohne Quelle genannt. Wahrscheinlich aus „Fried Green Tomatoes“ beziehungsweise dem Fannie-Flagg-Kontext. Exakte Quelle prüfen.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "tröstlich",
+      "resilient"
+    ],
+    "element_affinity": [
+      "wasser"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 10,
+    "word_count_en": 13,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0118",
+    "status": "approved",
+    "text": {
+      "de": "Du wirst schlechte Zeiten haben, aber sie werden dich immer auf die guten Dinge aufmerksam machen, denen du vorher keine Beachtung geschenkt hast.",
+      "en": "You’ll have bad times, but it’ll always wake you up to the good stuff you weren’t paying attention to.",
+      "original": null
+    },
+    "source": {
+      "author": "Matt Damon / Ben Affleck / Filmfigur Sean Maguire",
+      "work": "Good Will Hunting",
+      "year": 1997,
+      "original_language": "en",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "disputed",
+    "attribution_note": "Als „Good Will Hunting“-Zitat aufgenommen. Exakte Filmfassung und deutsche Synchronfassung vor finaler Nutzung prüfen.",
+    "mode_tags": [
+      "pulse"
+    ],
+    "tone_tags": [
+      "tröstlich",
+      "lebensklug"
+    ],
+    "element_affinity": [
+      "wasser"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 23,
+    "word_count_en": 19,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0119",
+    "status": "approved",
+    "text": {
+      "de": "Es sind unsere Entscheidungen, Harry, die zeigen, wer wir wirklich sind, weit mehr als unsere Fähigkeiten.",
+      "en": "It is our choices, Harry, that show what we truly are, far more than our abilities.",
+      "original": null
+    },
+    "source": {
+      "author": "J. K. Rowling",
+      "work": "Harry Potter and the Chamber of Secrets",
+      "year": 1998,
+      "original_language": "en",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "verified",
+    "attribution_note": null,
+    "mode_tags": [
+      "spannung"
+    ],
+    "tone_tags": [
+      "moralisch",
+      "identitätsstiftend"
+    ],
+    "element_affinity": [
+      "feuer"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 16,
+    "word_count_en": 16,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0120",
+    "status": "approved",
+    "text": {
+      "de": "Du darfst keine Angst haben, ein bisschen größer zu träumen, Schätzchen.",
+      "en": "You mustn’t be afraid to dream a little bigger, darling.",
+      "original": null
+    },
+    "source": {
+      "author": "Christopher Nolan / Filmfigur Eames",
+      "work": "Inception",
+      "year": 2010,
+      "original_language": "en",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "disputed",
+    "attribution_note": "Im Gespräch zunächst fälschlich mit „Alice im Wunderland“ assoziiert, korrekt ist „Inception“, Figur Eames. Deutsche Synchronfassung prüfen.",
+    "mode_tags": [
+      "spannung"
+    ],
+    "tone_tags": [
+      "mutig",
+      "spielerisch"
+    ],
+    "element_affinity": [
+      "feuer"
+    ],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 11,
+    "word_count_en": 10,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  },
+  {
+    "id": "aph-0121",
+    "status": "approved",
+    "text": {
+      "de": "Sie haben keine Angst vor dir. Sie haben Angst vor dem, wofür du für sie stehst.",
+      "en": "They’re not scared of you. They’re scared of what you represent to ’em.",
+      "original": null
+    },
+    "source": {
+      "author": "Terry Southern / Peter Fonda / Dennis Hopper / Jack Nicholson als George Hanson",
+      "work": "Easy Rider",
+      "year": 1969,
+      "original_language": "en",
+      "translator_de": "",
+      "translator_en": ""
+    },
+    "copyright": "Zitatrecht",
+    "attribution_status": "disputed",
+    "attribution_note": "Die Szene ist nicht mit Anthony Hopkins, sondern mit Jack Nicholson als George Hanson, zusammen mit Peter Fonda und Dennis Hopper. Für das Repository nur kurze, exakt geprüfte Zitatteile verwenden oder als Paraphrase formulieren.",
+    "mode_tags": [
+      "spannung"
+    ],
+    "tone_tags": [
+      "freiheitsbezogen",
+      "gesellschaftskritisch"
+    ],
+    "element_affinity": [],
+    "figure_affinity": [],
+    "season_affinity": [],
+    "word_count_de": 16,
+    "word_count_en": 13,
+    "quality_rating": 4,
+    "first_used": null,
+    "cooldown_days": 30
+  }
+]
