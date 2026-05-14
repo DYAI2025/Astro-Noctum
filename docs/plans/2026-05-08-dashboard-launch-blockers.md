@@ -937,16 +937,44 @@ Return it from the hook (Zeile 253). Mock it in any existing test that destructu
 
 **Step 2: Classify failures in the catch-block**
 
+#### Sanitization principles (added 2026-05-09 by F5)
+
+The `message` field of the `error: { code, message }` shape is rendered to end users via DailyChartHero. It MUST NOT contain:
+
+1. **Raw `err.message` content** — error messages from `fetch`, Zod, or Supabase frequently embed:
+   - Internal URLs and IPs (e.g., `ECONNREFUSED 127.0.0.1:3001`, `https://abcdef.supabase.co/...`)
+   - Stack-frame fragments
+   - Echoed request-body excerpts from validators (potentially containing user PII like birth date / coordinates)
+   - Unbounded length (Zod errors can be 500+ chars of nested path tracebacks)
+
+2. **Concatenated debug context** — `${err.name}: ${err.stack}` and similar.
+
+3. **Localized strings from third-party libraries** — Supabase/Postgrest can return messages in the locale of the server. The user-facing `message` MUST be English (per `CLAUDE.md` Language Policy).
+
+**Rule:** map each error class to a **fixed, pre-authored English string**. Pass the raw error to `console.error` for dev/Sentry visibility — but keep the UI surface clean. If a code needs more diagnostic detail in production, add a structured `details` field later (out of scope for 1.12); do not smuggle it through `message`.
+
+**AbortError handling (added 2026-05-09 after F3):** the `AbortSignal` now propagates to `fetch()`, so an unmount or 06:00 listener cleanup throws `AbortError`. This is **not a user-facing failure** — it means the consumer of the previous result no longer exists. Short-circuit the catch-block before the classifier runs; do NOT call `setError`.
+
+#### Implementation
+
 Replace the existing catch-block (`useFirstRunDaily.ts:209-218`):
 
 ```ts
 } catch (err) {
   // Per project doctrine 2026-05-08: surface failures explicitly,
-  // do NOT substitute synthetic fallback content.
-  if (cancelled) return;
+  // do NOT substitute synthetic fallback content. Per F5 sanitization
+  // principle: NEVER inline raw err.message into the user-facing
+  // `message` field — only fixed English strings keyed by error code.
+
+  if (opts.signal?.aborted) return;
+
+  // F3 follow-up: aborted fetches throw AbortError. The consumer (the
+  // hook caller) has gone away — there is nothing to surface, and no
+  // user is waiting to read an error message. Suppress entirely.
+  if (err instanceof Error && err.name === 'AbortError') return;
 
   let code = 'DAILY-PULSE-FETCH-FAILED-UNKNOWN';
-  let message = 'Daily horoscope fetch failed.';
+  let message = 'Daily horoscope fetch failed.'; // safe default, English, < 80 chars
 
   if (err instanceof Error) {
     // Match the error shapes thrown by fetchDailyExperience (see services/experience.ts:64)
@@ -954,24 +982,34 @@ Replace the existing catch-block (`useFirstRunDaily.ts:209-218`):
     if (m) {
       code = `DAILY-PULSE-FETCH-FAILED-${m[1]}`;
       message = `FuFirE /api/experience/daily returned HTTP ${m[1]}.`;
-    } else if (err.name === 'TypeError' || err.message.toLowerCase().includes('fetch')) {
+    } else if (err.name === 'TypeError' || /fetch/i.test(err.message)) {
       code = 'DAILY-PULSE-FETCH-FAILED-NETWORK';
-      message = `Network error reaching /api/experience/daily: ${err.message}`;
-    } else if (err.message.includes('parse') || err.name === 'ZodError') {
+      message = 'Network error reaching /api/experience/daily.';
+    } else if (err.name === 'ZodError' || /parse/i.test(err.message)) {
       code = 'DAILY-PULSE-FETCH-FAILED-VALIDATION';
-      message = `Daily-pulse response failed schema validation: ${err.message}`;
-    } else {
-      message = err.message;
+      message = 'Daily-pulse response failed schema validation.';
     }
+    // Note: NO `else { message = err.message }` branch. Unknown errors
+    // get the safe default. The raw err is logged below for diagnostics.
   }
 
-  console.error(`[useFirstRunDaily] [${code}]`, message, err);
+  // Diagnostic channel — full error object stays here. UI never sees it.
+  console.error(`[useFirstRunDaily] [${code}]`, err);
+
   setDailyData(null);
   setError({ code, message });
 } finally {
-  if (!cancelled) setLoading(false);
+  if (!opts.signal?.aborted) setLoading(false);
 }
 ```
+
+> **Sanitization invariants** any future modifier of this catch-block MUST preserve:
+>
+> - `message` is one of a fixed enum of pre-authored strings (or the default).
+> - `message` is English and ≤ 80 characters.
+> - `message` contains no URLs, no IPs, no stack frames, no echoed user input.
+> - `AbortError` returns silently (no `setError` call).
+> - The raw `err` object is logged to `console.error` exactly once.
 
 **Step 3: Clear `error` on successful fetch**
 

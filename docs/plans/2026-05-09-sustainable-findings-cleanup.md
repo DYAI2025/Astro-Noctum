@@ -40,11 +40,11 @@ A commit is "doctrine-clean" only when:
 
 | ID | Source | Severity | Status | Description |
 |----|--------|----------|--------|-------------|
-| F1 | 1.10 review (M1) | LOW | open | Hardcoded rose RGBA in DailyChartHero error block — bypasses theme tokens |
-| F2 | 1.10 review (coverage gap) | LOW | open | No negative-path test: `error: null` + impulsText set → impulse renders, error block absent |
-| F3 | 1.7/1.8 review (M1 perf) | MINOR | open with TODO | `opts.signal` in `runDailyFetch` is advisory-only — does not propagate to `fetch()` via `services/experience.ts` + `lib/authedFetch.ts` |
-| F4 | 1.10 review (test infrastructure) | MINOR | open | Vitest fake-timer + parallelism races: 4–5 random failures in full suite ~30% of runs. Tests pass in isolation. |
-| F5 | 1.10 review (forward-looking, A04 OWASP) | PRINCIPLE | not yet relevant | Task 1.12's error classifier MUST sanitize messages: no stack traces, file paths, user IDs, tokens |
+| F1 | 1.10 review (M1) | LOW | ✅ closed (`ca182e8`) | Hardcoded rose RGBA in DailyChartHero error block — bypasses theme tokens |
+| F2 | 1.10 review (coverage gap) | LOW | ✅ closed (`cd433ab`) | No negative-path test: `error: null` + impulsText set → impulse renders, error block absent |
+| F3 | 1.7/1.8 review (M1 perf) | MINOR | ✅ closed (`5505f72`+`1bf5c2b`) | `opts.signal` in `runDailyFetch` was advisory-only — now propagates to `fetch()` via `services/experience.ts` (8th param) |
+| F4 | 1.10 review (test infrastructure) | MINOR | ✅ closed (empirical) | Flake not reproducible after F1–F3: 3 consecutive full-suite runs all 248/248 files / 2303/2303 tests green. Earlier flake likely caused by F1's original DOM-based test (now replaced with source-file static-analysis). No config change needed; suite remains stable in default parallel mode. |
+| F5 | 1.10 review (forward-looking, A04 OWASP) | PRINCIPLE | ✅ closed (plan edit) | Task 1.12's catch-block requirements amended: fixed English strings only, no raw `err.message` in user-facing field, AbortError suppressed silently, sanitization invariants enumerated. |
 
 ---
 
