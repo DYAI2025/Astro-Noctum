@@ -54,3 +54,4 @@ Per [`data-model.md`](../../2-design/data-model.md):
 |------|-------|---------|
 | [DEC-supabase-as-personal-data-store](../../decisions/DEC-supabase-as-personal-data-store.md) | Supabase as primary personal-data store | All schema work in this component lands in Supabase migrations |
 | [DEC-rtbf-grace-window-24h](../../decisions/DEC-rtbf-grace-window-24h.md) | RTBF cancellation grace window is 24 hours | `rtbf_deletion_jobs.grace_window_ends_at` column derives from this; the 24h value is reflected in CHECK constraints or scheduler queries |
+| [DEC-codebase-lives-in-sibling-prod-dir](../../decisions/DEC-codebase-lives-in-sibling-prod-dir.md) | Runtime code lives in sibling `Astro-Noctum-prod/` directory | When writing migrations or seed scripts — runtime files live in `Astro-Noctum-prod/supabase/migrations/` and `Astro-Noctum-prod/supabase/seeds/` |

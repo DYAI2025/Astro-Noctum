@@ -20,7 +20,7 @@
 
 ### Current State
 
-**Phase: Design — in progress (2026-05-13).** Specification gate cleared 2026-05-07. Mid-Design REQ-SEC elicitation (2026-05-13) added 9 Approved security requirements, closing the previously-known REQ-SEC gap.
+**Phase: Code — in progress (2026-05-14).** Design phase completed 2026-05-13 (architecture / data-model / api-design drafted; 6 components decomposed; 59-task implementation plan populated). Spec gate cleared 2026-05-07. Mid-Design REQ-SEC elicitation (2026-05-13) added 9 Approved security requirements, closing the previously-known REQ-SEC gap. Mid-Code transition (2026-05-14) recorded [DEC-codebase-lives-in-sibling-prod-dir](decisions/DEC-codebase-lives-in-sibling-prod-dir.md) formalizing this SDLC scaffold as a documentation/governance overlay on the existing `Astro-Noctum-prod/` codebase.
 
 **Specification artifacts (post-elicitation):** Stakeholders 3; Goals 6 (all Approved); Requirements **39 total — 28 Approved (19 prior + 9 new REQ-SEC), 11 Should-have Draft**; Assumptions 5 (Unverified); Constraints 7 (Active). Requirement class distribution now includes 9 REQ-SEC (previously 0).
 
@@ -40,6 +40,10 @@
 **Components identified (2026-05-13):** 6 components decomposed into `3-code/` per `docs/plans/2026-05-13-component-decomposition.md`. `shared-types` (TypeScript types-only package), `web-frontend` (React SPA), `web-server` (Node `/api/*` routes), `edge-functions` (Supabase Edge Functions for `/v1/*` HTTP + scheduled jobs), `database` (Supabase Postgres schema), `tagespuls-package` (Python + TypeScript aphorism content + build pipeline). Each component has a `CLAUDE.component.md` describing responsibility, interfaces, requirement coverage, and relevant decisions.
 
 **Aphorism corpus (2026-05-14 — F6 batch):** Expanded to 54 review files / 33 approved entries (was 21 / 0) via plan `docs/plans/2026-05-14-aphorism-batch-extension-aph-0089-0121.md`. New batch IDs: aph-0089..aph-0121 (contiguous). Prod commits land on feature branch `feature/aphorism-batch-aph-0089-0121`. The 21 existing review files remain `status: draft`. Mode coverage of the approved pool: 19 `pulse`, 14 `spannung`, 0 `trace` — `trace`-mode daily-pulse rendering needs additional content before that surface can ship.
+
+**Implementation plan (2026-05-14):** `3-code/tasks.md` populated with **59 tasks across 13 phases (P0–P12)**, each phase ending with a deployable/testable system. Coverage: all 28 Approved + 11 Draft requirements have at least one implementing task; all 6 Active constraints respected; all 5 Active decisions enforced or referenced. Critical-path phases: P0 (baseline + shared-types + Python build verify) → P2 (database foundation) → P3/P9 (security + GDPR endpoints) → P8 (Tagespuls Neu) → P10/P11 (premium + schedulers) → P12 (pre-launch verification incl. ASM-supabase verification closing I-2). Known content blocker: `trace`-mode aphorisms still 0-approved, surface remains effectively gated in P8-TASK-8-8 until corpus expansion.
+
+**Implementation progress (2026-05-14):** 1 of 59 tasks Done — **TASK-0-1** (baseline checks: tsc / build / test all pass, 2 pre-existing observations recorded in `docs/baseline-checks-2026-05-14.md`). Currently in Phase 0; next task TASK-0-2 (shared-types workspace package skeleton).
 
 ---
 

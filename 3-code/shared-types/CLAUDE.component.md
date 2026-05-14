@@ -30,4 +30,4 @@ This component does not directly satisfy any single requirement; it is a structu
 
 | File | Title | Trigger |
 |------|-------|---------|
-| _(none yet — this component is structural; runtime decisions live in consuming components.)_ | | |
+| [DEC-codebase-lives-in-sibling-prod-dir](../../decisions/DEC-codebase-lives-in-sibling-prod-dir.md) | Runtime code lives in sibling `Astro-Noctum-prod/` directory | When deciding where the shared-types workspace package lives — defaults to `Astro-Noctum-prod/packages/shared-types/` per the overlay model |

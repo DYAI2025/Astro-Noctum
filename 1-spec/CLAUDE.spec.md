@@ -80,6 +80,7 @@ When an artifact (goal, user story, requirement) is no longer relevant:
 | [DEC-llm-provider-gemini](../decisions/DEC-llm-provider-gemini.md) | Google Gemini as primary LLM provider | When adding a requirement that involves LLM-generated text |
 | [DEC-rtbf-grace-window-24h](../decisions/DEC-rtbf-grace-window-24h.md) | RTBF cancellation grace window is 24 hours | When adjusting the RTBF requirement family (REQ-COMP-rtbf, REQ-SEC-rtbf-authz) |
 | [DEC-aphorism-batch-approval-bp-2026-05-14](../decisions/DEC-aphorism-batch-approval-bp-2026-05-14.md) | Aphorism batch approval by plan artifact | When operator wants to approve a batch of aphorisms via plan rather than per-file edits |
+| [DEC-codebase-lives-in-sibling-prod-dir](../decisions/DEC-codebase-lives-in-sibling-prod-dir.md) | Runtime code lives in sibling `Astro-Noctum-prod/` directory | When a requirement references a specific file path — confirm whether the path is in `Astro-Noctum-prod/` (existing code) or `3-code/<component>/` (new SDLC artifact) |
 <!-- Add rows as decisions are recorded. File column: [DEC-kebab-name](../decisions/DEC-kebab-name.md) -->
 
 ---

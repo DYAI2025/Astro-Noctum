@@ -52,3 +52,4 @@
 | [DEC-supabase-as-personal-data-store](../../decisions/DEC-supabase-as-personal-data-store.md) | Supabase as primary personal-data store | When adding an endpoint that reads / writes per-user data |
 | [DEC-llm-provider-gemini](../../decisions/DEC-llm-provider-gemini.md) | Google Gemini as primary LLM provider | When adding a feature that requires LLM output — all calls go through the LLM gateway |
 | [DEC-rtbf-grace-window-24h](../../decisions/DEC-rtbf-grace-window-24h.md) | RTBF cancellation grace window is 24 hours | When implementing the RTBF state machine or the scheduler advancing `pending_grace → executing` |
+| [DEC-codebase-lives-in-sibling-prod-dir](../../decisions/DEC-codebase-lives-in-sibling-prod-dir.md) | Runtime code lives in sibling `Astro-Noctum-prod/` directory | When editing or adding Edge Function code — runtime files live in `Astro-Noctum-prod/supabase/functions/...` |

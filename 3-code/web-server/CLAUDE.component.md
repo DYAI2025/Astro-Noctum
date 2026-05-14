@@ -42,3 +42,4 @@ Stripe webhook handler (responsible for `subscription_state` UPSERTs) implicitly
 | File | Title | Trigger |
 |------|-------|---------|
 | [DEC-supabase-as-personal-data-store](../../decisions/DEC-supabase-as-personal-data-store.md) | Supabase as primary personal-data store | When adding a new server route that reads / writes personal data |
+| [DEC-codebase-lives-in-sibling-prod-dir](../../decisions/DEC-codebase-lives-in-sibling-prod-dir.md) | Runtime code lives in sibling `Astro-Noctum-prod/` directory | When editing or adding `/api/*` route code — runtime files live in `Astro-Noctum-prod/server.mjs` and adjacent server-route files |

@@ -58,4 +58,4 @@
 
 | File | Title | Trigger |
 |------|-------|---------|
-| _(none yet — frontend-specific decisions, e.g., state-management library choice or feature-flag service, are recorded as they emerge during Code phase.)_ | | |
+| [DEC-codebase-lives-in-sibling-prod-dir](../../decisions/DEC-codebase-lives-in-sibling-prod-dir.md) | Runtime code lives in sibling `Astro-Noctum-prod/` directory | When editing or adding frontend code — runtime files live in `Astro-Noctum-prod/src/...`; this directory holds component governance only |

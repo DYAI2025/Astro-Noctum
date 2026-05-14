@@ -21,6 +21,7 @@ This phase defines **how** we're building the system. Focus on architecture, dat
 | [DEC-supabase-as-personal-data-store](../decisions/DEC-supabase-as-personal-data-store.md) | Supabase Postgres as primary personal-data store | When adding an entity holding per-user personal data or a new endpoint touching per-user data |
 | [DEC-llm-provider-gemini](../decisions/DEC-llm-provider-gemini.md) | Google Gemini as primary LLM provider | When adding a feature requiring LLM output |
 | [DEC-rtbf-grace-window-24h](../decisions/DEC-rtbf-grace-window-24h.md) | RTBF cancellation grace window is 24 hours | When modifying the RTBF state machine or the `rtbf_deletion_jobs` schema |
+| [DEC-codebase-lives-in-sibling-prod-dir](../decisions/DEC-codebase-lives-in-sibling-prod-dir.md) | Runtime code lives in sibling `Astro-Noctum-prod/` directory | When a design document references file paths — paths refer to `Astro-Noctum-prod/` for runtime code unless explicitly noted |
 <!-- Add rows as decisions are recorded. File column: [DEC-kebab-name](../decisions/DEC-kebab-name.md) -->
 
 ---

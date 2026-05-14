@@ -28,3 +28,4 @@
 | File | Title | Trigger |
 |------|-------|---------|
 | [DEC-aphorism-batch-approval-bp-2026-05-14](../../decisions/DEC-aphorism-batch-approval-bp-2026-05-14.md) | Aphorism batch approval by plan artifact | When the operator approves a batch via plan rather than per-file edits |
+| [DEC-codebase-lives-in-sibling-prod-dir](../../decisions/DEC-codebase-lives-in-sibling-prod-dir.md) | Runtime code lives in sibling `Astro-Noctum-prod/` directory | When editing aphorism content or build pipeline — runtime files live in `Astro-Noctum-prod/apps/tagespuls_package/` |

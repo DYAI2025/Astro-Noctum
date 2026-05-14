@@ -50,11 +50,15 @@ This phase contains the **implementation**. Focus on clean, tested, maintainable
 
 ## Component Isolation
 
-All source code, configuration, and assets for a component **must reside within that component's directory**. Specifically:
+**Important:** per [DEC-codebase-lives-in-sibling-prod-dir](../decisions/DEC-codebase-lives-in-sibling-prod-dir.md), this SDLC scaffold is a documentation/governance overlay on the existing `Astro-Noctum-prod/` codebase. The rules below apply to **new SDLC-governed artifacts** in `3-code/<component>/` — they do not require the pre-existing runtime code to be moved out of `Astro-Noctum-prod/`.
 
-- **No code outside component directories** — never place source files, configuration files, or build artifacts in `3-code/` itself or anywhere else outside the owning component's directory.
+For new SDLC-introduced artifacts (e.g., migration drafts before they land in `supabase/migrations/`, component documentation, new decisions, build-pipeline metadata):
+
+- **No artifact outside component directories** — never place these in `3-code/` itself or anywhere else outside the owning component's directory.
 - **No cross-component configuration** — configuration that spans multiple components should never be necessary. If such a situation arises, treat it as a potential design flaw or incorrect component separation. Stop work, notify the user with a clear description of the conflict, and propose alternative actions (e.g., refactoring responsibilities, introducing a new component, or adjusting the design).
 - **Do not rename or move component directories** — directory names are fixed; renaming or relocating them breaks cross-phase references and tooling assumptions.
+
+For runtime source code, build configuration, package manifests, and lockfiles — those live in `Astro-Noctum-prod/` per DEC-codebase-lives-in-sibling-prod-dir. Cross-references from design / component docs use paths rooted at `Astro-Noctum-prod/` (e.g., `src/components/Dashboard.tsx`).
 
 ---
 
