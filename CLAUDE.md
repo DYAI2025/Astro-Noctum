@@ -39,6 +39,8 @@
 
 **Components identified (2026-05-13):** 6 components decomposed into `3-code/` per `docs/plans/2026-05-13-component-decomposition.md`. `shared-types` (TypeScript types-only package), `web-frontend` (React SPA), `web-server` (Node `/api/*` routes), `edge-functions` (Supabase Edge Functions for `/v1/*` HTTP + scheduled jobs), `database` (Supabase Postgres schema), `tagespuls-package` (Python + TypeScript aphorism content + build pipeline). Each component has a `CLAUDE.component.md` describing responsibility, interfaces, requirement coverage, and relevant decisions.
 
+**Aphorism corpus (2026-05-14 — F6 batch):** Expanded to 54 review files / 33 approved entries (was 21 / 0) via plan `docs/plans/2026-05-14-aphorism-batch-extension-aph-0089-0121.md`. New batch IDs: aph-0089..aph-0121 (contiguous). Prod commits land on feature branch `feature/aphorism-batch-aph-0089-0121`. The 21 existing review files remain `status: draft`. Mode coverage of the approved pool: 19 `pulse`, 14 `spannung`, 0 `trace` — `trace`-mode daily-pulse rendering needs additional content before that surface can ship.
+
 ---
 
 ## Phase-Specific Instructions
