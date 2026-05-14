@@ -10,7 +10,9 @@ This phase handles **deployment and operations**. Focus on reliability, repeatab
 
 | File | Title | Trigger |
 |------|-------|---------|
-| _(none yet)_ | | |
+| [DEC-supabase-as-personal-data-store](../decisions/DEC-supabase-as-personal-data-store.md) | Supabase Postgres as primary personal-data store | Supabase region must be EU; deployment must verify residency + DPA on file |
+| [DEC-llm-provider-gemini](../decisions/DEC-llm-provider-gemini.md) | Google Gemini as primary LLM provider | Gemini API key stored as server-side env var only; DPA with Google in place |
+| [DEC-rtbf-grace-window-24h](../decisions/DEC-rtbf-grace-window-24h.md) | RTBF cancellation grace window is 24 hours | Scheduler must run at least every 1 hour to enforce the grace window |
 <!-- Add rows as decisions are recorded. File column: [DEC-kebab-name](../decisions/DEC-kebab-name.md) -->
 
 ---

@@ -18,7 +18,9 @@ This phase defines **how** we're building the system. Focus on architecture, dat
 
 | File | Title | Trigger |
 |------|-------|---------|
-| _(none yet)_ | | |
+| [DEC-supabase-as-personal-data-store](../decisions/DEC-supabase-as-personal-data-store.md) | Supabase Postgres as primary personal-data store | When adding an entity holding per-user personal data or a new endpoint touching per-user data |
+| [DEC-llm-provider-gemini](../decisions/DEC-llm-provider-gemini.md) | Google Gemini as primary LLM provider | When adding a feature requiring LLM output |
+| [DEC-rtbf-grace-window-24h](../decisions/DEC-rtbf-grace-window-24h.md) | RTBF cancellation grace window is 24 hours | When modifying the RTBF state machine or the `rtbf_deletion_jobs` schema |
 <!-- Add rows as decisions are recorded. File column: [DEC-kebab-name](../decisions/DEC-kebab-name.md) -->
 
 ---
