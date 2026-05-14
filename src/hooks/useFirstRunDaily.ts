@@ -40,9 +40,22 @@ interface UseFirstRunDailyResult {
 
 // ── Cache key helper ──────────────────────────────────────────────────
 
-// Returns the LOCAL calendar date as YYYY-MM-DD.
-// toISOString() returns UTC — in any timezone ahead of UTC, that would
-// still show yesterday's date after local midnight.
+/**
+ * Returns the LOCAL calendar date as YYYY-MM-DD.
+ *
+ * `toISOString()` returns UTC — in any timezone ahead of UTC, that
+ * would still show yesterday's date after local midnight. This helper
+ * uses local-date getters to avoid that pitfall.
+ *
+ * @deprecated 2026-05-08 — Use {@link dailyCacheKey} for cache lookups.
+ * `dailyCacheKey()` honors the 06:00 local-time day-window boundary that
+ * matches user expectations ("today's horoscope" = waking day, not the
+ * calendar day). `todayKey` is retained only because two existing test
+ * files (`daily-fallback.test.ts`, `daily-inline-rendering.test.ts`)
+ * still import it. Remove once those tests are migrated or deleted —
+ * tracked in `docs/plans/2026-05-08-dashboard-launch-blockers.md`
+ * (Phase 3 cleanup).
+ */
 export function todayKey(): string {
   const now = new Date();
   const y = now.getFullYear();
@@ -51,12 +64,57 @@ export function todayKey(): string {
   return `${y}-${m}-${d}`;
 }
 
-function getCachedDaily(): DailyResponse | null {
+/**
+ * Day-window key for daily-horoscope caching.
+ *
+ * The day window rotates at 06:00 local time, not midnight — users
+ * perceive "today's horoscope" as referring to the waking day, not the
+ * calendar day. Times between 00:00 and 05:59 belong to the previous
+ * day's window.
+ *
+ * Returns a YYYY-MM-DD string identifying the day-window.
+ *
+ * Example trace (Europe/Berlin, no DST switch):
+ *   2026-05-07 23:59 → "2026-05-07"   (still in May 7's window)
+ *   2026-05-08 04:00 → "2026-05-07"   (still in May 7's window — pre-rotation)
+ *   2026-05-08 05:59 → "2026-05-07"   (last second of May 7's window)
+ *   2026-05-08 06:00 → "2026-05-08"   (rotation: enter May 8's window)
+ *   2026-05-08 23:59 → "2026-05-08"   (in May 8's window)
+ *
+ * Year, leap-year, and month boundaries are delegated to Date.setDate(0)
+ * semantics (which roll back to the last day of the previous month,
+ * accounting for variable month lengths and leap days). Verified by
+ * src/__tests__/daily-pulse-six-am-rotation.test.ts.
+ */
+export function dailyCacheKey(): string {
+  const now = new Date();
+  const windowedDate = new Date(now);
+  if (now.getHours() < 6) {
+    windowedDate.setDate(now.getDate() - 1);
+  }
+  const y = windowedDate.getFullYear();
+  const m = String(windowedDate.getMonth() + 1).padStart(2, '0');
+  const d = String(windowedDate.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+/**
+ * Read the cached daily-horoscope payload IF it belongs to the current
+ * day-window (06:00 local boundary, see {@link dailyCacheKey}). Returns
+ * null if no cache exists, the cache is stale, or parsing fails.
+ *
+ * @internal Exported as of Task 1.6 (2026-05-08) for direct contract
+ * testing in `src/__tests__/daily-pulse-six-am-cache-rotation.test.ts`.
+ * Production code should consume the cache via the `useFirstRunDaily`
+ * hook — not via direct calls — to preserve the hook's invariants
+ * (dedupe via `lastFetchedDateRef`, error-state propagation, etc.).
+ */
+export function getCachedDaily(): DailyResponse | null {
   try {
     const raw = localStorage.getItem('daily_horoscope_cache');
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    if (parsed?.date === todayKey() && parsed?.data) {
+    if (parsed?.date === dailyCacheKey() && parsed?.data) {
       return parsed.data as DailyResponse;
     }
     return null;
@@ -65,11 +123,21 @@ function getCachedDaily(): DailyResponse | null {
   }
 }
 
-function setCachedDaily(data: DailyResponse): void {
+/**
+ * Persist the daily-horoscope payload tagged with the current day-window
+ * key. The next read will only return this payload while the local clock
+ * is within the same 06:00→05:59 window.
+ *
+ * @internal Exported as of Task 1.6 (2026-05-08) for direct contract
+ * testing in `src/__tests__/daily-pulse-six-am-cache-rotation.test.ts`.
+ * Production code should consume the cache via the `useFirstRunDaily`
+ * hook — not via direct calls.
+ */
+export function setCachedDaily(data: DailyResponse): void {
   try {
     localStorage.setItem(
       'daily_horoscope_cache',
-      JSON.stringify({ date: todayKey(), data }),
+      JSON.stringify({ date: dailyCacheKey(), data }),
     );
   } catch {
     // localStorage full or unavailable — ignore
@@ -125,7 +193,16 @@ export function useFirstRunDaily(
   // dependency array is identical.
   const [retryTick, setRetryTick] = useState(0);
 
-  useEffect(() => {
+  // ── Fetch logic — extracted to a callback so the 06:00 listener below
+  //    can reuse it without duplicating ~80 LOC.
+  //
+  //    Cancellation moved from `let cancelled` (closure flag) to AbortSignal
+  //    so the same callback can be invoked from both the mount-effect and
+  //    the listener, each with their own cancellation handle. The signal is
+  //    forwarded into fetchDailyExperience → authedFetch → fetch() so an
+  //    aborted controller actually cancels the in-flight network request
+  //    (F3 of docs/plans/2026-05-09-sustainable-findings-cleanup.md).
+  const runDailyFetch = useCallback(async (opts: { signal?: AbortSignal } = {}) => {
     const now = new Date();
     const currentHour = now.getHours();
     const isTodayTarget = !customDate || customDate === todayKey();
@@ -292,6 +369,49 @@ export function useFirstRunDaily(
     setError(null);
     setRetryTick((t) => t + 1);
   }, [loading, error, dailyData]);
+
+  // Mount-fetch: run when deps change. Reuses the callback above.
+  useEffect(() => {
+    const ac = new AbortController();
+    runDailyFetch({ signal: ac.signal });
+    return () => ac.abort();
+  }, [runDailyFetch]);
+
+  // ── 06:00 day-window listener ─────────────────────────────────────────
+  // Per project doctrine 2026-05-08 + user requirement: "Morgens um 6 Uhr
+  // muss es automatisch auf das neue Tageshoroskop wechseln." This effect
+  // schedules a single setTimeout that fires at the next 06:00 LOCAL time,
+  // resets the dedupe ref, clears the (now-stale) cache, and re-invokes
+  // runDailyFetch so the dashboard rolls onto the new day-window without
+  // a page reload. The setTimeout is short enough (≤24 h) for setTimeout's
+  // 32-bit integer ms range to hold without rollover.
+  useEffect(() => {
+    const now = new Date();
+    const next6am = new Date(now);
+    next6am.setHours(6, 0, 0, 0);
+    if (now.getTime() >= next6am.getTime()) {
+      next6am.setDate(next6am.getDate() + 1);
+    }
+    const msUntilNext6am = next6am.getTime() - now.getTime();
+
+    const timer = setTimeout(() => {
+      // Clear the localStorage cache: at this point dailyCacheKey() has
+      // rotated to the new day-window, so the existing entry would no
+      // longer match anyway. Removing it explicitly keeps localStorage
+      // tidy and avoids stale data lingering across user-tab visits.
+      localStorage.removeItem('daily_horoscope_cache');
+      // Reset the dedupe ref so runDailyFetch's `targetDate ===
+      // lastFetchedDateRef.current` guard releases.
+      lastFetchedDateRef.current = null;
+      // Reset state so consumers see the loading transition cleanly.
+      setDailyData(null);
+      // Trigger the refetch. No AbortSignal here — if the component
+      // unmounts mid-fetch, React 18 silently ignores the state updates.
+      runDailyFetch();
+    }, msUntilNext6am);
+
+    return () => clearTimeout(timer);
+  }, [runDailyFetch]);
 
   const handleClose = useCallback(() => {
     setShowModal(false);

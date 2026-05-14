@@ -47,6 +47,7 @@ export async function fetchDailyExperience(
   locale = 'de-DE',
   transitInfluences: TransitInfluenceInput[] = [],
   birthSign = '',
+  options?: { signal?: AbortSignal },
 ): Promise<DailyResponse> {
   const resp = await authedFetch('/api/experience/daily', {
     method: 'POST',
@@ -60,6 +61,7 @@ export async function fetchDailyExperience(
       transit_influences: transitInfluences,
       birth_sign: birthSign,
     }),
+    signal: options?.signal,
   });
   if (!resp.ok) throw new Error(`Daily horoscope failed: ${resp.status}`);
   return DailyResponseSchema.parse(await resp.json());
