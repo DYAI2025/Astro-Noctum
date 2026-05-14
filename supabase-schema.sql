@@ -243,3 +243,131 @@ CREATE INDEX IF NOT EXISTS stripe_events_type_idx ON stripe_events (type);
 CREATE INDEX IF NOT EXISTS stripe_events_received_idx ON stripe_events (received_at DESC);
 
 ALTER TABLE stripe_events ENABLE ROW LEVEL SECURITY;
+
+-- ── Tagespuls (no-placeholders architecture) ───────────────────────
+-- Mirrors supabase-migrations/20260509_tagespuls_tables.sql. Five
+-- tables backing the new daily-pulse flow. RLS on with no policies on
+-- all five → service_role only. The handler computes Wuxing vectors
+-- inline from astro_profiles.astro_json (no separate cache table).
+-- daily_pulses.slot_2 / slot_3 are NULLABLE: when the LLM is
+-- unavailable we still persist the row (aphorism + computed mode +
+-- intensity) and the client renders the aphorism alone.
+
+CREATE TABLE IF NOT EXISTS aphorisms (
+  id                  TEXT        PRIMARY KEY,
+  status              TEXT        NOT NULL CHECK (status IN ('approved','retired')),
+  text_de             TEXT        NOT NULL,
+  text_en             TEXT        NOT NULL,
+  text_original       TEXT,
+  author              TEXT        NOT NULL,
+  work                TEXT,
+  year                INTEGER,
+  original_language   TEXT        NOT NULL,
+  translator_de       TEXT,
+  translator_en       TEXT,
+  copyright           TEXT        NOT NULL,
+  attribution_status  TEXT        NOT NULL,
+  attribution_note    TEXT,
+  mode_tags           TEXT[]      NOT NULL,
+  tone_tags           TEXT[]      NOT NULL DEFAULT '{}',
+  element_affinity    TEXT[]      NOT NULL DEFAULT '{}',
+  figure_affinity     TEXT[]      NOT NULL DEFAULT '{}',
+  season_affinity     TEXT[]      NOT NULL DEFAULT '{}',
+  word_count_de       INTEGER     NOT NULL,
+  word_count_en       INTEGER     NOT NULL,
+  quality_rating      INTEGER     NOT NULL CHECK (quality_rating BETWEEN 1 AND 5),
+  cooldown_days       INTEGER     NOT NULL DEFAULT 30,
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_aphorisms_mode_tags
+  ON aphorisms USING GIN (mode_tags);
+CREATE INDEX IF NOT EXISTS idx_aphorisms_element_affinity
+  ON aphorisms USING GIN (element_affinity);
+
+ALTER TABLE aphorisms ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS cosmic_weather_snapshots (
+  date        DATE        PRIMARY KEY,
+  payload     JSONB       NOT NULL,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE cosmic_weather_snapshots ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS daily_pulses (
+  id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id         UUID        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  date            DATE        NOT NULL,
+  locale          TEXT        NOT NULL DEFAULT 'de',
+  mode            TEXT        NOT NULL CHECK (mode IN ('pulse','trace','spannung')),
+  intensity       NUMERIC     NOT NULL CHECK (intensity >= 0 AND intensity <= 1),
+  harmony_index   NUMERIC,
+  aphorism_id     TEXT        REFERENCES aphorisms(id),
+  slot_1          TEXT        NOT NULL,
+  slot_2          TEXT,
+  slot_3          TEXT,
+  weather_stale   BOOLEAN     NOT NULL DEFAULT false,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT daily_pulses_unique_user_date_locale UNIQUE (user_id, date, locale)
+);
+
+CREATE INDEX IF NOT EXISTS idx_daily_pulses_user_date
+  ON daily_pulses (user_id, date);
+
+ALTER TABLE daily_pulses ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS daily_interpretations (
+  id                       UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  daily_pulse_id           UUID        NOT NULL REFERENCES daily_pulses(id) ON DELETE CASCADE,
+  user_id                  UUID        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  pulse_date               DATE        NOT NULL,
+  selected_archetype_key   TEXT        NOT NULL CHECK (selected_archetype_key IN ('sonne','mond','aszendent','day_master','jahrestier','wuxing_dom')),
+  locale                   TEXT        NOT NULL DEFAULT 'de',
+  text                     TEXT        NOT NULL,
+  created_at               TIMESTAMPTZ NOT NULL DEFAULT now(),
+  -- Per 2026-05-09 audit C-3 ("Es geht nur einmal am Tag"): at most one
+  -- interpretation row per user/Kalendertag. A trigger copies user_id and
+  -- pulse_date from daily_pulses at write time, so concurrent locale-switch
+  -- inserts collide atomically on this constraint instead of slipping past
+  -- an application pre-check.
+  CONSTRAINT daily_interpretations_one_per_pulse UNIQUE (daily_pulse_id),
+  CONSTRAINT daily_interpretations_one_per_user_date UNIQUE (user_id, pulse_date)
+);
+
+CREATE OR REPLACE FUNCTION set_daily_interpretation_scope()
+RETURNS TRIGGER AS $$
+BEGIN
+  SELECT dp.user_id, dp.date
+    INTO NEW.user_id, NEW.pulse_date
+  FROM daily_pulses dp
+  WHERE dp.id = NEW.daily_pulse_id;
+
+  IF NEW.user_id IS NULL OR NEW.pulse_date IS NULL THEN
+    RAISE EXCEPTION 'daily_pulse_id % does not exist', NEW.daily_pulse_id
+      USING ERRCODE = '23503';
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_daily_interpretations_scope
+  BEFORE INSERT OR UPDATE OF daily_pulse_id ON daily_interpretations
+  FOR EACH ROW
+  EXECUTE FUNCTION set_daily_interpretation_scope();
+
+ALTER TABLE daily_interpretations ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS aphorism_usage_events (
+  id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  aphorism_id     TEXT        NOT NULL REFERENCES aphorisms(id),
+  user_id         UUID        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  date            DATE        NOT NULL,
+  daily_pulse_id  UUID        REFERENCES daily_pulses(id) ON DELETE CASCADE,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT aphorism_usage_events_unique_aphorism_user_date UNIQUE (aphorism_id, user_id, date)
+);
+
+ALTER TABLE aphorism_usage_events ENABLE ROW LEVEL SECURITY;

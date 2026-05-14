@@ -16,6 +16,10 @@ const FLAGS = {
   cosmic_encounter_v1: false,
   daily_fusion_hero_v1: false,
   atlas_v1: false,
+  // Tagespuls (Phase F) — curated aphorism + LLM slots + Rat-der-sechs
+  // mounted ABOVE DailyChartHero on the dashboard. Default ON for all users.
+  // Disable via: localStorage.setItem('ff_tagespuls_neu_v1', 'false')
+  tagespuls_neu_v1: true,
 } as const;
 
 type FlagName = keyof typeof FLAGS;

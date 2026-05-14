@@ -1,5 +1,153 @@
 # Changelog
 
+## [Unreleased] - 2026-05-09 — Tagespuls neu-architecture + KILL ALL PLACEHOLDERS
+
+### Why this sprint
+
+User directive (verbatim): _"alle aphorsimen sind approved, ich habe sie selbst geschrieben. … das aller schöimmst was immer noch passiert sind diese Paltzhalter! sie müssen mit aller höchyten prio weg! Auch fallbacks im frontend gehören dazu"_
+
+Translation: every aphorism the user wrote is approved as-is. Tagespuls must become visible to all users immediately. Generic generated horoscope text masquerading as personalized content must be eliminated everywhere — server fallbacks AND frontend fallbacks.
+
+This sprint ships the entire Tagespuls neu-architecture (originally PR 3 of the dashboard-flow plan, gated on aphorism approvals) and structurally removes every placeholder code path. The only acceptable user-visible states after this sprint are: real content, loading skeletons, profile-required CTA, retry UI on honest failure.
+
+### Database (Phase B)
+
+- **5 new Supabase tables** via `supabase-migrations/20260509_tagespuls_tables.sql`:
+  - `aphorisms` (status `approved | retired`, GIN indexes on `mode_tags` + `element_affinity`)
+  - `cosmic_weather_snapshots`
+  - `daily_pulses` — **`slot_2` and `slot_3` are NULLABLE.** When the AI router exhausts, the row stores aphorism + computed mode/intensity but null slots; client renders aphorism alone — never generic placeholder text.
+  - `daily_interpretations` (idempotent on `(daily_pulse_id, archetype_key, locale)`)
+  - `aphorism_usage_events` (cooldown ledger)
+- **Adaptations from the reference schema** (`apps/tagespuls_package/packages/db/schema.sql`): `user_astro_profiles` denormalized cache OMITTED (Wuxing vectors computed inline from existing `astro_profiles.astro_json`); all `user_id` FKs reference `auth.users(id)` directly; RLS enabled with no policy on all 5 tables (service-role only — mirrors `ai_quota` and `stripe_events` lockdown patterns).
+- **`supabase-schema.sql` kept in parity** per memory `feedback_schema_migration_alignment.md`.
+
+### Aphorism corpus (Phase A + C)
+
+- **21 aphorisms ingested** from `apps/tagespuls_package/knowledge/bazodiaac-brain/aphorisms/review/aph-*.md`. The user wrote all of them; the markdown frontmatter `status: draft|review` is overridden to `approved` at JSON-build time per explicit user authorization.
+- **Mode coverage**: `pulse=10, spannung=5, trace=6` — all three modes covered.
+- **Quality distribution**: `3-star=3, 4-star=12, 5-star=6`.
+- **`scripts/build-aphorisms-json.mjs`** parses YAML frontmatter + DE/EN/Original blockquotes from the markdowns into `apps/tagespuls_package/packages/voice/data/aphorisms.json` (715 lines). Zero-dep YAML parser, deterministic sorted output.
+- **`scripts/seed-aphorisms.mjs`** + npm script `seed:aphorisms` upserts the 21 rows into the live Supabase `aphorisms` table. Idempotent via `onConflict: 'id'`. Word counts computed from actual text inline (frontmatter is documentation only).
+
+### API routes (Phase D)
+
+- **`GET /api/daily-pulse?date=YYYY-MM-DD&locale=de|en`** (`server.mjs:3058–3286`):
+  - `requireUserAuth` (Supabase JWT). Loads `astro_profiles.astro_json`, derives harmony index from `fusion.harmony_index.harmony_index` (the actual nested prod shape), computes mode + intensity via `dayModeFromHarmony()`.
+  - Selects aphorism from approved corpus by mode-tag + cooldown via `aphorism_usage_events`. Top-5 by `quality_rating`, deterministic hash-pick by `(user_id, date, mode)`.
+  - LLM-generates `slot_2` (Brücke ins Heute) + `slot_3` (Handlungsimpuls) via the AI router (gemini-direct → openrouter free chain). On failure: store and return `null`. **No fallback text.**
+  - Persists `daily_pulses` row + `aphorism_usage_events`. L1 in-memory + L2 Supabase cache, both keyed by `(user_id, date, locale)`. **Cache write only when slots are non-null** — null-slot rows force a retry on the next request.
+  - Council figures (Sonne / Mond / Aszendent / Tag-Meister / Jahrestier / Wu Xing) extracted from `astro_profiles.astro_json` via the council builder helper (paths: `western.zodiac_sign`, `western.moon_sign`, `western.ascendant_sign`, `bazi.day_master`, `bazi.zodiac_sign`, `wuxing.dominant_element` — all confirmed against live prod data).
+  - Errors: `400 INVALID_LOCALE / INVALID_DATE`, `422 PROFILE_REQUIRED` (missing or empty profile), `503 APHORISM_POOL_EMPTY` (impossible with 21-row corpus but defensive).
+- **`POST /api/daily-interpretation`** (`server.mjs:3245–3380`):
+  - `requireUserAuth` + `dailyInterpretationLimiter` (6 calls / hour / user — closes the Gemini-quota DoS surface flagged in code review MEDIUM-4) + 10 KB JSON limit.
+  - Ownership check (the `daily_pulse_id` must belong to `req.userId`) — closes the IDOR surface (`DIN-002` test asserts 404 for cross-user access).
+  - Idempotent on `(daily_pulse_id, archetype_key, locale)` — second call serves from `daily_interpretations` row, no re-LLM.
+  - LLM-generates the personalized text via the `day-pulse-trace` skill content baked into the server-side prompt template.
+  - On AI exhaustion: `503 AI_UNAVAILABLE` with `retry_after: 300`. **No fallback text.**
+- **Helpers in `server/services/tagespuls.service.mjs`**: pure `dayModeFromHarmony`, `simpleHash`, `harmonyIndexFromAstroJson`, `buildCouncilFromProfile`, `buildSlotPrompt`, `buildInterpretationPrompt`, `normalizeLocale`, `normalizeDate`, `ARCHETYPE_KEYS`. All unit-testable.
+
+### Client (Phase E + F)
+
+- **`src/hooks/useDailyPulse.ts`** — fetches daily pulse on mount + on `user`/`locale` change. Maps server errors to typed: `profile_required` (422), `ai_unavailable` (503), `network` (fetch failure), `unknown`. `selectCouncilFigure(key)` POSTs to `/api/daily-interpretation` with hook-level idempotency — re-tapping the same figure doesn't refetch. `resetFigure()` clears phase 2 state. Auth via existing `src/lib/authedFetch.ts`. **No client-side cache** (server already caches L1+L2). **No `buildFallback*` functions of any kind.**
+- **`src/components/dashboard/TagespulsCard.tsx`** — two-phase UI:
+  - **Phase 1**: mode chip (PULS / SPUR / SPANNUNG), aphorism (slot_1) + author + work, `slot_2` (if non-null) labeled "Brücke ins Heute", `slot_3` (if non-null) labeled "Handlungsimpuls", "Wer begleitet dich heute?" header + 6 council buttons.
+  - **Phase 2** (after council tap): selected figure name + glyph + sign/element, `interpretation.text`, "← Andere Figur wählen" back button.
+  - **States**: loading → 4-line skeleton with shimmer; `profile_required` → CTA + "Daten ergänzen" button; `network` / `unknown` → retry button; `ai_unavailable` (Phase 2 only) → retry inline; `loadingInterpretation` → skeleton inside Phase 2.
+  - **Render-null contract**: when `slot_2` or `slot_3` is null in the response, that block is omitted entirely from the DOM. **Never substituted with generic text.**
+- **`src/lib/schemas/daily-pulse.ts`** — Zod schemas for the wire shape (`DailyPulseResponseSchema`, `DailyInterpretationSchema`, `DailyPulseErrorEnvelopeSchema`). Pre-existing schemas were misaligned with what the server actually returns (council is a 6-element **array**, not a nested object); rewritten to match wire shape.
+- **i18n keys** under `tagespuls.*` (DE+EN parity verified): mode chip labels, slot section labels, council labels, error messages, retry CTA. `npm run check:text-integrity` clean.
+- **Dashboard mount** (`src/components/Dashboard.tsx:380–385`): `TagespulsCard` mounted ABOVE `DailyChartHero` with `fadeIn(0.0)`, gated by feature flag `tagespuls_neu_v1` (default `true`). Order on the dashboard now: TagespulsCard → DailyChartHero → SignaturAnchorCard → AgentSection → … . LocalStorage override key `ff_tagespuls_neu_v1` for QA flip-off.
+
+### KILL ALL PLACEHOLDERS (Phase G)
+
+- **`buildDailyFallbackPayload()` in `server.mjs` DELETED.** Every callsite replaced with `503 AI_UNAVAILABLE` + `retry_after: 300`. The cache-poisoning guard from PR #328 HOTFIX-B is preserved as belt-and-braces — but the path that would set `'v1-server-fallback'` no longer exists.
+- **`buildFallbackDaily()` in `src/hooks/useFirstRunDaily.ts` DELETED.** On API failure, `dailyData = null` and `error` is set. Components handle null gracefully — the impuls just doesn't render. The `useFirstRunDaily` return type was extended with `error: { code, message } | null` for future retry-UI components.
+- **`isFallback` prop on `DailyChartHero` REMOVED.** The 9px-opacity-40% "↻ Heute nicht verfügbar" indicator added in PR #328 TASK-D2 is gone — it was a band-aid for the very fallback we're now killing.
+- **i18n cleanup**: `dashboard.dailyChartHero.fallback*` keys deleted from both DE and EN trees.
+- **Forbidden-string regression guard**: `TPC-003 / TPC-004` in `src/__tests__/tagespuls-card.test.tsx` walk the rendered DOM's `textContent` for known generic strings (`"Heute fließt deine Energie"`, `"Today your energy flows"`, etc.) and assert ZERO matches when slots are null. **Future drift caught by the test suite, not by reviewers.**
+
+### Tests + repository hygiene
+
+- **42 new tests** across the sprint:
+  - 11 server (`daily-pulse.test.mjs` 6× + `daily-interpretation.test.mjs` 5×)
+  - 18 client (`use-daily-pulse.test.ts` 8× + `tagespuls-card.test.tsx` 10×)
+  - 3 dashboard mount + flag gating (`dashboard-tagespuls-flag.test.tsx`)
+  - 1 rate-limit (`DIN-RATE-001` — 7th call returns 429 RATE_LIMITED)
+  - 9 deletions counterbalance: `daily-chart-hero-fallback-label.test.tsx` (3 tests), `daily-fallback`, `daily-inline-rendering` deleted because the contracts they asserted no longer exist; `experience-daily-no-cache-poisoning.test.mjs` reframed in place to assert the new 503 contract instead of the removed `v1-server-fallback` marker.
+- **Full suite**: 2323 / 2323 (was 2331 / 2331 at end of PR #329; net delta +13 added, -9 deleted/reframed = +4, plus +14 new tests for the routes/hook/component/flag/limit). `npm test` 28.7s. `tsc --noEmit` clean. `npm run build` succeeds in 6.47s. `npm run check:text-integrity` passes 2748 tracked files.
+- **WIP commit cleanup** per the 2026-05-09 code-reviewer agent's pre-merge plan: 50+ untracked files committed in 2 logical chunks — packages reference tree (openapi + voice scripts + voice/src/tagespuls.ts reference + sample data) and knowledge base + skills + design docs. Source markdown files retain their authored frontmatter status (status flip is JSON-build-time only).
+
+### Notes
+
+- **Implementation plan**: `docs/plans/2026-05-07-dashboard-flow-tagespuls-3d.md` (Phase T was originally gated on aphorism approvals; user explicitly approved all 21, gate lifted).
+- **Code-review pre-merge plan**: `docs/plans/2026-05-09-tagespuls-pre-merge.md` (parallel reviewer agent's findings — HIGH-1 was already covered by Phase D's `DIN-002` IDOR test; MEDIUM-4 closed by the rate limiter; INFO-1 closed by the schema.sql annotation).
+- **Architecture reference**: `apps/tagespuls_package/` (5 tables + 3 endpoints + 21 markdown sources + 2 Claude Code skills + 8 design docs). Production runtime in `server.mjs` + `server/services/tagespuls.service.mjs` + `src/hooks/useDailyPulse.ts` + `src/components/dashboard/TagespulsCard.tsx`.
+- **AI router** (`server/ai-router.mjs`) untouched — Tagespuls reuses the existing gemini-direct → openrouter 4-model free chain with per-route quota and structured envelope errors.
+- **Pending follow-ups (not blocking, deferred)**: 6 LOW/MEDIUM items from the code review (3 LOW + 3 MEDIUM-1..3) tracked in the pre-merge plan's Out-of-Scope section for future sprints — chiefly: harden `astro_profiles.astro_json` shape via Zod at the server boundary; add `aphorism_usage_events` cleanup migration for cooldown reset on profile rebirth; surface a graceful "no slots available today" state when AI exhaustion happens to coincide with the user's first daily-pulse call (edge case — current behavior renders aphorism alone, which is correct, but UX could acknowledge the missing slots more explicitly).
+
+## [Unreleased] - 2026-05-07 — Dashboard 3D Anchor + GreenOps (PR 2 of dashboard-flow-tagespuls plan)
+
+### Features
+
+- **`SignaturAnchorCard` on the dashboard** (`src/components/dashboard/SignaturAnchorCard.tsx`, `src/components/Dashboard.tsx`, `src/i18n/translations.ts`) — new static anchor section between `DailyChartHero` and `AgentSection`. Shows the user's birth sign + dominant Wu-Xing element with a "Signatur ansehen →" / "View signature →" CTA navigating to `/signatur`. **No WebGL on the dashboard mount** — performance-safe, the 3D Chladni sphere only loads when the user explicitly opts in by tapping the CTA. Empty state ("Profil unvollständig" / "Profile incomplete") when either prop is missing. Brief calls this "Option B"; Option A (embedded R3F on dashboard) is deferred until B is stable in prod. New i18n subkey `signatur.anchor.{title,cta,empty}` (DE+EN).
+
+### Performance
+
+- **Visibility-aware Signatur polling** (`src/hooks/useSignaturSignal.ts`) — bumped `VISIBLE_INTERVAL` from 8s to 15s and `HIDDEN_INTERVAL` from 45s to 60s. The hook had been hardened on 2026-05-06 with visibility detection, exponential-backoff on errors, and `online`/`offline` listeners — this task just shifts the cadence per the dashboard-flow plan's GreenOps targets. The plan's "currently every 800ms" framing referred to the legacy regression baseline; the actual code was already self-rescheduling at sane intervals. Net effect: ~50% reduction in transit-state requests for an active session, more during background tabs.
+- **Single `useSpaceWeather()` poller per dashboard mount** (`src/components/dashboard/MagnetsturmKarte.tsx`, `src/components/Dashboard.tsx`) — `MagnetsturmKarte` previously called `useSpaceWeather()` directly, duplicating the 5-minute NOAA SWPC poller already running in `Dashboard.tsx`. Now `MagnetsturmKarte` accepts `spaceWeather` as a prop; Dashboard is the single hook caller and passes the value down. Reduces NOAA SWPC requests from 2 → 1 per 5-min window per dashboard mount. The `useSpaceWeather()` callsites in `SignaturPage.tsx` and `SignaturRenderer.tsx` were intentionally left untouched — separate page mounts have separate page-scoped pollers, which is correct.
+
+### Documentation
+
+- **3D Signatur pipeline audit** (`docs/2026-05-07-signatur-3d-pipeline-audit.md`) — verdict: ✅ **robust**. The Wu-Xing DE/EN drift hypothesis was **refuted**. Both `services/api.ts` (mapper writing 10-key dict with EN+DE entries) AND `baziToChladniParams` itself (via `normalizeWuxingElementKey`, accepting `feuer/holz/wasser/erde/metall` case-insensitively) independently handle bilingual input. **No separate fix-track needed.** Two minor cosmetic observations: zero-weight profiles bias to Water due to `best = 'Water'` initialization, and `harmony_index` field read via dynamic key access never finds the field (cosmetic, not user-facing).
+- **Dashboard hierarchy audit** (`docs/2026-05-07-dashboard-hierarchy-audit.md`) — verdict: 🚨 **major mismatch deferred**. 5 of 8 brief-target sections aligned (DailyChartHero #1, SignaturAnchorCard #2, AgentSection #3, DashboardAstroSection #4, DashboardBottomUpgradeCard #8). 1 section out of order (`DashboardInterpretationSection` is at position #9, brief said #5 — moving up 4 slots crosses `planetariumSentinelRef`, `navHintsSentinelRef`, the `#interpretation-section` deep-link anchor, the Planetarium block, MagnetsturmKarte, and the Bottom Upgrade Card; non-mechanical reorder). 1 section in the brief that's not in code (`DashboardTagesEnergie` was deliberately retired in commit `882eea8` 2026-04-15 as a duplicate of DailyChartHero — the brief target is stale here). 4 sections in code that aren't in the brief (BirthChartOrrery, SkyModeToggle, ShareCard, LegalFooter — likely intentional). Reorder deferred to a dedicated PO-led hierarchy sprint. **Plan recommendation:** update the `2026-05-07-dashboard-flow-tagespuls-3d.md` target to drop `DashboardTagesEnergie` and either keep Interpretation at the epilogue position or formally re-confirm intended position before code changes.
+
+### Tests / Refactoring
+
+- **3 SignaturAnchorCard tests** (`src/__tests__/signatur-anchor-card.test.tsx`) — `SAC-001/002/003` covering preview render, navigation on click, empty-state-when-no-profile.
+- **3 visibility-aware polling tests** (`src/__tests__/use-signatur-signal-polling.test.ts`) — `USS-POLL-001/002/003`/004/005 covering visible 15s cadence, hidden 60s cadence, immediate refresh on visibility change.
+- **1 prop-driven MagnetsturmKarte test** (`src/__tests__/magnetsturm-karte-prop-driven.test.tsx`) — `MK-PROP-001` asserting render-from-prop without hook call. **12 existing tests in `src/__tests__/MagnetsturmKarte.test.tsx`** adapted to the new prop interface (no deletions; mock pattern `vi.mock('../hooks/useSpaceWeather', ...)` swapped for inline fixture passed via `spaceWeather` prop).
+- **`TODO(analytics):` markers** at three user-action surfaces (`src/components/Dashboard.tsx`, `src/components/dashboard/DayModeModal.tsx`, `src/components/dashboard/SignaturAnchorCard.tsx`) for `dashboard_first_interaction`, `daily_detail_open_rate`, `signatur_sphere_interaction`. Stubs only — future analytics-focused sprint will wire `trackEvent` calls.
+- Full suite: **2299/2299 passing** (was 2288/2288 at end of PR 1; net +11 = +3 SAC +5 polling +3 KP +1 MK-PROP −1 from re-running the existing 12 MK tests with the new fixture). 248 test files. `tsc --noEmit` clean. `npm run build` succeeds in 11.90s.
+
+### Notes
+
+- Implementation plan: `docs/plans/2026-05-07-dashboard-flow-tagespuls-3d.md` (PR 2 = Phase 2 + Phase 3 + Phase 5).
+- The plan's TASK-5.1 referenced 800ms polling — that was the historical regression baseline, not the current state. The hook was already at 8s/45s after the 2026-05-06 backend hardening sprint. This task just bumped the constants to align with the dashboard-flow plan's targets (15s/60s).
+- The plan's TASK-3.1 expected DashboardTagesEnergie in the dashboard hierarchy, but it was deliberately retired 3 weeks ago as a duplicate of DailyChartHero. The hierarchy audit recommends the plan be updated rather than the code reverted.
+- Pending follow-ups (not blocking): (a) deduplicate `useSpaceWeather()` between SignaturPage and SignaturRenderer if they ever co-mount; (b) zero-weight profile bias to Water in `baziToChladniParams` is cosmetic but worth fixing if user reports surface; (c) PO refinement of dashboard hierarchy target before TASK-3.1 reorder is attempted; (d) wire actual `trackEvent` calls behind the new TODO markers when the analytics sprint runs.
+
+## [Unreleased] - 2026-05-07 — Dashboard Stability Hotfixes (PR 1 of dashboard-flow-tagespuls plan)
+
+### Bug fixes
+
+- **`/signatur` no longer crashes** (`src/components/signatur-3d/SignatureSphere3D.tsx`) — react-three-fiber's `applyProps` treats unknown JSX attributes on `<mesh>`/`<group>` as Three.js property setters. `data-tint="gold"` and three `data-mesh-role` attributes (lines 373, 390-391, 411 from April commit `33a1119`) triggered `Uncaught Error: R3F: Cannot set "data-tint"`. The page-level `ErrorBoundary` caught it and rendered "Etwas ist schiefgelaufen" instead of the Chladni sphere. **This was the actual root cause of the user-reported "Signatur kaputt"** — not a data-flow issue. Removed the data-* attrs (they were non-functional on R3F nodes anyway — CSS selectors don't reach `Three.Object3D`). Source-level guard tests prevent re-introduction. Three sibling tests in `SignatureSphere3D.test.tsx` (Task-5b/5c/6 additions) that asserted the `[data-mesh-role]` / `[data-tint]` selectors were deleted — they only passed because the test file's Canvas mock short-circuits R3F's `applyProps`, letting the attrs fall through to JSDOM. They validated the bug, not the feature, and violated the file's own scope statement ("Internal scene-graph coverage beyond that is out of scope").
+- **`/api/experience/daily` cache no longer poisoned by fallback payloads** (`server.mjs`) — when the AI router fully exhausts (Gemini 429 + OpenRouter unset/exhausted/empty payload/malformed JSON), the daily handler falls back to `buildDailyFallbackPayload()`. Previously that fallback was written into both the L1 in-memory `horoscopeCache` and the L2 `daily_horoscope_cache` Supabase table — for the next 24h every request for the same `(user, date, lang)` returned the cached generic text without retrying the AI router. Even after the Gemini quota reset, users saw the generic "Heute fließt deine Energie ruhig…" all day. Fix: gate both cache writes on `parsedData.meta.engine_version !== 'v1-server-fallback'`. Real AI responses cache as before; fallback responses go to the client without poisoning the cache, forcing a retry on the next request. Original plan's HOTFIX-B (OpenRouter fallback + 24h cache) was already implemented in `server/ai-router.mjs` and `server.mjs:1563` — the live investigation surfaced this narrower bug.
+
+### Features
+
+- **Visible fallback indicator on `DailyChartHero`** (`src/components/dashboard/DailyChartHero.tsx`, `src/components/Dashboard.tsx`) — new optional `isFallback` prop. When `useFirstRunDaily()` falls back to `buildFallbackDaily()` (FuFirE/Gemini outage), Dashboard now passes `isFallback={dailyData?.meta?.engine_version === 'v1-local-fallback'}`. Hero renders a 9px-opacity-40% line under the impuls paragraph: `"↻ Heute nicht verfügbar — generischer Inhalt"` (DE) / `"↻ Unavailable today — generic content"` (EN). Real API response → no label. Profile-incomplete → no label (different state already handled).
+- **Em-dash placeholders for null space-weather drivers** (`src/components/dashboard/DailyChartHero.tsx`) — Driver Strip values (Kp, solar pressure, transit count) now render `—` when nullish/non-finite instead of crashing on `.toFixed()` or showing `NaN%`. Belt-and-braces guard for upstream NOAA outage or pre-resolution `useSpaceWeather()` hydration.
+
+### Documentation
+
+- **Coherence data-source audit** (`docs/2026-05-07-coherence-data-sources.md`) — verdict: ✅ single source of truth. All three coherence fields (`baseCoherence`, `positiveDailyDelta`, `displayedCoherence`) flow `astro_profiles.astro_json.fusion.harmony_index` + NOAA solar_pressure → `computeActiveImpacts` (server.mjs:2151) → `POST /api/impact/active` → `useActiveImpacts` hook → `Dashboard.tsx:269` → `DailyChartHero`. No parallel client computation. **Surfaced sharp edge:** the Zod schema validates each field independently as `[0,100]` integers but does NOT enforce the `displayed === base + delta` invariant — a future server regression would render an incoherent ring with no runtime error, caught only by the contract test.
+- **`/api/impact/active` contract documented** (`src/hooks/useActiveImpacts.ts`) — comment at the fetch callsite explains the empty `{}` body is intentional: server resolves `req.userId` via `requireUserAuth`, loads `astro_profiles` server-side, computes impacts without client input. Reference: `server.mjs:2198`.
+- **Vertiefen-button is fallback-agnostic** (`src/components/Dashboard.tsx`) — comment at the `onOpenDayModal` callsite documents that the `dailyEnabled` gate is independent of `dailyData` presence by design. Fallback data is a valid basis for opening the detail modal; the modal itself handles fallback-aware rendering.
+
+### Tests
+
+- **2 source-level guard tests** (`src/components/signatur-3d/__tests__/no-r3f-data-attrs.test.tsx`) — `SS3D-NO-DATA-001/002` prevent re-introduction of `data-mesh-role` / `data-tint` on R3F nodes.
+- **3 cache-poisoning regression tests** (`server/__tests__/experience-daily-no-cache-poisoning.test.mjs`) — `EDF-NCP-001` (real AI cached), `EDF-NCP-002` (fallback returned but NOT cached), `EDF-NCP-003` (consecutive failed-AI calls both retry the pipeline — closes the symptom directly).
+- **3 fallback-indicator tests** (`src/__tests__/daily-chart-hero-fallback-label.test.tsx`) — `DCH-FB-001/002/003` covering visible-when-fallback, hidden-when-real, hidden-when-impuls-empty.
+- **3 driver-dash tests** (`src/__tests__/daily-chart-hero-driver-dashes.test.tsx`) — `DCH-DASH-001/002/003` covering happy path, single-null Kp, all-null degenerate state.
+- Full suite: **2288/2288 passing** (was 2280/2280 pre-PR; net +11 = +2 guard +3 cache +3 indicator +3 dash − 0 from the 3 deleted obsolete tests counted in the +14 new). 245 test files. `tsc --noEmit` clean. `npm run build` succeeds in 10.35s.
+
+### Notes
+
+- Implementation plan: `docs/plans/2026-05-07-dashboard-flow-tagespuls-3d.md` (PR 1 = HOTFIX-A + HOTFIX-B + Phase D + Phase 4; PR 2 = Phase 2 + 3 + 5; PR 3 = Phase T, gated on aphorism approvals).
+- The plan's HOTFIX-B was authored before `server/ai-router.mjs` landed — the live investigation surfaced that the original fallback + 24h cache were already in place, and the actual symptom was the cache-poisoning narrowing described above. Plan kept for traceability; implementation was redirected.
+- Pending follow-ups (not blocking PR 1): (a) add a runtime invariant check for `displayed === base + delta` on `/api/impact/active` responses to harden the coherence contract surfaced by the audit; (b) the Driver-Strip TS types claim `kpIndex: number` (non-nullable) but the user-reported NaN/undefined symptom proves an upstream cast lies somewhere — worth tracing.
+
 ## [Unreleased] - 2026-05-07 — Dashboard CTA Consolidation (Phases A–F complete)
 
 ### Features

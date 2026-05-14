@@ -152,18 +152,18 @@ describe('SignatureSphere3D', () => {
   // ── H4 additions ─────────────────────────────────────────────────────────
 
   it('renders 12 glyphs (one per pole) even when all weights are sub-threshold', () => {
-    // All weights below TRAIL_THRESHOLD (0.35): glyphs still render (12), trails = 0.
+    // All weights below TRAIL_THRESHOLD (0.15): glyphs still render (12), trails = 0.
     const LOW: Readonly<Partial<Record<PlanetName, number>>> = {
-      Sun: 0.2,
-      Moon: 0.2,
-      Mercury: 0.2,
-      Venus: 0.2,
-      Mars: 0.2,
-      Jupiter: 0.2,
-      Saturn: 0.2,
-      Uranus: 0.2,
-      Neptune: 0.2,
-      Pluto: 0.2,
+      Sun: 0.1,
+      Moon: 0.1,
+      Mercury: 0.1,
+      Venus: 0.1,
+      Mars: 0.1,
+      Jupiter: 0.1,
+      Saturn: 0.1,
+      Uranus: 0.1,
+      Neptune: 0.1,
+      Pluto: 0.1,
     };
     const { queryAllByTestId } = render(<SignatureSphere3D weights={LOW} />);
     const glyphs = queryAllByTestId('drei-text-mock');
@@ -214,39 +214,6 @@ describe('SignatureSphere3D', () => {
     const { container } = render(<SignatureSphere3D weights={{ Sun: 0.5 }} />);
     const el = container.querySelector('[data-testid="signature-sphere-3d"]');
     expect(el?.getAttribute('data-element')).toBe('Water');
-  });
-
-  // ── Task-5b additions ─────────────────────────────────────────────────────
-
-  it('wire layer carries gold-tint role marker', () => {
-    const { container } = render(
-      <SignatureSphere3D weights={{ Sun: 0.5 }} dominantElement="Water" />
-    );
-    const wireMesh = container.querySelector('[data-mesh-role="wire"]');
-    expect(wireMesh).not.toBeNull();
-    expect(wireMesh?.getAttribute('data-tint')).toBe('gold');
-  });
-
-  // ── Task-5c additions ─────────────────────────────────────────────────────
-
-  it('wire layer has both main and halo meshes', () => {
-    const { container } = render(
-      <SignatureSphere3D weights={{ Sun: 0.5 }} dominantElement="Earth" />
-    );
-    const main = container.querySelector('[data-mesh-role="wire"]');
-    const halo = container.querySelector('[data-mesh-role="wire-halo"]');
-    expect(main).not.toBeNull();
-    expect(halo).not.toBeNull();
-  });
-
-  // ── Task-6 additions ─────────────────────────────────────────────────────
-
-  it('solid layer uses a ShaderMaterial when dominantElement is set', async () => {
-    const { container } = render(
-      <SignatureSphere3D weights={{ Sun: 0.5 }} dominantElement="Metal" />
-    );
-    const solidLayer = container.querySelector('[data-mesh-role="solid"]');
-    expect(solidLayer).not.toBeNull();
   });
 
   it('frame callback is a no-op when prefersReducedMotion is true', () => {

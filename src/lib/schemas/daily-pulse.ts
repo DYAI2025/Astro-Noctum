@@ -27,30 +27,75 @@ export const PulseAphorismSchema = z.object({
   season_affinity: z.array(z.string()),
 });
 
+// ── Wire response shape from GET /api/daily-pulse (Phase D server) ─────────
+//
+// Phase D returns a *flat* aphorism with slot_1/slot_2/slot_3 strings rather
+// than the full curation-side PulseAphorismSchema. slot_2 and slot_3 are
+// nullable by design — the no-placeholders directive forbids substituting
+// generic text when the LLM router fails. The client must render NOTHING for
+// null slots, never a fallback.
+
+export const PulseWireAphorismSchema = z.object({
+  id: z.string().nullable(),
+  author: z.string().nullable(),
+  attribution_status: AttributionStatusSchema.nullable(),
+  slot_1: z.string(),
+  // BUG-DAILY-001: consolidated impulse text. Server combines legacy
+  // slot_2 + slot_3 rows into this field at read time. New rows write
+  // only impulse_text (mirrored to slot_2 in DB for column reuse).
+  // Component prefers impulse_text; slot_2 / slot_3 stay in the schema
+  // for back-compat with cached rows during the transition.
+  impulse_text: z.string().nullable(),
+  slot_2: z.string().nullable(),
+  slot_3: z.string().nullable(),
+});
+export type PulseWireAphorism = z.infer<typeof PulseWireAphorismSchema>;
+
+// BUG-DAILY-003 + 004: server includes the user's locked decision for
+// today (if any) so the client can hydrate Phase 2 directly on mount,
+// preventing browser-back / refresh from showing a stale Phase 1 with
+// active selection buttons.
+export const ExistingDecisionSchema = z.object({
+  archetype_key: CouncilKeySchema,
+  text: z.string().min(1),
+});
+export type ExistingDecision = z.infer<typeof ExistingDecisionSchema>;
+
 export const DailyPulseResponseSchema = z.object({
+  id: z.string(),
+  user_id: z.string(),
   date: z.string(),
-  locale: z.enum(['de','en']),
-  userId: z.string(),
-  pulseId: z.string(),
-  harmonyIndex: z.number().min(0).max(1),
-  intensity: z.number().min(0).max(1),
+  locale: z.enum(['de', 'en']),
   mode: DayModeSchema,
-  cosmicWeatherSummary: z.string(),
-  aphorism: PulseAphorismSchema,
-  slot2: z.string(),
-  slot3: z.string(),
+  intensity: z.number(),
+  harmony_index: z.number(),
+  aphorism: PulseWireAphorismSchema,
   council: z.array(CouncilFigureSchema).length(6),
-  selectedArchetype: z.null(),
-  phase: z.literal('pulse'),
+  weather_stale: z.boolean(),
+  // BUG-DAILY-003 + 004: source of truth for "user already picked today".
+  // Cross-locale scoped (per the I-3 fix from PR #336) so locale switches
+  // can't bypass the lock. Single roundtrip — no separate /check-decision.
+  existing_decision: ExistingDecisionSchema.nullable(),
 });
 export type DailyPulseResponse = z.infer<typeof DailyPulseResponseSchema>;
 
-export const DailyInterpretationResponseSchema = z.object({
-  pulseId: z.string(),
-  selectedArchetype: CouncilFigureSchema,
-  dailyInterpretation: z.string(),
-  usedMode: DayModeSchema,
-  usedAphorismId: z.string(),
-  phase: z.literal('interpretation'),
+// ── POST /api/daily-interpretation response ────────────────────────────────
+//
+// Server returns the persisted row's id + interpretation text. The text is
+// always non-empty when status is 200 — server returns 503 with
+// AI_UNAVAILABLE when the LLM round trips fail rather than empty text.
+
+export const DailyInterpretationSchema = z.object({
+  id: z.string(),
+  text: z.string().min(1),
 });
-export type DailyInterpretationResponse = z.infer<typeof DailyInterpretationResponseSchema>;
+export type DailyInterpretation = z.infer<typeof DailyInterpretationSchema>;
+
+// ── Server error envelope (4xx / 5xx) ──────────────────────────────────────
+export const DailyPulseErrorEnvelopeSchema = z.object({
+  error: z.object({
+    code: z.string(),
+    retry_after: z.number().optional(),
+  }),
+});
+export type DailyPulseErrorEnvelope = z.infer<typeof DailyPulseErrorEnvelopeSchema>;

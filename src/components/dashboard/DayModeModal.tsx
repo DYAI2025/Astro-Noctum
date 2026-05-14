@@ -149,6 +149,7 @@ export function DayModeModal({ data, dayHarmonic, onClose }: Props) {
     if (!hasTrackedRef.current) {
       const mode = dayHarmonic?.mode ?? data.fusion.day_mode ?? 'pulse';
       trackEvent('day_mode_modal_opened', { mode });
+      // TODO(analytics): trackEvent('daily_detail_open_rate')
       hasTrackedRef.current = true;
     }
   }, [dayHarmonic, data.fusion.day_mode]);

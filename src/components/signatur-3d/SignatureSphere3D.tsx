@@ -370,7 +370,6 @@ function AnimatedScene({
         <mesh
           geometry={wireGeom}
           raycast={SKIP_RAYCAST}
-          data-mesh-role="wire-halo"
           scale={1.005}
           renderOrder={1}
         >
@@ -387,8 +386,6 @@ function AnimatedScene({
         <mesh
           geometry={wireGeom}
           raycast={SKIP_RAYCAST}
-          data-mesh-role="wire"
-          data-tint="gold"
           renderOrder={2}
         >
           <meshStandardMaterial
@@ -408,7 +405,6 @@ function AnimatedScene({
         <mesh
           geometry={solidGeom}
           raycast={SKIP_RAYCAST}
-          data-mesh-role="solid"
           material={wuxingMaterial}
         />
 
@@ -505,7 +501,7 @@ function AnimatedScene({
  *
  * Trail tubes:
  * - Drawn only for the 6 antipodal pole pairs whose assigned planet weight
- *   >= 0.35 (weights below render no trail, reducing triangle count).
+ *   >= 0.15 (weights below render no trail, reducing triangle count).
  *
  * Data contract:
  * - `weights` keys are the 10 Cousto planet names; missing keys default to 0.

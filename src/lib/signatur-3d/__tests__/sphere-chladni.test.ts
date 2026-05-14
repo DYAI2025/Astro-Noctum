@@ -168,5 +168,20 @@ describe('sphere-chladni', () => {
         expect(Math.abs(len - radius)).toBeLessThan(1e-9);
       }
     });
+
+    it('keeps antipodal pole-pair trails on a real great-circle arc instead of collapsing into one axis', () => {
+      const [from, to] = getPolePairs(1)[0];
+      const path = buildTrailPath(from, to, 1, 0, 3, 48, 0);
+
+      // Old behavior normalized a lerp between exact opposites, producing only
+      // +/- endpoint directions (and one origin fallback). A real branch must
+      // leave that axis by the midpoint and produce many distinct directions.
+      const midpoint = path[24];
+      expect(Math.abs(midpoint.x)).toBeLessThan(1e-9);
+      expect(Math.hypot(midpoint.y, midpoint.z)).toBeCloseTo(1, 12);
+
+      const distinctDirections = new Set(path.map((p) => pointKey(p)));
+      expect(distinctDirections.size).toBeGreaterThan(24);
+    });
   });
 });

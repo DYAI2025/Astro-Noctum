@@ -7,7 +7,10 @@
  *
  * Visibility rule: renders null when kpIndex < 4. No empty placeholder card.
  *
- * Data source: useSpaceWeather() — polls /api/space-weather/extended every 5 min.
+ * Data source: prop `spaceWeather` (TASK-5.2 — prop-driven).
+ * Dashboard.tsx is the single caller of useSpaceWeather() for the dashboard
+ * tree and passes the value down. This deduplicates the 5-minute NOAA poller
+ * (was 2 instances per dashboard mount, now 1).
  *
  * Note on solar wind speed / Bz: The current SpaceWeatherExtendedSchema does not
  * include solar wind plasma speed or Bz (IMF z-component) — these require
@@ -16,7 +19,7 @@
  * proxy display here (search: FUTURE-BZ-WIND).
  */
 
-import { useSpaceWeather } from '../../hooks/useSpaceWeather';
+import type { SpaceWeatherState } from '../../hooks/useSpaceWeather';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 // ── G-scale → display colour ──────────────────────────────────────────────────
@@ -49,16 +52,20 @@ const G_SCALE_EN: Record<string, string> = {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function MagnetsturmKarte() {
-  const sw = useSpaceWeather();
+interface MagnetsturmKarteProps {
+  /** Live space-weather state, owned by Dashboard.tsx (single poller). */
+  spaceWeather: SpaceWeatherState;
+}
+
+export function MagnetsturmKarte({ spaceWeather: sw }: MagnetsturmKarteProps) {
   const { lang } = useLanguage();
   const isDe = lang === 'de';
 
   // Self-hide when Kp < 4 (below G1 threshold)
-  // Source: useSpaceWeather().kpIndex (NOAA SWPC /api/space-weather/extended)
+  // Source: spaceWeather.kpIndex (NOAA SWPC /api/space-weather/extended via Dashboard)
   if (sw.loading || sw.kpIndex < 4) return null;
 
-  // Source: useSpaceWeather().gScale (derived from kpIndex in solar-pressure.ts)
+  // Source: spaceWeather.gScale (derived from kpIndex in solar-pressure.ts)
   const color = gScaleColor(sw.gScale);
   const label = isDe
     ? (G_SCALE_DE[sw.gScale] ?? sw.gScale)
@@ -84,12 +91,12 @@ export function MagnetsturmKarte() {
       {/* ── Header ────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          {/* Source: useSpaceWeather().gScale */}
+          {/* Source: spaceWeather.gScale */}
           <span
             className="text-[9px] font-bold tracking-[0.25em] uppercase px-2 py-0.5 rounded-full"
             style={{ background: `${color}22`, color }}
           >
-            {/* Source: useSpaceWeather().gScale (NOAA Kp→G-scale conversion) */}
+            {/* Source: spaceWeather.gScale (NOAA Kp→G-scale conversion) */}
             {sw.gScale}
           </span>
           <span
@@ -112,7 +119,7 @@ export function MagnetsturmKarte() {
       {/* ── Values ────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-3">
         {/* Kp Index */}
-        {/* Source: useSpaceWeather().kpIndex (NOAA SWPC Kp 3-hour index) */}
+        {/* Source: spaceWeather.kpIndex (NOAA SWPC Kp 3-hour index) */}
         <ValueCell
           label={isDe ? 'Kp-Index' : 'Kp Index'}
           value={sw.kpIndex.toFixed(1)}
@@ -124,7 +131,7 @@ export function MagnetsturmKarte() {
         />
 
         {/* Solar pressure */}
-        {/* Source: useSpaceWeather().solarPressure (computeSolarPressureScore in solar-pressure.ts) */}
+        {/* Source: spaceWeather.solarPressure (computeSolarPressureScore in solar-pressure.ts) */}
         <ValueCell
           label={isDe ? 'Solardruck' : 'Solar pressure'}
           value={Math.round(sw.solarPressure * 100).toString()}
@@ -136,7 +143,7 @@ export function MagnetsturmKarte() {
         />
 
         {/* X-ray class — FUTURE-BZ-WIND: replace with solar wind speed km/s when available */}
-        {/* Source: useSpaceWeather().xrayClass (NOAA SWPC GOES X-ray 1-8 Å) */}
+        {/* Source: spaceWeather.xrayClass (NOAA SWPC GOES X-ray 1-8 Å) */}
         {sw.xrayClass !== 'A' && (
           <ValueCell
             label={isDe ? 'Röntgenklasse' : 'X-ray class'}
@@ -150,7 +157,7 @@ export function MagnetsturmKarte() {
         )}
 
         {/* Proton flux if elevated (≥ 10 pfu = threshold for proton event) */}
-        {/* Source: useSpaceWeather().protonFlux (NOAA SWPC GOES proton ≥10 MeV) */}
+        {/* Source: spaceWeather.protonFlux (NOAA SWPC GOES proton ≥10 MeV) */}
         {sw.protonFlux >= 10 && (
           <ValueCell
             label={isDe ? 'Protonenfluss' : 'Proton flux'}

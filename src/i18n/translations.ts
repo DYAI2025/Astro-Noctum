@@ -175,6 +175,11 @@ const translationsEn: DeepStringRecord = {
       title: "Unlock your full Signatur experience",
       subtitle: "Premium clusters, advanced quizzes, and more",
     },
+    anchor: {
+      title: "Your Signature",
+      cta: "View signature →",
+      empty: "Profile incomplete",
+    },
   },
   signatureReveal: {
     soulprintCalculating: "Calculating your soulprint…",
@@ -501,6 +506,31 @@ const translationsEn: DeepStringRecord = {
     hourStem: "Hour Pillar",
     dominantElement: "Dominant Element",
   },
+  tagespuls: {
+    loading: "Loading today...",
+    council: {
+      title: "Who guides you today?",
+      sonne: "Sun",
+      mond: "Moon",
+      aszendent: "Ascendant",
+      day_master: "Day Master",
+      jahrestier: "Year Animal",
+      wuxing_dom: "Wu Xing",
+    },
+    modes: {
+      pulse: "PULSE",
+      trace: "TRACE",
+      spannung: "TENSION",
+    },
+    errors: {
+      profileRequired: "Please complete your birth data.",
+      profileCta: "Complete data",
+      network: "Connection issue.",
+      aiUnavailable: "Cannot load today yet. Please try again shortly.",
+      retry: "Try again",
+      unknown: "Something went wrong.",
+    },
+  },
 } as const;
 
 const translationsDe: DeepStringRecord = {
@@ -670,6 +700,11 @@ const translationsDe: DeepStringRecord = {
     upgradeCard: {
       title: "Schalte deine volle Signatur-Erfahrung frei",
       subtitle: "Premium-Cluster, erweiterte Quizzes und mehr",
+    },
+    anchor: {
+      title: "Deine Signatur",
+      cta: "Signatur ansehen →",
+      empty: "Profil unvollständig",
     },
   },
   signatureReveal: {
@@ -996,6 +1031,31 @@ const translationsDe: DeepStringRecord = {
     monthStem: "Monatssäule",
     hourStem: "Stundensäule",
     dominantElement: "Dominantes Element",
+  },
+  tagespuls: {
+    loading: "Heute wird geladen...",
+    council: {
+      title: "Wer begleitet dich heute?",
+      sonne: "Sonne",
+      mond: "Mond",
+      aszendent: "Aszendent",
+      day_master: "Tag-Meister",
+      jahrestier: "Jahrestier",
+      wuxing_dom: "Wu Xing",
+    },
+    modes: {
+      pulse: "PULS",
+      trace: "SPUR",
+      spannung: "SPANNUNG",
+    },
+    errors: {
+      profileRequired: "Bitte ergänze deine Geburtsdaten.",
+      profileCta: "Daten ergänzen",
+      network: "Verbindungsproblem.",
+      aiUnavailable: "Heute können wir noch nicht laden. Bitte gleich erneut.",
+      retry: "Erneut versuchen",
+      unknown: "Etwas ist schiefgelaufen.",
+    },
   },
 };
 

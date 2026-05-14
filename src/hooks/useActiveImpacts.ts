@@ -109,6 +109,9 @@ export function useActiveImpacts(): ActiveImpactsState {
         const response = await authedFetch('/api/impact/active', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          // Contract: server is profile-driven (resolves req.userId from session
+          // via requireUserAuth, loads astro_profiles + computes impacts
+          // server-side). Empty body is intentional — see server.mjs:2198.
           body: '{}',
         });
 

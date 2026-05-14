@@ -38,6 +38,8 @@ import { getConstellationForSign } from "../lib/astro-data/constellationFromSign
 import { useCelestialOrrery } from "../hooks/useCelestialOrrery";
 import { CITIES } from "../lib/astronomy/data";
 import { DailyChartHero } from "./dashboard/DailyChartHero";
+import { SignaturAnchorCard } from "./dashboard/SignaturAnchorCard";
+import { TagespulsCard } from "./dashboard/TagespulsCard";
 import { useActiveImpacts } from "../hooks/useActiveImpacts";
 
 const BirthChartOrrery = lazy(() => import("./BirthChartOrrery").then(m => ({ default: m.BirthChartOrrery })));
@@ -135,6 +137,10 @@ export function Dashboard({
   // Step 0 is immediate; step 1 waits for scroll; 'done' hides the overlay.
   // See `isTourStepVisible` in useDashboardTour.ts (DEVELOPMENT_BRIEF TASK-1.1).
   const tourOverlayVisible = isTourStepVisible(tourStep, scrollReached);
+
+  useEffect(() => {
+    // TODO(analytics): trackEvent('dashboard_first_interaction') on first user action
+  }, []);
 
   useEffect(() => {
     if (tourStep !== 1) return;
@@ -384,6 +390,15 @@ export function Dashboard({
         </div>
       </motion.header>
 
+      {/* ═══ 0. TAGESPULS — curated aphorism + LLM slots + Rat-der-sechs (Phase F) ═══ */}
+      {isFeatureEnabled('tagespuls_neu_v1') && (
+        <motion.div {...fadeIn(0.0)}>
+          <SectionErrorBoundary name="TagespulsCard">
+            <TagespulsCard onCompleteProfile={onReset} />
+          </SectionErrorBoundary>
+        </motion.div>
+      )}
+
       {/* ═══ 1. DAILY CHART HERO (unified volatile hero — DEC-dashboard-volatile-first) ═══ */}
       <motion.div {...fadeIn(0.02)}>
         <SectionErrorBoundary name="DailyChartHero">
@@ -400,7 +415,19 @@ export function Dashboard({
             impulsText={dailyData?.fusion?.synthesis || dailyData?.fusion?.summary}
             profileIncomplete={!metaLoading && !metaError && profileMeta.birthInput === null}
             onCompleteProfile={onReset}
+            // onOpenDayModal is intentionally passed regardless of dailyData
+            // presence. The modal handles its own loading/error states honestly.
             onOpenDayModal={dailyEnabled ? () => setIsDayModalOpen(true) : undefined}
+          />
+        </SectionErrorBoundary>
+      </motion.div>
+
+      {/* ═══ 1.5 SIGNATUR ANCHOR — preview + CTA, no WebGL on dashboard (TASK-2.2) ═══ */}
+      <motion.div {...fadeIn(0.08)}>
+        <SectionErrorBoundary name="SignaturAnchor">
+          <SignaturAnchorCard
+            dominantElement={apiData?.wuxing?.dominant_element}
+            birthSign={apiData?.western?.zodiac_sign}
           />
         </SectionErrorBoundary>
       </motion.div>
@@ -492,7 +519,7 @@ export function Dashboard({
       {/* ═══ 5. MAGNETSTURM (self-hides when Kp < 4) ════════════════ */}
       <motion.div {...fadeIn(0.26)}>
         <SectionErrorBoundary name="MagnetsturmKarte">
-          <MagnetsturmKarte />
+          <MagnetsturmKarte spaceWeather={spaceWeather} />
         </SectionErrorBoundary>
       </motion.div>
 

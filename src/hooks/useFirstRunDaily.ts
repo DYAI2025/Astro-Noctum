@@ -27,17 +27,15 @@ interface UseFirstRunDailyResult {
   nightHarmonic: DayHarmonicState | null;
   showModal: boolean;
   loading: boolean;
-  /**
-   * Non-null when the most recent fetch attempt failed. UI consumes via
-   * DailyChartHero.error to render `[CODE] message` prominently.
-   * Cleared on next successful fetch. Per project doctrine 2026-05-08:
-   * no synthetic fallbacks — failures must be visible.
-   *
-   * Currently always null in this commit (Task 1.11). Task 1.12 wires
-   * the catch-block to classify failures and call setError.
-   */
+  /** True when the last fetch attempt failed (network/router/parse). dailyData will be null. */
   error: { code: string; message: string } | null;
   handleClose: () => void;
+  /**
+   * Force a re-fetch on demand. Use after surfacing the `error` state to the
+   * user via a "Retry" button. Bumps an internal trigger so the effect
+   * re-runs even when its dependencies have not changed.
+   */
+  retry: () => void;
 }
 
 // ── Cache key helper ──────────────────────────────────────────────────
@@ -146,47 +144,6 @@ export function setCachedDaily(data: DailyResponse): void {
   }
 }
 
-// ── Local fallback ────────────────────────────────────────────────────
-
-/**
- * Local fallback daily data when FuFirE/Gemini is unreachable.
- * Provides a deterministic day-mode signal so DashboardTagesEnergie always renders.
- */
-export function buildFallbackDaily(locale: string = 'de'): DailyResponse {
-  const today = todayKey();
-  const dateHash = today.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-  const harmony = 0.3 + (dateHash % 40) / 100;
-  const mode: 'pulse' | 'trace' = harmony >= 0.50 ? 'trace' : 'pulse';
-
-  const synthesisDe = mode === 'pulse'
-    ? 'Heute fließt deine Energie ruhig und gleichmäßig. Ein guter Tag, um innezuhalten und zu beobachten.'
-    : 'Die kosmischen Linien kreuzen sich heute \u2014 etwas bewegt sich. Sei aufmerksam für unerwartete Impulse.';
-  const synthesisEn = mode === 'pulse'
-    ? 'Your energy flows calmly today. A good day to pause and observe.'
-    : 'Cosmic lines cross today \u2014 something is stirring. Stay alert for unexpected impulses.';
-
-  const text = locale.startsWith('en') ? synthesisEn : synthesisDe;
-  const action = locale.startsWith('en') ? 'Take a moment of stillness.' : 'Nimm dir einen Moment der Stille.';
-
-  const emptySection = { summary: '', themes: [] as string[], caution: '', opportunity: '', evidence: {} };
-
-  return {
-    date: today,
-    western: emptySection,
-    eastern: emptySection,
-    fusion: {
-      summary: text,
-      synthesis: text,
-      action,
-      pushworthy: false,
-      push_text: '',
-      harmony_index: harmony,
-      day_mode: mode,
-    },
-    meta: { engine_version: 'v1-local-fallback' },
-  } as DailyResponse;
-}
-
 // ── Hook ──────────────────────────────────────────────────────────────
 
 export function useFirstRunDaily(
@@ -201,11 +158,40 @@ export function useFirstRunDaily(
   const [dailyData, setDailyData] = useState<DailyResponse | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  // Error state — populated by Task 1.12's catch-block classifier.
-  // For now always null; the wire is in place so Dashboard.tsx can already
-  // consume it (Task 1.11 wiring).
-  const [error] = useState<{ code: string; message: string } | null>(null);
+  const [error, setError] = useState<{ code: string; message: string } | null>(null);
+  // 2026-05-11 audit fix: stabilize quizSectors + soulprintSectors via
+  // content-hash strings used in the dep array. Without this, callers
+  // who pass inline `[]` / `[...]` literals cause a fresh array
+  // reference on every render, which triggers the effect cleanup +
+  // re-run cycle — and that race spuriously re-fetches even when the
+  // logical content has not changed. Reading state to fire a retry is
+  // bad enough; clobbering an in-flight error result is worse.
+  const quizSectorsKey = quizSectors.join(',');
+  const soulprintSectorsKey = soulprintSectors ? soulprintSectors.join(',') : 'null';
+  // 2026-05-11 audit fix: the ref must be set AFTER a successful fetch /
+  // cache-hit, not on entry. Setting it on entry poisoned the guard
+  // forever when the fetch failed (network drop, 401, 503, schema
+  // mismatch) — the user lost daily content for the rest of the day.
   const lastFetchedDateRef = useRef<string | null>(null);
+  // 2026-05-11 audit fix: in-flight flag. Prevents React Strict Mode
+  // double-mounts, unstable-deps re-renders (e.g. inline `[]` arrays
+  // from callers), and rapid retry() calls from firing concurrent
+  // fetches. Cleared in the finally branch so the next legitimate
+  // trigger works.
+  const inFlightRef = useRef<boolean>(false);
+  // 2026-05-11 audit fix: per-fetch generation counter. Replaces the
+  // local `cancelled` closure flag because that flag was getting set
+  // spuriously by R2 effect re-runs (unstable deps + inline `[]`
+  // arrays trigger cleanup which sets cancelled=true), even when the
+  // in-flight guard then prevents R2 from initiating a real fetch.
+  // The result: R1's async would suppress its own state updates even
+  // though R1's fetch was still the canonical one. The generation
+  // counter increments only when an effect actually starts a fetch,
+  // so state updates only get suppressed when a NEW fetch took over.
+  const fetchGenRef = useRef<number>(0);
+  // Bumped by retry() to force the effect to re-run even when the
+  // dependency array is identical.
+  const [retryTick, setRetryTick] = useState(0);
 
   // ── Fetch logic — extracted to a callback so the 06:00 listener below
   //    can reuse it without duplicating ~80 LOC.
@@ -230,91 +216,159 @@ export function useFirstRunDaily(
     const targetDate = customDate || todayKey();
 
     // Guard: need userId + birthData; soulprint can be null (synthetic fallback).
-    // Also avoid re-fetching the same date — but the 06:00 listener resets
-    // `lastFetchedDateRef.current = null` before invoking us, so this guard
-    // releases on each scheduled rotation.
+    // Also avoid re-fetching the same date — but ONLY when the previous
+    // attempt succeeded. The ref is cleared in the catch below so a
+    // failed attempt does NOT block a future retry triggered by either
+    // (a) a dep change such as locale or soulprint update or
+    // (b) the explicit retry() callback.
     if (!userId || !birthData || targetDate === lastFetchedDateRef.current) return;
-    lastFetchedDateRef.current = targetDate;
+    // 2026-05-11 audit fix: in-flight guard. Without it React Strict
+    // Mode's double-mount in development fires two simultaneous fetches,
+    // and a user mashing retry() during the first fetch fires more.
+    // Also defeats unstable-deps races where consumer passes inline `[]`
+    // arrays that re-trigger the effect on every render.
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
 
-    // Controls ONLY the auto-open modal — dailyData is ALWAYS loaded
-    // because the inline DashboardTagesEnergie section needs it regardless.
-    let alreadySeen = false;
+    // 2026-05-11 audit fix: capture our generation. State updates and
+    // the loading toggle only fire if our generation is still current,
+    // i.e. no LATER effect run actually started a competing fetch. R2
+    // effect runs that get short-circuited by the in-flight guard do
+    // NOT bump the generation, so R1's state updates still fire.
+    const myGen = ++fetchGenRef.current;
+    const isCurrent = () => fetchGenRef.current === myGen;
 
-    try {
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('daily_modal_seen_date')
-        .eq('id', userId)
-        .maybeSingle();
+    // I-1 from the 2026-05-11 PR #343 review: snapshot the live arrays
+    // at effect-entry so the async body uses the same content the
+    // dep-hash was computed from. This makes the relationship between
+    // `quizSectorsKey` / `soulprintSectorsKey` (in the dep array) and
+    // `quizSectors` / `soulprintSectors` (read inside the IIFE)
+    // explicit, and lets us drop the eslint-disable on the dep array.
+    //
+    // Contract: callers who pass a NEW array reference (different
+    // content) get a re-fetch with the new content — BUT only on a
+    // NEW target date (lastFetchedDateRef guard above short-circuits
+    // same-day re-fetches regardless of quiz content). Callers who
+    // mutate an array in place after render WITHOUT re-rendering get
+    // undefined behavior — that's a React anti-pattern and we don't
+    // support it.
+    const quizSectorsSnapshot = quizSectors;
+    const soulprintSectorsSnapshot = soulprintSectors;
 
-      if (opts.signal?.aborted) return;
+    (async () => {
+      // Controls ONLY the auto-open modal — dailyData is ALWAYS loaded
+      // because the inline DashboardTagesEnergie section needs it regardless.
+      let alreadySeen = false;
 
-      if (profileError) {
-        console.warn('[useFirstRunDaily] Profile query failed, showing modal:', profileError.message);
-        alreadySeen = false;
-      } else if (profile?.daily_modal_seen_date === targetDate) {
-        alreadySeen = true;
-      }
+      try {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('daily_modal_seen_date')
+          .eq('id', userId)
+          .maybeSingle();
 
-      // Check localStorage cache — serves BOTH inline display and modal.
-      // Only cache for today's date.
-      const isToday = targetDate === todayKey();
-      if (isToday) {
-        const cached = getCachedDaily();
-        if (cached) {
-          setDailyData(cached);
-          if (!alreadySeen && isWithinDeliveryWindow) setShowModal(true);
-          return;
+        if (profileError) {
+          console.warn('[useFirstRunDaily] Profile query failed, showing modal:', profileError.message);
+          alreadySeen = false;
+        } else if (profile?.daily_modal_seen_date === targetDate) {
+          alreadySeen = true;
         }
-      }
 
-      // Fetch fresh daily experience — needed for inline TagesEnergie.
-      // Compute today's transit influences (client-side ephemeris).
-      const rawInfluences = birthSign ? computeTodayPlanetInfluences(birthSign) : null;
-      const transitInfluences: TransitInfluenceInput[] = rawInfluences
-        ? Object.entries(rawInfluences).map(([planet, inf]) => ({
-            planet,
-            aspectDeg: inf.aspectDeg,
-            fieldStrength: inf.fieldStrength,
-            isResonant: inf.isResonant,
-          }))
-        : [];
+        if (!isCurrent()) return;
 
-      setLoading(true);
-      const data = await fetchDailyExperience(
-        birthData,
-        soulprintSectors ?? Array(12).fill(0.5),
-        quizSectors,
-        targetDate,
-        locale,
-        transitInfluences,
-        birthSign ?? '',
-        // F3: forward signal so an aborted controller cancels the actual
-        // network call, not just the post-await state writes.
-        { signal: opts.signal },
-      );
+        // 2. Check localStorage cache — serves BOTH inline display and modal.
+        // Only cache for today's date.
+        const isToday = targetDate === todayKey();
+        if (isToday) {
+          const cached = getCachedDaily();
+          if (cached) {
+            setDailyData(cached);
+            setError(null);
+            lastFetchedDateRef.current = targetDate;
+            if (!alreadySeen && isWithinDeliveryWindow) setShowModal(true);
+            return;
+          }
+        }
 
-      if (opts.signal?.aborted) return;
+        // 3. Fetch fresh daily experience — needed for inline TagesEnergie
+        // Compute today's transit influences (client-side ephemeris)
+        const rawInfluences = birthSign ? computeTodayPlanetInfluences(birthSign) : null;
+        const transitInfluences: TransitInfluenceInput[] = rawInfluences
+          ? Object.entries(rawInfluences).map(([planet, inf]) => ({
+              planet,
+              aspectDeg: inf.aspectDeg,
+              fieldStrength: inf.fieldStrength,
+              isResonant: inf.isResonant,
+            }))
+          : [];
 
-      if (isToday) setCachedDaily(data);
-      setDailyData(data);
-      if (!alreadySeen && (!isTodayTarget || isWithinDeliveryWindow)) setShowModal(true);
-    } catch (err) {
-      // Graceful fallback: use local deterministic daily so DashboardTagesEnergie always renders.
-      // Task 1.12 will replace this with explicit error-state propagation per project doctrine
-      // 2026-05-08 (errors are surfaced, not masked).
-      console.warn('[useFirstRunDaily] Error occurred, using local fallback:', err);
-      if (!opts.signal?.aborted) {
-        const fallback = buildFallbackDaily();
-        // Adjust fallback date to target
-        fallback.date = targetDate;
-        setDailyData(fallback);
+        setLoading(true);
+        const data = await fetchDailyExperience(
+          birthData,
+          soulprintSectorsSnapshot ?? Array(12).fill(0.5),
+          quizSectorsSnapshot,
+          targetDate,
+          locale,
+          transitInfluences,
+          birthSign ?? '',
+        );
+
+        if (!isCurrent()) return;
+
+        if (isToday) setCachedDaily(data);
+        setDailyData(data);
+        setError(null);
+        lastFetchedDateRef.current = targetDate;
         if (!alreadySeen && (!isTodayTarget || isWithinDeliveryWindow)) setShowModal(true);
+      } catch (err) {
+        // Phase G (KILL ALL PLACEHOLDERS): no synthesized fallback content.
+        // On API failure, dailyData stays null and `error` is set. Components
+        // that consume the hook handle null gracefully — the impuls section
+        // simply does not render rather than displaying generic placeholder text.
+        const message = err instanceof Error ? err.message : String(err);
+        const code = (err as { code?: string } | null)?.code ?? 'unavailable';
+        console.warn('[useFirstRunDaily] daily fetch failed:', message);
+        if (isCurrent()) {
+          setDailyData(null);
+          setError({ code, message });
+          // 2026-05-11 audit fix: clear the date marker so a subsequent
+          // dependency change or retry() can re-fetch. Without this the
+          // failed attempt would block the rest of the day.
+          lastFetchedDateRef.current = null;
+        }
+      } finally {
+        if (isCurrent()) setLoading(false);
+        inFlightRef.current = false;
       }
-    } finally {
-      if (!opts.signal?.aborted) setLoading(false);
-    }
-  }, [userId, birthData, soulprintSectors, quizSectors, birthSign, customDate, locale]);
+    })();
+    // Note: quizSectors and soulprintSectors are NOT in the dep array
+    // directly — their content-hash keys are. The effect snapshots the
+    // live arrays at entry (see quizSectorsSnapshot /
+    // soulprintSectorsSnapshot above) so the body uses the same content
+    // the hash was computed from. ESLint's exhaustive-deps no longer
+    // fires because the body only reads the snapshots, not the live
+    // refs, after effect entry.
+  }, [userId, birthData, soulprintSectorsKey, quizSectorsKey, birthSign, customDate, locale, retryTick]);
+
+  const retry = useCallback(() => {
+    // I-2 from the 2026-05-11 PR #343 review: retry() is a no-op when
+    // there's nothing to recover from. Prevents accidental clicks on
+    // a future Retry button from spending an extra LLM call while the
+    // user already has valid data on screen.
+    //
+    // Guard interpretation: "healthy" = has data AND no error AND not
+    // currently loading. Any of those being off → recovery is plausibly
+    // wanted and we let it through.
+    if (loading) return;
+    if (!error && dailyData !== null) return;
+    // Belt and braces: the catch block already clears the marker, but a
+    // defensive clear here means retry() works even if some future code
+    // path forgets to clear it. The state bump forces the effect to
+    // re-run when nothing else in the deps array changed.
+    lastFetchedDateRef.current = null;
+    setError(null);
+    setRetryTick((t) => t + 1);
+  }, [loading, error, dailyData]);
 
   // Mount-fetch: run when deps change. Reuses the callback above.
   useEffect(() => {
@@ -383,5 +437,5 @@ export function useFirstRunDaily(
     return nh !== undefined ? computeNightHarmonic(nh) : null;
   }, [dailyData]);
 
-  return { dailyData, dayHarmonic, nightHarmonic, showModal, loading, error, handleClose };
+  return { dailyData, dayHarmonic, nightHarmonic, showModal, loading, error, handleClose, retry };
 }
