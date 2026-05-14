@@ -805,6 +805,509 @@ describe('POST /api/daily-interpretation — no-placeholders contract', () => {
     expect(res.body?.error?.text).toBe('Mond DE locked text');
   });
 
+  it('DIN-CACHE-INVAL-001: POST invalidates L1 dailyPulseCache so next GET returns existing_decision', async () => {
+    // PR-#331 follow-up C-1: dailyPulseCache (L1, 24h TTL) bakes
+    // existing_decision into the cached payload but is never invalidated
+    // by POST /api/daily-interpretation. A hard reload within 24h serves
+    // the stale existing_decision: null payload, so useDailyPulse lands
+    // in Phase 1 with active archetype buttons instead of the locked
+    // Phase 2 — exactly the BUG-DAILY-003/004 regression the
+    // existing_decision schema field was added to prevent.
+    //
+    // Scenario: GET (warm L1 with existing_decision: null) → POST → GET.
+    // After fix, the 2nd GET must reflect the persisted decision rather
+    // than serving the stale pre-POST payload.
+
+    // Production astro_json shape (mirrors daily-pulse.test.mjs fixture so
+    // the GET handler's harmonyIndexFromAstroJson + buildCouncilFromProfile
+    // succeed and we reach the existing_decision lookup + cache write path).
+    const profileAstroJson = {
+      fusion: {
+        cosmic_state: 0.8711,
+        harmony_index: {
+          method: 'dot_product',
+          harmony_index: 0.8711, // → mode='trace'
+          interpretation: 'Starke Resonanz',
+        },
+      },
+      bazi: { day_master: 'Ding', zodiac_sign: 'Dog', pillars: { day: { stem: 'Ding' } } },
+      western: { zodiac_sign: 'Taurus', moon_sign: 'Libra', ascendant_sign: 'Libra' },
+      wuxing: { dominant_element: 'Holz' },
+    };
+    const aphorismRow = {
+      id: 'aph-0001',
+      text_de: 'Wer den Fluss kennt, fürchtet die Brücke nicht.',
+      text_en: 'He who knows the river does not fear the bridge.',
+      author: 'Anonymous',
+      work: null,
+      attribution_status: 'folkloric',
+      mode_tags: ['trace', 'pulse'],
+      quality_rating: 5,
+      cooldown_days: 30,
+    };
+    const pulseAfterUpsert = {
+      id: 'pulse-uuid-1',
+      user_id: 'user-1',
+      date: '2026-05-09',
+      locale: 'de',
+      mode: 'trace',
+      intensity: 0.766,
+      harmony_index: 0.8711,
+      aphorism_id: aphorismRow.id,
+      slot_1: aphorismRow.text_de,
+      slot_2: 'Generated bridge sentence between aphorism and impulse.',
+      slot_3: null,
+      weather_stale: false,
+    };
+    // State: was the POST successful yet? Drives daily_interpretations GET.
+    let interpretationPersisted = false;
+    // Was the GET endpoint's /daily_pulses upsert run yet? Toggles whether
+    // subsequent locale-scoped GETs return [] (cache miss → generate) or
+    // [pulseAfterUpsert] (cache hit). Declared up here so the fetch-mock
+    // closure binds cleanly (no TDZ surprises if the mock fires before the
+    // var is initialized — which never happens, but cleaner this way).
+    let upserted = false;
+    const persistedRow = {
+      id: 'interp-uuid-after-post',
+      text: 'Dein Libra-Mond zeigt heute eine ruhige Wachsamkeit.',
+      selected_archetype_key: 'mond',
+      locale: 'de',
+      daily_pulse_id: 'pulse-uuid-1',
+      created_at: '2026-05-09T08:00:00Z',
+    };
+
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      const url = typeof input === 'string' ? input
+        : input instanceof URL ? input.toString()
+          : input?.url ?? '';
+      const method = (init?.method || (typeof input === 'object' && input?.method) || 'GET').toUpperCase();
+
+      if (url.includes('auth/v1/user')) {
+        const userBody = { id: 'user-1', email: 't@test.com', aud: 'authenticated' };
+        return {
+          ok: true, status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => userBody,
+          text: async () => JSON.stringify(userBody),
+        };
+      }
+
+      if (url.includes('/astro_profiles')) {
+        // GET endpoint reads .astro_json wrapper; POST endpoint also expects
+        // the same shape (so the buildCouncilFromProfile reload in the
+        // archetype-key path can extract signOrElement='Libra').
+        const headers = init?.headers || {};
+        const acceptRaw = headers instanceof Headers ? headers.get('accept') : (headers['Accept'] ?? headers.accept ?? '');
+        const wantsObject = String(acceptRaw || '').includes('vnd.pgrst.object');
+        const row = { astro_json: profileAstroJson };
+        const body = wantsObject ? row : [row];
+        return {
+          ok: true, status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => body,
+          text: async () => JSON.stringify(body),
+        };
+      }
+
+      if (url.includes('/daily_pulses')) {
+        if (method === 'GET') {
+          // First GET (locale-scoped): no existing row → generate-from-scratch.
+          // Second GET (locale-scoped): row IS upserted now (we mirror this
+          // in the cache layer, but the POST handler also fetches by id
+          // which uses the same /daily_pulses?id=eq.X path → must succeed).
+          // We always return [pulseAfterUpsert] here for any GET — the
+          // first GET path enters the "no L2 row" branch only when the
+          // locale-scoped query is empty. To force that, key off whether
+          // the URL contains a locale filter (existing-row lookup) AND
+          // whether the row has been "upserted" yet via POST upsert call.
+          // Simpler: track an "upserted" flag separately so the first
+          // locale-scoped GET returns [], all later GETs return [row].
+          const isLocaleScoped = url.includes('locale=eq.');
+          const isPulseIdScoped = url.includes('id=eq.');
+          if (isPulseIdScoped) {
+            // POST handler auth-boundary lookup — pulse must belong to user.
+            return {
+              ok: true, status: 200,
+              headers: new Headers({ 'content-type': 'application/json' }),
+              json: async () => [pulseAfterUpsert],
+              text: async () => JSON.stringify([pulseAfterUpsert]),
+            };
+          }
+          if (isLocaleScoped) {
+            // GET endpoint L2 lookup: empty first time, populated after.
+            // We use the upserted-flag set below by the POST upsert call.
+            const data = upserted ? [pulseAfterUpsert] : [];
+            return {
+              ok: true, status: 200,
+              headers: new Headers({ 'content-type': 'application/json' }),
+              json: async () => data,
+              text: async () => JSON.stringify(data),
+            };
+          }
+          // Date-scoped (no locale filter): used to collect ALL pulse_ids
+          // for the date (cross-locale lock check + existing_decision
+          // hydration in GET endpoint).
+          return {
+            ok: true, status: 200,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: async () => [{ id: pulseAfterUpsert.id }],
+            text: async () => JSON.stringify([{ id: pulseAfterUpsert.id }]),
+          };
+        }
+        // POST upsert (GET endpoint generate-from-scratch path).
+        upserted = true;
+        return {
+          ok: true, status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => [pulseAfterUpsert],
+          text: async () => JSON.stringify([pulseAfterUpsert]),
+        };
+      }
+
+      if (url.includes('/aphorisms') && !url.includes('aphorism_usage_events')) {
+        if (url.includes('id=eq.')) {
+          return {
+            ok: true, status: 200,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: async () => [aphorismRow],
+            text: async () => JSON.stringify([aphorismRow]),
+          };
+        }
+        return {
+          ok: true, status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => [aphorismRow],
+          text: async () => JSON.stringify([aphorismRow]),
+        };
+      }
+
+      if (url.includes('/aphorism_usage_events')) {
+        return {
+          ok: true, status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => [],
+          text: async () => '[]',
+        };
+      }
+
+      if (url.includes('/daily_interpretations')) {
+        const headers = init?.headers || {};
+        const acceptRaw = headers instanceof Headers ? headers.get('accept') : (headers['Accept'] ?? headers.accept ?? '');
+        const wantsObject = String(acceptRaw || '').includes('vnd.pgrst.object');
+
+        if (method === 'POST') {
+          // Successful insert — flip state so subsequent GETs see the row.
+          interpretationPersisted = true;
+          const body = wantsObject ? persistedRow : [persistedRow];
+          return {
+            ok: true, status: 200,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: async () => body,
+            text: async () => JSON.stringify(body),
+          };
+        }
+        // GET — return row only if POST has happened.
+        const list = interpretationPersisted ? [persistedRow] : [];
+        const body = wantsObject ? (list[0] ?? null) : list;
+        return {
+          ok: true, status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => body,
+          text: async () => JSON.stringify(body),
+        };
+      }
+
+      throw new Error(`Unhandled fetch mock request: ${method} ${url}`);
+    });
+
+    // GET endpoint also serializes the impulse_text via the slot-generation
+    // helper which calls Gemini. Use a JSON-shaped response so the parser
+    // accepts it. The interpretation POST also calls Gemini (plain string).
+    const geminiBoth = {
+      GoogleGenAI: class {
+        models = {
+          generateContent: vi.fn(async (req) => {
+            const prompt = typeof req?.contents === 'string' ? req.contents : JSON.stringify(req?.contents ?? '');
+            // The slot prompt asks for impulse_text JSON; the
+            // interpretation prompt asks for free text. Disambiguate by
+            // looking for the JSON-response hint.
+            const wantsJson = req?.config?.responseMimeType === 'application/json'
+              || /impulse_text/i.test(prompt);
+            if (wantsJson) {
+              return { text: JSON.stringify({ impulse_text: 'Generated bridge sentence between aphorism and impulse.' }) };
+            }
+            return { text: 'Dein Libra-Mond zeigt heute eine ruhige Wachsamkeit.' };
+          }),
+        };
+        getGenerativeModel = vi.fn().mockReturnValue({
+          generateContent: vi.fn().mockResolvedValue({ response: { text: () => '' } }),
+        });
+      },
+    };
+    const app = await loadApp(geminiBoth);
+
+    // Step 1: warm L1 cache. GET with no existing decision → cached payload
+    // has existing_decision: null.
+    const r1 = await request(app)
+      .get('/api/daily-pulse?date=2026-05-09&locale=de')
+      .set(AUTH_HEADER);
+    expect(r1.status).toBe(200);
+    expect(r1.body.existing_decision).toBeNull();
+
+    // Step 2: persist a decision.
+    const post = await request(app)
+      .post('/api/daily-interpretation')
+      .set(AUTH_HEADER)
+      .set('Content-Type', 'application/json')
+      .send({
+        daily_pulse_id: 'pulse-uuid-1',
+        selected_archetype_key: 'mond',
+        locale: 'de',
+      });
+    expect(post.status).toBe(200);
+    expect(post.body.id).toBe('interp-uuid-after-post');
+
+    // Step 3: GET again. Without the C-1 fix, the L1 cache hit short-circuits
+    // before the existing_decision lookup, returning the stale null payload.
+    // With the fix, the cache entry is invalidated and the handler re-reads
+    // the DB, surfacing the persisted decision.
+    const r2 = await request(app)
+      .get('/api/daily-pulse?date=2026-05-09&locale=de')
+      .set(AUTH_HEADER);
+    expect(r2.status).toBe(200);
+    expect(r2.body.existing_decision).not.toBeNull();
+    expect(r2.body.existing_decision.archetype_key).toBe('mond');
+    expect(r2.body.existing_decision.text).toBe('Dein Libra-Mond zeigt heute eine ruhige Wachsamkeit.');
+  });
+
+  it('DIN-CACHE-INVAL-002: POST invalidates locale-sibling cache (de POST clears en cache)', async () => {
+    // PR-#331 follow-up C-1 (sibling case): cache rows exist per (userId,
+    // date, locale). A user can warm both the de and en cache rows (e.g.
+    // via the locale switcher) before picking. The POST must invalidate
+    // BOTH locale siblings — otherwise switching locale after pick still
+    // serves a stale Phase 1 payload.
+
+    const profileAstroJson = {
+      fusion: { cosmic_state: 0.8711, harmony_index: { method: 'dot_product', harmony_index: 0.8711, interpretation: 'Starke Resonanz' } },
+      bazi: { day_master: 'Ding', zodiac_sign: 'Dog', pillars: { day: { stem: 'Ding' } } },
+      western: { zodiac_sign: 'Taurus', moon_sign: 'Libra', ascendant_sign: 'Libra' },
+      wuxing: { dominant_element: 'Holz' },
+    };
+    const aphorismRow = {
+      id: 'aph-0001',
+      text_de: 'Wer den Fluss kennt, fürchtet die Brücke nicht.',
+      text_en: 'He who knows the river does not fear the bridge.',
+      author: 'Anonymous', work: null, attribution_status: 'folkloric',
+      mode_tags: ['trace', 'pulse'], quality_rating: 5, cooldown_days: 30,
+    };
+    // Distinct pulse rows per locale — pulses are keyed (user_id, date, locale).
+    const pulseDe = {
+      id: 'pulse-uuid-de', user_id: 'user-1', date: '2026-05-09', locale: 'de',
+      mode: 'trace', intensity: 0.766, harmony_index: 0.8711,
+      aphorism_id: aphorismRow.id, slot_1: aphorismRow.text_de,
+      slot_2: 'Generated bridge DE.', slot_3: null, weather_stale: false,
+    };
+    const pulseEn = {
+      id: 'pulse-uuid-en', user_id: 'user-1', date: '2026-05-09', locale: 'en',
+      mode: 'trace', intensity: 0.766, harmony_index: 0.8711,
+      aphorism_id: aphorismRow.id, slot_1: aphorismRow.text_en,
+      slot_2: 'Generated bridge EN.', slot_3: null, weather_stale: false,
+    };
+    let upsertedDe = false;
+    let upsertedEn = false;
+    let interpretationPersisted = false;
+    const persistedRow = {
+      id: 'interp-uuid-after-post-de',
+      text: 'Dein Libra-Mond zeigt heute eine ruhige Wachsamkeit.',
+      selected_archetype_key: 'mond',
+      locale: 'de',
+      daily_pulse_id: 'pulse-uuid-de',
+      created_at: '2026-05-09T08:00:00Z',
+    };
+
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      const url = typeof input === 'string' ? input
+        : input instanceof URL ? input.toString()
+          : input?.url ?? '';
+      const method = (init?.method || (typeof input === 'object' && input?.method) || 'GET').toUpperCase();
+
+      if (url.includes('auth/v1/user')) {
+        return {
+          ok: true, status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ id: 'user-1', email: 't@test.com', aud: 'authenticated' }),
+          text: async () => JSON.stringify({ id: 'user-1' }),
+        };
+      }
+
+      if (url.includes('/astro_profiles')) {
+        const headers = init?.headers || {};
+        const acceptRaw = headers instanceof Headers ? headers.get('accept') : (headers['Accept'] ?? headers.accept ?? '');
+        const wantsObject = String(acceptRaw || '').includes('vnd.pgrst.object');
+        const row = { astro_json: profileAstroJson };
+        const body = wantsObject ? row : [row];
+        return {
+          ok: true, status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => body,
+          text: async () => JSON.stringify(body),
+        };
+      }
+
+      if (url.includes('/daily_pulses')) {
+        if (method === 'GET') {
+          const isPulseIdScoped = url.includes('id=eq.');
+          const isLocaleScoped = url.includes('locale=eq.');
+          const isDe = url.includes('locale=eq.de');
+          const isEn = url.includes('locale=eq.en');
+          if (isPulseIdScoped) {
+            // POST handler auth-boundary lookup — pulse-uuid-de.
+            return {
+              ok: true, status: 200,
+              headers: new Headers({ 'content-type': 'application/json' }),
+              json: async () => [pulseDe],
+              text: async () => JSON.stringify([pulseDe]),
+            };
+          }
+          if (isLocaleScoped) {
+            const row = isDe ? (upsertedDe ? [pulseDe] : []) : isEn ? (upsertedEn ? [pulseEn] : []) : [];
+            return {
+              ok: true, status: 200,
+              headers: new Headers({ 'content-type': 'application/json' }),
+              json: async () => row,
+              text: async () => JSON.stringify(row),
+            };
+          }
+          // Date-scoped: return both upserted pulses (id-only projection).
+          const ids = [];
+          if (upsertedDe) ids.push({ id: pulseDe.id });
+          if (upsertedEn) ids.push({ id: pulseEn.id });
+          return {
+            ok: true, status: 200,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: async () => ids,
+            text: async () => JSON.stringify(ids),
+          };
+        }
+        // POST upsert — pick row by locale from the request body when
+        // available. If the body is missing or can't be parsed, default
+        // to the `de` row.
+        let parsed = {};
+        try { parsed = init?.body ? JSON.parse(init.body) : {}; } catch (e) { void e; }
+        const isEn = parsed?.locale === 'en';
+        if (isEn) {
+          upsertedEn = true;
+          return {
+            ok: true, status: 200,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: async () => [pulseEn],
+            text: async () => JSON.stringify([pulseEn]),
+          };
+        }
+        upsertedDe = true;
+        return {
+          ok: true, status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => [pulseDe],
+          text: async () => JSON.stringify([pulseDe]),
+        };
+      }
+
+      if (url.includes('/aphorisms') && !url.includes('aphorism_usage_events')) {
+        return {
+          ok: true, status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => [aphorismRow],
+          text: async () => JSON.stringify([aphorismRow]),
+        };
+      }
+
+      if (url.includes('/aphorism_usage_events')) {
+        return {
+          ok: true, status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => [],
+          text: async () => '[]',
+        };
+      }
+
+      if (url.includes('/daily_interpretations')) {
+        const headers = init?.headers || {};
+        const acceptRaw = headers instanceof Headers ? headers.get('accept') : (headers['Accept'] ?? headers.accept ?? '');
+        const wantsObject = String(acceptRaw || '').includes('vnd.pgrst.object');
+        if (method === 'POST') {
+          interpretationPersisted = true;
+          const body = wantsObject ? persistedRow : [persistedRow];
+          return {
+            ok: true, status: 200,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: async () => body,
+            text: async () => JSON.stringify(body),
+          };
+        }
+        const list = interpretationPersisted ? [persistedRow] : [];
+        const body = wantsObject ? (list[0] ?? null) : list;
+        return {
+          ok: true, status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => body,
+          text: async () => JSON.stringify(body),
+        };
+      }
+
+      return {
+        ok: true, status: 200,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({}),
+        text: async () => '{}',
+      };
+    });
+
+    const geminiBoth = {
+      GoogleGenAI: class {
+        models = {
+          generateContent: vi.fn(async (req) => {
+            const prompt = typeof req?.contents === 'string' ? req.contents : JSON.stringify(req?.contents ?? '');
+            const wantsJson = req?.config?.responseMimeType === 'application/json' || /impulse_text/i.test(prompt);
+            if (wantsJson) {
+              return { text: JSON.stringify({ impulse_text: 'Generated bridge sentence.' }) };
+            }
+            return { text: 'Dein Libra-Mond zeigt heute eine ruhige Wachsamkeit.' };
+          }),
+        };
+        getGenerativeModel = vi.fn().mockReturnValue({
+          generateContent: vi.fn().mockResolvedValue({ response: { text: () => '' } }),
+        });
+      },
+    };
+    const app = await loadApp(geminiBoth);
+
+    // Warm both locale caches.
+    const de1 = await request(app).get('/api/daily-pulse?date=2026-05-09&locale=de').set(AUTH_HEADER);
+    expect(de1.status).toBe(200);
+    expect(de1.body.existing_decision).toBeNull();
+
+    const en1 = await request(app).get('/api/daily-pulse?date=2026-05-09&locale=en').set(AUTH_HEADER);
+    expect(en1.status).toBe(200);
+    expect(en1.body.existing_decision).toBeNull();
+
+    // POST on de.
+    const post = await request(app)
+      .post('/api/daily-interpretation')
+      .set(AUTH_HEADER)
+      .set('Content-Type', 'application/json')
+      .send({ daily_pulse_id: 'pulse-uuid-de', selected_archetype_key: 'mond', locale: 'de' });
+    expect(post.status).toBe(200);
+
+    // BOTH locale GETs must now reflect the decision. Without the en-sibling
+    // invalidation, switching to en after pick still serves Phase 1.
+    const de2 = await request(app).get('/api/daily-pulse?date=2026-05-09&locale=de').set(AUTH_HEADER);
+    expect(de2.body.existing_decision?.archetype_key).toBe('mond');
+
+    const en2 = await request(app).get('/api/daily-pulse?date=2026-05-09&locale=en').set(AUTH_HEADER);
+    expect(en2.body.existing_decision?.archetype_key).toBe('mond');
+  });
+
   it('DIN-LOOPHOLE-002: same archetype, different locale → 409 (locked text in original locale)', async () => {
     // Edge case: user has 'mond DE' decision, switches to EN, picks
     // 'mond' again. Same archetype but different locale. Per spec
