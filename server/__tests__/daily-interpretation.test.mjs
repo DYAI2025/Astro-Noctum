@@ -1017,12 +1017,7 @@ describe('POST /api/daily-interpretation — no-placeholders contract', () => {
         };
       }
 
-      return {
-        ok: true, status: 200,
-        headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({}),
-        text: async () => '{}',
-      };
+      throw new Error(`Unhandled fetch mock request: ${method} ${url}`);
     });
 
     // GET endpoint also serializes the impulse_text via the slot-generation
