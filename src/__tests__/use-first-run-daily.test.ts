@@ -190,6 +190,62 @@ describe('useFirstRunDaily — error recovery', () => {
     expect(result.current.error).toBeNull();
   });
 
+  it('FRD-RETRY-004: dependency changes while in flight invalidate stale response and fetch latest inputs', async () => {
+    const staleDaily = { ...VALID_DAILY, meta: { engine_version: 'stale-de' } };
+    const freshDaily = { ...VALID_DAILY, meta: { engine_version: 'fresh-en' } };
+
+    let resolveStale!: (value: unknown) => void;
+    let resolveFresh!: (value: unknown) => void;
+    fetchDailyExperienceMock.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveStale = resolve;
+      }),
+    );
+    fetchDailyExperienceMock.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveFresh = resolve;
+      }),
+    );
+
+    const useFirstRunDaily = await loadHook();
+    const STABLE_QUIZ: number[] = [];
+
+    const { result, rerender } = renderHook(
+      ({ locale }: { locale: string }) =>
+        useFirstRunDaily('user-1', VALID_BIRTH, null, STABLE_QUIZ, 'Taurus', undefined, locale),
+      { initialProps: { locale: 'de-DE' } },
+    );
+
+    await waitFor(() => expect(result.current.loading).toBe(true));
+    expect(fetchDailyExperienceMock).toHaveBeenCalledTimes(1);
+
+    rerender({ locale: 'en-US' });
+
+    // The locale change is a meaningful dependency change, but it should be
+    // queued rather than dispatched concurrently while the first request runs.
+    expect(fetchDailyExperienceMock).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      resolveStale(staleDaily);
+    });
+
+    await waitFor(() => expect(fetchDailyExperienceMock).toHaveBeenCalledTimes(2));
+    expect(fetchDailyExperienceMock.mock.calls[1][4]).toBe('en-US');
+    expect(result.current.dailyData).toBeNull();
+
+    act(() => {
+      resolveFresh(freshDaily);
+    });
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+      expect(result.current.dailyData).toEqual(freshDaily);
+    });
+
+    expect(result.current.dailyData).not.toEqual(staleDaily);
+    expect(result.current.error).toBeNull();
+  });
+
   it('FRD-RETRY-003: retry() during in-flight request is debounced (no second fetch)', async () => {
     // Use a never-resolving promise so the first fetch stays in flight
     // when retry() is called.
