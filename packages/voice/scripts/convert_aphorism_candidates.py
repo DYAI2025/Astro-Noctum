@@ -182,15 +182,19 @@ def render_file(fm):
     ]
     if attribution_note:
         fields.append(f'attribution_note: "{attribution_note}"')
-    # Filter element_affinity to only include validator-allowed Wu-Xing
-    # elements. The candidate input occasionally uses "luft" (German for air),
-    # which is not part of the BaZi five-element schema accepted by the
-    # validator — drop such values rather than fail validation.
+    # Map element_affinity values into the validator-allowed Wu-Xing set.
+    # The candidate input occasionally uses "luft" (German for air), which
+    # has no direct Wu-Xing equivalent. Per DEC-luft-maps-to-metall
+    # (2026-05-15), map luft → metall (closest Wu-Xing neighbor: clarity /
+    # autumn / structure) before filtering. The downstream filter remains
+    # as a defensive guard against any other non-Wu-Xing value.
     raw_elements = fm.get("element_affinity", "[]")
     elements_match = re.fullmatch(r"\[(.*)\]", raw_elements.strip())
     if elements_match:
         items = [x.strip().strip('"').strip("'") for x in elements_match.group(1).split(",") if x.strip()]
-        kept = [x for x in items if x in ALLOWED_ELEMENTS]
+        # DEC-luft-maps-to-metall: substitute luft → metall before filtering.
+        mapped = ["metall" if x == "luft" else x for x in items]
+        kept = [x for x in mapped if x in ALLOWED_ELEMENTS]
         element_field_val = "[" + ", ".join(kept) + "]"
     else:
         element_field_val = "[]"
