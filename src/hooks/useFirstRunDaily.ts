@@ -205,7 +205,8 @@ export function useFirstRunDaily(
   const runDailyFetch = useCallback(async (opts: { signal?: AbortSignal } = {}) => {
     const now = new Date();
     const currentHour = now.getHours();
-    const isTodayTarget = !customDate || customDate === todayKey();
+    const activeWindowKey = dailyCacheKey();
+    const isTodayTarget = !customDate || customDate === activeWindowKey;
     // Deliberate delivery window: modal auto-open is suppressed outside 06:00–17:59 local time.
     // Rationale: daily content is morning-oriented; late-night auto-open is disruptive.
     // Note: Dashboard.tsx currently does NOT consume `showModal` (Wireframe F3 decision —
@@ -213,7 +214,7 @@ export function useFirstRunDaily(
     // retained so the behaviour can be re-enabled cleanly when/if auto-open is restored.
     // Decision 2026-05-06: keep guard, do not remove (Option B confirmed by Ben).
     const isWithinDeliveryWindow = currentHour >= 6 && currentHour < 18;
-    const targetDate = customDate || todayKey();
+    const targetDate = customDate || activeWindowKey;
 
     // Guard: need userId + birthData; soulprint can be null (synthetic fallback).
     // Also avoid re-fetching the same date — but ONLY when the previous
@@ -277,8 +278,8 @@ export function useFirstRunDaily(
         if (!isCurrent()) return;
 
         // 2. Check localStorage cache — serves BOTH inline display and modal.
-        // Only cache for today's date.
-        const isToday = targetDate === todayKey();
+        // Only cache for the active 06:00 day-window.
+        const isToday = targetDate === activeWindowKey;
         if (isToday) {
           const cached = getCachedDaily();
           if (cached) {
@@ -416,8 +417,8 @@ export function useFirstRunDaily(
   const handleClose = useCallback(() => {
     setShowModal(false);
 
-    // Mark today's date as seen in profiles (fire-and-forget)
-    const today = todayKey();
+    // Mark the active 06:00 day-window as seen in profiles (fire-and-forget).
+    const today = dailyCacheKey();
     supabase
       .from('profiles')
       .update({ daily_modal_seen_date: today })

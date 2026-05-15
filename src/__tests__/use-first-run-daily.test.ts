@@ -42,19 +42,26 @@ const VALID_DAILY: any = {
 };
 
 /**
- * Seed localStorage with a cached daily under today's local-calendar key.
+ * Seed localStorage with a cached daily under the active 06:00 day-window key.
  * Mirrors the `setCachedDaily()` shape in useFirstRunDaily.ts so the
  * cache-hit branch picks it up on first effect run.
  */
-function seedTodayCache(data: unknown): void {
+function activeDailyWindowKey(): string {
   const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
-  const todayKey = `${y}-${m}-${d}`;
+  const windowedDate = new Date(now);
+  if (now.getHours() < 6) {
+    windowedDate.setDate(now.getDate() - 1);
+  }
+  const y = windowedDate.getFullYear();
+  const m = String(windowedDate.getMonth() + 1).padStart(2, '0');
+  const d = String(windowedDate.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function seedTodayCache(data: unknown): void {
   window.localStorage.setItem(
     'daily_horoscope_cache',
-    JSON.stringify({ date: todayKey, data }),
+    JSON.stringify({ date: activeDailyWindowKey(), data }),
   );
 }
 
@@ -99,6 +106,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.clearAllMocks();
 });
 
@@ -271,6 +279,35 @@ describe('useFirstRunDaily — error recovery', () => {
     expect(fetchDailyExperienceMock).toHaveBeenCalledTimes(1);
     expect(result.current.dailyData).not.toBeNull();
     expect(result.current.error).toBeNull();
+  });
+
+  it('FRD-WINDOW-001: cold-start before 06:00 fetches the active day-window date', async () => {
+    // Regression for PR #347 review: when there is no valid cache and the
+    // user opens the dashboard between 00:00 and 05:59, the network request
+    // must use the same 06:00 day-window key that getCachedDaily()/setCachedDaily()
+    // use. Otherwise cold-start users see the next calendar day's horoscope at
+    // midnight while cached users keep the previous window until 06:00.
+    vi.useFakeTimers({ shouldAdvanceTime: true, advanceTimeDelta: 20 });
+    vi.setSystemTime(new Date('2026-05-08T05:30:00'));
+    fetchDailyExperienceMock.mockResolvedValueOnce(VALID_DAILY);
+
+    const useFirstRunDaily = await loadHook();
+    const STABLE_QUIZ: number[] = [];
+    const { result } = renderHook(() =>
+      useFirstRunDaily('user-1', VALID_BIRTH, null, STABLE_QUIZ, 'Taurus'),
+    );
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+      expect(result.current.dailyData).not.toBeNull();
+    });
+
+    expect(fetchDailyExperienceMock).toHaveBeenCalledTimes(1);
+    // fetchDailyExperience(birthData, soulprintSectors, quizSectors, targetDate, ...)
+    expect(fetchDailyExperienceMock.mock.calls[0][3]).toBe('2026-05-07');
+
+    const cached = JSON.parse(window.localStorage.getItem('daily_horoscope_cache') ?? '{}');
+    expect(cached.date).toBe('2026-05-07');
   });
 
   it('FRD-CACHE-001: cache-hit path sets the ref so same-deps re-renders do not re-fetch', async () => {
