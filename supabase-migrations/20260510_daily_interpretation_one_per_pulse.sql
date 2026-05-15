@@ -46,5 +46,18 @@ WHERE daily_interpretation.id = ranked_interpretations.id
   AND ranked_interpretations.decision_rank > 1;
 
 -- Add the new constraint: at most one interpretation per daily_pulse_id.
-ALTER TABLE daily_interpretations
-  ADD CONSTRAINT daily_interpretations_one_per_pulse UNIQUE (daily_pulse_id);
+-- Wrapped in IF NOT EXISTS so a migration replay (CI, fresh clone, disaster
+-- recovery) does not fail with 42710 (duplicate_object) after this migration
+-- has already been applied in production.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'daily_interpretations'::regclass
+      AND conname = 'daily_interpretations_one_per_pulse'
+  ) THEN
+    ALTER TABLE daily_interpretations
+      ADD CONSTRAINT daily_interpretations_one_per_pulse UNIQUE (daily_pulse_id);
+  END IF;
+END $$;

@@ -32,3 +32,8 @@ H_SESSION_KICKOFF.md
 # Local tooling state (claude-flow swarm coordination, ruflo MCP memory DB)
 .swarm/
 ruvector.db
+
+# Aphorism curator backup zips — the content is already tracked as
+# individual aph-NNNN.md files under the same review/ folder; the zips
+# are local-only redundant archives.
+**/aphorisms/review/Archiv.zip

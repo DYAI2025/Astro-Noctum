@@ -292,7 +292,14 @@ export function Dashboard({
 
   const birthSign = apiData?.western?.zodiac_sign ?? null;
 
-  const { dailyData, dayHarmonic, nightHarmonic, handleClose: handleDailyClose } = useFirstRunDaily(
+  const {
+    dailyData,
+    dayHarmonic,
+    nightHarmonic,
+    loading: dailyLoading,
+    error: dailyError,
+    handleClose: handleDailyClose,
+  } = useFirstRunDaily(
     userId,
     profileMeta.birthInput,
     effectiveSoulprint,
@@ -313,6 +320,13 @@ export function Dashboard({
   }, [dayHarmonic, nightHarmonic, isPremium]);
 
   // natalWeights + dimensionWeights removed — MiniSignature no longer in dashboard grid.
+
+  // DailyChartHero shows its skeleton when EITHER the daily-pulse fetch is
+  // in flight (Task 1.11 wire) OR the active-impacts/transit fetch is in
+  // flight without a cached impact value yet. Both contribute legitimately
+  // to "the hero is not ready to show real content".
+  const heroLoading =
+    dailyLoading || ((metaLoading || transitLoading) && impactHarmonyIndex == null);
 
   // ── Render ────────────────────────────────────────────────────────────
 
@@ -389,7 +403,8 @@ export function Dashboard({
       <motion.div {...fadeIn(0.02)}>
         <SectionErrorBoundary name="DailyChartHero">
           <DailyChartHero
-            loading={(metaLoading || transitLoading) && impactHarmonyIndex == null}
+            loading={heroLoading}
+            error={dailyError}
             baseCoherence={impactBaseCoherence}
             positiveDailyDelta={impactPositiveDailyDelta}
             displayedCoherence={impactDisplayedCoherence}

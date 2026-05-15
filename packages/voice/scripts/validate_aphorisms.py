@@ -20,7 +20,7 @@ def parse_scalar(value):
     v = value.strip()
     if v == 'null': return None
     if v.startswith('"') and v.endswith('"'):
-        return bytes(v[1:-1], 'utf-8').decode('unicode_escape')
+        return v[1:-1]
     if v.startswith("'") and v.endswith("'"):
         return v[1:-1]
     if v.startswith('[') and v.endswith(']'):
