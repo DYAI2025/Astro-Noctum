@@ -51,12 +51,12 @@ export function todayKey(): string {
   return `${y}-${m}-${d}`;
 }
 
-function getCachedDaily(): DailyResponse | null {
+function getCachedDaily(requestKey: string): DailyResponse | null {
   try {
     const raw = localStorage.getItem('daily_horoscope_cache');
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    if (parsed?.date === todayKey() && parsed?.data) {
+    if (parsed?.date === todayKey() && parsed?.requestKey === requestKey && parsed?.data) {
       return parsed.data as DailyResponse;
     }
     return null;
@@ -65,15 +65,25 @@ function getCachedDaily(): DailyResponse | null {
   }
 }
 
-function setCachedDaily(data: DailyResponse): void {
+function setCachedDaily(data: DailyResponse, requestKey: string): void {
   try {
     localStorage.setItem(
       'daily_horoscope_cache',
-      JSON.stringify({ date: todayKey(), data }),
+      JSON.stringify({ date: todayKey(), requestKey, data }),
     );
   } catch {
     // localStorage full or unavailable — ignore
   }
+}
+
+function birthInputKey(birthData: BirthInput): string {
+  return [
+    birthData.date,
+    birthData.time,
+    birthData.tz,
+    birthData.lat,
+    birthData.lon,
+  ].join('|');
 }
 
 // ── Hook ──────────────────────────────────────────────────────────────
@@ -100,11 +110,12 @@ export function useFirstRunDaily(
   // bad enough; clobbering an in-flight error result is worse.
   const quizSectorsKey = quizSectors.join(',');
   const soulprintSectorsKey = soulprintSectors ? soulprintSectors.join(',') : 'null';
-  // 2026-05-11 audit fix: the ref must be set AFTER a successful fetch /
-  // cache-hit, not on entry. Setting it on entry poisoned the guard
-  // forever when the fetch failed (network drop, 401, 503, schema
-  // mismatch) — the user lost daily content for the rest of the day.
-  const lastFetchedDateRef = useRef<string | null>(null);
+  const birthDataKey = birthData ? birthInputKey(birthData) : 'null';
+  // 2026-05-11 audit fix: the success marker must be set AFTER a successful fetch /
+  // cache-hit, not on entry. 2026-05-15 follow-up: key it by the full
+  // logical request (date + locale + birth inputs + sectors + sign), not just
+  // the date, so same-day dependency changes can fetch fresh content.
+  const lastFetchedRequestKeyRef = useRef<string | null>(null);
   // 2026-05-11 audit fix: in-flight flag. Prevents React Strict Mode
   // double-mounts, unstable-deps re-renders (e.g. inline `[]` arrays
   // from callers), and rapid retry() calls from firing concurrent
@@ -121,6 +132,9 @@ export function useFirstRunDaily(
   // counter increments only when an effect actually starts a fetch,
   // so state updates only get suppressed when a NEW fetch took over.
   const fetchGenRef = useRef<number>(0);
+  const activeRequestKeyRef = useRef<string | null>(null);
+  const queuedRequestKeyRef = useRef<string | null>(null);
+  const [queuedFetchTick, setQueuedFetchTick] = useState(0);
   // Bumped by retry() to force the effect to re-run even when the
   // dependency array is identical.
   const [retryTick, setRetryTick] = useState(0);
@@ -139,19 +153,39 @@ export function useFirstRunDaily(
     const targetDate = customDate || todayKey();
 
     // Guard: need userId + birthData; soulprint can be null (synthetic fallback).
-    // Also avoid re-fetching the same date — but ONLY when the previous
-    // attempt succeeded. The ref is cleared in the catch below so a
-    // failed attempt does NOT block a future retry triggered by either
-    // (a) a dep change such as locale or soulprint update or
-    // (b) the explicit retry() callback.
-    if (!userId || !birthData || targetDate === lastFetchedDateRef.current) return;
-    // 2026-05-11 audit fix: in-flight guard. Without it React Strict
-    // Mode's double-mount in development fires two simultaneous fetches,
-    // and a user mashing retry() during the first fetch fires more.
-    // Also defeats unstable-deps races where consumer passes inline `[]`
-    // arrays that re-trigger the effect on every render.
-    if (inFlightRef.current) return;
+    if (!userId || !birthData) return;
+
+    const requestKey = [
+      userId,
+      targetDate,
+      birthDataKey,
+      soulprintSectorsKey,
+      quizSectorsKey,
+      birthSign ?? '',
+      locale,
+    ].join('::');
+
+    // Avoid re-fetching the same logical daily request — but only when the
+    // previous attempt for these exact inputs succeeded. A same-day change to
+    // locale, birth data, sectors, or sign must not be blocked by a date-only
+    // marker.
+    if (requestKey === lastFetchedRequestKeyRef.current) return;
+
+    // 2026-05-15 review fix: if a meaningful dependency changes while a
+    // request is in flight, invalidate the older generation and queue exactly
+    // one follow-up fetch for the latest request key. Duplicate retry()/Strict
+    // Mode reruns for the active key are still debounced.
+    if (inFlightRef.current) {
+      if (requestKey !== activeRequestKeyRef.current) {
+        queuedRequestKeyRef.current = requestKey;
+        fetchGenRef.current += 1;
+      }
+      return;
+    }
+
     inFlightRef.current = true;
+    activeRequestKeyRef.current = requestKey;
+    queuedRequestKeyRef.current = null;
 
     // 2026-05-11 audit fix: capture our generation. State updates and
     // the loading toggle only fire if our generation is still current,
@@ -186,11 +220,11 @@ export function useFirstRunDaily(
         // Only cache for today's date.
         const isToday = targetDate === todayKey();
         if (isToday) {
-          const cached = getCachedDaily();
+          const cached = getCachedDaily(requestKey);
           if (cached) {
             setDailyData(cached);
             setError(null);
-            lastFetchedDateRef.current = targetDate;
+            lastFetchedRequestKeyRef.current = requestKey;
             if (!alreadySeen && isWithinDeliveryWindow) setShowModal(true);
             return;
           }
@@ -221,10 +255,10 @@ export function useFirstRunDaily(
 
         if (!isCurrent()) return;
 
-        if (isToday) setCachedDaily(data);
+        if (isToday) setCachedDaily(data, requestKey);
         setDailyData(data);
         setError(null);
-        lastFetchedDateRef.current = targetDate;
+        lastFetchedRequestKeyRef.current = requestKey;
         if (!alreadySeen && (!isTodayTarget || isWithinDeliveryWindow)) setShowModal(true);
       } catch (err) {
         // Phase G (KILL ALL PLACEHOLDERS): no synthesized fallback content.
@@ -240,11 +274,16 @@ export function useFirstRunDaily(
           // 2026-05-11 audit fix: clear the date marker so a subsequent
           // dependency change or retry() can re-fetch. Without this the
           // failed attempt would block the rest of the day.
-          lastFetchedDateRef.current = null;
+          lastFetchedRequestKeyRef.current = null;
         }
       } finally {
-        if (isCurrent()) setLoading(false);
+        const hasQueuedFollowUp = queuedRequestKeyRef.current !== null;
+        if (isCurrent() && !hasQueuedFollowUp) setLoading(false);
+        activeRequestKeyRef.current = null;
         inFlightRef.current = false;
+        if (hasQueuedFollowUp) {
+          setQueuedFetchTick((tick) => tick + 1);
+        }
       }
     })();
     // Note: quizSectors and soulprintSectors are NOT in the dep array
@@ -252,14 +291,14 @@ export function useFirstRunDaily(
     // for the rationale. The hook body still reads the live arrays, so
     // the latest values are used inside the effect when it runs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, birthData, soulprintSectorsKey, quizSectorsKey, birthSign, customDate, locale, retryTick]);
+  }, [userId, birthDataKey, soulprintSectorsKey, quizSectorsKey, birthSign, customDate, locale, retryTick, queuedFetchTick]);
 
   const retry = useCallback(() => {
     // Belt and braces: the catch block already clears the marker, but a
     // defensive clear here means retry() works even if some future code
     // path forgets to clear it. The state bump forces the effect to
     // re-run when nothing else in the deps array changed.
-    lastFetchedDateRef.current = null;
+    lastFetchedRequestKeyRef.current = null;
     setError(null);
     setRetryTick((t) => t + 1);
   }, []);
