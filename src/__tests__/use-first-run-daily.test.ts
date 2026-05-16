@@ -310,6 +310,65 @@ describe('useFirstRunDaily — error recovery', () => {
     expect(cached.date).toBe('2026-05-07');
   });
 
+  it('FRD-WINDOW-002: resolving a pre-06:00 fetch after rotation does not cache yesterday as today', async () => {
+    // Regression for PR #350 review: a cold request can start before 06:00
+    // with yesterday's day-window key, then resolve after the mounted 06:00
+    // timer has already tried to fetch the new window. The in-flight guard
+    // must not let that stale response populate today's cache or UI.
+    vi.useFakeTimers({ shouldAdvanceTime: true, advanceTimeDelta: 20 });
+    vi.setSystemTime(new Date('2026-05-08T05:59:50'));
+
+    let resolvePreRotation: ((value: typeof VALID_DAILY) => void) | undefined;
+    const preRotationPromise = new Promise<typeof VALID_DAILY>((resolve) => {
+      resolvePreRotation = resolve;
+    });
+    const postRotationDaily = {
+      ...VALID_DAILY,
+      fusion: { harmony_index: 0.8, synthesis: 'new-window daily' },
+    };
+
+    fetchDailyExperienceMock
+      .mockReturnValueOnce(preRotationPromise)
+      .mockResolvedValueOnce(postRotationDaily);
+
+    const useFirstRunDaily = await loadHook();
+    const STABLE_QUIZ: number[] = [];
+    const { result } = renderHook(() =>
+      useFirstRunDaily('user-1', VALID_BIRTH, null, STABLE_QUIZ, 'Taurus'),
+    );
+
+    await waitFor(() => {
+      expect(fetchDailyExperienceMock).toHaveBeenCalledTimes(1);
+    });
+    expect(fetchDailyExperienceMock.mock.calls[0][3]).toBe('2026-05-07');
+
+    // Cross the local 06:00 boundary. The scheduled listener invokes
+    // runDailyFetch(), but the first request is still in-flight, so the hook
+    // records a pending new-window refetch instead of starting it immediately.
+    act(() => {
+      vi.advanceTimersByTime(10_000);
+    });
+    expect(fetchDailyExperienceMock).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      resolvePreRotation!(VALID_DAILY);
+    });
+
+    await waitFor(() => {
+      expect(fetchDailyExperienceMock).toHaveBeenCalledTimes(2);
+    });
+    expect(fetchDailyExperienceMock.mock.calls[1][3]).toBe('2026-05-08');
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+      expect(result.current.dailyData).toBe(postRotationDaily);
+    });
+
+    const cached = JSON.parse(window.localStorage.getItem('daily_horoscope_cache') ?? '{}');
+    expect(cached.date).toBe('2026-05-08');
+    expect(cached.data).toEqual(postRotationDaily);
+  });
+
   it('FRD-CACHE-001: cache-hit path sets the ref so same-deps re-renders do not re-fetch', async () => {
     // I-3 from the 2026-05-11 PR #343 review: the cache-hit branch in
     // useFirstRunDaily.ts (line 188-196) sets lastFetchedDateRef to

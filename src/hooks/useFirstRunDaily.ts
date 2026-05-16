@@ -133,11 +133,11 @@ export function getCachedDaily(): DailyResponse | null {
  * Production code should consume the cache via the `useFirstRunDaily`
  * hook — not via direct calls.
  */
-export function setCachedDaily(data: DailyResponse): void {
+export function setCachedDaily(data: DailyResponse, cacheKey = dailyCacheKey()): void {
   try {
     localStorage.setItem(
       'daily_horoscope_cache',
-      JSON.stringify({ date: dailyCacheKey(), data }),
+      JSON.stringify({ date: cacheKey, data }),
     );
   } catch {
     // localStorage full or unavailable — ignore
@@ -179,6 +179,12 @@ export function useFirstRunDaily(
   // fetches. Cleared in the finally branch so the next legitimate
   // trigger works.
   const inFlightRef = useRef<boolean>(false);
+  // If the 06:00 rotation fires while a pre-rotation request is still
+  // in-flight, remember that the skipped invocation must be replayed as
+  // soon as the old request settles. Otherwise the stale response can win
+  // the race and keep yesterday's day-window on screen.
+  const pendingWindowRefetchRef = useRef<boolean>(false);
+  const inFlightWindowKeyRef = useRef<string | null>(null);
   // 2026-05-11 audit fix: per-fetch generation counter. Replaces the
   // local `cancelled` closure flag because that flag was getting set
   // spuriously by R2 effect re-runs (unstable deps + inline `[]`
@@ -228,8 +234,14 @@ export function useFirstRunDaily(
     // and a user mashing retry() during the first fetch fires more.
     // Also defeats unstable-deps races where consumer passes inline `[]`
     // arrays that re-trigger the effect on every render.
-    if (inFlightRef.current) return;
+    if (inFlightRef.current) {
+      if (!customDate && activeWindowKey !== inFlightWindowKeyRef.current) {
+        pendingWindowRefetchRef.current = true;
+      }
+      return;
+    }
     inFlightRef.current = true;
+    inFlightWindowKeyRef.current = activeWindowKey;
 
     // 2026-05-11 audit fix: capture our generation. State updates and
     // the loading toggle only fire if our generation is still current,
@@ -316,7 +328,13 @@ export function useFirstRunDaily(
 
         if (!isCurrent()) return;
 
-        if (isToday) setCachedDaily(data);
+        const completionWindowKey = dailyCacheKey();
+        if (!customDate && targetDate !== completionWindowKey) {
+          pendingWindowRefetchRef.current = true;
+          return;
+        }
+
+        if (isToday) setCachedDaily(data, activeWindowKey);
         setDailyData(data);
         setError(null);
         lastFetchedDateRef.current = targetDate;
@@ -340,6 +358,15 @@ export function useFirstRunDaily(
       } finally {
         if (isCurrent()) setLoading(false);
         inFlightRef.current = false;
+        inFlightWindowKeyRef.current = null;
+
+        if (isCurrent() && pendingWindowRefetchRef.current && !customDate) {
+          pendingWindowRefetchRef.current = false;
+          lastFetchedDateRef.current = null;
+          localStorage.removeItem('daily_horoscope_cache');
+          setDailyData(null);
+          setRetryTick((t) => t + 1);
+        }
       }
     })();
     // Note: quizSectors and soulprintSectors are NOT in the dep array
