@@ -143,7 +143,7 @@ Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO.
 
 ## 3. Empfänger und Dienstleister
 
-- Supabase (Supabase Inc., Singapur): Authentifizierung, Datenbank. Hosting-Region: MISSING_SUPABASE_REGION_CONFIRMATION — bitte im Supabase-Dashboard unter Project Settings → General → Region prüfen.
+- Supabase (Supabase Inc., Singapur): Authentifizierung, Datenbank. Hosting-Region: EU (Irland, AWS eu-west-1).
 - Railway (Railway Corp., USA): Hosting von Backend und API-Server.
 - Google Gemini API (Google LLC, 1600 Amphitheatre Parkway, Mountain View, CA 94043, USA): KI-Interpretationen und Zusammenfassungen.
 - ElevenLabs (ElevenLabs, Inc., USA): optionale Sprachagenten-Funktionen.
@@ -208,7 +208,7 @@ Legal basis: Art. 6(1)(f) GDPR. Legitimate interest: secure operation.
 
 ## 3. Recipients and service providers
 
-- Supabase (Supabase Inc., Singapore): authentication, database. Hosting region: MISSING_SUPABASE_REGION_CONFIRMATION — please verify in the Supabase dashboard under Project Settings → General → Region.
+- Supabase (Supabase Inc., Singapore): authentication, database. Hosting region: EU (Ireland, AWS eu-west-1).
 - Railway (Railway Corp., USA): hosting of backend and API server.
 - Google Gemini API (Google LLC, 1600 Amphitheatre Parkway, Mountain View, CA 94043, USA): AI interpretations and summaries.
 - ElevenLabs (ElevenLabs, Inc., USA): optional voice-agent features.
