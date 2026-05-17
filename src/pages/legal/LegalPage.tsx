@@ -48,7 +48,9 @@ function renderMarkdownLite(body: string): string {
     } else if (line.trim() === "") {
       flushParagraph();
     } else {
-      pendingParagraphLines.push(line);
+      pendingParagraphLines.push(
+        line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"),
+      );
     }
   }
 
@@ -71,7 +73,6 @@ export default function LegalPage({ kind }: LegalPageProps) {
   return (
     <div
       className="min-h-screen bg-[#00050A] text-gray-200"
-      style={{ fontFamily: "inherit" }}
     >
       <div className="max-w-2xl mx-auto px-6 py-10">
         {/* Back link */}
@@ -114,7 +115,6 @@ export default function LegalPage({ kind }: LegalPageProps) {
 
         {/* Legal content */}
         <article
-          className="prose-invert"
           // body text is internal static content, not user input
           dangerouslySetInnerHTML={{ __html: renderedBody }}
         />
