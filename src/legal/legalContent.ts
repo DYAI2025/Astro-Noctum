@@ -7,11 +7,9 @@ export const LEGAL_OPERATOR = {
   appName: "Bazodiac",
   operatorName: "Benjamin Poersch",
   email: "ben.poersch@dyai.app",
-  address: "MISSING_LEGAL_ADDRESS",
-  phone: "MISSING_PHONE_OPTIONAL",
-  vatId: "MISSING_VAT_ID_OPTIONAL",
-  register: "MISSING_REGISTER_OPTIONAL",
-  supervisoryAuthority: "MISSING_SUPERVISORY_AUTHORITY",
+  address: "Grazer Damm 207, 12157 Berlin",
+  supervisoryAuthority:
+    "Berliner Beauftragte für Datenschutz und Informationsfreiheit, Friedrichstraße 219, 10969 Berlin (https://www.datenschutz-berlin.de/)",
 };
 
 export const LEGAL_DOCS: Record<
@@ -32,19 +30,6 @@ Bazodiac
 Betrieben von: ${LEGAL_OPERATOR.operatorName}
 Anschrift: ${LEGAL_OPERATOR.address}
 E-Mail: ${LEGAL_OPERATOR.email}
-Telefon: ${LEGAL_OPERATOR.phone}
-
-## Vertreten durch
-
-${LEGAL_OPERATOR.operatorName}
-
-## Umsatzsteuer-ID
-
-${LEGAL_OPERATOR.vatId}
-
-## Registerangaben
-
-${LEGAL_OPERATOR.register}
 
 ## Verantwortlich für journalistisch-redaktionelle Inhalte
 
@@ -87,19 +72,6 @@ Bazodiac
 Operated by: ${LEGAL_OPERATOR.operatorName}
 Address: ${LEGAL_OPERATOR.address}
 Email: ${LEGAL_OPERATOR.email}
-Phone: ${LEGAL_OPERATOR.phone}
-
-## Represented by
-
-${LEGAL_OPERATOR.operatorName}
-
-## VAT ID
-
-${LEGAL_OPERATOR.vatId}
-
-## Register information
-
-${LEGAL_OPERATOR.register}
 
 ## Responsible for editorial content
 
@@ -171,11 +143,11 @@ Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO.
 
 ## 3. Empfänger und Dienstleister
 
-- Supabase: Authentifizierung, Datenbank. Anbieter/Region: MISSING_SUPABASE_ENTITY / MISSING_SUPABASE_REGION_CONFIRMATION.
-- Railway oder vergleichbares Hosting: Backend/API. Anbieter/Region: MISSING_RAILWAY_ENTITY_AND_REGION.
-- Google Gemini API: KI-Interpretationen. Anbieter/Rolle/Region: MISSING_GEMINI_PROCESSOR_ENTITY.
-- ElevenLabs: Sprachagenten. Anbieter/Rolle/Region: MISSING_ELEVENLABS_PROCESSOR_ENTITY.
-- Stripe: Zahlungsabwicklung. Anbieter/Rolle/Region: MISSING_STRIPE_ENTITY.
+- Supabase (Supabase Inc., Singapur): Authentifizierung, Datenbank. Hosting-Region: MISSING_SUPABASE_REGION_CONFIRMATION — bitte im Supabase-Dashboard unter Project Settings → General → Region prüfen.
+- Railway (Railway Corp., USA): Hosting von Backend und API-Server.
+- Google Gemini API (Google LLC, 1600 Amphitheatre Parkway, Mountain View, CA 94043, USA): KI-Interpretationen und Zusammenfassungen.
+- ElevenLabs (ElevenLabs, Inc., USA): optionale Sprachagenten-Funktionen.
+- Stripe (Stripe Technology Europe, Limited, 1 Grand Canal Street Lower, Dublin 2, Irland): Zahlungsabwicklung und Premium-Status.
 
 ## 4. Ihre Rechte
 
@@ -236,11 +208,11 @@ Legal basis: Art. 6(1)(f) GDPR. Legitimate interest: secure operation.
 
 ## 3. Recipients and service providers
 
-- Supabase: authentication, database. Provider/region: MISSING_SUPABASE_ENTITY / MISSING_SUPABASE_REGION_CONFIRMATION.
-- Railway or comparable hosting: backend/API. Provider/region: MISSING_RAILWAY_ENTITY_AND_REGION.
-- Google Gemini API: AI interpretations. Provider/role/region: MISSING_GEMINI_PROCESSOR_ENTITY.
-- ElevenLabs: voice-agent features. Provider/role/region: MISSING_ELEVENLABS_PROCESSOR_ENTITY.
-- Stripe: payment processing. Provider/role/region: MISSING_STRIPE_ENTITY.
+- Supabase (Supabase Inc., Singapore): authentication, database. Hosting region: MISSING_SUPABASE_REGION_CONFIRMATION — please verify in the Supabase dashboard under Project Settings → General → Region.
+- Railway (Railway Corp., USA): hosting of backend and API server.
+- Google Gemini API (Google LLC, 1600 Amphitheatre Parkway, Mountain View, CA 94043, USA): AI interpretations and summaries.
+- ElevenLabs (ElevenLabs, Inc., USA): optional voice-agent features.
+- Stripe (Stripe Technology Europe, Limited, 1 Grand Canal Street Lower, Dublin 2, Ireland): payment processing and premium status.
 
 ## 4. Your rights
 
