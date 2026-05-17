@@ -80,7 +80,7 @@ export default function LegalPage({ kind }: LegalPageProps) {
             to="/"
             className="text-sm text-gray-400 hover:text-[#D4AF37] transition-colors"
           >
-            ← Back
+            {lang === "de" ? "← Zurück" : "← Back"}
           </Link>
         </div>
 
