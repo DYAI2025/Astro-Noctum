@@ -23,11 +23,11 @@ import { usePremium } from "./hooks/usePremium";
 import { useUpgradeCheckout } from "./hooks/useUpgradeCheckout";
 import { isFeatureEnabled } from "./lib/feature-flags";
 import type { BootstrapResponse, SignatureDeltaResponse } from "./lib/schemas/experience";
-import { Volume2, VolumeX, Settings, X, Moon, Sun, Home, Lock } from "lucide-react";
+import { Volume2, VolumeX, Settings, Moon, Sun, Home, Lock } from "lucide-react";
 import { IconSparkles as Sparkles, IconOrbit as OrbitIcon } from "./components/animated-icons";
 import { SettingsMenu } from "./components/navigation/SettingsMenu";
 import { AgentsPopup } from "./components/navigation/AgentsPopup";
-import { LEGAL_CONTENT } from "./components/LegalFooter";
+import { StaticLegalLinks } from "./components/StaticLegalLinks";
 import { computeCenterLinks, MOBILE_NAV_ITEM_CLASS } from "./lib/navigation";
 import { DebugPanel, useDebugPanel } from "./debug";
 import { useElementTheme } from "./hooks/useElementTheme";
@@ -383,13 +383,11 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
   const agentActive = activeAgent !== null && agentStates[activeAgent]?.active;
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [agentsPopupOpen, setAgentsPopupOpen] = useState(false);
-  const [legalSection, setLegalSection] = useState<null | "terms" | "privacy">(null);
 
-  // Important fix #5: close settings + legal + agents popup on route change
+  // Important fix #5: close settings + agents popup on route change
   useEffect(() => {
     setSettingsOpen(false);
     setAgentsPopupOpen(false);
-    setLegalSection(null);
   }, [location.pathname]);
 
   // Centralised upgrade-to-premium client owner — analytics + 6-key error
@@ -568,7 +566,6 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
                 togglePlanetarium={togglePlanetarium}
                 signOut={signOut}
                 t={t}
-                onOpenLegal={(s) => setLegalSection((prev) => (prev === s ? null : s))}
                 onClose={() => setSettingsOpen(false)}
                 isPremium={isPremium}
               />
@@ -600,37 +597,6 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
           </Link>
         )}
       </div>
-      )}
-
-      {/* ── Legal modal ───────────────────────────────────────────────── */}
-      {legalSection && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-          onClick={() => setLegalSection(null)}
-          aria-modal="true"
-          role="dialog"
-        >
-          <div
-            className="relative max-w-2xl w-full max-h-[80vh] overflow-y-auto rounded-2xl border border-[#D4AF37]/15 bg-[#00050A]/95 backdrop-blur p-6 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-start justify-between mb-4">
-              <h4 className="text-[10px] uppercase tracking-[0.3em] text-[#D4AF37]/60 font-semibold">
-                {LEGAL_CONTENT[legalSection][lang].title}
-              </h4>
-              <button
-                onClick={() => setLegalSection(null)}
-                className="text-white/30 hover:text-white/60 transition-colors ml-4 shrink-0"
-                aria-label={t("legal.closeAriaLabel")}
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="text-xs text-white/40 leading-relaxed whitespace-pre-line">
-              {LEGAL_CONTENT[legalSection][lang].body}
-            </div>
-          </div>
-        </div>
       )}
 
       {/* ── Main content (routed) ──────────────────────────────────────── */}
@@ -746,7 +712,6 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
               togglePlanetarium={togglePlanetarium}
               signOut={signOut}
               t={t}
-              onOpenLegal={(s) => setLegalSection((prev) => (prev === s ? null : s))}
               onClose={() => setSettingsOpen(false)}
               isPremium={isPremium}
             />
@@ -754,6 +719,9 @@ function AppShell({ user, lang, setLang, t, siteVisible, planetariumMode, toggle
         </div>
       </nav>
       )}
+
+      {/* ── Static Legal Links (footer) ────────────────────────────────── */}
+      {!isOnboardingRoute && <StaticLegalLinks />}
     </motion.div>
   );
 }

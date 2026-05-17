@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { LogOut, ExternalLink, Moon, Sun } from "lucide-react";
+import { Link } from "react-router-dom";
 import { ManageSubscription } from "../ManageSubscription";
 
 interface SettingsMenuProps {
@@ -12,7 +13,6 @@ interface SettingsMenuProps {
   togglePlanetarium: () => void;
   signOut: () => void;
   t: (key: string) => string;
-  onOpenLegal: (s: "terms" | "privacy") => void;
   onClose: () => void;
   isPremium: boolean;
 }
@@ -26,7 +26,6 @@ export function SettingsMenu({
   togglePlanetarium,
   signOut,
   t,
-  onOpenLegal,
   onClose,
   isPremium,
 }: SettingsMenuProps) {
@@ -135,22 +134,34 @@ export function SettingsMenu({
         <div className="border-t border-[#D4AF37]/10 my-1" />
 
         {/* AGB */}
-        <button
+        <Link
           role="menuitem"
-          onClick={() => { onOpenLegal("terms"); onClose(); }}
-          className="w-full px-4 py-2.5 text-left text-sm text-white/60 hover:text-white hover:bg-[#D4AF37]/08 transition-colors"
+          to={lang === "de" ? "/agb" : "/terms"}
+          onClick={onClose}
+          className="block w-full px-4 py-2.5 text-left text-sm text-white/60 hover:text-white hover:bg-[#D4AF37]/08 transition-colors"
         >
           {t("nav.settingsAgb")}
-        </button>
+        </Link>
 
         {/* Datenschutz */}
-        <button
+        <Link
           role="menuitem"
-          onClick={() => { onOpenLegal("privacy"); onClose(); }}
-          className="w-full px-4 py-2.5 text-left text-sm text-white/60 hover:text-white hover:bg-[#D4AF37]/08 transition-colors"
+          to={lang === "de" ? "/datenschutz" : "/privacy"}
+          onClick={onClose}
+          className="block w-full px-4 py-2.5 text-left text-sm text-white/60 hover:text-white hover:bg-[#D4AF37]/08 transition-colors"
         >
           {t("nav.settingsPrivacy")}
-        </button>
+        </Link>
+
+        {/* Impressum */}
+        <Link
+          role="menuitem"
+          to={lang === "de" ? "/impressum" : "/legal-notice"}
+          onClick={onClose}
+          className="block w-full px-4 py-2.5 text-left text-sm text-white/60 hover:text-white hover:bg-[#D4AF37]/08 transition-colors"
+        >
+          {lang === "de" ? "Impressum" : "Legal Notice"}
+        </Link>
 
         {/* sky.bazodiac.space */}
         <a
