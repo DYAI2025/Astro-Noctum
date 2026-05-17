@@ -243,21 +243,29 @@ export function useFirstRunDaily(
       locale,
     ].join('::');
 
-    // Avoid re-fetching the same logical daily request — but only when the
-    // previous attempt for these exact inputs succeeded. A same-day change to
-    // locale, birth data, sectors, or sign must not be blocked by a date-only
-    // marker.
-    if (requestKey === lastFetchedRequestKeyRef.current) return;
-
     // 2026-05-15 review fix: if a meaningful dependency changes while a
     // request is in flight, invalidate the older generation and queue exactly
-    // one follow-up fetch for the latest request key. Duplicate retry()/Strict
-    // Mode reruns for the active key are still debounced.
+    // one follow-up fetch for the latest request key BEFORE consulting the
+    // success marker below. Otherwise switching back to an already-fetched key
+    // could return early and let the now-stale in-flight response win.
+    // Duplicate retry()/Strict Mode reruns for the active key are still
+    // debounced.
     if (inFlightRef.current) {
       if (requestKey !== activeRequestKeyRef.current) {
         queuedRequestKeyRef.current = requestKey;
         fetchGenRef.current += 1;
       }
+      return;
+    }
+
+    // Avoid re-fetching the same logical daily request — but only when the
+    // previous attempt for these exact inputs succeeded. A same-day change to
+    // locale, birth data, sectors, or sign must not be blocked by a date-only
+    // marker. If this guard is reached after a queued follow-up invalidated an
+    // obsolete in-flight request, also clear loading because the current data is
+    // already the latest successful result.
+    if (requestKey === lastFetchedRequestKeyRef.current) {
+      setLoading(false);
       return;
     }
 

@@ -246,6 +246,54 @@ describe('useFirstRunDaily — error recovery', () => {
     expect(result.current.error).toBeNull();
   });
 
+  it('FRD-RETRY-005: switching back to an already-fetched key invalidates the active request', async () => {
+    const loadedDaily = { ...VALID_DAILY, meta: { engine_version: 'loaded-de' } };
+    const staleDaily = { ...VALID_DAILY, meta: { engine_version: 'stale-en' } };
+
+    fetchDailyExperienceMock.mockResolvedValueOnce(loadedDaily);
+    let resolveStale!: (value: unknown) => void;
+    fetchDailyExperienceMock.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveStale = resolve;
+      }),
+    );
+
+    const useFirstRunDaily = await loadHook();
+    const STABLE_QUIZ: number[] = [];
+
+    const { result, rerender } = renderHook(
+      ({ locale }: { locale: string }) =>
+        useFirstRunDaily('user-1', VALID_BIRTH, null, STABLE_QUIZ, 'Taurus', undefined, locale),
+      { initialProps: { locale: 'de-DE' } },
+    );
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+      expect(result.current.dailyData).toEqual(loadedDaily);
+    });
+    expect(fetchDailyExperienceMock).toHaveBeenCalledTimes(1);
+
+    rerender({ locale: 'en-US' });
+    await waitFor(() => expect(result.current.loading).toBe(true));
+    expect(fetchDailyExperienceMock).toHaveBeenCalledTimes(2);
+
+    rerender({ locale: 'de-DE' });
+    expect(fetchDailyExperienceMock).toHaveBeenCalledTimes(2);
+
+    act(() => {
+      resolveStale(staleDaily);
+    });
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+      expect(result.current.dailyData).toEqual(loadedDaily);
+    });
+
+    expect(fetchDailyExperienceMock).toHaveBeenCalledTimes(2);
+    expect(result.current.dailyData).not.toEqual(staleDaily);
+    expect(result.current.error).toBeNull();
+  });
+
   it('FRD-RETRY-003: retry() during in-flight request is debounced (no second fetch)', async () => {
     // Use a never-resolving promise so the first fetch stays in flight
     // when retry() is called.
