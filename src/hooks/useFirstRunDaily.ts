@@ -173,7 +173,10 @@ export function useFirstRunDaily(
     // Duplicate retry()/Strict Mode reruns for the active key are still
     // debounced.
     if (inFlightRef.current) {
-      if (requestKey !== activeRequestKeyRef.current) {
+      if (
+        requestKey !== activeRequestKeyRef.current &&
+        requestKey !== queuedRequestKeyRef.current
+      ) {
         queuedRequestKeyRef.current = requestKey;
         fetchGenRef.current += 1;
       }
@@ -187,6 +190,7 @@ export function useFirstRunDaily(
     // obsolete in-flight request, also clear loading because the current data is
     // already the latest successful result.
     if (requestKey === lastFetchedRequestKeyRef.current) {
+      queuedRequestKeyRef.current = null;
       setLoading(false);
       return;
     }
