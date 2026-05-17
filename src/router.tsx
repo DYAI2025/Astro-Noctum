@@ -16,6 +16,7 @@ const SkyPage = lazy(() => import('./pages/SkyPage'));
 const FaqPage = lazy(() => import('./pages/FaqPage'));
 const WeeklyInsightsPage = lazy(() => import('./pages/WeeklyInsightsPage'));
 const SynastryPage = lazy(() => import('./pages/SynastryPage'));
+const LegalPage = lazy(() => import('./pages/legal/LegalPage'));
 
 // ── Transition variants (per docs/wireframes/depth-navigation-v1.md) ─────────
 
@@ -120,6 +121,12 @@ export function AppRoutes({ hasCompleteProfile, onboardingProps }: AppRoutesProp
             <Route path="/synastry" element={<SynastryPage />} />
             <Route path="/faq" element={<FaqPage />} />
             <Route path="/sky" element={<SkyPage />} />
+            <Route path="/datenschutz"   element={<LegalPage kind="privacy"  />} />
+            <Route path="/privacy"       element={<LegalPage kind="privacy"  />} />
+            <Route path="/impressum"     element={<LegalPage kind="imprint"  />} />
+            <Route path="/legal-notice"  element={<LegalPage kind="imprint"  />} />
+            <Route path="/agb"           element={<LegalPage kind="terms"    />} />
+            <Route path="/terms"         element={<LegalPage kind="terms"    />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
