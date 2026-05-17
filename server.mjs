@@ -375,17 +375,24 @@ app.use('/api', aiRouter);
 // known high-frequency polling GETs so they don't starve write endpoints.
 const HIGH_FREQ_POLL_PREFIXES = [
   "/transit-state/",
-  "/space-weather",
 ];
+
+const HIGH_FREQ_POLL_PATHS = new Set([
+  "/space-weather",
+]);
+
+const isHighFreqPollRequest = (req) => (
+  HIGH_FREQ_POLL_PREFIXES.some((p) => req.path.startsWith(p)) ||
+  HIGH_FREQ_POLL_PATHS.has(req.path)
+);
+
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 min
   max: 2000,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests, please try again later." },
-  skip: (req) =>
-    req.method === "GET" &&
-    HIGH_FREQ_POLL_PREFIXES.some((p) => req.path.startsWith(p)),
+  skip: (req) => req.method === "GET" && isHighFreqPollRequest(req),
 });
 app.use("/api/", apiLimiter);
 
@@ -3477,6 +3484,12 @@ app.post('/api/daily-interpretation', requireUserAuth, dailyInterpretationLimite
           .limit(1);
         const winner = winnerList?.[0] ?? null;
         if (winner) {
+          // PR-#331 C-1: invalidate L1 cache for both locale siblings of
+          // (userId, pulse.date). The L1 payload may still hold a
+          // pre-race existing_decision: null snapshot; future GETs must
+          // hit the DB and surface the winner instead of stale Phase 1.
+          dailyPulseCache.delete(tagespulsCacheKey(userId, pulse.date, 'de'));
+          dailyPulseCache.delete(tagespulsCacheKey(userId, pulse.date, 'en'));
           return res.status(409).json({
             error: {
               code: 'ALREADY_DECIDED',
@@ -3495,6 +3508,14 @@ app.post('/api/daily-interpretation', requireUserAuth, dailyInterpretationLimite
       console.error('[daily-interpretation] Persist failed:', insErr?.code || insErr?.message);
       return res.status(500).json({ error: { code: 'PERSIST_FAILED' } });
     }
+
+    // PR-#331 C-1: invalidate L1 cache for both locale siblings of
+    // (userId, pulse.date). Without this, the dailyPulseCache (24h TTL)
+    // keeps serving the pre-insert payload with existing_decision: null,
+    // and a hard reload within 24h lands the client in Phase 1 with
+    // active archetype buttons instead of the locked Phase 2.
+    dailyPulseCache.delete(tagespulsCacheKey(userId, pulse.date, 'de'));
+    dailyPulseCache.delete(tagespulsCacheKey(userId, pulse.date, 'en'));
 
     return res.json({ id: row.id, text: row.text });
   } catch (err) {

@@ -25,7 +25,9 @@
       "ironisch",
       "scharf"
     ],
-    "element_affinity": [],
+    "element_affinity": [
+      "metall"
+    ],
     "figure_affinity": [],
     "season_affinity": [],
     "word_count_de": 8,
@@ -134,7 +136,9 @@
       "knapp",
       "moralisch"
     ],
-    "element_affinity": [],
+    "element_affinity": [
+      "metall"
+    ],
     "figure_affinity": [],
     "season_affinity": [],
     "word_count_de": 10,
@@ -169,7 +173,9 @@
       "ironisch",
       "geistreich"
     ],
-    "element_affinity": [],
+    "element_affinity": [
+      "metall"
+    ],
     "figure_affinity": [],
     "season_affinity": [],
     "word_count_de": 9,
@@ -204,7 +210,9 @@
       "satirisch",
       "scharf"
     ],
-    "element_affinity": [],
+    "element_affinity": [
+      "metall"
+    ],
     "figure_affinity": [],
     "season_affinity": [],
     "word_count_de": 16,
@@ -239,7 +247,9 @@
       "ironisch",
       "leicht"
     ],
-    "element_affinity": [],
+    "element_affinity": [
+      "metall"
+    ],
     "figure_affinity": [],
     "season_affinity": [],
     "word_count_de": 10,
@@ -459,7 +469,9 @@
       "philosophisch",
       "freiheitsbezogen"
     ],
-    "element_affinity": [],
+    "element_affinity": [
+      "metall"
+    ],
     "figure_affinity": [],
     "season_affinity": [],
     "word_count_de": 24,
@@ -864,7 +876,9 @@
       "politisch",
       "entschieden"
     ],
-    "element_affinity": [],
+    "element_affinity": [
+      "metall"
+    ],
     "figure_affinity": [],
     "season_affinity": [],
     "word_count_de": 7,
@@ -936,7 +950,9 @@
       "systemisch",
       "erkenntnisorientiert"
     ],
-    "element_affinity": [],
+    "element_affinity": [
+      "metall"
+    ],
     "figure_affinity": [],
     "season_affinity": [],
     "word_count_de": 10,
@@ -971,7 +987,9 @@
       "systemisch",
       "provokant"
     ],
-    "element_affinity": [],
+    "element_affinity": [
+      "metall"
+    ],
     "figure_affinity": [],
     "season_affinity": [],
     "word_count_de": 16,
@@ -1191,7 +1209,9 @@
       "freiheitsbezogen",
       "gesellschaftskritisch"
     ],
-    "element_affinity": [],
+    "element_affinity": [
+      "metall"
+    ],
     "figure_affinity": [],
     "season_affinity": [],
     "word_count_de": 16,
