@@ -27,7 +27,7 @@ export function StaticLegalLinks() {
       {links.map((link, index) => (
         <span key={link.to} className="flex items-center">
           {index > 0 && (
-            <span className="mx-2 text-xs text-white/20 select-none">·</span>
+            <span className="mx-2 text-xs text-white/20 select-none" aria-hidden="true">·</span>
           )}
           <Link
             to={link.to}
