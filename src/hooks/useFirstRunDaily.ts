@@ -133,11 +133,11 @@ export function getCachedDaily(): DailyResponse | null {
  * Production code should consume the cache via the `useFirstRunDaily`
  * hook — not via direct calls.
  */
-export function setCachedDaily(data: DailyResponse): void {
+export function setCachedDaily(data: DailyResponse, cacheKey = dailyCacheKey()): void {
   try {
     localStorage.setItem(
       'daily_horoscope_cache',
-      JSON.stringify({ date: dailyCacheKey(), data }),
+      JSON.stringify({ date: cacheKey, data }),
     );
   } catch {
     // localStorage full or unavailable — ignore
@@ -190,6 +190,12 @@ export function useFirstRunDaily(
   // fetches. Cleared in the finally branch so the next legitimate
   // trigger works.
   const inFlightRef = useRef<boolean>(false);
+  // If the 06:00 rotation fires while a pre-rotation request is still
+  // in-flight, remember that the skipped invocation must be replayed as
+  // soon as the old request settles. Otherwise the stale response can win
+  // the race and keep yesterday's day-window on screen.
+  const pendingWindowRefetchRef = useRef<boolean>(false);
+  const inFlightWindowKeyRef = useRef<string | null>(null);
   // 2026-05-11 audit fix: per-fetch generation counter. Replaces the
   // local `cancelled` closure flag because that flag was getting set
   // spuriously by R2 effect re-runs (unstable deps + inline `[]`
