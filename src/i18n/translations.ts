@@ -46,6 +46,7 @@ const translationsEn: DeepStringRecord = {
     settingsSubscription: "Subscription",
     settingsAgb: "Terms (AGB)",
     settingsPrivacy: "Privacy",
+    settingsImprint: "Legal Notice",
     settingsSky: "sky.bazodiac.space",
     sidebar: {
       home: "Your Bazodiac",
@@ -572,6 +573,7 @@ const translationsDe: DeepStringRecord = {
     settingsSubscription: "Abonnement",
     settingsAgb: "AGB",
     settingsPrivacy: "Datenschutz",
+    settingsImprint: "Impressum",
     settingsSky: "sky.bazodiac.space",
     sidebar: {
       home: "Dein Bazodiac",

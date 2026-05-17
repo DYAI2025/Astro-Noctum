@@ -160,7 +160,7 @@ export function SettingsMenu({
           onClick={onClose}
           className="block w-full px-4 py-2.5 text-left text-sm text-white/60 hover:text-white hover:bg-[#D4AF37]/08 transition-colors"
         >
-          {lang === "de" ? "Impressum" : "Legal Notice"}
+          {t("nav.settingsImprint")}
         </Link>
 
         {/* sky.bazodiac.space */}
