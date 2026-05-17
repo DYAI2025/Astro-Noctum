@@ -375,17 +375,24 @@ app.use('/api', aiRouter);
 // known high-frequency polling GETs so they don't starve write endpoints.
 const HIGH_FREQ_POLL_PREFIXES = [
   "/transit-state/",
-  "/space-weather",
 ];
+
+const HIGH_FREQ_POLL_PATHS = new Set([
+  "/space-weather",
+]);
+
+const isHighFreqPollRequest = (req) => (
+  HIGH_FREQ_POLL_PREFIXES.some((p) => req.path.startsWith(p)) ||
+  HIGH_FREQ_POLL_PATHS.has(req.path)
+);
+
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 min
   max: 2000,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests, please try again later." },
-  skip: (req) =>
-    req.method === "GET" &&
-    HIGH_FREQ_POLL_PREFIXES.some((p) => req.path.startsWith(p)),
+  skip: (req) => req.method === "GET" && isHighFreqPollRequest(req),
 });
 app.use("/api/", apiLimiter);
 
