@@ -276,7 +276,7 @@ Diese Bedingungen regeln die Nutzung von Bazodiac, einer Webanwendung für astro
 
 ## 2. Leistungsbeschreibung
 
-Die Inhalte dienen Unterhaltung, Selbstreflexion und Orientierung. Sie sind keine medizinische, psychologische, rechtliche, steuerliche, finanzielle oder sonstige professionelle Beratung dar.
+Die Inhalte dienen Unterhaltung, Selbstreflexion und Orientierung. Sie stellen keine medizinische, psychologische, rechtliche, steuerliche, finanzielle oder sonstige professionelle Beratung dar.
 
 ## 3. Nutzerkonto
 
