@@ -418,7 +418,7 @@ const dailyInterpretationLimiter = rateLimit({
   max: 6,                           // 6 calls per window
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => req.userId || ipKeyGenerator(req.ip),
+  keyGenerator: (req) => req.userId || ipKeyGenerator(req.ip ?? 'unknown'),
   message: { error: { code: 'RATE_LIMITED', retry_after: 3600 } },
   skip: (req) => req.method === 'OPTIONS',
 });
