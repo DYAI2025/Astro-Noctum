@@ -22,7 +22,8 @@
     "typecheck:src": "bash ./scripts/ci-typecheck-src.sh",
     "typecheck": "node ./scripts/run-typecheck.mjs",
     "check:runtime-imports": "node scripts/check-runtime-ts-imports.mjs",
-    "seed:aphorisms": "node --env-file=.env scripts/seed-aphorisms.mjs"
+    "seed:aphorisms": "node --env-file=.env scripts/seed-aphorisms.mjs",
+    "predeploy:fly": "node scripts/fly-preflight.mjs"
   },
   "engines": {
     "node": ">=20.19.0"
