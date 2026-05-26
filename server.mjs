@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
 import compression from "compression";
 import helmet from "helmet";
-import rateLimit from "express-rate-limit";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import { createGenAiRouter } from "./server/ai-router.mjs";
 import { aiRouter } from "./server/routes/ai.routes.mjs";
 import { requestIdMiddleware } from "./server/middleware/requestId.mjs";
@@ -418,7 +418,7 @@ const dailyInterpretationLimiter = rateLimit({
   max: 6,                           // 6 calls per window
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => req.userId || req.ip,
+  keyGenerator: (req) => req.userId || ipKeyGenerator(req.ip ?? 'unknown'),
   message: { error: { code: 'RATE_LIMITED', retry_after: 3600 } },
   skip: (req) => req.method === 'OPTIONS',
 });
