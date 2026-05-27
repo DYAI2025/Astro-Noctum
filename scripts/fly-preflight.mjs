@@ -35,7 +35,7 @@ function listFlySecrets(appName) {
 
 const appName = getFlyAppName();
 const secrets = listFlySecrets(appName);
-const secretNames = new Set(secrets.map((secret) => secret.Name));
+const secretNames = new Set(secrets.map((secret) => secret.name ?? secret.Name).filter(Boolean));
 const missing = requiredVars.filter((name) => !secretNames.has(name));
 
 if (missing.length > 0) {
