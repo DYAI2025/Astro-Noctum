@@ -23,7 +23,8 @@
     "typecheck": "node ./scripts/run-typecheck.mjs",
     "check:runtime-imports": "node scripts/check-runtime-ts-imports.mjs",
     "seed:aphorisms": "node --env-file=.env scripts/seed-aphorisms.mjs",
-    "predeploy:fly": "node scripts/fly-preflight.mjs"
+    "predeploy:fly": "node scripts/fly-preflight.mjs",
+    "smoke:production-html": "node scripts/smoke-production-html.mjs"
   },
   "engines": {
     "node": ">=20.19.0"
