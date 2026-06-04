@@ -68,8 +68,8 @@ def read_latest_statuses(ledger_path: Path) -> dict[str, str]:
     """Return the latest status per gate, or an empty map on fail-closed input."""
 
     try:
-        content = ledger_path.read_text(encoding="utf-8", newline="")
-    except OSError:
+        content = ledger_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError):
         return {}
 
     if not content.strip():
