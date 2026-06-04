@@ -424,6 +424,40 @@ const dailyInterpretationLimiter = rateLimit({
 });
 
 const distPath = path.join(__dirname, "dist");
+const distIndexPath = path.join(distPath, "index.html");
+
+function validateProductionBundle() {
+  const shouldValidate = process.env.NODE_ENV === "production"
+    || Boolean(process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_PUBLIC_DOMAIN || process.env.FLY_APP_NAME);
+  if (!shouldValidate) return;
+
+  if (!fs.existsSync(distIndexPath)) {
+    console.error(
+      `[server] Missing production bundle at ${distIndexPath}. Run "npm run build" before "npm run start".`,
+    );
+    process.exit(1);
+  }
+
+  const html = fs.readFileSync(distIndexPath, "utf8");
+  const hasDevEntrypoint = /\/src\/main\.tsx(?:["'?]|$)/.test(html);
+  const hasBuiltScript = /<script\b[^>]+src=["']\/assets\/[^"']+\.js[^"']*["'][^>]*>/i.test(html);
+  const hasBuiltStylesheet = /<link\b[^>]+rel=["']stylesheet["'][^>]+href=["']\/assets\/[^"']+\.css[^"']*["'][^>]*>/i.test(html);
+
+  if (hasDevEntrypoint || !hasBuiltScript || !hasBuiltStylesheet) {
+    console.error(
+      [
+        "[server] Invalid production bundle: dist/index.html must be Vite build output.",
+        `  contains /src/main.tsx: ${hasDevEntrypoint}`,
+        `  contains /assets/*.js: ${hasBuiltScript}`,
+        `  contains /assets/*.css: ${hasBuiltStylesheet}`,
+        "Run \"npm run build\" during deploy and serve dist/index.html, not the repository root index.html.",
+      ].join("\n"),
+    );
+    process.exit(1);
+  }
+}
+
+validateProductionBundle();
 
 // BAFE API URLs - build ordered list for fallback chain.
 // Railway private networking (.railway.internal) is IPv6-only and often
@@ -6511,7 +6545,7 @@ app.post("/api/share", requireUserAuth, async (req, res) => {
 
 // Public share page — serve the SPA so client-side handles /share/:hash
 app.get("/share/:hash", async (_req, res) => {
-  const html = await fs.promises.readFile(path.join(distPath, "index.html"), "utf-8");
+  const html = await fs.promises.readFile(distIndexPath, "utf-8");
   res.send(html);
 });
 
@@ -6579,7 +6613,12 @@ app.use(compression({
 app.use("/assets", express.static(path.join(distPath, "assets"), {
   maxAge: "1y",
   immutable: true,
+  fallthrough: false,
 }));
+
+app.get("/src/*", (_req, res) => {
+  res.status(404).type("text/plain").send("Production builds do not serve Vite source files. Serve dist/index.html instead.");
+});
 
 // Other static files (HTML, media, icons) — short cache, revalidate
 app.use(express.static(distPath, {
@@ -6593,7 +6632,7 @@ app.use(express.static(distPath, {
 }));
 
 app.get("/fu-ring", (_req, res) => {
-  const html = fs.readFileSync(path.join(distPath, "index.html"), "utf8");
+  const html = fs.readFileSync(distIndexPath, "utf8");
   const ogHtml = html.replace(
     "<head>",
     `<head>
@@ -6605,7 +6644,7 @@ app.get("/fu-ring", (_req, res) => {
 });
 
 app.get("*", (_req, res) => {
-  res.sendFile(path.join(distPath, "index.html"));
+  res.sendFile(distIndexPath);
 });
 
 // ── POST /api/analyze/conversation — Dialogue analysis with Gemini ──────
