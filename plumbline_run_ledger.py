@@ -92,7 +92,11 @@ def read_latest_statuses(ledger_path: Path) -> dict[str, str]:
             if not any(name in lowered for name in STATUS_FIELD_CANDIDATES):
                 return {}
             normalized_rows = (
-                {key.strip().lower(): value for key, value in row.items() if key is not None}
+                {
+                    key.strip().lower(): (value or "")
+                    for key, value in row.items()
+                    if key is not None
+                }
                 for row in reader
             )
             latest = _latest_statuses_from_dict_rows(normalized_rows)
