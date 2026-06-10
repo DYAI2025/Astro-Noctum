@@ -107,17 +107,26 @@ export function dailyCacheKey(): string {
  * testing in `src/__tests__/daily-pulse-six-am-cache-rotation.test.ts`.
  * Production code should consume the cache via the `useFirstRunDaily`
  * hook — not via direct calls — to preserve the hook's invariants
- * (dedupe via `lastFetchedDateRef`, error-state propagation, etc.).
+ * (dedupe via `lastFetchedRequestKeyRef`, error-state propagation, etc.).
  */
-export function getCachedDaily(): DailyResponse | null {
+export function getCachedDaily(requestKey?: string): DailyResponse | null {
   try {
     const raw = localStorage.getItem('daily_horoscope_cache');
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    if (parsed?.date === dailyCacheKey() && parsed?.data) {
-      return parsed.data as DailyResponse;
+    if (parsed?.date !== dailyCacheKey() || !parsed?.data) return null;
+    // Same-day changes to the logical request (locale, birth data, sectors,
+    // sign) must not be served from a cache written for different inputs.
+    // Entries written before `requestKey` existed — or seeded without one —
+    // match any caller, so the day-window check alone governs them.
+    if (
+      requestKey !== undefined &&
+      parsed.requestKey !== undefined &&
+      parsed.requestKey !== requestKey
+    ) {
+      return null;
     }
-    return null;
+    return parsed.data as DailyResponse;
   } catch {
     return null;
   }
@@ -133,11 +142,15 @@ export function getCachedDaily(): DailyResponse | null {
  * Production code should consume the cache via the `useFirstRunDaily`
  * hook — not via direct calls.
  */
-export function setCachedDaily(data: DailyResponse, cacheKey = dailyCacheKey()): void {
+export function setCachedDaily(
+  data: DailyResponse,
+  requestKey?: string,
+  cacheKey = dailyCacheKey(),
+): void {
   try {
     localStorage.setItem(
       'daily_horoscope_cache',
-      JSON.stringify({ date: cacheKey, data }),
+      JSON.stringify({ date: cacheKey, requestKey, data }),
     );
   } catch {
     // localStorage full or unavailable — ignore
@@ -300,8 +313,8 @@ export function useFirstRunDaily(
     //
     // Contract: callers who pass a NEW array reference (different
     // content) get a re-fetch with the new content — BUT only on a
-    // NEW target date (lastFetchedDateRef guard above short-circuits
-    // same-day re-fetches regardless of quiz content). Callers who
+    // NEW target date (lastFetchedRequestKeyRef guard above short-circuits
+    // same-request re-fetches regardless of quiz content). Callers who
     // mutate an array in place after render WITHOUT re-rendering get
     // undefined behavior — that's a React anti-pattern and we don't
     // support it.
@@ -406,7 +419,12 @@ export function useFirstRunDaily(
     // the hash was computed from. ESLint's exhaustive-deps no longer
     // fires because the body only reads the snapshots, not the live
     // refs, after effect entry.
-  }, [userId, birthData, soulprintSectorsKey, quizSectorsKey, birthSign, customDate, locale, retryTick]);
+    // `queuedFetchTick` MUST stay in this dep array: the finally block above
+    // bumps it when a queued follow-up request exists, which re-creates this
+    // callback and re-runs the mount effect so the queued fetch actually
+    // dispatches. Dropping it silently kills the queue mechanism (the bad
+    // merge that broke CI on 2026-05-17 did exactly that).
+  }, [userId, birthData, soulprintSectorsKey, quizSectorsKey, birthSign, customDate, locale, retryTick, queuedFetchTick]);
 
   const retry = useCallback(() => {
     // I-2 from the 2026-05-11 PR #343 review: retry() is a no-op when
@@ -458,9 +476,9 @@ export function useFirstRunDaily(
       // longer match anyway. Removing it explicitly keeps localStorage
       // tidy and avoids stale data lingering across user-tab visits.
       localStorage.removeItem('daily_horoscope_cache');
-      // Reset the dedupe ref so runDailyFetch's `targetDate ===
-      // lastFetchedDateRef.current` guard releases.
-      lastFetchedDateRef.current = null;
+      // Reset the dedupe ref so runDailyFetch's `requestKey ===
+      // lastFetchedRequestKeyRef.current` guard releases.
+      lastFetchedRequestKeyRef.current = null;
       // Reset state so consumers see the loading transition cleanly.
       setDailyData(null);
       // Trigger the refetch. No AbortSignal here — if the component
