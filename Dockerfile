@@ -27,6 +27,18 @@ RUN npm ci --include=dev
 # Copy application code
 COPY . .
 
+# Vite bakes VITE_* vars into the bundle at BUILD time. Railway passes service
+# variables as build args, but Docker only sees them when declared as ARG here.
+# Without these the frontend crashes at init ("Missing VITE_SUPABASE_URL...").
+ARG VITE_SUPABASE_URL
+ARG VITE_SUPABASE_ANON_KEY
+ARG VITE_SUPABASE_PUBLISHABLE_API_KEY
+ARG VITE_BAFE_BASE_URL
+ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL \
+    VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY \
+    VITE_SUPABASE_PUBLISHABLE_API_KEY=$VITE_SUPABASE_PUBLISHABLE_API_KEY \
+    VITE_BAFE_BASE_URL=$VITE_BAFE_BASE_URL
+
 # Build application
 RUN npm run build
 
